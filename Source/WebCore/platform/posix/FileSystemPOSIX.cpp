@@ -247,7 +247,7 @@ String directoryName(const String& path)
     return dirname(fsRep.mutableData());
 }
 
-#if !PLATFORM(EFL)
+#if !PLATFORM(EFL) || PLATFORM(NIX)
 Vector<String> listDirectory(const String& path, const String& filter)
 {
     Vector<String> entries;

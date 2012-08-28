@@ -95,6 +95,7 @@ my $isWinCE;
 my $isWinCairo;
 my $isWx;
 my $isEfl;
+my $isNix;
 my @wxArgs;
 my $isBlackBerry;
 my $isChromium;
@@ -321,7 +322,7 @@ sub determineArchitecture
             chomp $supports64Bit;
             $architecture = 'x86_64' if $supports64Bit;
         }
-    } elsif (isEfl()) {
+    } elsif (isEfl() || isNix()) {
         my $host_processor = "";
         $host_processor = `cmake --system-information | grep CMAKE_SYSTEM_PROCESSOR`;
         if ($host_processor =~ m/^CMAKE_SYSTEM_PROCESSOR \"([^"]+)\"/) {
@@ -331,13 +332,13 @@ sub determineArchitecture
         }
     }
 
-    if (!$architecture && (isGtk() || isAppleMacWebKit() || isEfl())) {
+    if (!$architecture && (isGtk() || isAppleMacWebKit() || isEfl() || isNix())) {
         # Fall back to output of `arch', if it is present.
         $architecture = `arch`;
         chomp $architecture;
     }
 
-    if (!$architecture && (isGtk() || isAppleMacWebKit() || isEfl())) {
+    if (!$architecture && (isGtk() || isAppleMacWebKit() || isEfl() || isNix())) {
         # Fall back to output of `uname -m', if it is present.
         $architecture = `uname -m`;
         chomp $architecture;
@@ -386,6 +387,7 @@ sub argumentsForConfiguration()
     push(@args, '--qt') if isQt();
     push(@args, '--gtk') if isGtk();
     push(@args, '--efl') if isEfl();
+    push(@args, '--nix') if isNix();
     push(@args, '--wincairo') if isWinCairo();
     push(@args, '--wince') if isWinCE();
     push(@args, '--wx') if isWx();
@@ -472,7 +474,7 @@ sub productDir
 sub jscProductDir
 {
     my $productDir = productDir();
-    $productDir .= "/bin" if (isQt() || isEfl());
+    $productDir .= "/bin" if (isQt() || isEfl() || isNix());
     $productDir .= "/Programs" if isGtk();
 
     return $productDir;
@@ -776,6 +778,9 @@ sub builtDylibPathForName
     if (isEfl()) {
         return "$configurationProductDir/lib/libewebkit.so";
     }
+    if (isNix()) {
+        return "$configurationProductDir/lib/libNixWebKit.so";
+    }
     if (isWinCE()) {
         return "$configurationProductDir/$libraryName";
     }
@@ -937,7 +942,7 @@ sub determineIsQt()
     }
 
     # The presence of QTDIR only means Qt if --gtk or --wx or --efl or --blackberry or --chromium or --wincairo are not on the command-line
-    if (isGtk() || isWx() || isEfl() || isBlackBerry() || isChromium() || isWinCairo()) {
+    if (isGtk() || isWx() || isEfl() || isBlackBerry() || isChromium() || isWinCairo() || isNix()) {
         $isQt = 0;
         return;
     }
@@ -1085,6 +1090,17 @@ sub isEfl()
     return $isEfl;
 }
 
+sub determineIsNix()
+{
+    return if defined($isNix);
+    $isNix = checkForArgumentAndRemoveFromARGV("--nix");
+}
+
+sub isNix()
+{
+    determineIsNix();
+    return $isNix;
+}
 sub isGtk()
 {
     determineIsGtk();
@@ -1343,7 +1359,7 @@ sub isCrossCompilation()
 
 sub isAppleWebKit()
 {
-    return !(isQt() or isGtk() or isWx() or isChromium() or isEfl() or isWinCE() or isBlackBerry());
+    return !(isQt() or isGtk() or isWx() or isChromium() or isEfl() or isWinCE() or isBlackBerry() or isNix());
 }
 
 sub isAppleMacWebKit()
@@ -1511,7 +1527,7 @@ sub relativeScriptsDir()
 sub launcherPath()
 {
     my $relativeScriptsPath = relativeScriptsDir();
-    if (isGtk() || isQt() || isWx() || isEfl() || isWinCE()) {
+    if (isGtk() || isQt() || isWx() || isEfl() || isWinCE() || isNix()) {
         return "$relativeScriptsPath/run-launcher";
     } elsif (isAppleWebKit()) {
         return "$relativeScriptsPath/run-safari";
@@ -1532,6 +1548,8 @@ sub launcherName()
         return "EWebLauncher";
     } elsif (isWinCE()) {
         return "WinCELauncher";
+    } elsif (isNix()) {
+        return "NixLauncher";
     }
 }
 
@@ -1558,7 +1576,7 @@ sub checkRequiredSystemConfig
             print "http://developer.apple.com/tools/xcode\n";
             print "*************************************************************\n";
         }
-    } elsif (isGtk() or isQt() or isWx() or isEfl()) {
+    } elsif (isGtk() or isQt() or isWx() or isEfl() or isNix()) {
         my @cmds = qw(flex bison gperf);
         my @missing = ();
         foreach my $cmd (@cmds) {
@@ -1729,7 +1747,7 @@ sub copyInspectorFrontendFiles
         $inspectorResourcesDirPath = $productDir . "/WebCore.framework/Resources/inspector";
     } elsif (isAppleWinWebKit()) {
         $inspectorResourcesDirPath = $productDir . "/WebKit.resources/inspector";
-    } elsif (isQt() || isGtk()) {
+    } elsif (isQt() || isGtk() || isNix()) {
         my $prefix = $ENV{"WebKitInstallationPrefix"};
         $inspectorResourcesDirPath = (defined($prefix) ? $prefix : "/usr/share") . "/webkit-1.0/webinspector";
     } elsif (isEfl()) {
@@ -2078,6 +2096,8 @@ sub jhbuildWrapperPrefixIfNeeded()
             return File::Spec->catfile(sourceDir(), "Tools", "efl", "run-with-jhbuild");
         } elsif (isGtk()) {
             return File::Spec->catfile(sourceDir(), "Tools", "gtk", "run-with-jhbuild");
+        } elsif (isNix()) {
+            return File::Spec->catfile(sourceDir(), "Tools", "nix", "run-with-jhbuild");
         }
     }
 
@@ -2187,6 +2207,7 @@ sub cmakeBasedPortName()
     return "BlackBerry" if isBlackBerry();
     return "Efl" if isEfl();
     return "WinCE" if isWinCE();
+    return "Nix" if isNix();
     return "";
 }
 

@@ -33,7 +33,7 @@
 #include <WebCore/GraphicsContext.h>
 #include <cairo/cairo.h>
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) && !PLATFORM(NIX)
 #include "ewk_view_private.h"
 #endif
 
@@ -69,7 +69,7 @@ void BackingStore::incorporateUpdate(ShareableBitmap* bitmap, const UpdateInfo& 
         bitmap->paint(graphicsContext, updateRect.location(), srcRect);
     }
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) && !PLATFORM(NIX)
     // Update ewk_view with new backingStore image.
     ewk_view_image_data_set(m_webPageProxy->viewWidget(), cairo_image_surface_get_data(m_backingStore->cairoSurface()), m_size);
 #endif
