@@ -38,7 +38,7 @@ OBJC_CLASS NSView;
 #elif PLATFORM(GTK)
 #include <GOwnPtrGtk.h>
 typedef union _GdkEvent GdkEvent;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 #include <Evas.h>
 #endif
 
@@ -55,9 +55,14 @@ public:
 #elif PLATFORM(GTK)
     NativeWebKeyboardEvent(const NativeWebKeyboardEvent&);
     NativeWebKeyboardEvent(GdkEvent*);
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
     NativeWebKeyboardEvent(const Evas_Event_Key_Down*);
     NativeWebKeyboardEvent(const Evas_Event_Key_Up*);
+#elif PLATFORM(NIX)
+    NativeWebKeyboardEvent(const WebKeyboardEvent& event)
+        : WebKeyboardEvent(event)
+        , m_nativeEvent(0)
+    { }
 #endif
 
 #if USE(APPKIT)
@@ -68,7 +73,7 @@ public:
     const QKeyEvent* nativeEvent() const { return &m_nativeEvent; }
 #elif PLATFORM(GTK)
     GdkEvent* nativeEvent() const { return m_nativeEvent.get(); }
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
     const void* nativeEvent() const { return m_nativeEvent; }
 #endif
 
@@ -81,7 +86,7 @@ private:
     QKeyEvent m_nativeEvent;
 #elif PLATFORM(GTK)
     GOwnPtr<GdkEvent> m_nativeEvent;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
     const void* m_nativeEvent;
 #endif
 };

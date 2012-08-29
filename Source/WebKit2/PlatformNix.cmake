@@ -22,9 +22,7 @@ LIST(APPEND WebKit2_SOURCES
     Shared/cairo/ShareableBitmapCairo.cpp
 
     Shared/efl/LayerTreeContextEfl.cpp
-    Shared/efl/NativeWebKeyboardEventEfl.cpp
     Shared/efl/NativeWebWheelEventEfl.cpp
-    Shared/efl/NativeWebMouseEventEfl.cpp
     Shared/efl/ProcessExecutablePathEfl.cpp
     Shared/efl/WebEventFactory.cpp
 
@@ -37,6 +35,7 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/API/C/soup/WKSoupRequestManager.cpp
 
     UIProcess/API/efl/ewk_main.cpp
+    UIProcess/API/nix/WebView.cpp
 
     UIProcess/cairo/BackingStoreCairo.cpp
 
@@ -165,6 +164,7 @@ SET(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
 CONFIGURE_FILE(efl/ewebkit2.pc.in ${CMAKE_BINARY_DIR}/WebKit2/efl/ewebkit2.pc @ONLY)
 SET (EWebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_main.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/WebView.h"
 )
 
 INSTALL(FILES ${CMAKE_BINARY_DIR}/WebKit2/efl/ewebkit2.pc DESTINATION lib/pkgconfig)
