@@ -2,6 +2,7 @@
  *  Copyright (C) 2008 INdT - Instituto Nokia de Tecnologia
  *  Copyright (C) 2009-2010 ProFUSION embedded systems
  *  Copyright (C) 2009-2010 Samsung Electronics
+ *  Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -18,21 +19,21 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef ClipboardEfl_h
-#define ClipboardEfl_h
+#ifndef ClipboardNix_h
+#define ClipboardNix_h
 
 #include "Clipboard.h"
 
 namespace WebCore {
 class CachedImage;
 
-class ClipboardEfl : public Clipboard {
+class ClipboardNix : public Clipboard {
 public:
-    static PassRefPtr<ClipboardEfl> create(ClipboardAccessPolicy policy, ClipboardType clipboardType = CopyAndPaste)
+    static PassRefPtr<ClipboardNix> create(ClipboardAccessPolicy policy, ClipboardType clipboardType = CopyAndPaste)
     {
-        return adoptRef(new ClipboardEfl(policy, clipboardType));
+        return adoptRef(new ClipboardNix(policy, clipboardType));
     }
-    ~ClipboardEfl();
+    ~ClipboardNix();
 
     void clearData(const String&);
     void clearAllData();
@@ -62,7 +63,7 @@ public:
 #endif
 
 private:
-    ClipboardEfl(ClipboardAccessPolicy, ClipboardType);
+    ClipboardNix(ClipboardAccessPolicy, ClipboardType);
 };
 }
 

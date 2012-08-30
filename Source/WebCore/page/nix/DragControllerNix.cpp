@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
- * Copyright (C) 2008 INdT - Instituto Nokia de Tecnologia
+ * Copyright (C) 2007 Apple Inc.
  * Copyright (C) 2009-2010 ProFUSION embedded systems
  * Copyright (C) 2009-2010 Samsung Electronics
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,10 +13,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -26,23 +26,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeEfl_h
-#define ScrollbarThemeEfl_h
+#include "config.h"
+#include "DragController.h"
 
-#include "ScrollbarTheme.h"
+#include "DragData.h"
+#include "Frame.h"
+#include "FrameView.h"
+#include "Page.h"
 
 namespace WebCore {
 
-class ScrollbarThemeEfl : public ScrollbarTheme {
-public:
-    virtual ~ScrollbarThemeEfl();
+const int DragController::LinkDragBorderInset = 2;
+const int DragController::MaxOriginalImageArea = 1500 * 1500;
+const int DragController::DragIconRightInset = 7;
+const int DragController::DragIconBottomInset = 3;
 
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
+const float DragController::DragImageAlpha = 0.75f;
 
-    virtual void registerScrollbar(ScrollbarThemeClient*);
-    virtual void unregisterScrollbar(ScrollbarThemeClient*);
-};
+bool DragController::isCopyKeyDown(DragData*)
+{
+    return false;
+}
+
+DragOperation DragController::dragOperation(DragData* dragData)
+{
+    if (dragData->containsURL(0))
+        return DragOperationCopy;
+
+    return DragOperationNone;
+}
+
+const IntSize& DragController::maxDragImageSize()
+{
+    static const IntSize maxDragImageSize(400, 400);
+
+    return maxDragImageSize;
+}
+
+void DragController::cleanupAfterSystemDrag()
+{}
 
 }
-#endif // ScrollbarThemeEfl_h
-

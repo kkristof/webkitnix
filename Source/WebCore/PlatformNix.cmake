@@ -4,8 +4,6 @@ LIST(APPEND WebCore_LINK_FLAGS
 )
 
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-  "${WEBCORE_DIR}/accessibility/efl"
-  "${WEBCORE_DIR}/page/efl"
   "${WEBCORE_DIR}/platform/nix"
   "${WEBCORE_DIR}/platform/graphics/efl"
   "${WEBCORE_DIR}/platform/linux"
@@ -19,40 +17,39 @@ LIST(APPEND WebCore_INCLUDE_DIRECTORIES
 # RenderThemeEfl.
 ###########################################
 LIST(APPEND WebCore_SOURCES
-  accessibility/efl/AccessibilityObjectEfl.cpp
-  page/efl/DragControllerEfl.cpp
-  page/efl/EventHandlerEfl.cpp
+  accessibility/nix/AccessibilityObjectNix.cpp
+  page/nix/DragControllerNix.cpp
+  page/nix/EventHandlerNix.cpp
   platform/Cursor.cpp
-  platform/efl/ClipboardEfl.cpp
-  platform/efl/ContextMenuEfl.cpp
-  platform/efl/ContextMenuItemEfl.cpp
+  platform/nix/ClipboardNix.cpp
+  platform/nix/ContextMenuNix.cpp
+  platform/nix/ContextMenuItemNix.cpp
   platform/nix/CursorNix.cpp
-  platform/efl/DragDataEfl.cpp
-  platform/efl/DragImageEfl.cpp
-  platform/efl/EflKeyboardUtilities.cpp
-  platform/efl/ErrorsEfl.cpp
+  platform/nix/DragDataNix.cpp
+  platform/nix/DragImageNix.cpp
+  platform/nix/EflKeyboardUtilities.cpp
+  platform/nix/ErrorsNix.cpp
   platform/efl/EventLoopEfl.cpp
   platform/posix/FileSystemPOSIX.cpp
   platform/nix/FileSystemNix.cpp
-  platform/efl/KURLEfl.cpp
-  platform/efl/LanguageEfl.cpp
-  platform/efl/LocalizedStringsEfl.cpp
-  platform/efl/MIMETypeRegistryEfl.cpp
-  platform/efl/PasteboardEfl.cpp
+  platform/nix/KURLNix.cpp
+  platform/nix/LanguageNix.cpp
+  platform/nix/LocalizedStringsNix.cpp
+  platform/nix/MIMETypeRegistryNix.cpp
+  platform/nix/PasteboardNix.cpp
   platform/nix/PlatformScreenNix.cpp
   platform/nix/PlatformKeyboardEventNix.cpp
-  platform/efl/RefPtrEfl.cpp
   platform/efl/RenderThemeEfl.cpp
   platform/efl/RunLoopEfl.cpp
   platform/nix/NixScreenUtilities.cpp
   platform/nix/ScrollViewNix.cpp
-  platform/efl/ScrollbarThemeEfl.cpp
+  platform/nix/ScrollbarThemeNix.cpp
   platform/nix/ScrollbarNix.cpp
   platform/posix/SharedBufferPOSIX.cpp
   platform/nix/SoundNix.cpp
   platform/efl/SharedTimerEfl.cpp
-  platform/efl/SystemTimeEfl.cpp
-  platform/efl/TemporaryLinkStubs.cpp
+  platform/nix/SystemTimeNix.cpp
+  platform/nix/TemporaryLinkStubs.cpp
   platform/nix/WidgetNix.cpp
   platform/graphics/ImageSource.cpp
   platform/graphics/efl/IconEfl.cpp
@@ -166,15 +163,9 @@ IF (WTF_USE_ICU_UNICODE)
   )
 ENDIF ()
 
-IF (WTF_USE_TEXTURE_MAPPER)
-  LIST(APPEND WebCore_SOURCES
+LIST(APPEND WebCore_SOURCES
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
-  )
-ELSE ()
-  LIST(APPEND WebCore_SOURCES
-    platform/graphics/efl/GraphicsLayerEfl.cpp
-  )
-ENDIF ()
+)
 
 LIST(APPEND WebCore_LIBRARIES
   ${CAIRO_LIBRARIES}
@@ -304,14 +295,5 @@ IF (ENABLE_WEB_AUDIO)
   FILE(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")
   INSTALL(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
   ADD_DEFINITIONS(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
-ENDIF ()
-
-IF (ENABLE_GAMEPAD OR ENABLE_NETWORK_INFO)
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-    ${EEZE_INCLUDE_DIRS}
-  )
-  LIST(APPEND WebCore_LIBRARIES
-    ${EEZE_LIBRARIES}
-  )
 ENDIF ()
 

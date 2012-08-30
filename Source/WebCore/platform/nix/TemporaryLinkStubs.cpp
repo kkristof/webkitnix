@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
- * Copyright (C) 2008 Diego Hidalgo C. Gonzalez
+ * Copyright (C) 2006, 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2006 Michael Emmel mike.emmel@gmail.com
  * Copyright (C) 2009-2010 ProFUSION embedded systems
  * Copyright (C) 2009-2010 Samsung Electronics
  * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
@@ -28,42 +28,24 @@
  */
 
 #include "config.h"
-#include "PlatformKeyboardEvent.h"
 
+#include "KURL.h"
 #include "NotImplemented.h"
-#include "TextEncoding.h"
-#include <stdio.h>
-#include <wtf/CurrentTime.h>
+#include "SSLKeyGenerator.h"
+
+using namespace WebCore;
 
 namespace WebCore {
 
-void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type, bool)
-{
-    ASSERT(m_type == KeyDown);
-    m_type = type;
-
-    if (type == PlatformEvent::RawKeyDown) {
-        m_text = String();
-        m_unmodifiedText = String();
-    } else {
-        m_keyIdentifier = String();
-        m_windowsVirtualKeyCode = 0;
-    }
-}
-
-bool PlatformKeyboardEvent::currentCapsLockState()
+void getSupportedKeySizes(Vector<String>&)
 {
     notImplemented();
-    return false;
 }
 
-void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
+String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String &challengeString, const KURL &url)
 {
-    notImplemented();
-    shiftKey = false;
-    ctrlKey = false;
-    altKey = false;
-    metaKey = false;
+    return String();
 }
 
 }
+

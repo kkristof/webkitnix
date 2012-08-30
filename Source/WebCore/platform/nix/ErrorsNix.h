@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,8 +24,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ErrorsEfl_h
-#define ErrorsEfl_h
+#ifndef ErrorsNix_h
+#define ErrorsNix_h
 
 #include "PlatformString.h"
 
@@ -96,4 +97,4 @@ ResourceError invalidPageRangeToPrint(const PrintContext*);
 
 }
 
-#endif // ErrorsEfl_h
+#endif // ErrorsNix_h

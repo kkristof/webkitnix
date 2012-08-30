@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
- * Copyright (C) 2008 Diego Hidalgo C. Gonzalez
+ * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008 INdT - Instituto Nokia de Tecnologia
  * Copyright (C) 2009-2010 ProFUSION embedded systems
  * Copyright (C) 2009-2010 Samsung Electronics
  * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
@@ -14,10 +14,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -28,42 +28,35 @@
  */
 
 #include "config.h"
-#include "PlatformKeyboardEvent.h"
+#include "ScrollbarThemeNix.h"
 
 #include "NotImplemented.h"
-#include "TextEncoding.h"
 #include <stdio.h>
-#include <wtf/CurrentTime.h>
 
 namespace WebCore {
 
-void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type, bool)
+ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    ASSERT(m_type == KeyDown);
-    m_type = type;
-
-    if (type == PlatformEvent::RawKeyDown) {
-        m_text = String();
-        m_unmodifiedText = String();
-    } else {
-        m_keyIdentifier = String();
-        m_windowsVirtualKeyCode = 0;
-    }
+    static ScrollbarThemeNix theme;
+    return &theme;
 }
 
-bool PlatformKeyboardEvent::currentCapsLockState()
+ScrollbarThemeNix::~ScrollbarThemeNix()
 {
-    notImplemented();
-    return false;
 }
 
-void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
+int ScrollbarThemeNix::scrollbarThickness(ScrollbarControlSize controlSize)
 {
-    notImplemented();
-    shiftKey = false;
-    ctrlKey = false;
-    altKey = false;
-    metaKey = false;
+    return 0; // we paint on top
+}
+
+void ScrollbarThemeNix::registerScrollbar(ScrollbarThemeClient* scrollbar)
+{
+}
+
+void ScrollbarThemeNix::unregisterScrollbar(ScrollbarThemeClient* scrollbar)
+{
 }
 
 }
+

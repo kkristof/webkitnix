@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
- * Copyright (C) 2008 Diego Hidalgo C. Gonzalez
+ * Copyright (C) 2003, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2008 INdT - Instituto Nokia de Tecnologia
  * Copyright (C) 2009-2010 ProFUSION embedded systems
  * Copyright (C) 2009-2010 Samsung Electronics
  * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
@@ -28,42 +28,36 @@
  */
 
 #include "config.h"
-#include "PlatformKeyboardEvent.h"
+#include "Language.h"
 
-#include "NotImplemented.h"
-#include "TextEncoding.h"
-#include <stdio.h>
-#include <wtf/CurrentTime.h>
+#include "PlatformString.h"
+
+#include <locale.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
-void PlatformKeyboardEvent::disambiguateKeyDownEvent(Type type, bool)
+static String platformLanguage()
 {
-    ASSERT(m_type == KeyDown);
-    m_type = type;
+    char* localeDefault = setlocale(LC_CTYPE, 0);
 
-    if (type == PlatformEvent::RawKeyDown) {
-        m_text = String();
-        m_unmodifiedText = String();
-    } else {
-        m_keyIdentifier = String();
-        m_windowsVirtualKeyCode = 0;
-    }
+    if (!localeDefault)
+        return String("c");
+
+    String locale = String(localeDefault);
+    locale.replace('_', '-');
+    size_t position = locale.find('.');
+    if (position != notFound)
+        locale = locale.left(position);
+
+    return locale;
 }
 
-bool PlatformKeyboardEvent::currentCapsLockState()
+Vector<String> platformUserPreferredLanguages()
 {
-    notImplemented();
-    return false;
-}
-
-void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKey, bool& altKey, bool& metaKey)
-{
-    notImplemented();
-    shiftKey = false;
-    ctrlKey = false;
-    altKey = false;
-    metaKey = false;
+    Vector<String> userPreferredLanguages;
+    userPreferredLanguages.append(platformLanguage());
+    return userPreferredLanguages;
 }
 
 }
