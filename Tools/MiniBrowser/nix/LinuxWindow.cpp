@@ -1,15 +1,24 @@
 #include "LinuxWindow.h"
-#include <Ecore_X.h>
 
-// TODO: We are assuming Xlib is being used as backend for ecore-x, we
-// need it because of GLX. We probably should enforce this.
+#include <cstdio>
+#include <cstdlib>
+#include <glib.h>
+
+// FIXME: Lidar com evento de destruir janela.
+
 LinuxWindow::LinuxWindow(LinuxWindowClient* client)
-    : m_display(reinterpret_cast<Display*>(ecore_x_display_get()))
+    : m_display(XOpenDisplay(0))
     , m_visualInfo(0)
     , m_client(client)
     , m_width(800)
     , m_height(600)
+    , m_eventSource(0)
 {
+    if (!m_display) {
+        printf("Error: couldn't connect to X server\n");
+        exit(1);
+    }
+
     m_rootWindow = DefaultRootWindow(m_display);
 
     GLint attributes[] = {
@@ -29,9 +38,9 @@ LinuxWindow::LinuxWindow(LinuxWindowClient* client)
     setAttributes.colormap = m_colormap;
     setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask;
 
-    m_window = XCreateWindow(m_display, m_rootWindow, 0, 0, m_width, m_height, 0, m_visualInfo->depth, InputOutput, m_visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
+    m_eventSource = new XlibEventSource(m_display, this);
 
-    ecore_event_handler_add(ECORE_X_EVENT_ANY, ecoreXEventAnyCallback, reinterpret_cast<void*>(this));
+    m_window = XCreateWindow(m_display, m_rootWindow, 0, 0, m_width, m_height, 0, m_visualInfo->depth, InputOutput, m_visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
 
     XMapWindow(m_display, m_window);
     XStoreName(m_display, m_window, "MiniBrowser");
@@ -44,6 +53,7 @@ LinuxWindow::LinuxWindow(LinuxWindowClient* client)
 
 LinuxWindow::~LinuxWindow()
 {
+    delete m_eventSource;
     glXMakeCurrent(m_display, None, 0);
     glXDestroyContext(m_display, m_glContext);
     XDestroyWindow(m_display, m_window);
@@ -64,41 +74,31 @@ void LinuxWindow::swapBuffers()
     glXSwapBuffers(m_display, m_window);
 }
 
-Eina_Bool LinuxWindow::ecoreXEventAnyCallback(void* data, int eventType, void* event)
+void LinuxWindow::handleXEvent(const XEvent& event)
 {
-    XEvent* ev = reinterpret_cast<XEvent*>(event);
-    LinuxWindow* window = reinterpret_cast<LinuxWindow*>(data);
-
-    window->handleXEvent(ev);
-
-    return ECORE_CALLBACK_DONE;
-}
-
-void LinuxWindow::handleXEvent(XEvent* event)
-{
-    if (event->type == ConfigureNotify) {
-        updateSizeIfNeeded(event->xconfigure.width, event->xconfigure.height);
+    if (event.type == ConfigureNotify) {
+        updateSizeIfNeeded(event.xconfigure.width, event.xconfigure.height);
         return;
     }
 
     if (!m_client)
         return;
 
-    switch (event->type) {
+    switch (event.type) {
     case Expose:
         m_client->handleExposeEvent();
         break;
     case KeyPress:
-        m_client->handleKeyPressEvent(*reinterpret_cast<XKeyPressedEvent*>(event));
+        m_client->handleKeyPressEvent(reinterpret_cast<const XKeyPressedEvent&>(event));
         break;
     case KeyRelease:
-        m_client->handleKeyReleaseEvent(*reinterpret_cast<XKeyReleasedEvent*>(event));
+        m_client->handleKeyReleaseEvent(reinterpret_cast<const XKeyReleasedEvent&>(event));
         break;
     case ButtonPress:
-        m_client->handleButtonPressEvent(*reinterpret_cast<XButtonPressedEvent*>(event));
+        m_client->handleButtonPressEvent(reinterpret_cast<const XButtonPressedEvent&>(event));
         break;
     case ButtonRelease:
-        m_client->handleButtonReleaseEvent(*reinterpret_cast<XButtonReleasedEvent*>(event));
+        m_client->handleButtonReleaseEvent(reinterpret_cast<const XButtonReleasedEvent&>(event));
         break;
     }
 }

@@ -1,12 +1,11 @@
-#include "ewk_main.h"
 #include "LinuxWindow.h"
-#include <Ecore.h>
-#include <Ecore_X.h>
 #include <WebKit2/WKPreferences.h>
 #include <WebKit2/WKPreferencesPrivate.h>
 #include <WebKit2/WKString.h>
 #include <WebKit2/WKURL.h>
 #include <WebView.h>
+#include <cstdio>
+#include <glib.h>
 
 #include <wtf/Platform.h>
 #include <WebKit2/WKRetainPtr.h>
@@ -126,20 +125,17 @@ void MiniBrowser::updateDisplay()
 
 int main(int argc, char* argv[])
 {
-    ewk_init();
-    ecore_x_init(0);
+    GMainLoop* mainLoop = g_main_loop_new(0, false);
 
     MiniBrowser* browser = new MiniBrowser();
 
     // TODO: Couldn't make it show anything without fixed layout, maybe a sizing related problem.
     WKPageSetUseFixedLayout(browser->pageRef(), true);
     const char* url = argc > 1 ? argv[1] : "http://www.google.com";
-
     WKPageLoadURL(browser->pageRef(), WKURLCreateWithUTF8CString(url));
 
-    ecore_main_loop_begin();
-    delete browser;
+    g_main_loop_run(mainLoop);
 
-    ecore_x_shutdown();
-    ewk_shutdown();
+    delete browser;
+    g_main_loop_unref(mainLoop);
 }

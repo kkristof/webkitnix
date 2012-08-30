@@ -1,4 +1,7 @@
-#include <Ecore.h>
+#ifndef LinuxWindow_h
+#define LinuxWindow_h
+
+#include "XlibEventSource.h"
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <X11/X.h>
@@ -17,7 +20,7 @@ public:
     virtual void handleSizeChanged(int width, int height) = 0;
 };
 
-class LinuxWindow {
+class LinuxWindow : public XlibEventSource::Client {
 public:
     LinuxWindow(LinuxWindowClient*);
     ~LinuxWindow();
@@ -31,9 +34,9 @@ public:
     Display* display() const { return m_display; }
 
 private:
-    static Eina_Bool ecoreXEventAnyCallback(void* data, int eventType, void* event);
+    // XlibEventSource::Client.
+    virtual void handleXEvent(const XEvent&);
 
-    void handleXEvent(XEvent*);
     void updateSizeIfNeeded(int width, int height);
 
     Display* m_display;
@@ -43,7 +46,10 @@ private:
     Colormap m_colormap;
     Window m_window;
     GLXContext m_glContext;
+    XlibEventSource* m_eventSource;
 
     int m_width;
     int m_height;
 };
+
+#endif // LinuxWindow_h

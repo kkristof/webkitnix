@@ -3,13 +3,12 @@ SET(MiniBrowser_DIR "${TOOLS_DIR}/MiniBrowser/nix")
 SET(MiniBrowser_SOURCES
     ${MiniBrowser_DIR}/main.cpp
     ${MiniBrowser_DIR}/LinuxWindow.cpp
+    ${MiniBrowser_DIR}/XlibEventSource.cpp
 )
 
 SET(MiniBrowser_INCLUDE_DIRECTORIES
-    ${ECORE_X_INCLUDE_DIRS}
-    ${EFLDEPS_INCLUDE_DIRS}
+    ${GLIB_INCLUDE_DIRS}
     ${DERIVED_SOURCES_WEBKIT2_DIR}/include
-    ${WEBKIT2_DIR}/UIProcess/API/efl
     ${WEBKIT2_DIR}/UIProcess/API/nix
     ${WEBKIT2_DIR}
     ${CMAKE_SOURCE_DIR}/Source
@@ -18,21 +17,13 @@ SET(MiniBrowser_INCLUDE_DIRECTORIES
 
 SET(MiniBrowser_LIBRARIES
     ${WebKit2_LIBRARY_NAME}
-    ${ECORE_X_LIBRARIES}
-    ${EFLDEPS_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLIB_LIBRARIES}
     ${GLIB_GTHREAD_LIBRARIES}
-)
-
-SET(MiniBrowser_LINK_FLAGS
-    ${ECORE_X_LDFLAGS}
-    ${EFLDEPS_LDFLAGS}
 )
 
 INCLUDE_DIRECTORIES(${MiniBrowser_INCLUDE_DIRECTORIES})
 
 ADD_EXECUTABLE(MiniBrowser ${MiniBrowser_SOURCES})
 TARGET_LINK_LIBRARIES(MiniBrowser ${MiniBrowser_LIBRARIES})
-ADD_TARGET_PROPERTIES(MiniBrowser LINK_FLAGS "${MiniBrowser_LINK_FLAGS}")
 SET_TARGET_PROPERTIES(MiniBrowser PROPERTIES FOLDER "Tools")
