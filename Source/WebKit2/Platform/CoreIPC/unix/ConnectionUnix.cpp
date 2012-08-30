@@ -41,7 +41,7 @@
 #if PLATFORM(QT)
 #include <QSocketNotifier>
 #include <QWeakPointer>
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 #include <glib.h>
 #endif
 
@@ -142,7 +142,7 @@ void Connection::platformInvalidate()
     if (!m_isConnected)
         return;
 
-#if PLATFORM(GTK)
+#if PLATFORM(GTK) || PLATFORM(NIX)
     m_connectionQueue.unregisterEventSourceHandler(m_socketDescriptor);
 #endif
 
@@ -151,7 +151,7 @@ void Connection::platformInvalidate()
     m_socketNotifier = 0;
 #endif
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) && !PLATFORM(NIX)
     m_connectionQueue.unregisterSocketEventHandler(m_socketDescriptor);
 #endif
 
@@ -422,7 +422,7 @@ bool Connection::open()
     m_isConnected = true;
 #if PLATFORM(QT)
     m_socketNotifier = m_connectionQueue.registerSocketEventHandler(m_socketDescriptor, QSocketNotifier::Read, WTF::bind(&Connection::readyReadHandler, this));
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
     m_connectionQueue.registerEventSourceHandler(m_socketDescriptor, (G_IO_HUP | G_IO_ERR), WTF::bind(&Connection::connectionDidClose, this));
     m_connectionQueue.registerEventSourceHandler(m_socketDescriptor, G_IO_IN, WTF::bind(&Connection::readyReadHandler, this));
 #elif PLATFORM(EFL)

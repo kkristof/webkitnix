@@ -29,7 +29,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/DragImageNix.cpp
   platform/nix/EflKeyboardUtilities.cpp
   platform/nix/ErrorsNix.cpp
-  platform/efl/EventLoopEfl.cpp
+  platform/gtk/EventLoopGtk.cpp
   platform/posix/FileSystemPOSIX.cpp
   platform/nix/FileSystemNix.cpp
   platform/nix/KURLNix.cpp
@@ -40,14 +40,14 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/PlatformScreenNix.cpp
   platform/nix/PlatformKeyboardEventNix.cpp
   platform/efl/RenderThemeEfl.cpp
-  platform/efl/RunLoopEfl.cpp
+  platform/gtk/RunLoopGtk.cpp
   platform/nix/NixScreenUtilities.cpp
   platform/nix/ScrollViewNix.cpp
   platform/nix/ScrollbarThemeNix.cpp
   platform/nix/ScrollbarNix.cpp
   platform/posix/SharedBufferPOSIX.cpp
   platform/nix/SoundNix.cpp
-  platform/efl/SharedTimerEfl.cpp
+  platform/gtk/SharedTimerGtk.cpp
   platform/nix/SystemTimeNix.cpp
   platform/nix/TemporaryLinkStubs.cpp
   platform/nix/WidgetNix.cpp

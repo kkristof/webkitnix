@@ -51,7 +51,7 @@ class QSocketNotifier;
 QT_END_NAMESPACE
 #endif
 
-#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 #include "PlatformProcessIdentifier.h"
 #endif
 

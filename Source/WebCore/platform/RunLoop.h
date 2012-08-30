@@ -35,11 +35,11 @@
 #include <wtf/ThreadSpecific.h>
 #include <wtf/Threading.h>
 
-#if PLATFORM(GTK)
+#if PLATFORM(GTK) || PLATFORM(NIX)
 #include <wtf/gobject/GRefPtr.h>
 #endif
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) && !PLATFORM(NIX)
 #include <Ecore.h>
 #endif
 
@@ -94,13 +94,13 @@ public:
         static void timerFired(RunLoop*, int ID);
         int m_ID;
         bool m_isRepeating;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
         static gboolean timerFiredCallback(RunLoop::TimerBase*);
         gboolean isRepeating() const { return m_isRepeating; }
         void clearTimerSource();
         GRefPtr<GSource> m_timerSource;
         gboolean m_isRepeating;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
         static bool timerFired(void* data);
         OwnPtr<Ecore_Timer> m_timer;
         bool m_isRepeating;
@@ -156,7 +156,7 @@ private:
     TimerMap m_activeTimers;
     class TimerObject;
     TimerObject* m_timerObject;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 public:
     static gboolean queueWork(RunLoop*);
     GMainLoop* innermostLoop();
@@ -165,7 +165,7 @@ public:
 private:
     GRefPtr<GMainContext> m_runLoopContext;
     Vector<GRefPtr<GMainLoop> > m_runLoopMainLoops;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
     bool m_initEfl;
     OwnPtr<Ecore_Pipe> m_pipe;
     static void wakeUpEvent(void* data, void*, unsigned int);

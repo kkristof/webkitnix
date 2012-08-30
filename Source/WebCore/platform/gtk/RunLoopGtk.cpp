@@ -27,7 +27,9 @@
 #include "config.h"
 #include "RunLoop.h"
 
+#if !PLATFORM(NIX)
 #include <gdk/gdk.h>
+#endif
 #include <glib.h>
 
 namespace WebCore {

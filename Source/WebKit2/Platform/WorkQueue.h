@@ -41,7 +41,7 @@
 #include <wtf/Threading.h>
 #include <wtf/Vector.h>
 
-#if (PLATFORM(QT) && !OS(DARWIN)) || PLATFORM(GTK) || PLATFORM(EFL)
+#if (PLATFORM(QT) && !OS(DARWIN)) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 #include "PlatformProcessIdentifier.h"
 #endif
 
@@ -51,10 +51,10 @@ QT_BEGIN_NAMESPACE
 class QObject;
 class QThread;
 QT_END_NAMESPACE
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 #include <wtf/gobject/GRefPtr.h>
 typedef gboolean (*GSourceFunc) (gpointer data);
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 #include <Ecore.h>
 #endif
 
@@ -92,11 +92,11 @@ public:
 #elif PLATFORM(QT)
     QSocketNotifier* registerSocketEventHandler(int, QSocketNotifier::Type, const Function<void()>&);
     void dispatchOnTermination(WebKit::PlatformProcessIdentifier, const Function<void()>&);
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
     void registerEventSourceHandler(int, int, const Function<void()>&);
     void unregisterEventSourceHandler(int);
     void dispatchOnTermination(WebKit::PlatformProcessIdentifier, const Function<void()>&);
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
     void registerSocketEventHandler(int, const Function<void()>&);
     void unregisterSocketEventHandler(int);
 #endif
@@ -173,7 +173,7 @@ private:
     class WorkItemQt;
     QThread* m_workThread;
     friend class WorkItemQt;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
     static void startWorkQueueThread(WorkQueue*);
     void workQueueThreadBody();
     void dispatchOnSource(GSource*, const Function<void()>&, GSourceFunc);
@@ -186,7 +186,7 @@ private:
     class EventSource;
     HashMap<int, Vector<EventSource*> > m_eventSources;
     typedef HashMap<int, Vector<EventSource*> >::iterator EventSourceIterator; 
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
     fd_set m_fileDescriptorSet;
     int m_maxFileDescriptor;
     int m_readFromPipeDescriptor;

@@ -8,8 +8,8 @@ LIST(APPEND WebKit2_LINK_FLAGS
 )
 
 LIST(APPEND WebKit2_SOURCES
-    Platform/efl/ModuleEfl.cpp
-    Platform/efl/WorkQueueEfl.cpp
+    Platform/gtk/ModuleGtk.cpp
+    Platform/gtk/WorkQueueGtk.cpp
     Platform/unix/SharedMemoryUnix.cpp
 
     Platform/CoreIPC/unix/ConnectionUnix.cpp
@@ -28,8 +28,6 @@ LIST(APPEND WebKit2_SOURCES
 
     Shared/soup/PlatformCertificateInfo.cpp
     Shared/soup/WebCoreArgumentCodersSoup.cpp
-
-    UIProcess/API/cpp/efl/WKEinaSharedString.cpp
 
     UIProcess/API/C/soup/WKContextSoup.cpp
     UIProcess/API/C/soup/WKSoupRequestManager.cpp
@@ -60,8 +58,8 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/Downloads/efl/DownloadSoupErrorsEfl.cpp
     WebProcess/Downloads/soup/DownloadSoup.cpp
 
-    WebProcess/efl/WebProcessEfl.cpp
-    WebProcess/efl/WebProcessMainEfl.cpp
+    WebProcess/nix/WebProcessNix.cpp
+    WebProcess/nix/WebProcessMainNix.cpp
 
     WebProcess/InjectedBundle/efl/InjectedBundleEfl.cpp
 
@@ -97,6 +95,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/UIProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
     "${WEBKIT2_DIR}/WebProcess/efl"
+    "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/efl"
     "${WTF_DIR}/wtf/gobject"
@@ -134,7 +133,7 @@ LIST(APPEND WebKit2_LIBRARIES
 )
 
 LIST (APPEND WebProcess_SOURCES
-    efl/MainEfl.cpp
+    nix/MainNix.cpp
 )
 
 LIST (APPEND WebProcess_LIBRARIES

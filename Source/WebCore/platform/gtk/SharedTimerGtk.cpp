@@ -30,7 +30,11 @@
 
 #include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>
+#if !PLATFORM(NIX)
 #include <gdk/gdk.h>
+#else
+#define GDK_PRIORITY_REDRAW (G_PRIORITY_HIGH_IDLE + 20)
+#endif
 #include <glib.h>
 
 namespace WebCore {
