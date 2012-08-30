@@ -22,9 +22,7 @@ LIST(APPEND WebKit2_SOURCES
     Shared/cairo/ShareableBitmapCairo.cpp
 
     Shared/efl/LayerTreeContextEfl.cpp
-    Shared/efl/NativeWebWheelEventEfl.cpp
     Shared/efl/ProcessExecutablePathEfl.cpp
-    Shared/efl/WebEventFactory.cpp
 
     Shared/soup/PlatformCertificateInfo.cpp
     Shared/soup/WebCoreArgumentCodersSoup.cpp
@@ -69,7 +67,7 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/WebCoreSupport/efl/WebPopupMenuEfl.cpp
 
     WebProcess/WebPage/efl/WebInspectorEfl.cpp
-    WebProcess/WebPage/efl/WebPageEfl.cpp
+    WebProcess/WebPage/nix/WebPageNix.cpp
 
     WebProcess/soup/WebSoupRequestManager.cpp
     WebProcess/soup/WebKitSoupRequestGeneric.cpp

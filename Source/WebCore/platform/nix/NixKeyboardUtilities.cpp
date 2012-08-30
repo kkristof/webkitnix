@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Samsung Electronics
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * All rights reserved.
  *
@@ -26,7 +27,7 @@
  */
 
 #include "config.h"
-#include "EflKeyboardUtilities.h"
+#include "NixKeyboardUtilities.h"
 
 #include "KeyboardEvent.h"
 #include "WindowsKeyboardCodes.h"
@@ -70,152 +71,11 @@ static inline void addCharactersToKeyMap(const char from, const char to)
         keyMap().set(String(&c, 1), String::format("U+%04X", c));
 }
 
-static void createKeyMap()
-{
-    for (unsigned int i = 1; i < 25; i++) {
-        String key = "F" + String::number(i);
-        keyMap().set(key, key);
-    }
-    keyMap().set("Alt_L", "Alt");
-    keyMap().set("ISO_Level3_Shift", "Alt");
-    keyMap().set("Menu", "Alt");
-    keyMap().set("Shift_L", "Shift");
-    keyMap().set("Shift_R", "Shift");
-    keyMap().set("Down", "Down");
-    keyMap().set("End", "End");
-    keyMap().set("Return", "Enter");
-    keyMap().set("KP_Enter", "Enter");
-    keyMap().set("Home", "Home");
-    keyMap().set("Insert", "Insert");
-    keyMap().set("Left", "Left");
-    keyMap().set("Down", "Down");
-    keyMap().set("Next", "PageDown");
-    keyMap().set("Prior", "PageUp");
-    keyMap().set("Right", "Right");
-    keyMap().set("Up", "Up");
-    keyMap().set("Delete", "U+007F");
-    keyMap().set("Tab", "U+0009");
-    keyMap().set("ISO_Left_Tab", "U+0009");
-    keyMap().set("BackSpace", "U+0008");
-    keyMap().set("space", "U+0020");
-    keyMap().set("Escape", "U+001B");
-    keyMap().set("Print", "PrintScreen");
-    // Keypad location
-    keyMap().set("KP_Left", "Left");
-    keyMap().set("KP_Right", "Right");
-    keyMap().set("KP_Up", "Up");
-    keyMap().set("KP_Down", "Down");
-    keyMap().set("KP_Prior", "PageUp");
-    keyMap().set("KP_Next", "PageDown");
-    keyMap().set("KP_Home", "Home");
-    keyMap().set("KP_End", "End");
-    keyMap().set("KP_Insert", "Insert");
-    keyMap().set("KP_Delete", "U+007F");
- 
-    addCharactersToKeyMap('a', 'z');
-    addCharactersToKeyMap('A', 'Z');
-    addCharactersToKeyMap('0', '9');
-}
-
 static inline void addCharactersToWinKeyMap(const char from, const char to, const int baseCode)
 {
     int i = 0;
     for (char c = from; c <= to; c++, i++)
         windowsKeyMap().set(String(&c, 1), baseCode + i);
-}
-
-static void createWindowsKeyMap()
-{
-    windowsKeyMap().set("Return", VK_RETURN);
-    windowsKeyMap().set("KP_Return", VK_RETURN);
-    windowsKeyMap().set("Alt_L", VK_LMENU);
-    windowsKeyMap().set("Alt_R", VK_RMENU);
-    windowsKeyMap().set("ISO_Level3_Shift", VK_MENU);
-    windowsKeyMap().set("Menu", VK_MENU);
-    windowsKeyMap().set("Shift_L", VK_LSHIFT);
-    windowsKeyMap().set("Shift_R", VK_RSHIFT);
-    windowsKeyMap().set("Control_L", VK_LCONTROL);
-    windowsKeyMap().set("Control_R", VK_RCONTROL);
-    windowsKeyMap().set("Pause", VK_PAUSE);
-    windowsKeyMap().set("Break", VK_PAUSE);
-    windowsKeyMap().set("Caps_Lock", VK_CAPITAL);
-    windowsKeyMap().set("Scroll_Lock", VK_SCROLL);
-    windowsKeyMap().set("Num_Lock", VK_NUMLOCK);
-    windowsKeyMap().set("Escape", VK_ESCAPE);
-    windowsKeyMap().set("Tab", VK_TAB);
-    windowsKeyMap().set("ISO_Left_Tab", VK_TAB);
-    windowsKeyMap().set("BackSpace", VK_BACK);
-    windowsKeyMap().set("space", VK_SPACE);
-    windowsKeyMap().set("Next", VK_NEXT);
-    windowsKeyMap().set("Prior", VK_PRIOR);
-    windowsKeyMap().set("Home", VK_HOME);
-    windowsKeyMap().set("End", VK_END);
-    windowsKeyMap().set("Right", VK_RIGHT);
-    windowsKeyMap().set("Left", VK_LEFT);
-    windowsKeyMap().set("Up", VK_UP);
-    windowsKeyMap().set("Down", VK_DOWN);
-    windowsKeyMap().set("Print", VK_SNAPSHOT);
-    windowsKeyMap().set("Insert", VK_INSERT);
-    windowsKeyMap().set("Delete", VK_DELETE);
-
-    windowsKeyMap().set("comma", VK_OEM_COMMA);
-    windowsKeyMap().set("less", VK_OEM_COMMA);
-    windowsKeyMap().set("period", VK_OEM_PERIOD);
-    windowsKeyMap().set("greater", VK_OEM_PERIOD);
-    windowsKeyMap().set("semicolon", VK_OEM_1);
-    windowsKeyMap().set("colon", VK_OEM_1);
-    windowsKeyMap().set("slash", VK_OEM_2);
-    windowsKeyMap().set("question", VK_OEM_2);
-    windowsKeyMap().set("grave", VK_OEM_3);
-    windowsKeyMap().set("asciitilde", VK_OEM_3);
-    windowsKeyMap().set("bracketleft", VK_OEM_4);
-    windowsKeyMap().set("braceleft", VK_OEM_4);
-    windowsKeyMap().set("backslash", VK_OEM_5);
-    windowsKeyMap().set("bar", VK_OEM_5);
-    windowsKeyMap().set("bracketright", VK_OEM_6);
-    windowsKeyMap().set("braceright", VK_OEM_6);
-    windowsKeyMap().set("apostrophe", VK_OEM_7);
-    windowsKeyMap().set("quotedbl", VK_OEM_7);
-    // Keypad location
-    windowsKeyMap().set("KP_Left", VK_LEFT);
-    windowsKeyMap().set("KP_Right", VK_RIGHT);
-    windowsKeyMap().set("KP_Up", VK_UP);
-    windowsKeyMap().set("KP_Down", VK_DOWN);
-    windowsKeyMap().set("KP_Prior", VK_PRIOR);
-    windowsKeyMap().set("KP_Next", VK_NEXT);
-    windowsKeyMap().set("KP_Home", VK_HOME);
-    windowsKeyMap().set("KP_End", VK_END);
-    windowsKeyMap().set("KP_Insert", VK_INSERT);
-    windowsKeyMap().set("KP_Delete", VK_DELETE);
-
-    // Set alphabet to the windowsKeyMap.
-    addCharactersToWinKeyMap('a', 'z', VK_A);
-    addCharactersToWinKeyMap('A', 'Z', VK_A);
-
-    // Set digits to the windowsKeyMap.
-    addCharactersToWinKeyMap('0', '9', VK_0);
-
-    // Set shifted digits to the windowsKeyMap.
-    windowsKeyMap().set("exclam", VK_1);
-    windowsKeyMap().set("at", VK_2);
-    windowsKeyMap().set("numbersign", VK_3);
-    windowsKeyMap().set("dollar", VK_4);
-    windowsKeyMap().set("percent", VK_5);
-    windowsKeyMap().set("asciicircum", VK_6);
-    windowsKeyMap().set("ampersand", VK_7);
-    windowsKeyMap().set("asterisk", VK_8);
-    windowsKeyMap().set("parenleft", VK_9);
-    windowsKeyMap().set("parenright", VK_0);
-    windowsKeyMap().set("minus", VK_OEM_MINUS);
-    windowsKeyMap().set("underscore", VK_OEM_MINUS);
-    windowsKeyMap().set("equal", VK_OEM_PLUS);
-    windowsKeyMap().set("plus", VK_OEM_PLUS);
-
-    // Set F_XX keys to the windowsKeyMap.
-    for (unsigned int i = 1; i < 25; i++) {
-        String key = "F" + String::number(i);
-        windowsKeyMap().set(key, VK_F1 + i - 1);
-    }
 }
 
 static const unsigned CtrlKey = 1 << 0;
@@ -299,28 +159,6 @@ static void createKeyPressCommandMap()
 {
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyPressEntries); ++i)
         keyPressCommandsMap().set(keyPressEntries[i].modifiers << 16 | keyPressEntries[i].charCode, keyPressEntries[i].name);
-}
-
-String keyIdentifierForEvasKeyName(const String& keyName)
-{
-    if (keyMap().isEmpty())
-        createKeyMap();
-
-    if (keyMap().contains(keyName))
-        return keyMap().get(keyName);
-
-    return keyName;
-}
-
-int windowsKeyCodeForEvasKeyName(const String& keyName)
-{
-    if (windowsKeyMap().isEmpty())
-        createWindowsKeyMap();
-
-    if (windowsKeyMap().contains(keyName))
-        return windowsKeyMap().get(keyName);
-
-    return 0;
 }
 
 const char* getKeyDownCommandName(const KeyboardEvent* event)

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Samsung Electronics
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * All rights reserved.
  *
@@ -25,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EflKeyboardUtilities_h
-#define EflKeyboardUtilities_h
+#ifndef NixKeyboardUtilities_h
+#define NixKeyboardUtilities_h
 
 namespace WTF {
 class String;
@@ -36,13 +37,9 @@ namespace WebCore {
 
 class KeyboardEvent;
 
-WTF::String keyIdentifierForEvasKeyName(const WTF::String&);
-WTF::String singleCharacterString(const WTF::String&);
-int windowsKeyCodeForEvasKeyName(const WTF::String&);
-
 const char* getKeyDownCommandName(const KeyboardEvent*);
 const char* getKeyPressCommandName(const KeyboardEvent*);
 
 } // namespace WebCore
 
-#endif // EflKeyboardUtilities_h
+#endif // NixKeyboardUtilities_h

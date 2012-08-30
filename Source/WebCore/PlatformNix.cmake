@@ -27,7 +27,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/CursorNix.cpp
   platform/nix/DragDataNix.cpp
   platform/nix/DragImageNix.cpp
-  platform/nix/EflKeyboardUtilities.cpp
+  platform/nix/NixKeyboardUtilities.cpp
   platform/nix/ErrorsNix.cpp
   platform/gtk/EventLoopGtk.cpp
   platform/posix/FileSystemPOSIX.cpp
