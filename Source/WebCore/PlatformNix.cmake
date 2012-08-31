@@ -8,12 +8,9 @@ LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/platform/linux"
   "${WEBCORE_DIR}/platform/mediastream/gstreamer"
   "${WEBCORE_DIR}/platform/network/soup"
-  "${WEBCORE_DIR}/platform/text/efl"
-  "${WEBCORE_DIR}/plugins/efl"
 )
 ###########################################
-#Fix EventLoopEFL, RunLoopEfl and WidgetEfl
-# RenderThemeEfl.
+#Fix RenderThemeEfl.
 ###########################################
 LIST(APPEND WebCore_SOURCES
   accessibility/nix/AccessibilityObjectNix.cpp
@@ -40,7 +37,6 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/PlatformKeyboardEventNix.cpp
   platform/efl/RenderThemeEfl.cpp
   platform/gtk/RunLoopGtk.cpp
-  platform/nix/NixScreenUtilities.cpp
   platform/nix/ScrollViewNix.cpp
   platform/nix/ScrollbarThemeNix.cpp
   platform/nix/ScrollbarNix.cpp
@@ -92,8 +88,8 @@ LIST(APPEND WebCore_SOURCES
 )
 
 LIST(APPEND WebCore_USER_AGENT_STYLE_SHEETS
-    ${WEBCORE_DIR}/css/mediaControlsEfl.css
-    ${WEBCORE_DIR}/css/mediaControlsEflFullscreen.css
+    ${WEBCORE_DIR}/css/mediaControlsNix.css
+    ${WEBCORE_DIR}/css/mediaControlsNixFullscreen.css
 )
 
 IF (WTF_USE_CAIRO)
@@ -231,7 +227,7 @@ IF (ENABLE_VIDEO)
     platform/graphics/gstreamer/GStreamerGWorld.cpp
     platform/graphics/gstreamer/ImageGStreamerCairo.cpp
     platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
-    platform/graphics/gstreamer/PlatformVideoWindowEfl.cpp
+    platform/graphics/gstreamer/PlatformVideoWindowNix.cpp
     platform/graphics/gstreamer/VideoSinkGStreamer.cpp
     platform/graphics/gstreamer/WebKitWebSourceGStreamer.cpp
   )
