@@ -34,6 +34,10 @@
 #include <wtf/gobject/GlibUtilities.h>
 #include <wtf/text/CString.h>
 
+#if PLATFORM(NIX)
+#define WEBKITGTK_API_VERSION_STRING
+#endif
+
 namespace WebCore {
 
 /* On linux file names are just raw bytes, so also strings that cannot be encoded in any way

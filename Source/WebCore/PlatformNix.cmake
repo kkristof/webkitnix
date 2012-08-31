@@ -26,8 +26,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/NixKeyboardUtilities.cpp
   platform/nix/ErrorsNix.cpp
   platform/gtk/EventLoopGtk.cpp
-  platform/posix/FileSystemPOSIX.cpp
-  platform/nix/FileSystemNix.cpp
+  platform/gtk/FileSystemGtk.cpp
   platform/nix/KURLNix.cpp
   platform/nix/LanguageNix.cpp
   platform/nix/LocalizedStringsNix.cpp
@@ -40,7 +39,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/ScrollViewNix.cpp
   platform/nix/ScrollbarThemeNix.cpp
   platform/nix/ScrollbarNix.cpp
-  platform/posix/SharedBufferPOSIX.cpp
+  platform/gtk/SharedBufferGtk.cpp
   platform/nix/SoundNix.cpp
   platform/gtk/SharedTimerGtk.cpp
   platform/nix/SystemTimeNix.cpp
@@ -73,7 +72,6 @@ LIST(APPEND WebCore_SOURCES
   platform/network/soup/SocketStreamHandleSoup.cpp
   platform/network/soup/SoupURIUtils.cpp
   platform/PlatformStrategies.cpp
-  platform/posix/FileSystemPOSIX.cpp
   platform/text/nix/TextBreakIteratorInternalICUNix.cpp
 )
 

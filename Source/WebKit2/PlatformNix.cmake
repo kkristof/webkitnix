@@ -3,7 +3,6 @@ LIST(APPEND WebKit2_LINK_FLAGS
     ${ECORE_X_LDFLAGS}
     ${EDJE_LDFLAGS}
     ${EFLDEPS_LDFLAGS}
-    ${EFREET_LDFLAGS}
     ${EVAS_LDFLAGS}
 )
 
@@ -36,7 +35,7 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/cairo/BackingStoreCairo.cpp
 
     UIProcess/efl/TextCheckerEfl.cpp
-    UIProcess/efl/WebContextEfl.cpp
+    UIProcess/nix/WebContextNix.cpp
     UIProcess/efl/WebFullScreenManagerProxyEfl.cpp
     UIProcess/nix/WebInspectorProxyNix.cpp
     UIProcess/nix/WebPageProxyNix.cpp
@@ -101,7 +100,6 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     ${ECORE_X_INCLUDE_DIRS}
     ${EDJE_INCLUDE_DIRS}
     ${EFLDEPS_INCLUDE_DIRS}
-    ${EFREET_INCLUDE_DIRS}
     ${EVAS_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
     ${LIBXSLT_INCLUDE_DIRS}
@@ -115,7 +113,6 @@ LIST(APPEND WebKit2_LIBRARIES
     ${CAIRO_LIBRARIES}
     ${ECORE_X_LIBRARIES}
     ${EFLDEPS_LIBRARIES}
-    ${EFREET_LIBRARIES}
     ${Freetype_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${OPENGL_LIBRARIES}

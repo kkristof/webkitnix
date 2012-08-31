@@ -3,6 +3,7 @@ LIST(APPEND WTF_SOURCES
     efl/OwnPtrEfl.cpp
     gobject/GOwnPtr.cpp
     gobject/GRefPtr.cpp
+    gobject/GlibUtilities.cpp
 
     OSAllocatorPosix.cpp
     ThreadIdentifierDataPthreads.cpp
