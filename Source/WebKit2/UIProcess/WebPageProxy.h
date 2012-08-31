@@ -120,8 +120,10 @@ class WKView;
 
 #if PLATFORM(GTK)
 typedef GtkWidget* PlatformWidget;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 typedef Evas_Object* PlatformWidget;
+#elif PLATFORM(NIX)
+typedef void* PlatformWidget;
 #endif
 
 #if ENABLE(WEB_INTENTS)
@@ -362,7 +364,7 @@ public:
     void proxyAuthenticationRequiredRequest(const String& hostname, uint16_t port, const String& prefilledUsername, String& username, String& password);
     void setUserScripts(const Vector<String>&);
 #endif // PLATFORM(QT).
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) && !PLATFORM(NIX)
     void setThemePath(const String&);
 #endif
 

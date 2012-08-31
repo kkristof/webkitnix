@@ -39,8 +39,10 @@ class WidgetBackingStorePrivate;
 
 #if PLATFORM(GTK)
 typedef GtkWidget* PlatformWidget;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 typedef Evas_Object* PlatformWidget;
+#elif PLATFORM(NIX)
+typedef void* PlatformWidget;
 #endif
 
 class WidgetBackingStore {

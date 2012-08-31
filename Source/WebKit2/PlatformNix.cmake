@@ -39,7 +39,7 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/efl/WebContextEfl.cpp
     UIProcess/efl/WebFullScreenManagerProxyEfl.cpp
     UIProcess/nix/WebInspectorProxyNix.cpp
-    UIProcess/efl/WebPageProxyEfl.cpp
+    UIProcess/nix/WebPageProxyNix.cpp
     UIProcess/efl/WebPreferencesEfl.cpp
 
     UIProcess/soup/WebCookieManagerProxySoup.cpp
