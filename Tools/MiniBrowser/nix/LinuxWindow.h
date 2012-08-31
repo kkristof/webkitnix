@@ -18,6 +18,7 @@ public:
     virtual void handleButtonReleaseEvent(const XButtonReleasedEvent&) = 0;
 
     virtual void handleSizeChanged(int width, int height) = 0;
+    virtual void handleClosed() = 0;
 };
 
 class LinuxWindow : public XlibEventSource::Client {

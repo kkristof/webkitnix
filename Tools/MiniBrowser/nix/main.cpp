@@ -12,7 +12,7 @@
 
 class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient {
 public:
-    MiniBrowser();
+    MiniBrowser(GMainLoop*);
     virtual ~MiniBrowser();
 
     WKPageRef pageRef() const { return m_webView->pageRef(); }
@@ -24,6 +24,7 @@ public:
     virtual void handleButtonPressEvent(const XButtonPressedEvent&);
     virtual void handleButtonReleaseEvent(const XButtonReleasedEvent&);
     virtual void handleSizeChanged(int, int);
+    virtual void handleClosed();
 
     // Nix::WebViewClient.
     virtual void viewNeedsDisplay(int, int, int, int) { updateDisplay(); }
@@ -35,13 +36,15 @@ private:
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
     LinuxWindow* m_window;
     Nix::WebView* m_webView;
+    GMainLoop* m_mainLoop;
 };
 
-MiniBrowser::MiniBrowser()
+MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     : m_context(AdoptWK, WKContextCreate())
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString(""))))
     , m_window(new LinuxWindow(this))
     , m_webView(0)
+    , m_mainLoop(mainLoop)
 {
     WKPreferencesRef preferences = WKPageGroupGetPreferences(m_pageGroup.get());
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
@@ -106,6 +109,11 @@ void MiniBrowser::handleSizeChanged(int width, int height)
     m_webView->setSize(width, height);
 }
 
+void MiniBrowser::handleClosed()
+{
+    g_main_loop_quit(m_mainLoop);
+}
+
 void MiniBrowser::updateDisplay()
 {
     if (!m_webView || !m_window)
@@ -127,7 +135,7 @@ int main(int argc, char* argv[])
 {
     GMainLoop* mainLoop = g_main_loop_new(0, false);
 
-    MiniBrowser* browser = new MiniBrowser();
+    MiniBrowser* browser = new MiniBrowser(mainLoop);
 
     // TODO: Couldn't make it show anything without fixed layout, maybe a sizing related problem.
     WKPageSetUseFixedLayout(browser->pageRef(), true);

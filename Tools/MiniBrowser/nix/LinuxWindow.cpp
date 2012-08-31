@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <glib.h>
 
-// FIXME: Lidar com evento de destruir janela.
+Atom wmDeleteMessageAtom;
 
 LinuxWindow::LinuxWindow(LinuxWindowClient* client)
     : m_display(XOpenDisplay(0))
@@ -42,6 +42,9 @@ LinuxWindow::LinuxWindow(LinuxWindowClient* client)
 
     m_window = XCreateWindow(m_display, m_rootWindow, 0, 0, m_width, m_height, 0, m_visualInfo->depth, InputOutput, m_visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
 
+    wmDeleteMessageAtom = XInternAtom(m_display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(m_display, m_window, &wmDeleteMessageAtom, 1);
+
     XMapWindow(m_display, m_window);
     XStoreName(m_display, m_window, "MiniBrowser");
 
@@ -57,6 +60,7 @@ LinuxWindow::~LinuxWindow()
     glXMakeCurrent(m_display, None, 0);
     glXDestroyContext(m_display, m_glContext);
     XDestroyWindow(m_display, m_window);
+    XCloseDisplay(m_display);
 }
 
 std::pair<int, int> LinuxWindow::size() const
@@ -99,6 +103,10 @@ void LinuxWindow::handleXEvent(const XEvent& event)
         break;
     case ButtonRelease:
         m_client->handleButtonReleaseEvent(reinterpret_cast<const XButtonReleasedEvent&>(event));
+        break;
+    case ClientMessage:
+        if (event.xclient.data.l[0] == wmDeleteMessageAtom)
+            m_client->handleClosed();
         break;
     }
 }
