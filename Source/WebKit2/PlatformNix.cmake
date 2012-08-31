@@ -29,7 +29,6 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/API/C/soup/WKContextSoup.cpp
     UIProcess/API/C/soup/WKSoupRequestManager.cpp
 
-    UIProcess/API/efl/ewk_main.cpp
     UIProcess/API/nix/WebView.cpp
 
     UIProcess/cairo/BackingStoreCairo.cpp
@@ -156,13 +155,12 @@ ADD_CUSTOM_TARGET(forwarding-headerSoup
 SET(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
 
 CONFIGURE_FILE(efl/ewebkit2.pc.in ${CMAKE_BINARY_DIR}/WebKit2/efl/ewebkit2.pc @ONLY)
-SET (EWebKit2_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_main.h"
+SET (WebKitNix_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/WebView.h"
 )
 
 INSTALL(FILES ${CMAKE_BINARY_DIR}/WebKit2/efl/ewebkit2.pc DESTINATION lib/pkgconfig)
-INSTALL(FILES ${EWebKit2_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
+INSTALL(FILES ${WebKitNix_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
 
 ADD_DEFINITIONS(-DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
     -DWEBPROCESSNAME=\"${WebProcess_EXECUTABLE_NAME}\"
