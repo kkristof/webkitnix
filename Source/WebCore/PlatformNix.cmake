@@ -5,7 +5,6 @@ LIST(APPEND WebCore_LINK_FLAGS
 
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/platform/nix"
-  "${WEBCORE_DIR}/platform/graphics/efl"
   "${WEBCORE_DIR}/platform/linux"
   "${WEBCORE_DIR}/platform/mediastream/gstreamer"
   "${WEBCORE_DIR}/platform/network/soup"
@@ -52,10 +51,8 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/TemporaryLinkStubs.cpp
   platform/nix/WidgetNix.cpp
   platform/graphics/ImageSource.cpp
-  platform/graphics/efl/IconEfl.cpp
-  platform/graphics/efl/ImageEfl.cpp
-  platform/graphics/efl/IntPointEfl.cpp
-  platform/graphics/efl/IntRectEfl.cpp
+  platform/graphics/nix/IconNix.cpp
+  platform/graphics/nix/ImageNix.cpp
   platform/image-decoders/ImageDecoder.cpp
   platform/image-decoders/bmp/BMPImageDecoder.cpp
   platform/image-decoders/bmp/BMPImageReader.cpp

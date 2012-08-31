@@ -61,7 +61,7 @@ namespace Platform {
 class IntPoint;
 }
 }
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 typedef struct _Evas_Point Evas_Point;
 #endif
 
@@ -147,7 +147,7 @@ public:
 #elif PLATFORM(BLACKBERRY)
     IntPoint(const BlackBerry::Platform::IntPoint&);
     operator BlackBerry::Platform::IntPoint() const;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
     explicit IntPoint(const Evas_Point&);
     operator Evas_Point() const;
 #endif
