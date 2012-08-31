@@ -50,7 +50,8 @@ public:
 
     virtual WKPageRef pageRef();
 
-    virtual void sendMouseEvent(const Nix::MouseEvent&);
+    virtual void sendEvent(const Nix::InputEvent&);
+    void sendMouseEvent(const Nix::MouseEvent&);
     virtual void sendKeyEvent(bool, char);
 
     // PageClient.
@@ -271,6 +272,30 @@ static WebKit::WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEven
         notImplemented();
     }
     return WebKit::WebMouseEvent::NoButton;
+}
+
+void WebViewImpl::sendEvent(const Nix::InputEvent& event)
+{
+    using namespace Nix;
+
+    switch (event.type) {
+        case InputEvent::MouseDown:
+        case InputEvent::MouseUp:
+        case InputEvent::MouseMove:
+        case InputEvent::MouseWheel:
+            sendMouseEvent(static_cast<const Nix::MouseEvent&>(event));
+            break;
+        case InputEvent::KeyDown:
+        case InputEvent::KeyUp:
+            notImplemented();
+            break;
+        case InputEvent::TouchStart:
+        case InputEvent::TouchMove:
+        case InputEvent::TouchEnd:
+        case InputEvent::TouchCancel:
+            notImplemented();
+            break;
+    }
 }
 
 void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)

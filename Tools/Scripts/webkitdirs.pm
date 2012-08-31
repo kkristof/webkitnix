@@ -779,7 +779,7 @@ sub builtDylibPathForName
         return "$configurationProductDir/lib/libewebkit.so";
     }
     if (isNix()) {
-        return "$configurationProductDir/lib/libNixWebKit.so";
+        return "$configurationProductDir/lib/libWebKitNix.so";
     }
     if (isWinCE()) {
         return "$configurationProductDir/$libraryName";

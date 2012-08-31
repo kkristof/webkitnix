@@ -122,7 +122,7 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.clickCount = 1;
     ev.modifiers = 0;
     ev.timestamp = event.time;
-    m_webView->sendMouseEvent(ev);
+    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
@@ -140,7 +140,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.clickCount = 1;
     ev.modifiers = 0;
     ev.timestamp = event.time;
-    m_webView->sendMouseEvent(ev);
+    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
@@ -158,7 +158,7 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.clickCount = 0;
     ev.modifiers = 0;
     ev.timestamp = event.time;
-    m_webView->sendMouseEvent(ev);
+    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handleSizeChanged(int width, int height)

@@ -1,6 +1,6 @@
-IF (ENABLE_WEBKIT2 AND NOT ("${PORT}" STREQUAL "Nix"))
+IF (ENABLE_WEBKIT2)
     ADD_SUBDIRECTORY(WebKitTestRunner)
-ENDIF ()
+ENDIF()
 
 IF ("${PORT}" STREQUAL "Efl")
     ADD_SUBDIRECTORY(EWebLauncher/ControlTheme)

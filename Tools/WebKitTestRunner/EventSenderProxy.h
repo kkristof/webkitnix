@@ -35,6 +35,8 @@
 #include <wtf/Vector.h>
 #elif PLATFORM(EFL)
 #include <wtf/Deque.h>
+#elif PLATFORM(NIX)
+#include <WebView.h>
 #endif
 
 namespace WTR {
@@ -81,7 +83,7 @@ private:
     double currentEventTime() { return m_time; }
     void updateClickCountForButton(int button);
 
-#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
     void replaySavedEvents();
 #endif
 
@@ -96,6 +98,9 @@ private:
 #elif PLATFORM(EFL)
     void sendOrQueueEvent(const WTREvent&);
     void dispatchEvent(const WTREvent&);
+#elif PLATFORM(NIX)
+    void sendOrQueueEvent(Nix::InputEvent*);
+    Nix::MouseEvent* createMouseEvent(Nix::InputEvent::Type type, unsigned int button, WKEventModifiers wkModifiers);
 #endif
 
     double m_time;

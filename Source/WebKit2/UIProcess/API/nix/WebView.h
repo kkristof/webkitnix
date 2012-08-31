@@ -45,7 +45,7 @@ struct WK_EXPORT InputEvent {
     bool capsLockKey() const { return modifiers & CapsLockKey; }
 
     Type type;
-    int modifiers;
+    unsigned modifiers;
     double timestamp;
 };
 
@@ -56,19 +56,6 @@ struct WK_EXPORT MouseEvent : public InputEvent {
         MiddleButton,
         RightButton
     };
-
-    MouseEvent() { }
-    MouseEvent(InputEvent::Type type, Button button, int x, int y, int globalX, int globalY, int clickCount, uint32_t modifiers, double timestamp)
-        : InputEvent(type, modifiers, timestamp)
-        , button(button)
-        , x(x)
-        , y(y)
-        , globalX(globalX)
-        , globalY(globalY)
-        , clickCount(clickCount)
-    {
-
-    }
 
     Button button;
     int x;
@@ -111,8 +98,8 @@ public:
 
     virtual WKPageRef pageRef() = 0;
 
-    // TODO: Create a proper datastructure to use as argument for events.
-    virtual void sendMouseEvent(const Nix::MouseEvent&) = 0;
+    virtual void sendEvent(const Nix::InputEvent&) = 0;
+    // TODO Remove this method when implement KeyborardEvent
     virtual void sendKeyEvent(bool, char) = 0;
 };
 

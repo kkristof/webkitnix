@@ -42,7 +42,7 @@ typedef UINT_PTR PlatformTimerRef;
 #elif PLATFORM(QT)
 #include <QTimer>
 typedef QTimer PlatformTimerRef;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 typedef unsigned int PlatformTimerRef;
 #elif PLATFORM(EFL)
 typedef struct _Ecore_Timer Ecore_Timer;
