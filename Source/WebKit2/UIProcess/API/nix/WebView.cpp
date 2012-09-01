@@ -16,7 +16,6 @@
 #include "WebPageGroup.h"
 #include "WebPopupMenuProxy.h"
 #include "WebPreferences.h"
-#include <Eina.h>
 
 namespace Nix {
 
@@ -141,9 +140,6 @@ private:
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
 {
-    // FIXME: Needed for eina strings. Remove when we stop using Eina in other places.
-    eina_init();
-
     g_type_init();
     return new WebViewImpl(WebKit::toImpl(contextRef), WebKit::toImpl(pageGroupRef), client);
 }

@@ -30,7 +30,6 @@
 #include "CoordinatedGraphicsLayer.h"
 #include "ProxyResolverSoup.h"
 #include "WKBase.h"
-#include <Eina.h>
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/RunLoop.h>
 #include <WebKit2/WebProcess.h>
@@ -47,9 +46,6 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
 {
     // WebProcess should be launched with an option.
     if (argc != 2)
-        return 1;
-
-    if (!eina_init())
         return 1;
 
     g_type_init();
