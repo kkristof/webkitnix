@@ -39,7 +39,7 @@
 #include <wtf/gobject/GRefPtr.h>
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
 #include <Ecore.h>
 #endif
 
@@ -100,7 +100,7 @@ public:
         void clearTimerSource();
         GRefPtr<GSource> m_timerSource;
         gboolean m_isRepeating;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
         static bool timerFired(void* data);
         OwnPtr<Ecore_Timer> m_timer;
         bool m_isRepeating;
@@ -165,7 +165,7 @@ public:
 private:
     GRefPtr<GMainContext> m_runLoopContext;
     Vector<GRefPtr<GMainLoop> > m_runLoopMainLoops;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     bool m_initEfl;
     OwnPtr<Ecore_Pipe> m_pipe;
     static void wakeUpEvent(void* data, void*, unsigned int);

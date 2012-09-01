@@ -176,7 +176,7 @@ namespace WebKit {
     macro(PictographFontFamily, pictographFontFamily, String, String, "Apple Color Emoji") \
     \
 
-#elif PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
+#elif PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 
 #define FOR_EACH_WEBKIT_FONT_FAMILY_PREFERENCE(macro) \
     macro(StandardFontFamily, standardFontFamily, String, String, "Times") \

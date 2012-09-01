@@ -88,7 +88,7 @@ WebInspectorProxy::WebInspectorProxy(WebPageProxy* page)
     , m_isProfilingPage(false)
 #if PLATFORM(WIN)
     , m_inspectorWindow(0)
-#elif (PLATFORM(GTK) || PLATFORM(EFL)) && !PLATFORM(NIX)
+#elif PLATFORM(GTK) || PLATFORM(EFL)
     , m_inspectorView(0)
     , m_inspectorWindow(0)
 #endif

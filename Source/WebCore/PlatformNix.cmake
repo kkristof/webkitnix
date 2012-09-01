@@ -66,17 +66,15 @@ LIST(APPEND WebCore_SOURCES
   platform/network/soup/SoupURIUtils.cpp
   platform/PlatformStrategies.cpp
   platform/text/nix/TextBreakIteratorInternalICUNix.cpp
+
+  plugins/PluginPackageNone.cpp
+  plugins/PluginViewNone.cpp
 )
 
 IF (ENABLE_BATTERY_STATUS)
     LIST(APPEND WebCore_INCLUDE_DIRECTORIES ${DBUS_INCLUDE_DIRS})
     LIST(APPEND WebCore_LIBRARIES ${DBUS_LIBRARIES})
 ENDIF ()
-
-LIST(APPEND WebCore_SOURCES
-  plugins/PluginPackageNone.cpp
-  plugins/PluginViewNone.cpp
-)
 
 LIST(APPEND WebCore_USER_AGENT_STYLE_SHEETS
     ${WEBCORE_DIR}/css/mediaControlsNix.css

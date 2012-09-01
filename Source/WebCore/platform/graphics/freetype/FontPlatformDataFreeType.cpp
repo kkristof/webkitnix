@@ -31,7 +31,7 @@
 #include <cairo.h>
 #include <fontconfig/fcfreetype.h>
 
-#if !PLATFORM(EFL)
+#if !PLATFORM(EFL) && !PLATFORM(NIX)
 #include <gdk/gdk.h>
 #endif
 

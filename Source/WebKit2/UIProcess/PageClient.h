@@ -126,11 +126,11 @@ public:
     virtual void handleProxyAuthenticationRequiredRequest(const String& hostname, uint16_t port, const String& prefilledUsername, String& username, String& password) = 0;
 #endif // PLATFORM(QT).
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     virtual void handleDownloadRequest(DownloadProxy*) = 0;
-#endif // PLATFORM(QT) || PLATFORM(EFL)
+#endif // PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     virtual void didChangeContentsSize(const WebCore::IntSize&) = 0;
 #endif
 

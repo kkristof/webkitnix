@@ -36,7 +36,7 @@ OBJC_CLASS NSView;
 #elif PLATFORM(GTK)
 #include <GOwnPtrGtk.h>
 typedef union _GdkEvent GdkEvent;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 #include <Evas.h>
 #endif
 
@@ -53,7 +53,7 @@ public:
 #elif PLATFORM(GTK)
     NativeWebWheelEvent(const NativeWebWheelEvent&);
     NativeWebWheelEvent(GdkEvent*);
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const Evas_Point*);
 #elif PLATFORM(NIX)
     NativeWebWheelEvent(const WebWheelEvent& event)
@@ -69,7 +69,7 @@ public:
     const QWheelEvent* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(GTK)
     const GdkEvent* nativeEvent() const { return m_nativeEvent.get(); }
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(NIX)
     const void* nativeEvent() const { return 0; }
@@ -84,7 +84,7 @@ private:
     QWheelEvent* m_nativeEvent;
 #elif PLATFORM(GTK)
     GOwnPtr<GdkEvent> m_nativeEvent;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* m_nativeEvent;
 #endif
 };

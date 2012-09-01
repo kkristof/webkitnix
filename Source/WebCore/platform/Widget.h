@@ -77,7 +77,7 @@ class wxWindow;
 typedef wxWindow* PlatformWidget;
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
 typedef struct _Evas_Object Evas_Object;
 typedef struct _Evas Evas;
 typedef struct _Ecore_Evas Ecore_Evas;
@@ -90,7 +90,7 @@ typedef QWebPageClient* PlatformPageClient;
 #elif PLATFORM(BLACKBERRY)
 #include "PageClientBlackBerry.h"
 typedef PageClientBlackBerry* PlatformPageClient;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 class PageClientEfl;
 typedef PageClientEfl* PlatformPageClient;
 #else
@@ -213,7 +213,7 @@ public:
     void removeFromSuperview();
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
     // FIXME: These should really go to PlatformWidget. They're here currently since
     // the EFL port considers that Evas_Object (a C object) is a PlatformWidget, but
     // encapsulating that into a C++ class will make this header clean as it should be.
@@ -267,7 +267,7 @@ private:
 
     IntRect m_frame; // Not used when a native widget exists.
 
-#if PLATFORM(MAC) || (PLATFORM(EFL) && !PLATFORM(NIX))
+#if PLATFORM(MAC) || PLATFORM(EFL)
     WidgetPrivate* m_data;
 #endif
 

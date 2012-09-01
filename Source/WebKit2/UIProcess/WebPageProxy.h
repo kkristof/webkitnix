@@ -120,7 +120,7 @@ class WKView;
 
 #if PLATFORM(GTK)
 typedef GtkWidget* PlatformWidget;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 typedef Evas_Object* PlatformWidget;
 #elif PLATFORM(NIX)
 typedef void* PlatformWidget;
@@ -364,7 +364,7 @@ public:
     void proxyAuthenticationRequiredRequest(const String& hostname, uint16_t port, const String& prefilledUsername, String& username, String& password);
     void setUserScripts(const Vector<String>&);
 #endif // PLATFORM(QT).
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
     void setThemePath(const String&);
 #endif
 
@@ -642,7 +642,7 @@ public:
     void didReceiveMessageFromNavigatorQtObject(const String&);
 #endif
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     void handleDownloadRequest(DownloadProxy*);
 #endif
 
@@ -841,7 +841,7 @@ private:
     void didFindZoomableArea(const WebCore::IntPoint&, const WebCore::IntRect&);
 #endif
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     void didChangeContentsSize(const WebCore::IntSize&);
 #endif
 
@@ -883,7 +883,7 @@ private:
     void getEditorCommandsForKeyEvent(const AtomicString&, Vector<String>&);
     void bindAccessibilityTree(const String&);
 #endif
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     void getEditorCommandsForKeyEvent(Vector<String>&);
 #endif
 

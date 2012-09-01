@@ -79,7 +79,7 @@ messages -> WebPageProxy {
     ProxyAuthenticationRequiredRequest(WTF::String hostname, uint16_t port, WTF::String prefilledUsername) -> (WTF::String username, WTF::String password)
 #endif
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     DidChangeContentsSize(WebCore::IntSize newSize)
 #endif
 

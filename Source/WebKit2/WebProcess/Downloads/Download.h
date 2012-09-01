@@ -38,7 +38,7 @@ OBJC_CLASS NSURLDownload;
 OBJC_CLASS WKDownloadAsDelegate;
 #endif
 
-#if PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/ResourceHandleClient.h>
 #endif
@@ -142,7 +142,7 @@ private:
 #if PLATFORM(QT)
     QtFileDownloader* m_qtDownloader;
 #endif
-#if PLATFORM(GTK) || PLATFORM(EFL)
+#if PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
     OwnPtr<WebCore::ResourceHandleClient> m_downloadClient;
     RefPtr<WebCore::ResourceHandle> m_resourceHandle;
 #endif

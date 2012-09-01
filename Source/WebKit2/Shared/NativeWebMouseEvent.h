@@ -36,7 +36,7 @@ OBJC_CLASS NSView;
 #elif PLATFORM(GTK)
 #include <GOwnPtrGtk.h>
 typedef union _GdkEvent GdkEvent;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 #include <Evas.h>
 #endif
 
@@ -53,7 +53,7 @@ public:
 #elif PLATFORM(GTK)
     NativeWebMouseEvent(const NativeWebMouseEvent&);
     NativeWebMouseEvent(GdkEvent*, int);
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     NativeWebMouseEvent(const Evas_Event_Mouse_Down*, const Evas_Point*);
     NativeWebMouseEvent(const Evas_Event_Mouse_Up*, const Evas_Point*);
     NativeWebMouseEvent(const Evas_Event_Mouse_Move*, const Evas_Point*);

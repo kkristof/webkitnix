@@ -52,7 +52,7 @@ OBJC_CLASS WKWebInspectorWKView;
 #include "WebInspectorClientGtk.h"
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
 #include <Ecore_Evas.h>
 #include <Evas.h>
 #endif
@@ -222,7 +222,7 @@ private:
     WebInspectorClientGtk m_client;
     GtkWidget* m_inspectorView;
     GtkWidget* m_inspectorWindow;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     Evas_Object* m_inspectorView;
     Ecore_Evas* m_inspectorWindow;
 #endif

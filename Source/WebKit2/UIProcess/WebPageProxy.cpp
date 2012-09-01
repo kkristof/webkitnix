@@ -2692,7 +2692,7 @@ void WebPageProxy::handleDownloadRequest(DownloadProxy* download)
 }
 #endif // PLATFORM(QT) || PLATFORM(EFL)
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
 void WebPageProxy::didChangeContentsSize(const IntSize& size)
 {
     m_pageClient->didChangeContentsSize(size);

@@ -54,7 +54,7 @@ QT_END_NAMESPACE
 #elif PLATFORM(GTK) || PLATFORM(NIX)
 #include <wtf/gobject/GRefPtr.h>
 typedef gboolean (*GSourceFunc) (gpointer data);
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 #include <Ecore.h>
 #endif
 
@@ -96,7 +96,7 @@ public:
     void registerEventSourceHandler(int, int, const Function<void()>&);
     void unregisterEventSourceHandler(int);
     void dispatchOnTermination(WebKit::PlatformProcessIdentifier, const Function<void()>&);
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     void registerSocketEventHandler(int, const Function<void()>&);
     void unregisterSocketEventHandler(int);
 #endif
@@ -186,7 +186,7 @@ private:
     class EventSource;
     HashMap<int, Vector<EventSource*> > m_eventSources;
     typedef HashMap<int, Vector<EventSource*> >::iterator EventSourceIterator; 
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     fd_set m_fileDescriptorSet;
     int m_maxFileDescriptor;
     int m_readFromPipeDescriptor;

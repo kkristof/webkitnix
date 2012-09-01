@@ -43,7 +43,7 @@
 #undef VERSION
 #endif
 
-#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY)
+#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY) || PLATFORM(NIX)
 #include "ANGLEWebKitBridge.h"
 #endif
 
@@ -61,7 +61,7 @@ class QGLContext;
 class QOpenGLContext;
 class QSurface;
 QT_END_NAMESPACE
-#elif PLATFORM(GTK) || PLATFORM(EFL)
+#elif PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 typedef unsigned int GLuint;
 #endif
 
@@ -506,7 +506,7 @@ public:
 #if USE(ACCELERATED_COMPOSITING)
     PlatformLayer* platformLayer() const;
 #endif
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
     PlatformGraphicsContext3D platformGraphicsContext3D();
     Platform3DObject platformTexture() const { return m_texture; }
 #if USE(ACCELERATED_COMPOSITING)
@@ -521,7 +521,7 @@ public:
 #endif
     bool makeContextCurrent();
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY)
+#if PLATFORM(MAC) || PLATFORM(CHROMIUM) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY) || PLATFORM(NIX)
     // With multisampling on, blit from multisampleFBO to regular FBO.
     void prepareTexture();
 #endif
@@ -799,7 +799,7 @@ public:
 #if USE(CG)
     static void paintToCanvas(const unsigned char* imagePixels, int imageWidth, int imageHeight,
                               int canvasWidth, int canvasHeight, CGContextRef);
-#elif PLATFORM(GTK) || PLATFORM(EFL)
+#elif PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
     void paintToCanvas(const unsigned char* imagePixels, int imageWidth, int imageHeight,
                        int canvasWidth, int canvasHeight, PlatformContextCairo* context);
 #elif PLATFORM(QT)
@@ -924,7 +924,7 @@ public:
                     AlphaOp alphaOp,
                     void* destinationData);
 
-#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY)
+#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY) || PLATFORM(NIX)
     // Take into account the user's requested context creation attributes,
     // in particular stencil and antialias, and determine which could or
     // could not be honored based on the capabilities of the OpenGL
@@ -962,7 +962,7 @@ public:
     void* m_context;
 #endif
 
-#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY)
+#if PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(BLACKBERRY) || PLATFORM(NIX)
     struct ShaderSourceEntry {
         String source;
         String log;

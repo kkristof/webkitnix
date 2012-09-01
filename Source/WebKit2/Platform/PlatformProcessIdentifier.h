@@ -31,7 +31,7 @@
 QT_BEGIN_NAMESPACE
 class QProcess;
 QT_END_NAMESPACE
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
 #include <unistd.h>
 #endif
 
@@ -43,7 +43,7 @@ typedef pid_t PlatformProcessIdentifier;
 typedef HANDLE PlatformProcessIdentifier;
 #elif PLATFORM(QT)
 typedef QProcess* PlatformProcessIdentifier;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 #ifdef G_OS_WIN32
 typedef void* GPid;
 #else

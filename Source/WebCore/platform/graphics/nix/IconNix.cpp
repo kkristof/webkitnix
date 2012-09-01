@@ -41,12 +41,6 @@
 
 namespace WebCore {
 
-Icon::Icon()
-    : m_icon(0)
-{
-    notImplemented();
-}
-
 Icon::~Icon()
 {
 }

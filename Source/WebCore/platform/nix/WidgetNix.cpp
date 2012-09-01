@@ -69,11 +69,6 @@ void Widget::setFrameRect(const IntRect& rect)
     Widget::frameRectsChanged();
 }
 
-void Widget::frameRectsChanged()
-{
-    notImplemented();
-}
-
 void Widget::setFocus(bool focused)
 {
 }

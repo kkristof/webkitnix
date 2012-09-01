@@ -106,9 +106,4 @@ const char* WebPage::interpretKeyEvent(const KeyboardEvent* event)
     return getKeyPressCommandName(event);
 }
 
-void WebPage::setThemePath(const String& themePath)
-{
-    notImplemented();
-}
-
 } // namespace WebKit

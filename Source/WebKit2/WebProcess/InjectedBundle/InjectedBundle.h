@@ -39,7 +39,7 @@
 #include <QLibrary>
 #endif
 
-#if PLATFORM(GTK)
+#if PLATFORM(GTK) || PLATFORM(NIX)
 typedef struct _GModule GModule;
 #endif
 
@@ -61,7 +61,7 @@ typedef CFBundleRef PlatformBundle;
 typedef HMODULE PlatformBundle;
 #elif PLATFORM(QT)
 typedef QLibrary PlatformBundle;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
 typedef ::GModule* PlatformBundle;
 #elif PLATFORM(EFL)
 typedef Eina_Module* PlatformBundle;

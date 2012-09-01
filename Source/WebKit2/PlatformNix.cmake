@@ -57,10 +57,9 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/nix/WebProcessNix.cpp
     WebProcess/nix/WebProcessMainNix.cpp
 
-    WebProcess/InjectedBundle/efl/InjectedBundleEfl.cpp
+    WebProcess/InjectedBundle/gtk/InjectedBundleGtk.cpp
 
     WebProcess/WebCoreSupport/efl/WebContextMenuClientEfl.cpp
-    WebProcess/WebCoreSupport/efl/WebEditorClientEfl.cpp
     WebProcess/WebCoreSupport/efl/WebErrorsEfl.cpp
     WebProcess/WebCoreSupport/efl/WebPopupMenuEfl.cpp
 

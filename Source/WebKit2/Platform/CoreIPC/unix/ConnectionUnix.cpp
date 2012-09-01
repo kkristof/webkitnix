@@ -151,7 +151,7 @@ void Connection::platformInvalidate()
     m_socketNotifier = 0;
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
     m_connectionQueue.unregisterSocketEventHandler(m_socketDescriptor);
 #endif
 

@@ -51,7 +51,7 @@ QT_END_NAMESPACE
 #ifdef GTK_API_VERSION_2
 typedef struct _GdkRectangle GdkRectangle;
 #endif
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 typedef struct _Eina_Rectangle Eina_Rectangle;
 #elif PLATFORM(BLACKBERRY)
 namespace BlackBerry {
@@ -211,7 +211,7 @@ public:
     IntRect(const GdkRectangle&);
     operator GdkRectangle() const;
 #endif
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     explicit IntRect(const Eina_Rectangle&);
     operator Eina_Rectangle() const;
 #endif

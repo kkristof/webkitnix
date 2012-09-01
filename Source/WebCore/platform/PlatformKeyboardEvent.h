@@ -61,8 +61,7 @@ class KeyboardEvent;
 }
 #endif
 
-// FIXME: REMOVE THE !PLATFORM(NIX) AS SOON AS THEY ARE INDEPENDENT
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
 typedef struct _Evas_Event_Key_Down Evas_Event_Key_Down;
 typedef struct _Evas_Event_Key_Up Evas_Event_Key_Up;
 #endif
@@ -175,8 +174,7 @@ namespace WebCore {
         PlatformKeyboardEvent(const BlackBerry::Platform::KeyboardEvent&);
 #endif
 
-// FIXME: REMOVE THE !PLATFORM(NIX) AS SOON AS THEY ARE INDEPENDENT
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
         explicit PlatformKeyboardEvent(const Evas_Event_Key_Down*);
         explicit PlatformKeyboardEvent(const Evas_Event_Key_Up*);
 #endif

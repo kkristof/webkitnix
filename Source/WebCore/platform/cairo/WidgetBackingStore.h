@@ -27,7 +27,7 @@
 
 #if PLATFORM(GTK)
 #include <gtk/gtk.h>
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 #include <Evas.h>
 #endif
 
@@ -39,7 +39,7 @@ class WidgetBackingStorePrivate;
 
 #if PLATFORM(GTK)
 typedef GtkWidget* PlatformWidget;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
 typedef Evas_Object* PlatformWidget;
 #elif PLATFORM(NIX)
 typedef void* PlatformWidget;

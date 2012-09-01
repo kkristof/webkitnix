@@ -41,7 +41,7 @@
 typedef struct _GModule GModule;
 #endif
 
-#if PLATFORM(EFL) && !PLATFORM(NIX)
+#if PLATFORM(EFL)
 #include <Eina.h>
 #endif
 
@@ -87,7 +87,7 @@ private:
     QLibrary m_lib;
 #elif PLATFORM(GTK) || PLATFORM(NIX)
     GModule* m_handle;
-#elif PLATFORM(EFL) && !PLATFORM(NIX)
+#elif PLATFORM(EFL)
     OwnPtr<Eina_Module> m_module;
 #endif
 };

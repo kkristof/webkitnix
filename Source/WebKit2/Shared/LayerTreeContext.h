@@ -58,7 +58,7 @@ public:
     uint32_t webLayerID;
 #elif PLATFORM(GTK)
     uint64_t windowHandle;
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
     uint32_t webLayerID;
 #endif
 };
