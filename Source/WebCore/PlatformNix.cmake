@@ -1,17 +1,10 @@
-LIST(APPEND WebCore_LINK_FLAGS
-    ${ECORE_X_LDFLAGS}
-    ${EFLDEPS_LDFLAGS}
-)
-
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/platform/nix"
   "${WEBCORE_DIR}/platform/linux"
   "${WEBCORE_DIR}/platform/mediastream/gstreamer"
   "${WEBCORE_DIR}/platform/network/soup"
 )
-###########################################
-#Fix RenderThemeEfl.
-###########################################
+
 LIST(APPEND WebCore_SOURCES
   accessibility/nix/AccessibilityObjectNix.cpp
   page/nix/DragControllerNix.cpp
@@ -34,7 +27,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/PasteboardNix.cpp
   platform/nix/PlatformScreenNix.cpp
   platform/nix/PlatformKeyboardEventNix.cpp
-  platform/efl/RenderThemeEfl.cpp
+  platform/nix/RenderThemeNix.cpp
   platform/gtk/RunLoopGtk.cpp
   platform/nix/ScrollViewNix.cpp
   platform/nix/ScrollbarThemeNix.cpp
@@ -160,9 +153,6 @@ LIST(APPEND WebCore_SOURCES
 
 LIST(APPEND WebCore_LIBRARIES
   ${CAIRO_LIBRARIES}
-  ${ECORE_X_LIBRARIES}
-  ${EFLDEPS_LIBRARIES}
-  ${EVAS_LIBRARIES}
   ${FONTCONFIG_LIBRARIES}
   ${FREETYPE_LIBRARIES}
   ${ICU_LIBRARIES}
@@ -180,9 +170,6 @@ LIST(APPEND WebCore_LIBRARIES
 
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   ${CAIRO_INCLUDE_DIRS}
-  ${ECORE_X_INCLUDE_DIRS}
-  ${EFLDEPS_INCLUDE_DIRS}
-  ${EVAS_INCLUDE_DIRS}
   ${FREETYPE_INCLUDE_DIRS}
   ${ICU_INCLUDE_DIRS}
   ${LIBXML2_INCLUDE_DIR}

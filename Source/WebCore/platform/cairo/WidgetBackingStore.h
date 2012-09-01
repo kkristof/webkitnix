@@ -27,7 +27,7 @@
 
 #if PLATFORM(GTK)
 #include <gtk/gtk.h>
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) && !PLATFORM(NIX)
 #include <Evas.h>
 #endif
 
