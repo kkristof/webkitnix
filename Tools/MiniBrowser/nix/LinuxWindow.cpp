@@ -36,7 +36,7 @@ LinuxWindow::LinuxWindow(LinuxWindowClient* client)
 
     XSetWindowAttributes setAttributes;
     setAttributes.colormap = m_colormap;
-    setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask;
+    setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
 
     m_eventSource = new XlibEventSource(m_display, this);
 
@@ -107,6 +107,9 @@ void LinuxWindow::handleXEvent(const XEvent& event)
     case ClientMessage:
         if (event.xclient.data.l[0] == wmDeleteMessageAtom)
             m_client->handleClosed();
+        break;
+    case MotionNotify:
+        m_client->handlePointerMoveEvent(reinterpret_cast<const XPointerMovedEvent&>(event));
         break;
     }
 }

@@ -23,6 +23,7 @@ public:
     virtual void handleKeyReleaseEvent(const XKeyReleasedEvent&);
     virtual void handleButtonPressEvent(const XButtonPressedEvent&);
     virtual void handleButtonReleaseEvent(const XButtonReleasedEvent&);
+    virtual void handlePointerMoveEvent(const XPointerMovedEvent&);
     virtual void handleSizeChanged(int, int);
     virtual void handleClosed();
 
@@ -87,18 +88,72 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     m_webView->sendKeyEvent(false, key);
 }
 
+static Nix::MouseEvent::Button convertXEventButtonToNativeMouseButton(unsigned int mouseButton)
+{
+    switch (mouseButton) {
+    case Button1:
+        return Nix::MouseEvent::LeftButton;
+    case Button2:
+        return Nix::MouseEvent::MiddleButton;
+    case Button3:
+        return Nix::MouseEvent::RightButton;
+    default:
+        return Nix::MouseEvent::NoButton;
+    }
+}
+
 void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 {
     if (!m_webView)
         return;
-    m_webView->sendMouseEvent(true, event.x, event.y);
+
+    Nix::MouseEvent ev;
+    ev.type = Nix::InputEvent::MouseDown;
+    ev.button = convertXEventButtonToNativeMouseButton(event.button);
+    ev.x = event.x;
+    ev.y = event.y;
+    ev.globalX = event.x_root;
+    ev.globalY = event.y_root;
+    ev.clickCount = 1;
+    ev.modifiers = 0;
+    ev.timestamp = event.time;
+    m_webView->sendMouseEvent(ev);
 }
 
 void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
 {
     if (!m_webView)
         return;
-    m_webView->sendMouseEvent(false, event.x, event.y);
+
+    Nix::MouseEvent ev;
+    ev.type = Nix::InputEvent::MouseUp;
+    ev.button = convertXEventButtonToNativeMouseButton(event.button),
+    ev.x = event.x;
+    ev.y = event.y;
+    ev.globalX = event.x_root;
+    ev.globalY = event.y_root;
+    ev.clickCount = 1;
+    ev.modifiers = 0;
+    ev.timestamp = event.time;
+    m_webView->sendMouseEvent(ev);
+}
+
+void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
+{
+    if (!m_webView)
+        return;
+
+    Nix::MouseEvent ev;
+    ev.type = Nix::InputEvent::MouseMove;
+    ev.button = Nix::MouseEvent::NoButton;
+    ev.x = event.x;
+    ev.y = event.y;
+    ev.globalX = event.x_root;
+    ev.globalY = event.y_root;
+    ev.clickCount = 0;
+    ev.modifiers = 0;
+    ev.timestamp = event.time;
+    m_webView->sendMouseEvent(ev);
 }
 
 void MiniBrowser::handleSizeChanged(int width, int height)

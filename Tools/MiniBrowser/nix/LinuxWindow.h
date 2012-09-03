@@ -16,6 +16,7 @@ public:
     virtual void handleKeyReleaseEvent(const XKeyReleasedEvent&) = 0;
     virtual void handleButtonPressEvent(const XButtonPressedEvent&) = 0;
     virtual void handleButtonReleaseEvent(const XButtonReleasedEvent&) = 0;
+    virtual void handlePointerMoveEvent(const XPointerMovedEvent&) = 0;
 
     virtual void handleSizeChanged(int width, int height) = 0;
     virtual void handleClosed() = 0;

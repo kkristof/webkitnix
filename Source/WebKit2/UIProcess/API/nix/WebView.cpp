@@ -50,8 +50,8 @@ public:
 
     virtual WKPageRef pageRef();
 
+    virtual void sendMouseEvent(const Nix::MouseEvent&);
     virtual void sendKeyEvent(bool, char);
-    virtual void sendMouseEvent(bool, int x, int y);
 
     // PageClient.
     virtual PassOwnPtr<WebKit::DrawingAreaProxy> createDrawingAreaProxy();
@@ -136,6 +136,7 @@ private:
     bool m_visible;
     bool m_active;
     WebCore::IntSize m_size;
+    WebCore::IntPoint m_lastCursorPosition;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -240,21 +241,53 @@ void WebViewImpl::sendKeyEvent(bool down, char key)
     m_webPageProxy->handleKeyboardEvent(WebKit::NativeWebKeyboardEvent(event));
 }
 
-void WebViewImpl::sendMouseEvent(bool down, int x, int y)
+static WebKit::WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
 {
-    static WebCore::FloatPoint lastPos = WebCore::FloatPoint(0, 0);
+    switch (type) {
+    case Nix::InputEvent::MouseDown:
+        return WebKit::WebEvent::MouseDown;
+    case Nix::InputEvent::MouseUp:
+        return WebKit::WebEvent::MouseUp;
+    case Nix::InputEvent::MouseMove:
+        return WebKit::WebEvent::MouseMove;
+    default:
+        notImplemented();
+    }
+    return WebKit::WebEvent::MouseMove;
+}
 
-    WebKit::WebEvent::Type type = down? WebKit::WebEvent::MouseDown : WebKit::WebEvent::MouseUp;
-    WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::LeftButton;
-    float deltaX = x - lastPos.x();
-    float deltaY = y - lastPos.y();
-    int clickCount = 1;
-    WebKit::WebEvent::Modifiers modifiers = WebKit::WebEvent::Modifiers();
-    double timestamp = 0;
-    lastPos.set(x, y);
+static WebKit::WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEvent::Button button)
+{
+    switch (button) {
+    case Nix::MouseEvent::NoButton:
+        return WebKit::WebMouseEvent::NoButton;
+    case Nix::MouseEvent::LeftButton:
+        return WebKit::WebMouseEvent::LeftButton;
+    case Nix::MouseEvent::MiddleButton:
+        return WebKit::WebMouseEvent::MiddleButton;
+    case Nix::MouseEvent::RightButton:
+        return WebKit::WebMouseEvent::RightButton;
+    default:
+        notImplemented();
+    }
+    return WebKit::WebMouseEvent::NoButton;
+}
 
-    WebKit::WebMouseEvent event(type, button, WebCore::IntPoint(x, y), WebCore::IntPoint(x, y), deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
-    m_webPageProxy->handleMouseEvent(WebKit::NativeWebMouseEvent(event));
+void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
+{
+    WebKit::WebEvent::Type type = convertToWebEventType(event.type);
+    WebKit::WebMouseEvent::Button button = convertToWebMouseEventButton(event.button);
+    float deltaX = event.x - m_lastCursorPosition.x();
+    float deltaY = event.y - m_lastCursorPosition.y();
+    int clickCount = event.clickCount;
+    WebKit::WebEvent::Modifiers modifiers = static_cast<WebKit::WebEvent::Modifiers>(event.modifiers);
+    double timestamp = event.timestamp;
+    WebCore::IntPoint position = WebCore::IntPoint(event.x, event.y);
+    WebCore::IntPoint globalPosition = WebCore::IntPoint(event.globalX, event.globalY);
+    m_lastCursorPosition = position;
+
+    WebKit::WebMouseEvent webEvent(type, button, position, globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
+    m_webPageProxy->handleMouseEvent(WebKit::NativeWebMouseEvent(webEvent));
 }
 
 void WebViewImpl::paintToCurrentGLContext()
