@@ -29,12 +29,11 @@ LIST(APPEND WebKit2_SOURCES
 
     UIProcess/cairo/BackingStoreCairo.cpp
 
-    UIProcess/efl/TextCheckerEfl.cpp
+    UIProcess/nix/TextCheckerNix.cpp
     UIProcess/nix/WebContextNix.cpp
-    UIProcess/efl/WebFullScreenManagerProxyEfl.cpp
     UIProcess/nix/WebInspectorProxyNix.cpp
     UIProcess/nix/WebPageProxyNix.cpp
-    UIProcess/efl/WebPreferencesEfl.cpp
+    UIProcess/nix/WebPreferencesNix.cpp
 
     UIProcess/soup/WebCookieManagerProxySoup.cpp
     UIProcess/soup/WebSoupRequestManagerClient.cpp
@@ -59,7 +58,7 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/WebCoreSupport/efl/WebErrorsEfl.cpp
     WebProcess/WebCoreSupport/efl/WebPopupMenuEfl.cpp
 
-    WebProcess/WebPage/efl/WebInspectorEfl.cpp
+    WebProcess/WebPage/nix/WebInspectorNix.cpp
     WebProcess/WebPage/nix/WebPageNix.cpp
 
     WebProcess/soup/WebSoupRequestManager.cpp
@@ -74,7 +73,7 @@ LIST(APPEND WebKit2_MESSAGES_IN_FILES
 
 LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${JAVASCRIPTCORE_DIR}/llint"
-    "${WEBCORE_DIR}/platform/efl"
+    "${WEBCORE_DIR}/platform/nix"
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/network/soup"
     "${WEBCORE_DIR}/svg/graphics"
