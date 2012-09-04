@@ -23,6 +23,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/KURLNix.cpp
   platform/nix/LanguageNix.cpp
   platform/nix/LocalizedStringsNix.cpp
+  platform/gtk/LoggingGtk.cpp
   platform/nix/MIMETypeRegistryNix.cpp
   platform/nix/PasteboardNix.cpp
   platform/nix/PlatformScreenNix.cpp
