@@ -46,7 +46,7 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/Cookies/soup/WebCookieManagerSoup.cpp
     WebProcess/Cookies/soup/WebKitSoupCookieJarSqlite.cpp
 
-    WebProcess/Downloads/efl/DownloadSoupErrorsEfl.cpp
+    WebProcess/Downloads/nix/DownloadSoupErrorsNix.cpp
     WebProcess/Downloads/soup/DownloadSoup.cpp
 
     WebProcess/nix/WebProcessNix.cpp
@@ -54,9 +54,8 @@ LIST(APPEND WebKit2_SOURCES
 
     WebProcess/InjectedBundle/gtk/InjectedBundleGtk.cpp
 
-    WebProcess/WebCoreSupport/efl/WebContextMenuClientEfl.cpp
-    WebProcess/WebCoreSupport/efl/WebErrorsEfl.cpp
-    WebProcess/WebCoreSupport/efl/WebPopupMenuEfl.cpp
+    WebProcess/WebCoreSupport/nix/WebErrorsNix.cpp
+    WebProcess/WebCoreSupport/nix/WebPopupMenuNix.cpp
 
     WebProcess/WebPage/nix/WebInspectorNix.cpp
     WebProcess/WebPage/nix/WebPageNix.cpp
@@ -77,17 +76,13 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/network/soup"
     "${WEBCORE_DIR}/svg/graphics"
-    "${WEBKIT2_DIR}/Shared/efl"
     "${WEBKIT2_DIR}/Shared/soup"
     "${WEBKIT2_DIR}/UIProcess/API/C/soup"
-    "${WEBKIT2_DIR}/UIProcess/API/cpp/efl"
-    "${WEBKIT2_DIR}/UIProcess/API/efl"
     "${WEBKIT2_DIR}/UIProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
-    "${WEBKIT2_DIR}/WebProcess/efl"
     "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
-    "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/efl"
+    "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/nix"
     "${WTF_DIR}/wtf/gobject"
     ${CAIRO_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
