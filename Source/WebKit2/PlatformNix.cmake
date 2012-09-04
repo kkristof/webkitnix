@@ -16,8 +16,8 @@ LIST(APPEND WebKit2_SOURCES
 
     Shared/cairo/ShareableBitmapCairo.cpp
 
-    Shared/efl/LayerTreeContextEfl.cpp
-    Shared/efl/ProcessExecutablePathEfl.cpp
+    Shared/nix/LayerTreeContextNix.cpp
+    Shared/gtk/ProcessExecutablePathGtk.cpp
 
     Shared/soup/PlatformCertificateInfo.cpp
     Shared/soup/WebCoreArgumentCodersSoup.cpp
@@ -39,7 +39,7 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/soup/WebSoupRequestManagerClient.cpp
     UIProcess/soup/WebSoupRequestManagerProxy.cpp
 
-    UIProcess/Launcher/efl/ProcessLauncherEfl.cpp
+    UIProcess/Launcher/gtk/ProcessLauncherGtk.cpp
 
     UIProcess/Plugins/unix/PluginInfoStoreUnix.cpp
 
