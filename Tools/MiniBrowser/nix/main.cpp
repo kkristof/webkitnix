@@ -54,6 +54,9 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     m_webView = Nix::WebView::create(m_context.get(), m_pageGroup.get(), this);
     m_webView->initialize();
 
+    // TODO: Couldn't make it show anything without fixed layout, maybe a sizing related problem.
+    WKPageSetUseFixedLayout(m_webView->pageRef(), true);
+
     std::pair<int, int> size = m_window->size();
     m_webView->setSize(size.first, size.second);
 
@@ -192,8 +195,6 @@ int main(int argc, char* argv[])
 
     MiniBrowser* browser = new MiniBrowser(mainLoop);
 
-    // TODO: Couldn't make it show anything without fixed layout, maybe a sizing related problem.
-    WKPageSetUseFixedLayout(browser->pageRef(), true);
     const char* url = argc > 1 ? argv[1] : "http://www.google.com";
     WKPageLoadURL(browser->pageRef(), WKURLCreateWithUTF8CString(url));
 
