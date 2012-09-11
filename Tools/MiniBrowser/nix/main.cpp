@@ -29,6 +29,8 @@ public:
 
     // Nix::WebViewClient.
     virtual void viewNeedsDisplay(int, int, int, int) { updateDisplay(); }
+    virtual void webProcessCrashed(WKStringRef url);
+    virtual void webProcessRelaunched();
 
 private:
     void updateDisplay();
@@ -187,6 +189,20 @@ void MiniBrowser::updateDisplay()
     m_webView->paintToCurrentGLContext();
 
     m_window->swapBuffers();
+}
+
+void MiniBrowser::webProcessCrashed(WKStringRef url)
+{
+    size_t urlStringSize =  WKStringGetMaximumUTF8CStringSize(url);
+    char* urlString = new char[urlStringSize];
+    WKStringGetUTF8CString(url, urlString, urlStringSize);
+    fprintf(stderr, "The web process has crashed on '%s'.\n", urlString);
+    delete urlString;
+}
+
+void MiniBrowser::webProcessRelaunched()
+{
+    fprintf(stdout, "The web process has been restarted.\n");
 }
 
 int main(int argc, char* argv[])

@@ -83,6 +83,8 @@ public:
     virtual ~WebViewClient() { }
 
     virtual void viewNeedsDisplay(int x, int y, int width, int height) = 0;
+    virtual void webProcessCrashed(WKStringRef url) = 0;
+    virtual void webProcessRelaunched() = 0;
 };
 
 class WK_EXPORT WebView {

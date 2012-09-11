@@ -62,13 +62,13 @@ public:
     virtual bool isViewWindowActive() { return m_active; }
     virtual bool isViewInWindow() { return true; } // FIXME
     virtual WebCore::IntSize viewSize() { return m_size; }
+    virtual void processDidCrash();
+    virtual void didRelaunchProcess() { m_client->webProcessRelaunched(); }
 
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
     virtual void scrollView(const WebCore::IntRect& scrollRect, const WebCore::IntSize& scrollOffset) { notImplemented(); }
 
-    virtual void processDidCrash() { notImplemented(); }
-    virtual void didRelaunchProcess() { notImplemented(); }
     virtual void pageClosed() { notImplemented(); }
 
     virtual void toolTipChanged(const String&, const String&) { notImplemented(); }
@@ -309,6 +309,11 @@ void WebViewImpl::paintToCurrentGLContext()
 
     WebCore::FloatRect rect(0, 0, m_size.width(), m_size.height());
     renderer->paintToCurrentGLContext(WebCore::TransformationMatrix(), 1.0, rect);
+}
+
+void WebViewImpl::processDidCrash()
+{
+    m_client->webProcessCrashed(WebKit::toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
 }
 
 } // namespace Nix
