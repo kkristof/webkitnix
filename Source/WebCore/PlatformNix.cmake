@@ -66,6 +66,11 @@ LIST(APPEND WebCore_SOURCES
   platform/PlatformStrategies.cpp
   platform/text/nix/TextBreakIteratorInternalICUNix.cpp
 
+  plugins/PluginDatabase.cpp
+  plugins/PluginDebug.cpp
+  plugins/PluginPackage.cpp
+  plugins/PluginStream.cpp
+  plugins/PluginView.cpp
   plugins/PluginPackageNone.cpp
   plugins/PluginViewNone.cpp
 )
