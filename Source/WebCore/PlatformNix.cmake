@@ -30,9 +30,7 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/PlatformKeyboardEventNix.cpp
   platform/nix/RenderThemeNix.cpp
   platform/gtk/RunLoopGtk.cpp
-  platform/nix/ScrollViewNix.cpp
   platform/nix/ScrollbarThemeNix.cpp
-  platform/nix/ScrollbarNix.cpp
   platform/gtk/SharedBufferGtk.cpp
   platform/nix/SoundNix.cpp
   platform/gtk/SharedTimerGtk.cpp
