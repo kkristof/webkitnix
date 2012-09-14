@@ -51,6 +51,13 @@ typedef struct _Evas_Object Evas_Object;
 typedef struct _Ecore_Evas Ecore_Evas;
 typedef Evas_Object* PlatformWKView;
 typedef Ecore_Evas* PlatformWindow;
+#elif PLATFORM(NIX)
+namespace Nix {
+    class WebView;
+    class WebViewClient;
+}
+typedef Nix::WebView* PlatformWKView;
+typedef int PlatformWindow;
 #endif
 
 namespace TestWebKitAPI {
@@ -90,6 +97,8 @@ private:
 
 #if PLATFORM(WIN)
     WindowMessageObserver* m_parentWindowMessageObserver;
+#elif PLATFORM(NIX)
+    Nix::WebViewClient* m_webViewClient;
 #endif
 };
 
