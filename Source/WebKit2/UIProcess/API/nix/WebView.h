@@ -54,7 +54,8 @@ struct WK_EXPORT MouseEvent : public InputEvent {
         NoButton = -1,
         LeftButton,
         MiddleButton,
-        RightButton
+        RightButton,
+        FourthButton,
     };
 
     Button button;

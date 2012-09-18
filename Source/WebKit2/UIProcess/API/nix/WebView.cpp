@@ -264,6 +264,7 @@ static WebKit::WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEven
         return WebKit::WebMouseEvent::NoButton;
     case Nix::MouseEvent::LeftButton:
         return WebKit::WebMouseEvent::LeftButton;
+    case Nix::MouseEvent::FourthButton:
     case Nix::MouseEvent::MiddleButton:
         return WebKit::WebMouseEvent::MiddleButton;
     case Nix::MouseEvent::RightButton:
