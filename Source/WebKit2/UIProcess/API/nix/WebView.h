@@ -12,7 +12,7 @@ struct WK_EXPORT InputEvent {
         MouseDown,
         MouseUp,
         MouseMove,
-        MouseWheel,
+        Wheel,
         KeyDown,
         KeyUp,
         TouchStart,
@@ -64,6 +64,19 @@ struct WK_EXPORT MouseEvent : public InputEvent {
     int globalX;
     int globalY;
     int clickCount;
+};
+
+struct WK_EXPORT WheelEvent : public InputEvent {
+    enum Orientation {
+        Vertical,
+        Horizontal
+    };
+    int x;
+    int y;
+    int globalX;
+    int globalY;
+    float delta;
+    Orientation orientation;
 };
 
 class WebViewClient {

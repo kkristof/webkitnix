@@ -16,6 +16,7 @@
 #include "WebPageGroup.h"
 #include "WebPopupMenuProxy.h"
 #include "WebPreferences.h"
+#include <WebCore/Scrollbar.h>
 
 namespace Nix {
 
@@ -51,7 +52,7 @@ public:
     virtual WKPageRef pageRef();
 
     virtual void sendEvent(const Nix::InputEvent&);
-    void sendMouseEvent(const Nix::MouseEvent&);
+    // FIXME: Move this function to private when we remove it from public interface.
     virtual void sendKeyEvent(bool, char);
 
     // PageClient.
@@ -66,6 +67,8 @@ public:
     virtual void processDidCrash();
     virtual void didRelaunchProcess() { m_client->webProcessRelaunched(); }
 
+    virtual void pageDidRequestScroll(const WebCore::IntPoint& point);
+
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
     virtual void scrollView(const WebCore::IntRect& scrollRect, const WebCore::IntSize& scrollOffset) { notImplemented(); }
@@ -73,10 +76,6 @@ public:
     virtual void pageClosed() { notImplemented(); }
 
     virtual void toolTipChanged(const String&, const String&) { notImplemented(); }
-
-#if USE(TILED_BACKING_STORE)
-    virtual void pageDidRequestScroll(const WebCore::IntPoint&) { notImplemented(); }
-#endif
 
     virtual void handleDownloadRequest(WebKit::DownloadProxy*) { notImplemented(); }
 
@@ -131,6 +130,9 @@ public:
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
 
 private:
+    void sendMouseEvent(const Nix::MouseEvent&);
+    void sendWheelEvent(const Nix::WheelEvent&);
+
     WebViewClient* m_client;
     WTF::RefPtr<WebKit::WebPageProxy> m_webPageProxy;
     bool m_focused;
@@ -138,6 +140,7 @@ private:
     bool m_active;
     WebCore::IntSize m_size;
     WebCore::IntPoint m_lastCursorPosition;
+    WebCore::IntPoint m_scrollPosition;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -172,7 +175,7 @@ void WebViewImpl::setSize(int width, int height)
 
     drawingArea->setSize(m_size, WebCore::IntSize());
     const float scale = 1.0;
-    drawingArea->setVisibleContentsRect(WebCore::IntRect(WebCore::IntPoint(), m_size), scale, WebCore::FloatPoint());
+    drawingArea->setVisibleContentsRect(WebCore::IntRect(m_scrollPosition, m_size), scale, WebCore::FloatPoint());
 }
 
 bool WebViewImpl::isFocused() const
@@ -251,6 +254,8 @@ static WebKit::WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
         return WebKit::WebEvent::MouseUp;
     case Nix::InputEvent::MouseMove:
         return WebKit::WebEvent::MouseMove;
+    case Nix::InputEvent::Wheel:
+        return WebKit::WebEvent::Wheel;
     default:
         notImplemented();
     }
@@ -283,8 +288,10 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
         case InputEvent::MouseDown:
         case InputEvent::MouseUp:
         case InputEvent::MouseMove:
-        case InputEvent::MouseWheel:
             sendMouseEvent(static_cast<const Nix::MouseEvent&>(event));
+            break;
+        case InputEvent::Wheel:
+            sendWheelEvent(static_cast<const Nix::WheelEvent&>(event));
             break;
         case InputEvent::KeyDown:
         case InputEvent::KeyUp:
@@ -333,13 +340,49 @@ void WebViewImpl::paintToCurrentGLContext()
     renderer->setActive(true);
     renderer->syncRemoteContent();
 
+    WebCore::TransformationMatrix scrollTransform;
+    scrollTransform.translate(-m_scrollPosition.x(), -m_scrollPosition.y());
+
     WebCore::FloatRect rect(0, 0, m_size.width(), m_size.height());
-    renderer->paintToCurrentGLContext(WebCore::TransformationMatrix(), 1.0, rect);
+    renderer->paintToCurrentGLContext(scrollTransform, 1.0, rect);
 }
 
 void WebViewImpl::processDidCrash()
 {
     m_client->webProcessCrashed(WebKit::toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
+}
+
+void WebViewImpl::pageDidRequestScroll(const WebCore::IntPoint& point)
+{
+    if (m_scrollPosition == point)
+        return;
+    m_scrollPosition = point;
+
+    WebKit::DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
+    if (!drawingArea)
+        return;
+
+    const float scale = 1.0;
+    drawingArea->setVisibleContentsRect(WebCore::IntRect(m_scrollPosition, m_size), scale, WebCore::FloatPoint());
+
+    // FIXME: It's not clear to me yet whether we should ask for display here or this is at the wrong level.
+    setViewNeedsDisplay(WebCore::IntRect(WebCore::IntPoint(), m_size));
+}
+
+void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
+{
+    WebKit::WebEvent::Type type = convertToWebEventType(event.type);
+    WebCore::IntPoint position = WebCore::IntPoint(event.x, event.y);
+    WebCore::IntPoint globalPosition = WebCore::IntPoint(event.globalX, event.globalY);
+    WebCore::FloatSize delta = event.orientation == Nix::WheelEvent::Vertical ? WebCore::FloatSize(0, event.delta) : WebCore::FloatSize(event.delta, 0);
+    WebKit::WebEvent::Modifiers modifiers = static_cast<WebKit::WebEvent::Modifiers>(event.modifiers);
+    double timestamp = event.timestamp;
+
+    const float ticks = event.delta / float(WebCore::Scrollbar::pixelsPerLineStep());
+    WebCore::FloatSize wheelTicks = Nix::WheelEvent::Vertical ? WebCore::FloatSize(0, ticks) : WebCore::FloatSize(ticks, 0);
+
+    WebKit::WebWheelEvent webEvent(type, position, globalPosition, delta, wheelTicks, WebKit::WebWheelEvent::ScrollByPixelWheelEvent, modifiers, timestamp);
+    m_webPageProxy->handleWheelEvent(WebKit::NativeWebWheelEvent(webEvent));
 }
 
 } // namespace Nix

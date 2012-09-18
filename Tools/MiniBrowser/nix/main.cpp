@@ -33,6 +33,8 @@ public:
     virtual void webProcessRelaunched();
 
 private:
+    void handleWheelEvent(const XButtonPressedEvent&);
+
     void updateDisplay();
 
     WKRetainPtr<WKContextRef> m_context;
@@ -107,10 +109,33 @@ static Nix::MouseEvent::Button convertXEventButtonToNativeMouseButton(unsigned i
     }
 }
 
+void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
+{
+    // Same constant we use inside WebView to calculate the ticks. See also WebCore::Scrollbar::pixelsPerLineStep().
+    const float pixelsPerStep = 40.0f;
+
+    Nix::WheelEvent ev;
+    ev.type = Nix::InputEvent::Wheel;
+    ev.modifiers = 0;
+    ev.timestamp = event.time;
+    ev.x = event.x;
+    ev.y = event.y;
+    ev.globalX = event.x_root;
+    ev.globalY = event.y_root;
+    ev.delta = pixelsPerStep * (event.button == 4 ? 1 : -1);
+    ev.orientation = event.state & Mod1Mask ? Nix::WheelEvent::Horizontal : Nix::WheelEvent::Vertical;
+    m_webView->sendEvent(ev);
+}
+
 void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 {
     if (!m_webView)
         return;
+
+    if (event.button == 4 || event.button == 5) {
+        handleWheelEvent(event);
+        return;
+    }
 
     Nix::MouseEvent ev;
     ev.type = Nix::InputEvent::MouseDown;
@@ -127,7 +152,7 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 
 void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
 {
-    if (!m_webView)
+    if (!m_webView || event.button == 4 || event.button == 5)
         return;
 
     Nix::MouseEvent ev;
