@@ -4,6 +4,8 @@
 #include <WebKit2/WKString.h>
 #include <WebKit2/WKURL.h>
 #include <WebView.h>
+#include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #include <cstdio>
 #include <glib.h>
 
@@ -75,13 +77,40 @@ MiniBrowser::~MiniBrowser()
     delete m_window;
 }
 
+enum NavigationCommand {
+    NoNavigation,
+    BackNavigation,
+    ForwardNavigation
+};
+
+static NavigationCommand checkNavigationCommand(const KeySym keySym, const unsigned state)
+{
+    if (!(state & Mod1Mask))
+        return NoNavigation;
+    if (keySym == XK_Left)
+        return BackNavigation;
+    if (keySym == XK_Right)
+        return ForwardNavigation;
+    return NoNavigation;
+}
+
 void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
 {
     if (!m_webView)
         return;
 
-    printf("key = %s\n", XKeysymToString(XKeycodeToKeysym(m_window->display(), event.keycode, 0)));
-    char key = XKeysymToString(XKeycodeToKeysym(m_window->display(), event.keycode, 0))[0];
+    KeySym keySym = XkbKeycodeToKeysym(m_window->display(), event.keycode, 0, 0);
+    NavigationCommand command = checkNavigationCommand(keySym, event.state);
+    if (command == BackNavigation) {
+        WKPageGoBack(pageRef());
+        return;
+    }
+    if (command == ForwardNavigation) {
+        WKPageGoForward(pageRef());
+        return;
+    }
+
+    char key = XKeysymToString(keySym)[0];
     m_webView->sendKeyEvent(true, key);
 }
 
@@ -90,8 +119,11 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     if (!m_webView)
         return;
 
-    printf("key = %s\n", XKeysymToString(XKeycodeToKeysym(m_window->display(), event.keycode, 0)));
-    char key = XKeysymToString(XKeycodeToKeysym(m_window->display(), event.keycode, 0))[0];
+    KeySym keySym = XkbKeycodeToKeysym(m_window->display(), event.keycode, 0, 0);
+    if (checkNavigationCommand(keySym, event.state) != NoNavigation)
+        return;
+
+    char key = XKeysymToString(keySym)[0];
     m_webView->sendKeyEvent(false, key);
 }
 
@@ -232,6 +264,8 @@ void MiniBrowser::webProcessRelaunched()
 
 int main(int argc, char* argv[])
 {
+    printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
+
     GMainLoop* mainLoop = g_main_loop_new(0, false);
 
     MiniBrowser* browser = new MiniBrowser(mainLoop);
