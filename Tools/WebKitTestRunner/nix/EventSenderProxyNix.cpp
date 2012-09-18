@@ -196,7 +196,7 @@ void EventSenderProxy::setTouchPointRadius(int radiusX, int radiusY)
 
 #endif
 
-static void dispatchAndDestroyEvent(TestController* testController, Nix::InputEvent* event)
+static void dispatchAndDeleteEvent(TestController* testController, Nix::InputEvent* event)
 {
     PlatformWKView webView = testController->mainWebView()->platformView();
     webView->sendEvent(*event);
@@ -206,7 +206,7 @@ static void dispatchAndDestroyEvent(TestController* testController, Nix::InputEv
 void EventSenderProxy::sendOrQueueEvent(Nix::InputEvent* event)
 {
     if (!endOfQueue && !eventQueue[endOfQueue].delay) {
-        dispatchAndDestroyEvent(m_testController, event);
+        dispatchAndDeleteEvent(m_testController, event);
         return;
     }
     eventQueue[endOfQueue++].event = event;
@@ -227,7 +227,7 @@ void EventSenderProxy::replaySavedEvents()
             usleep(ev.delay * 1000);
         i++;
 
-        dispatchAndDestroyEvent(m_testController, ev.event);
+        dispatchAndDeleteEvent(m_testController, ev.event);
         ev.event = 0;
         ev.delay = 0;
     }
