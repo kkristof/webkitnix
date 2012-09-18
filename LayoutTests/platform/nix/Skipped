@@ -46,11 +46,6 @@ canvas/philip/tests/type.prototype.html
 # Missing testRunner.enableAutoResizeMode
 fast/autoresize
 
-# We may need to create a GL context to get WebGL tests running
-fast/canvas
-fast/clip
-fast/compact
-
 fast/cookies/local-file-can-set-cookies.html
 fast/encoding/denormalised-voiced-japanese-chars.html
 fast/encoding/idn-security.html
@@ -99,8 +94,6 @@ fast/loader/policy-delegate-action-hit-test-zoomed.html
 fast/loader/repeat-same-document-navigation.html
 fast/loader/scroll-position-restored-on-back-non-cached.html
 fast/loader/scroll-position-restored-on-back.html
-fast/media
-fast/mediastream
 fast/parser/comment-in-script.html
 fast/parser/nested-fragment-parser-crash.html
 fast/parser/pre-html5-parser-quirks.html
@@ -132,7 +125,6 @@ transitions/cross-fade-border-image.html
 transitions/opacity-transition-zindex.html
 transitions/suspend-transform-transition.html
 transitions/svg-transitions.html
-webintents
 
 
 #############################################################
@@ -140,14 +132,28 @@ webintents
 #############################################################
 
 accessibility
+animations
 batterystatus
+compositing
+fast/canvas
+fast/clip
+fast/compact
+fast/filesystem
+fast/media
+fast/mediastream
+fast/notifications
 fast/speech
 fast/viewport
+fast/workers
 fullscreen
 gamepad
+media
 networkinformation
+plugins
 touchadjustment
 webaudio
+webintents
+
 
 ################################################################################
 # MISSING RESULTS
@@ -292,8 +298,6 @@ transitions/transition-end-event-rendering.html
 # NEED MORE TRIAGING, MORE THAN 50% FAILING
 ################################################################################
 
-animations
-compositing
 editing
 fast/animation
 fast/backgrounds
@@ -301,7 +305,6 @@ fast/block
 fast/dom
 fast/dynamic
 fast/files
-fast/filesystem
 fast/forms
 fast/frames
 fast/inline
@@ -310,7 +313,6 @@ fast/line-grid
 fast/lists
 fast/multicol
 fast/mutation
-fast/notifications
 fast/overflow
 fast/regions
 fast/repaint
@@ -324,16 +326,13 @@ fast/table
 fast/text
 fast/text-autosizing
 fast/transforms
-fast/workers
 fast/writing-mode
 fast/xsl
 http
 ietestcenter/css3
 inspector
-media
 perf
 platform
-plugins
 pointer-lock
 scrollbars
 storage
