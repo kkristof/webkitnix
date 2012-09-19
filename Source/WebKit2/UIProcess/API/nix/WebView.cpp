@@ -23,6 +23,12 @@ using namespace WebKit;
 
 namespace Nix {
 
+cairo_matrix_t WebViewClient::viewToScreenTransform()
+{
+    static cairo_matrix_t identityTransform = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    return identityTransform;
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -133,6 +139,8 @@ public:
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
 
 private:
+    void transformPointToViewCoordinates(double& x, double& y);
+
     void sendMouseEvent(const Nix::MouseEvent&);
     void sendWheelEvent(const Nix::WheelEvent&);
 
@@ -313,17 +321,28 @@ void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     WebMouseEvent::Button button = convertToWebMouseEventButton(event.button);
-    float deltaX = event.x - m_lastCursorPosition.x();
-    float deltaY = event.y - m_lastCursorPosition.y();
+
+    double x = event.x;
+    double y = event.y;
+    transformPointToViewCoordinates(x, y);
+
+    float deltaX = x - m_lastCursorPosition.x();
+    float deltaY = y - m_lastCursorPosition.y();
     int clickCount = event.clickCount;
     WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);
     double timestamp = event.timestamp;
-    IntPoint position = IntPoint(event.x, event.y);
+    IntPoint position = IntPoint(x, y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     m_lastCursorPosition = position;
 
     WebMouseEvent webEvent(type, button, position, globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
     m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(webEvent));
+}
+
+// TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
+static TransformationMatrix toTransformationMatrix(const cairo_matrix_t& matrix)
+{
+    return TransformationMatrix(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
 }
 
 void WebViewImpl::paintToCurrentGLContext()
@@ -343,11 +362,22 @@ void WebViewImpl::paintToCurrentGLContext()
     renderer->setActive(true);
     renderer->syncRemoteContent();
 
-    TransformationMatrix scrollTransform;
-    scrollTransform.translate(-m_scrollPosition.x(), -m_scrollPosition.y());
+    cairo_matrix_t viewTransform = m_client->viewToScreenTransform();
+    double x = 0;
+    double y = 0;
+    double width = m_size.width();
+    double height = m_size.height();
+    cairo_matrix_transform_point(&viewTransform, &x, &y);
+    cairo_matrix_transform_distance(&viewTransform, &width, &height);
 
-    FloatRect rect(0, 0, m_size.width(), m_size.height());
-    renderer->paintToCurrentGLContext(scrollTransform, 1.0, rect);
+    cairo_matrix_t scrollTransform;
+    cairo_matrix_init_translate(&scrollTransform, -m_scrollPosition.x(), -m_scrollPosition.y());
+
+    cairo_matrix_t transform;
+    cairo_matrix_multiply(&transform, &scrollTransform, &viewTransform);
+
+    FloatRect rect(x, y, width, height);
+    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), 1.0, rect);
 }
 
 void WebViewImpl::processDidCrash()
@@ -372,10 +402,29 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
 }
 
+void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
+{
+    cairo_matrix_t invertedViewTransform = m_client->viewToScreenTransform();
+    cairo_matrix_invert(&invertedViewTransform);
+
+    cairo_matrix_t invertedScrollTransform;
+    cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
+
+    cairo_matrix_t transform;
+    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScrollTransform);
+
+    cairo_matrix_transform_point(&transform, &x, &y);
+}
+
 void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
-    IntPoint position = IntPoint(event.x, event.y);
+
+    double x = event.x;
+    double y = event.y;
+    transformPointToViewCoordinates(x, y);
+
+    IntPoint position = IntPoint(x, y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     FloatSize delta = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
     WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);

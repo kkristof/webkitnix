@@ -4,6 +4,7 @@
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
+#include <cairo.h>
 
 namespace Nix {
 
@@ -84,6 +85,8 @@ public:
     virtual ~WebViewClient() { }
 
     virtual void viewNeedsDisplay(int x, int y, int width, int height) = 0;
+    virtual cairo_matrix_t viewToScreenTransform();
+
     virtual void webProcessCrashed(WKStringRef url) = 0;
     virtual void webProcessRelaunched() = 0;
 };
