@@ -346,7 +346,7 @@ my @features = (
       define => "ENABLE_QUOTA", default => 0, value => \$quotaSupport },
 
     { option => "request-animation-frame", desc => "Toggle Request Animation Frame support",
-      define => "ENABLE_REQUEST_ANIMATION_FRAME", default => (isAppleMacWebKit() || isGtk() || isEfl() || isBlackBerry()), value => \$requestAnimationFrameSupport },
+      define => "ENABLE_REQUEST_ANIMATION_FRAME", default => (isAppleMacWebKit() || isGtk() || isEfl() || isBlackBerry() || isNix()), value => \$requestAnimationFrameSupport },
 
     { option => "scripted-speech", desc => "Toggle Scripted Speech support",
       define => "ENABLE_SCRIPTED_SPEECH", default => 0, value => \$scriptedSpeechSupport },
