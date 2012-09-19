@@ -116,7 +116,7 @@ void TestController::initializeInjectedBundlePath()
         fclose(f);
         bundlePath = path;
     }
-    m_injectedBundlePath = WKStringCreateWithUTF8CString(bundlePath);
+    m_injectedBundlePath.adopt(WKStringCreateWithUTF8CString(bundlePath));
 }
 
 void TestController::initializeTestPluginDirectory()
@@ -129,7 +129,7 @@ void TestController::initializeTestPluginDirectory()
         strcat(path, "/../lib/libTestRunnerInjectedBundle.so");
         pluginPath = path;
     }
-    m_testPluginDirectory = WKStringCreateWithUTF8CString(pluginPath);
+    m_testPluginDirectory.adopt(WKStringCreateWithUTF8CString(pluginPath));
 }
 
 void TestController::platformInitializeContext()
