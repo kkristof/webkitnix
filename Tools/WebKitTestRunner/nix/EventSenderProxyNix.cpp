@@ -236,4 +236,9 @@ void EventSenderProxy::replaySavedEvents()
     isReplayingEvents = false;
 }
 
+void EventSenderProxy::continuousMouseScrollBy(int horizontal, int vertical, bool paged)
+{
+    notImplemented();
+}
+
 }

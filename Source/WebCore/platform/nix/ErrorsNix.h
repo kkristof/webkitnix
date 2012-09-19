@@ -27,7 +27,7 @@
 #ifndef ErrorsNix_h
 #define ErrorsNix_h
 
-#include "PlatformString.h"
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
