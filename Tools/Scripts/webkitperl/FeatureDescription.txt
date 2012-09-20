@@ -1,0 +1,124 @@
+#
+# This file list all possible WebKit features, it has
+# a three columns format:
+#
+#   COMMAND_LINE_SWITCH  FEATURE_DEFINE  FEATURE_DESCRIPTION
+#
+# For example, adding the line:
+#
+# foo-bar  ENABLE_FOOBAR  Toggle Foo Bar support
+#
+# Will add two new command line switches to build-webkit script,
+#
+# --foo-bar and --no-foo-bar
+#
+# And when enabled, ENABLE_FOOBAR will be passed to WebKit, i.e.
+# ENABLE(FOOBAR) will evaluate to true.
+#
+# Each port define a collection of features default to true in the
+# file FeatureDefaults{PORT}.txt
+#
+
+3d-rendering               ENABLE_3D_RENDERING                  Toggle 3D Rendering support
+accelerated-2d-canvas      ENABLE_ACCELERATED_2D_CANVAS         Toggle Accelerated 2D Canvas support
+animation-api              ENABLE_ANIMATION_API                 Toggle Animation API support
+battery-status             ENABLE_BATTERY_STATUS                Toggle Battery Status support
+blob                       ENABLE_BLOB                          Toggle Blob support
+channel-messaging          ENABLE_CHANNEL_MESSAGING             Toggle Channel Messaging support
+csp-next                   ENABLE_CSP_NEXT                      Toggle Content Security Policy 1.1 support
+css3-text-decoration       ENABLE_CSS3_TEXT_DECORATION          Toggle CSS3 Text Decoration support
+css-box-decoration-break   ENABLE_CSS_BOX_DECORATION_BREAK      Toggle CSS box-decoration-break support
+css-compositing            ENABLE_CSS_COMPOSITING               Toggle CSS Compositing support
+css-exclusions             ENABLE_CSS_EXCLUSIONS                Toggle CSS Exclusions support
+css-filters                ENABLE_CSS_FILTERS                   Toggle CSS Filters support
+css-hierarchies            ENABLE_CSS_HIERARCHIES               Toggle CSS Hierarchy support
+css-image-orientation      ENABLE_CSS_IMAGE_ORIENTATION         Toggle CSS image-orientation support
+css-image-resolution       ENABLE_CSS_IMAGE_RESOLUTION          Toggle CSS image-resolution support
+css-image-set              ENABLE_CSS_IMAGE_SET                 Toggle CSS image-set support
+css-regions                ENABLE_CSS_REGIONS                   Toggle CSS Regions support
+css-shaders                ENABLE_CSS_SHADERS                   Toggle CSS Shaders support
+css-variables              ENABLE_CSS_VARIABLES                 Toggle CSS Variable support
+custom-scheme-handler      ENABLE_CUSTOM_SCHEME_HANDLER         Toggle Custom Scheme Handler support
+datalist                   ENABLE_DATALIST_ELEMENT              Toggle Datalist support
+data-transfer-items        ENABLE_DATA_TRANSFER_ITEMS           Toggle Data Transfer Items support
+details                    ENABLE_DETAILS_ELEMENT               Toggle Details support
+device-orientation         ENABLE_DEVICE_ORIENTATION            Toggle Device Orientation support
+dialog                     ENABLE_DIALOG_ELEMENT                Toggle Dialog Element support
+directory-upload           ENABLE_DIRECTORY_UPLOAD              Toggle Directory Upload support
+download-attribute         ENABLE_DOWNLOAD_ATTRIBUTE            Toggle Download Attribute support
+drag                       ENABLE_DRAG_SUPPORT                  Toggle Drag Support
+fast-mobile-scrolling      ENABLE_FAST_MOBILE_SCROLLING         Toogle Fast Mobile Scrolling support
+file-system                ENABLE_FILE_SYSTEM                   Toggle File System support
+filters                    ENABLE_FILTERS                       Toggle Filters support
+ftpdir                     ENABLE_FTPDIR                        Toggle FTP Directory support
+fullscreen-api             ENABLE_FULLSCREEN_API                Toggle Fullscreen API support
+gamepad                    ENABLE_GAMEPAD                       Toggle Gamepad support
+geolocation                ENABLE_GEOLOCATION                   Toggle Geolocation support
+glib                       ENABLE_GLIB_SUPPORT                  Toggle Glib support
+high-dpi-canvas            ENABLE_HIGH_DPI_CANVAS               Toggle High DPI Canvas support
+icon-database              ENABLE_ICONDATABASE                  Toggle Icondatabase support
+iframe-seamless            ENABLE_IFRAME_SEAMLESS               Toggle iframe seamless attribute support
+indexed-database           ENABLE_INDEXED_DATABASE              Toggle Indexed Database support
+input-speech               ENABLE_INPUT_SPEECH                  Toggle Input Speech support
+input-type-color           ENABLE_INPUT_TYPE_COLOR              Toggle Input Type Color support
+input-type-date            ENABLE_INPUT_TYPE_DATE               Toggle Input Type Date support
+input-type-datetime        ENABLE_INPUT_TYPE_DATETIME           Toggle Input Type Datetime support
+input-type-datetimelocal   ENABLE_INPUT_TYPE_DATETIMELOCAL      Toggle Input Type Datetimelocal support
+input-type-month           ENABLE_INPUT_TYPE_MONTH              Toggle Input Type Month support
+input-type-time            ENABLE_INPUT_TYPE_TIME               Toggle Input Type Time support
+input-type-week            ENABLE_INPUT_TYPE_WEEK               Toggle Input Type Week support
+inspector                  ENABLE_INSPECTOR                     Toggle Inspector support
+javascript-debugger        ENABLE_JAVASCRIPT_DEBUGGER           Toggle JavaScript Debugger support
+javascript-jit             ENABLE_JIT                           Toggle JustInTime javascript support
+legacy-notifications       ENABLE_LEGACY_NOTIFICATIONS          Toggle Legacy Notifications support
+legacy-vendor-prefixes     ENABLE_LEGACY_VENDOR_PREFIXES        Toggle Legacy Vendor Prefix support
+legacy-viewport-adaption   ENABLE_LEGACY_VIEWPORT_ADAPTION      Toogle legacy viewport adaption
+legacy-webkit-blob-builder ENABLE_LEGACY_WEBKIT_BLOB_BUILDER    Toggle Legacy WebKit Blob Builder support
+link-prefetch              ENABLE_LINK_PREFETCH                 Toggle Link Prefetch support
+link-prerender             ENABLE_LINK_PRERENDER                Toggle Link Prerender support
+llint                      ENABLE_LLINT                         Toggle JSC Low Level Interpreter support
+mathml                     ENABLE_MATHML                        Toggle MathML support
+media-capture              ENABLE_MEDIA_CAPTURE                 Toggle Media Capture support
+media-source               ENABLE_MEDIA_SOURCE                  Toggle Media Source support
+media-statistics           ENABLE_MEDIA_STATISTICS              Toggle Media Statistics support
+media-stream               ENABLE_MEDIA_STREAM                  Toggle Media Stream support
+memory-sampler             ENABLE_MEMORY_SAMPLER                Toggle Memory Sampler support
+meter-tag                  ENABLE_METER_ELEMENT                 Toggle Meter Tag support
+mhtml                      ENABLE_MHTML                         Toggle MHTML support
+microdata                  ENABLE_MICRODATA                     Toggle Microdata support
+mutation-observers         ENABLE_MUTATION_OBSERVERS            Toggle Mutation Observers support
+navigator-content-utils    ENABLE_NAVIGATOR_CONTENT_UTILS       Toggle Navigator Content Utils support
+netscape-plugin-api        ENABLE_NETSCAPE_PLUGIN_API           Toggle Netscape Plugin API support
+network-info               ENABLE_NETWORK_INFO                  Toggle Network Info support
+notifications              ENABLE_NOTIFICATIONS                 Toggle Notifications support
+orientation-events         ENABLE_ORIENTATION_EVENTS            Toggle Orientation Events support
+page-visibility-api        ENABLE_PAGE_VISIBILITY_API           Toggle Page Visibility API support
+progress-tag               ENABLE_PROGRESS_ELEMENT              Toggle Progress Tag support
+quota                      ENABLE_QUOTA                         Toggle Quota support
+request-animation-frame    ENABLE_REQUEST_ANIMATION_FRAME       Toggle Request Animation Frame support
+scripted-speech            ENABLE_SCRIPTED_SPEECH               Toggle Scripted Speech support
+shadow-dom                 ENABLE_SHADOW_DOM                    Toggle Shadow DOM support
+shared-workers             ENABLE_SHARED_WORKERS                Toggle Shared Workers support
+sql-database               ENABLE_SQL_DATABASE                  Toggle SQL Database support
+style-scoped               ENABLE_STYLE_SCOPED                  Toggle Style Scoped support
+svg-dom-objc-bindings      ENABLE_SVG_DOM_OBJC_BINDINGS         Toggle SVG DOM ObjC Bindings support
+svg                        ENABLE_SVG                           Toggle SVG support
+svg-fonts                  ENABLE_SVG_FONTS                     Toggle SVG Fonts support
+system-malloc              USE_SYSTEM_MALLOC                    Toggle system allocator instead of TCmalloc
+text-autosizing            ENABLE_TEXT_AUTOSIZING               Toggle Text Autosizing support
+tiled-backing-store        WTF_USE_TILED_BACKING_STORE          Toggle Tiled Backing Store support
+touch-events               ENABLE_TOUCH_EVENTS                  Toggle Touch Events support
+touch-icon-loading         ENABLE_TOUCH_ICON_LOADING            Toggle Touch Icon Loading Support
+undo-manager               ENABLE_UNDO_MANAGER                  Toggle Undo Manager support
+vibration                  ENABLE_VIBRATION                     Toggle Vibration support
+video                      ENABLE_VIDEO                         Toggle Video support
+video-track                ENABLE_VIDEO_TRACK                   Toggle Video Track support
+web-audio                  ENABLE_WEB_AUDIO                     Toggle Web Audio support
+webgl                      ENABLE_WEBGL                         Toggle WebGL support
+web-intents                ENABLE_WEB_INTENTS                   Toggle Web Intents support
+web-intents-tag            ENABLE_WEB_INTENTS_TAG               Toggle Web Intents Tag support
+web-sockets                ENABLE_WEB_SOCKETS                   Toggle Web Sockets support
+web-timing                 ENABLE_WEB_TIMING                    Toggle Web Timing support
+workers                    ENABLE_WORKERS                       Toggle Workers support
+xhr-response-blob          ENABLE_XHR_RESPONSE_BLOB             Toggle XHR Response BLOB support
+xslt                       ENABLE_XSLT                          Toggle XSLT support

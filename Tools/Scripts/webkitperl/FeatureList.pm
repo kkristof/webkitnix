@@ -140,6 +140,7 @@ my (
     $xsltSupport,
 );
 
+my @featureValues = ();
 my @features = (
     { option => "3d-rendering", desc => "Toggle 3D Rendering support",
       define => "ENABLE_3D_RENDERING", default => (isAppleMacWebKit() || isQt()), value => \$threeDRenderingSupport },
@@ -426,6 +427,43 @@ my @features = (
     { option => "xslt", desc => "Toggle XSLT support",
       define => "ENABLE_XSLT", default => 1, value => \$xsltSupport },
 );
+
+if (isNix()) {
+    # Reset WebKit @features array and populate it with FeatureDescription.txt file
+    @features = ( );
+    my %featureIndex = ( );
+    my $baseDir = __FILE__;
+    $baseDir =~ s/FeatureList\.pm//;
+    my $featureDescriptionFile = "${baseDir}FeatureDescription.txt";
+
+    open(FEATURE_DESCRIPTION, $featureDescriptionFile) or die("Failed to open $featureDescriptionFile\n.");
+    while (<FEATURE_DESCRIPTION>) {
+        chomp;
+        if (!$_ or $_ =~ /^#/) {
+            next;
+        }
+
+        my @values = split(/\s+/, $_, 3);
+
+        push(@featureValues, 0);
+        push(@features, { option => $values[0], desc => $values[2], define => $values[1], default => 0, value => \$featureValues[$#featureValues + 1]});
+        $featureIndex{ $values[1] } = \$features[$#features];
+    }
+
+    # Fill the default values using Port specific FeatureList
+    my $featureFile = "${baseDir}FeatureDefaultsNix.txt";
+
+    if (open(FEATURES, $featureFile)) {
+        while (<FEATURES>) {
+            chomp;
+            ${$featureIndex{$_}}->{default} = 1;
+        }
+        close(FEATURES);
+    } else {
+        print STDERR "Failed to open $featureFile.\n";
+        exit 1;
+    }
+}
 
 sub getFeatureOptionList()
 {
