@@ -102,6 +102,10 @@ public:
     virtual int height() const = 0;
     virtual void setSize(int width, int height) = 0;
 
+    virtual int scrollX() const = 0;
+    virtual int scrollY() const = 0;
+    virtual void setScrollPosition(int x, int y) = 0;
+
     virtual bool isFocused() const = 0;
     virtual void setFocused(bool) = 0;
 

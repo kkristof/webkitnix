@@ -47,6 +47,10 @@ public:
     virtual int height() const;
     virtual void setSize(int width, int height);
 
+    virtual int scrollX() const { return m_scrollPosition.x(); }
+    virtual int scrollY() const { return m_scrollPosition.y(); }
+    virtual void setScrollPosition(int x, int y);
+
     virtual bool isFocused() const;
     virtual void setFocused(bool);
 
@@ -139,6 +143,8 @@ public:
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
 
 private:
+    void updateVisibleContents();
+
     void transformPointToViewCoordinates(double& x, double& y);
 
     void sendMouseEvent(const Nix::MouseEvent&);
@@ -185,6 +191,20 @@ void WebViewImpl::setSize(int width, int height)
         return;
 
     drawingArea->setSize(m_size, IntSize());
+    const float scale = 1.0;
+    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, m_size), scale, FloatPoint());
+}
+
+void WebViewImpl::setScrollPosition(int x, int y)
+{
+    if (m_scrollPosition.x() == x && m_scrollPosition.y() == y)
+        return;
+    m_scrollPosition = IntPoint(x, y);
+
+    DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
+    if (!drawingArea)
+        return;
+
     const float scale = 1.0;
     drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, m_size), scale, FloatPoint());
 }
@@ -387,18 +407,9 @@ void WebViewImpl::processDidCrash()
 
 void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 {
-    if (m_scrollPosition == point)
-        return;
-    m_scrollPosition = point;
-
-    DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
-    if (!drawingArea)
-        return;
-
-    const float scale = 1.0;
-    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, m_size), scale, FloatPoint());
-
-    // FIXME: It's not clear to me yet whether we should ask for display here or this is at the wrong level.
+    setScrollPosition(point.x(), point.y());
+    // FIXME: It's not clear to me yet whether we should ask for display here or this is
+    // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
 }
 
