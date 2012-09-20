@@ -68,6 +68,7 @@ void WebInspectorProxy::platformInspectedURLChanged(const String&)
 String WebInspectorProxy::inspectorPageURL() const
 {
     notImplemented();
+    return String();
 }
 
 String WebInspectorProxy::inspectorBaseURL() const
