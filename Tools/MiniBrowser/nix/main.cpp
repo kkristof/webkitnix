@@ -1,4 +1,5 @@
 #include "LinuxWindow.h"
+#include "XlibEventUtils.h"
 #include <WebKit2/WKPreferences.h>
 #include <WebKit2/WKPreferencesPrivate.h>
 #include <WebKit2/WKString.h>
@@ -99,8 +100,12 @@ void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
     if (!m_webView)
         return;
 
-    KeySym keySym = XkbKeycodeToKeysym(m_window->display(), event.keycode, 0, 0);
-    NavigationCommand command = checkNavigationCommand(keySym, event.state);
+    Nix::KeyEvent ev;
+    ev.type = Nix::InputEvent::KeyDown;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    KeySym symbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), ev.shiftKey() ? 1 : 0);
+    NavigationCommand command = checkNavigationCommand(symbol, event.state);
     if (command == BackNavigation) {
         WKPageGoBack(pageRef());
         return;
@@ -109,9 +114,8 @@ void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
         WKPageGoForward(pageRef());
         return;
     }
-
-    char key = XKeysymToString(keySym)[0];
-    m_webView->sendKeyEvent(true, key);
+    ev.key = convertXKeySymToNativeKeycode(symbol);
+    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
@@ -119,26 +123,15 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     if (!m_webView)
         return;
 
-    KeySym keySym = XkbKeycodeToKeysym(m_window->display(), event.keycode, 0, 0);
-    if (checkNavigationCommand(keySym, event.state) != NoNavigation)
+    Nix::KeyEvent ev;
+    ev.type = Nix::InputEvent::KeyUp;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    KeySym symbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), ev.shiftKey() ? 1 : 0);
+    if (checkNavigationCommand(symbol, event.state) != NoNavigation)
         return;
-
-    char key = XKeysymToString(keySym)[0];
-    m_webView->sendKeyEvent(false, key);
-}
-
-static Nix::MouseEvent::Button convertXEventButtonToNativeMouseButton(unsigned int mouseButton)
-{
-    switch (mouseButton) {
-    case Button1:
-        return Nix::MouseEvent::LeftButton;
-    case Button2:
-        return Nix::MouseEvent::MiddleButton;
-    case Button3:
-        return Nix::MouseEvent::RightButton;
-    default:
-        return Nix::MouseEvent::NoButton;
-    }
+    ev.key = convertXKeySymToNativeKeycode(symbol);
+    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)

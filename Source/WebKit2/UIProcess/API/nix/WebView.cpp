@@ -1,3 +1,31 @@
+/*
+ * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include "config.h"
 #include "WebView.h"
 
@@ -16,7 +44,9 @@
 #include "WebPageGroup.h"
 #include "WebPopupMenuProxy.h"
 #include "WebPreferences.h"
+#include "WindowsKeyboardCodes.h"
 #include <WebCore/Scrollbar.h>
+#include <wtf/text/WTFString.h>
 
 using namespace WebCore;
 using namespace WebKit;
@@ -65,8 +95,6 @@ public:
     virtual WKPageRef pageRef();
 
     virtual void sendEvent(const Nix::InputEvent&);
-    // FIXME: Move this function to private when we remove it from public interface.
-    virtual void sendKeyEvent(bool, char);
 
     // PageClient.
     virtual PassOwnPtr<DrawingAreaProxy> createDrawingAreaProxy();
@@ -149,6 +177,7 @@ private:
 
     void sendMouseEvent(const Nix::MouseEvent&);
     void sendWheelEvent(const Nix::WheelEvent&);
+    void sendKeyEvent(const Nix::KeyEvent&);
 
     WebViewClient* m_client;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
@@ -257,25 +286,6 @@ WKPageRef WebViewImpl::pageRef()
     return toAPI(m_webPageProxy.get());
 }
 
-void WebViewImpl::sendKeyEvent(bool down, char key)
-{
-    WebEvent::Type type = down ? WebEvent::KeyDown : WebEvent::KeyUp;
-    const WTF::String text = WTF::String(&key, 1);
-    const WTF::String unmodifiedText = WTF::String(&key, 1);
-    bool isAutoRepeat = false;
-    bool isSystemKey = false; // FIXME: No idea what that is.
-    bool isKeypad = false;
-    const WTF::String keyIdentifier = WTF::String(&key, 1);
-    int windowsVirtualKeyCode = 0;
-    int nativeVirtualKeyCode = 0;
-    int macCharCode = 0;
-    WebEvent::Modifiers modifiers = WebEvent::Modifiers();
-    double timestamp = 0;
-
-    WebKeyboardEvent event(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
-    m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(event));
-}
-
 static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
 {
     switch (type) {
@@ -287,6 +297,10 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
         return WebEvent::MouseMove;
     case Nix::InputEvent::Wheel:
         return WebEvent::Wheel;
+    case Nix::InputEvent::KeyDown:
+        return WebEvent::KeyDown;
+    case Nix::InputEvent::KeyUp:
+        return WebEvent::KeyUp;
     default:
         notImplemented();
     }
@@ -326,7 +340,7 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
             break;
         case InputEvent::KeyDown:
         case InputEvent::KeyUp:
-            notImplemented();
+            sendKeyEvent(static_cast<const Nix::KeyEvent&>(event));
             break;
         case InputEvent::TouchStart:
         case InputEvent::TouchMove:
@@ -446,6 +460,443 @@ void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
 
     WebWheelEvent webEvent(type, position, globalPosition, delta, wheelTicks, WebWheelEvent::ScrollByPixelWheelEvent, modifiers, timestamp);
     m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(webEvent));
+}
+
+static String keyIdentifierForNixKeyCode(KeyEvent::Key keyCode)
+{
+    switch (keyCode) {
+    case KeyEvent::Key_Menu:
+    case KeyEvent::Key_Alt:
+        return ASCIILiteral("Alt");
+    case KeyEvent::Key_Clear:
+        return ASCIILiteral("Clear");
+    case KeyEvent::Key_Down:
+        return ASCIILiteral("Down");
+    case KeyEvent::Key_End:
+        return ASCIILiteral("End");
+    case KeyEvent::Key_Return:
+    case KeyEvent::Key_Enter:
+        return ASCIILiteral("Enter");
+    case KeyEvent::Key_Execute:
+        return ASCIILiteral("Execute");
+    case KeyEvent::Key_F1:
+        return ASCIILiteral("F1");
+    case KeyEvent::Key_F2:
+        return ASCIILiteral("F2");
+    case KeyEvent::Key_F3:
+        return ASCIILiteral("F3");
+    case KeyEvent::Key_F4:
+        return ASCIILiteral("F4");
+    case KeyEvent::Key_F5:
+        return ASCIILiteral("F5");
+    case KeyEvent::Key_F6:
+        return ASCIILiteral("F6");
+    case KeyEvent::Key_F7:
+        return ASCIILiteral("F7");
+    case KeyEvent::Key_F8:
+        return ASCIILiteral("F8");
+    case KeyEvent::Key_F9:
+        return ASCIILiteral("F9");
+    case KeyEvent::Key_F10:
+        return ASCIILiteral("F10");
+    case KeyEvent::Key_F11:
+        return ASCIILiteral("F11");
+    case KeyEvent::Key_F12:
+        return ASCIILiteral("F12");
+    case KeyEvent::Key_F13:
+        return ASCIILiteral("F13");
+    case KeyEvent::Key_F14:
+        return ASCIILiteral("F14");
+    case KeyEvent::Key_F15:
+        return ASCIILiteral("F15");
+    case KeyEvent::Key_F16:
+        return ASCIILiteral("F16");
+    case KeyEvent::Key_F17:
+        return ASCIILiteral("F17");
+    case KeyEvent::Key_F18:
+        return ASCIILiteral("F18");
+    case KeyEvent::Key_F19:
+        return ASCIILiteral("F19");
+    case KeyEvent::Key_F20:
+        return ASCIILiteral("F20");
+    case KeyEvent::Key_F21:
+        return ASCIILiteral("F21");
+    case KeyEvent::Key_F22:
+        return ASCIILiteral("F22");
+    case KeyEvent::Key_F23:
+        return ASCIILiteral("F23");
+    case KeyEvent::Key_F24:
+        return ASCIILiteral("F24");
+    case KeyEvent::Key_Help:
+        return ASCIILiteral("Help");
+    case KeyEvent::Key_Home:
+        return ASCIILiteral("Home");
+    case KeyEvent::Key_Insert:
+        return ASCIILiteral("Insert");
+    case KeyEvent::Key_Left:
+        return ASCIILiteral("Left");
+    case KeyEvent::Key_PageDown:
+        return ASCIILiteral("PageDown");
+    case KeyEvent::Key_PageUp:
+        return ASCIILiteral("PageUp");
+    case KeyEvent::Key_Pause:
+        return ASCIILiteral("Pause");
+    case KeyEvent::Key_Print:
+        return ASCIILiteral("PrintScreen");
+    case KeyEvent::Key_Right:
+        return ASCIILiteral("Right");
+    case KeyEvent::Key_Select:
+        return ASCIILiteral("Select");
+    case KeyEvent::Key_Up:
+        return ASCIILiteral("Up");
+    case KeyEvent::Key_Delete:
+        return ASCIILiteral("U+007F");
+    case KeyEvent::Key_Backspace:
+        return ASCIILiteral("U+0008");
+    case KeyEvent::Key_Tab:
+        return ASCIILiteral("U+0009");
+    case KeyEvent::Key_Backtab:
+        return ASCIILiteral("U+0009");
+    default:
+        return String::format("U+%04X", toASCIIUpper((int) keyCode));
+    }
+}
+
+static int windowsKeyCodeForKeyEvent(KeyEvent::Key keycode, bool isKeypad)
+{
+    if (isKeypad) {
+        switch (keycode) {
+        case KeyEvent::Key_0:
+            return VK_NUMPAD0;
+        case KeyEvent::Key_1:
+            return VK_NUMPAD1;
+        case KeyEvent::Key_2:
+            return VK_NUMPAD2;
+        case KeyEvent::Key_3:
+            return VK_NUMPAD3;
+        case KeyEvent::Key_4:
+            return VK_NUMPAD4;
+        case KeyEvent::Key_5:
+            return VK_NUMPAD5;
+        case KeyEvent::Key_6:
+            return VK_NUMPAD6;
+        case KeyEvent::Key_7:
+            return VK_NUMPAD7;
+        case KeyEvent::Key_8:
+            return VK_NUMPAD8;
+        case KeyEvent::Key_9:
+            return VK_NUMPAD9;
+        case KeyEvent::Key_Asterisk:
+            return VK_MULTIPLY;
+        case KeyEvent::Key_Plus:
+            return VK_ADD;
+        case KeyEvent::Key_Minus:
+            return VK_SUBTRACT;
+        case KeyEvent::Key_Period:
+            return VK_DECIMAL;
+        case KeyEvent::Key_Slash:
+            return VK_DIVIDE;
+        case KeyEvent::Key_PageUp:
+            return VK_PRIOR;
+        case KeyEvent::Key_PageDown:
+            return VK_NEXT;
+        case KeyEvent::Key_End:
+            return VK_END;
+        case KeyEvent::Key_Home:
+            return VK_HOME;
+        case KeyEvent::Key_Left:
+            return VK_LEFT;
+        case KeyEvent::Key_Up:
+            return VK_UP;
+        case KeyEvent::Key_Right:
+            return VK_RIGHT;
+        case KeyEvent::Key_Down:
+            return VK_DOWN;
+        case KeyEvent::Key_Enter:
+        case KeyEvent::Key_Return:
+            return VK_RETURN;
+        case KeyEvent::Key_Insert:
+            return VK_INSERT;
+        case KeyEvent::Key_Delete:
+            return VK_DELETE;
+        default:
+            return 0;
+        }
+
+    } else {
+        switch (keycode) {
+        case KeyEvent::Key_Backspace:
+            return VK_BACK;
+        case KeyEvent::Key_Backtab:
+        case KeyEvent::Key_Tab:
+            return VK_TAB;
+        case KeyEvent::Key_Clear:
+            return VK_CLEAR;
+        case KeyEvent::Key_Enter:
+        case KeyEvent::Key_Return:
+            return VK_RETURN;
+        case KeyEvent::Key_Shift:
+            return VK_SHIFT;
+        case KeyEvent::Key_Control:
+            return VK_CONTROL;
+        case KeyEvent::Key_Menu:
+        case KeyEvent::Key_Alt:
+            return VK_MENU;
+        case KeyEvent::Key_F1:
+            return VK_F1;
+        case KeyEvent::Key_F2:
+            return VK_F2;
+        case KeyEvent::Key_F3:
+            return VK_F3;
+        case KeyEvent::Key_F4:
+            return VK_F4;
+        case KeyEvent::Key_F5:
+            return VK_F5;
+        case KeyEvent::Key_F6:
+            return VK_F6;
+        case KeyEvent::Key_F7:
+            return VK_F7;
+        case KeyEvent::Key_F8:
+            return VK_F8;
+        case KeyEvent::Key_F9:
+            return VK_F9;
+        case KeyEvent::Key_F10:
+            return VK_F10;
+        case KeyEvent::Key_F11:
+            return VK_F11;
+        case KeyEvent::Key_F12:
+            return VK_F12;
+        case KeyEvent::Key_F13:
+            return VK_F13;
+        case KeyEvent::Key_F14:
+            return VK_F14;
+        case KeyEvent::Key_F15:
+            return VK_F15;
+        case KeyEvent::Key_F16:
+            return VK_F16;
+        case KeyEvent::Key_F17:
+            return VK_F17;
+        case KeyEvent::Key_F18:
+            return VK_F18;
+        case KeyEvent::Key_F19:
+            return VK_F19;
+        case KeyEvent::Key_F20:
+            return VK_F20;
+        case KeyEvent::Key_F21:
+            return VK_F21;
+        case KeyEvent::Key_F22:
+            return VK_F22;
+        case KeyEvent::Key_F23:
+            return VK_F23;
+        case KeyEvent::Key_F24:
+            return VK_F24;
+        case KeyEvent::Key_Pause:
+            return VK_PAUSE;
+        case KeyEvent::Key_CapsLock:
+            return VK_CAPITAL;
+        case KeyEvent::Key_Kana_Lock:
+        case KeyEvent::Key_Kana_Shift:
+            return VK_KANA;
+        case KeyEvent::Key_Hangul:
+            return VK_HANGUL;
+        case KeyEvent::Key_Hangul_Hanja:
+            return VK_HANJA;
+        case KeyEvent::Key_Kanji:
+            return VK_KANJI;
+        case KeyEvent::Key_Escape:
+            return VK_ESCAPE;
+        case KeyEvent::Key_Space:
+            return VK_SPACE;
+        case KeyEvent::Key_PageUp:
+            return VK_PRIOR;
+        case KeyEvent::Key_PageDown:
+            return VK_NEXT;
+        case KeyEvent::Key_End:
+            return VK_END;
+        case KeyEvent::Key_Home:
+            return VK_HOME;
+        case KeyEvent::Key_Left:
+            return VK_LEFT;
+        case KeyEvent::Key_Up:
+            return VK_UP;
+        case KeyEvent::Key_Right:
+            return VK_RIGHT;
+        case KeyEvent::Key_Down:
+            return VK_DOWN;
+        case KeyEvent::Key_Select:
+            return VK_SELECT;
+        case KeyEvent::Key_Print:
+            return VK_SNAPSHOT;
+        case KeyEvent::Key_Execute:
+            return VK_EXECUTE;
+        case KeyEvent::Key_Insert:
+            return VK_INSERT;
+        case KeyEvent::Key_Delete:
+            return VK_DELETE;
+        case KeyEvent::Key_Help:
+            return VK_HELP;
+        case KeyEvent::Key_0:
+        case KeyEvent::Key_ParenLeft:
+            return VK_0;
+        case KeyEvent::Key_1:
+            return VK_1;
+        case KeyEvent::Key_2:
+        case KeyEvent::Key_At:
+            return VK_2;
+        case KeyEvent::Key_3:
+        case KeyEvent::Key_NumberSign:
+            return VK_3;
+        case KeyEvent::Key_4:
+        case KeyEvent::Key_Dollar:
+            return VK_4;
+        case KeyEvent::Key_5:
+        case KeyEvent::Key_Percent:
+            return VK_5;
+        case KeyEvent::Key_6:
+        case KeyEvent::Key_AsciiCircum:
+            return VK_6;
+        case KeyEvent::Key_7:
+        case KeyEvent::Key_Ampersand:
+            return VK_7;
+        case KeyEvent::Key_8:
+        case KeyEvent::Key_Asterisk:
+            return VK_8;
+        case KeyEvent::Key_9:
+        case KeyEvent::Key_ParenRight:
+            return VK_9;
+        case KeyEvent::Key_A:
+            return VK_A;
+        case KeyEvent::Key_B:
+            return VK_B;
+        case KeyEvent::Key_C:
+            return VK_C;
+        case KeyEvent::Key_D:
+            return VK_D;
+        case KeyEvent::Key_E:
+            return VK_E;
+        case KeyEvent::Key_F:
+            return VK_F;
+        case KeyEvent::Key_G:
+            return VK_G;
+        case KeyEvent::Key_H:
+            return VK_H;
+        case KeyEvent::Key_I:
+            return VK_I;
+        case KeyEvent::Key_J:
+            return VK_J;
+        case KeyEvent::Key_K:
+            return VK_K;
+        case KeyEvent::Key_L:
+            return VK_L;
+        case KeyEvent::Key_M:
+            return VK_M;
+        case KeyEvent::Key_N:
+            return VK_N;
+        case KeyEvent::Key_O:
+            return VK_O;
+        case KeyEvent::Key_P:
+            return VK_P;
+        case KeyEvent::Key_Q:
+            return VK_Q;
+        case KeyEvent::Key_R:
+            return VK_R;
+        case KeyEvent::Key_S:
+            return VK_S;
+        case KeyEvent::Key_T:
+            return VK_T;
+        case KeyEvent::Key_U:
+            return VK_U;
+        case KeyEvent::Key_V:
+            return VK_V;
+        case KeyEvent::Key_W:
+            return VK_W;
+        case KeyEvent::Key_X:
+            return VK_X;
+        case KeyEvent::Key_Y:
+            return VK_Y;
+        case KeyEvent::Key_Z:
+            return VK_Z;
+        case KeyEvent::Key_Meta:
+            return VK_LWIN;
+        case KeyEvent::Key_NumLock:
+            return VK_NUMLOCK;
+        case KeyEvent::Key_ScrollLock:
+            return VK_SCROLL;
+        case KeyEvent::Key_Semicolon:
+        case KeyEvent::Key_Colon:
+            return VK_OEM_1;
+        case KeyEvent::Key_Plus:
+        case KeyEvent::Key_Equal:
+            return VK_OEM_PLUS;
+        case KeyEvent::Key_Comma:
+        case KeyEvent::Key_Less:
+            return VK_OEM_COMMA;
+        case KeyEvent::Key_Minus:
+        case KeyEvent::Key_Underscore:
+            return VK_OEM_MINUS;
+        case KeyEvent::Key_Period:
+        case KeyEvent::Key_Greater:
+            return VK_OEM_PERIOD;
+        case KeyEvent::Key_Slash:
+        case KeyEvent::Key_Question:
+            return VK_OEM_2;
+        case KeyEvent::Key_AsciiTilde:
+        case KeyEvent::Key_QuoteLeft:
+            return VK_OEM_3;
+        case KeyEvent::Key_BracketLeft:
+        case KeyEvent::Key_BraceLeft:
+            return VK_OEM_4;
+        case KeyEvent::Key_Backslash:
+        case KeyEvent::Key_Bar:
+            return VK_OEM_5;
+        case KeyEvent::Key_BracketRight:
+        case KeyEvent::Key_BraceRight:
+            return VK_OEM_6;
+        case KeyEvent::Key_QuoteDbl:
+            return VK_OEM_7;
+        default:
+            return 0;
+        }
+    }
+}
+
+static String keyTextForNixKeyEvent(const KeyEvent& event)
+{
+    if (event.key >= KeyEvent::Key_Space && event.key <= KeyEvent::Key_AsciiTilde) {
+        bool shouldUseUpperCase = event.shiftKey();
+        return String::format("%c", shouldUseUpperCase ? toASCIIUpper((int) event.key) : toASCIILower((int) event.key));
+    }
+
+    switch (event.key) {
+    case KeyEvent::Key_Tab:
+    case KeyEvent::Key_Backtab:
+        return "\t";
+    case KeyEvent::Key_Enter:
+        return "\r";
+    default:
+        break;
+    }
+
+    return "";
+}
+
+void WebViewImpl::sendKeyEvent(const KeyEvent& event)
+{
+    WebEvent::Type type = convertToWebEventType(event.type);
+    const WTF::String text = keyTextForNixKeyEvent(event);
+    const WTF::String unmodifiedText = text;
+    bool isAutoRepeat = false;
+    bool isSystemKey = false;
+    bool isKeypad = false;
+    const WTF::String keyIdentifier = keyIdentifierForNixKeyCode(event.key);
+    int windowsVirtualKeyCode = windowsKeyCodeForKeyEvent(event.key, isKeypad);
+    int nativeVirtualKeyCode = 0;
+    int macCharCode = 0;
+    WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);
+    double timestamp = event.timestamp;
+
+    WebKeyboardEvent webEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
+    m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(webEvent));
 }
 
 } // namespace Nix

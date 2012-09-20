@@ -1,84 +1,13 @@
 #ifndef WebView_h
 #define WebView_h
 
+#include "NixEvents.h"
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
 #include <cairo.h>
 
 namespace Nix {
-
-struct WK_EXPORT InputEvent {
-    enum Type {
-        MouseDown,
-        MouseUp,
-        MouseMove,
-        Wheel,
-        KeyDown,
-        KeyUp,
-        TouchStart,
-        TouchMove,
-        TouchEnd,
-        TouchCancel
-    };
-
-    enum Modifiers {
-        ShiftKey    = 1 << 0,
-        ControlKey  = 1 << 1,
-        AltKey      = 1 << 2,
-        MetaKey     = 1 << 3,
-        CapsLockKey = 1 << 4
-    };
-
-    InputEvent() { }
-    InputEvent(Type type, uint32_t modifiers, double timestamp)
-        : type(type)
-        , modifiers(modifiers)
-        , timestamp(timestamp)
-    {
-
-    }
-
-    bool shiftKey() const { return modifiers & ShiftKey; }
-    bool controlKey() const { return modifiers & ControlKey; }
-    bool altKey() const { return modifiers & AltKey; }
-    bool metaKey() const { return modifiers & MetaKey; }
-    bool capsLockKey() const { return modifiers & CapsLockKey; }
-
-    Type type;
-    unsigned modifiers;
-    double timestamp;
-};
-
-struct WK_EXPORT MouseEvent : public InputEvent {
-    enum Button {
-        NoButton = -1,
-        LeftButton,
-        MiddleButton,
-        RightButton,
-        FourthButton,
-    };
-
-    Button button;
-    int x;
-    int y;
-    int globalX;
-    int globalY;
-    int clickCount;
-};
-
-struct WK_EXPORT WheelEvent : public InputEvent {
-    enum Orientation {
-        Vertical,
-        Horizontal
-    };
-    int x;
-    int y;
-    int globalX;
-    int globalY;
-    float delta;
-    Orientation orientation;
-};
 
 class WebViewClient {
 public:
@@ -120,8 +49,6 @@ public:
     virtual WKPageRef pageRef() = 0;
 
     virtual void sendEvent(const Nix::InputEvent&) = 0;
-    // TODO Remove this method when implement KeyborardEvent
-    virtual void sendKeyEvent(bool, char) = 0;
 };
 
 } // namespace Nix

@@ -136,6 +136,7 @@ SET(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
 
 CONFIGURE_FILE(nix/WebKitNix.pc.in ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc @ONLY)
 SET (WebKitNix_HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NixEvents.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/WebView.h"
 )
 
