@@ -112,6 +112,8 @@ if (isQt()) {
     push(@ARGV, "--gtk");
 } elsif (isEfl()) {
     push(@ARGV, "--efl");
+} elsif (isNix()) {
+    push(@ARGV, "--nix");
 } elsif (isChromium()) {
     push(@ARGV, "--chromium")
 } elsif (isWinCairo()) {
