@@ -307,6 +307,22 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
     return WebEvent::MouseMove;
 }
 
+static WebEvent::Modifiers convertToWebEventModifiers(unsigned modifiers)
+{
+    unsigned webModifiers;
+    if (modifiers & InputEvent::ShiftKey)
+        webModifiers |= WebEvent::ShiftKey;
+    if (modifiers & InputEvent::ControlKey)
+        webModifiers |= WebEvent::ControlKey;
+    if (modifiers & InputEvent::AltKey)
+        webModifiers |= WebEvent::AltKey;
+    if (modifiers & InputEvent::MetaKey)
+        webModifiers |= WebEvent::MetaKey;
+    if (modifiers & InputEvent::CapsLockKey)
+        webModifiers |= WebEvent::CapsLockKey;
+    return static_cast<WebEvent::Modifiers>(webModifiers);
+}
+
 static WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEvent::Button button)
 {
     switch (button) {
@@ -363,7 +379,7 @@ void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
     float deltaX = x - m_lastCursorPosition.x();
     float deltaY = y - m_lastCursorPosition.y();
     int clickCount = event.clickCount;
-    WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
     IntPoint position = IntPoint(x, y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
@@ -452,7 +468,7 @@ void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
     IntPoint position = IntPoint(x, y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     FloatSize delta = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
-    WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
 
     const float ticks = event.delta / float(Scrollbar::pixelsPerLineStep());
@@ -892,7 +908,7 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
     int windowsVirtualKeyCode = windowsKeyCodeForKeyEvent(event.key, isKeypad);
     int nativeVirtualKeyCode = 0;
     int macCharCode = 0;
-    WebEvent::Modifiers modifiers = static_cast<WebEvent::Modifiers>(event.modifiers);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
 
     WebKeyboardEvent webEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);

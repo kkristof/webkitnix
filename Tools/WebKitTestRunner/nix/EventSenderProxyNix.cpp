@@ -37,13 +37,31 @@
 #include "TestController.h"
 
 #include <unistd.h>
+#include <wtf/CurrentTime.h>
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnArrayPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <API/nix/WebView.h>
+#include <API/C/WKAPICast.h>
 
 namespace WTR {
+
+// Key event location code defined in DOM Level 3.
+enum KeyLocationCode {
+    DOMKeyLocationStandard      = 0x00,
+    DOMKeyLocationLeft          = 0x01,
+    DOMKeyLocationRight         = 0x02,
+    DOMKeyLocationNumpad        = 0x03
+};
+
+// Unicode values for Apple non-letter keys.
+#define KEYCODE_DEL         127
+#define KEYCODE_BACKSPACE   8
+#define KEYCODE_UPARROW     0xf700
+#define KEYCODE_DOWNARROW   0xf701
+#define KEYCODE_LEFTARROW   0xf702
+#define KEYCODE_RIGHTARROW  0xf703
 
 struct WTREvent {
     Nix::InputEvent* event;
@@ -133,9 +151,128 @@ void EventSenderProxy::leapForward(int milliseconds)
     m_time += milliseconds;
 }
 
+static unsigned getModifiers(WKEventModifiers modifiersRef)
+{
+    unsigned modifiers = 0;
+
+    if (modifiersRef & kWKEventModifiersControlKey)
+        modifiers |= Nix::InputEvent::ControlKey;
+    if (modifiersRef & kWKEventModifiersShiftKey)
+        modifiers |= Nix::InputEvent::ShiftKey;
+    if (modifiersRef & kWKEventModifiersAltKey)
+        modifiers |= Nix::InputEvent::AltKey;
+    if (modifiersRef & kWKEventModifiersMetaKey)
+        modifiers |= Nix::InputEvent::MetaKey;
+
+    return modifiers;
+}
+
+Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers)
+{
+    Nix::KeyEvent* ev = new Nix::KeyEvent();
+    ev->type = type;
+    ev->key = static_cast<Nix::KeyEvent::Key>(code);
+    ev->modifiers = modifiers;
+    ev->timestamp = m_time;
+    return ev;
+}
+
 void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers, unsigned location)
 {
-    notImplemented();
+    WTF::String key = WebKit::toWTFString(keyRef);
+    unsigned modifiers = getModifiers(wkModifiers);
+    // FIXME: Handle keypad symbols properly. Right now we are ignoring them.
+    bool isKeypad = (location == DOMKeyLocationNumpad);
+
+    unsigned code = 0;
+    if (key.length() == 1) {
+        code = key[0];
+        if (code == '\r')
+            code = Nix::KeyEvent::Key_Return;
+        else if (code == '\t') {
+            code = Nix::KeyEvent::Key_Tab;
+            if (modifiers == Nix::InputEvent::ShiftKey)
+                code = Nix::KeyEvent::Key_Backtab;
+        } else if (code == KEYCODE_DEL || code == KEYCODE_BACKSPACE) {
+            code = Nix::KeyEvent::Key_Backspace;
+            if (modifiers == Nix::InputEvent::AltKey)
+                modifiers = Nix::InputEvent::ControlKey;
+        } else if (code == 'o' && modifiers == Nix::InputEvent::ControlKey) {
+            // Mimic the emacs ctrl-o binding on Mac by inserting a paragraph
+            // separator and then putting the cursor back to its original
+            // position. Allows us to pass emacs-ctrl-o.html
+            code = '\n';
+            modifiers = 0;
+            sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers));
+            sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers));
+            code = Nix::KeyEvent::Key_Left;
+        } else if (code == 'y' && modifiers == Nix::InputEvent::ControlKey)
+            code = 'c';
+        else if (code == 'k' && modifiers == Nix::InputEvent::ControlKey)
+            code = 'x';
+        else if (code == 'a' && modifiers == Nix::InputEvent::ControlKey) {
+            code = Nix::KeyEvent::Key_Home;
+            modifiers = 0;
+        } else if (code == KEYCODE_LEFTARROW) {
+            code = Nix::KeyEvent::Key_Left;
+            if (modifiers & Nix::InputEvent::MetaKey) {
+                modifiers -= Nix::InputEvent::MetaKey;
+                code = Nix::KeyEvent::Key_Home;
+            }
+        } else if (code == KEYCODE_RIGHTARROW) {
+            code = Nix::KeyEvent::Key_Right;
+            if (modifiers & Nix::InputEvent::MetaKey) {
+                modifiers -= Nix::InputEvent::MetaKey;
+                code = Nix::KeyEvent::Key_End;
+            }
+        } else if (code == KEYCODE_UPARROW) {
+            code = Nix::KeyEvent::Key_Up;
+            if (modifiers & Nix::InputEvent::MetaKey) {
+                modifiers -= Nix::InputEvent::MetaKey;
+                code = Nix::KeyEvent::Key_PageUp;
+            }
+        } else if (code == KEYCODE_DOWNARROW) {
+            code = Nix::KeyEvent::Key_Down;
+            if (modifiers & Nix::InputEvent::MetaKey) {
+                modifiers -= Nix::InputEvent::MetaKey;
+                code = Nix::KeyEvent::Key_PageDown;
+            }
+        } else
+            code = toASCIIUpper(code);
+    } else {
+        if (key.startsWith('F') && key.length() <= 3) {
+            key.remove(0, 1);
+            int functionKey = key.toInt();
+            ASSERT(functionKey >= 1 && functionKey <= 35);
+            code = Nix::KeyEvent::Key_F1 + (functionKey - 1);
+        } else if (key == "leftArrow")
+            code = Nix::KeyEvent::Key_Left;
+        else if (key == "rightArrow")
+            code = Nix::KeyEvent::Key_Right;
+        else if (key == "upArrow")
+            code = Nix::KeyEvent::Key_Up;
+        else if (key == "downArrow")
+            code = Nix::KeyEvent::Key_Down;
+        else if (key == "pageUp")
+            code = Nix::KeyEvent::Key_PageUp;
+        else if (key == "pageDown")
+            code = Nix::KeyEvent::Key_PageDown;
+        else if (key == "home")
+            code = Nix::KeyEvent::Key_Home;
+        else if (key == "end")
+            code = Nix::KeyEvent::Key_End;
+        else if (key == "insert")
+            code = Nix::KeyEvent::Key_Insert;
+        else if (key == "delete")
+            code = Nix::KeyEvent::Key_Delete;
+        else if (key == "printScreen")
+            code = Nix::KeyEvent::Key_Print;
+        else if (key == "menu")
+            code = Nix::KeyEvent::Key_Menu;
+    }
+
+    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers));
+    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers));
 }
 
 #if ENABLE(TOUCH_EVENTS)

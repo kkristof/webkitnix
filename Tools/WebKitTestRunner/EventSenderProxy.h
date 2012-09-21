@@ -102,6 +102,7 @@ private:
 #elif PLATFORM(NIX)
     void sendOrQueueEvent(Nix::InputEvent*);
     Nix::MouseEvent* createMouseEvent(Nix::InputEvent::Type type, unsigned int button, WKEventModifiers wkModifiers);
+    Nix::KeyEvent* createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers);
 #endif
 
     double m_time;
