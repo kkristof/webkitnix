@@ -2569,7 +2569,6 @@ IF (WTF_USE_3D_GRAPHICS)
     LIST(APPEND WebCore_INCLUDE_DIRECTORIES
         ${OPENGL_INCLUDE_DIR}
         "${THIRDPARTY_DIR}/ANGLE/src"
-        "${THIRDPARTY_DIR}/ANGLE/include"
         "${THIRDPARTY_DIR}/ANGLE/include/GLSLANG"
         "${WEBCORE_DIR}/platform/graphics/gpu"
     )
@@ -2953,6 +2952,13 @@ ADD_DEPENDENCIES(${WebCoreTestSupport_LIBRARY_NAME} ${WebCore_LIBRARY_NAME})
 IF (WTF_USE_3D_GRAPHICS)
     SET(ANGLESupport_LIBRARY_NAME ANGLESupport)
     ADD_LIBRARY(${ANGLESupport_LIBRARY_NAME} STATIC ${ANGLESupport_SOURCES})
+
+    # Workaround for (1) the fact that we CAN'T include ANGLE/include since it would conflict with
+    # systems' EGL headers; and (2) the fact that setting INCLUDE_DIRECTORIES property for target
+    # do not work. See http://public.kitware.com/Bug/print_bug_page.php?bug_id=1968.
+    # FIXME: Case when THIRDPARTY_DIR has a space.
+    ADD_TARGET_PROPERTIES(${ANGLESupport_LIBRARY_NAME} COMPILE_FLAGS "-I${THIRDPARTY_DIR}/ANGLE/include")
+
     SET_TARGET_PROPERTIES(${ANGLESupport_LIBRARY_NAME} PROPERTIES FOLDER "WebCore")
     LIST(APPEND WebCore_LIBRARIES ${ANGLESupport_LIBRARY_NAME})
     WEBKIT_SET_EXTRA_COMPILER_FLAGS(${ANGLESupport_LIBRARY_NAME} IGNORECXX_WARNINGS)

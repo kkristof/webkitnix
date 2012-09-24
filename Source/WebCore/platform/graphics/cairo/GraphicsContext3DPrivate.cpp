@@ -33,7 +33,7 @@
 #endif
 
 #if PLATFORM(NIX)
-#include "GLContextNix.h"
+#include "GLContextEGL.h"
 #endif
 
 using namespace std;
@@ -55,7 +55,7 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
         break;
     case GraphicsContext3D::RenderToCurrentGLContext:
 #ifdef PLATFORM(NIX)
-        m_glContext = GLContextNix::createFromCurrentGLContext();
+        m_glContext = GLContextEGL::createFromCurrentGLContext();
 #endif
         break;
     case GraphicsContext3D::RenderDirectlyToHostWindow:

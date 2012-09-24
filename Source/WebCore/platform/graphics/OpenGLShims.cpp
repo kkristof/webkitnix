@@ -26,6 +26,10 @@
 #include <dlfcn.h>
 #endif
 
+#if PLATFORM(NIX)
+#include <EGL/egl.h>
+#endif
+
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
@@ -41,6 +45,11 @@ OpenGLFunctionTable* openGLFunctionTable()
 static void* getProcAddress(const char* procName)
 {
     return reinterpret_cast<void*>(QOpenGLContext::currentContext()->getProcAddress(procName));
+}
+#elif PLATFORM(NIX)
+static void* getProcAddress(const char* procName)
+{
+    return reinterpret_cast<void*>(eglGetProcAddress(procName));
 }
 #else
 typedef void* (*glGetProcAddressType) (const char* procName);
