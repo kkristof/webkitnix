@@ -47,6 +47,7 @@ SET(WebKit2_LIBRARY_NAME WebKitNix)
 # and maybe for all ports when this patch goes up stream.
 #
 # Default feature list can be found at Tools/Scripts/webkitperl/FeatureDefaultsNix.txt
+WEBKIT_OPTION_DEFINE(ENABLE_API_TESTS "Enable public API unit tests" ON)
 WEBKIT_OPTION_END()
 
 FIND_PACKAGE(Freetype REQUIRED)
