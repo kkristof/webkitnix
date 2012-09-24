@@ -36,6 +36,7 @@ canvas/philip/tests/2d.text.draw.baseline.hanging.html
 canvas/philip/tests/2d.text.draw.baseline.ideographic.html
 canvas/philip/tests/2d.text.draw.baseline.middle.html
 canvas/philip/tests/2d.text.draw.baseline.top.html
+canvas/philip/tests/2d.text.draw.fontface.notinpage.html
 canvas/philip/tests/2d.text.draw.space.collapse.end.html
 canvas/philip/tests/2d.text.draw.space.collapse.other.html
 canvas/philip/tests/2d.text.draw.space.collapse.space.html
@@ -66,13 +67,16 @@ fast/gradients/zero-range-repeating-gradient-hang.html
 fast/harness/override-preferences-2.html
 fast/harness/page-cache-crash-on-data-urls.html
 fast/harness/results.html
+fast/harness/sample-fail-mismatch-reftest.html
 fast/harness/show-modal-dialog.html
 fast/harness/use-page-cache.html
 fast/history/back-forward-reset-after-error-handling.html
+fast/history/gesture-before-onload-location-href.html
 fast/history/go-back-to-changed-name.html
 fast/history/multiple-classes-visited.html
 fast/history/timed-refresh-in-cached-frame.html
 fast/history/window-open.html
+fast/innerHTML/innerHTML-iframe.html
 fast/js/create-lots-of-workers.html
 fast/js/custom-constructors.html
 fast/js/exception-linenums-in-html-3.html
@@ -105,6 +109,8 @@ fast/preloader/script.html
 fast/profiler/dead-time.html
 fast/profiler/stop-profiling-after-setTimeout.html
 fast/reflections
+fast/scrolling/scrollbar-tickmarks-hittest.html
+loader/go-back-to-different-window-size.html
 printing/iframe-print.html
 printing/page-count-percentage-height.html
 printing/page-rule-selection.html
@@ -119,12 +125,12 @@ sputnik/Unicode/Unicode_510/S7.6_A5.3_T2.html
 # Many tests needing new rebaselines
 # the generic results are using a viewport of 800 pixels
 tables
-# Failures
 transitions/cross-fade-background-image.html
 transitions/cross-fade-border-image.html
 transitions/opacity-transition-zindex.html
 transitions/suspend-transform-transition.html
 transitions/svg-transitions.html
+webarchive/loading/javascript-url-iframe-crash.html
 
 
 #############################################################
