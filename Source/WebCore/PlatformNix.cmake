@@ -231,6 +231,7 @@ IF (WTF_USE_3D_GRAPHICS)
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/graphics/opengl"
     "${WEBCORE_DIR}/platform/graphics/texmap"
+    "${WEBCORE_DIR}/platform/graphics/nix"
   )
   LIST(APPEND WebCore_LIBRARIES
     ${OPENGL_gl_LIBRARY}
@@ -241,6 +242,7 @@ IF (WTF_USE_3D_GRAPHICS)
     platform/graphics/cairo/GLContext.cpp
     platform/graphics/cairo/GraphicsContext3DCairo.cpp
     platform/graphics/cairo/GraphicsContext3DPrivate.cpp
+    platform/graphics/nix/GLContextNix.cpp
     platform/graphics/opengl/Extensions3DOpenGL.cpp
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGL.cpp

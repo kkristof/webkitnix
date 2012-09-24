@@ -32,6 +32,10 @@
 #include <texmap/TextureMapperGL.h>
 #endif
 
+#if PLATFORM(NIX)
+#include "GLContextNix.h"
+#endif
+
 using namespace std;
 
 namespace WebCore {
@@ -50,6 +54,9 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
         m_glContext = GLContext::createOffscreenContext(GLContext::sharingContext());
         break;
     case GraphicsContext3D::RenderToCurrentGLContext:
+#ifdef PLATFORM(NIX)
+        m_glContext = GLContextNix::createFromCurrentGLContext();
+#endif
         break;
     case GraphicsContext3D::RenderDirectlyToHostWindow:
         ASSERT_NOT_REACHED();
