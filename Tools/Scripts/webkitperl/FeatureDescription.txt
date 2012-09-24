@@ -74,6 +74,7 @@ legacy-notifications       ENABLE_LEGACY_NOTIFICATIONS          Toggle Legacy No
 legacy-vendor-prefixes     ENABLE_LEGACY_VENDOR_PREFIXES        Toggle Legacy Vendor Prefix support
 legacy-viewport-adaption   ENABLE_LEGACY_VIEWPORT_ADAPTION      Toogle legacy viewport adaption
 legacy-webkit-blob-builder ENABLE_LEGACY_WEBKIT_BLOB_BUILDER    Toggle Legacy WebKit Blob Builder support
+legacy-web-audio           ENABLE_LEGACY_WEB_AUDIO              Toggle Legacy Web Audio support
 link-prefetch              ENABLE_LINK_PREFETCH                 Toggle Link Prefetch support
 link-prerender             ENABLE_LINK_PRERENDER                Toggle Link Prerender support
 llint                      ENABLE_LLINT                         Toggle JSC Low Level Interpreter support
