@@ -55,6 +55,7 @@ enum CompositingUpdateType {
 // There is one RenderLayerCompositor per RenderView.
 
 class RenderLayerCompositor : public GraphicsLayerClient {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     RenderLayerCompositor(RenderView*);
     ~RenderLayerCompositor();
@@ -192,6 +193,8 @@ public:
     void frameViewDidChangeSize();
     void frameViewDidScroll();
 
+    void scrollingLayerDidChange(RenderLayer*);
+
     String layerTreeAsText(bool showDebugInfo = false);
 
     // These are named to avoid conflicts with the functions in GraphicsLayerClient
@@ -290,6 +293,7 @@ private:
     bool requiresCompositingForPlugin(RenderObject*) const;
     bool requiresCompositingForFrame(RenderObject*) const;
     bool requiresCompositingForFilters(RenderObject*) const;
+    bool requiresCompositingForBlending(RenderObject* renderer) const;
     bool requiresCompositingForScrollableFrame() const;
     bool requiresCompositingForPosition(RenderObject*, const RenderLayer*) const;
     bool requiresCompositingForOverflowScrolling(const RenderLayer*) const;

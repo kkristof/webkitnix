@@ -894,15 +894,10 @@ HRESULT STDMETHODCALLTYPE WebFrame::numberOfPages(
     /* [in] */ float pageHeightInPixels,
     /* [retval][out] */ int* result)
 {
-    if (!result)
-        return E_POINTER;
-
-    Frame* coreFrame = core(this);
-    if (!coreFrame)
-        return E_FAIL;
-
-    *result = PrintContext::numberOfPages(coreFrame, FloatSize(pageWidthInPixels, pageHeightInPixels));
-    return S_OK;
+    // TODO: Please remove this function if not needed as this is LTC specific function
+    // and has been moved to Internals.
+    notImplemented();
+    return E_FAIL;
 }
 
 HRESULT STDMETHODCALLTYPE WebFrame::scrollOffset(
@@ -1447,11 +1442,10 @@ HRESULT WebFrame::canProvideDocumentSource(bool* result)
     COMPtr<IWebURLResponse> urlResponse;
     hr = dataSource->response(&urlResponse);
     if (SUCCEEDED(hr) && urlResponse) {
-        BSTR mimeTypeBStr;
+        BString mimeTypeBStr;
         if (SUCCEEDED(urlResponse->MIMEType(&mimeTypeBStr))) {
             String mimeType(mimeTypeBStr, SysStringLen(mimeTypeBStr));
             *result = mimeType == "text/html" || WebCore::DOMImplementation::isXMLMIMEType(mimeType);
-            SysFreeString(mimeTypeBStr);
         }
     }
     return hr;
@@ -2539,7 +2533,7 @@ HRESULT WebFrame::stringByEvaluatingJavaScriptInScriptWorld(IWebScriptWorld* iWo
 
     JSC::ExecState* exec = anyWorldGlobalObject->globalExec();
     JSC::JSLockHolder lock(exec);
-    String resultString = ustringToString(result.toString(exec)->value(exec));
+    String resultString = result.toWTFString(exec);
     *evaluationResult = BString(resultString).release();
 
     return S_OK;

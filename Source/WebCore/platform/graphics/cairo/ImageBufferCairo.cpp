@@ -38,17 +38,17 @@
 #include "NotImplemented.h"
 #include "Pattern.h"
 #include "PlatformContextCairo.h"
-#include "PlatformString.h"
 #include "RefPtrCairo.h"
 #include <cairo.h>
 #include <wtf/Vector.h>
 #include <wtf/text/Base64.h>
+#include <wtf/text/WTFString.h>
 
 using namespace std;
 
 namespace WebCore {
 
-ImageBufferData::ImageBufferData(const IntSize& size)
+ImageBufferData::ImageBufferData(const IntSize&)
     : m_surface(0)
     , m_platformContext(0)
 {
@@ -268,7 +268,7 @@ static cairo_status_t writeFunction(void* output, const unsigned char* data, uns
 
 static bool encodeImage(cairo_surface_t* image, const String& mimeType, Vector<char>* output)
 {
-    ASSERT(mimeType == "image/png"); // Only PNG output is supported for now.
+    ASSERT_UNUSED(mimeType, mimeType == "image/png"); // Only PNG output is supported for now.
 
     return cairo_surface_write_to_png_stream(image, writeFunction, output) == CAIRO_STATUS_SUCCESS;
 }

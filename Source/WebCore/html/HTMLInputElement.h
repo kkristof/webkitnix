@@ -129,6 +129,7 @@ public:
     HTMLElement* speechButtonElement() const;
 #endif
     HTMLElement* sliderThumbElement() const;
+    HTMLElement* sliderTrackElement() const;
     virtual HTMLElement* placeholderElement() const;
 
     bool checked() const { return m_isChecked; }
@@ -289,6 +290,9 @@ protected:
     HTMLInputElement(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);
     void createShadowSubtree();
     virtual void defaultEventHandler(Event*);
+    // FIXME: Author shadows should be allowed
+    // https://bugs.webkit.org/show_bug.cgi?id=92608
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
 private:
     enum AutoCompleteSetting { Uninitialized, On, Off };
@@ -408,7 +412,9 @@ private:
     bool m_valueAttributeWasUpdatedAfterParsing : 1;
     bool m_wasModifiedByUser : 1;
     bool m_canReceiveDroppedFiles : 1;
-    bool m_hasTouchEventHandler: 1;
+#if ENABLE(TOUCH_EVENTS)
+    bool m_hasTouchEventHandler : 1;
+#endif
     OwnPtr<InputType> m_inputType;
 #if ENABLE(DATALIST_ELEMENT)
     OwnPtr<ListAttributeTargetObserver> m_listAttributeTargetObserver;

@@ -54,18 +54,18 @@ namespace JSC {
         static size_t offsetOfRegisters() { return OBJECT_OFFSETOF(JSVariableObject, m_registers); }
 
     protected:
-        static const unsigned StructureFlags = JSSymbolTableObject::StructureFlags;
+        static const unsigned StructureFlags = Base::StructureFlags;
 
-        JSVariableObject(JSGlobalData& globalData, Structure* structure, Register* registers)
-            : JSSymbolTableObject(globalData, structure)
+        JSVariableObject(
+            JSGlobalData& globalData,
+            Structure* structure,
+            Register* registers,
+            JSScope* scope,
+            SharedSymbolTable* symbolTable = 0
+        )
+            : Base(globalData, structure, scope, symbolTable)
             , m_registers(reinterpret_cast<WriteBarrierBase<Unknown>*>(registers))
         {
-        }
-
-        void finishCreation(JSGlobalData& globalData, SharedSymbolTable* symbolTable = 0)
-        {
-            Base::finishCreation(globalData, symbolTable);
-            COMPILE_ASSERT(sizeof(WriteBarrierBase<Unknown>) == sizeof(Register), Register_should_be_same_size_as_WriteBarrierBase);
         }
 
         WriteBarrierBase<Unknown>* m_registers; // "r" in the register file.

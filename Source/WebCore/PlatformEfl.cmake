@@ -1,8 +1,3 @@
-LIST(APPEND WebCore_LINK_FLAGS
-    ${ECORE_X_LDFLAGS}
-    ${EFLDEPS_LDFLAGS}
-)
-
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/accessibility/efl"
   "${WEBCORE_DIR}/page/efl"
@@ -44,7 +39,6 @@ LIST(APPEND WebCore_SOURCES
   platform/efl/PlatformMouseEventEfl.cpp
   platform/efl/PlatformScreenEfl.cpp
   platform/efl/PlatformWheelEventEfl.cpp
-  platform/efl/RefPtrEfl.cpp
   platform/efl/RenderThemeEfl.cpp
   platform/efl/RunLoopEfl.cpp
   platform/efl/ScrollViewEfl.cpp
@@ -72,6 +66,7 @@ LIST(APPEND WebCore_SOURCES
   platform/image-decoders/webp/WEBPImageDecoder.cpp
   platform/linux/GamepadDeviceLinux.cpp
   platform/mediastream/gstreamer/MediaStreamCenterGStreamer.cpp
+  platform/network/efl/NetworkStateNotifierEfl.cpp
   platform/network/soup/CookieJarSoup.cpp
   platform/network/soup/CookieStorageSoup.cpp
   platform/network/soup/CredentialStorageSoup.cpp
@@ -193,8 +188,15 @@ ENDIF ()
 
 LIST(APPEND WebCore_LIBRARIES
   ${CAIRO_LIBRARIES}
+  ${ECORE_LIBRARIES}
+  ${ECORE_EVAS_LIBRARIES}
+  ${ECORE_FILE_LIBRARIES}
   ${ECORE_X_LIBRARIES}
-  ${EFLDEPS_LIBRARIES}
+  ${E_DBUS_LIBRARIES}
+  ${E_DBUS_EUKIT_LIBRARIES}
+  ${EDJE_LIBRARIES}
+  ${EEZE_LIBRARIES}
+  ${EINA_LIBRARIES}
   ${EVAS_LIBRARIES}
   ${FONTCONFIG_LIBRARIES}
   ${FREETYPE_LIBRARIES}
@@ -213,8 +215,15 @@ LIST(APPEND WebCore_LIBRARIES
 
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   ${CAIRO_INCLUDE_DIRS}
+  ${ECORE_INCLUDE_DIRS}
+  ${ECORE_EVAS_INCLUDE_DIRS}
+  ${ECORE_FILE_INCLUDE_DIRS}
   ${ECORE_X_INCLUDE_DIRS}
-  ${EFLDEPS_INCLUDE_DIRS}
+  ${E_DBUS_INCLUDE_DIRS}
+  ${E_DBUS_EUKIT_INCLUDE_DIRS}
+  ${EDJE_INCLUDE_DIRS}
+  ${EEZE_INCLUDE_DIRS}
+  ${EINA_INCLUDE_DIRS}
   ${EVAS_INCLUDE_DIRS}
   ${FREETYPE_INCLUDE_DIRS}
   ${ICU_INCLUDE_DIRS}
@@ -294,8 +303,7 @@ IF (WTF_USE_3D_GRAPHICS)
   )
 ENDIF ()
 
-ADD_DEFINITIONS(-DWTF_USE_CROSS_PLATFORM_CONTEXT_MENUS=1
-                -DDATA_DIR="${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}")
+ADD_DEFINITIONS(-DDATA_DIR="${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}")
 
 IF (ENABLE_WEB_AUDIO)
   LIST(APPEND WebCore_INCLUDE_DIRECTORIES
@@ -319,14 +327,5 @@ IF (ENABLE_WEB_AUDIO)
   FILE(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")
   INSTALL(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
   ADD_DEFINITIONS(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
-ENDIF ()
-
-IF (ENABLE_GAMEPAD OR ENABLE_NETWORK_INFO)
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-    ${EEZE_INCLUDE_DIRS}
-  )
-  LIST(APPEND WebCore_LIBRARIES
-    ${EEZE_LIBRARIES}
-  )
 ENDIF ()
 

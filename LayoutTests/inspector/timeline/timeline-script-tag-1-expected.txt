@@ -10,18 +10,17 @@ ParseHTML
 ----> InvalidateLayout
 EvaluateScript Properties:
 {
-    startTime : <number>
-    data : {
-        url : <string>
-        lineNumber : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "EvaluateScript"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        lineNumber : <number>
+        url : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "EvaluateScript"
+    usedHeapSize : <number>
 }
 ParseHTML
 

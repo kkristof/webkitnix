@@ -36,11 +36,11 @@
 #include <runtime/LiteralParser.h>
 #include <runtime/Operations.h>
 #include <runtime/Protect.h>
-#include <runtime/UString.h>
 #include <runtime/JSValue.h>
 
 #include <wtf/Assertions.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/text/WTFString.h>
 
 #include <algorithm> // for std::min
 
@@ -175,7 +175,7 @@ bool JSValueIsInstanceOfConstructor(JSContextRef ctx, JSValueRef value, JSObject
     JSObject* jsConstructor = toJS(constructor);
     if (!jsConstructor->structure()->typeInfo().implementsHasInstance())
         return false;
-    bool result = jsConstructor->methodTable()->hasInstance(jsConstructor, exec, jsValue, jsConstructor->get(exec, exec->propertyNames().prototype)); // false if an exception is thrown
+    bool result = jsConstructor->hasInstance(exec, jsValue); // false if an exception is thrown
     if (exec->hadException()) {
         if (exception)
             *exception = toRef(exec, exec->exception());
@@ -227,14 +227,14 @@ JSValueRef JSValueMakeString(JSContextRef ctx, JSStringRef string)
     ExecState* exec = toJS(ctx);
     APIEntryShim entryShim(exec);
 
-    return toRef(exec, jsString(exec, string->ustring()));
+    return toRef(exec, jsString(exec, string->string()));
 }
 
 JSValueRef JSValueMakeFromJSONString(JSContextRef ctx, JSStringRef string)
 {
     ExecState* exec = toJS(ctx);
     APIEntryShim entryShim(exec);
-    UString str = string->ustring();
+    String str = string->string();
     if (str.is8Bit()) {
         LiteralParser<LChar> parser(exec, str.characters8(), str.length(), StrictJSON);
         return toRef(exec, parser.tryLiteralParse());
@@ -248,7 +248,7 @@ JSStringRef JSValueCreateJSONString(JSContextRef ctx, JSValueRef apiValue, unsig
     ExecState* exec = toJS(ctx);
     APIEntryShim entryShim(exec);
     JSValue value = toJS(exec, apiValue);
-    UString result = JSONStringify(exec, value, indent);
+    String result = JSONStringify(exec, value, indent);
     if (exception)
         *exception = 0;
     if (exec->hadException()) {

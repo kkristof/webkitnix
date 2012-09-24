@@ -69,12 +69,12 @@ void JSDocument::setLocation(ExecState* exec, JSValue value)
     if (!frame)
         return;
 
-    UString locationString = value.toString(exec)->value(exec);
+    String locationString = value.toString(exec)->value(exec);
     if (exec->hadException())
         return;
 
     if (Location* location = frame->document()->domWindow()->location())
-        location->setHref(ustringToString(locationString), activeDOMWindow(exec), firstDOMWindow(exec));
+        location->setHref(locationString, activeDOMWindow(exec), firstDOMWindow(exec));
 }
 
 JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, Document* document)
@@ -85,6 +85,14 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, Document* documen
     JSDOMWrapper* wrapper = getCachedWrapper(currentWorld(exec), document);
     if (wrapper)
         return wrapper;
+
+    if (DOMWindow* domWindow = document->domWindow()) {
+        globalObject = toJSDOMWindow(toJS(exec, domWindow));
+        // Creating a wrapper for domWindow might have created a wrapper for document as well.
+        wrapper = getCachedWrapper(currentWorld(exec), document);
+        if (wrapper)
+            return wrapper;
+    }
 
     if (document->isHTMLDocument())
         wrapper = CREATE_DOM_WRAPPER(exec, globalObject, HTMLDocument, document);

@@ -36,7 +36,6 @@
 #include "PageCache.h"
 #include "Settings.h"
 #include "KURL.h"
-#include "PlatformString.h"
 #include "IconDatabase.h"
 #include "PluginDatabase.h"
 #include "Image.h"
@@ -44,6 +43,7 @@
 #include "ApplicationCacheStorage.h"
 #include "DatabaseTracker.h"
 #include "FileSystem.h"
+#include <wtf/text/WTFString.h>
 
 #include <QApplication>
 #include <QStandardPaths>
@@ -525,7 +525,7 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::LocalContentCanAccessFileUrls, true);
     d->attributes.insert(QWebSettings::AcceleratedCompositingEnabled, true);
     d->attributes.insert(QWebSettings::WebGLEnabled, false);
-    d->attributes.insert(QWebSettings::CSSRegionsEnabled, false);
+    d->attributes.insert(QWebSettings::CSSRegionsEnabled, true);
     d->attributes.insert(QWebSettings::CSSGridLayoutEnabled, false);
     d->attributes.insert(QWebSettings::HyperlinkAuditingEnabled, false);
     d->attributes.insert(QWebSettings::TiledBackingStoreEnabled, false);

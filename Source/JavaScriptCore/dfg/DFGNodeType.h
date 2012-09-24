@@ -137,16 +137,18 @@ namespace JSC { namespace DFG {
     macro(PhantomPutStructure, NodeMustGenerate | NodeDoesNotExit) \
     macro(AllocatePropertyStorage, NodeMustGenerate | NodeDoesNotExit | NodeResultStorage) \
     macro(ReallocatePropertyStorage, NodeMustGenerate | NodeDoesNotExit | NodeResultStorage) \
-    macro(GetPropertyStorage, NodeResultStorage) \
+    macro(GetButterfly, NodeResultStorage) \
     macro(CheckArray, NodeMustGenerate) \
+    macro(Arrayify, NodeResultStorage | NodeMustGenerate | NodeClobbersWorld) \
     macro(GetIndexedPropertyStorage, NodeResultStorage) \
     macro(GetByOffset, NodeResultJS) \
     macro(PutByOffset, NodeMustGenerate) \
     macro(GetArrayLength, NodeResultInt32) \
-    macro(GetScopeChain, NodeResultJS) \
-    macro(GetScopedVar, NodeResultJS | NodeMustGenerate) \
-    macro(PutScopedVar, NodeMustGenerate | NodeClobbersWorld) \
-    macro(GetGlobalVar, NodeResultJS | NodeMustGenerate) \
+    macro(GetScope, NodeResultJS) \
+    macro(GetScopeRegisters, NodeResultStorage) \
+    macro(GetScopedVar, NodeResultJS) \
+    macro(PutScopedVar, NodeMustGenerate) \
+    macro(GetGlobalVar, NodeResultJS) \
     macro(PutGlobalVar, NodeMustGenerate) \
     macro(GlobalVarWatchpoint, NodeMustGenerate) \
     macro(PutGlobalVarCheck, NodeMustGenerate) \

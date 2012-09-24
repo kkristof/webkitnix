@@ -40,7 +40,7 @@ namespace WebCore {
 JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, IDBKey* key)
 {
     if (!key)
-        return jsNull();
+        return jsUndefined();
 
     switch (key->type()) {
     case IDBKey::ArrayType:
@@ -56,7 +56,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, IDBKey* key)
             return JSValue(outArray);
         }
     case IDBKey::StringType:
-        return jsString(exec, key->string());
+        return jsStringWithCache(exec, key->string());
     case IDBKey::DateType:
         return jsDateOrNull(exec, key->date());
     case IDBKey::NumberType:

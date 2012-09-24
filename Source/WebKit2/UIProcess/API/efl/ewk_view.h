@@ -64,6 +64,7 @@
  * - "text,found", unsigned int*: the requested text was found and it gives the number of matches.
  * - "title,changed", const char*: title of the main frame was changed.
  * - "uri,changed", const char*: uri of the main frame was changed.
+ * - "webprocess,crashed", Eina_Bool*: expects a @c EINA_TRUE if web process crash is handled; @c EINA_FALSE, otherwise.
  */
 
 #ifndef ewk_view_h
@@ -73,6 +74,8 @@
 #include "ewk_context.h"
 #include "ewk_download_job.h"
 #include "ewk_intent.h"
+#include "ewk_settings.h"
+#include "ewk_touch.h"
 #include "ewk_url_request.h"
 #include "ewk_url_response.h"
 #include "ewk_web_error.h"
@@ -105,19 +108,32 @@ struct _Ewk_View_Smart_Class {
     //  - if overridden, have to call parent method if desired
     Eina_Bool (*focus_in)(Ewk_View_Smart_Data *sd);
     Eina_Bool (*focus_out)(Ewk_View_Smart_Data *sd);
+    Eina_Bool (*fullscreen_enter)(Ewk_View_Smart_Data *sd);
+    Eina_Bool (*fullscreen_exit)(Ewk_View_Smart_Data *sd);
     Eina_Bool (*mouse_wheel)(Ewk_View_Smart_Data *sd, const Evas_Event_Mouse_Wheel *ev);
     Eina_Bool (*mouse_down)(Ewk_View_Smart_Data *sd, const Evas_Event_Mouse_Down *ev);
     Eina_Bool (*mouse_up)(Ewk_View_Smart_Data *sd, const Evas_Event_Mouse_Up *ev);
     Eina_Bool (*mouse_move)(Ewk_View_Smart_Data *sd, const Evas_Event_Mouse_Move *ev);
     Eina_Bool (*key_down)(Ewk_View_Smart_Data *sd, const Evas_Event_Key_Down *ev);
     Eina_Bool (*key_up)(Ewk_View_Smart_Data *sd, const Evas_Event_Key_Up *ev);
+
+    // javascript popup:
+    //   - All strings should be guaranteed to be stringshared.
+    void (*run_javascript_alert)(Ewk_View_Smart_Data *sd, const char *message);
+    Eina_Bool (*run_javascript_confirm)(Ewk_View_Smart_Data *sd, const char *message);
+    const char *(*run_javascript_prompt)(Ewk_View_Smart_Data *sd, const char *message, const char *default_value); /**< return string should be stringshared. */
+
+    // color picker:
+    //   - Shows and hides color picker.
+    Eina_Bool (*input_picker_color_request)(Ewk_View_Smart_Data *sd, int r, int g, int b, int a);
+    Eina_Bool (*input_picker_color_dismiss)(Ewk_View_Smart_Data *sd);
 };
 
 /**
  * The version you have to put into the version field
  * in the @a Ewk_View_Smart_Class structure.
  */
-#define EWK_VIEW_SMART_CLASS_VERSION 2UL
+#define EWK_VIEW_SMART_CLASS_VERSION 5UL
 
 /**
  * Initializer for whole Ewk_View_Smart_Class structure.
@@ -129,7 +145,7 @@ struct _Ewk_View_Smart_Class {
  * @see EWK_VIEW_SMART_CLASS_INIT_VERSION
  * @see EWK_VIEW_SMART_CLASS_INIT_NAME_VERSION
  */
-#define EWK_VIEW_SMART_CLASS_INIT(smart_class_init) {smart_class_init, EWK_VIEW_SMART_CLASS_VERSION, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define EWK_VIEW_SMART_CLASS_INIT(smart_class_init) {smart_class_init, EWK_VIEW_SMART_CLASS_VERSION, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 /**
  * Initializer to zero a whole Ewk_View_Smart_Class structure.
@@ -304,6 +320,15 @@ EAPI Evas_Object *ewk_view_add(Evas *e);
 EAPI Evas_Object *ewk_view_add_with_context(Evas *e, Ewk_Context *context);
 
 /**
+ * Gets the Ewk_Context of this view.
+ *
+ * @param o the view object to get the Ewk_Context
+ *
+ * @return the Ewk_Context of this view or @c NULL on failure
+ */
+EAPI Ewk_Context *ewk_view_context_get(const Evas_Object *o);
+
+/**
  * Asks the object to load the given URI.
  *
  * @param o view object to load @a URI
@@ -354,6 +379,15 @@ EAPI Eina_Bool ewk_view_reload_bypass_cache(Evas_Object *o);
  * @return @c EINA_TRUE on success or @c EINA_FALSE otherwise.
  */
 EAPI Eina_Bool    ewk_view_stop(Evas_Object *o);
+
+/**
+ * Gets the Ewk_Settings of this view.
+ *
+ * @param o view object to get Ewk_Settings
+ *
+ * @return the Ewk_Settings of this view or @c NULL on failure
+ */
+EAPI Ewk_Settings *ewk_view_settings_get(const Evas_Object *o);
 
 /**
  * Delivers a Web intent to the view's main frame.
@@ -543,7 +577,7 @@ EAPI Eina_Bool ewk_view_device_pixel_ratio_set(Evas_Object *o, float ratio);
  * use this one.
  *
  * @param o view object to change theme
- * @param path theme path, may be @c NULL to reset to the default theme
+ * @param path theme path
  */
 EAPI void ewk_view_theme_set(Evas_Object *o, const char *path);
 
@@ -619,6 +653,60 @@ EAPI Eina_Bool ewk_view_popup_menu_select(Evas_Object *o, unsigned int index);
  *         popup menu is not selected)
  */
 EAPI Eina_Bool ewk_view_popup_menu_close(Evas_Object *o);
+
+/**
+ * Sets whether the ewk_view supports the mouse events or not.
+ *
+ * The ewk_view will support the mouse events if EINA_TRUE or not support the
+ * mouse events otherwise. The default value is EINA_TRUE.
+ *
+ * @param o view object to enable/disable the mouse events
+ * @param enabled a state to set
+ *
+ * @return @c EINA_TRUE on success or @c EINA_FALSE on failure
+ */
+EAPI Eina_Bool ewk_view_mouse_events_enabled_set(Evas_Object *o, Eina_Bool enabled);
+
+/**
+ * Queries if the ewk_view supports the mouse events.
+ *
+ * @param o view object to query if the mouse events are enabled
+ *
+ * @return @c EINA_TRUE if the mouse events are enabled or @c EINA_FALSE otherwise
+ */
+EAPI Eina_Bool ewk_view_mouse_events_enabled_get(const Evas_Object *o);
+
+/*
+ * Sets the user chosen color. To be used when implementing a color picker.
+ *
+ * The function should only be called when a color has been requested by the document.
+ * If called when this is not the case or when the input picker has been dismissed, this
+ * function will fail and return EINA_FALSE.
+ *
+ * @param o view object contains color picker
+ * @param r red channel value to be set
+ * @param g green channel value to be set
+ * @param b blue channel value to be set
+ * @param a alpha channel value to be set
+ *
+ * @return @c EINA_TRUE on success @c EINA_FALSE otherwise
+ */
+EAPI Eina_Bool ewk_view_color_picker_color_set(Evas_Object *o, int r, int g, int b, int a);
+
+/**
+ * Feeds the touch event to the view.
+ *
+ * @param o view object to feed touch event
+ * @param type the type of touch event
+ * @param points a list of points (Ewk_Touch_Point) to process
+ * @param modifiers an Evas_Modifier handle to the list of modifier keys
+ *        registered in the Evas. Users can get the Evas_Modifier from the Evas
+ *        using evas_key_modifier_get() and can set each modifier key using
+ *        evas_key_modifier_on() and evas_key_modifier_off()
+ *
+ * @return @c EINA_TRUE on success or @c EINA_FALSE on failure
+ */
+EAPI Eina_Bool ewk_view_feed_touch_event(Evas_Object *o, Ewk_Touch_Event_Type type, const Eina_List *points, const Evas_Modifier *modifiers);
 
 #ifdef __cplusplus
 }

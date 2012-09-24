@@ -55,12 +55,19 @@ struct WebProcessCreationParameters {
     SandboxExtension::Handle injectedBundlePathExtensionHandle;
 
     String applicationCacheDirectory;    
+    SandboxExtension::Handle applicationCacheDirectoryExtensionHandle;
     String databaseDirectory;
+    SandboxExtension::Handle databaseDirectoryExtensionHandle;
     String localStorageDirectory;
+    SandboxExtension::Handle localStorageDirectoryExtensionHandle;
 
     Vector<String> urlSchemesRegistererdAsEmptyDocument;
     Vector<String> urlSchemesRegisteredAsSecure;
     Vector<String> urlSchemesForWhichDomainRelaxationIsForbidden;
+    Vector<String> urlSchemesRegisteredAsLocal;
+    Vector<String> urlSchemesRegisteredAsNoAccess;
+    Vector<String> urlSchemesRegisteredAsDisplayIsolated;
+    Vector<String> urlSchemesRegisteredAsCORSEnabled;
 
     // MIME types for which the UI process will handle showing the data.
     Vector<String> mimeTypesWithCustomRepresentation;
@@ -76,6 +83,8 @@ struct WebProcessCreationParameters {
 #if ENABLE(PLUGIN_PROCESS)
     bool disablePluginProcessMessageTimeout;
 #endif
+
+    double terminationTimeout;
 
     Vector<String> languages;
 
@@ -96,14 +105,15 @@ struct WebProcessCreationParameters {
 
     // FIXME: These should be merged with CFURLCache counterparts below.
     String nsURLCachePath;
+    SandboxExtension::Handle nsURLCachePathExtensionHandle;
+
     uint64_t nsURLCacheMemoryCapacity;
     uint64_t nsURLCacheDiskCapacity;
 
     CoreIPC::MachPort acceleratedCompositingPort;
 
     String uiProcessBundleResourcePath;
-
-    String webInspectorBaseDirectory;
+    SandboxExtension::Handle uiProcessBundleResourcePathExtensionHandle;
 
 #elif PLATFORM(WIN)
     String cfURLCachePath;

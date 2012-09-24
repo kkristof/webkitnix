@@ -129,15 +129,20 @@ InspectorTest.addObject = function(object, customFormatters, prefix, firstLinePr
     prefix = prefix || "";
     firstLinePrefix = firstLinePrefix || prefix;
     InspectorTest.addResult(firstLinePrefix + "{");
-    for (var prop in object) {
+    var propertyNames = Object.keys(object);
+    propertyNames.sort();
+    for (var i = 0; i < propertyNames.length; ++i) {
+        var prop = propertyNames[i];
         if (typeof object.hasOwnProperty === "function" && !object.hasOwnProperty(prop))
             continue;
         var prefixWithName = "    " + prefix + prop + " : ";
         var propValue = object[prop];
         if (customFormatters && customFormatters[prop]) {
             var formatterName = customFormatters[prop];
-            var formatter = InspectorTest.formatters[formatterName];
-            InspectorTest.addResult(prefixWithName + formatter(propValue));
+            if (formatterName !== "skip") {
+                var formatter = InspectorTest.formatters[formatterName];
+                InspectorTest.addResult(prefixWithName + formatter(propValue));
+            }
         } else
             InspectorTest.dump(propValue, customFormatters, "    " + prefix, prefixWithName);
     }
@@ -366,6 +371,26 @@ InspectorTest.textContentWithLineBreaks = function(node)
     }
     return buffer;
 }
+
+InspectorTest.StringOutputStream = function(callback)
+{
+    this._callback = callback;
+    this._buffer = "";
+};
+
+InspectorTest.StringOutputStream.prototype = {
+    write: function(chunk, callback)
+    {
+        this._buffer += chunk;
+        if (callback)
+            callback(this);
+    },
+
+    close: function()
+    {
+        this._callback(this._buffer);
+    }
+};
 
 };
 

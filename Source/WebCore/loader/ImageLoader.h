@@ -26,7 +26,6 @@
 #include "CachedImage.h"
 #include "CachedImageClient.h"
 #include "CachedResourceHandle.h"
-#include "Element.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/AtomicString.h>
@@ -67,7 +66,7 @@ public:
     void setLoadManually(bool loadManually) { m_loadManually = loadManually; }
 
     bool hasPendingBeforeLoadEvent() const { return m_hasPendingBeforeLoadEvent; }
-    bool hasPendingLoadEvent() const { return m_hasPendingLoadEvent; }
+    bool hasPendingActivity() const { return m_hasPendingLoadEvent || m_hasPendingErrorEvent; }
 
     void dispatchPendingEvent(ImageEventSender*);
 

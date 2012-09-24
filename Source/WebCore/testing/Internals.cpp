@@ -32,6 +32,7 @@
 #include "ClientRectList.h"
 #include "ComposedShadowTreeWalker.h"
 #include "DOMStringList.h"
+#include "DOMWindow.h"
 #include "Document.h"
 #include "DocumentMarker.h"
 #include "DocumentMarkerController.h"
@@ -46,9 +47,12 @@
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
 #include "HistoryItem.h"
+#include "InspectorClient.h"
 #include "InspectorConsoleAgent.h"
 #include "InspectorController.h"
 #include "InspectorCounters.h"
+#include "InspectorFrontendChannel.h"
+#include "InspectorFrontendClientLocal.h"
 #include "InspectorInstrumentation.h"
 #include "InspectorOverlay.h"
 #include "InstrumentingAgents.h"
@@ -104,6 +108,50 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+
+class InspectorFrontendClientDummy : public InspectorFrontendClientLocal {
+public:
+    InspectorFrontendClientDummy(InspectorController*, Page*);
+    virtual ~InspectorFrontendClientDummy() { }
+    virtual void attachWindow() OVERRIDE { }
+    virtual void detachWindow() OVERRIDE { }
+
+    virtual String localizedStringsURL() OVERRIDE { return String(); }
+    virtual String hiddenPanels() OVERRIDE { return String(); }
+
+    virtual void bringToFront() OVERRIDE { }
+    virtual void closeWindow() OVERRIDE { }
+
+    virtual void inspectedURLChanged(const String&) OVERRIDE { }
+
+protected:
+    virtual void setAttachedWindowHeight(unsigned) OVERRIDE { }
+};
+
+InspectorFrontendClientDummy::InspectorFrontendClientDummy(InspectorController* controller, Page* page)
+    : InspectorFrontendClientLocal(controller, page, adoptPtr(new InspectorFrontendClientLocal::Settings()))
+{
+}
+
+class InspectorFrontendChannelDummy : public InspectorFrontendChannel {
+public:
+    explicit InspectorFrontendChannelDummy(Page*);
+    virtual ~InspectorFrontendChannelDummy() { }
+    virtual bool sendMessageToFrontend(const String& message) OVERRIDE;
+
+private:
+    Page* m_frontendPage;
+};
+
+InspectorFrontendChannelDummy::InspectorFrontendChannelDummy(Page* page)
+    : m_frontendPage(page)
+{
+}
+
+bool InspectorFrontendChannelDummy::sendMessageToFrontend(const String& message)
+{
+    return InspectorClient::doDispatchMessageOnFrontendPage(m_frontendPage, message);
+}
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)
 {
@@ -1061,6 +1109,45 @@ Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
         result[i] = String::number(counts[i]);
     return result;
 }
+
+PassRefPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
+{
+    Page* page = contextDocument()->frame()->page();
+    ASSERT(page);
+
+    DOMWindow* window = page->mainFrame()->document()->domWindow();
+    ASSERT(window);
+
+    m_frontendWindow = window->open(url, "", "", window, window);
+    ASSERT(m_frontendWindow);
+
+    Page* frontendPage = m_frontendWindow->document()->page();
+    ASSERT(frontendPage);
+
+    OwnPtr<InspectorFrontendClientDummy> frontendClient = adoptPtr(new InspectorFrontendClientDummy(page->inspectorController(), frontendPage));
+
+    frontendPage->inspectorController()->setInspectorFrontendClient(frontendClient.release());
+
+    m_frontendChannel = adoptPtr(new InspectorFrontendChannelDummy(frontendPage));
+
+    page->inspectorController()->connectFrontend(m_frontendChannel.get());
+
+    return m_frontendWindow;
+}
+
+void Internals::closeDummyInspectorFrontend()
+{
+    Page* page = contextDocument()->frame()->page();
+    ASSERT(page);
+    ASSERT(m_frontendWindow);
+
+    page->inspectorController()->disconnectFrontend();
+
+    m_frontendChannel.release();
+
+    m_frontendWindow->close(m_frontendWindow->scriptExecutionContext());
+    m_frontendWindow.release();
+}
 #endif // ENABLE(INSPECTOR)
 
 bool Internals::hasGrammarMarker(Document* document, int from, int length, ExceptionCode&)
@@ -1168,6 +1255,34 @@ PassRefPtr<DOMStringList> Internals::iconURLs(Document* document) const
         stringList->append(iter->m_iconURL.string());
 
     return stringList.release();
+}
+
+int Internals::numberOfPages(float pageWidth, float pageHeight)
+{
+    if (!frame())
+        return -1;
+
+    return PrintContext::numberOfPages(frame(), FloatSize(pageWidth, pageHeight));
+}
+
+String Internals::pageProperty(String propertyName, int pageNumber, ExceptionCode& ec) const
+{
+    if (!frame()) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+
+    return PrintContext::pageProperty(frame(), propertyName.utf8().data(), pageNumber);
+}
+
+String Internals::pageSizeAndMarginsInPixels(int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft, ExceptionCode& ec) const
+{
+    if (!frame()) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+
+    return PrintContext::pageSizeAndMarginsInPixels(frame(), pageNumber, width, height, marginTop, marginRight, marginBottom, marginLeft);
 }
 
 #if ENABLE(FULLSCREEN_API)

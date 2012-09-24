@@ -61,7 +61,6 @@ class FormState;
 class FormSubmission;
 class FrameLoaderClient;
 class FrameNetworkingContext;
-class MemoryObjectInfo;
 class NavigationAction;
 class NetworkingContext;
 class Page;
@@ -384,6 +383,9 @@ private:
     mutable SubframeLoader m_subframeLoader;
     mutable FrameLoaderStateMachine m_stateMachine;
     mutable IconController m_icon;
+
+    class FrameProgressTracker;
+    OwnPtr<FrameProgressTracker> m_progressTracker;
 
     FrameState m_state;
     FrameLoadType m_loadType;

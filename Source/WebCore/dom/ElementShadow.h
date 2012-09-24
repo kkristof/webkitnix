@@ -28,7 +28,6 @@
 #define ElementShadow_h
 
 #include "ContentDistributor.h"
-#include "Element.h"
 #include "ExceptionCode.h"
 #include "ShadowRoot.h"
 #include <wtf/DoublyLinkedList.h>
@@ -44,6 +43,7 @@ class Element;
 class TreeScope;
 
 class ElementShadow {
+   WTF_MAKE_NONCOPYABLE(ElementShadow); WTF_MAKE_FAST_ALLOCATED;
 public:
     ElementShadow();
     ~ElementShadow();
@@ -76,7 +76,6 @@ private:
 
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     ContentDistributor m_distributor;
-    WTF_MAKE_NONCOPYABLE(ElementShadow);
 };
 
 inline ShadowRoot* ElementShadow::youngestShadowRoot() const

@@ -28,19 +28,19 @@
 #include "WebIconDatabase.h"
 
 #include "CFDictionaryPropertyBag.h"
-#include "WebPreferences.h"
 #include "WebNotificationCenter.h"
-#include <WebCore/BitmapInfo.h>
+#include "WebPreferences.h"
+#include "shlobj.h"
 #include <WebCore/BString.h>
+#include <WebCore/BitmapInfo.h>
 #include <WebCore/COMPtr.h>
 #include <WebCore/FileSystem.h>
 #include <WebCore/HWndDC.h>
 #include <WebCore/IconDatabase.h>
 #include <WebCore/Image.h>
-#include <WebCore/PlatformString.h>
 #include <WebCore/SharedBuffer.h>
 #include <wtf/MainThread.h>
-#include "shlobj.h"
+#include <wtf/text/WTFString.h>
 
 using namespace WebCore;
 using namespace WTF;
@@ -84,12 +84,11 @@ void WebIconDatabase::startUpIconDatabase()
 
     iconDatabase().setClient(this);
 
-    BSTR prefDatabasePath = 0;
+    BString prefDatabasePath;
     if (FAILED(standardPrefs->iconDatabaseLocation(&prefDatabasePath)))
         LOG_ERROR("Unable to get icon database location preference");
 
     String databasePath(prefDatabasePath, SysStringLen(prefDatabasePath));
-    SysFreeString(prefDatabasePath);
 
     if (databasePath.isEmpty()) {
         databasePath = localUserSpecificStorageDirectory();

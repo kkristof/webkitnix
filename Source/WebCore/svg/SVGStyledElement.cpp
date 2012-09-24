@@ -28,7 +28,6 @@
 #include "Document.h"
 #include "EventNames.h"
 #include "HTMLNames.h"
-#include "PlatformString.h"
 #include "RenderObject.h"
 #include "RenderSVGResource.h"
 #include "RenderSVGResourceClipper.h"
@@ -46,6 +45,7 @@
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -181,6 +181,7 @@ CSSPropertyID SVGStyledElement::cssPropertyIdForSVGAttributeName(const Qualified
         mapAttributeToCSSProperty(propertyNameToIdMap, marker_midAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, marker_startAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, maskAttr);
+        mapAttributeToCSSProperty(propertyNameToIdMap, mask_typeAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, opacityAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, overflowAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, pointer_eventsAttr);
@@ -251,6 +252,7 @@ static inline AttributeToPropertyTypeMap& cssPropertyToTypeMap()
     s_cssPropertyMap.set(marker_midAttr, AnimatedString);
     s_cssPropertyMap.set(marker_startAttr, AnimatedString);
     s_cssPropertyMap.set(maskAttr, AnimatedString);
+    s_cssPropertyMap.set(mask_typeAttr, AnimatedString);
     s_cssPropertyMap.set(opacityAttr, AnimatedNumber);
     s_cssPropertyMap.set(overflowAttr, AnimatedString);
     s_cssPropertyMap.set(pointer_eventsAttr, AnimatedString);

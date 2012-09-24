@@ -53,6 +53,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_renderVSyncEnabled(true)
     , m_viewportEnabled(false)
     , m_applyDefaultDeviceScaleFactorInCompositor(false)
+    , m_gestureTapHighlightEnabled(true)
     , m_defaultTileSize(WebSize(256, 256))
     , m_maxUntiledLayerSize(WebSize(512, 512))
 {
@@ -336,6 +337,11 @@ void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
     m_settings->setWebGLEnabled(enabled);
 }
 
+void WebSettingsImpl::setCSSStickyPositionEnabled(bool enabled)
+{
+    m_settings->setCSSStickyPositionEnabled(enabled);
+}
+
 void WebSettingsImpl::setExperimentalCSSRegionsEnabled(bool enabled)
 {
     m_settings->setCSSRegionsEnabled(enabled);
@@ -425,6 +431,12 @@ void WebSettingsImpl::setAcceleratedCompositingFor3DTransformsEnabled(bool enabl
 void WebSettingsImpl::setAcceleratedCompositingForVideoEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForVideoEnabled(enabled);
+}
+
+void WebSettingsImpl::setAcceleratedCompositingForOverflowScrollEnabled(
+    bool enabled)
+{
+    m_settings->setAcceleratedCompositingForOverflowScrollEnabled(enabled);
 }
 
 void WebSettingsImpl::setAcceleratedCompositingForPluginsEnabled(bool enabled)
@@ -634,6 +646,11 @@ void WebSettingsImpl::setSyncXHRInDocumentsEnabled(bool enabled)
 void WebSettingsImpl::setCookieEnabled(bool enabled)
 {
     m_settings->setCookieEnabled(enabled);
+}
+
+void WebSettingsImpl::setGestureTapHighlightEnabled(bool enableHighlight)
+{
+    m_gestureTapHighlightEnabled = enableHighlight;
 }
 
 } // namespace WebKit

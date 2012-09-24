@@ -8,6 +8,8 @@
 </form>
 
 <script>
-var select = document.getElementById('select');
-var shadowRoot = new WebKitShadowRoot(select);
+if (window.internals)
+    internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
+
+var shadowRoot = new WebKitShadowRoot(host);
 </script>

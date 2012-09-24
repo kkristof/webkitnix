@@ -1140,6 +1140,8 @@ static bool fastDocumentTeardownEnabled()
     [self _clearGlibLoopObserver];
 #endif
 
+    [[self _notificationProvider] unregisterWebView:self];
+
     [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
@@ -1428,6 +1430,7 @@ static bool needsSelfRetainWhileLoadingQuirk()
     settings->setUsesEncodingDetector([preferences usesEncodingDetector]);
     settings->setFantasyFontFamily([preferences fantasyFontFamily]);
     settings->setFixedFontFamily([preferences fixedFontFamily]);
+    settings->setScreenFontSubstitutionEnabled([preferences screenFontSubstitutionEnabled]);
     settings->setForceFTPDirectoryListings([preferences _forceFTPDirectoryListings]);
     settings->setFTPDirectoryTemplatePath([preferences _ftpDirectoryTemplatePath]);
     settings->setLocalStorageDatabasePath([preferences _localStorageDatabasePath]);
@@ -1545,6 +1548,10 @@ static bool needsSelfRetainWhileLoadingQuirk()
     settings->setRequestAnimationFrameEnabled([preferences requestAnimationFrameEnabled]);
     settings->setNeedsDidFinishLoadOrderQuirk(needsDidFinishLoadOrderQuirk());
     settings->setDiagnosticLoggingEnabled([preferences diagnosticLoggingEnabled]);
+
+    // We have enabled this setting in WebKit2 for the sake of some ScrollingCoordinator work.
+    // To avoid possible rendering differences, we should enable it for WebKit1 too.
+    settings->setFixedPositionCreatesStackingContext(true);
     
     NSTimeInterval timeout = [preferences incrementalRenderingSuppressionTimeoutInSeconds];
     if (timeout > 0)
@@ -1785,7 +1792,7 @@ static inline IMP getMethod(id o, SEL s)
     HTMLNames::init(); // this method is used for importing bookmarks at startup, so HTMLNames are likely to be uninitialized yet
     RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/html"); // bookmark files are HTML
     String result = decoder->decode(static_cast<const char*>([data bytes]), [data length]);
-    result += decoder->flush();
+    result.append(decoder->flush());
     return result;
 }
 
@@ -2864,6 +2871,8 @@ static PassOwnPtr<Vector<String> > toStringVector(NSArray* patterns)
 
     Pagination pagination = page->pagination();
     pagination.behavesLikeColumns = behavesLikeColumns;
+
+    page->setPagination(pagination);
 }
 
 - (BOOL)_paginationBehavesLikeColumns
@@ -4788,7 +4797,7 @@ static NSAppleEventDescriptor* aeDescFromJSValue(ExecState* exec, JSValue jsValu
     if (jsValue.isBoolean())
         return [NSAppleEventDescriptor descriptorWithBoolean:jsValue.asBoolean()];
     if (jsValue.isString())
-        return [NSAppleEventDescriptor descriptorWithString:ustringToString(jsValue.getString(exec))];
+        return [NSAppleEventDescriptor descriptorWithString:jsValue.getString(exec)];
     if (jsValue.isNumber()) {
         double value = jsValue.asNumber();
         int intValue = value;
@@ -6517,15 +6526,10 @@ static void glibContextIterationCallback(CFRunLoopObserverRef, CFRunLoopActivity
 @implementation WebView (WebViewNotification)
 - (void)_setNotificationProvider:(id<WebNotificationProvider>)notificationProvider
 {
-    if (_private) {
+    if (_private && !_private->_notificationProvider) {
         _private->_notificationProvider = notificationProvider;
         [_private->_notificationProvider registerWebView:self];
     }
-}
-
-- (void)_notificationControllerDestroyed
-{
-    [[self _notificationProvider] unregisterWebView:self];
 }
 
 - (id<WebNotificationProvider>)_notificationProvider

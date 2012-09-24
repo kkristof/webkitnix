@@ -222,9 +222,12 @@ SET(WebCore_IDL_FILES
     Modules/mediastream/NavigatorUserMediaErrorCallback.idl
     Modules/mediastream/NavigatorUserMediaSuccessCallback.idl
     Modules/mediastream/PeerConnection00.idl
+    Modules/mediastream/RTCErrorCallback.idl
     Modules/mediastream/RTCIceCandidate.idl
+    Modules/mediastream/RTCIceCandidateEvent.idl
     Modules/mediastream/RTCPeerConnection.idl
     Modules/mediastream/RTCSessionDescription.idl
+    Modules/mediastream/RTCSessionDescriptionCallback.idl
     Modules/mediastream/SessionDescription.idl
 
     Modules/navigatorcontentutils/NavigatorContentUtils.idl
@@ -817,7 +820,6 @@ SET(WebCore_SOURCES
     Modules/indexeddb/IDBKey.cpp
     Modules/indexeddb/IDBKeyRange.cpp
     Modules/indexeddb/IDBKeyPath.cpp
-    Modules/indexeddb/IDBKeyPathBackendImpl.cpp
     Modules/indexeddb/IDBLevelDBBackingStore.cpp
     Modules/indexeddb/IDBLevelDBCoding.cpp
     Modules/indexeddb/IDBObjectStore.cpp
@@ -844,6 +846,7 @@ SET(WebCore_SOURCES
 
     Modules/mediastream/IceCandidate.cpp
     Modules/mediastream/LocalMediaStream.cpp
+    Modules/mediastream/MediaConstraintsImpl.cpp
     Modules/mediastream/MediaStream.cpp
     Modules/mediastream/MediaStreamEvent.cpp
     Modules/mediastream/MediaStreamList.cpp
@@ -854,8 +857,11 @@ SET(WebCore_SOURCES
     Modules/mediastream/NavigatorMediaStream.cpp
     Modules/mediastream/PeerConnection00.cpp
     Modules/mediastream/RTCIceCandidate.cpp
+    Modules/mediastream/RTCIceCandidateEvent.cpp
     Modules/mediastream/RTCPeerConnection.cpp
     Modules/mediastream/RTCSessionDescription.cpp
+    Modules/mediastream/RTCSessionDescriptionRequestImpl.cpp
+    Modules/mediastream/RTCVoidRequestImpl.cpp
     Modules/mediastream/SessionDescription.cpp
     Modules/mediastream/UserMediaController.cpp
     Modules/mediastream/UserMediaRequest.cpp
@@ -991,7 +997,9 @@ SET(WebCore_SOURCES
     bindings/generic/BindingSecurity.cpp
     bindings/generic/RuntimeEnabledFeatures.cpp
 
+    css/BasicShapeFunctions.cpp
     css/CSSAspectRatioValue.cpp
+    css/CSSBasicShapes.cpp
     css/CSSBorderImage.cpp
     css/CSSBorderImageSliceValue.cpp
     css/CSSCalculationValue.cpp
@@ -1036,7 +1044,6 @@ SET(WebCore_SOURCES
     css/CSSValue.cpp
     css/CSSValueList.cpp
     css/CSSValuePool.cpp
-    css/CSSWrapShapes.cpp
     css/FontFeatureValue.cpp
     css/FontValue.cpp
     css/LengthFunctions.cpp
@@ -1073,7 +1080,6 @@ SET(WebCore_SOURCES
     css/WebKitCSSSVGDocumentValue.cpp
     css/WebKitCSSShaderValue.cpp
     css/WebKitCSSTransformValue.cpp
-    css/WrapShapeFunctions.cpp
 
     dom/ActiveDOMObject.cpp
     dom/Attr.cpp
@@ -1143,7 +1149,6 @@ SET(WebCore_SOURCES
     dom/IdTargetObserver.cpp
     dom/IdTargetObserverRegistry.cpp
     dom/KeyboardEvent.cpp
-    dom/MemoryInstrumentation.cpp
     dom/MessageChannel.cpp
     dom/MessageEvent.cpp
     dom/MessagePortChannel.cpp
@@ -1209,6 +1214,7 @@ SET(WebCore_SOURCES
     dom/UserGestureIndicator.cpp
     dom/UserTypingGestureIndicator.cpp
     dom/ViewportArguments.cpp
+    dom/WebCoreMemoryInstrumentation.cpp
     dom/WebKitAnimationEvent.cpp
     dom/WebKitNamedFlow.cpp
     dom/WebKitTransitionEvent.cpp
@@ -1414,6 +1420,7 @@ SET(WebCore_SOURCES
     html/ImageDocument.cpp
     html/ImageInputType.cpp
     html/InputType.cpp
+    html/InputTypeNames.cpp
     html/LabelableElement.cpp
     html/LabelsNodeList.cpp
     html/LinkRelAttribute.cpp
@@ -1531,15 +1538,16 @@ SET(WebCore_SOURCES
     inspector/IdentifiersFactory.cpp
     inspector/InjectedScript.cpp
     inspector/InjectedScriptBase.cpp
+    inspector/InjectedScriptCanvasModule.cpp
     inspector/InjectedScriptHost.cpp
     inspector/InjectedScriptManager.cpp
     inspector/InjectedScriptModule.cpp
-    inspector/InjectedScriptWebGLModule.cpp
     inspector/InspectorAgent.cpp
     inspector/InspectorApplicationCacheAgent.cpp
     inspector/InspectorBaseAgent.cpp
     inspector/InspectorPageAgent.cpp
     inspector/InspectorCSSAgent.cpp
+    inspector/InspectorCanvasAgent.cpp
     inspector/InspectorClient.cpp
     inspector/InspectorConsoleAgent.cpp
     inspector/InspectorController.cpp
@@ -1567,7 +1575,6 @@ SET(WebCore_SOURCES
     inspector/InspectorStyleTextEditor.cpp
     inspector/InspectorTimelineAgent.cpp
     inspector/InspectorValues.cpp
-    inspector/InspectorWebGLAgent.cpp
     inspector/InspectorWorkerAgent.cpp
     inspector/InstrumentingAgents.cpp
     inspector/MemoryInstrumentationImpl.cpp
@@ -1678,6 +1685,7 @@ SET(WebCore_SOURCES
     page/DragController.cpp
     page/EventHandler.cpp
     page/EventSource.cpp
+    page/FeatureObserver.cpp
     page/FocusController.cpp
     page/Frame.cpp
     page/FrameActionScheduler.cpp
@@ -1725,6 +1733,7 @@ SET(WebCore_SOURCES
     page/animation/ImplicitAnimation.cpp
     page/animation/KeyframeAnimation.cpp
 
+    page/scrolling/ScrollingConstraints.cpp
     page/scrolling/ScrollingCoordinator.cpp
     page/scrolling/ScrollingCoordinatorNone.cpp
 
@@ -1760,6 +1769,7 @@ SET(WebCore_SOURCES
     platform/MemoryPressureHandler.cpp
     platform/PlatformEvent.cpp
     platform/PlatformInstrumentation.cpp
+    platform/PlatformMemoryInstrumentation.cpp
     platform/RunLoop.cpp
     platform/RuntimeApplicationChecks.cpp
     platform/ScrollAnimator.cpp
@@ -1834,6 +1844,7 @@ SET(WebCore_SOURCES
     platform/graphics/FontFeatureSettings.cpp
     platform/graphics/FractionalLayoutBoxExtent.cpp
     platform/graphics/FractionalLayoutRect.cpp
+    platform/graphics/GeneratedImage.cpp
     platform/graphics/GeneratorGeneratedImage.cpp
     platform/graphics/GlyphPageTreeNode.cpp
     platform/graphics/Gradient.cpp
@@ -1927,6 +1938,7 @@ SET(WebCore_SOURCES
     platform/mediastream/IceOptions.cpp
     platform/mediastream/MediaHints.cpp
     platform/mediastream/MediaStreamCenter.cpp
+    platform/mediastream/MediaStreamSource.cpp
     platform/mediastream/PeerConnection00Handler.cpp
     platform/mediastream/RTCIceCandidateDescriptor.cpp
     platform/mediastream/RTCPeerConnectionHandler.cpp
@@ -1975,14 +1987,16 @@ SET(WebCore_SOURCES
     platform/text/DateTimeFormat.cpp
     platform/text/Hyphenation.cpp
     platform/text/LineEnding.cpp
+    platform/text/LocaleNone.cpp
     platform/text/LocaleToScriptMappingDefault.cpp
     platform/text/LocalizedDateNone.cpp
     platform/text/LocalizedNumberNone.cpp
+    platform/text/Localizer.cpp
     platform/text/QuotedPrintable.cpp
     platform/text/RegularExpression.cpp
     platform/text/SegmentedString.cpp
-    platform/text/String.cpp
     platform/text/TextBoundaries.cpp
+    platform/text/TextBreakIterator.cpp
     platform/text/TextCodec.cpp
     platform/text/TextCodecLatin1.cpp
     platform/text/TextCodecUTF16.cpp
@@ -2006,6 +2020,9 @@ SET(WebCore_SOURCES
     rendering/BidiRun.cpp
     rendering/CounterNode.cpp
     rendering/EllipsisBox.cpp
+    rendering/ExclusionInterval.cpp
+    rendering/ExclusionRectangle.cpp
+    rendering/ExclusionShape.cpp
     rendering/FilterEffectRenderer.cpp
     rendering/FixedTableLayout.cpp
     rendering/FlowThreadController.cpp
@@ -2029,6 +2046,7 @@ SET(WebCore_SOURCES
     rendering/RenderCounter.cpp
     rendering/RenderDeprecatedFlexibleBox.cpp
     rendering/RenderDetailsMarker.cpp
+    rendering/RenderDialog.cpp
     rendering/RenderEmbeddedObject.cpp
     rendering/RenderFieldset.cpp
     rendering/RenderFileUploadControl.cpp
@@ -2114,6 +2132,7 @@ SET(WebCore_SOURCES
     rendering/mathml/RenderMathMLSubSup.cpp
     rendering/mathml/RenderMathMLUnderOver.cpp
 
+    rendering/style/BasicShapes.cpp
     rendering/style/ContentData.cpp
     rendering/style/CounterDirectives.cpp
     rendering/style/FillLayer.cpp
@@ -2142,7 +2161,6 @@ SET(WebCore_SOURCES
     rendering/style/StyleVisualData.cpp
     rendering/style/SVGRenderStyle.cpp
     rendering/style/SVGRenderStyleDefs.cpp
-    rendering/style/WrapShapes.cpp
 
     rendering/svg/RenderSVGBlock.cpp
     rendering/svg/RenderSVGContainer.cpp
@@ -2481,7 +2499,7 @@ IF (ENABLE_SMOOTH_SCROLLING)
     LIST(APPEND WebCore_SOURCES
         platform/ActivePlatformGestureAnimation.cpp
         platform/ScrollAnimatorNone.cpp
-        platform/TouchpadFlingPlatformGestureCurve.cpp
+        platform/TouchFlingPlatformGestureCurve.cpp
     )
 ENDIF ()
 
@@ -2562,18 +2580,18 @@ IF (WTF_USE_3D_GRAPHICS)
     IF (BISON_VERSION EQUAL "2.5")
         # Bison 2.5 can not compile generated glslang.
         # See https://bugs.webkit.org/show_bug.cgi?id=93487
-        LIST(APPEND WebCore_SOURCES
+        LIST(APPEND ANGLESupport_SOURCES
             ${THIRDPARTY_DIR}/ANGLE/src/compiler/glslang_lex.cpp
             ${THIRDPARTY_DIR}/ANGLE/src/compiler/glslang_tab.cpp
         )
     ELSE ()
-        LIST(APPEND WebCore_SOURCES
+        LIST(APPEND ANGLESupport_SOURCES
             ${DERIVED_SOURCES_WEBCORE_DIR}/glslang.cpp
             ${DERIVED_SOURCES_WEBCORE_DIR}/glslang_tab.cpp
         )
     ENDIF ()
 
-    LIST(APPEND WebCore_SOURCES
+    LIST(APPEND ANGLESupport_SOURCES
         ${THIRDPARTY_DIR}/ANGLE/src/compiler/BuiltInFunctionEmulator.cpp
         ${THIRDPARTY_DIR}/ANGLE/src/compiler/CodeGenGLSL.cpp
         ${THIRDPARTY_DIR}/ANGLE/src/compiler/Compiler.cpp
@@ -2668,28 +2686,6 @@ IF (WTF_USE_3D_GRAPHICS)
     )
 ENDIF ()
 
-IF (ENABLE_REQUEST_ANIMATION_FRAME)
-    LIST(APPEND WebCore_IDL_FILES
-        dom/RequestAnimationFrameCallback.idl
-    )
-    LIST(APPEND WebCore_SOURCES
-        dom/ScriptedAnimationController.cpp
-    )
-ENDIF ()
-
-IF (ENABLE_VIBRATION)
-    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-        ${WEBCORE_DIR}/Modules/vibration
-    )
-    LIST(APPEND WebCore_IDL_FILES
-        Modules/vibration/NavigatorVibration.idl
-    )
-    LIST(APPEND WebCore_SOURCES
-        Modules/vibration/NavigatorVibration.cpp
-        Modules/vibration/Vibration.cpp
-    )
-ENDIF ()
-
 SET(WebCoreTestSupport_INCLUDE_DIRECTORIES
     "${WebCore_INCLUDE_DIRECTORIES}"
     "${WEBCORE_DIR}/testing"
@@ -2727,7 +2723,6 @@ SET(IDL_ATTRIBUTES_FILE ${WEBCORE_DIR}/bindings/scripts/IDLAttributes.txt)
 INCLUDE(${WEBCORE_DIR}/UseJSC.cmake)
 
 SET(WebCore_LIBRARIES ${WTF_LIBRARY_NAME} ${JavaScriptCore_LIBRARY_NAME})
-SET(WebCore_LINK_FLAGS "")
 WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 
 # ANGLE tokenizer & parser
@@ -2781,15 +2776,13 @@ ADD_CUSTOM_COMMAND(
 LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptSource.h)
 
 
-# Generate InjectedScriptWebGLModuleSource.h
-IF (ENABLE_WEBGL)
-    ADD_CUSTOM_COMMAND(
-        OUTPUT ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptWebGLModuleSource.h
-        MAIN_DEPENDENCY inspector/InjectedScriptWebGLModuleSource.js
-        COMMAND ${PERL_EXECUTABLE} ${WEBCORE_DIR}/inspector/xxd.pl InjectedScriptWebGLModuleSource_js ${WEBCORE_DIR}/inspector/InjectedScriptWebGLModuleSource.js ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptWebGLModuleSource.h
-        VERBATIM)
-    LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptWebGLModuleSource.h)
-ENDIF ()
+# Generate InjectedScriptCanvasModuleSource.h
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptCanvasModuleSource.h
+    MAIN_DEPENDENCY inspector/InjectedScriptCanvasModuleSource.js
+    COMMAND ${PERL_EXECUTABLE} ${WEBCORE_DIR}/inspector/xxd.pl InjectedScriptCanvasModuleSource_js ${WEBCORE_DIR}/inspector/InjectedScriptCanvasModuleSource.js ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptCanvasModuleSource.h
+    VERBATIM)
+LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/InjectedScriptCanvasModuleSource.h)
 
 
 MAKE_HASH_TOOLS(${WEBCORE_DIR}/platform/ColorData)
@@ -2823,16 +2816,11 @@ ADD_CUSTOM_COMMAND(
     VERBATIM)
 LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/HTMLEntityTable.cpp)
 
-
-# Replace ";" with "space" in order to recognize feature definition in css files.
-SET(FEATURE_DEFINES_WITH_SPACE_SEPARATOR "")
-FOREACH(_feature ${FEATURE_DEFINES})
+SET(FEATURE_DEFINES_CSS ${FEATURE_DEFINES_WITH_SPACE_SEPARATOR})
+IF (CMAKE_SYSTEM_NAME MATCHES "QNX")
     # filter out color input since we have our own solution
-    IF (NOT CMAKE_SYSTEM_NAME MATCHES "QNX" OR NOT _feature MATCHES "ENABLE_INPUT_TYPE_COLOR")
-        SET(FEATURE_DEFINES_WITH_SPACE_SEPARATOR "${FEATURE_DEFINES_WITH_SPACE_SEPARATOR} ${_feature}")
-    ENDIF()
-ENDFOREACH()
-
+    STRING(REPLACE "ENABLE_INPUT_TYPE_COLOR" "" FEATURE_DEFINES_CSS "${FEATURE_DEFINES_CSS}")
+ENDIF()
 
 # Generate CSS property names
 ADD_CUSTOM_COMMAND (
@@ -2841,7 +2829,7 @@ ADD_CUSTOM_COMMAND (
     DEPENDS ${WebCore_CSS_PROPERTY_NAMES}
     WORKING_DIRECTORY ${DERIVED_SOURCES_WEBCORE_DIR}
     COMMAND ${PERL_EXECUTABLE} -ne "print" ${WebCore_CSS_PROPERTY_NAMES} > ${DERIVED_SOURCES_WEBCORE_DIR}/CSSPropertyNames.in
-    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/makeprop.pl --defines "${FEATURE_DEFINES_WITH_SPACE_SEPARATOR}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}"
+    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/makeprop.pl --defines "${FEATURE_DEFINES_CSS}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}"
     VERBATIM)
 LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/CSSPropertyNames.cpp)
 ADD_SOURCE_WEBCORE_DERIVED_DEPENDENCIES(${WEBCORE_DIR}/css/CSSParser.cpp CSSValueKeywords.h)
@@ -2855,7 +2843,7 @@ ADD_CUSTOM_COMMAND (
     DEPENDS ${WebCore_CSS_VALUE_KEYWORDS}
     WORKING_DIRECTORY ${DERIVED_SOURCES_WEBCORE_DIR}
     COMMAND ${PERL_EXECUTABLE} -ne "print" ${WebCore_CSS_VALUE_KEYWORDS} > ${DERIVED_SOURCES_WEBCORE_DIR}/CSSValueKeywords.in
-    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/makevalues.pl --defines "${FEATURE_DEFINES_WITH_SPACE_SEPARATOR}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}"
+    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/makevalues.pl --defines "${FEATURE_DEFINES_CSS}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}"
     VERBATIM)
 LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/CSSValueKeywords.cpp)
 ADD_SOURCE_WEBCORE_DERIVED_DEPENDENCIES(${WEBCORE_DIR}/css/CSSParser.cpp CSSValueKeywords.h)
@@ -2867,7 +2855,7 @@ ADD_CUSTOM_COMMAND(
     OUTPUT ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheetsData.cpp ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheets.h
     MAIN_DEPENDENCY ${WEBCORE_DIR}/css/make-css-file-arrays.pl
     DEPENDS ${WebCore_USER_AGENT_STYLE_SHEETS} ${WEBCORE_DIR}/bindings/scripts/preprocessor.pm
-    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/make-css-file-arrays.pl --defines "${FEATURE_DEFINES_WITH_SPACE_SEPARATOR}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}" ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheets.h ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheetsData.cpp ${WebCore_USER_AGENT_STYLE_SHEETS}
+    COMMAND ${PERL_EXECUTABLE} -I${WEBCORE_DIR}/bindings/scripts ${WEBCORE_DIR}/css/make-css-file-arrays.pl --defines "${FEATURE_DEFINES_CSS}" --preprocessor "${CODE_GENERATOR_PREPROCESSOR}" ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheets.h ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheetsData.cpp ${WebCore_USER_AGENT_STYLE_SHEETS}
     VERBATIM)
 LIST(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentStyleSheetsData.cpp)
 ADD_SOURCE_WEBCORE_DERIVED_DEPENDENCIES(${WEBCORE_DIR}/css/StyleResolver.cpp UserAgentStyleSheetsData.cpp UserAgentStyleSheets.h)
@@ -2962,12 +2950,15 @@ SET_TARGET_PROPERTIES(${WebCoreTestSupport_LIBRARY_NAME} PROPERTIES FOLDER "WebC
 ADD_DEPENDENCIES(${WebCore_LIBRARY_NAME} ${JavaScriptCore_LIBRARY_NAME})
 ADD_DEPENDENCIES(${WebCoreTestSupport_LIBRARY_NAME} ${WebCore_LIBRARY_NAME})
 
-TARGET_LINK_LIBRARIES(${WebCore_LIBRARY_NAME} ${WebCore_LIBRARIES})
-
-IF (WebCore_LINK_FLAGS)
-    ADD_TARGET_PROPERTIES(${WebCore_LIBRARY_NAME} LINK_FLAGS "${WebCore_LINK_FLAGS}")
-    ADD_TARGET_PROPERTIES(${WebCoreTestSupport_LIBRARY_NAME} LINK_FLAGS "${WebCore_LINK_FLAGS}")
+IF (WTF_USE_3D_GRAPHICS)
+    SET(ANGLESupport_LIBRARY_NAME ANGLESupport)
+    ADD_LIBRARY(${ANGLESupport_LIBRARY_NAME} STATIC ${ANGLESupport_SOURCES})
+    SET_TARGET_PROPERTIES(${ANGLESupport_LIBRARY_NAME} PROPERTIES FOLDER "WebCore")
+    LIST(APPEND WebCore_LIBRARIES ${ANGLESupport_LIBRARY_NAME})
+    WEBKIT_SET_EXTRA_COMPILER_FLAGS(${ANGLESupport_LIBRARY_NAME} IGNORECXX_WARNINGS)
 ENDIF ()
+
+TARGET_LINK_LIBRARIES(${WebCore_LIBRARY_NAME} ${WebCore_LIBRARIES})
 
 IF (SHARED_CORE)
     SET_TARGET_PROPERTIES(${WebCore_LIBRARY_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})

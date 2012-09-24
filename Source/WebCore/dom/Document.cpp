@@ -105,10 +105,11 @@
 #include "ImageLoader.h"
 #include "InspectorCounters.h"
 #include "InspectorInstrumentation.h"
+#include "Language.h"
+#include "Localizer.h"
 #include "Logging.h"
 #include "MediaQueryList.h"
 #include "MediaQueryMatcher.h"
-#include "MemoryInstrumentation.h"
 #include "MouseEventWithHitTestResults.h"
 #include "NameNodeList.h"
 #include "NamedFlowCollection.h"
@@ -126,12 +127,14 @@
 #include "PointerLockController.h"
 #include "PopStateEvent.h"
 #include "ProcessingInstruction.h"
+#include "QualifiedName.h"
 #include "RegisteredEventListener.h"
 #include "RenderArena.h"
 #include "RenderNamedFlowThread.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
 #include "RenderWidget.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SchemeRegistry.h"
 #include "ScopedEventQueue.h"
 #include "ScriptCallStack.h"
@@ -156,6 +159,7 @@
 #include "TreeWalker.h"
 #include "UndoManager.h"
 #include "UserContentURLPattern.h"
+#include "WebCoreMemoryInstrumentation.h"
 #include "WebKitNamedFlow.h"
 #include "XMLDocumentParser.h"
 #include "XMLHttpRequest.h"
@@ -1136,6 +1140,11 @@ bool Document::regionBasedColumnsEnabled() const
     return settings() && settings()->regionBasedColumnsEnabled(); 
 }
 
+bool Document::cssStickyPositionEnabled() const
+{
+    return settings() && settings()->cssStickyPositionEnabled(); 
+}
+
 bool Document::cssRegionsEnabled() const
 {
     return settings() && settings()->cssRegionsEnabled(); 
@@ -1196,9 +1205,9 @@ PassRefPtr<Element> Document::createElementNS(const String& namespaceURI, const 
 
 String Document::readyState() const
 {
-    DEFINE_STATIC_LOCAL(const String, loading, ("loading"));
-    DEFINE_STATIC_LOCAL(const String, interactive, ("interactive"));
-    DEFINE_STATIC_LOCAL(const String, complete, ("complete"));
+    DEFINE_STATIC_LOCAL(const String, loading, (ASCIILiteral("loading")));
+    DEFINE_STATIC_LOCAL(const String, interactive, (ASCIILiteral("interactive")));
+    DEFINE_STATIC_LOCAL(const String, complete, (ASCIILiteral("complete")));
 
     switch (m_readyState) {
     case Loading:
@@ -1406,6 +1415,8 @@ PassRefPtr<NodeList> Document::nodesFromRect(int centerX, int centerY, unsigned 
         type |= HitTestRequest::IgnoreClipping;
     else if (!frameView->visibleContentRect().intersects(HitTestResult::rectForPoint(point, topPadding, rightPadding, bottomPadding, leftPadding)))
         return 0;
+    if (allowShadowContent)
+        type |= HitTestRequest::AllowShadowContent;
 
     HitTestRequest request(type);
 
@@ -1416,8 +1427,7 @@ PassRefPtr<NodeList> Document::nodesFromRect(int centerX, int centerY, unsigned 
         return handleZeroPadding(request, result);
     }
 
-    enum ShadowContentFilterPolicy shadowContentFilterPolicy = allowShadowContent ? AllowShadowContent : DoNotAllowShadowContent;
-    HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding, shadowContentFilterPolicy);
+    HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding);
     renderView()->hitTest(request, result);
 
     return StaticHashSetNodeList::adopt(result.rectBasedTestResult());
@@ -1798,10 +1808,9 @@ bool Document::childNeedsAndNotInStyleRecalc()
 void Document::recalcStyle(StyleChange change)
 {
     // we should not enter style recalc while painting
-    if (view() && view()->isPainting()) {
-        ASSERT(!view()->isPainting());
+    ASSERT(!view() || !view()->isPainting());
+    if (view() && view()->isPainting())
         return;
-    }
     
     if (m_inStyleRecalc)
         return; // Guard against re-entrancy. -dwh
@@ -2816,12 +2825,12 @@ String Document::userAgent(const KURL& url) const
     return frame() ? frame()->loader()->userAgent(url) : String();
 }
 
-void Document::disableEval()
+void Document::disableEval(const String& errorMessage)
 {
     if (!frame())
         return;
 
-    frame()->script()->disableEval();
+    frame()->script()->disableEval(errorMessage);
 }
 
 bool Document::canNavigate(Frame* targetFrame)
@@ -3297,7 +3306,7 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
     return true;
 }
 
-PassRefPtr<Node> Document::cloneNode(bool /*deep*/, ExceptionCode&)
+PassRefPtr<Node> Document::cloneNode(bool /*deep*/)
 {
     // Spec says cloning Document nodes is "implementation dependent"
     // so we do not support it...
@@ -4547,6 +4556,12 @@ void Document::unregisterForMediaVolumeCallbacks(Element* e)
     m_mediaVolumeCallbackElements.remove(e);
 }
 
+void Document::storageBlockingStateDidChange()
+{
+    if (Settings* settings = this->settings())
+        securityOrigin()->setStorageBlockingPolicy(settings->storageBlockingPolicy());
+}
+
 void Document::privateBrowsingStateDidChange() 
 {
     HashSet<Element*>::iterator end = m_privateBrowsingStateChangedElements.end();
@@ -4886,6 +4901,10 @@ void Document::finishedParsing()
 
         InspectorInstrumentation::domContentLoadedEventFired(f.get());
     }
+
+    // The ElementAttributeData sharing cache is only used during parsing since
+    // that's when the majority of immutable attribute data will be created.
+    m_immutableAttributeDataCache.clear();
 }
 
 PassRefPtr<XPathExpression> Document::createExpression(const String& expression,
@@ -5037,8 +5056,7 @@ void Document::initSecurityContext()
                 securityOrigin()->enforceFilePathSeparation();
             }
         }
-        if (settings->thirdPartyStorageBlockingEnabled())
-            securityOrigin()->blockThirdPartyStorage();
+        securityOrigin()->setStorageBlockingPolicy(settings->storageBlockingPolicy());
     }
 
     Document* parentDocument = ownerElement() ? ownerElement()->document() : 0;
@@ -5751,6 +5769,10 @@ void Document::setFullScreenRendererBackgroundColor(Color backgroundColor)
     
 void Document::fullScreenChangeDelayTimerFired(Timer<Document>*)
 {
+    // Since we dispatch events in this function, it's possible that the
+    // document will be detached and GC'd. We protect it here to make sure we
+    // can finish the function successfully.
+    RefPtr<Document> protectDocument(this);
     Deque<RefPtr<Node> > changeQueue;
     m_fullScreenChangeEventTargetQueue.swap(changeQueue);
 
@@ -5758,6 +5780,9 @@ void Document::fullScreenChangeDelayTimerFired(Timer<Document>*)
         RefPtr<Node> node = changeQueue.takeFirst();
         if (!node)
             node = documentElement();
+        // The dispatchEvent below may have blown away our documentElement.
+        if (!node)
+            continue;
 
         // If the element was removed from our tree, also message the documentElement. Since we may
         // have a document hierarchy, check that node isn't in another document.
@@ -5774,6 +5799,9 @@ void Document::fullScreenChangeDelayTimerFired(Timer<Document>*)
         RefPtr<Node> node = errorQueue.takeFirst();
         if (!node)
             node = documentElement();
+        // The dispatchEvent below may have blown away our documentElement.
+        if (!node)
+            continue;
         
         // If the element was removed from our tree, also message the documentElement. Since we may
         // have a document hierarchy, check that node isn't in another document.
@@ -5866,7 +5894,7 @@ void Document::webkitExitPointerLock()
 
 Element* Document::webkitPointerLockElement() const
 {
-    if (!page())
+    if (!page() || page()->pointerLockController()->lockPending())
         return 0;
     if (Element* element = page()->pointerLockController()->element()) {
         if (element->document() == this)
@@ -6115,24 +6143,138 @@ void Document::setContextFeatures(PassRefPtr<ContextFeatures> features)
     m_contextFeatures = features;
 }
 
+static RenderObject* nearestCommonHoverAncestor(RenderObject* obj1, RenderObject* obj2)
+{
+    if (!obj1 || !obj2)
+        return 0;
+
+    for (RenderObject* currObj1 = obj1; currObj1; currObj1 = currObj1->hoverAncestor()) {
+        for (RenderObject* currObj2 = obj2; currObj2; currObj2 = currObj2->hoverAncestor()) {
+            if (currObj1 == currObj2)
+                return currObj1;
+        }
+    }
+
+    return 0;
+}
+
+void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResult& result)
+{
+    // We don't update :hover/:active state when the result is marked as readOnly.
+    if (request.readOnly())
+        return;
+
+    Node* innerNodeInDocument = result.innerNode();
+    ASSERT(!innerNodeInDocument || innerNodeInDocument->document() == this);
+
+    Node* oldActiveNode = activeNode();
+    if (oldActiveNode && !request.active()) {
+        // We are clearing the :active chain because the mouse has been released.
+        for (RenderObject* curr = oldActiveNode->renderer(); curr; curr = curr->parent()) {
+            if (curr->node() && !curr->isText()) {
+                curr->node()->setActive(false);
+                curr->node()->clearInActiveChain();
+            }
+        }
+        setActiveNode(0);
+    } else {
+        Node* newActiveNode = innerNodeInDocument;
+        if (!oldActiveNode && newActiveNode && request.active() && !request.touchMove()) {
+            // We are setting the :active chain and freezing it. If future moves happen, they
+            // will need to reference this chain.
+            for (RenderObject* curr = newActiveNode->renderer(); curr; curr = curr->parent()) {
+                if (curr->node() && !curr->isText())
+                    curr->node()->setInActiveChain();
+            }
+            setActiveNode(newActiveNode);
+        }
+    }
+    // If the mouse has just been pressed, set :active on the chain. Those (and only those)
+    // nodes should remain :active until the mouse is released.
+    bool allowActiveChanges = !oldActiveNode && activeNode();
+
+    // If the mouse is down and if this is a mouse move event, we want to restrict changes in
+    // :hover/:active to only apply to elements that are in the :active chain that we froze
+    // at the time the mouse went down.
+    bool mustBeInActiveChain = request.active() && request.move();
+
+    RefPtr<Node> oldHoverNode = hoverNode();
+    // Clear the :hover chain when the touch gesture is over.
+    if (request.touchRelease()) {
+        if (oldHoverNode) {
+            for (RenderObject* curr = oldHoverNode->renderer(); curr; curr = curr->hoverAncestor()) {
+                if (curr->node() && !curr->isText())
+                    curr->node()->setHovered(false);
+            }
+            setHoverNode(0);
+        }
+        // A touch release can not set new hover or active target.
+        return;
+    }
+
+    // Check to see if the hovered node has changed.
+    // If it hasn't, we do not need to do anything.
+    Node* newHoverNode = innerNodeInDocument;
+    while (newHoverNode && !newHoverNode->renderer())
+        newHoverNode = newHoverNode->parentOrHostNode();
+
+    // Update our current hover node.
+    setHoverNode(newHoverNode);
+
+    // We have two different objects. Fetch their renderers.
+    RenderObject* oldHoverObj = oldHoverNode ? oldHoverNode->renderer() : 0;
+    RenderObject* newHoverObj = newHoverNode ? newHoverNode->renderer() : 0;
+
+    // Locate the common ancestor render object for the two renderers.
+    RenderObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
+
+    Vector<RefPtr<Node>, 32> nodesToRemoveFromChain;
+    Vector<RefPtr<Node>, 32> nodesToAddToChain;
+
+    if (oldHoverObj != newHoverObj) {
+        // The old hover path only needs to be cleared up to (and not including) the common ancestor;
+        for (RenderObject* curr = oldHoverObj; curr && curr != ancestor; curr = curr->hoverAncestor()) {
+            if (curr->node() && !curr->isText() && (!mustBeInActiveChain || curr->node()->inActiveChain()))
+                nodesToRemoveFromChain.append(curr->node());
+        }
+    }
+
+    // Now set the hover state for our new object up to the root.
+    for (RenderObject* curr = newHoverObj; curr; curr = curr->hoverAncestor()) {
+        if (curr->node() && !curr->isText() && (!mustBeInActiveChain || curr->node()->inActiveChain()))
+            nodesToAddToChain.append(curr->node());
+    }
+
+    size_t removeCount = nodesToRemoveFromChain.size();
+    for (size_t i = 0; i < removeCount; ++i)
+        nodesToRemoveFromChain[i]->setHovered(false);
+
+    size_t addCount = nodesToAddToChain.size();
+    for (size_t i = 0; i < addCount; ++i) {
+        if (allowActiveChanges)
+            nodesToAddToChain[i]->setActive(true);
+        nodesToAddToChain[i]->setHovered(true);
+    }
+}
+
 void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this, MemoryInstrumentation::DOM);
-    info.addInstrumentedMember(m_styleResolver);
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
+    info.addMember(m_styleResolver);
     ContainerNode::reportMemoryUsage(memoryObjectInfo);
     info.addVector(m_customFonts);
-    info.addInstrumentedMember(m_url);
-    info.addInstrumentedMember(m_baseURL);
-    info.addInstrumentedMember(m_baseURLOverride);
-    info.addInstrumentedMember(m_baseElementURL);
-    info.addInstrumentedMember(m_cookieURL);
-    info.addInstrumentedMember(m_firstPartyForCookies);
-    info.addInstrumentedMember(m_documentURI);
-    info.addInstrumentedMember(m_baseTarget);
-    info.addInstrumentedMember(m_frame);
-    info.addInstrumentedMember(m_cachedResourceLoader);
-    info.addInstrumentedMember(m_elemSheet);
-    info.addInstrumentedMember(m_pageUserSheet);
+    info.addMember(m_url);
+    info.addMember(m_baseURL);
+    info.addMember(m_baseURLOverride);
+    info.addMember(m_baseElementURL);
+    info.addMember(m_cookieURL);
+    info.addMember(m_firstPartyForCookies);
+    info.addMember(m_documentURI);
+    info.addMember(m_baseTarget);
+    info.addMember(m_frame);
+    info.addMember(m_cachedResourceLoader);
+    info.addMember(m_elemSheet);
+    info.addMember(m_pageUserSheet);
     if (m_pageGroupUserSheets)
         info.addInstrumentedVectorPtr(m_pageGroupUserSheets);
     if (m_userSheets)
@@ -6140,13 +6282,13 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addHashSet(m_nodeIterators);
     info.addHashSet(m_ranges);
     info.addListHashSet(m_styleSheetCandidateNodes);
-    info.addInstrumentedMember(m_preferredStylesheetSet);
-    info.addInstrumentedMember(m_selectedStylesheetSet);
-    info.addInstrumentedMember(m_title.string());
-    info.addInstrumentedMember(m_rawTitle.string());
-    info.addInstrumentedMember(m_xmlEncoding);
-    info.addInstrumentedMember(m_xmlVersion);
-    info.addInstrumentedMember(m_contentLanguage);
+    info.addMember(m_preferredStylesheetSet);
+    info.addMember(m_selectedStylesheetSet);
+    info.addMember(m_title.string());
+    info.addMember(m_rawTitle.string());
+    info.addMember(m_xmlEncoding);
+    info.addMember(m_xmlVersion);
+    info.addMember(m_contentLanguage);
     info.addHashMap(m_documentNamedItemCollections);
     info.addHashMap(m_windowNamedItemCollections);
 #if ENABLE(DASHBOARD_SUPPORT)
@@ -6158,7 +6300,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addHashSet(m_mediaVolumeCallbackElements);
     info.addHashSet(m_privateBrowsingStateChangedElements);
     info.addHashMap(m_elementsByAccessKey);
-    info.addInstrumentedMember(m_eventQueue);
+    info.addMember(m_eventQueue);
     info.addHashSet(m_mediaCanStartListeners);
     info.addVector(m_pendingTasks);
 }
@@ -6171,5 +6313,80 @@ PassRefPtr<UndoManager> Document::undoManager()
     return m_undoManager;
 }
 #endif
+
+class ImmutableAttributeDataCacheKey {
+public:
+    ImmutableAttributeDataCacheKey(const QualifiedName& tagName, const Attribute* attributes, unsigned attributeCount)
+        : m_tagQName(tagName)
+        , m_attributes(attributes)
+        , m_attributeCount(attributeCount)
+    { }
+
+    bool operator!=(const ImmutableAttributeDataCacheKey& other) const
+    {
+        if (m_tagQName != other.m_tagQName)
+            return true;
+        if (m_attributeCount != other.m_attributeCount)
+            return true;
+        return memcmp(m_attributes, other.m_attributes, sizeof(Attribute) * m_attributeCount);
+    }
+
+    unsigned hash() const
+    {
+        unsigned attributeHash = StringHasher::hashMemory(m_attributes, m_attributeCount * sizeof(Attribute));
+        return WTF::pairIntHash(m_tagQName.localName().impl()->existingHash(), attributeHash);
+    }
+
+private:
+    QualifiedName m_tagQName;
+    const Attribute* m_attributes;
+    unsigned m_attributeCount;
+};
+
+struct ImmutableAttributeDataCacheEntry {
+    ImmutableAttributeDataCacheEntry(const ImmutableAttributeDataCacheKey& k, PassRefPtr<ElementAttributeData> v)
+        : key(k)
+        , value(v)
+    { }
+
+    ImmutableAttributeDataCacheKey key;
+    RefPtr<ElementAttributeData> value;
+};
+
+PassRefPtr<ElementAttributeData> Document::cachedImmutableAttributeData(const Element* element, const Vector<Attribute>& attributes)
+{
+    ASSERT(!attributes.isEmpty());
+
+    ImmutableAttributeDataCacheKey cacheKey(element->tagQName(), attributes.data(), attributes.size());
+    unsigned cacheHash = cacheKey.hash();
+
+    ImmutableAttributeDataCache::iterator cacheIterator = m_immutableAttributeDataCache.add(cacheHash, nullptr).iterator;
+    if (cacheIterator->second && cacheIterator->second->key != cacheKey)
+        cacheHash = 0;
+
+    RefPtr<ElementAttributeData> attributeData;
+    if (cacheHash && cacheIterator->second)
+        attributeData = cacheIterator->second->value;
+    else
+        attributeData = ElementAttributeData::createImmutable(attributes);
+
+    if (!cacheHash || cacheIterator->second)
+        return attributeData.release();
+
+    cacheIterator->second = adoptPtr(new ImmutableAttributeDataCacheEntry(ImmutableAttributeDataCacheKey(element->tagQName(), attributeData->immutableAttributeArray(), attributeData->length()), attributeData));
+
+    return attributeData.release();
+}
+
+Localizer& Document::getLocalizer(const AtomicString& locale)
+{
+    AtomicString localeKey = locale;
+    if (locale.isEmpty() || !RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
+        localeKey = defaultLanguage();
+    LocaleToLocalizerMap::AddResult result = m_localizerCache.add(localeKey, nullptr);
+    if (result.isNewEntry)
+        result.iterator->second = Localizer::create(localeKey);
+    return *(result.iterator->second);
+}
 
 } // namespace WebCore

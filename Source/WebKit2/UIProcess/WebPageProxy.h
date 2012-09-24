@@ -99,6 +99,7 @@ namespace WebCore {
     class FloatRect;
     class IntSize;
     class ProtectionSpace;
+    class SharedBuffer;
     struct FileChooserSettings;
     struct TextAlternativeWithRange;
     struct TextCheckingResult;
@@ -140,6 +141,7 @@ class PlatformCertificateInfo;
 class StringPairVector;
 class WebBackForwardList;
 class WebBackForwardListItem;
+class WebColorPickerResultListenerProxy;
 class WebContextMenuProxy;
 class WebData;
 class WebEditCommandProxy;
@@ -487,6 +489,9 @@ public:
     bool hasHorizontalScrollbar() const { return m_mainFrameHasHorizontalScrollbar; }
     bool hasVerticalScrollbar() const { return m_mainFrameHasVerticalScrollbar; }
 
+    void setSuppressScrollbarAnimations(bool);
+    bool areScrollbarAnimationsSuppressed() const { return m_suppressScrollbarAnimations; }
+
     bool isPinnedToLeftSide() const { return m_mainFrameIsPinnedToLeftSide; }
     bool isPinnedToRightSide() const { return m_mainFrameIsPinnedToRightSide; }
 
@@ -711,13 +716,19 @@ public:
     virtual NativeWebMouseEvent* currentlyProcessedMouseDownEvent();
 
 #if PLATFORM(GTK) && USE(TEXTURE_MAPPER_GL)
-    void widgetMapped(uint64_t nativeWindowId);
+    void setAcceleratedCompositingWindowId(uint64_t nativeWindowId);
+    void invalidateWidget();
 #endif
 
     void setSuppressVisibilityUpdates(bool flag) { m_suppressVisibilityUpdates = flag; }
     bool suppressVisibilityUpdates() { return m_suppressVisibilityUpdates; }
 
     void postMessageToInjectedBundle(const String& messageName, APIObject* messageBody);
+
+#if ENABLE(INPUT_TYPE_COLOR)
+    void setColorChooserColor(const WebCore::Color&);
+    void endColorChooser();
+#endif
 
 private:
     WebPageProxy(PageClient*, PassRefPtr<WebProcessProxy>, WebPageGroup*, uint64_t pageID);
@@ -831,7 +842,7 @@ private:
     void reattachToWebProcessWithItem(WebBackForwardListItem*);
 
     void requestNotificationPermission(uint64_t notificationID, const String& originString);
-    void showNotification(const String& title, const String& body, const String& iconURL, const String& tag, const String& originString, uint64_t notificationID);
+    void showNotification(const String& title, const String& body, const String& iconURL, const String& tag, const String& lang, const String& dir, const String& originString, uint64_t notificationID);
     
 #if USE(TILED_BACKING_STORE)
     void pageDidRequestScroll(const WebCore::IntPoint&);
@@ -850,9 +861,7 @@ private:
 #endif
 
 #if ENABLE(INPUT_TYPE_COLOR)
-    void showColorChooser(const WebCore::Color& initialColor);
-    void setColorChooserColor(const WebCore::Color&);
-    void endColorChooser();
+    void showColorChooser(const WebCore::Color& initialColor, const WebCore::IntRect&);
     void didChooseColor(const WebCore::Color&);
     void didEndColorChooser();
 #endif
@@ -1097,6 +1106,8 @@ private:
     bool m_useFixedLayout;
     WebCore::IntSize m_fixedLayoutSize;
 
+    bool m_suppressScrollbarAnimations;
+
     WebCore::Pagination::Mode m_paginationMode;
     bool m_paginationBehavesLikeColumns;
     double m_pageLength;
@@ -1141,6 +1152,7 @@ private:
 #endif
 #if ENABLE(INPUT_TYPE_COLOR)
     RefPtr<WebColorChooserProxy> m_colorChooser;
+    RefPtr<WebColorPickerResultListenerProxy> m_colorPickerResultListener;
 #endif
 
     uint64_t m_pageID;

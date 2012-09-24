@@ -74,11 +74,11 @@
 #include "TextEncoding.h"
 #include "TextResourceDecoder.h"
 #include "UserGestureIndicator.h"
-
 #include <wtf/CurrentTime.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>
 #include <wtf/text/Base64.h>
+#include <wtf/text/StringBuilder.h>
 
 using namespace std;
 
@@ -197,8 +197,7 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
             if (!decoder)
                 return false;
             String content = decoder->decode(buffer->data(), buffer->size());
-            content += decoder->flush();
-            *result = content;
+            *result = content + decoder->flush();
             return true;
         }
         default:
@@ -350,13 +349,6 @@ void InspectorPageAgent::restore()
         ErrorString error;
         enable(&error);
 
-        // When restoring the agent, override values are restored into the FrameView.
-        int width = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
-        int height = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-        double fontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride);
-        bool fitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
-        updateViewMetrics(width, height, fontScaleFactor, fitWindow);
-
         if (m_inspectorAgent->didCommitLoadFired())
             frameNavigated(m_page->mainFrame()->loader()->documentLoader());
 #if ENABLE(TOUCH_EVENTS)
@@ -503,7 +495,7 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
     ListHashSet<Cookie> rawCookiesList;
 
     // If we can't get raw cookies - fall back to String representation
-    String stringCookiesList;
+    StringBuilder stringCookiesList;
 
     // Return value to getRawCookies should be the same for every call because
     // the return value is platform/network backend specific, and the call will
@@ -519,7 +511,7 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
             if (!rawCookiesImplemented) {
                 // FIXME: We need duplication checking for the String representation of cookies.
                 ExceptionCode ec = 0;
-                stringCookiesList += document->cookie(ec);
+                stringCookiesList.append(document->cookie(ec));
                 // Exceptions are thrown by cookie() in sandboxed frames. That won't happen here
                 // because "document" is the document of the main frame of the page.
                 ASSERT(!ec);
@@ -539,7 +531,7 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
         *cookiesString = "";
     } else {
         cookies = TypeBuilder::Array<TypeBuilder::Page::Cookie>::create();
-        *cookiesString = stringCookiesList;
+        *cookiesString = stringCookiesList.toString();
     }
 }
 
@@ -915,6 +907,12 @@ void InspectorPageAgent::didLayout()
 
     if (currentWidth && currentHeight)
         m_client->autoZoomPageToFitWidth();
+    m_overlay->update();
+}
+
+void InspectorPageAgent::didScroll()
+{
+    m_overlay->update();
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Frame* frame)
@@ -1013,6 +1011,9 @@ void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double
     controller->positionChanged(0); // Kick location update.
 #else
     *error = "Geolocation is not available.";
+    UNUSED_PARAM(latitude);
+    UNUSED_PARAM(longitude);
+    UNUSED_PARAM(accuracy);
 #endif
 }
 

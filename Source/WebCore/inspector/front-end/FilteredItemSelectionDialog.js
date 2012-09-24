@@ -121,7 +121,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     _itemsLoaded: function(index, chunkLength, chunkIndex, chunkCount)
     {
         for (var i = index; i < index + chunkLength; ++i)
-            this._itemElementsContainer.appendChild(this._createItemElement(i, this._delegate.itemTitleAt(i)));
+            this._itemElementsContainer.appendChild(this._createItemElement(i));
         this._filterItems();
 
         if (chunkIndex === chunkCount)
@@ -135,21 +135,21 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     /**
      * @param {number} index
-     * @param {string} title
      */
-    _createItemElement: function(index, title)
+    _createItemElement: function(index)
     {
         if (this._itemElements[index])
             return this._itemElements[index];
 
         var itemElement = document.createElement("div");
         itemElement.className = "item";
-        var titleElement = itemElement.createChild("span");
-        var subtitleElement = itemElement.createChild("span");
-        titleElement.textContent = title;
+        itemElement._titleElement = itemElement.createChild("span");
+        itemElement._titleElement.textContent = this._delegate.itemTitleAt(index);
+        itemElement._titleSuffixElement = itemElement.createChild("span");
+        itemElement._subtitleElement = itemElement.createChild("span", "subtitle");
+        itemElement._subtitleElement.textContent = this._delegate.itemSubtitleAt(index);
         this._elementIndexes.put(itemElement, index);
         this._itemElements.push(itemElement);
-
         return itemElement;
     },
 
@@ -192,23 +192,17 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
      */
     _innerCreateSearchRegExp: function(query, isGlobal)
     {
-        query = query ? query.trim() : query;
         if (!query)
             return new RegExp(".*");
+        query = query.trim();
 
         var ignoreCase = (query === query.toLowerCase());
-
-        const toEscape = "^[]{}()\\.$*+?|";
-
-        var regExpString = "";
-        for (var i = 0; i < query.length; ++i) {
-            var c = query.charAt(i);
-            if (toEscape.indexOf(c) !== -1)
-                c = "\\" + c;
-            if (i)
-                regExpString += "[^" + c + "]*";
-            regExpString += c;
-        }
+        var regExpString = query.escapeForRegExp().replace(/\\\*/g, ".*").replace(/\\\?/g, ".")
+        if (ignoreCase)
+            regExpString = regExpString.replace(/(?!^)(\\\.|[_:-])/g, "[^._:-]*$1");
+        else
+            regExpString = regExpString.replace(/(?!^)(\\\.|[A-Z_:-])/g, "[^.A-Z_:-]*$1");
+        regExpString = "^" + "[^a-zA-Z0-9]*" + regExpString;
         return new RegExp(regExpString, (ignoreCase ? "i" : "") + (isGlobal ? "g" : ""));
     },
 
@@ -223,7 +217,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var firstElement;
         for (var i = 0; i < this._itemElements.length; ++i) {
             var itemElement = this._itemElements[i];
-            itemElement.lastChild.textContent = this._delegate.itemSubtitleAt(i);
+            itemElement._titleSuffixElement.textContent = this._delegate.itemSuffixAt(i);
             if (regex.test(this._delegate.itemKeyAt(i))) {
                 this._showItemElement(itemElement);
                 if (!firstElement)
@@ -393,7 +387,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var ranges = [];
 
         var match;
-        while ((match = regex.exec(key)) !== null) {
+        while ((match = regex.exec(key)) !== null && match[0]) {
             ranges.push({ offset: match.index, length: regex.lastIndex - match.index });
         }
 
@@ -433,6 +427,12 @@ WebInspector.SelectionDialogContentProvider.prototype = {
      * @return {string}
      */
     itemTitleAt: function(itemIndex) { },
+
+    /*
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemSuffixAt: function(itemIndex) { },
 
     /*
      * @param {number} itemIndex
@@ -512,9 +512,18 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
      * @param {number} itemIndex
      * @return {string}
      */
-    itemSubtitleAt: function(itemIndex)
+    itemSuffixAt: function(itemIndex)
     {
         return "";
+    },
+
+    /*
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemSubtitleAt: function(itemIndex)
+    {
+        return ":" + (this._functionItems[itemIndex].line + 1);
     },
 
     /**
@@ -636,9 +645,18 @@ WebInspector.OpenResourceDialog.prototype = {
      * @param {number} itemIndex
      * @return {string}
      */
-    itemSubtitleAt: function(itemIndex)
+    itemSuffixAt: function(itemIndex)
     {
         return this._queryLineNumber || "";
+    },
+
+    /*
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemSubtitleAt: function(itemIndex)
+    {
+        return this._uiSourceCodes[itemIndex].parsedURL.folderPathComponents;
     },
 
     /**

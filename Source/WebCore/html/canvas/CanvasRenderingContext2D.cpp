@@ -72,6 +72,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/UnusedParam.h>
+#include <wtf/text/StringBuilder.h>
 
 #if USE(CG)
 #include <ApplicationServices/ApplicationServices.h>
@@ -507,40 +508,80 @@ void CanvasRenderingContext2D::setShadowColor(const String& color)
     applyShadow();
 }
 
-const DashArray* CanvasRenderingContext2D::webkitLineDash() const
+const Vector<float>& CanvasRenderingContext2D::getLineDash() const
 {
-    return &state().m_lineDash;
+    return state().m_lineDash;
 }
 
-void CanvasRenderingContext2D::setWebkitLineDash(const DashArray& dash)
+static bool lineDashSequenceIsValid(const Vector<float>& dash)
 {
-    if (state().m_lineDash == dash)
+    for (size_t i = 0; i < dash.size(); i++) {
+        if (!isfinite(dash[i]) || dash[i] < 0)
+            return false;
+    }
+    return true;
+}
+
+void CanvasRenderingContext2D::setLineDash(const Vector<float>& dash)
+{
+    if (!lineDashSequenceIsValid(dash))
         return;
+
     realizeSaves();
     modifiableState().m_lineDash = dash;
-    GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    c->setLineDash(state().m_lineDash, state().m_lineDashOffset);
+    // Spec requires the concatenation of two copies the dash list when the
+    // number of elements is odd
+    if (dash.size() % 2)
+        modifiableState().m_lineDash.append(dash);
+
+    applyLineDash();
 }
 
-float CanvasRenderingContext2D::webkitLineDashOffset() const
+void CanvasRenderingContext2D::setWebkitLineDash(const Vector<float>& dash)
+{
+    if (!lineDashSequenceIsValid(dash))
+        return;
+
+    realizeSaves();
+    modifiableState().m_lineDash = dash;
+
+    applyLineDash();
+}
+
+float CanvasRenderingContext2D::lineDashOffset() const
 {
     return state().m_lineDashOffset;
 }
 
-void CanvasRenderingContext2D::setWebkitLineDashOffset(float offset)
+void CanvasRenderingContext2D::setLineDashOffset(float offset)
 {
-    if (!isfinite(offset))
+    if (!isfinite(offset) || state().m_lineDashOffset == offset)
         return;
-    if (state().m_lineDashOffset == offset)
-        return;
+
     realizeSaves();
     modifiableState().m_lineDashOffset = offset;
+    applyLineDash();
+}
+
+float CanvasRenderingContext2D::webkitLineDashOffset() const
+{
+    return lineDashOffset();
+}
+
+void CanvasRenderingContext2D::setWebkitLineDashOffset(float offset)
+{
+    setLineDashOffset(offset);
+}
+
+void CanvasRenderingContext2D::applyLineDash() const
+{
     GraphicsContext* c = drawingContext();
     if (!c)
         return;
-    c->setLineDash(state().m_lineDash, state().m_lineDashOffset);
+    DashArray convertedLineDash(state().m_lineDash.size());
+    for (size_t i = 0; i < state().m_lineDash.size(); ++i)
+        convertedLineDash[i] = static_cast<DashArrayElement>(state().m_lineDash[i]);
+    c->setLineDash(convertedLineDash, state().m_lineDashOffset);
 }
 
 float CanvasRenderingContext2D::globalAlpha() const
@@ -1992,37 +2033,40 @@ String CanvasRenderingContext2D::font() const
     if (!state().m_realizedFont)
         return defaultFont;
 
-    String serializedFont;
+    StringBuilder serializedFont;
     const FontDescription& fontDescription = state().m_font.fontDescription();
 
     if (fontDescription.italic())
-        serializedFont += "italic ";
+        serializedFont.appendLiteral("italic ");
     if (fontDescription.smallCaps() == FontSmallCapsOn)
-        serializedFont += "small-caps ";
+        serializedFont.appendLiteral("small-caps ");
 
-    serializedFont += String::number(fontDescription.computedPixelSize()) + "px";
+    serializedFont.appendNumber(fontDescription.computedPixelSize());
+    serializedFont.appendLiteral("px");
 
     const FontFamily& firstFontFamily = fontDescription.family();
     for (const FontFamily* fontFamily = &firstFontFamily; fontFamily; fontFamily = fontFamily->next()) {
         if (fontFamily != &firstFontFamily)
-            serializedFont += ",";
+            serializedFont.append(',');
 
+        // FIXME: We should append family directly to serializedFont rather than building a temporary string.
         String family = fontFamily->family();
         if (family.startsWith("-webkit-"))
             family = family.substring(8);
         if (family.contains(' '))
             family = makeString('"', family, '"');
 
-        serializedFont += " " + family;
+        serializedFont.append(' ');
+        serializedFont.append(family);
     }
 
-    return serializedFont;
+    return serializedFont.toString();
 }
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
     RefPtr<StylePropertySet> parsedStyle = StylePropertySet::create();
-    CSSParser(strictToCSSParserMode(!m_usesCSSCompatibilityParseMode)).parseDeclaration(parsedStyle.get(), "font:" + newFont, 0, 0);
+    CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, strictToCSSParserMode(!m_usesCSSCompatibilityParseMode), 0);
     if (parsedStyle->isEmpty())
         return;
 

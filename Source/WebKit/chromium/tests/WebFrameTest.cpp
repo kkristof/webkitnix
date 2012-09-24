@@ -45,6 +45,7 @@
 #include "WebFormElement.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "WebHistoryItem.h"
 #include "WebRange.h"
 #include "WebScriptSource.h"
 #include "WebSearchableFormData.h"
@@ -54,6 +55,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "platform/WebFloatRect.h"
+#include "platform/WebURLResponse.h"
 #include "v8.h"
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>
@@ -988,10 +990,11 @@ TEST_F(WebFrameTest, FindInPageMatchRects)
     webView->close();
 }
 
-static WebView* selectRangeTestCreateWebView(const std::string& url)
+static WebView* createWebViewForTextSelection(const std::string& url)
 {
     WebView* webView = FrameTestHelpers::createWebViewAndLoad(url, true);
     webView->settings()->setDefaultFontSize(12);
+    webView->enableFixedLayoutMode(false);
     webView->resize(WebSize(640, 480));
     return webView;
 }
@@ -1008,6 +1011,11 @@ static WebPoint bottomRightMinusOne(const WebRect& rect)
     // strictly correct, as hit-testing checks the pixel to the lower-right of
     // the input coordinate, but it's a wart on the API.
     return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
+}
+
+static WebRect elementBounds(WebFrame* frame, const WebString& id)
+{
+    return frame->document().getElementById(id).boundsInViewportSpace();
 }
 
 static std::string selectionAsString(WebFrame* frame)
@@ -1027,7 +1035,7 @@ TEST_F(WebFrameTest, SelectRange)
     registerMockedHttpURLLoad("select_range_iframe.html");
     registerMockedHttpURLLoad("select_range_editable.html");
 
-    webView = selectRangeTestCreateWebView(m_baseURL + "select_range_basic.html");
+    webView = createWebViewForTextSelection(m_baseURL + "select_range_basic.html");
     frame = webView->mainFrame();
     EXPECT_EQ("Some test text for testing.", selectionAsString(frame));
     webView->selectionBounds(startWebRect, endWebRect);
@@ -1037,7 +1045,7 @@ TEST_F(WebFrameTest, SelectRange)
     EXPECT_EQ("Some test text for testing.", selectionAsString(frame));
     webView->close();
 
-    webView = selectRangeTestCreateWebView(m_baseURL + "select_range_scroll.html");
+    webView = createWebViewForTextSelection(m_baseURL + "select_range_scroll.html");
     frame = webView->mainFrame();
     EXPECT_EQ("Some offscreen test text for testing.", selectionAsString(frame));
     webView->selectionBounds(startWebRect, endWebRect);
@@ -1047,7 +1055,7 @@ TEST_F(WebFrameTest, SelectRange)
     EXPECT_EQ("Some offscreen test text for testing.", selectionAsString(frame));
     webView->close();
 
-    webView = selectRangeTestCreateWebView(m_baseURL + "select_range_iframe.html");
+    webView = createWebViewForTextSelection(m_baseURL + "select_range_iframe.html");
     frame = webView->mainFrame();
     WebFrame* subframe = frame->findChildByExpression(WebString::fromUTF8("/html/body/iframe"));
     EXPECT_EQ("Some test text for testing.", selectionAsString(subframe));
@@ -1060,22 +1068,244 @@ TEST_F(WebFrameTest, SelectRange)
 
     // Select the middle of an editable element, then try to extend the selection to the top of the document.
     // The selection range should be clipped to the bounds of the editable element.
-    webView = selectRangeTestCreateWebView(m_baseURL + "select_range_editable.html");
+    webView = createWebViewForTextSelection(m_baseURL + "select_range_editable.html");
     frame = webView->mainFrame();
     EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
     webView->selectionBounds(startWebRect, endWebRect);
-    frame->selectRange(WebPoint(0, 0), bottomRightMinusOne(endWebRect));
+    frame->selectRange(bottomRightMinusOne(endWebRect), WebPoint(0, 0));
     EXPECT_EQ("16-char header. This text is initially selected.", selectionAsString(frame));
     webView->close();
 
     // As above, but extending the selection to the bottom of the document.
-    webView = selectRangeTestCreateWebView(m_baseURL + "select_range_editable.html");
+    webView = createWebViewForTextSelection(m_baseURL + "select_range_editable.html");
     frame = webView->mainFrame();
     EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
     webView->selectionBounds(startWebRect, endWebRect);
     frame->selectRange(topLeft(startWebRect), WebPoint(640, 480));
     EXPECT_EQ("This text is initially selected. 16-char footer.", selectionAsString(frame));
     webView->close();
+}
+
+TEST_F(WebFrameTest, SelectRangeCanMoveSelectionStart)
+{
+    registerMockedHttpURLLoad("text_selection.html");
+    WebView* webView = createWebViewForTextSelection(m_baseURL + "text_selection.html");
+    WebFrame* frame = webView->mainFrame();
+
+    // Select second span. We can move the start to include the first span.
+    frame->executeScript(WebScriptSource("selectElement('header_2');"));
+    EXPECT_EQ("Header 2.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "header_2")), topLeft(elementBounds(frame, "header_1")));
+    EXPECT_EQ("Header 1. Header 2.", selectionAsString(frame));
+
+    // We can move the start and end together.
+    frame->executeScript(WebScriptSource("selectElement('header_1');"));
+    EXPECT_EQ("Header 1.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "header_1")), bottomRightMinusOne(elementBounds(frame, "header_1")));
+    EXPECT_EQ("", selectionAsString(frame));
+    // Selection is a caret, not empty.
+    EXPECT_FALSE(frame->selectionRange().isNull());
+
+    // We can move the start across the end.
+    frame->executeScript(WebScriptSource("selectElement('header_1');"));
+    EXPECT_EQ("Header 1.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "header_1")), bottomRightMinusOne(elementBounds(frame, "header_2")));
+    EXPECT_EQ(" Header 2.", selectionAsString(frame));
+
+    // Can't extend the selection part-way into an editable element.
+    frame->executeScript(WebScriptSource("selectElement('footer_2');"));
+    EXPECT_EQ("Footer 2.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "footer_2")), topLeft(elementBounds(frame, "editable_2")));
+    EXPECT_EQ(" [ Footer 1. Footer 2.", selectionAsString(frame));
+
+    // Can extend the selection completely across editable elements.
+    frame->executeScript(WebScriptSource("selectElement('footer_2');"));
+    EXPECT_EQ("Footer 2.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "footer_2")), topLeft(elementBounds(frame, "header_2")));
+    EXPECT_EQ("Header 2. ] [ Editable 1. Editable 2. ] [ Footer 1. Footer 2.", selectionAsString(frame));
+
+    // If the selection is editable text, we can't extend it into non-editable text.
+    frame->executeScript(WebScriptSource("selectElement('editable_2');"));
+    EXPECT_EQ("Editable 2.", selectionAsString(frame));
+    frame->selectRange(bottomRightMinusOne(elementBounds(frame, "editable_2")), topLeft(elementBounds(frame, "header_2")));
+    EXPECT_EQ("[ Editable 1. Editable 2.", selectionAsString(frame));
+
+    webView->close();
+}
+
+TEST_F(WebFrameTest, SelectRangeCanMoveSelectionEnd)
+{
+    registerMockedHttpURLLoad("text_selection.html");
+    WebView* webView = createWebViewForTextSelection(m_baseURL + "text_selection.html");
+    WebFrame* frame = webView->mainFrame();
+
+    // Select first span. We can move the end to include the second span.
+    frame->executeScript(WebScriptSource("selectElement('header_1');"));
+    EXPECT_EQ("Header 1.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "header_1")), bottomRightMinusOne(elementBounds(frame, "header_2")));
+    EXPECT_EQ("Header 1. Header 2.", selectionAsString(frame));
+
+    // We can move the start and end together.
+    frame->executeScript(WebScriptSource("selectElement('header_2');"));
+    EXPECT_EQ("Header 2.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "header_2")), topLeft(elementBounds(frame, "header_2")));
+    EXPECT_EQ("", selectionAsString(frame));
+    // Selection is a caret, not empty.
+    EXPECT_FALSE(frame->selectionRange().isNull());
+
+    // We can move the end across the start.
+    frame->executeScript(WebScriptSource("selectElement('header_2');"));
+    EXPECT_EQ("Header 2.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "header_2")), topLeft(elementBounds(frame, "header_1")));
+    EXPECT_EQ("Header 1. ", selectionAsString(frame));
+
+    // Can't extend the selection part-way into an editable element.
+    frame->executeScript(WebScriptSource("selectElement('header_1');"));
+    EXPECT_EQ("Header 1.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "header_1")), bottomRightMinusOne(elementBounds(frame, "editable_1")));
+    EXPECT_EQ("Header 1. Header 2. ] ", selectionAsString(frame));
+
+    // Can extend the selection completely across editable elements.
+    frame->executeScript(WebScriptSource("selectElement('header_1');"));
+    EXPECT_EQ("Header 1.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "header_1")), bottomRightMinusOne(elementBounds(frame, "footer_1")));
+    EXPECT_EQ("Header 1. Header 2. ] [ Editable 1. Editable 2. ] [ Footer 1.", selectionAsString(frame));
+
+    // If the selection is editable text, we can't extend it into non-editable text.
+    frame->executeScript(WebScriptSource("selectElement('editable_1');"));
+    EXPECT_EQ("Editable 1.", selectionAsString(frame));
+    frame->selectRange(topLeft(elementBounds(frame, "editable_1")), bottomRightMinusOne(elementBounds(frame, "footer_1")));
+    EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
+
+    webView->close();
+}
+
+class DisambiguationPopupTestWebViewClient : public WebViewClient {
+public:
+    virtual bool didTapMultipleTargets(const WebGestureEvent&, const WebVector<WebRect>& targetRects) OVERRIDE
+    {
+        EXPECT_GE(targetRects.size(), 2u);
+        m_triggered = true;
+        return true;
+    }
+
+    bool triggered() const { return m_triggered; }
+    void resetTriggered() { m_triggered = false; }
+    bool m_triggered;
+};
+
+static WebGestureEvent fatTap(int x, int y)
+{
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureTap;
+    event.x = x;
+    event.y = y;
+    event.data.tap.width = 50;
+    event.data.tap.height = 50;
+    return event;
+}
+
+TEST_F(WebFrameTest, DisambiguationPopupTest)
+{
+    registerMockedHttpURLLoad("disambiguation_popup.html");
+
+    DisambiguationPopupTestWebViewClient client;
+
+    // Make sure we initialize to minimum scale, even if the window size
+    // only becomes available after the load begins.
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "disambiguation_popup.html", true, 0, &client));
+    webViewImpl->resize(WebSize(1000, 1000));
+    webViewImpl->layout();
+
+    client.resetTriggered();
+    webViewImpl->handleInputEvent(fatTap(0, 0));
+    EXPECT_FALSE(client.triggered());
+
+    client.resetTriggered();
+    webViewImpl->handleInputEvent(fatTap(200, 115));
+    EXPECT_FALSE(client.triggered());
+
+    for (int i = 0; i <= 46; i++) {
+        client.resetTriggered();
+        webViewImpl->handleInputEvent(fatTap(120, 230 + i * 5));
+
+        int j = i % 10;
+        if (j >= 7 && j <= 9)
+            EXPECT_TRUE(client.triggered());
+        else
+            EXPECT_FALSE(client.triggered());
+    }
+
+    for (int i = 0; i <= 46; i++) {
+        client.resetTriggered();
+        webViewImpl->handleInputEvent(fatTap(10 + i * 5, 590));
+
+        int j = i % 10;
+        if (j >= 7 && j <= 9)
+            EXPECT_TRUE(client.triggered());
+        else
+            EXPECT_FALSE(client.triggered());
+    }
+
+}
+
+class TestSubstituteDataWebFrameClient : public WebFrameClient {
+public:
+    TestSubstituteDataWebFrameClient()
+        : m_commitCalled(false)
+    {
+    }
+
+    virtual void didFailProvisionalLoad(WebFrame* frame, const WebURLError& error)
+    {
+        frame->loadHTMLString("This should appear", toKURL("data:text/html,chromewebdata"), error.unreachableURL, true);
+        webkit_support::RunAllPendingMessages();
+    }
+
+    virtual void didCommitProvisionalLoad(WebFrame* frame, bool)
+    {
+        if (frame->dataSource()->response().url() != WebURL(URLTestHelpers::toKURL("about:blank")))
+            m_commitCalled = true;
+    }
+
+    bool commitCalled() const { return m_commitCalled; }
+
+private:
+    bool m_commitCalled;
+};
+
+TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
+{
+    TestSubstituteDataWebFrameClient webFrameClient;
+
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad("about:blank", true, &webFrameClient);
+    webkit_support::RunAllPendingMessages();
+    WebFrame* frame = webView->mainFrame();
+
+    // Load a url as a history navigation that will return an error. TestSubstituteDataWebFrameClient
+    // will start a SubstituteData load in response to the load failure, which should get fully committed.
+    // Due to https://bugs.webkit.org/show_bug.cgi?id=91685, FrameLoader::didReceiveData() wasn't getting
+    // called in this case, which resulted in the SubstituteData document not getting displayed.
+    WebURLError error;
+    error.reason = 1337;
+    error.domain = "WebFrameTest";
+    std::string errorURL = "http://0.0.0.0";
+    WebURLResponse response;
+    response.initialize();
+    response.setURL(URLTestHelpers::toKURL(errorURL));
+    response.setMIMEType("text/html");
+    response.setHTTPStatusCode(500);
+    WebHistoryItem errorHistoryItem;
+    errorHistoryItem.initialize();
+    errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
+    errorHistoryItem.setOriginalURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
+    webkit_support::RegisterMockedErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
+    frame->loadHistoryItem(errorHistoryItem);
+    webkit_support::ServeAsynchronousMockedRequests();
+
+    WebString text = frame->contentAsText(std::numeric_limits<size_t>::max());
+    EXPECT_EQ("This should appear", std::string(text.utf8().data()));
+    EXPECT_TRUE(webFrameClient.commitCalled());
 }
 
 } // namespace

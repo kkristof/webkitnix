@@ -32,12 +32,21 @@
 
 namespace WebCore {
 
-ANGLEWebKitBridge::ANGLEWebKitBridge(ShShaderOutput shaderOutput) :
-    builtCompilers(false),
-    m_fragmentCompiler(0),
-    m_vertexCompiler(0),
-    m_shaderOutput(shaderOutput)
+inline static int getValidationResultValue(const ShHandle compiler, ShShaderInfo shaderInfo)
 {
+    int value = -1;
+    ShGetInfo(compiler, shaderInfo, &value);
+    return value;
+}
+
+ANGLEWebKitBridge::ANGLEWebKitBridge(ShShaderOutput shaderOutput, ShShaderSpec shaderSpec)
+    : builtCompilers(false)
+    , m_fragmentCompiler(0)
+    , m_vertexCompiler(0)
+    , m_shaderOutput(shaderOutput)
+    , m_shaderSpec(shaderSpec)
+{
+    // This is a no-op if it's already initialized.
     ShInitialize();
 }
 
@@ -69,8 +78,8 @@ void ANGLEWebKitBridge::setResources(ShBuiltInResources resources)
 bool ANGLEWebKitBridge::validateShaderSource(const char* shaderSource, ANGLEShaderType shaderType, String& translatedShaderSource, String& shaderValidationLog, int extraCompileOptions)
 {
     if (!builtCompilers) {
-        m_fragmentCompiler = ShConstructCompiler(SH_FRAGMENT_SHADER, SH_WEBGL_SPEC, m_shaderOutput, &m_resources);
-        m_vertexCompiler = ShConstructCompiler(SH_VERTEX_SHADER, SH_WEBGL_SPEC, m_shaderOutput, &m_resources);
+        m_fragmentCompiler = ShConstructCompiler(SH_FRAGMENT_SHADER, m_shaderSpec, m_shaderOutput, &m_resources);
+        m_vertexCompiler = ShConstructCompiler(SH_VERTEX_SHADER, m_shaderSpec, m_shaderOutput, &m_resources);
         if (!m_fragmentCompiler || !m_vertexCompiler) {
             cleanupCompilers();
             return false;
@@ -90,8 +99,7 @@ bool ANGLEWebKitBridge::validateShaderSource(const char* shaderSource, ANGLEShad
 
     bool validateSuccess = ShCompile(compiler, shaderSourceStrings, 1, SH_OBJECT_CODE | extraCompileOptions);
     if (!validateSuccess) {
-        int logSize = 0;
-        ShGetInfo(compiler, SH_INFO_LOG_LENGTH, &logSize);
+        int logSize = getValidationResultValue(compiler, SH_INFO_LOG_LENGTH);
         if (logSize > 1) {
             OwnArrayPtr<char> logBuffer = adoptArrayPtr(new char[logSize]);
             if (logBuffer) {
@@ -102,14 +110,42 @@ bool ANGLEWebKitBridge::validateShaderSource(const char* shaderSource, ANGLEShad
         return false;
     }
 
-    int translationLength = 0;
-    ShGetInfo(compiler, SH_OBJECT_CODE_LENGTH, &translationLength);
+    int translationLength = getValidationResultValue(compiler, SH_OBJECT_CODE_LENGTH);
     if (translationLength > 1) {
         OwnArrayPtr<char> translationBuffer = adoptArrayPtr(new char[translationLength]);
         if (!translationBuffer)
             return false;
         ShGetObjectCode(compiler, translationBuffer.get());
         translatedShaderSource = translationBuffer.get();
+    }
+
+    return true;
+}
+
+bool ANGLEWebKitBridge::getUniforms(ShShaderType shaderType, Vector<ANGLEShaderSymbol> &symbols)
+{
+    const ShHandle compiler = (shaderType == SH_VERTEX_SHADER ? m_vertexCompiler : m_fragmentCompiler);
+
+    int numUniforms = getValidationResultValue(compiler, SH_ACTIVE_UNIFORMS);
+    if (numUniforms < 0)
+        return false;
+    if (!numUniforms)
+        return true;
+
+    int maxNameLength = getValidationResultValue(compiler, SH_ACTIVE_UNIFORM_MAX_LENGTH);
+    if (maxNameLength <= 1)
+        return false;
+    OwnArrayPtr<char> nameBuffer = adoptArrayPtr(new char[maxNameLength]);
+
+    for (int i = 0; i < numUniforms; ++i) {
+        ANGLEShaderSymbol symbol;
+        symbol.symbolType = SHADER_SYMBOL_TYPE_UNIFORM;
+        int nameLength = -1;
+        ShGetActiveUniform(compiler, i, &nameLength, &symbol.size, &symbol.dataType, nameBuffer.get(), 0);
+        if (nameLength <= 0)
+            return false;
+        symbol.name = String::fromUTF8(nameBuffer.get(), nameLength);
+        symbols.append(symbol);
     }
 
     return true;

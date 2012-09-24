@@ -86,7 +86,7 @@ var WebInspector = {
 
         if (!WebInspector.WorkerManager.isWorkerFrontend()) {
             this._nodeSearchButton = new WebInspector.StatusBarButton(WebInspector.UIString("Select an element in the page to inspect it."), "node-search-status-bar-item");
-            this._nodeSearchButton.addEventListener("click", this._toggleSearchingForNode, this);
+            this._nodeSearchButton.addEventListener("click", this.toggleSearchingForNode, this);
             mainStatusBar.insertBefore(this._nodeSearchButton.element, bottomStatusBarContainer);
         }
 
@@ -356,7 +356,7 @@ var WebInspector = {
         InspectorFrontendHost.setZoomFactor(Math.pow(1.2, this._zoomLevel));
     },
 
-    _toggleSearchingForNode: function()
+    toggleSearchingForNode: function()
     {
         var enabled = !this._nodeSearchButton.toggled;
         /**
@@ -406,7 +406,7 @@ WebInspector.Events = {
 
 WebInspector.loaded = function()
 {
-    InspectorBackend.loadFromJSONIfNeeded();
+    InspectorBackend.loadFromJSONIfNeeded("../Inspector.json");
 
     if (WebInspector.WorkerManager.isDedicatedWorkerFrontend()) {
         // Do not create socket for the worker front-end.
@@ -491,7 +491,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     this.networkLog = new WebInspector.NetworkLog();
     this.domAgent = new WebInspector.DOMAgent();
-    this.javaScriptContextManager = new WebInspector.JavaScriptContextManager(this.resourceTreeModel);
+    this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
 
@@ -523,7 +523,8 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.scriptSnippetModel = new WebInspector.ScriptSnippetModel(this.workspace);
     new WebInspector.DebuggerScriptMapping(this.workspace);
-    new WebInspector.StylesUISourceCodeProvider(this.workspace);
+    new WebInspector.NetworkUISourceCodeProvider(this.workspace);
+    new WebInspector.StylesSourceMapping(this.workspace);
     if (WebInspector.experimentsSettings.sass.isEnabled())
         new WebInspector.SASSSourceMapping(this.workspace);
 
@@ -861,7 +862,7 @@ WebInspector.documentKeyDown = function(event)
             var isNodeSearchKey = event.ctrlKey && !event.metaKey && !event.altKey && event.shiftKey;
 
         if (isNodeSearchKey) {
-            this._toggleSearchingForNode();
+            this.toggleSearchingForNode();
             event.consume(true);
             return;
         }

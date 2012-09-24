@@ -78,6 +78,8 @@ struct OpInfo {
 struct Node {
     enum VarArgTag { VarArg };
     
+    Node() { }
+    
     // Construct a node with up to 3 children, no immediate value.
     Node(NodeType op, CodeOrigin codeOrigin, NodeIndex child1 = NoNode, NodeIndex child2 = NoNode, NodeIndex child3 = NoNode)
         : codeOrigin(codeOrigin)
@@ -337,12 +339,6 @@ struct Node {
         return variableAccessData()->local();
     }
     
-    VirtualRegister unmodifiedArgumentsRegister()
-    {
-        ASSERT(op() == TearOffActivation);
-        return static_cast<VirtualRegister>(m_opInfo);
-    }
-    
     VirtualRegister unlinkedLocal()
     {
         ASSERT(op() == GetLocalUnlinked);
@@ -470,13 +466,19 @@ struct Node {
 
     bool hasScopeChainDepth()
     {
-        return op() == GetScopeChain;
+        return op() == GetScope;
     }
     
     unsigned scopeChainDepth()
     {
         ASSERT(hasScopeChainDepth());
         return m_opInfo;
+    }
+
+    Edge scope()
+    {
+        ASSERT(op() == GetScopeRegisters);
+        return child1();
     }
 
     bool hasResult()
@@ -744,6 +746,7 @@ struct Node {
         case StringCharAt:
         case StringCharCodeAt:
         case CheckArray:
+        case Arrayify:
         case ArrayPush:
         case ArrayPop:
             return true;
@@ -810,6 +813,7 @@ struct Node {
         case ValueToInt32:
         case UInt32ToNumber:
         case DoubleAsInt32:
+        case PhantomArguments:
             return true;
         case Phantom:
         case Nop:
@@ -916,12 +920,27 @@ struct Node {
     {
         return isBooleanSpeculation(prediction());
     }
-    
+   
+    bool shouldSpeculateString()
+    {
+        return isStringSpeculation(prediction());
+    }
+ 
     bool shouldSpeculateFinalObject()
     {
         return isFinalObjectSpeculation(prediction());
     }
     
+    bool shouldSpeculateNonStringCell()
+    {
+        return isNonStringCellSpeculation(prediction());
+    }
+
+    bool shouldSpeculateNonStringCellOrOther()
+    {
+        return isNonStringCellOrOtherSpeculation(prediction());
+    }
+
     bool shouldSpeculateFinalObjectOrOther()
     {
         return isFinalObjectOrOtherSpeculation(prediction());

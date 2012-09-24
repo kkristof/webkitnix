@@ -32,7 +32,7 @@
 #ifndef PlatformSupport_h
 #define PlatformSupport_h
 
-#include "PlatformString.h"
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -42,12 +42,6 @@ struct FontRenderStyle;
 class PlatformSupport {
 public:
     static void getRenderStyleForStrike(const char* family, int sizeAndStyle, FontRenderStyle* result);
-    struct FontFamily {
-        String name;
-        bool isBold;
-        bool isItalic;
-    };
-    static void getFontFamilyForCharacters(const UChar*, size_t numCharacters, const char* preferredLocale, FontFamily*);
 };
 
 } // namespace WebCore

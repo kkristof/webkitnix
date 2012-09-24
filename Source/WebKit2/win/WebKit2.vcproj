@@ -2899,7 +2899,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\UIProcess\WebColorChooserProxy.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\UIProcess\WebColorChooserProxy.h"
+				>
+			</File>
+			<File
+				RelativePath="..\UIProcess\WebColorPickerResultListenerProxy.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\UIProcess\WebColorPickerResultListenerProxy.h"
 				>
 			</File>
 			<File
@@ -3329,6 +3341,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\UIProcess\API\C\WKColorPickerResultListener.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\UIProcess\API\C\WKColorPickerResultListener.h"
+						>
+					</File>
+					<File
 						RelativePath="..\UIProcess\API\C\WKContext.cpp"
 						>
 					</File>
@@ -3506,6 +3526,14 @@
 					</File>
 					<File
 						RelativePath="..\UIProcess\API\C\WKNotificationManager.h"
+						>
+					</File>
+					<File
+						RelativePath="..\UIProcess\API\C\WKNotificationPermissionRequest.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\UIProcess\API\C\WKNotificationPermissionRequest.h"
 						>
 					</File>
 					<File

@@ -155,23 +155,6 @@ static void updateStyleOfAnonymousBlockContinuations(RenderObject* block, const 
     }
 }
 
-void RenderInline::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
-{
-    if (FrameView *frameView = view()->frameView()) {
-        RenderStyle* oldStyle = style();
-        bool newStyleIsSticky = newStyle && newStyle->position() == StickyPosition;
-        bool oldStyleIsSticky = oldStyle && oldStyle->position() == StickyPosition;
-        if (newStyleIsSticky != oldStyleIsSticky) {
-            if (newStyleIsSticky)
-                frameView->addFixedObject(this);
-            else
-                frameView->removeFixedObject(this);
-        }
-    }
-
-    RenderBoxModelObject::styleWillChange(diff, newStyle);
-}
-
 void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBoxModelObject::styleDidChange(diff, oldStyle);
@@ -1010,15 +993,8 @@ LayoutRect RenderInline::clippedOverflowRectForRepaint(RenderBoxModelObject* rep
     if (cb->hasColumns())
         cb->adjustRectForColumns(repaintRect);
 
-    if (cb->hasOverflowClip()) {
-        // cb->height() is inaccurate if we're in the middle of a layout of |cb|, so use the
-        // layer's size instead.  Even if the layer's size is wrong, the layer itself will repaint
-        // anyway if its size does change.
-        repaintRect.move(-cb->scrolledContentOffset()); // For overflow:auto/scroll/hidden.
-
-        LayoutRect boxRect(LayoutPoint(), cb->cachedSizeForOverflowClip());
-        repaintRect.intersect(boxRect);
-    }
+    if (cb->hasOverflowClip())
+        cb->applyCachedClipAndScrollOffsetForRepaint(repaintRect);
 
     cb->computeRectForRepaint(repaintContainer, repaintRect);
 
@@ -1090,21 +1066,13 @@ void RenderInline::computeRectForRepaint(RenderBoxModelObject* repaintContainer,
     
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
+    rect.setLocation(topLeft);
     if (o->hasOverflowClip()) {
         RenderBox* containerBox = toRenderBox(o);
-
-        // o->height() is inaccurate if we're in the middle of a layout of |o|, so use the
-        // layer's size instead.  Even if the layer's size is wrong, the layer itself will repaint
-        // anyway if its size does change.
-        topLeft -= containerBox->scrolledContentOffset(); // For overflow:auto/scroll/hidden.
-
-        LayoutRect repaintRect(topLeft, rect.size());
-        LayoutRect boxRect(LayoutPoint(), containerBox->cachedSizeForOverflowClip());
-        rect = intersection(repaintRect, boxRect);
+        containerBox->applyCachedClipAndScrollOffsetForRepaint(rect);
         if (rect.isEmpty())
             return;
-    } else
-        rect.setLocation(topLeft);
+    }
 
     if (containerSkipped) {
         // If the repaintContainer is below o, then we need to map the rect into repaintContainer's coordinates.

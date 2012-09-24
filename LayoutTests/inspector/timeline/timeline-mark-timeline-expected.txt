@@ -2,15 +2,14 @@ Tests the Timeline API mark feature
 
 TimeStamp Properties:
 {
-    startTime : <number>
-    stackTrace : <object>
+    counters : <object>
     data : {
         message : "MARK TIMELINE"
     }
-    type : "TimeStamp"
     frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    type : "TimeStamp"
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 

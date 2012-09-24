@@ -25,7 +25,10 @@
 #include "CSSComputedStyleDeclaration.h"
 
 #include "AnimationController.h"
+#include "BasicShapeFunctions.h"
+#include "BasicShapes.h"
 #include "CSSAspectRatioValue.h"
+#include "CSSBasicShapes.h"
 #include "CSSBorderImage.h"
 #include "CSSLineBoxContainValue.h"
 #include "CSSParser.h"
@@ -46,7 +49,6 @@
 #include "FontFeatureSettings.h"
 #include "FontFeatureValue.h"
 #include "FontValue.h"
-#include "MemoryInstrumentation.h"
 #include "Pair.h"
 #include "Rect.h"
 #include "RenderBox.h"
@@ -56,21 +58,18 @@
 #include "StyleInheritedData.h"
 #include "StylePropertySet.h"
 #include "StylePropertyShorthand.h"
+#include "WebCoreMemoryInstrumentation.h"
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
 #include <wtf/text/StringBuilder.h>
 
-#if ENABLE(CSS_EXCLUSIONS)
-#include "CSSWrapShapes.h"
-#include "WrapShapeFunctions.h"
-#include "WrapShapes.h"
-#endif
-
 #if ENABLE(CSS_SHADERS)
+#include "CustomFilterArrayParameter.h"
 #include "CustomFilterNumberParameter.h"
 #include "CustomFilterOperation.h"
 #include "CustomFilterParameter.h"
 #include "CustomFilterTransformParameter.h"
+#include "WebKitCSSArrayFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
 #endif
 
@@ -161,6 +160,7 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyOutlineColor,
     CSSPropertyOutlineStyle,
     CSSPropertyOutlineWidth,
+    CSSPropertyOverflowWrap,
     CSSPropertyOverflowX,
     CSSPropertyOverflowY,
     CSSPropertyPaddingBottom,
@@ -235,6 +235,7 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitBoxPack,
     CSSPropertyWebkitBoxReflect,
     CSSPropertyWebkitBoxShadow,
+    CSSPropertyWebkitClipPath,
     CSSPropertyWebkitColorCorrection,
     CSSPropertyWebkitColumnBreakAfter,
     CSSPropertyWebkitColumnBreakBefore,
@@ -254,7 +255,6 @@ static const CSSPropertyID computedProperties[] = {
 #if ENABLE(CSS_FILTERS)
     CSSPropertyWebkitFilter,
 #endif
-#if ENABLE(CSS3_FLEXBOX)
     CSSPropertyWebkitAlignContent,
     CSSPropertyWebkitAlignItems,
     CSSPropertyWebkitAlignSelf,
@@ -264,7 +264,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitFlexDirection,
     CSSPropertyWebkitFlexWrap,
     CSSPropertyWebkitJustifyContent,
-#endif
     CSSPropertyWebkitFontKerning,
     CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitFontVariantLigatures,
@@ -306,10 +305,8 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitMaskRepeat,
     CSSPropertyWebkitMaskSize,
     CSSPropertyWebkitNbspMode,
-#if ENABLE(CSS3_FLEXBOX)
     CSSPropertyWebkitOrder,
-#endif
-#if ENABLE(OVERFLOW_SCROLLING)
+#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     CSSPropertyWebkitOverflowScrolling,
 #endif
     CSSPropertyWebkitPerspective,
@@ -380,6 +377,7 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyMarkerEnd,
     CSSPropertyMarkerMid,
     CSSPropertyMarkerStart,
+    CSSPropertyMaskType,
     CSSPropertyShapeRendering,
     CSSPropertyStroke,
     CSSPropertyStrokeDasharray,
@@ -776,6 +774,14 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
 }
 
 #if ENABLE(CSS_SHADERS)
+static PassRefPtr<CSSValue> valueForCustomFilterArrayParameter(const CustomFilterArrayParameter* arrayParameter)
+{
+    RefPtr<WebKitCSSArrayFunctionValue> arrayParameterValue = WebKitCSSArrayFunctionValue::create();
+    for (unsigned i = 0, size = arrayParameter->size(); i < size; ++i)
+        arrayParameterValue->append(cssValuePool().createValue(arrayParameter->valueAt(i), CSSPrimitiveValue::CSS_NUMBER));
+    return arrayParameterValue.release();
+}
+
 static PassRefPtr<CSSValue> valueForCustomFilterNumberParameter(const CustomFilterNumberParameter* numberParameter)
 {
     RefPtr<CSSValueList> numberParameterValue = CSSValueList::createSpaceSeparated();
@@ -798,6 +804,8 @@ static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* re
     // FIXME: Add here computed style for the other types: boolean, transform, matrix, texture.
     ASSERT(parameter);
     switch (parameter->parameterType()) {
+    case CustomFilterParameter::ARRAY:
+        return valueForCustomFilterArrayParameter(static_cast<const CustomFilterArrayParameter*>(parameter));
     case CustomFilterParameter::NUMBER:
         return valueForCustomFilterNumberParameter(static_cast<const CustomFilterNumberParameter*>(parameter));
     case CustomFilterParameter::TRANSFORM:
@@ -1292,8 +1300,8 @@ static PassRefPtr<CSSValue> counterToCSSValue(const RenderStyle* style, CSSPrope
 
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CounterDirectiveMap::const_iterator it = map->begin(); it != map->end(); ++it) {
-        list->append(cssValuePool().createValue(it->first.get(), CSSPrimitiveValue::CSS_STRING));
-        short number = propertyID == CSSPropertyCounterIncrement ? it->second.m_incrementValue : it->second.m_resetValue;
+        list->append(cssValuePool().createValue(it->first, CSSPrimitiveValue::CSS_STRING));
+        short number = propertyID == CSSPropertyCounterIncrement ? it->second.incrementValue() : it->second.resetValue();
         list->append(cssValuePool().createValue((double)number, CSSPrimitiveValue::CSS_NUMBER));
     }
     return list.release();
@@ -1699,7 +1707,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->display());
         case CSSPropertyEmptyCells:
             return cssValuePool().createValue(style->emptyCells());
-#if ENABLE(CSS3_FLEXBOX)
         case CSSPropertyWebkitAlignContent:
             return cssValuePool().createValue(style->alignContent());
         case CSSPropertyWebkitAlignItems:
@@ -1729,7 +1736,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->justifyContent());
         case CSSPropertyWebkitOrder:
             return cssValuePool().createValue(style->order(), CSSPrimitiveValue::CSS_NUMBER);
-#endif
         case CSSPropertyFloat:
             return cssValuePool().createValue(style->floating());
         case CSSPropertyFont: {
@@ -1933,6 +1939,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return zoomAdjustedPixelValue(style->outlineWidth(), style.get());
         case CSSPropertyOverflow:
             return cssValuePool().createValue(max(style->overflowX(), style->overflowY()));
+        case CSSPropertyOverflowWrap:
+            return cssValuePool().createValue(style->overflowWrap());
         case CSSPropertyOverflowX:
             return cssValuePool().createValue(style->overflowX());
         case CSSPropertyOverflowY:
@@ -2079,7 +2087,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWordSpacing:
             return zoomAdjustedPixelValue(style->wordSpacing(), style.get());
         case CSSPropertyWordWrap:
-            return cssValuePool().createValue(style->wordWrap());
+            return cssValuePool().createValue(style->overflowWrap());
         case CSSPropertyWebkitLineBreak:
             return cssValuePool().createValue(style->khtmlLineBreak());
         case CSSPropertyWebkitNbspMode:
@@ -2279,7 +2287,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitMarginTopCollapse:
         case CSSPropertyWebkitMarginBeforeCollapse:
             return cssValuePool().createValue(style->marginBeforeCollapse());
-#if ENABLE(OVERFLOW_SCROLLING)
+#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
         case CSSPropertyWebkitOverflowScrolling:
             if (!style->useTouchOverflowScrolling())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -2409,6 +2417,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return counterToCSSValue(style.get(), propertyID);
         case CSSPropertyCounterReset:
             return counterToCSSValue(style.get(), propertyID);
+        case CSSPropertyWebkitClipPath:
+            if (ClipPathOperation* operation = style->clipPath()) {
+                if (operation->getOperationType() == ClipPathOperation::SHAPE)
+                    return valueForBasicShape(static_cast<ShapeClipPathOperation*>(operation)->basicShape());
+            }
+            return cssValuePool().createIdentifierValue(CSSValueNone);
 #if ENABLE(CSS_REGIONS)
         case CSSPropertyWebkitFlowInto:
             if (style->flowThread().isNull())
@@ -2431,11 +2445,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitShapeInside:
             if (!style->wrapShapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return valueForWrapShape(style->wrapShapeInside());
+            return valueForBasicShape(style->wrapShapeInside());
         case CSSPropertyWebkitShapeOutside:
             if (!style->wrapShapeOutside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return valueForWrapShape(style->wrapShapeOutside());
+            return valueForBasicShape(style->wrapShapeOutside());
         case CSSPropertyWebkitWrapThrough:
             return cssValuePool().createValue(style->wrapThrough());
 #endif
@@ -2600,6 +2614,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyMarkerEnd:
         case CSSPropertyMarkerMid:
         case CSSPropertyMarkerStart:
+        case CSSPropertyMaskType:
         case CSSPropertyShapeRendering:
         case CSSPropertyStroke:
         case CSSPropertyStrokeDasharray:
@@ -2735,8 +2750,8 @@ PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(co
 
 void CSSComputedStyleDeclaration::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this, MemoryInstrumentation::CSS);
-    info.addInstrumentedMember(m_node);
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
+    info.addMember(m_node);
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const

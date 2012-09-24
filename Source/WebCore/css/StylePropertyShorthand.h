@@ -26,6 +26,7 @@
 namespace WebCore {
 
 class StylePropertyShorthand {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     StylePropertyShorthand()
         : m_properties(0)
@@ -87,10 +88,8 @@ const StylePropertyShorthand& webkitBorderEndShorthand();
 const StylePropertyShorthand& webkitBorderStartShorthand();
 const StylePropertyShorthand& webkitColumnsShorthand();
 const StylePropertyShorthand& webkitColumnRuleShorthand();
-#if ENABLE(CSS3_FLEXBOX)
 const StylePropertyShorthand& webkitFlexFlowShorthand();
 const StylePropertyShorthand& webkitFlexShorthand();
-#endif
 const StylePropertyShorthand& webkitMarginCollapseShorthand();
 const StylePropertyShorthand& webkitMarqueeShorthand();
 const StylePropertyShorthand& webkitMaskShorthand();

@@ -472,10 +472,11 @@ public:
     // there is ranged selection.
     virtual bool selectWordAroundCaret() = 0;
 
-    virtual void selectRange(const WebPoint& start, const WebPoint& end) = 0;
+    // Select a range of text, as if by drag-selecting from base to extent
+    // with character granularity.
+    virtual void selectRange(const WebPoint& base, const WebPoint& extent) = 0;
 
     virtual void selectRange(const WebRange&) = 0;
-
 
     // Printing ------------------------------------------------------------
 

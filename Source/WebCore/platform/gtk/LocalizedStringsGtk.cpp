@@ -34,8 +34,8 @@
 #include <wtf/gobject/GOwnPtr.h>
 #include "IntSize.h"
 #include "NotImplemented.h"
-#include "PlatformString.h"
 #include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
@@ -558,6 +558,8 @@ String localizedMediaControlElementString(const String& name)
         return String::fromUTF8(_("show closed captions"));
     if (name == "HideClosedCaptionsButton")
         return String::fromUTF8(_("hide closed captions"));
+    if (name == "ControlsPanel")
+        return String::fromUTF8(_("media controls"));
 
     ASSERT_NOT_REACHED();
     return String();

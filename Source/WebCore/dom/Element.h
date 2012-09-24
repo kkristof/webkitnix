@@ -275,6 +275,7 @@ public:
     ElementShadow* shadow() const;
     ElementShadow* ensureShadow();
     virtual void willAddAuthorShadowRoot() { }
+    virtual bool areAuthorShadowsAllowed() const { return true; }
 
     ShadowRoot* userAgentShadowRoot() const;
 
@@ -425,7 +426,10 @@ public:
     PassRefPtr<RenderStyle> styleForRenderer();
 
     RenderRegion* renderRegion() const;
+#if ENABLE(CSS_REGIONS)
     const AtomicString& webkitRegionOverset() const;
+    Vector<RefPtr<Range> > webkitGetRegionFlowRanges() const;
+#endif
 
     bool hasID() const;
     bool hasClass() const;
@@ -436,10 +440,10 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     {
-        MemoryClassInfo info(memoryObjectInfo, this, MemoryInstrumentation::DOM);
+        MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
         ContainerNode::reportMemoryUsage(memoryObjectInfo);
-        info.addInstrumentedMember(m_tagName);
-        info.addInstrumentedMember(m_attributeData);
+        info.addMember(m_tagName);
+        info.addMember(m_attributeData);
     }
 
 protected:
@@ -500,7 +504,7 @@ private:
     
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    virtual PassRefPtr<Node> cloneNode(bool deep, ExceptionCode&);
+    virtual PassRefPtr<Node> cloneNode(bool deep);
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;
@@ -519,7 +523,7 @@ private:
     ElementRareData* elementRareData() const;
     ElementRareData* ensureElementRareData();
 
-    OwnPtr<ElementAttributeData> m_attributeData;
+    RefPtr<ElementAttributeData> m_attributeData;
 };
     
 inline Element* toElement(Node* node)

@@ -29,11 +29,11 @@
 #include "IntRect.h"
 #include "GraphicsLayer.h"
 #include "GraphicsTypes3D.h"
-#include "PlatformString.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
+#include <wtf/text/WTFString.h>
 
 // FIXME: Find a better way to avoid the name confliction for NO_ERROR.
 #if ((PLATFORM(CHROMIUM) && OS(WINDOWS)) || PLATFORM(WIN) || (PLATFORM(QT) && OS(WINDOWS)))
@@ -250,6 +250,7 @@ public:
         ALPHA = 0x1906,
         RGB = 0x1907,
         RGBA = 0x1908,
+        BGRA = 0x80E1,
         LUMINANCE = 0x1909,
         LUMINANCE_ALPHA = 0x190A,
         UNSIGNED_SHORT_4_4_4_4 = 0x8033,

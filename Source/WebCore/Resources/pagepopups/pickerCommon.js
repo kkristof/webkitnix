@@ -1,3 +1,4 @@
+"use strict";
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
@@ -29,12 +30,6 @@ function $(id) {
     return document.getElementById(id);
 }
 
-function bind(func, context) {
-    return function() {
-        return func.apply(context, arguments);
-    };
-}
-
 /**
  * @param {!string} tagName
  * @param {string=} opt_class
@@ -63,6 +58,9 @@ function resizeWindow(width, height) {
     }
 }
 
+/**
+ * @return {!number}
+ */
 function getScrollbarWidth() {
     if (typeof window.scrollbarWidth === "undefined") {
         var scrollDiv = document.createElement("div");
@@ -76,3 +74,52 @@ function getScrollbarWidth() {
     }
     return window.scrollbarWidth;
 }
+
+/**
+ * @param {!string} className
+ * @return {?Element}
+ */
+function enclosingNodeOrSelfWithClass(selfNode, className)
+{
+    for (var node = selfNode; node && node !== selfNode.ownerDocument; node = node.parentNode) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
+            return node;
+    }
+    return null;
+};
+
+/**
+ * @constructor
+ * @param {!Element} element
+ * @param {!Object} config
+ */
+function Picker(element, config) {
+    this._element = element;
+    this._config = config;
+}
+
+/**
+ * @enum {number}
+ */
+Picker.Actions = {
+    SetValue: 0,
+    Cancel: -1,
+    ChooseOtherColor: -2
+};
+
+/**
+ * @param {!string} value
+ */
+Picker.prototype.submitValue = function(value) {
+    window.pagePopupController.setValueAndClosePopup(Picker.Actions.SetValue, value);
+}
+
+Picker.prototype.handleCancel = function() {
+    window.pagePopupController.setValueAndClosePopup(Picker.Actions.Cancel, "");
+}
+
+Picker.prototype.chooseOtherColor = function() {
+    window.pagePopupController.setValueAndClosePopup(Picker.Actions.ChooseOtherColor, "");
+}
+
+Picker.prototype.cleanup = function() {};

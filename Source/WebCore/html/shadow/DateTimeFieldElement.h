@@ -33,6 +33,7 @@
 namespace WebCore {
 
 class DateComponents;
+class DateTimeFieldsState;
 
 // DateTimeFieldElement is base class of date time field element.
 class DateTimeFieldElement : public HTMLElement {
@@ -44,22 +45,27 @@ public:
         DispatchEvent,
     };
 
-    // FieldEventHandler implementer must call removeEventHandler when
+    // FieldOwner implementer must call removeEventHandler when
     // it doesn't handle event, e.g. at destruction.
-    class FieldEventHandler {
+    class FieldOwner {
     public:
-        virtual ~FieldEventHandler();
+        virtual ~FieldOwner();
+        virtual void didBlurFromField() = 0;
+        virtual void didFocusOnField() = 0;
         virtual void fieldValueChanged() = 0;
-        virtual void focusOnNextField() = 0;
+        virtual bool focusOnNextField(const DateTimeFieldElement&) = 0;
+        virtual bool focusOnPreviousField(const DateTimeFieldElement&) = 0;
     };
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool hasValue() const = 0;
     bool isReadOnly() const;
-    void removeEventHandler() { m_fieldEventHandler = 0; }
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
+    void removeEventHandler() { m_fieldOwner = 0; }
     void setReadOnly();
     virtual void setEmptyValue(const DateComponents& dateForReadOnlyField, EventBehavior = DispatchNoEvent) = 0;
     virtual void setValueAsDate(const DateComponents&) = 0;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&, const DateComponents& dateForReadOnlyField) = 0;
     virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) = 0;
     virtual void stepDown() = 0;
     virtual void stepUp() = 0;
@@ -69,17 +75,24 @@ public:
     virtual String visibleValue() const = 0;
 
 protected:
-    DateTimeFieldElement(Document*, FieldEventHandler&);
+    DateTimeFieldElement(Document*, FieldOwner&);
+    virtual void didBlur();
+    virtual void didFocus();
     void focusOnNextField();
     virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
-    void initialize(const AtomicString&);
+    void initialize(const AtomicString& shadowPseudoId, const String& axHelpText);
+    virtual int maximum() const = 0;
+    virtual int minimum() const = 0;
     virtual double unitInMillisecond() const = 0;
     void updateVisibleValue(EventBehavior);
 
 private:
     void defaultKeyboardEventHandler(KeyboardEvent*);
+    virtual bool isFocusable() const OVERRIDE FINAL;
+    bool isRTL() const;
+    virtual bool supportsFocus() const OVERRIDE FINAL;
 
-    FieldEventHandler* m_fieldEventHandler;
+    FieldOwner* m_fieldOwner;
 };
 
 } // namespace WebCore

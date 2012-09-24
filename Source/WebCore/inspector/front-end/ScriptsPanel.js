@@ -298,6 +298,8 @@ WebInspector.ScriptsPanel.prototype = {
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on exception: '%s'.", details.auxData.description));
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.Assert)
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on assertion."));
+        else if (details.reason === WebInspector.DebuggerModel.BreakReason.CSPViolation)
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a script blocked due to Content Security Policy directive: \"%s\".", details.auxData.directiveText));
         else {
             function didGetUILocation(uiLocation)
             {
@@ -990,6 +992,7 @@ WebInspector.ScriptsPanel.prototype = {
         this._toggleDebuggerSidebarButton.state = "shown";
         this._toggleDebuggerSidebarButton.title = WebInspector.UIString("Hide debugger");
         this.splitView.showSidebarElement();
+        this.debugSidebarResizeWidgetElement.removeStyleClass("hidden");
         WebInspector.settings.debuggerSidebarHidden.set(false);
     },
 
@@ -1000,6 +1003,7 @@ WebInspector.ScriptsPanel.prototype = {
         this._toggleDebuggerSidebarButton.state = "hidden";
         this._toggleDebuggerSidebarButton.title = WebInspector.UIString("Show debugger");
         this.splitView.hideSidebarElement();
+        this.debugSidebarResizeWidgetElement.addStyleClass("hidden");
         WebInspector.settings.debuggerSidebarHidden.set(true);
     },
 

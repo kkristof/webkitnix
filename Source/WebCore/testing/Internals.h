@@ -27,8 +27,8 @@
 #define Internals_h
 
 #include "ContextDestructionObserver.h"
+#include "ExceptionCodePlaceholder.h"
 #include "NodeList.h"
-#include "PlatformString.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -38,10 +38,12 @@ namespace WebCore {
 class ClientRect;
 class ClientRectList;
 class DOMStringList;
+class DOMWindow;
 class Document;
 class DocumentMarker;
 class Element;
 class Frame;
+class InspectorFrontendChannelDummy;
 class InternalSettings;
 class Node;
 class PagePopupController;
@@ -192,12 +194,18 @@ public:
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
+    PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
+    void closeDummyInspectorFrontend();
 #endif
 
     String counterValue(Element*);
 
     int pageNumber(Element*, float pageWidth = 800, float pageHeight = 600);
     PassRefPtr<DOMStringList> iconURLs(Document*) const;
+
+    int numberOfPages(float pageWidthInPixels = 800, float pageHeightInPixels = 600);
+    String pageProperty(String, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
+    String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionCode& = ASSERT_NO_EXCEPTION) const;
 
 #if ENABLE(FULLSCREEN_API)
     void webkitWillEnterFullScreenForElement(Document*, Element*);
@@ -219,6 +227,10 @@ private:
     Frame* frame() const;
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionCode&);
+#if ENABLE(INSPECTOR)
+    RefPtr<DOMWindow> m_frontendWindow;
+    OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
+#endif
 };
 
 } // namespace WebCore

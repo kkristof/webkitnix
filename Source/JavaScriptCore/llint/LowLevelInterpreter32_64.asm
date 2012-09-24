@@ -108,13 +108,16 @@ macro cCall2(function, arg1, arg2)
     if ARMv7
         move arg1, t0
         move arg2, t1
+        call function
     elsif X86
         poke arg1, 0
         poke arg2, 1
+        call function
+    elsif C_LOOP
+        cloopCallSlowPath function, arg1, arg2
     else
         error
     end
-    call function
 end
 
 # This barely works. arg3 and arg4 should probably be immediates.
@@ -124,15 +127,18 @@ macro cCall4(function, arg1, arg2, arg3, arg4)
         move arg2, t1
         move arg3, t2
         move arg4, t3
+        call function
     elsif X86
         poke arg1, 0
         poke arg2, 1
         poke arg3, 2
         poke arg4, 3
+        call function
+    elsif C_LOOP
+        error
     else
         error
     end
-    call function
 end
 
 macro callSlowPath(slowPath)
@@ -346,7 +352,7 @@ _llint_op_create_this:
     loadp Callee[cfr], t0
     loadp JSFunction::m_cachedInheritorID[t0], t2
     btpz t2, .opCreateThisSlow
-    allocateBasicJSObject(JSFinalObjectSizeClassIndex, JSGlobalData::jsFinalObjectClassInfo, t2, t0, t1, t3, .opCreateThisSlow)
+    allocateBasicJSObject(JSFinalObjectSizeClassIndex, t2, t0, t1, t3, .opCreateThisSlow)
     loadi 4[PC], t1
     storei CellTag, TagOffset[cfr, t1, 8]
     storei t0, PayloadOffset[cfr, t1, 8]
@@ -378,7 +384,7 @@ _llint_op_new_object:
     loadp CodeBlock[cfr], t0
     loadp CodeBlock::m_globalObject[t0], t0
     loadp JSGlobalObject::m_emptyObjectStructure[t0], t1
-    allocateBasicJSObject(JSFinalObjectSizeClassIndex, JSGlobalData::jsFinalObjectClassInfo, t1, t0, t2, t3, .opNewObjectSlow)
+    allocateBasicJSObject(JSFinalObjectSizeClassIndex, t1, t0, t2, t3, .opNewObjectSlow)
     loadi 4[PC], t1
     storei CellTag, TagOffset[cfr, t1, 8]
     storei t0, PayloadOffset[cfr, t1, 8]
@@ -827,28 +833,21 @@ _llint_op_bitor:
 
 _llint_op_check_has_instance:
     traceExecution()
-    loadi 4[PC], t1
+    loadi 12[PC], t1
     loadConstantOrVariablePayload(t1, CellTag, t0, .opCheckHasInstanceSlow)
     loadp JSCell::m_structure[t0], t0
-    btbz Structure::m_typeInfo + TypeInfo::m_flags[t0], ImplementsHasInstance, .opCheckHasInstanceSlow
-    dispatch(2)
+    btbz Structure::m_typeInfo + TypeInfo::m_flags[t0], ImplementsDefaultHasInstance, .opCheckHasInstanceSlow
+    dispatch(5)
 
 .opCheckHasInstanceSlow:
     callSlowPath(_llint_slow_path_check_has_instance)
-    dispatch(2)
+    dispatch(0)
 
 
 _llint_op_instanceof:
     traceExecution()
-    # Check that baseVal implements the default HasInstance behavior.
-    # FIXME: This should be deprecated.
-    loadi 12[PC], t1
-    loadConstantOrVariablePayloadUnchecked(t1, t0)
-    loadp JSCell::m_structure[t0], t0
-    btbz Structure::m_typeInfo + TypeInfo::m_flags[t0], ImplementsDefaultHasInstance, .opInstanceofSlow
-    
     # Actually do the work.
-    loadi 16[PC], t0
+    loadi 12[PC], t0
     loadi 4[PC], t3
     loadConstantOrVariablePayload(t0, CellTag, t1, .opInstanceofSlow)
     loadp JSCell::m_structure[t1], t2
@@ -868,11 +867,11 @@ _llint_op_instanceof:
 .opInstanceofDone:
     storei BooleanTag, TagOffset[cfr, t3, 8]
     storei t0, PayloadOffset[cfr, t3, 8]
-    dispatch(5)
+    dispatch(4)
 
 .opInstanceofSlow:
     callSlowPath(_llint_slow_path_instanceof)
-    dispatch(5)
+    dispatch(4)
 
 
 _llint_op_is_undefined:
@@ -941,21 +940,21 @@ _llint_op_is_string:
 macro loadPropertyAtVariableOffsetKnownNotFinal(propertyOffset, objectAndStorage, tag, payload)
     assert(macro (ok) bigteq propertyOffset, InlineStorageCapacity, ok end)
     negi propertyOffset
-    loadp JSObject::m_outOfLineStorage[objectAndStorage], objectAndStorage
-    loadi TagOffset + (InlineStorageCapacity - 2) * 8[objectAndStorage, propertyOffset, 8], tag
-    loadi PayloadOffset + (InlineStorageCapacity - 2) * 8[objectAndStorage, propertyOffset, 8], payload
+    loadp JSObject::m_butterfly[objectAndStorage], objectAndStorage
+    loadi TagOffset + (InlineStorageCapacity - 1) * 8 - sizeof IndexingHeader[objectAndStorage, propertyOffset, 8], tag
+    loadi PayloadOffset + (InlineStorageCapacity - 1) * 8 - sizeof IndexingHeader[objectAndStorage, propertyOffset, 8], payload
 end
 
 macro loadPropertyAtVariableOffset(propertyOffset, objectAndStorage, tag, payload)
     bilt propertyOffset, InlineStorageCapacity, .isInline
-    loadp JSObject::m_outOfLineStorage[objectAndStorage], objectAndStorage
+    loadp JSObject::m_butterfly[objectAndStorage], objectAndStorage
     negi propertyOffset
     jmp .ready
 .isInline:
-    addp JSFinalObject::m_inlineStorage - (InlineStorageCapacity - 2) * 8, objectAndStorage
+    addp JSFinalObject::m_inlineStorage - (InlineStorageCapacity - 1) * 8 + sizeof IndexingHeader, objectAndStorage
 .ready:
-    loadi TagOffset + (InlineStorageCapacity - 2) * 8[objectAndStorage, propertyOffset, 8], tag
-    loadi PayloadOffset + (InlineStorageCapacity - 2) * 8[objectAndStorage, propertyOffset, 8], payload
+    loadi TagOffset + (InlineStorageCapacity - 1) * 8 - sizeof IndexingHeader[objectAndStorage, propertyOffset, 8], tag
+    loadi PayloadOffset + (InlineStorageCapacity - 1) * 8 - sizeof IndexingHeader[objectAndStorage, propertyOffset, 8], payload
 end
 
 macro resolveGlobal(size, slow)
@@ -1006,14 +1005,14 @@ macro getScope(deBruijinIndexOperand, scopeCheck)
     # Need to conditionally skip over one scope.
     bieq TagOffset[cfr, t1, 8], EmptyValueTag, .noActivation
     scopeCheck(t0, t1)
-    loadp ScopeChainNode::next[t0], t0
+    loadp JSScope::m_next[t0], t0
 .noActivation:
     subi 1, t2
     
     btiz t2, .done
 .loop:
     scopeCheck(t0, t1)
-    loadp ScopeChainNode::next[t0], t0
+    loadp JSScope::m_next[t0], t0
     subi 1, t2
     btinz t2, .loop
 
@@ -1022,13 +1021,13 @@ end
 
 _llint_op_resolve_global_dynamic:
     traceExecution()
-    loadp JITStackFrame::globalData[sp], t3
-    loadp JSGlobalData::activationStructure[t3], t3
+    loadp CodeBlock[cfr], t3
+    loadp CodeBlock::m_globalObject[t3], t3
+    loadp JSGlobalObject::m_activationStructure[t3], t3
     getScope(
         20[PC],
         macro (scope, scratch)
-            loadp ScopeChainNode::object[scope], scratch
-            bpneq JSCell::m_structure[scratch], t3, .opResolveGlobalDynamicSuperSlow
+            bpneq JSCell::m_structure[scope], t3, .opResolveGlobalDynamicSuperSlow
         end)
     resolveGlobal(7, .opResolveGlobalDynamicSlow)
     dispatch(7)
@@ -1051,7 +1050,6 @@ _llint_op_get_scoped_var:
     getScope(12[PC], macro (scope, scratch) end)
     loadi 4[PC], t1
     loadi 8[PC], t2
-    loadp ScopeChainNode::object[t0], t0
     loadp JSVariableObject::m_registers[t0], t0
     loadi TagOffset[t0, t2, 8], t3
     loadi PayloadOffset[t0, t2, 8], t0
@@ -1069,7 +1067,6 @@ _llint_op_put_scoped_var:
     loadConstantOrVariable(t1, t3, t2)
     loadi 4[PC], t1
     writeBarrier(t3, t2)
-    loadp ScopeChainNode::object[t0], t0
     loadp JSVariableObject::m_registers[t0], t0
     storei t3, TagOffset[t0, t1, 8]
     storei t2, PayloadOffset[t0, t1, 8]
@@ -1097,6 +1094,7 @@ _llint_op_get_global_var_watchable:
     getGlobalVar(5)
 
 
+_llint_op_init_global_const:
 _llint_op_put_global_var:
     traceExecution()
     loadi 8[PC], t1
@@ -1108,6 +1106,7 @@ _llint_op_put_global_var:
     dispatch(3)
 
 
+_llint_op_init_global_const_check:
 _llint_op_put_global_var_check:
     traceExecution()
     loadp 12[PC], t2
@@ -1162,6 +1161,30 @@ _llint_op_get_by_id:
 
 _llint_op_get_by_id_out_of_line:
     getById(withOutOfLineStorage)
+
+
+_llint_op_get_array_length:
+    traceExecution()
+    loadi 8[PC], t0
+    loadp 16[PC], t1
+    loadConstantOrVariablePayload(t0, CellTag, t3, .opGetArrayLengthSlow)
+    loadp JSCell::m_structure[t3], t2
+    arrayProfile(t2, t1, t0)
+    btiz t2, IsArray, .opGetArrayLengthSlow
+    btiz t2, HasArrayStorage, .opGetArrayLengthSlow
+    loadi 4[PC], t1
+    loadp 32[PC], t2
+    loadp JSObject::m_butterfly[t3], t0
+    loadi -sizeof IndexingHeader + IndexingHeader::m_publicLength[t0], t0
+    bilt t0, 0, .opGetArrayLengthSlow
+    valueProfile(Int32Tag, t0, t2)
+    storep t0, PayloadOffset[cfr, t1, 8]
+    storep Int32Tag, TagOffset[cfr, t1, 8]
+    dispatch(9)
+
+.opGetArrayLengthSlow:
+    callSlowPath(_llint_slow_path_get_by_id)
+    dispatch(9)
 
 
 _llint_op_get_arguments_length:
@@ -1275,20 +1298,15 @@ _llint_op_put_by_id_transition_normal_out_of_line:
 _llint_op_get_by_val:
     traceExecution()
     loadi 8[PC], t2
-    loadi 12[PC], t3
     loadConstantOrVariablePayload(t2, CellTag, t0, .opGetByValSlow)
+    loadp JSCell::m_structure[t0], t2
+    loadp 16[PC], t3
+    arrayProfile(t2, t3, t1)
+    btiz t2, HasArrayStorage, .opGetByValSlow
+    loadi 12[PC], t3
     loadConstantOrVariablePayload(t3, Int32Tag, t1, .opGetByValSlow)
-    loadp JSCell::m_structure[t0], t3
-    loadp 16[PC], t2
-    if VALUE_PROFILER
-        storep t3, ArrayProfile::m_lastSeenStructure[t2]
-    end
-    loadp CodeBlock[cfr], t2
-    loadp CodeBlock::m_globalData[t2], t2
-    loadp JSGlobalData::jsArrayClassInfo[t2], t2
-    bpneq Structure::m_classInfo[t3], t2, .opGetByValSlow
-    loadp JSArray::m_storage[t0], t3
-    biaeq t1, JSArray::m_vectorLength[t0], .opGetByValSlow
+    loadp JSObject::m_butterfly[t0], t3
+    biaeq t1, -sizeof IndexingHeader + IndexingHeader::m_vectorLength[t3], .opGetByValSlow
     loadi 4[PC], t0
     loadi ArrayStorage::m_vector + TagOffset[t3, t1, 8], t2
     loadi ArrayStorage::m_vector + PayloadOffset[t3, t1, 8], t1
@@ -1362,19 +1380,14 @@ _llint_op_put_by_val:
     traceExecution()
     loadi 4[PC], t0
     loadConstantOrVariablePayload(t0, CellTag, t1, .opPutByValSlow)
+    loadp JSCell::m_structure[t1], t2
+    loadp 16[PC], t3
+    arrayProfile(t2, t3, t0)
+    btiz t2, HasArrayStorage, .opPutByValSlow
     loadi 8[PC], t0
     loadConstantOrVariablePayload(t0, Int32Tag, t2, .opPutByValSlow)
-    loadp JSCell::m_structure[t1], t3
-    loadp 16[PC], t0
-    if VALUE_PROFILER
-        storep t3, ArrayProfile::m_lastSeenStructure[t0]
-    end
-    loadp CodeBlock[cfr], t0
-    loadp CodeBlock::m_globalData[t0], t0
-    loadp JSGlobalData::jsArrayClassInfo[t0], t0
-    bpneq Structure::m_classInfo[t3], t0, .opPutByValSlow
-    biaeq t2, JSArray::m_vectorLength[t1], .opPutByValSlow
-    loadp JSArray::m_storage[t1], t0
+    loadp JSObject::m_butterfly[t1], t0
+    biaeq t2, -sizeof IndexingHeader + IndexingHeader::m_vectorLength[t0], .opPutByValSlow
     bieq ArrayStorage::m_vector + TagOffset[t0, t2, 8], EmptyValueTag, .opPutByValEmpty
 .opPutByValStoreResult:
     loadi 12[PC], t3
@@ -1385,10 +1398,11 @@ _llint_op_put_by_val:
     dispatch(5)
 
 .opPutByValEmpty:
+    storeb 1, ArrayProfile::m_mayStoreToHole[t3]
     addi 1, ArrayStorage::m_numValuesInVector[t0]
-    bib t2, ArrayStorage::m_length[t0], .opPutByValStoreResult
+    bib t2, -sizeof IndexingHeader + IndexingHeader::m_publicLength[t0], .opPutByValStoreResult
     addi 1, t2, t1
-    storei t1, ArrayStorage::m_length[t0]
+    storei t1, -sizeof IndexingHeader + IndexingHeader::m_publicLength[t0]
     jmp .opPutByValStoreResult
 
 .opPutByValSlow:
@@ -1615,7 +1629,7 @@ macro doCall(slowPath)
     addp 24, PC
     lshifti 3, t3
     addp cfr, t3  # t3 contains the new value of cfr
-    loadp JSFunction::m_scopeChain[t2], t0
+    loadp JSFunction::m_scope[t2], t0
     storei t2, Callee + PayloadOffset[t3]
     storei t0, ScopeChain + PayloadOffset[t3]
     loadi 8 - 24[PC], t2
@@ -1625,8 +1639,7 @@ macro doCall(slowPath)
     storei CellTag, Callee + TagOffset[t3]
     storei CellTag, ScopeChain + TagOffset[t3]
     move t3, cfr
-    call LLIntCallLinkInfo::machineCodeTarget[t1]
-    dispatchAfterCall()
+    callTargetFunction(t1)
 
 .opCallSlow:
     slowPathForCall(6, slowPath)
@@ -1636,13 +1649,10 @@ end
 _llint_op_tear_off_activation:
     traceExecution()
     loadi 4[PC], t0
-    loadi 8[PC], t1
-    bineq TagOffset[cfr, t0, 8], EmptyValueTag, .opTearOffActivationCreated
-    bieq TagOffset[cfr, t1, 8], EmptyValueTag, .opTearOffActivationNotCreated
-.opTearOffActivationCreated:
+    bieq TagOffset[cfr, t0, 8], EmptyValueTag, .opTearOffActivationNotCreated
     callSlowPath(_llint_slow_path_tear_off_activation)
 .opTearOffActivationNotCreated:
-    dispatch(3)
+    dispatch(2)
 
 
 _llint_op_tear_off_arguments:
@@ -1652,7 +1662,7 @@ _llint_op_tear_off_arguments:
     bieq TagOffset[cfr, t0, 8], EmptyValueTag, .opTearOffArgumentsNotCreated
     callSlowPath(_llint_slow_path_tear_off_arguments)
 .opTearOffArgumentsNotCreated:
-    dispatch(2)
+    dispatch(3)
 
 
 _llint_op_ret:
@@ -1824,6 +1834,19 @@ macro nativeCallTrampoline(executableOffsetToFunction)
         loadp JSFunction::m_executable[t1], t1
         move t2, cfr
         call executableOffsetToFunction[t1]
+        restoreReturnAddressBeforeReturn(t3)
+        loadp JITStackFrame::globalData[sp], t3
+    elsif C_LOOP
+        loadp JITStackFrame::globalData[sp], t3
+        storep cfr, JSGlobalData::topCallFrame[t3]
+        move t0, t2
+        preserveReturnAddressAfterCall(t3)
+        storep t3, ReturnPC[cfr]
+        move cfr, t0
+        loadi Callee + PayloadOffset[cfr], t1
+        loadp JSFunction::m_executable[t1], t1
+        move t2, cfr
+        cloopCallNative executableOffsetToFunction[t1]
         restoreReturnAddressBeforeReturn(t3)
         loadp JITStackFrame::globalData[sp], t3
     else  

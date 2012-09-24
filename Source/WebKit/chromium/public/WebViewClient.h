@@ -62,6 +62,7 @@ class WebFileChooserCompletion;
 class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationService;
+class WebGestureEvent;
 class WebHelperPlugin;
 class WebHitTestResult;
 class WebIconLoadingCompletion;
@@ -84,6 +85,7 @@ struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPoint;
 struct WebPopupMenuInfo;
+struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;
 
@@ -139,6 +141,9 @@ public:
 
     // Called to retrieve the provider of desktop notifications.
     virtual WebNotificationPresenter* notificationPresenter() { return 0; }
+
+    // Called when a gesture event is handled.
+    virtual void didHandleGestureEvent(const WebGestureEvent& event, bool eventSwallowed) { }
 
     // Called to request an icon for the specified filenames.
     // The icon is shown in a file upload control.
@@ -284,6 +289,9 @@ public:
     // After calling WebWidget::layout(), expect to get this notification
     // unless the view did not need a layout.
     virtual void didUpdateLayout() { }
+
+    // Return true to swallow the input event if the embedder will start a disambiguation popup
+    virtual bool didTapMultipleTargets(const WebGestureEvent&, const WebVector<WebRect>& targetRects) { return false; }
 
     // Session history -----------------------------------------------------
 

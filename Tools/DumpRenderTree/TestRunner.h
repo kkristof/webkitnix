@@ -70,11 +70,8 @@ public:
     void keepWebHistory();
     JSValueRef computedStyleIncludingVisitedInfo(JSContextRef, JSValueRef);
     void notifyDone();
-    int numberOfPages(float pageWidthInPixels, float pageHeightInPixels);
     int numberOfPendingGeolocationPermissionRequests();
     void overridePreference(JSStringRef key, JSStringRef value);
-    JSRetainPtr<JSStringRef> pageProperty(const char* propertyName, int pageNumber) const;
-    JSRetainPtr<JSStringRef> pageSizeAndMarginsInPixels(int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft) const;
     JSStringRef pathToLocalResource(JSContextRef, JSStringRef url);
     void queueBackNavigation(int howFarBackward);
     void queueForwardNavigation(int howFarForward);
@@ -368,6 +365,8 @@ public:
 
     void setStorageDatabaseIdleInterval(double);
 
+    bool hasPendingWebNotificationClick() const { return m_hasPendingWebNotificationClick; }
+
 private:
     TestRunner(const std::string& testPathOrURL, const std::string& expectedPixelHash);
 
@@ -423,6 +422,7 @@ private:
     // FIXME 81697: This variable most likely will be removed once we have migrated the tests from fast/notifications to http/tests/notifications.
     bool m_areLegacyWebNotificationPermissionRequestsIgnored;
     bool m_customFullScreenBehavior;
+    bool m_hasPendingWebNotificationClick;
 
     std::string m_authenticationUsername;
     std::string m_authenticationPassword; 

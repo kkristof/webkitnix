@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2006, 2007, 2008, Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -33,6 +33,7 @@
 
 #include "FontOrientation.h"
 #include "FontRenderStyle.h"
+#include "SharedBuffer.h"
 #include "SkPaint.h"
 #include "TextOrientation.h"
 #include <wtf/Forward.h>
@@ -46,6 +47,7 @@ typedef uint32_t SkFontID;
 namespace WebCore {
 
 class FontDescription;
+class OpenTypeVerticalData;
 
 #if USE(HARFBUZZ_NG)
 class HarfBuzzNGFace;
@@ -102,6 +104,11 @@ public:
     FontPlatformData& operator=(const FontPlatformData&);
     bool isHashTableDeletedValue() const { return m_typeface == hashTableDeletedFontValue(); }
 
+#if ENABLE(OPENTYPE_VERTICAL)
+    const OpenTypeVerticalData* verticalData() const;
+    PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
+#endif
+
 #ifndef NDEBUG
     String description() const;
 #endif
@@ -126,6 +133,7 @@ public:
     static void setSubpixelPositioning(bool);
 
 private:
+    void getRenderStyleForStrike(const char*, int);
     void querySystemForRenderStyle();
 
     // FIXME: Could SkAutoUnref be used here?

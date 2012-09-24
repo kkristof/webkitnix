@@ -27,6 +27,7 @@
 #define TestController_h
 
 #include "WebNotificationProvider.h"
+#include <GeolocationProviderMock.h>
 #include <WebKit2/WKRetainPtr.h>
 #include <string>
 #include <vector>
@@ -65,6 +66,11 @@ public:
 
     void simulateWebNotificationClick(uint64_t notificationID);
 
+    // Geolocation.
+    void setGeolocationPermission(bool enabled) { m_isGeolocationPermissionAllowed = enabled; }
+    bool isGeolocationPermissionAllowed() const { return m_isGeolocationPermissionAllowed; }
+    void setMockGeolocationPosition(double latitude, double longitude, double accuracy);
+
     bool resetStateToConsistentValues();
 
 private:
@@ -97,6 +103,9 @@ private:
     static void processDidCrash(WKPageRef, const void* clientInfo);
     void processDidCrash();
 
+    static void decidePolicyForNotificationPermissionRequest(WKPageRef, WKSecurityOriginRef, WKNotificationPermissionRequestRef, const void*);
+    void decidePolicyForNotificationPermissionRequest(WKPageRef, WKSecurityOriginRef, WKNotificationPermissionRequestRef);
+
     static WKPageRef createOtherPage(WKPageRef oldPage, WKURLRequestRef, WKDictionaryRef, WKEventModifiers, WKEventMouseButton, const void*);
 
     static void runModal(WKPageRef, const void* clientInfo);
@@ -120,6 +129,7 @@ private:
     OwnPtr<PlatformWebView> m_mainWebView;
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
+    OwnPtr<GeolocationProviderMock> m_geolocationProvider;
 
     enum State {
         Initial,
@@ -139,6 +149,8 @@ private:
     bool m_shouldExitWhenWebProcessCrashes;
     
     bool m_beforeUnloadReturnValue;
+
+    bool m_isGeolocationPermissionAllowed;
 
     EventSenderProxy* m_eventSenderProxy;
 };

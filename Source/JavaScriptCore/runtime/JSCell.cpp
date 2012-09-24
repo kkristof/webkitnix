@@ -38,7 +38,7 @@ void JSCell::destroy(JSCell* cell)
     cell->JSCell::~JSCell();
 }
 
-bool JSCell::getString(ExecState* exec, UString&stringValue) const
+bool JSCell::getString(ExecState* exec, String& stringValue) const
 {
     if (!isString())
         return false;
@@ -46,9 +46,9 @@ bool JSCell::getString(ExecState* exec, UString&stringValue) const
     return true;
 }
 
-UString JSCell::getString(ExecState* exec) const
+String JSCell::getString(ExecState* exec) const
 {
-    return isString() ? static_cast<const JSString*>(this)->value(exec) : UString();
+    return isString() ? static_cast<const JSString*>(this)->value(exec) : String();
 }
 
 JSObject* JSCell::getObject()
@@ -178,10 +178,15 @@ void JSCell::getOwnPropertyNames(JSObject*, ExecState*, PropertyNameArray&, Enum
     ASSERT_NOT_REACHED();
 }
 
-UString JSCell::className(const JSObject*)
+void JSCell::getOwnNonIndexPropertyNames(JSObject*, ExecState*, PropertyNameArray&, EnumerationMode)
 {
     ASSERT_NOT_REACHED();
-    return UString();
+}
+
+String JSCell::className(const JSObject*)
+{
+    ASSERT_NOT_REACHED();
+    return String();
 }
 
 const char* JSCell::className()
@@ -194,7 +199,7 @@ void JSCell::getPropertyNames(JSObject*, ExecState*, PropertyNameArray&, Enumera
     ASSERT_NOT_REACHED();
 }
 
-bool JSCell::hasInstance(JSObject*, ExecState*, JSValue, JSValue)
+bool JSCell::customHasInstance(JSObject*, ExecState*, JSValue)
 {
     ASSERT_NOT_REACHED();
     return false;

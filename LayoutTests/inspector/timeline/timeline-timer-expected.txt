@@ -2,162 +2,151 @@ Tests the Timeline events for Timers
 
 TimerInstall Properties:
 {
-    startTime : <number>
-    stackTrace : <object>
-    data : {
-        timerId : <number>
-        timeout : 10
-        singleShot : true
-    }
-    type : "TimerInstall"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        singleShot : true
+        timeout : 10
+        timerId : <number>
+    }
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    type : "TimerInstall"
+    usedHeapSize : <number>
 }
 TimerInstall Properties:
 {
-    startTime : <number>
-    stackTrace : <object>
+    counters : <object>
     data : {
-        timerId : <number>
-        timeout : 20
         singleShot : false
+        timeout : 20
+        timerId : <number>
     }
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
     type : "TimerInstall"
-    frameId : <string>
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 TimerFire Properties:
 {
-    startTime : <number>
+    children : <object>
+    counters : <object>
     data : {
         timerId : <number>
     }
-    children : <object>
     endTime : <number>
-    type : "TimerFire"
     frameId : <string>
+    startTime : <number>
+    type : "TimerFire"
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 TimerFire Properties:
 {
-    startTime : <number>
+    children : <object>
+    counters : <object>
     data : {
         timerId : <number>
     }
-    children : <object>
     endTime : <number>
-    type : "TimerFire"
     frameId : <string>
+    startTime : <number>
+    type : "TimerFire"
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 TimerFire Properties:
 {
-    startTime : <number>
+    children : <object>
+    counters : <object>
     data : {
         timerId : <number>
     }
-    children : <object>
     endTime : <number>
-    type : "TimerFire"
     frameId : <string>
+    startTime : <number>
+    type : "TimerFire"
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 TimerRemove Properties:
 {
-    startTime : <number>
-    stackTrace : <object>
+    counters : <object>
     data : {
         timerId : <number>
     }
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
     type : "TimerRemove"
-    frameId : <string>
     usedHeapSize : <number>
-    totalHeapSize : <number>
-    counters : <object>
 }
 FunctionCall Properties:
 {
-    startTime : <number>
-    data : {
-        scriptName : <string>
-        scriptLine : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "FunctionCall"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "FunctionCall"
+    usedHeapSize : <number>
 }
 FunctionCall Properties:
 {
-    startTime : <number>
-    data : {
-        scriptName : <string>
-        scriptLine : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "FunctionCall"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "FunctionCall"
+    usedHeapSize : <number>
 }
 FunctionCall Properties:
 {
-    startTime : <number>
-    data : {
-        scriptName : <string>
-        scriptLine : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "FunctionCall"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "FunctionCall"
+    usedHeapSize : <number>
 }
 FunctionCall Properties:
 {
-    startTime : <number>
-    data : {
-        scriptName : <string>
-        scriptLine : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "FunctionCall"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "FunctionCall"
+    usedHeapSize : <number>
 }
 EvaluateScript Properties:
 {
-    startTime : <number>
-    data : {
-        url : <string>
-        lineNumber : <number>
-    }
     children : <object>
-    endTime : <number>
-    type : "EvaluateScript"
-    frameId : <string>
-    usedHeapSize : <number>
-    totalHeapSize : <number>
     counters : <object>
+    data : {
+        lineNumber : <number>
+        url : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "EvaluateScript"
+    usedHeapSize : <number>
 }
 

@@ -47,8 +47,8 @@ namespace WebCore {
 
 static const String& eventParameterName(bool isSVGEvent)
 {
-    DEFINE_STATIC_LOCAL(const String, eventString, ("event"));
-    DEFINE_STATIC_LOCAL(const String, evtString, ("evt"));
+    DEFINE_STATIC_LOCAL(const String, eventString, (ASCIILiteral("event")));
+    DEFINE_STATIC_LOCAL(const String, evtString, (ASCIILiteral("evt")));
     return isSVGEvent ? evtString : eventString;
 }
 
@@ -103,10 +103,10 @@ String eventListenerHandlerBody(Document* document, EventListener* eventListener
     if (!jsFunction)
         return "";
     ScriptState* scriptState = scriptStateFromNode(jsListener->isolatedWorld(), document);
-    return ustringToString(jsFunction->toString(scriptState)->value(scriptState));
+    return jsFunction->toString(scriptState)->value(scriptState);
 }
 
-bool eventListenerHandlerLocation(Document* document, EventListener* eventListener, String& sourceName, int& lineNumber)
+bool eventListenerHandlerLocation(Document* document, EventListener* eventListener, String& sourceName, String& scriptId, int& lineNumber)
 {
     const JSEventListener* jsListener = JSEventListener::cast(eventListener);
     ASSERT(jsListener);
@@ -122,8 +122,10 @@ bool eventListenerHandlerLocation(Document* document, EventListener* eventListen
     JSC::FunctionExecutable* funcExecutable = jsFunction->jsExecutable();
     if (!funcExecutable)
         return false;
-    lineNumber = funcExecutable->lineNo();
-    sourceName = ustringToString(funcExecutable->sourceURL());
+    lineNumber = funcExecutable->lineNo() - 1;
+    intptr_t funcSourceId = funcExecutable->sourceID();
+    scriptId = funcSourceId == SourceProvider::nullID ? "" : String::number(funcSourceId);
+    sourceName = funcExecutable->sourceURL();
     return true;
 }
 

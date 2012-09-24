@@ -20,7 +20,9 @@
 #include "config.h"
 #include "EWK2UnitTestEnvironment.h"
 
+#include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringConcatenate.h>
+#include <wtf/text/WTFString.h>
 
 namespace EWK2UnitTest {
 
@@ -41,9 +43,22 @@ const char* EWK2UnitTestEnvironment::defaultTheme() const
     return TEST_THEME_DIR"/default.edj";
 }
 
+const char* EWK2UnitTestEnvironment::injectedBundleSample() const
+{
+    return TEST_LIB_DIR "/libewk2UnitTestInjectedBundleSample.so";
+}
+
 CString EWK2UnitTestEnvironment::urlForResource(const char* resource)
 {
     return makeString("file://"TEST_RESOURCES_DIR"/", resource).utf8();
+}
+
+CString EWK2UnitTestEnvironment::pathForResource(const char* resource)
+{
+    StringBuilder builder;
+    builder.appendLiteral(TEST_RESOURCES_DIR "/");
+    builder.append(resource);
+    return builder.toString().utf8();
 }
 
 } // namespace EWK2UnitTest

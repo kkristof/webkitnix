@@ -32,23 +32,26 @@
 #include "Color.h"
 #include "FloatQuad.h"
 #include "LayoutTypes.h"
-#include "Node.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
 class Color;
 class GraphicsContext;
 class InspectorClient;
+class InspectorValue;
 class IntRect;
 class Node;
 class Page;
 
 struct HighlightConfig {
+    WTF_MAKE_FAST_ALLOCATED;
+public:
     Color content;
     Color contentOutline;
     Color padding;
@@ -66,12 +69,14 @@ struct Highlight {
     void setColors(const HighlightConfig& highlightConfig)
     {
         contentColor = highlightConfig.content;
+        contentOutlineColor = highlightConfig.contentOutline;
         paddingColor = highlightConfig.padding;
         borderColor = highlightConfig.border;
         marginColor = highlightConfig.margin;
     }
 
     Color contentColor;
+    Color contentOutlineColor;
     Color paddingColor;
     Color borderColor;
     Color marginColor;
@@ -83,6 +88,7 @@ struct Highlight {
 };
 
 class InspectorOverlay {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<InspectorOverlay> create(Page* page, InspectorClient* client)
     {
@@ -90,6 +96,7 @@ public:
     }
     ~InspectorOverlay();
 
+    void update();
     void paint(GraphicsContext&);
     void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
     void getHighlight(Highlight*) const;
@@ -105,12 +112,13 @@ public:
 private:
     InspectorOverlay(Page*, InspectorClient*);
 
-    void update();
-    void drawNodeHighlight(GraphicsContext*);
-    void drawRectHighlight(GraphicsContext*);
-    void drawOverlayPage(GraphicsContext*);
+    void drawNodeHighlight();
+    void drawRectHighlight();
+    void drawPausedInDebuggerMessage();
     Page* overlayPage();
+    void reset();
     void evaluateInOverlay(const String& method, const String& argument);
+    void evaluateInOverlay(const String& method, PassRefPtr<InspectorValue> argument);
 
     Page* m_page;
     InspectorClient* m_client;

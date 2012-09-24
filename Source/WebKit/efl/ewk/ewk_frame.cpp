@@ -262,7 +262,7 @@ static void _ewk_frame_smart_resize(Evas_Object* ewkFrame, Evas_Coord width, Eva
     evas_object_resize(smartData->region, width, height);
     Evas_Coord x, y;
     evas_object_geometry_get(smartData->region, &x, &y, &width, &height);
-    INF("region=%p, visible=%d, geo=%d,%d + %dx%d",
+    INFO("region=%p, visible=%d, geo=%d,%d + %dx%d",
         smartData->region, evas_object_visible_get(smartData->region), x, y, width, height);
     _ewk_frame_debug(ewkFrame);
 #endif
@@ -458,7 +458,7 @@ const char* ewk_frame_script_execute(Evas_Object* ewkFrame, const char* script)
 
     JSC::ExecState* exec = smartData->frame->script()->globalObject(WebCore::mainThreadNormalWorld())->globalExec();
     JSC::JSLockHolder lock(exec);
-    resultString = WebCore::ustringToString(result.toString(exec)->value(exec));
+    resultString = result.toString(exec)->value(exec);
     return eina_stringshare_add(resultString.utf8().data());
 #else
     notImplemented();
@@ -881,7 +881,7 @@ Eina_Bool ewk_frame_feed_focus_in(Evas_Object* ewkFrame)
     return true;
 }
 
-Eina_Bool ewk_frame_feed_focus_out(Evas_Object* ewkFrame)
+Eina_Bool ewk_frame_feed_focus_out(Evas_Object*)
 {
     // TODO: what to do on focus out?
     ERR("what to do?");
@@ -897,7 +897,7 @@ Eina_Bool ewk_frame_focused_element_geometry_get(const Evas_Object *ewkFrame, in
     WebCore::Node* focusedNode = document->focusedNode();
     if (!focusedNode)
         return false;
-    WebCore::IntRect nodeRect = focusedNode->getPixelSnappedRect();
+    WebCore::IntRect nodeRect = focusedNode->pixelSnappedBoundingBox();
     if (x)
         *x = nodeRect.x();
     if (y)
@@ -1334,7 +1334,7 @@ void ewk_frame_did_perform_first_navigation(Evas_Object* ewkFrame)
  *
  * Emits signal: "state,save"
  */
-void ewk_frame_view_state_save(Evas_Object* ewkFrame, WebCore::HistoryItem* item)
+void ewk_frame_view_state_save(Evas_Object* ewkFrame, WebCore::HistoryItem*)
 {
     evas_object_smart_callback_call(ewkFrame, "state,save", 0);
 }
@@ -1638,12 +1638,12 @@ ssize_t ewk_frame_source_get(const Evas_Object* ewkFrame, char** frameSource)
     EINA_SAFETY_ON_NULL_RETURN_VAL(smartData->frame->document(), -1);
     EINA_SAFETY_ON_NULL_RETURN_VAL(frameSource, -1);
 
-    WTF::String source;
+    StringBuilder builder;
     *frameSource = 0; // Saves 0 to pointer until it's not allocated.
 
     if (!smartData->frame->document()->isHTMLDocument()) {
         // FIXME: Support others documents.
-        WRN("Only HTML documents are supported");
+        WARN("Only HTML documents are supported");
         return -1;
     }
 
@@ -1654,28 +1654,20 @@ ssize_t ewk_frame_source_get(const Evas_Object* ewkFrame, char** frameSource)
             if (node->hasTagName(WebCore::HTMLNames::htmlTag)) {
                 WebCore::HTMLElement* element = static_cast<WebCore::HTMLElement*>(node);
                 if (element)
-                    source = element->outerHTML();
+                    builder.append(element->outerHTML());
                 break;
             }
         }
 
-    // Try to get <head> and <body> tags if <html> tag was not found.
-    if (source.isEmpty()) {
-        if (smartData->frame->document()->head())
-            source = smartData->frame->document()->head()->outerHTML();
-
-        if (smartData->frame->document()->body())
-            source += smartData->frame->document()->body()->outerHTML();
-    }
-
-    size_t sourceLength = strlen(source.utf8().data());
+    CString utf8String = builder.toString().utf8();
+    size_t sourceLength = utf8String.length();
     *frameSource = static_cast<char*>(malloc(sourceLength + 1));
     if (!*frameSource) {
         CRITICAL("Could not allocate memory.");
         return -1;
     }
 
-    strncpy(*frameSource, source.utf8().data(), sourceLength);
+    strncpy(*frameSource, utf8String.data(), sourceLength);
     (*frameSource)[sourceLength] = '\0';
 
     return sourceLength;
@@ -1702,7 +1694,7 @@ Eina_List* ewk_frame_resources_location_get(const Evas_Object* ewkFrame)
         void* data = 0;
         Eina_Bool found = false;
         EINA_LIST_FOREACH(listOfImagesLocation, listIterator, data)
-            if (found = !strcmp(static_cast<char*>(data), imageLocation.utf8().data()))
+            if ((found = !strcmp(static_cast<char*>(data), imageLocation.utf8().data())))
                 break;
         if (found)
             continue;
@@ -1802,7 +1794,7 @@ bool ewk_frame_uri_changed(Evas_Object* ewkFrame)
     EINA_SAFETY_ON_NULL_RETURN_VAL(smartData->frame, false);
     WTF::CString uri(smartData->frame->document()->url().string().utf8());
 
-    INF("uri=%s", uri.data());
+    INFO("uri=%s", uri.data());
     if (!uri.data()) {
         ERR("no uri");
         return false;
@@ -1852,6 +1844,15 @@ WTF::PassRefPtr<WebCore::Widget> ewk_frame_plugin_create(Evas_Object* ewkFrame, 
 
     if (pluginView->status() == WebCore::PluginStatusLoadedSuccessfully)
         return pluginView.release();
+#else
+    UNUSED_PARAM(ewkFrame);
+    UNUSED_PARAM(pluginSize);
+    UNUSED_PARAM(element);
+    UNUSED_PARAM(url);
+    UNUSED_PARAM(paramNames);
+    UNUSED_PARAM(paramValues);
+    UNUSED_PARAM(mimeType);
+    UNUSED_PARAM(loadManually);
 #endif // #if ENABLE(NETSCAPE_PLUGIN_API)
     return 0;
 }

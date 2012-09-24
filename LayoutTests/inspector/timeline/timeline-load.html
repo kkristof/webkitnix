@@ -16,9 +16,9 @@ function test()
             return new InspectorTest.FakeFileReader(input, delegate, model.saveToFile.bind(model));
         }
 
-        function createFileWriter(fileName, delegate)
+        function createFileWriter(fileName, callback)
         {
-            return new InspectorTest.FakeFileWriter(delegate, checkSaveData);
+            callback(new InspectorTest.StringOutputStream(checkSaveData));
         }
 
         function checkSaveData(output)
@@ -28,7 +28,6 @@ function test()
             expectedOutput.shift();
             InspectorTest.assertEquals(JSON.stringify(expectedOutput), JSON.stringify(saveData), "saved data is not equal to restored");
             InspectorTest.addResult("passed");
-            InspectorTest.completeTest();
         }
 
         InspectorTest.override(model, "_createFileReader", createFileReader);

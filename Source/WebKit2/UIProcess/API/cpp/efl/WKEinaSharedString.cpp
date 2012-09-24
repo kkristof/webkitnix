@@ -60,7 +60,7 @@ WKEinaSharedString::WKEinaSharedString(const char* str)
 WKEinaSharedString::WKEinaSharedString(WKAdoptTag adoptTag, WKStringRef stringRef)
     : m_string(fromRefType(stringRef, /*adopt*/ true))
 {
-    ASSERT(adoptTag == AdoptWK); // Guard for future enum changes.
+    ASSERT_UNUSED(adoptTag, adoptTag == AdoptWK); // Guard for future enum changes.
 }
 
 WKEinaSharedString::WKEinaSharedString(WKStringRef stringRef)
@@ -71,7 +71,7 @@ WKEinaSharedString::WKEinaSharedString(WKStringRef stringRef)
 WKEinaSharedString::WKEinaSharedString(WKAdoptTag adoptTag, WKURLRef urlRef)
     : m_string(fromRefType(urlRef, /*adopt*/ true))
 {
-    ASSERT(adoptTag == AdoptWK); // Guard for future enum changes.
+    ASSERT_UNUSED(adoptTag, adoptTag == AdoptWK); // Guard for future enum changes.
 }
 
 WKEinaSharedString::WKEinaSharedString(WKURLRef urlRef)
@@ -104,4 +104,11 @@ WKEinaSharedString& WKEinaSharedString::operator=(const char* str)
 bool WKEinaSharedString::operator==(const char* str) const
 {
     return (!str || !m_string) ? (str == m_string) : !strcmp(m_string, str);
+}
+
+WKEinaSharedString WKEinaSharedString::adopt(Eina_Stringshare* string)
+{
+    WKEinaSharedString sharedString;
+    sharedString.m_string = static_cast<const char*>(string);
+    return sharedString;
 }

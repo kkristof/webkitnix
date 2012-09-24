@@ -674,9 +674,9 @@ void Frame::dispatchVisibilityStateChangeEvent()
 
 void Frame::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this, MemoryInstrumentation::DOM);
-    info.addInstrumentedMember(m_doc.get());
-    info.addInstrumentedMember(m_loader);
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
+    info.addMember(m_doc.get());
+    info.addMember(m_loader);
 }
 
 void Frame::willDetachPage()
@@ -850,7 +850,7 @@ void Frame::tiledBackingStorePaintEnd(const Vector<IntRect>& paintedArea)
         return;
     unsigned size = paintedArea.size();
     // Request repaint from the system
-    for (int n = 0; n < size; ++n)
+    for (unsigned n = 0; n < size; ++n)
         m_page->chrome()->invalidateContentsAndRootView(m_view->contentsToRootView(paintedArea[n]), false);
 }
 
@@ -886,6 +886,7 @@ String Frame::layerTreeAsText(bool showDebugInfo) const
 
     return contentRenderer()->compositor()->layerTreeAsText(showDebugInfo);
 #else
+    UNUSED_PARAM(showDebugInfo);
     return String();
 #endif
 }

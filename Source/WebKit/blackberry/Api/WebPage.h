@@ -66,6 +66,7 @@ class BackingStoreClient;
 class BackingStorePrivate;
 class InRegionScroller;
 class RenderQueue;
+class WebCookieJar;
 class WebOverlay;
 class WebPageClient;
 class WebPageCompositor;
@@ -126,6 +127,8 @@ public:
     void reloadFromCache();
 
     WebSettings* settings() const;
+
+    WebCookieJar* cookieJar() const;
 
     void setVisible(bool);
     bool isVisible() const;
@@ -380,6 +383,8 @@ public:
     void autofillTextField(const std::string&);
 
     void enableQnxJavaScriptObject(bool);
+
+    WebString renderTreeAsText();
 
 private:
     virtual ~WebPage();

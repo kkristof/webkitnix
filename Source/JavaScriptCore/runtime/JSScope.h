@@ -30,11 +30,16 @@
 
 namespace JSC {
 
+class ScopeChainIterator;
+
 class JSScope : public JSNonFinalObject {
 public:
     typedef JSNonFinalObject Base;
 
-    JS_EXPORT_PRIVATE static JSObject* objectAtScope(ScopeChainNode*);
+    friend class LLIntOffsetsExtractor;
+    static size_t offsetOfNext();
+
+    JS_EXPORT_PRIVATE static JSObject* objectAtScope(JSScope*);
 
     static JSValue resolve(CallFrame*, const Identifier&);
     static JSValue resolveSkip(CallFrame*, const Identifier&, int skip);
@@ -56,20 +61,36 @@ public:
     static JSValue resolveWithBase(CallFrame*, const Identifier&, Register* base);
     static JSValue resolveWithThis(CallFrame*, const Identifier&, Register* base);
 
+    static void visitChildren(JSCell*, SlotVisitor&);
+
     bool isDynamicScope(bool& requiresDynamicChecks) const;
 
+    ScopeChainIterator begin();
+    ScopeChainIterator end();
+    JSScope* next();
+    int localDepth();
+
+    JSGlobalObject* globalObject();
+    JSGlobalData* globalData();
+    JSObject* globalThis();
+
 protected:
-    JSScope(JSGlobalData&, Structure*);
+    JSScope(JSGlobalData&, Structure*, JSScope* next);
+    static const unsigned StructureFlags = OverridesVisitChildren | Base::StructureFlags;
+
+private:
+    WriteBarrier<JSScope> m_next;
 };
 
-inline JSScope::JSScope(JSGlobalData& globalData, Structure* structure)
+inline JSScope::JSScope(JSGlobalData& globalData, Structure* structure, JSScope* next)
     : Base(globalData, structure)
+    , m_next(globalData, this, next, WriteBarrier<JSScope>::MayBeNull)
 {
 }
 
 class ScopeChainIterator {
 public:
-    ScopeChainIterator(ScopeChainNode* node)
+    ScopeChainIterator(JSScope* node)
         : m_node(node)
     {
     }
@@ -77,7 +98,7 @@ public:
     JSObject* get() const { return JSScope::objectAtScope(m_node); }
     JSObject* operator->() const { return JSScope::objectAtScope(m_node); }
 
-    ScopeChainIterator& operator++() { m_node = m_node->next.get(); return *this; }
+    ScopeChainIterator& operator++() { m_node = m_node->next(); return *this; }
 
     // postfix ++ intentionally omitted
 
@@ -85,17 +106,64 @@ public:
     bool operator!=(const ScopeChainIterator& other) const { return m_node != other.m_node; }
 
 private:
-    ScopeChainNode* m_node;
+    JSScope* m_node;
 };
 
-inline ScopeChainIterator ScopeChainNode::begin()
+inline ScopeChainIterator JSScope::begin()
 {
     return ScopeChainIterator(this); 
 }
 
-inline ScopeChainIterator ScopeChainNode::end()
+inline ScopeChainIterator JSScope::end()
 { 
     return ScopeChainIterator(0); 
+}
+
+inline JSScope* JSScope::next()
+{ 
+    return m_next.get();
+}
+
+inline JSGlobalObject* JSScope::globalObject()
+{ 
+    return structure()->globalObject();
+}
+
+inline JSGlobalData* JSScope::globalData()
+{ 
+    return Heap::heap(this)->globalData();
+}
+
+inline Register& Register::operator=(JSScope* scope)
+{
+    *this = JSValue(scope);
+    return *this;
+}
+
+inline JSScope* Register::scope() const
+{
+    return jsCast<JSScope*>(jsValue());
+}
+
+inline JSGlobalData& ExecState::globalData() const
+{
+    ASSERT(scope()->globalData());
+    return *scope()->globalData();
+}
+
+inline JSGlobalObject* ExecState::lexicalGlobalObject() const
+{
+    return scope()->globalObject();
+}
+
+inline JSObject* ExecState::globalThisValue() const
+{
+    return scope()->globalThis();
+}
+
+inline size_t JSScope::offsetOfNext()
+{
+    return OBJECT_OFFSETOF(JSScope, m_next);
 }
 
 } // namespace JSC

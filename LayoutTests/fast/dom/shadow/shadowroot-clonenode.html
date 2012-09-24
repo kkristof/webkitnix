@@ -10,17 +10,7 @@ description('Calling ShadowRoot.cloneNode() should throw a DATA_CLONE_ERR except
 
 var host = document.createElement('div');
 var shadowRoot = new WebKitShadowRoot(host);
-
-var exceptionCode = null;
-try {
-    shadowRoot.cloneNode()
-} catch (e) {
-    exceptionCode = e.code;
-}
-
-shouldBe('exceptionCode', 'DOMException.DATA_CLONE_ERR')
-
-finishJSTest();
+shouldThrow('shadowRoot.cloneNode()', '"Error: DATA_CLONE_ERR: DOM Exception 25"');
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </html>

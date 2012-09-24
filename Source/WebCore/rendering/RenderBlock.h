@@ -491,14 +491,15 @@ protected:
     }
 #endif
 
-    void computeInitialRegionRangeForBlock();
+    void updateRegionsAndExclusionsLogicalSize();
     void computeRegionRangeForBlock();
 
     virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
 private:
 #if ENABLE(CSS_EXCLUSIONS)
-    void updateWrapShapeInfoAfterStyleChange(const WrapShape*, const WrapShape* oldWrapShape);
+    void computeExclusionShapeSize();
+    void updateWrapShapeInfoAfterStyleChange(const BasicShape*, const BasicShape* oldWrapShape);
 #endif
     virtual RenderObjectChildList* virtualChildren() { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const { return children(); }
@@ -715,6 +716,7 @@ private:
         RenderText* m_text;
         OwnPtr<TextLayout> m_layout;
         LazyLineBreakIterator m_lineBreakIterator;
+        const Font* m_font;
     };
 
     class LineBreaker {
@@ -930,6 +932,7 @@ private:
         bool canCollapseWithMarginAfter() const { return m_atAfterSideOfBlock && m_canCollapseMarginAfterWithChildren; }
         bool canCollapseMarginBeforeWithChildren() const { return m_canCollapseMarginBeforeWithChildren; }
         bool canCollapseMarginAfterWithChildren() const { return m_canCollapseMarginAfterWithChildren; }
+        void setCanCollapseMarginAfterWithChildren(bool collapse) { m_canCollapseMarginAfterWithChildren = collapse; }
         bool quirkContainer() const { return m_quirkContainer; }
         bool determinedMarginBeforeQuirk() const { return m_determinedMarginBeforeQuirk; }
         bool marginBeforeQuirk() const { return m_marginBeforeQuirk; }
@@ -1008,7 +1011,7 @@ protected:
 
     virtual bool requiresColumns(int desiredColumnCount) const;
 
-    virtual bool recomputeLogicalWidth();
+    virtual bool updateLogicalWidthAndColumnWidth();
 
     virtual bool canCollapseAnonymousBlockChild() const { return true; }
 

@@ -39,8 +39,6 @@
 #include "WebFileUtilities.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebIDBKey.h"
-#include "WebIDBKeyPath.h"
 #include "WebKit.h"
 #include "WebPluginContainerImpl.h"
 #include "WebPluginListBuilderImpl.h"
@@ -235,43 +233,6 @@ bool PlatformSupport::loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID
     return false;
 }
 #elif OS(UNIX)
-void PlatformSupport::getFontFamilyForCharacters(const UChar* characters, size_t numCharacters, const char* preferredLocale, FontFamily* family)
-{
-#if OS(ANDROID)
-    // FIXME: We do not use fontconfig on Android, so use simple logic for now.
-    // https://bugs.webkit.org/show_bug.cgi?id=67587
-    family->name = "Arial";
-    family->isBold = false;
-    family->isItalic = false;
-#else
-    WebFontFamily webFamily;
-    if (WebKit::Platform::current()->sandboxSupport())
-        WebKit::Platform::current()->sandboxSupport()->getFontFamilyForCharacters(characters, numCharacters, preferredLocale, &webFamily);
-    else
-        WebFontInfo::familyForChars(characters, numCharacters, preferredLocale, &webFamily);
-    family->name = String::fromUTF8(webFamily.name.data(), webFamily.name.length());
-    family->isBold = webFamily.isBold;
-    family->isItalic = webFamily.isItalic;
-#endif
-}
-
-void PlatformSupport::getRenderStyleForStrike(const char* font, int sizeAndStyle, FontRenderStyle* result)
-{
-    WebFontRenderStyle style;
-
-#if OS(ANDROID)
-    style.setDefaults();
-#else
-    if (!font || !*font)
-        style.setDefaults(); // It's probably a webfont. Take the system defaults.
-    else if (WebKit::Platform::current()->sandboxSupport())
-        WebKit::Platform::current()->sandboxSupport()->getRenderStyleForStrike(font, sizeAndStyle, &style);
-    else
-        WebFontInfo::renderStyleForStrike(font, sizeAndStyle, &style);
-#endif
-
-    style.toFontRenderStyle(result);
-}
 #endif
 
 // Indexed Database -----------------------------------------------------------
@@ -281,23 +242,6 @@ PassRefPtr<IDBFactoryBackendInterface> PlatformSupport::idbFactory()
     // There's no reason why we need to allocate a new proxy each time, but
     // there's also no strong reason not to.
     return IDBFactoryBackendProxy::create();
-}
-
-void PlatformSupport::createIDBKeysFromSerializedValuesAndKeyPath(const Vector<RefPtr<SerializedScriptValue> >& values, const IDBKeyPath& keyPath, Vector<RefPtr<IDBKey> >& keys)
-{
-    WebVector<WebSerializedScriptValue> webValues = values;
-    WebVector<WebIDBKey> webKeys;
-    webKitPlatformSupport()->createIDBKeysFromSerializedValuesAndKeyPath(webValues, keyPath, webKeys);
-
-    size_t webKeysSize = webKeys.size();
-    keys.reserveCapacity(webKeysSize);
-    for (size_t i = 0; i < webKeysSize; ++i)
-        keys.append(PassRefPtr<IDBKey>(webKeys[i]));
-}
-
-PassRefPtr<SerializedScriptValue> PlatformSupport::injectIDBKeyIntoSerializedValue(PassRefPtr<IDBKey> key, PassRefPtr<SerializedScriptValue> value, const IDBKeyPath& keyPath)
-{
-    return webKitPlatformSupport()->injectIDBKeyIntoSerializedValue(key, value, keyPath);
 }
 
 // Plugin ---------------------------------------------------------------------
@@ -535,17 +479,6 @@ void PlatformSupport::paintThemePart(
 // Glue layer. Once the Glue layer moves entirely into the WebKit layer, these
 // methods will be deleted.
 
-void PlatformSupport::notifyJSOutOfMemory(Frame* frame)
-{
-    if (!frame)
-        return;
-
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
-    if (!webFrame->client())
-        return;
-    webFrame->client()->didExhaustMemoryAvailableForScript(webFrame);
-}
-
 int PlatformSupport::screenHorizontalDPI(Widget* widget)
 {
     WebWidgetClient* client = toWebWidgetClient(widget);
@@ -600,12 +533,6 @@ IntRect PlatformSupport::screenAvailableRect(Widget* widget)
     if (!client)
         return IntRect();
     return client->screenInfo().availableRect;
-}
-
-bool PlatformSupport::popupsAllowed(NPP npp)
-{
-    // FIXME: Give the embedder a way to control this.
-    return false;
 }
 
 #if ENABLE(WORKERS)

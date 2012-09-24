@@ -54,10 +54,6 @@
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
 
-        # If set to 1, links against the compositor bindings from the chromium repository
-        # instead of the compositor-implementation binding files in WebKit/chromium/src.
-        'use_libcc_for_compositor%': 0,
-
         # List of DevTools source files, ordered by dependencies. It is used both
         # for copying them to resource dir, and for generating 'devtools.html' file.
         'devtools_files': [
@@ -71,13 +67,14 @@
             'type': 'static_library',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
+                '../../WebCore/WebCore.gyp/WebCore.gyp:webcore',
                 '<(chromium_src_dir)/skia/skia.gyp:skia',
+                '<(chromium_src_dir)/third_party/angle/src/build_angle.gyp:translator_glsl',
                 '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
                 '<(chromium_src_dir)/third_party/npapi/npapi.gyp:npapi',
-                '<(chromium_src_dir)/third_party/angle/src/build_angle.gyp:translator_glsl',
                 '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
+                'webkit_wtf_support',
             ],
             'export_dependent_settings': [
                 '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
@@ -358,11 +355,10 @@
                 'src/BatteryClientImpl.h',
                 'src/BlobRegistryProxy.cpp',
                 'src/BlobRegistryProxy.h',
+                'src/DateTimeChooserImpl.cpp',
+                'src/DateTimeChooserImpl.h',
                 'src/ChromeClientImpl.cpp',
                 'src/ChromeClientImpl.h',
-                'src/ChromiumCurrentTime.cpp',
-                'src/ChromiumOSRandomSource.cpp',
-                'src/ChromiumThreading.cpp',
                 'src/ColorChooserUIController.cpp',
                 'src/ColorChooserUIController.h',
                 'src/CompositionUnderlineBuilder.h',
@@ -485,6 +481,8 @@
                 'src/WebCache.cpp',
                 'src/WebColorName.cpp',
                 'src/WebCommon.cpp',
+                'src/WebCompositorInputHandlerImpl.cpp',
+                'src/WebCompositorInputHandlerImpl.h',
                 'src/WebCrossOriginPreflightResultCache.cpp',
                 'src/WebCursorInfo.cpp',
                 'src/WebDOMEvent.cpp',
@@ -716,8 +714,10 @@
                                 'tests/PopupMenuTest.cpp',
                                 'tests/RenderTableCellTest.cpp',
                                 'tests/RenderTableRowTest.cpp',
+                                'tests/ScrollingCoordinatorChromiumTest.cpp',
                                 'tests/URLTestHelpers.cpp',
                                 'tests/WebFrameTest.cpp',
+                                'tests/WebImageTest.cpp',
                                 'tests/WebPageNewSerializerTest.cpp',
                                 'tests/WebPageSerializerTest.cpp',
                                 'tests/WebViewTest.cpp',
@@ -826,33 +826,37 @@
                         }],
                     ],
                 }],
-                ['clang==1', {
-                    'cflags': ['-Wglobal-constructors'],
-                    'xcode_settings': {
-                        'WARNING_CFLAGS': ['-Wglobal-constructors'],
-                    },
-                }],
-                ['use_libcc_for_compositor==1', {
-                    'dependencies': [
-                        '<(chromium_src_dir)/webkit/compositor/compositor.gyp:webkit_compositor',
-                    ],
-                    'sources!': [
-                        '../../WebCore/platform/chromium/support/CCThreadImpl.cpp',
-                        '../../WebCore/platform/chromium/support/CCThreadImpl.h',
-                        '../../WebCore/platform/chromium/support/WebCompositorImpl.cpp',
-                        '../../WebCore/platform/chromium/support/WebCompositorImpl.h',
-                    ],
-                }, { # else: use_libcc_for_compositor==0
-                    'sources': [
-                        '<@(webkit_compositor_bindings_files)',
-                    ]
-                }],
             ],
             'target_conditions': [
                 ['OS=="android"', {
                     'sources/': [
                         ['include', '^src/linux/WebFontRendering\\.cpp$'],
                         ['include', '^src/linux/WebFontRenderStyle\\.cpp$'],
+                    ],
+                }],
+            ],
+        },
+        {
+            'target_name': 'webkit_wtf_support',
+            'type': 'static_library',
+            'dependencies': [
+                '../../WTF/WTF.gyp/WTF.gyp:wtf',
+            ],
+            'defines': [
+                'WEBKIT_IMPLEMENTATION=1',
+            ],
+            'include_dirs': [
+                '../../Platform/chromium',
+            ],
+            'sources': [
+                'src/ChromiumCurrentTime.cpp',
+                'src/ChromiumOSRandomSource.cpp',
+                'src/ChromiumThreading.cpp',
+            ],
+            'conditions': [
+                ['component=="shared_library"', {
+                    'defines': [
+                        'WEBKIT_DLL',
                     ],
                 }],
             ],
@@ -1303,6 +1307,14 @@
                     }],
                 },
             ],
+        }],
+        ['clang==1', {
+            'target_defaults': {
+                'cflags': ['-Wglobal-constructors'],
+                'xcode_settings': {
+                    'WARNING_CFLAGS': ['-Wglobal-constructors'],
+                },
+            },
         }],
     ], # conditions
 }

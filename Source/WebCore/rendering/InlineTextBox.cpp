@@ -64,6 +64,15 @@ void InlineTextBox::destroy(RenderArena* arena)
     InlineBox::destroy(arena);
 }
 
+void InlineTextBox::markDirty(bool dirty)
+{
+    if (dirty) {
+        m_len = 0;
+        m_start = 0;
+    }
+    InlineBox::markDirty(dirty);
+}
+
 LayoutRect InlineTextBox::logicalOverflowRect() const
 {
     if (knownToHaveNoOverflow() || !gTextBoxesWithOverflow)
@@ -349,7 +358,7 @@ bool InlineTextBox::isLineBreak() const
     return renderer()->isBR() || (renderer()->style()->preserveNewline() && len() == 1 && (*textRenderer()->text())[start()] == '\n');
 }
 
-bool InlineTextBox::nodeAtPoint(const HitTestRequest&, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
+bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit /* lineTop */, LayoutUnit /*lineBottom*/)
 {
     if (isLineBreak())
         return false;
@@ -359,7 +368,7 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest&, HitTestResult& result, co
     FloatRect rect(boxOrigin, size());
     if (m_truncation != cFullTruncation && visibleToHitTesting() && locationInContainer.intersects(rect)) {
         renderer()->updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset)));
-        if (!result.addNodeToRectBasedTestResult(renderer()->node(), locationInContainer, rect))
+        if (!result.addNodeToRectBasedTestResult(renderer()->node(), request, locationInContainer, rect))
             return true;
     }
     return false;

@@ -32,11 +32,11 @@
 #include "IntRect.h"
 #include "ImageSource.h"
 #include "PlatformScreen.h"
-#include "PlatformString.h"
 #include "SharedBuffer.h"
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
+#include <wtf/text/WTFString.h>
 
 #if USE(SKIA)
 #include "NativeImageSkia.h"
@@ -289,14 +289,14 @@ namespace WebCore {
 
         static bool rgbColorProfile(const char* profileData, unsigned profileLength)
         {
-            ASSERT(profileLength >= iccColorProfileHeaderLength);
+            ASSERT_UNUSED(profileLength, profileLength >= iccColorProfileHeaderLength);
 
             return !memcmp(&profileData[16], "RGB ", 4);
         }
 
         static bool inputDeviceColorProfile(const char* profileData, unsigned profileLength)
         {
-            ASSERT(profileLength >= iccColorProfileHeaderLength);
+            ASSERT_UNUSED(profileLength, profileLength >= iccColorProfileHeaderLength);
 
             return !memcmp(&profileData[12], "mntr", 4) || !memcmp(&profileData[12], "scnr", 4);
         }

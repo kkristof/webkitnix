@@ -35,6 +35,7 @@
 #include <wtf/PageBlock.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/StringExtras.h>
+#include <wtf/UnusedParam.h>
 
 #if OS(DARWIN) && ENABLE(PARALLEL_GC)
 #include <sys/sysctl.h>
@@ -101,6 +102,8 @@ static unsigned computeNumberOfGCMarkers(int maxNumberOfGCMarkers)
     ASSERT(cpusToUse >= 1);
     if (cpusToUse < 1)
         cpusToUse = 1;
+#else
+    UNUSED_PARAM(maxNumberOfGCMarkers);
 #endif
 
     return cpusToUse;
@@ -138,6 +141,19 @@ void Options::initialize()
     ; // Deconfuse editors that do auto indentation
 #endif
     
+#if !ENABLE(JIT)
+    useJIT() = false;
+    useDFGJIT() = false;
+#endif
+#if !ENABLE(YARR_JIT)
+    useRegExpJIT() = false;
+#endif
+
+#if USE(CF) || OS(UNIX)
+    zombiesAreImmortal() = !!getenv("JSImmortalZombieEnabled");
+    useZombieMode() = zombiesAreImmortal() || !!getenv("JSZombieEnabled");
+#endif
+
     // Do range checks where needed and make corrections to the options:
     ASSERT(thresholdForOptimizeAfterLongWarmUp() >= thresholdForOptimizeAfterWarmUp());
     ASSERT(thresholdForOptimizeAfterWarmUp() >= thresholdForOptimizeSoon());

@@ -35,7 +35,8 @@
 #include "Identifier.h"
 #include "JSDateMath.h"
 #include "JSGlobalObject.h"
-#include "UString.h"
+#include "JSLock.h"
+#include "LLIntData.h"
 #include "WriteBarrier.h"
 #include <wtf/dtoa.h>
 #include <wtf/Threading.h>
@@ -53,6 +54,7 @@ static void initializeThreadingOnce()
 {
     WTF::double_conversion::initialize();
     WTF::initializeThreading();
+    GlobalJSLock::initialize();
     Options::initialize();
 #if ENABLE(WRITE_BARRIER_PROFILING)
     WriteBarrierCounters::initialize();
@@ -61,6 +63,9 @@ static void initializeThreadingOnce()
     ExecutableAllocator::initializeAllocator();
 #endif
     RegisterFile::initializeThreading();
+#if ENABLE(LLINT)
+    LLInt::initialize();
+#endif
 }
 
 void initializeThreading()

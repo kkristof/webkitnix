@@ -41,10 +41,13 @@ void PluginProcessCreationParameters::encode(CoreIPC::ArgumentEncoder* encoder) 
 {
     encoder->encode(pluginPath);
     encoder->encode(supportsAsynchronousPluginInitialization);
+    encoder->encode(minimumLifetime);
+    encoder->encode(terminationTimeout);
 
 #if PLATFORM(MAC)
     encoder->encode(parentProcessName);
     encoder->encode(acceleratedCompositingPort);
+    encoder->encode(sandboxProfileDirectoryPath);
 #endif
 }
 
@@ -54,11 +57,16 @@ bool PluginProcessCreationParameters::decode(CoreIPC::ArgumentDecoder* decoder, 
         return false;
     if (!decoder->decode(result.supportsAsynchronousPluginInitialization))
         return false;
-
+    if (!decoder->decode(result.minimumLifetime))
+        return false;
+    if (!decoder->decode(result.terminationTimeout))
+        return false;
 #if PLATFORM(MAC)
     if (!decoder->decode(result.parentProcessName))
         return false;
     if (!decoder->decode(result.acceleratedCompositingPort))
+        return false;
+    if (!decoder->decode(result.sandboxProfileDirectoryPath))
         return false;
 #endif
 

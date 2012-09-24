@@ -53,6 +53,7 @@ public:
     virtual void setAcceleratedCompositingForAnimationEnabled(bool);
     virtual void setAcceleratedCompositingForCanvasEnabled(bool);
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool);
+    virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool);
     virtual void setAcceleratedCompositingForPluginsEnabled(bool);
     virtual void setAcceleratedCompositingForVideoEnabled(bool);
     virtual void setAcceleratedFiltersEnabled(bool);
@@ -84,6 +85,7 @@ public:
     virtual void setEnableScrollAnimator(bool);
     virtual void setExperimentalCSSCustomFilterEnabled(bool);
     virtual void setExperimentalCSSGridLayoutEnabled(bool);
+    virtual void setCSSStickyPositionEnabled(bool);
     virtual void setExperimentalCSSRegionsEnabled(bool);
     virtual void setExperimentalCSSVariablesEnabled(bool);
     virtual void setExperimentalWebGLEnabled(bool);
@@ -95,6 +97,7 @@ public:
     virtual void setForceCompositingMode(bool);
     virtual void setFrameFlatteningEnabled(bool);
     virtual void setFullScreenEnabled(bool);
+    virtual void setGestureTapHighlightEnabled(bool);
     virtual void setHyperlinkAuditingEnabled(bool);
     virtual void setImagesEnabled(bool);
     virtual void setInteractiveFormValidationEnabled(bool);
@@ -157,6 +160,7 @@ public:
     bool showPaintRects() const { return m_showPaintRects; }
     bool renderVSyncEnabled() const { return m_renderVSyncEnabled; }
     bool applyDefaultDeviceScaleFactorInCompositor() const { return m_applyDefaultDeviceScaleFactorInCompositor; }
+    bool gestureTapHighlightEnabled() { return m_gestureTapHighlightEnabled; }
     WebSize defaultTileSize() const { return m_defaultTileSize; }
     WebSize maxUntiledLayerSize() const { return m_maxUntiledLayerSize; }
 
@@ -168,6 +172,7 @@ private:
     bool m_renderVSyncEnabled;
     bool m_viewportEnabled;
     bool m_applyDefaultDeviceScaleFactorInCompositor;
+    bool m_gestureTapHighlightEnabled;
     WebSize m_defaultTileSize;
     WebSize m_maxUntiledLayerSize;
 };

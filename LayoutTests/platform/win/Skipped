@@ -40,6 +40,10 @@ css3/filters/effect-sepia-hw.html
 # Custom filters not yet supported on Windows
 css3/filters/custom
 
+# Needs rebaseline after bug 97217 is fixed
+# https://bugs.webkit.org/show_bug.cgi?id=97325
+css3/masking/clip-path-circle-relative-overflow.html
+
 # CSS image-set support not yet enabled (needs ENABLE_CSS_IMAGE_SET).
 fast/css/image-set-parsing.html
 fast/css/image-set-parsing-invalid.html
@@ -105,7 +109,6 @@ fast/text/international/bidi-neutral-run.html
 fast/text/international/bidi-neutral-directionality-paragraph-start.html
 svg/W3C-SVG-1.1/fonts-glyph-02-t.svg
 svg/W3C-SVG-1.1/text-intro-05-t.svg
-svg/batik/text/textBiDi.svg
 svg/text/text-intro-05-t.svg
 #                           - Mac OS X and Windows do not have a CJK font in common
 fast/encoding/denormalised-voiced-japanese-chars.html
@@ -258,6 +261,7 @@ http/tests/fileapi
 fast/dom/DOMURL/check-instanceof-domurl-functions.html
 fast/forms/file/input-file-entries.html
 fast/forms/file/recover-file-input-in-unposted-form.html
+http/tests/security/contentSecurityPolicy/blob-urls-match-self.html
 
 # Need to add functionality to DumpRenderTree to test IDN <rdar://problem/5301954>
 fast/encoding/idn-security.html
@@ -393,10 +397,6 @@ animations/3d/transform-origin-vs-functions.html
 compositing/reflections/animation-inside-reflection.html
 compositing/reflections/nested-reflection-animated.html
 
-# Sometimes fail http://webkit.org/b/48454
-compositing/tiling/huge-layer-resize.html
-compositing/tiling/huge-layer-with-layer-children-resize.html
-
 # http://webkit.org/b/48455
 transitions/cancel-transition.html
 
@@ -517,7 +517,6 @@ editing/pasteboard/undoable-fragment-removes.html
 editing/execCommand/enabling-and-selection-2.html
 
 # Needs custom policy delegate enhancement in DRT
-http/tests/navigation/post-goback-repost-policy.html
 http/tests/download
 
 # Needs scheduleAsynchronousClick method for EventSender
@@ -597,7 +596,6 @@ accessibility/aria-tab-roles.html
 accessibility/aria-text-role.html
 accessibility/aria-used-on-image-maps.html
 accessibility/button-press-action.html
-accessibility/canvas.html
 accessibility/document-attributes.html
 accessibility/editable-webarea-context-menu-point.html
 accessibility/ignore-spacer-elements.html
@@ -624,6 +622,7 @@ accessibility/radio-button-checkbox-size.html
 accessibility/radio-button-group-members.html
 accessibility/radio-button-title-label.html
 accessibility/secure-textfield-title-ui.html
+accessibility/spinbutton-value.html
 accessibility/table-attributes.html
 accessibility/table-cell-spans.html
 accessibility/table-cells.html
@@ -706,7 +705,6 @@ fast/text/international/bidi-linebreak-003.html
 fast/text/international/bidi-listbox-atsui.html
 fast/text/international/bidi-listbox.html
 fast/text/international/hindi-spacing.html
-http/tests/loading/gmail-assert-on-load.html
 http/tests/misc/window-dot-stop.html
 http/tests/security/dataTransfer-set-data-file-url.html
 http/tests/xmlhttprequest/abort-should-cancel-load.html
@@ -833,6 +831,7 @@ fast/dom/Geolocation
 
 # This port doesn't support Notifications.
 fast/notifications
+http/tests/notifications
 
 # These media tests regressed on the bots.  Skipping to make the bots green again.
 # https://bugs.webkit.org/show_bug.cgi?id=28281
@@ -966,9 +965,6 @@ media/video-display-aspect-ratio.html
 
 # Accept header is handled by the browser
 http/tests/misc/image-checks-for-accept.html
-
-# Needs platform specific API implemented in DRT, maybe not relevant for non-Mac and non-Windows ports
-fast/loader/api-test-new-window-data-load-base-url.html
 
 # Needs to implement NPP_HandleEvent() in TestNetscapePlugin
 plugins/keyboard-events.html
@@ -1150,9 +1146,11 @@ fast/forms/number/number-spinbutton-change-and-input-events.html
 fast/forms/number/number-large-padding.html
 fast/forms/number/number-size.html
 fast/forms/number/number-spinbutton-capturing.html
+fast/forms/number/number-spinbutton-click-in-iframe.html
 fast/forms/number/number-spinbutton-gets-disabled-or-readonly.html
 fast/forms/number/number-spinbutton-state.html
 fast/forms/number/number-spinbutton-in-multi-column.html
+
 
 # Datalist is not yet enabled.
 fast/forms/datalist
@@ -1313,6 +1311,8 @@ plugins/iframe-shims.html
 # Requires WebP support.
 fast/canvas/canvas-toDataURL-webp.html
 fast/images/webp-image-decoding.html
+http/tests/images/webp-partial-load.html
+http/tests/images/webp-progressive-load.html
 
 # Missing layoutTestController.findString() http://webkit.org/b/50234
 editing/text-iterator/findString.html
@@ -1474,6 +1474,7 @@ fast/events/constructors/webgl-context-event-constructor.html
 http/tests/security/webgl-remote-read-remote-image-allowed.html
 http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html
 http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html
+inspector/profiler/webgl
 
 # Tests that require ENABLE(DOWNLOAD_ATTRIBUTE).
 fast/dom/HTMLAnchorElement/anchor-nodownload.html
@@ -1743,12 +1744,14 @@ fast/sub-pixel/float-wrap-with-subpixel-top.html
 fast/sub-pixel/inline-block-should-not-wrap.html
 fast/sub-pixel/inline-block-with-margin.html
 fast/sub-pixel/inline-block-with-padding.html
+fast/sub-pixel/large-sizes.html
 fast/sub-pixel/layout-boxes-with-zoom.html
 fast/sub-pixel/position-right-aligns-with-container.html
 fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html
 fast/sub-pixel/size-of-box-with-zoom.html
 fast/sub-pixel/table-rows-no-gaps.html
 fast/sub-pixel/sub-pixel-accumulates-to-layers.html
+fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html
 
 # No CORS support for media elements is implemented yet.
 http/tests/security/video-cross-origin-readback.html
@@ -1868,10 +1871,6 @@ compositing/backing/no-backing-foreground-layer.html
 # https://bugs.webkit.org/show_bug.cgi?id=88150
 compositing/geometry/clipping-foreground.html
 
-# Asserts in MessagePort::contextDestroyed
-# https://bugs.webkit.org/show_bug.cgi?id=85811
-fast/events/message-port-clone.html
-
 # Require rebaseline after bug 88171
 # https://bugs.webkit.org/show_bug.cgi?id=88171
 fast/block/float/independent-align-positioning.html
@@ -1882,7 +1881,6 @@ css1/formatting_model/floating_elements.html
 css2.1/20110323/c543-txt-decor-000.html
 fast/block/float/float-in-float-hit-testing.html
 fast/block/float/overhanging-tall-block.html
-fast/css/align-positioned-object-on-resize.html
 fast/css/text-transform-select.html
 fast/css/zoom-body-scroll.html
 fast/dom/34176.html
@@ -1993,7 +1991,6 @@ fast/borders/only-one-border-with-width.html
 fast/multicol/progression-reverse.html
 fast/multicol/vertical-lr/rules-with-border-before.html
 fast/multicol/vertical-rl/rules-with-border-before.html
-css1/box_properties/border_bottom-expected.png
 css2.1/t0805-c5519-brdr-r-00-a.html
 css2.1/t0805-c5519-brdr-r-01-e.html
 css2.1/t0805-c5520-brdr-b-01-e.html
@@ -2139,4 +2136,159 @@ fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html
 fast/inline/absolute-positioned-inline-in-centred-block.html
 fast/css/absolute-child-with-percent-height-inside-relative-parent.html
 
+# These tests have different results for NRWT and ORWT, skipping on OWRT for now
+editing/deleting/delete-br-004.html
+editing/deleting/delete-br-005.html
+editing/deleting/delete-br-006.html
 
+# https://bugs.webkit.org/show_bug.cgi?id=95405
+# Test times out
+platform/win/accessibility/single-select-children.html
+
+# Require rebaseline after https://bugs.webkit.org/show_bug.cgi?id=80394
+fast/block/float/024.html
+fast/block/margin-collapse/empty-clear-blocks.html
+fast/block/margin-collapse/025.html
+fast/block/margin-collapse/block-inside-inline/025.html
+
+# referrer tests failing, problems connecting to address provided to iframe
+http/tests/security/no-referrer.html
+http/tests/security/referrer-policy-https-always.html
+http/tests/security/referrer-policy-https-default.html
+http/tests/security/referrer-policy-https-never.html
+http/tests/security/referrer-policy-redirect.html
+
+# As usual, DRT on Windows has problems knowing how to continue a test when focus moves to a popup window, in this case the file chooser
+# https://bugs.webkit.org/show_bug.cgi?id=87469
+fast/events/domactivate-sets-underlying-click-event-as-handled.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=95388
+fast/css/nested-layers-with-hover.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=95428
+media/video-controls-captions.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=95795
+editing/style/apply-style-atomic.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=94374
+inspector/timeline/timeline-decode-resize.html
+
+# Flaky inspector tests
+# https://bugs.webkit.org/show_bug.cgi?id=95802
+http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html
+http/tests/inspector/console-resource-errors.html
+http/tests/inspector/network/network-initiator-from-console.html
+http/tests/inspector/resource-tree/resource-request-content-while-loading.html
+http/tests/inspector/search/resources-search-match-index.html
+inspector/profiler/heap-snapshot.html
+inspector/profiler/memory-instrumentation-cached-images.html
+inspector/styles/media-queries.html
+inspector/styles/region-style-crash.html
+
+# Flaky http/tests/security tests
+# https://bugs.webkit.org/show_bug.cgi?id=95803
+http/tests/security/local-image-from-remote-whitelisted.html
+http/tests/security/object-literals.html
+http/tests/security/script-with-failed-cors-check-fails-to-load.html
+http/tests/security/xss-DENIED-mime-type-execute-as-html.html
+http/tests/security/xss-DENIED-xsl-external-entity.xml
+http/tests/security/contentSecurityPolicy/report-blocked-uri.html
+http/tests/security/cookies/cookie-theft-with-javascript-doc.html
+http/tests/security/frameNavigation/inactive-function-in-popup-navigate-child.html
+http/tests/security/local-video-poster-from-remote.html
+http/tests/security/local-video-source-from-remote.html
+http/tests/security/location-prototype.html
+http/tests/security/script-crossorigin-loads-correctly.html
+http/tests/security/video-poster-cross-origin-crash.html
+http/tests/security/xss-eval.html
+
+# Flaky http/tests/cookie tests
+# https://bugs.webkit.org/show_bug.cgi?id=95805
+http/tests/cookies/multiple-cookies.html
+http/tests/cookies/single-quoted-value.html
+
+# Flaky media/video tests
+# https://bugs.webkit.org/show_bug.cgi?id=95806
+media/video-aspect-ratio.html
+media/video-replaces-poster.html
+media/video-set-rate-from-pause.html
+media/video-src-change.html
+media/video-timeupdate-reverse-play.html
+media/W3C/video/src/src_removal_does_not_trigger_loadstart.html
+
+# Interactive form validation not enabled on Windows
+fast/forms/number/number-interactive-validation-required.html
+
+# Dialog element is not yet enabled.
+fast/dom/HTMLDialogElement
+
+# Windows does not have global selection.
+editing/pasteboard/paste-global-selection.html
+
+# Skipping a large number of tests that have been failing on Windows for a long period of time
+# https://bugs.webkit.org/show_bug.cgi?id=97026
+editing/selection/select-from-textfield-outwards.html
+editing/spelling/grammar-edit-word.html
+fast/dom/constructed-objects-prototypes.html
+fast/dom/Proximity/check-event-deviceproximity.html
+fast/dom/Proximity/create-event-deviceproximity.html
+fast/events/constructors/device-proximity-event-constructor.html
+fast/forms/state-restore-broken-state.html
+fast/html/progress-user-modify.html
+fast/js/global-constructors.html
+fast/multicol/shrink-to-column-height-for-pagination.html
+inspector/device-orientation-success.html
+inspector/geolocation-error.html
+inspector/geolocation-success.html
+inspector/geolocation-watchPosition.html
+inspector/styles/variables/css-variables.html
+inspector/timeline/timeline-receive-response-event.html
+media/audio-controls-rendering.html
+media/audio-repaint.html
+media/controls-styling-strict.html
+media/media-controls-clone.html
+media/video-controls-fullscreen-volume.html
+plugins/geturlnotify-during-document-teardown.html
+svg/custom/glyph-selection-bidi-mirror.svg
+svg/custom/relative-sized-use-on-symbol.xhtml
+svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml
+svg/text/bidi-text-query.svg
+svg/text/bidi-tspans.svg
+svg/text/non-bmp-positioning-lists.svg
+svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html
+svg/zoom/page/zoom-svg-through-object-with-auto-size.html
+tables/mozilla_expected_failures/collapsing_borders/bug41262-5.html
+tables/mozilla_expected_failures/marvin/table_overflow_hidden_tbody.html
+tables/mozilla_expected_failures/marvin/table_overflow_hidden_tr.html
+http/tests/fullscreen/fullscreenelement-different-origin.html
+http/tests/fullscreen/fullscreenelement-same-origin.html
+http/tests/history/back-with-fragment-change.php
+http/tests/images/jpg-img-partial-load.html
+http/tests/inspector/console-cross-origin-iframe-logging.html
+http/tests/inspector/inspect-element.html
+http/tests/inspector/resource-har-conversion.html
+http/tests/inspector/resource-parameters.html
+http/tests/inspector/websocket/web-socket-frame.html
+http/tests/loading/pdf-commit-load-callbacks.html
+http/tests/loading/post-in-iframe-with-back-navigation.html
+http/tests/media/media-document.html
+http/tests/media/video-useragent.html
+http/tests/misc/submit-post-keygen.html
+http/tests/navigation/https-in-page-cache.html
+http/tests/navigation/post-307-response.html
+http/tests/navigation/post-frames-goback1.html
+http/tests/navigation/post-goback1.html
+http/tests/security/cross-frame-access-call.html
+http/tests/security/cross-frame-access-get.html
+http/tests/security/sandboxed-iframe-modify-self.html
+http/tests/security/contentSecurityPolicy/block-mixed-content-hides-warning.html
+http/tests/security/contentSecurityPolicy/script-src-star-cross-scheme.html
+http/tests/security/xssAuditor/script-tag-with-callbacks.html
+http/tests/security/xssAuditor/xss-filter-bypass-long-string.html
+http/tests/xmlhttprequest/access-control-allow-lists-starting-with-comma.html
+http/tests/xmlhttprequest/range-test.html
+
+#https://bugs.webkit.org/show_bug.cgi?id=97271
+http/tests/security/sandboxed-iframe-origin-add.html
+http/tests/security/sandboxed-iframe-origin-remove.html

@@ -31,6 +31,8 @@
 #ifndef RuntimeEnabledFeatures_h
 #define RuntimeEnabledFeatures_h
 
+#include "PlatformExportMacros.h"
+
 namespace WebCore {
 
 // A class that stores static enablers for all experimental features. Note that
@@ -129,10 +131,6 @@ public:
     static bool webkitAudioContextEnabled() { return isWebAudioEnabled; }
 #endif
 
-    static void setPushStateEnabled(bool isEnabled) { isPushStateEnabled = isEnabled; }
-    static bool pushStateEnabled() { return isPushStateEnabled; }
-    static bool replaceStateEnabled() { return isPushStateEnabled; }
-
 #if ENABLE(TOUCH_EVENTS)
     static bool touchEnabled() { return isTouchEnabled; }
     static void setTouchEnabled(bool isEnabled) { isTouchEnabled = isEnabled; }
@@ -187,7 +185,9 @@ public:
 
     static bool peerConnectionEnabled() { return isMediaStreamEnabled && isPeerConnectionEnabled; }
     static void setPeerConnectionEnabled(bool isEnabled) { isPeerConnectionEnabled = isEnabled; }
-    static bool webkitPeerConnection00Enabled() { return peerConnectionEnabled(); }
+    static bool deprecatedPeerConnectionEnabled() { return isMediaStreamEnabled && isDeprecatedPeerConnectionEnabled; }
+    static void setDeprecatedPeerConnectionEnabled(bool isEnabled) { isDeprecatedPeerConnectionEnabled = isEnabled; }
+    static bool webkitPeerConnection00Enabled() { return deprecatedPeerConnectionEnabled(); }
     static bool webkitRTCPeerConnectionEnabled() { return peerConnectionEnabled(); }
 #endif
 
@@ -264,6 +264,10 @@ public:
     static void setDialogElementEnabled(bool isEnabled) { isDialogElementEnabled = isEnabled; }
 #endif
 
+    static bool langAttributeAwareFormControlUIEnabled() { return isLangAttributeAwareFormControlUIEnabled; }
+    // The lang attribute support is incomplete and should only be turned on for tests.
+    static void setLangAttributeAwareFormControlUIEnabled(bool isEnabled) { isLangAttributeAwareFormControlUIEnabled = isEnabled; }
+
 private:
     // Never instantiate.
     RuntimeEnabledFeatures() { }
@@ -276,12 +280,12 @@ private:
     static bool isGeolocationEnabled;
     static bool isIndexedDBEnabled;
     static bool isWebAudioEnabled;
-    static bool isPushStateEnabled;
     static bool isTouchEnabled;
     static bool isDeviceMotionEnabled;
     static bool isDeviceOrientationEnabled;
     static bool isSpeechInputEnabled;
     static bool isCSSExclusionsEnabled;
+    WEBCORE_TESTING static bool isLangAttributeAwareFormControlUIEnabled;
 #if ENABLE(SCRIPTED_SPEECH)
     static bool isScriptedSpeechEnabled;
 #endif
@@ -296,6 +300,7 @@ private:
 #if ENABLE(MEDIA_STREAM)
     static bool isMediaStreamEnabled;
     static bool isPeerConnectionEnabled;
+    static bool isDeprecatedPeerConnectionEnabled;
 #endif
 
 #if ENABLE(GAMEPAD)

@@ -350,6 +350,7 @@ extern "C" {
     EncodedJSValue JIT_STUB cti_op_call_NotJSFunction(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     EncodedJSValue JIT_STUB cti_op_call_eval(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     EncodedJSValue JIT_STUB cti_op_construct_NotJSConstruct(STUB_ARGS_DECLARATION) WTF_INTERNAL;
+    EncodedJSValue JIT_STUB cti_op_check_has_instance(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     EncodedJSValue JIT_STUB cti_op_create_this(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     EncodedJSValue JIT_STUB cti_op_convert_this(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     EncodedJSValue JIT_STUB cti_op_create_arguments(STUB_ARGS_DECLARATION) WTF_INTERNAL;
@@ -417,8 +418,8 @@ extern "C" {
     JSObject* JIT_STUB cti_op_new_object(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     JSObject* JIT_STUB cti_op_new_regexp(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     JSObject* JIT_STUB cti_op_push_activation(STUB_ARGS_DECLARATION) WTF_INTERNAL;
-    JSObject* JIT_STUB cti_op_push_new_scope(STUB_ARGS_DECLARATION) WTF_INTERNAL;
-    JSObject* JIT_STUB cti_op_push_scope(STUB_ARGS_DECLARATION) WTF_INTERNAL;
+    void JIT_STUB cti_op_push_name_scope(STUB_ARGS_DECLARATION) WTF_INTERNAL;
+    void JIT_STUB cti_op_push_with_scope(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     JSObject* JIT_STUB cti_op_put_by_id_transition_realloc(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     JSPropertyNameIterator* JIT_STUB cti_op_get_pnames(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     int JIT_STUB cti_op_eq(STUB_ARGS_DECLARATION) WTF_INTERNAL;
@@ -431,7 +432,6 @@ extern "C" {
     void* JIT_STUB cti_op_load_varargs(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     int JIT_STUB cti_timeout_check(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     int JIT_STUB cti_has_property(STUB_ARGS_DECLARATION) WTF_INTERNAL;
-    void JIT_STUB cti_op_check_has_instance(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     void JIT_STUB cti_op_debug(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     void JIT_STUB cti_op_end(STUB_ARGS_DECLARATION) WTF_INTERNAL;
     void JIT_STUB cti_op_jmp_scopes(STUB_ARGS_DECLARATION) WTF_INTERNAL;
@@ -468,7 +468,13 @@ extern "C" {
     void* JIT_STUB cti_vm_throw(STUB_ARGS_DECLARATION) REFERENCED_FROM_ASM WTF_INTERNAL;
 } // extern "C"
 
-#endif // ENABLE(JIT)
+#elif ENABLE(LLINT_C_LOOP)
+
+struct JITStackFrame {
+    JSGlobalData* globalData;
+};
+
+#endif // ENABLE(LLINT_C_LOOP)
 
 } // namespace JSC
 

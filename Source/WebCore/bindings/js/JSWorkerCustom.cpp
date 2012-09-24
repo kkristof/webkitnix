@@ -45,10 +45,12 @@ JSC::JSValue JSWorker::postMessage(JSC::ExecState* exec)
     return handlePostMessage(exec, impl());
 }
 
+#if ENABLE(LEGACY_VENDOR_PREFIXES)
 JSC::JSValue JSWorker::webkitPostMessage(JSC::ExecState* exec)
 {
     return handlePostMessage(exec, impl());
 }
+#endif
 
 EncodedJSValue JSC_HOST_CALL JSWorkerConstructor::constructJSWorker(ExecState* exec)
 {
@@ -57,7 +59,7 @@ EncodedJSValue JSC_HOST_CALL JSWorkerConstructor::constructJSWorker(ExecState* e
     if (!exec->argumentCount())
         return throwVMError(exec, createNotEnoughArgumentsError(exec));
 
-    UString scriptURL = exec->argument(0).toString(exec)->value(exec);
+    String scriptURL = exec->argument(0).toString(exec)->value(exec);
     if (exec->hadException())
         return JSValue::encode(JSValue());
 
@@ -65,7 +67,7 @@ EncodedJSValue JSC_HOST_CALL JSWorkerConstructor::constructJSWorker(ExecState* e
     DOMWindow* window = asJSDOMWindow(exec->lexicalGlobalObject())->impl();
 
     ExceptionCode ec = 0;
-    RefPtr<Worker> worker = Worker::create(window->document(), ustringToString(scriptURL), ec);
+    RefPtr<Worker> worker = Worker::create(window->document(), scriptURL, ec);
     if (ec) {
         setDOMException(exec, ec);
         return JSValue::encode(JSValue());

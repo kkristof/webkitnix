@@ -210,19 +210,20 @@ void RenderTable::removeCaption(const RenderTableCaption* oldCaption)
         return;
 
     m_captions.remove(index);
-
-    // FIXME: The rest of this function is probably not needed since we have 
-    // implemented proper multiple captions support (see bug 58249).
-    if (node())
-        node()->setNeedsStyleRecalc();
 }
 
-void RenderTable::computeLogicalWidth()
+void RenderTable::updateLogicalWidth()
 {
     recalcSectionsIfNeeded();
 
-    if (isOutOfFlowPositioned())
-        computePositionedLogicalWidth();
+    if (isOutOfFlowPositioned()) {
+        LogicalExtentComputedValues computedValues;
+        computePositionedLogicalWidth(computedValues);
+        setLogicalWidth(computedValues.m_extent);
+        setLogicalLeft(computedValues.m_position);
+        setMarginStart(computedValues.m_margins.m_start);
+        setMarginEnd(computedValues.m_margins.m_end);
+    }
 
     RenderBlock* cb = containingBlock();
     RenderView* renderView = view();
@@ -266,7 +267,13 @@ void RenderTable::computeLogicalWidth()
         LayoutUnit containerLogicalWidthForAutoMargins = availableLogicalWidth;
         if (avoidsFloats() && cb->containsFloats())
             containerLogicalWidthForAutoMargins = containingBlockAvailableLineWidthInRegion(0, 0); // FIXME: Work with regions someday.
-        computeInlineDirectionMargins(cb, containerLogicalWidthForAutoMargins, logicalWidth());
+        ComputedMarginValues marginValues;
+        bool hasInvertedDirection =  cb->style()->isLeftToRightDirection() == style()->isLeftToRightDirection();
+        computeInlineDirectionMargins(cb, containerLogicalWidthForAutoMargins, logicalWidth(),
+            hasInvertedDirection ? marginValues.m_start : marginValues.m_end,
+            hasInvertedDirection ? marginValues.m_end : marginValues.m_start);
+        setMarginStart(marginValues.m_start);
+        setMarginEnd(marginValues.m_end);
     } else {
         setMarginStart(minimumValueForLength(style()->marginStart(), availableLogicalWidth, renderView));
         setMarginEnd(minimumValueForLength(style()->marginEnd(), availableLogicalWidth, renderView));
@@ -339,7 +346,7 @@ void RenderTable::layout()
     initMaxMarginValues();
     
     LayoutUnit oldLogicalWidth = logicalWidth();
-    computeLogicalWidth();
+    updateLogicalWidth();
 
     if (logicalWidth() != oldLogicalWidth) {
         for (unsigned i = 0; i < m_captions.size(); i++)
@@ -400,7 +407,7 @@ void RenderTable::layout()
     setLogicalHeight(logicalHeight() + borderAndPaddingBefore);
 
     if (!isOutOfFlowPositioned())
-        computeLogicalHeight();
+        updateLogicalHeight();
 
     Length logicalHeightLength = style()->logicalHeight();
     LayoutUnit computedLogicalHeight = 0;
@@ -452,7 +459,7 @@ void RenderTable::layout()
     }
 
     if (isOutOfFlowPositioned())
-        computeLogicalHeight();
+        updateLogicalHeight();
 
     // table can be containing block of positioned elements.
     // FIXME: Only pass true if width or height changed.
@@ -1291,7 +1298,7 @@ bool RenderTable::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     LayoutRect boundsRect(adjustedLocation, size());
     if (visibleToHitTesting() && (action == HitTestBlockBackground || action == HitTestChildBlockBackground) && locationInContainer.intersects(boundsRect)) {
         updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(adjustedLocation)));
-        if (!result.addNodeToRectBasedTestResult(node(), locationInContainer, boundsRect))
+        if (!result.addNodeToRectBasedTestResult(node(), request, locationInContainer, boundsRect))
             return true;
     }
 
@@ -1309,7 +1316,7 @@ RenderTable* RenderTable::createAnonymousWithParentRenderer(const RenderObject* 
 const BorderValue& RenderTable::tableStartBorderAdjoiningCell(const RenderTableCell* cell) const
 {
     ASSERT(cell->isFirstOrLastCellInRow());
-    if (cell->section()->hasSameDirectionAsTable())
+    if (hasSameDirectionAs(cell->section()))
         return style()->borderStart();
 
     return style()->borderEnd();
@@ -1318,7 +1325,7 @@ const BorderValue& RenderTable::tableStartBorderAdjoiningCell(const RenderTableC
 const BorderValue& RenderTable::tableEndBorderAdjoiningCell(const RenderTableCell* cell) const
 {
     ASSERT(cell->isFirstOrLastCellInRow());
-    if (cell->section()->hasSameDirectionAsTable())
+    if (hasSameDirectionAs(cell->section()))
         return style()->borderEnd();
 
     return style()->borderStart();

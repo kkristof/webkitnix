@@ -133,11 +133,8 @@ WebProcess& WebProcess::shared()
     return process;
 }
 
-static const double shutdownTimeout = 60;
-
 WebProcess::WebProcess()
-    : ChildProcess(shutdownTimeout)
-    , m_inDidClose(false)
+    : m_inDidClose(false)
     , m_shouldTrackVisitedLinks(true)
     , m_hasSetCacheModel(false)
     , m_cacheModel(CacheModelDocumentViewer)
@@ -256,10 +253,6 @@ void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parame
 
     for (size_t i = 0; i < parameters.mimeTypesWithCustomRepresentation.size(); ++i)
         m_mimeTypesWithCustomRepresentations.add(parameters.mimeTypesWithCustomRepresentation[i]);
-    
-#if PLATFORM(MAC)
-    m_presenterApplicationPid = parameters.presenterApplicationPid;
-#endif
 
     if (parameters.shouldAlwaysUseComplexTextCodePath)
         setAlwaysUsesComplexTextCodePath(true);
@@ -274,6 +267,8 @@ void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parame
 #if ENABLE(PLUGIN_PROCESS)
     m_disablePluginProcessMessageTimeout = parameters.disablePluginProcessMessageTimeout;
 #endif
+
+    setTerminationTimeout(parameters.terminationTimeout);
 }
 
 void WebProcess::setShouldTrackVisitedLinks(bool shouldTrackVisitedLinks)
@@ -295,6 +290,26 @@ void WebProcess::registerURLSchemeAsSecure(const String& urlScheme) const
 void WebProcess::setDomainRelaxationForbiddenForURLScheme(const String& urlScheme) const
 {
     SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(true, urlScheme);
+}
+
+void WebProcess::registerURLSchemeAsLocal(const String& urlScheme) const
+{
+    SchemeRegistry::registerURLSchemeAsLocal(urlScheme);
+}
+
+void WebProcess::registerURLSchemeAsNoAccess(const String& urlScheme) const
+{
+    SchemeRegistry::registerURLSchemeAsNoAccess(urlScheme);
+}
+
+void WebProcess::registerURLSchemeAsDisplayIsolated(const String& urlScheme) const
+{
+    SchemeRegistry::registerURLSchemeAsDisplayIsolated(urlScheme);
+}
+
+void WebProcess::registerURLSchemeAsCORSEnabled(const String& urlScheme) const
+{
+    SchemeRegistry::registerURLSchemeAsCORSEnabled(urlScheme);
 }
 
 void WebProcess::setDefaultRequestTimeoutInterval(double timeoutInterval)
@@ -875,6 +890,8 @@ void WebProcess::getSitesWithPluginData(const Vector<String>& pluginPaths, uint6
         for (size_t i = 0; i < sites.size(); ++i)
             sitesSet.add(sites[i]);
     }
+#else
+    UNUSED_PARAM(pluginPaths);
 #endif
 
     Vector<String> sites;
@@ -902,6 +919,11 @@ void WebProcess::clearPluginSiteData(const Vector<String>& pluginPaths, const Ve
         for (size_t i = 0; i < sites.size(); ++i)
             netscapePluginModule->clearSiteData(sites[i], flags, maxAgeInSeconds);
     }
+#else
+    UNUSED_PARAM(pluginPaths);
+    UNUSED_PARAM(sites);
+    UNUSED_PARAM(flags);
+    UNUSED_PARAM(maxAgeInSeconds);
 #endif
 
     connection()->send(Messages::WebProcessProxy::DidClearPluginSiteData(callbackID), 0);
@@ -917,10 +939,10 @@ static void fromCountedSetToHashMap(TypeCountSet* countedSet, HashMap<String, ui
 
 static void getWebCoreMemoryCacheStatistics(Vector<HashMap<String, uint64_t> >& result)
 {
-    DEFINE_STATIC_LOCAL(String, imagesString, ("Images"));
-    DEFINE_STATIC_LOCAL(String, cssString, ("CSS"));
-    DEFINE_STATIC_LOCAL(String, xslString, ("XSL"));
-    DEFINE_STATIC_LOCAL(String, javaScriptString, ("JavaScript"));
+    DEFINE_STATIC_LOCAL(String, imagesString, (ASCIILiteral("Images")));
+    DEFINE_STATIC_LOCAL(String, cssString, (ASCIILiteral("CSS")));
+    DEFINE_STATIC_LOCAL(String, xslString, (ASCIILiteral("XSL")));
+    DEFINE_STATIC_LOCAL(String, javaScriptString, (ASCIILiteral("JavaScript")));
     
     MemoryCache::Statistics memoryCacheStatistics = memoryCache()->getStatistics();
     

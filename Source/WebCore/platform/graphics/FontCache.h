@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
+#include <wtf/text/WTFString.h>
 #include <wtf/unicode/Unicode.h>
 
 #if OS(WINDOWS)
@@ -41,8 +42,7 @@
 #include <mlang.h>
 #endif
 
-namespace WebCore
-{
+namespace WebCore {
 
 class Font;
 class FontPlatformData;
@@ -113,6 +113,13 @@ public:
 #endif
     OpenTypeVerticalData* getVerticalData(const FontFileKey&, const FontPlatformData&);
 #endif
+
+    struct SimpleFontFamily {
+        String name;
+        bool isBold;
+        bool isItalic;
+    };
+    static void getFontFamilyForCharacters(const UChar* characters, size_t numCharacters, const char* preferredLocale, SimpleFontFamily*);
 
 private:
     FontCache();

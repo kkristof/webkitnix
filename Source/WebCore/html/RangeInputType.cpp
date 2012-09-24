@@ -38,6 +38,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
+#include "InputTypeNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "PlatformMouseEvent.h"
@@ -328,6 +329,11 @@ bool RangeInputType::shouldRespectListAttribute()
 HTMLElement* RangeInputType::sliderThumbElement() const
 {
     return sliderThumbElementOf(element());
+}
+
+HTMLElement* RangeInputType::sliderTrackElement() const
+{
+    return sliderTrackElementOf(element());
 }
 
 #if ENABLE(DATALIST_ELEMENT)

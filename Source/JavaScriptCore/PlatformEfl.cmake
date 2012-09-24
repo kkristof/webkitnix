@@ -1,6 +1,8 @@
 LIST(APPEND JavaScriptCore_SOURCES
     jit/ExecutableAllocatorFixedVMPool.cpp
     jit/ExecutableAllocator.cpp
+
+    runtime/MemoryStatistics.cpp
 )
 
 LIST(APPEND JavaScriptCore_LIBRARIES
@@ -16,7 +18,3 @@ IF (ENABLE_GLIB_SUPPORT)
     ${JAVASCRIPTCORE_DIR}/wtf/gobject
   )
 ENDIF ()
-
-LIST(APPEND JavaScriptCore_LINK_FLAGS
-    ${ECORE_LDFLAGS}
-)

@@ -78,8 +78,6 @@ public:
 
     void deleteAllRenderBoxRegionInfo();
 
-    LayoutUnit offsetFromLogicalTopOfFirstPage() const;
-
     bool isFirstRegion() const;
     bool isLastRegion() const;
 
@@ -100,22 +98,58 @@ public:
     // height of a single column or page in the set.
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
+
+    virtual LayoutUnit minPreferredLogicalWidth() const OVERRIDE;
+    virtual LayoutUnit maxPreferredLogicalWidth() const OVERRIDE;
     
+    LayoutUnit logicalTopOfFlowThreadContentRect(const LayoutRect&) const;
+    LayoutUnit logicalBottomOfFlowThreadContentRect(const LayoutRect&) const;
+    LayoutUnit logicalTopForFlowThreadContent() const { return logicalTopOfFlowThreadContentRect(flowThreadPortionRect()); };
+    LayoutUnit logicalBottomForFlowThreadContent() const { return logicalBottomOfFlowThreadContentRect(flowThreadPortionRect()); };
+
+    void getRanges(Vector<RefPtr<Range> >&) const;
+
     // This method represents the logical height of the entire flow thread portion used by the region or set.
     // For RenderRegions it matches logicalPaginationHeight(), but for sets it is the height of all the pages
     // or columns added together.
     virtual LayoutUnit logicalHeightOfAllFlowThreadContent() const;
 
-    virtual void expandToEncompassFlowThreadContentsIfNeeded() {};
+    bool shouldHaveAutoLogicalHeight() const
+    {
+        bool hasSpecifiedEndpointsForHeight = style()->logicalTop().isSpecified() && style()->logicalBottom().isSpecified();
+        bool hasAnchoredEndpointsForHeight = isOutOfFlowPositioned() && hasSpecifiedEndpointsForHeight;
+        return style()->logicalHeight().isAuto() && !hasAnchoredEndpointsForHeight;
+    }
+    bool hasAutoLogicalHeight() const { return m_hasAutoLogicalHeight; }
+
+    // The top of the nearest page inside the region. For RenderRegions, this is just the logical top of the
+    // flow thread portion we contain. For sets, we have to figure out the top of the nearest column or
+    // page.
+    virtual LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
+    
+    virtual void expandToEncompassFlowThreadContentsIfNeeded() { };
+
+    // Whether or not this region is a set.
+    virtual bool isRenderRegionSet() const { return false; }
+    
+    virtual void repaintFlowThreadContent(const LayoutRect& repaintRect, bool immediate) const;
 
 protected:
     void setRegionObjectsRegionStyle();
     void restoreRegionObjectsOriginalStyle();
 
     LayoutRect overflowRectForFlowThreadPortion(LayoutRect flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
+    void repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, bool immediate, const LayoutRect& flowThreadPortionRect,
+                                           const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
 
 private:
     virtual const char* renderName() const { return "RenderRegion"; }
+
+    // FIXME: these functions should be revisited once RenderRegion inherits from RenderBlock
+    // instead of RenderReplaced (see https://bugs.webkit.org/show_bug.cgi?id=74132 )
+    // When width is auto, use normal block/box sizing code except when inline.
+    virtual bool isInlineBlockOrInlineTable() const OVERRIDE { return isInline() && style()->logicalWidth().isAuto(); }
+    virtual bool shouldComputeSizeAsReplaced() const OVERRIDE { return !style()->logicalWidth().isAuto(); }
 
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
@@ -128,6 +162,7 @@ private:
     void printRegionObjectsStyles();
 
     void checkRegionStyle();
+    void updateRegionHasAutoLogicalHeightFlag();
 
 protected:
     RenderFlowThread* m_flowThread;
@@ -159,8 +194,9 @@ private:
     typedef HashMap<const RenderObject*, ObjectRegionStyleInfo > RenderObjectRegionStyleMap;
     RenderObjectRegionStyleMap m_renderObjectRegionStyle;
 
-    bool m_isValid;
-    bool m_hasCustomRegionStyle;
+    bool m_isValid : 1;
+    bool m_hasCustomRegionStyle : 1;
+    bool m_hasAutoLogicalHeight : 1;
     RegionState m_regionState;
 };
 

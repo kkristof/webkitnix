@@ -45,7 +45,7 @@ EncodedJSValue JSC_HOST_CALL boundFunctionCall(ExecState* exec)
 
     MarkedArgumentBuffer args;
     for (unsigned i = 0; i < boundArgs->length(); ++i)
-        args.append(boundArgs->getIndex(i));
+        args.append(boundArgs->getIndexQuickly(i));
     for (unsigned i = 0; i < exec->argumentCount(); ++i)
         args.append(exec->argument(i));
 
@@ -65,7 +65,7 @@ EncodedJSValue JSC_HOST_CALL boundFunctionConstruct(ExecState* exec)
 
     MarkedArgumentBuffer args;
     for (unsigned i = 0; i < boundArgs->length(); ++i)
-        args.append(boundArgs->getIndex(i));
+        args.append(boundArgs->getIndexQuickly(i));
     for (unsigned i = 0; i < exec->argumentCount(); ++i)
         args.append(exec->argument(i));
 
@@ -76,7 +76,7 @@ EncodedJSValue JSC_HOST_CALL boundFunctionConstruct(ExecState* exec)
     return JSValue::encode(construct(exec, targetFunction, constructType, constructData, args));
 }
 
-JSBoundFunction* JSBoundFunction::create(ExecState* exec, JSGlobalObject* globalObject, JSObject* targetFunction, JSValue boundThis, JSValue boundArgs, int length, const UString& name)
+JSBoundFunction* JSBoundFunction::create(ExecState* exec, JSGlobalObject* globalObject, JSObject* targetFunction, JSValue boundThis, JSValue boundArgs, int length, const String& name)
 {
     ConstructData constructData;
     ConstructType constructType = JSC::getConstructData(targetFunction, constructData);
@@ -89,14 +89,9 @@ JSBoundFunction* JSBoundFunction::create(ExecState* exec, JSGlobalObject* global
     return function;
 }
 
-bool JSBoundFunction::hasInstance(JSObject* object, ExecState* exec, JSValue value, JSValue)
+bool JSBoundFunction::customHasInstance(JSObject* object, ExecState* exec, JSValue value)
 {
-    JSBoundFunction* thisObject = jsCast<JSBoundFunction*>(object);
-    // FIXME: our instanceof implementation will have already (incorrectly) performed
-    // a [[Get]] of .prototype from the bound function object, which is incorrect!
-    // https://bugs.webkit.org/show_bug.cgi?id=68656
-    JSValue proto = thisObject->m_targetFunction->get(exec, exec->propertyNames().prototype);
-    return thisObject->m_targetFunction->methodTable()->hasInstance(thisObject->m_targetFunction.get(), exec, value, proto);
+    return jsCast<JSBoundFunction*>(object)->m_targetFunction->hasInstance(exec, value);
 }
 
 JSBoundFunction::JSBoundFunction(ExecState* exec, JSGlobalObject* globalObject, Structure* structure, JSObject* targetFunction, JSValue boundThis, JSValue boundArgs)
@@ -107,13 +102,13 @@ JSBoundFunction::JSBoundFunction(ExecState* exec, JSGlobalObject* globalObject, 
 {
 }
 
-void JSBoundFunction::finishCreation(ExecState* exec, NativeExecutable* executable, int length, const UString& name)
+void JSBoundFunction::finishCreation(ExecState* exec, NativeExecutable* executable, int length, const String& name)
 {
     Base::finishCreation(exec, executable, length, name);
     ASSERT(inherits(&s_info));
 
-    putDirectAccessor(exec->globalData(), exec->propertyNames().arguments, globalObject()->throwTypeErrorGetterSetter(exec), DontDelete | DontEnum | Accessor);
-    putDirectAccessor(exec->globalData(), exec->propertyNames().caller, globalObject()->throwTypeErrorGetterSetter(exec), DontDelete | DontEnum | Accessor);
+    putDirectAccessor(exec, exec->propertyNames().arguments, globalObject()->throwTypeErrorGetterSetter(exec), DontDelete | DontEnum | Accessor);
+    putDirectAccessor(exec, exec->propertyNames().caller, globalObject()->throwTypeErrorGetterSetter(exec), DontDelete | DontEnum | Accessor);
 }
 
 void JSBoundFunction::visitChildren(JSCell* cell, SlotVisitor& visitor)

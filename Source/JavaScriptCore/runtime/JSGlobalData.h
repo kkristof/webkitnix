@@ -76,7 +76,6 @@ namespace JSC {
     class RegExpCache;
     class Stringifier;
     class Structure;
-    class UString;
 #if ENABLE(REGEXP_TRACING)
     class RegExp;
 #endif
@@ -229,17 +228,14 @@ namespace JSC {
         
         Strong<Structure> structureStructure;
         Strong<Structure> debuggerActivationStructure;
-        Strong<Structure> activationStructure;
         Strong<Structure> interruptedExecutionErrorStructure;
         Strong<Structure> terminatedExecutionErrorStructure;
-        Strong<Structure> nameScopeStructure;
-        Strong<Structure> strictEvalActivationStructure;
         Strong<Structure> stringStructure;
         Strong<Structure> notAnObjectStructure;
         Strong<Structure> propertyNameIteratorStructure;
         Strong<Structure> getterSetterStructure;
         Strong<Structure> apiWrapperStructure;
-        Strong<Structure> scopeChainNodeStructure;
+        Strong<Structure> JSScopeStructure;
         Strong<Structure> executableStructure;
         Strong<Structure> nativeExecutableStructure;
         Strong<Structure> evalExecutableStructure;
@@ -248,7 +244,7 @@ namespace JSC {
         Strong<Structure> regExpStructure;
         Strong<Structure> sharedSymbolTableStructure;
         Strong<Structure> structureChainStructure;
-        Strong<Structure> withScopeStructure;
+        Strong<Structure> sparseArrayValueMapStructure;
 
         IdentifierTable* identifierTable;
         CommonIdentifiers* propertyNames;
@@ -289,7 +285,7 @@ namespace JSC {
 #elif !ENABLE(CLASSIC_INTERPRETER) && !ENABLE(LLINT)
         bool canUseJIT() { return true; } // jit only
 #else
-        bool canUseJIT() { return m_canUseAssembler; }
+        bool canUseJIT() { return m_canUseJIT; }
 #endif
 
 #if !ENABLE(YARR_JIT)
@@ -297,7 +293,7 @@ namespace JSC {
 #elif !ENABLE(CLASSIC_INTERPRETER) && !ENABLE(LLINT)
         bool canUseRegExpJIT() { return true; } // jit only
 #else
-        bool canUseRegExpJIT() { return m_canUseAssembler; }
+        bool canUseRegExpJIT() { return m_canUseRegExpJIT; }
 #endif
 
         PrivateName m_inheritorIDKey;
@@ -322,8 +318,6 @@ namespace JSC {
 
         const ClassInfo* const jsArrayClassInfo;
         const ClassInfo* const jsFinalObjectClassInfo;
-
-        LLInt::Data llintData;
 
         ReturnAddressPtr exceptionLocation;
         JSValue hostCallReturnValue;
@@ -368,7 +362,7 @@ namespace JSC {
         double cachedUTCOffset;
         DSTOffsetCache dstOffsetCache;
         
-        UString cachedDateString;
+        String cachedDateString;
         double cachedDateStringValue;
 
         int maxReentryDepth;
@@ -423,6 +417,7 @@ namespace JSC {
         { \
             ASSERT(!m_##type##ArrayDescriptor.m_classInfo || m_##type##ArrayDescriptor.m_classInfo == descriptor.m_classInfo); \
             m_##type##ArrayDescriptor = descriptor; \
+            ASSERT(m_##type##ArrayDescriptor.m_classInfo); \
         } \
         const TypedArrayDescriptor& type##ArrayDescriptor() const { ASSERT(m_##type##ArrayDescriptor.m_classInfo); return m_##type##ArrayDescriptor; }
 
@@ -447,6 +442,8 @@ namespace JSC {
         void createNativeThunk();
 #if ENABLE(ASSEMBLER) && (ENABLE(CLASSIC_INTERPRETER) || ENABLE(LLINT))
         bool m_canUseAssembler;
+        bool m_canUseJIT;
+        bool m_canUseRegExpJIT;
 #endif
 #if ENABLE(GC_VALIDATION)
         const ClassInfo* m_initializingObjectClass;
@@ -475,6 +472,11 @@ namespace JSC {
         m_initializingObjectClass = initializingObjectClass;
     }
 #endif
+
+    inline Heap* WeakSet::heap() const
+    {
+        return &m_globalData->heap;
+    }
 
 } // namespace JSC
 

@@ -55,6 +55,24 @@ MediaSource::MediaSource(ScriptExecutionContext* context)
     m_activeSourceBuffers = SourceBufferList::create(scriptExecutionContext(), m_asyncEventQueue.get());
 }
 
+const String& MediaSource::openKeyword()
+{
+    DEFINE_STATIC_LOCAL(const String, open, (ASCIILiteral("open")));
+    return open;
+}
+
+const String& MediaSource::closedKeyword()
+{
+    DEFINE_STATIC_LOCAL(const String, closed, (ASCIILiteral("closed")));
+    return closed;
+}
+
+const String& MediaSource::endedKeyword()
+{
+    DEFINE_STATIC_LOCAL(const String, ended, (ASCIILiteral("ended")));
+    return ended;
+}
+
 SourceBufferList* MediaSource::sourceBuffers()
 {
     return m_sourceBuffers.get();
@@ -64,6 +82,24 @@ SourceBufferList* MediaSource::activeSourceBuffers()
 {
     // FIXME(91649): support track selection
     return m_activeSourceBuffers.get();
+}
+
+double MediaSource::duration() const
+{
+    return m_readyState == closedKeyword() ? std::numeric_limits<float>::quiet_NaN() : m_player->duration();
+}
+
+void MediaSource::setDuration(double duration, ExceptionCode& ec)
+{
+    if (duration < 0.0 || isnan(duration)) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+    if (m_readyState != openKeyword()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    m_player->sourceSetDuration(duration);
 }
 
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionCode& ec)

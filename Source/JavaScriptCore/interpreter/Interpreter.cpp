@@ -49,6 +49,8 @@
 #include "JSNotAnObject.h"
 #include "JSPropertyNameIterator.h"
 #include "JSString.h"
+#include "JSWithScope.h"
+#include "LLIntCLoop.h"
 #include "LiteralParser.h"
 #include "NameInstance.h"
 #include "ObjectPrototype.h"
@@ -61,7 +63,6 @@
 #include "SamplingTool.h"
 #include "StrictEvalActivation.h"
 #include "StrongInlines.h"
-#include "UStringConcatenate.h"
 #include <limits.h>
 #include <stdio.h>
 #include <wtf/Threading.h>
@@ -80,7 +81,7 @@ namespace JSC {
 static CallFrame* getCallerInfo(JSGlobalData*, CallFrame*, int& lineNumber, unsigned& bytecodeOffset);
 
 // Returns the depth of the scope chain within a given call frame.
-static int depth(CodeBlock* codeBlock, ScopeChainNode* sc)
+static int depth(CodeBlock* codeBlock, JSScope* sc)
 {
     if (!codeBlock->needsFullScopeChain())
         return 0;
@@ -130,14 +131,6 @@ static NEVER_INLINE bool isInvalidParamForIn(CallFrame* callFrame, JSValue value
     exceptionData = createInvalidParamError(callFrame, "in" , value);
     return true;
 }
-
-static NEVER_INLINE bool isInvalidParamForInstanceOf(CallFrame* callFrame, JSValue value, JSValue& exceptionData)
-{
-    if (value.isObject() && asObject(value)->structure()->typeInfo().implementsHasInstance())
-        return false;
-    exceptionData = createInvalidParamError(callFrame, "instanceof" , value);
-    return true;
-}
 #endif
 
 JSValue eval(CallFrame* callFrame)
@@ -150,13 +143,13 @@ JSValue eval(CallFrame* callFrame)
         return program;
     
     TopCallFrameSetter topCallFrame(callFrame->globalData(), callFrame);
-    UString programSource = asString(program)->value(callFrame);
+    String programSource = asString(program)->value(callFrame);
     if (callFrame->hadException())
         return JSValue();
     
     CallFrame* callerFrame = callFrame->callerFrame();
     CodeBlock* callerCodeBlock = callerFrame->codeBlock();
-    ScopeChainNode* callerScopeChain = callerFrame->scopeChain();
+    JSScope* callerScopeChain = callerFrame->scope();
     EvalExecutable* eval = callerCodeBlock->evalCodeCache().tryGet(callerCodeBlock->isStrictMode(), programSource, callerScopeChain);
 
     if (!eval) {
@@ -201,7 +194,7 @@ CallFrame* loadVarargs(CallFrame* callFrame, RegisterFile* registerFile, JSValue
         newCallFrame->setArgumentCountIncludingThis(argumentCountIncludingThis);
         newCallFrame->setThisValue(thisValue);
         for (size_t i = 0; i < callFrame->argumentCount(); ++i)
-            newCallFrame->setArgument(i, callFrame->argument(i));
+            newCallFrame->setArgument(i, callFrame->argumentAfterCapture(i));
         return newCallFrame;
     }
 
@@ -278,15 +271,14 @@ Interpreter::Interpreter()
 
 Interpreter::~Interpreter()
 {
-#if ENABLE(LLINT)
+#if ENABLE(LLINT) && ENABLE(COMPUTED_GOTO_OPCODES)
     if (m_classicEnabled)
         delete[] m_opcodeTable;
 #endif
 }
 
-void Interpreter::initialize(LLInt::Data* llintData, bool canUseJIT)
+void Interpreter::initialize(bool canUseJIT)
 {
-    UNUSED_PARAM(llintData);
     UNUSED_PARAM(canUseJIT);
 
     // If we have LLInt, then we shouldn't be building any kind of classic interpreter.
@@ -294,15 +286,16 @@ void Interpreter::initialize(LLInt::Data* llintData, bool canUseJIT)
 #error "Building both LLInt and the Classic Interpreter is not supported because it doesn't make sense."
 #endif
 
+#if ENABLE(COMPUTED_GOTO_OPCODES)
 #if ENABLE(LLINT)
-    m_opcodeTable = llintData->opcodeMap();
+    m_opcodeTable = LLInt::opcodeMap();
     for (int i = 0; i < numOpcodeIDs; ++i)
         m_opcodeIDTable.add(m_opcodeTable[i], static_cast<OpcodeID>(i));
     m_classicEnabled = false;
+
 #elif ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
     if (canUseJIT) {
         // If the JIT is present, don't use jump destinations for opcodes.
-        
         for (int i = 0; i < numOpcodeIDs; ++i) {
             Opcode opcode = bitwise_cast<void*>(static_cast<uintptr_t>(i));
             m_opcodeTable[i] = opcode;
@@ -316,13 +309,16 @@ void Interpreter::initialize(LLInt::Data* llintData, bool canUseJIT)
         
         m_classicEnabled = true;
     }
-#else
+#endif // ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
+
+#else // !ENABLE(COMPUTED_GOTO_OPCODES)
 #if ENABLE(CLASSIC_INTERPRETER)
     m_classicEnabled = true;
 #else
     m_classicEnabled = false;
 #endif
-#endif // ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
+#endif // !ENABLE(COMPUTED_GOTO_OPCODES)
+
 #if !ASSERT_DISABLED
     m_initialized = true;
 #endif
@@ -362,7 +358,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
     while (it < end) {
         JSValue v = it->jsValue();
         int registerNumber = it - callFrame->registers();
-        UString name = codeBlock->nameForRegister(registerNumber);
+        String name = codeBlock->nameForRegister(registerNumber);
 #if USE(JSVALUE32_64)
         dataLog("[r% 3d %14s]      | %10p | %-16s 0x%llx \n", registerNumber, name.ascii().data(), it, v.description(), JSValue::encode(v));
 #else
@@ -378,7 +374,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
     ++it;
     dataLog("[Callee]                   | %10p | %p \n", it, callFrame->callee());
     ++it;
-    dataLog("[ScopeChain]               | %10p | %p \n", it, callFrame->scopeChain());
+    dataLog("[ScopeChain]               | %10p | %p \n", it, callFrame->scope());
     ++it;
 #if ENABLE(JIT)
     AbstractPC pc = callFrame->abstractReturnPC(callFrame->globalData());
@@ -401,7 +397,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
         do {
             JSValue v = it->jsValue();
             int registerNumber = it - callFrame->registers();
-            UString name = codeBlock->nameForRegister(registerNumber);
+            String name = codeBlock->nameForRegister(registerNumber);
 #if USE(JSVALUE32_64)
             dataLog("[r% 3d %14s]      | %10p | %-16s 0x%llx \n", registerNumber, name.ascii().data(), it, v.description(), JSValue::encode(v));
 #else
@@ -433,7 +429,7 @@ void Interpreter::dumpRegisters(CallFrame* callFrame)
 
 bool Interpreter::isOpcode(Opcode opcode)
 {
-#if ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER) || ENABLE(LLINT)
+#if ENABLE(COMPUTED_GOTO_OPCODES)
 #if !ENABLE(LLINT)
     if (!m_classicEnabled)
         return static_cast<OpcodeID>(bitwise_cast<uintptr_t>(opcode)) <= op_end;
@@ -449,7 +445,7 @@ bool Interpreter::isOpcode(Opcode opcode)
 NEVER_INLINE bool Interpreter::unwindCallFrame(CallFrame*& callFrame, JSValue exceptionValue, unsigned& bytecodeOffset, CodeBlock*& codeBlock)
 {
     CodeBlock* oldCodeBlock = codeBlock;
-    ScopeChainNode* scopeChain = callFrame->scopeChain();
+    JSScope* scope = callFrame->scope();
 
     if (Debugger* debugger = callFrame->dynamicGlobalObject()->debugger()) {
         DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
@@ -459,23 +455,20 @@ NEVER_INLINE bool Interpreter::unwindCallFrame(CallFrame*& callFrame, JSValue ex
             debugger->didExecuteProgram(debuggerCallFrame, codeBlock->ownerExecutable()->sourceID(), codeBlock->ownerExecutable()->lastLine(), 0);
     }
 
-    // If this call frame created an activation or an 'arguments' object, tear it off.
-    if (oldCodeBlock->codeType() == FunctionCode && oldCodeBlock->needsFullScopeChain()) {
-        if (!callFrame->uncheckedR(oldCodeBlock->activationRegister()).jsValue()) {
-            oldCodeBlock->createActivation(callFrame);
-            scopeChain = callFrame->scopeChain();
-        }
-        while (!JSScope::objectAtScope(scopeChain)->inherits(&JSActivation::s_info))
-            scopeChain = scopeChain->pop();
+    JSValue activation;
+    if (oldCodeBlock->codeType() == FunctionCode && oldCodeBlock->needsActivation()) {
+        activation = callFrame->uncheckedR(oldCodeBlock->activationRegister()).jsValue();
+        if (activation)
+            jsCast<JSActivation*>(activation)->tearOff(*scope->globalData());
+    }
 
-        callFrame->setScopeChain(scopeChain);
-        JSActivation* activation = asActivation(JSScope::objectAtScope(scopeChain));
-        activation->tearOff(*scopeChain->globalData);
-        if (JSValue arguments = callFrame->uncheckedR(unmodifiedArgumentsRegister(oldCodeBlock->argumentsRegister())).jsValue())
-            asArguments(arguments)->didTearOffActivation(callFrame->globalData(), activation);
-    } else if (oldCodeBlock->usesArguments() && !oldCodeBlock->isStrictMode()) {
-        if (JSValue arguments = callFrame->uncheckedR(unmodifiedArgumentsRegister(oldCodeBlock->argumentsRegister())).jsValue())
-            asArguments(arguments)->tearOff(callFrame);
+    if (oldCodeBlock->codeType() == FunctionCode && oldCodeBlock->usesArguments()) {
+        if (JSValue arguments = callFrame->uncheckedR(unmodifiedArgumentsRegister(oldCodeBlock->argumentsRegister())).jsValue()) {
+            if (activation)
+                jsCast<Arguments*>(arguments)->didTearOffActivation(callFrame, jsCast<JSActivation*>(activation));
+            else
+                jsCast<Arguments*>(arguments)->tearOff(callFrame);
+        }
     }
 
     CallFrame* callerFrame = callFrame->callerFrame();
@@ -497,7 +490,7 @@ NEVER_INLINE bool Interpreter::unwindCallFrame(CallFrame*& callFrame, JSValue ex
         bytecodeOffset = codeBlock->bytecodeOffset(callerFrame, callFrame->returnPC());
     else
         bytecodeOffset = codeBlock->bytecodeOffset(callFrame->returnVPC()) - 1;
-#elif ENABLE(JIT)
+#elif ENABLE(JIT) || ENABLE(LLINT)
     bytecodeOffset = codeBlock->bytecodeOffset(callerFrame, callFrame->returnPC());
 #else
     bytecodeOffset = codeBlock->bytecodeOffset(callFrame->returnVPC()) - 1;
@@ -524,7 +517,8 @@ static void appendSourceToError(CallFrame* callFrame, ErrorInstance* exception, 
     int expressionStart = divotPoint - startOffset;
     int expressionStop = divotPoint + endOffset;
 
-    if (!expressionStop || expressionStart > codeBlock->source()->length())
+    const String& sourceString = codeBlock->source()->source();
+    if (!expressionStop || expressionStart > static_cast<int>(sourceString.length()))
         return;
 
     JSGlobalData* globalData = &callFrame->globalData();
@@ -532,14 +526,14 @@ static void appendSourceToError(CallFrame* callFrame, ErrorInstance* exception, 
     if (!jsMessage || !jsMessage.isString())
         return;
 
-    UString message = asString(jsMessage)->value(callFrame);
+    String message = asString(jsMessage)->value(callFrame);
 
     if (expressionStart < expressionStop)
-        message =  makeUString(message, " (evaluating '", codeBlock->source()->getRange(expressionStart, expressionStop), "')");
+        message =  makeString(message, " (evaluating '", codeBlock->source()->getRange(expressionStart, expressionStop), "')");
     else {
         // No range information, so give a few characters of context
-        const StringImpl* data = codeBlock->source()->data();
-        int dataLength = codeBlock->source()->length();
+        const StringImpl* data = sourceString.impl();
+        int dataLength = sourceString.length();
         int start = expressionStart;
         int stop = expressionStart;
         // Get up to 20 characters of context to the left and right of the divot, clamping to the line.
@@ -552,7 +546,7 @@ static void appendSourceToError(CallFrame* callFrame, ErrorInstance* exception, 
             stop++;
         while (stop > expressionStart && isStrWhiteSpace((*data)[stop - 1]))
             stop--;
-        message = makeUString(message, " (near '...", codeBlock->source()->getRange(start, stop), "...')");
+        message = makeString(message, " (near '...", codeBlock->source()->getRange(start, stop), "...')");
     }
 
     exception->putDirect(*globalData, globalData->propertyNames->message, jsString(globalData, message));
@@ -569,7 +563,7 @@ static int getLineNumberForCallFrame(JSGlobalData* globalData, CallFrame* callFr
     if (!globalData->canUseJIT())
         return codeBlock->lineNumberForBytecodeOffset(callFrame->bytecodeOffsetForNonDFGCode() - 1);
 #endif
-#if ENABLE(JIT)
+#if ENABLE(JIT) || ENABLE(LLINT)
 #if ENABLE(DFG_JIT)
     if (codeBlock->getJITType() == JITCode::DFGJIT)
         return codeBlock->lineNumberForBytecodeOffset(codeBlock->codeOrigin(callFrame->codeOriginIndexForDFG()).bytecodeIndex);
@@ -595,7 +589,7 @@ static CallFrame* getCallerInfo(JSGlobalData* globalData, CallFrame* callFrame, 
     
     CodeBlock* callerCodeBlock = callerFrame->codeBlock();
     
-#if ENABLE(JIT)
+#if ENABLE(JIT) || ENABLE(LLINT)
     if (!callFrame->hasReturnPC())
         callframeIsHost = true;
 #endif
@@ -614,7 +608,7 @@ static CallFrame* getCallerInfo(JSGlobalData* globalData, CallFrame* callFrame, 
             return callerFrame;
         }
 #endif
-#if ENABLE(JIT)
+#if ENABLE(JIT) || ENABLE(LLINT)
 #if ENABLE(DFG_JIT)
         if (callerCodeBlock && callerCodeBlock->getJITType() == JITCode::DFGJIT) {
             unsigned codeOriginIndex = callerFrame->codeOriginIndexForDFG();
@@ -631,7 +625,7 @@ static CallFrame* getCallerInfo(JSGlobalData* globalData, CallFrame* callFrame, 
             return callerFrame;
         }
 #endif
-#if ENABLE(JIT)
+#if ENABLE(JIT) || ENABLE(LLINT)
     #if ENABLE(DFG_JIT)
         if (callFrame->isInlineCallFrame()) {
             InlineCallFrame* icf = callFrame->inlineCallFrame();
@@ -665,7 +659,7 @@ static CallFrame* getCallerInfo(JSGlobalData* globalData, CallFrame* callFrame, 
     return callerFrame;
 }
 
-static ALWAYS_INLINE const UString getSourceURLFromCallFrame(CallFrame* callFrame) 
+static ALWAYS_INLINE const String getSourceURLFromCallFrame(CallFrame* callFrame)
 {
     ASSERT(!callFrame->hasHostCallFrameFlag());
 #if ENABLE(CLASSIC_INTERPRETER)
@@ -706,13 +700,13 @@ void Interpreter::getStackTrace(JSGlobalData* globalData, Vector<StackFrame>& re
     callFrame = callFrame->trueCallFrameFromVMCode();
 
     while (callFrame && callFrame != CallFrame::noCaller()) {
-        UString sourceURL;
+        String sourceURL;
         if (callFrame->codeBlock()) {
             sourceURL = getSourceURLFromCallFrame(callFrame);
             StackFrame s = { Strong<JSObject>(*globalData, callFrame->callee()), getStackFrameCodeType(callFrame), Strong<ExecutableBase>(*globalData, callFrame->codeBlock()->ownerExecutable()), line, sourceURL};
             results.append(s);
         } else {
-            StackFrame s = { Strong<JSObject>(*globalData, callFrame->callee()), StackFrameNativeCode, Strong<ExecutableBase>(), -1, UString()};
+            StackFrame s = { Strong<JSObject>(*globalData, callFrame->callee()), StackFrameNativeCode, Strong<ExecutableBase>(), -1, String()};
             results.append(s);
         }
         unsigned unusedBytecodeOffset = 0;
@@ -738,6 +732,8 @@ void Interpreter::addStackTraceIfNecessary(CallFrame* callFrame, JSObject* error
         globalObject = globalData->dynamicGlobalObject;
     else
         globalObject = error->globalObject();
+
+    // FIXME: JSStringJoiner could be more efficient than StringBuilder here.
     StringBuilder builder;
     for (unsigned i = 0; i < stackTrace.size(); i++) {
         builder.append(String(stackTrace[i].toString(globalObject->globalExec()).impl()));
@@ -745,7 +741,7 @@ void Interpreter::addStackTraceIfNecessary(CallFrame* callFrame, JSObject* error
             builder.append('\n');
     }
     
-    error->putDirect(*globalData, globalData->propertyNames->stack, jsString(globalData, UString(builder.toString().impl())), ReadOnly | DontDelete);
+    error->putDirect(*globalData, globalData->propertyNames->stack, jsString(globalData, builder.toString()), ReadOnly | DontDelete);
 }
 
 NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSValue& exceptionValue, unsigned bytecodeOffset)
@@ -809,15 +805,15 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
     m_registerFile.shrink(highWaterMark);
 
     // Unwind the scope chain within the exception handler's call frame.
-    ScopeChainNode* scopeChain = callFrame->scopeChain();
+    JSScope* scope = callFrame->scope();
     int scopeDelta = 0;
     if (!codeBlock->needsFullScopeChain() || codeBlock->codeType() != FunctionCode 
         || callFrame->uncheckedR(codeBlock->activationRegister()).jsValue())
-        scopeDelta = depth(codeBlock, scopeChain) - handler->scopeDepth;
+        scopeDelta = depth(codeBlock, scope) - handler->scopeDepth;
     ASSERT(scopeDelta >= 0);
     while (scopeDelta--)
-        scopeChain = scopeChain->pop();
-    callFrame->setScopeChain(scopeChain);
+        scope = scope->next();
+    callFrame->setScope(scope);
 
     return handler;
 }
@@ -834,10 +830,11 @@ static inline JSObject* checkedReturn(JSObject* returnValue)
     return returnValue;
 }
 
-JSValue Interpreter::execute(ProgramExecutable* program, CallFrame* callFrame, ScopeChainNode* scopeChain, JSObject* thisObj)
+JSValue Interpreter::execute(ProgramExecutable* program, CallFrame* callFrame, JSObject* thisObj)
 {
+    JSScope* scope = callFrame->scope();
     ASSERT(isValidThisObject(thisObj, callFrame));
-    ASSERT(!scopeChain->globalData->exception);
+    ASSERT(!scope->globalData()->exception);
     ASSERT(!callFrame->globalData().isCollectorBusy());
     if (callFrame->globalData().isCollectorBusy())
         CRASH();
@@ -845,22 +842,25 @@ JSValue Interpreter::execute(ProgramExecutable* program, CallFrame* callFrame, S
     if (m_reentryDepth >= MaxSmallThreadReentryDepth && m_reentryDepth >= callFrame->globalData().maxReentryDepth)
         return checkedReturn(throwStackOverflowError(callFrame));
 
-    DynamicGlobalObjectScope globalObjectScope(*scopeChain->globalData, scopeChain->globalObject.get());
+    // First check if the "program" is actually just a JSON object. If so,
+    // we'll handle the JSON object here. Else, we'll handle real JS code
+    // below at failedJSONP.
+    DynamicGlobalObjectScope globalObjectScope(*scope->globalData(), scope->globalObject());
     Vector<JSONPData> JSONPData;
     bool parseResult;
-    const UString programSource = program->source().toString();
+    const String programSource = program->source().toString();
     if (programSource.isNull())
         return jsUndefined();
     if (programSource.is8Bit()) {
         LiteralParser<LChar> literalParser(callFrame, programSource.characters8(), programSource.length(), JSONP);
-        parseResult = literalParser.tryJSONPParse(JSONPData, scopeChain->globalObject->globalObjectMethodTable()->supportsRichSourceInfo(scopeChain->globalObject.get()));
+        parseResult = literalParser.tryJSONPParse(JSONPData, scope->globalObject()->globalObjectMethodTable()->supportsRichSourceInfo(scope->globalObject()));
     } else {
         LiteralParser<UChar> literalParser(callFrame, programSource.characters16(), programSource.length(), JSONP);
-        parseResult = literalParser.tryJSONPParse(JSONPData, scopeChain->globalObject->globalObjectMethodTable()->supportsRichSourceInfo(scopeChain->globalObject.get()));
+        parseResult = literalParser.tryJSONPParse(JSONPData, scope->globalObject()->globalObjectMethodTable()->supportsRichSourceInfo(scope->globalObject()));
     }
 
     if (parseResult) {
-        JSGlobalObject* globalObject = scopeChain->globalObject.get();
+        JSGlobalObject* globalObject = scope->globalObject();
         JSValue result;
         for (unsigned entry = 0; entry < JSONPData.size(); entry++) {
             Vector<JSONPPathEntry> JSONPPath;
@@ -945,36 +945,47 @@ JSValue Interpreter::execute(ProgramExecutable* program, CallFrame* callFrame, S
         return result;
     }
 failedJSONP:
-    JSObject* error = program->compile(callFrame, scopeChain);
+    // If we get here, then we have already proven that the script is not a JSON
+    // object.
+
+    // Compile source to bytecode if necessary:
+    JSObject* error = program->compile(callFrame, scope);
     if (error)
         return checkedReturn(throwError(callFrame, error));
     CodeBlock* codeBlock = &program->generatedBytecode();
 
+    // Reserve stack space for this invocation:
     Register* oldEnd = m_registerFile.end();
     Register* newEnd = oldEnd + codeBlock->numParameters() + RegisterFile::CallFrameHeaderSize + codeBlock->m_numCalleeRegisters;
     if (!m_registerFile.grow(newEnd))
         return checkedReturn(throwStackOverflowError(callFrame));
 
+    // Push the call frame for this invocation:
     CallFrame* newCallFrame = CallFrame::create(oldEnd + codeBlock->numParameters() + RegisterFile::CallFrameHeaderSize);
     ASSERT(codeBlock->numParameters() == 1); // 1 parameter for 'this'.
-    newCallFrame->init(codeBlock, 0, scopeChain, CallFrame::noCaller(), codeBlock->numParameters(), 0);
+    newCallFrame->init(codeBlock, 0, scope, CallFrame::noCaller(), codeBlock->numParameters(), 0);
     newCallFrame->setThisValue(thisObj);
     TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
 
     if (Profiler* profiler = callFrame->globalData().enabledProfiler())
         profiler->willExecute(callFrame, program->sourceURL(), program->lineNo());
 
+    // Execute the code:
     JSValue result;
     {
         SamplingTool::CallRecord callRecord(m_sampler.get());
 
         m_reentryDepth++;  
+#if ENABLE(LLINT_C_LOOP)
+        result = LLInt::CLoop::execute(newCallFrame, llint_program_prologue);
+#else // !ENABLE(LLINT_C_LOOP)
 #if ENABLE(JIT)
         if (!classicEnabled())
-            result = program->generatedJITCode().execute(&m_registerFile, newCallFrame, scopeChain->globalData);
+            result = program->generatedJITCode().execute(&m_registerFile, newCallFrame, scope->globalData());
         else
-#endif
+#endif // ENABLE(JIT)
             result = privateExecute(Normal, &m_registerFile, newCallFrame);
+#endif // !ENABLE(LLINT_C_LOOP)
 
         m_reentryDepth--;
     }
@@ -999,7 +1010,7 @@ JSValue Interpreter::executeCall(CallFrame* callFrame, JSObject* function, CallT
         return checkedReturn(throwStackOverflowError(callFrame));
 
     Register* oldEnd = m_registerFile.end();
-    ASSERT(callFrame->frameExtent() <= oldEnd || callFrame == callFrame->scopeChain()->globalObject->globalExec());
+    ASSERT(callFrame->frameExtent() <= oldEnd || callFrame == callFrame->scope()->globalObject()->globalExec());
     int argCount = 1 + args.size(); // implicit "this" parameter
     size_t registerOffset = argCount + RegisterFile::CallFrameHeaderSize;
 
@@ -1012,11 +1023,11 @@ JSValue Interpreter::executeCall(CallFrame* callFrame, JSObject* function, CallT
         newCallFrame->setArgument(i, args.at(i));
 
     if (callType == CallTypeJS) {
-        ScopeChainNode* callDataScopeChain = callData.js.scopeChain;
+        JSScope* callDataScope = callData.js.scope;
 
-        DynamicGlobalObjectScope globalObjectScope(*callDataScopeChain->globalData, callDataScopeChain->globalObject.get());
+        DynamicGlobalObjectScope globalObjectScope(*callDataScope->globalData(), callDataScope->globalObject());
 
-        JSObject* compileError = callData.js.functionExecutable->compileForCall(callFrame, callDataScopeChain);
+        JSObject* compileError = callData.js.functionExecutable->compileForCall(callFrame, callDataScope);
         if (UNLIKELY(!!compileError)) {
             m_registerFile.shrink(oldEnd);
             return checkedReturn(throwError(callFrame, compileError));
@@ -1029,7 +1040,7 @@ JSValue Interpreter::executeCall(CallFrame* callFrame, JSObject* function, CallT
             return checkedReturn(throwStackOverflowError(callFrame));
         }
 
-        newCallFrame->init(newCodeBlock, 0, callDataScopeChain, callFrame->addHostCallFrameFlag(), argCount, function);
+        newCallFrame->init(newCodeBlock, 0, callDataScope, callFrame->addHostCallFrameFlag(), argCount, function);
 
         TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
 
@@ -1041,12 +1052,17 @@ JSValue Interpreter::executeCall(CallFrame* callFrame, JSObject* function, CallT
             SamplingTool::CallRecord callRecord(m_sampler.get());
 
             m_reentryDepth++;  
+#if ENABLE(LLINT_C_LOOP)
+            result = LLInt::CLoop::execute(newCallFrame, llint_function_for_call_prologue);
+#else // ENABLE(LLINT_C_LOOP)
 #if ENABLE(JIT)
             if (!classicEnabled())
-                result = callData.js.functionExecutable->generatedJITCodeForCall().execute(&m_registerFile, newCallFrame, callDataScopeChain->globalData);
+                result = callData.js.functionExecutable->generatedJITCodeForCall().execute(&m_registerFile, newCallFrame, callDataScope->globalData());
             else
-#endif
+#endif // ENABLE(JIT)
                 result = privateExecute(Normal, &m_registerFile, newCallFrame);
+#endif // !ENABLE(LLINT_C_LOOP)
+
             m_reentryDepth--;
         }
 
@@ -1058,12 +1074,12 @@ JSValue Interpreter::executeCall(CallFrame* callFrame, JSObject* function, CallT
     }
 
     ASSERT(callType == CallTypeHost);
-    ScopeChainNode* scopeChain = callFrame->scopeChain();
-    newCallFrame->init(0, 0, scopeChain, callFrame->addHostCallFrameFlag(), argCount, function);
+    JSScope* scope = callFrame->scope();
+    newCallFrame->init(0, 0, scope, callFrame->addHostCallFrameFlag(), argCount, function);
 
     TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
 
-    DynamicGlobalObjectScope globalObjectScope(*scopeChain->globalData, scopeChain->globalObject.get());
+    DynamicGlobalObjectScope globalObjectScope(*scope->globalData(), scope->globalObject());
 
     if (Profiler* profiler = callFrame->globalData().enabledProfiler())
         profiler->willExecute(callFrame, function);
@@ -1106,11 +1122,11 @@ JSObject* Interpreter::executeConstruct(CallFrame* callFrame, JSObject* construc
         newCallFrame->setArgument(i, args.at(i));
 
     if (constructType == ConstructTypeJS) {
-        ScopeChainNode* constructDataScopeChain = constructData.js.scopeChain;
+        JSScope* constructDataScope = constructData.js.scope;
 
-        DynamicGlobalObjectScope globalObjectScope(*constructDataScopeChain->globalData, constructDataScopeChain->globalObject.get());
+        DynamicGlobalObjectScope globalObjectScope(*constructDataScope->globalData(), constructDataScope->globalObject());
 
-        JSObject* compileError = constructData.js.functionExecutable->compileForConstruct(callFrame, constructDataScopeChain);
+        JSObject* compileError = constructData.js.functionExecutable->compileForConstruct(callFrame, constructDataScope);
         if (UNLIKELY(!!compileError)) {
             m_registerFile.shrink(oldEnd);
             return checkedReturn(throwError(callFrame, compileError));
@@ -1123,7 +1139,7 @@ JSObject* Interpreter::executeConstruct(CallFrame* callFrame, JSObject* construc
             return checkedReturn(throwStackOverflowError(callFrame));
         }
 
-        newCallFrame->init(newCodeBlock, 0, constructDataScopeChain, callFrame->addHostCallFrameFlag(), argCount, constructor);
+        newCallFrame->init(newCodeBlock, 0, constructDataScope, callFrame->addHostCallFrameFlag(), argCount, constructor);
 
         TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
 
@@ -1135,12 +1151,16 @@ JSObject* Interpreter::executeConstruct(CallFrame* callFrame, JSObject* construc
             SamplingTool::CallRecord callRecord(m_sampler.get());
 
             m_reentryDepth++;  
+#if ENABLE(LLINT_C_LOOP)
+            result = LLInt::CLoop::execute(newCallFrame, llint_function_for_construct_prologue);
+#else // !ENABLE(LLINT_C_LOOP)
 #if ENABLE(JIT)
             if (!classicEnabled())
-                result = constructData.js.functionExecutable->generatedJITCodeForConstruct().execute(&m_registerFile, newCallFrame, constructDataScopeChain->globalData);
+                result = constructData.js.functionExecutable->generatedJITCodeForConstruct().execute(&m_registerFile, newCallFrame, constructDataScope->globalData());
             else
-#endif
+#endif // ENABLE(JIT)
                 result = privateExecute(Normal, &m_registerFile, newCallFrame);
+#endif // !ENABLE(LLINT_C_LOOP)
             m_reentryDepth--;
         }
 
@@ -1155,12 +1175,12 @@ JSObject* Interpreter::executeConstruct(CallFrame* callFrame, JSObject* construc
     }
 
     ASSERT(constructType == ConstructTypeHost);
-    ScopeChainNode* scopeChain = callFrame->scopeChain();
-    newCallFrame->init(0, 0, scopeChain, callFrame->addHostCallFrameFlag(), argCount, constructor);
+    JSScope* scope = callFrame->scope();
+    newCallFrame->init(0, 0, scope, callFrame->addHostCallFrameFlag(), argCount, constructor);
 
     TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
 
-    DynamicGlobalObjectScope globalObjectScope(*scopeChain->globalData, scopeChain->globalObject.get());
+    DynamicGlobalObjectScope globalObjectScope(*scope->globalData(), scope->globalObject());
 
     if (Profiler* profiler = callFrame->globalData().enabledProfiler())
         profiler->willExecute(callFrame, constructor);
@@ -1181,9 +1201,9 @@ JSObject* Interpreter::executeConstruct(CallFrame* callFrame, JSObject* construc
     return checkedReturn(asObject(result));
 }
 
-CallFrameClosure Interpreter::prepareForRepeatCall(FunctionExecutable* functionExecutable, CallFrame* callFrame, JSFunction* function, int argumentCountIncludingThis, ScopeChainNode* scopeChain)
+CallFrameClosure Interpreter::prepareForRepeatCall(FunctionExecutable* functionExecutable, CallFrame* callFrame, JSFunction* function, int argumentCountIncludingThis, JSScope* scope)
 {
-    ASSERT(!scopeChain->globalData->exception);
+    ASSERT(!scope->globalData()->exception);
     
     if (callFrame->globalData().isCollectorBusy())
         return CallFrameClosure();
@@ -1202,7 +1222,7 @@ CallFrameClosure Interpreter::prepareForRepeatCall(FunctionExecutable* functionE
         return CallFrameClosure();
     }
 
-    JSObject* error = functionExecutable->compileForCall(callFrame, scopeChain);
+    JSObject* error = functionExecutable->compileForCall(callFrame, scope);
     if (error) {
         throwError(callFrame, error);
         m_registerFile.shrink(oldEnd);
@@ -1216,9 +1236,9 @@ CallFrameClosure Interpreter::prepareForRepeatCall(FunctionExecutable* functionE
         m_registerFile.shrink(oldEnd);
         return CallFrameClosure();
     }
-    newCallFrame->init(codeBlock, 0, scopeChain, callFrame->addHostCallFrameFlag(), argumentCountIncludingThis, function);  
-    scopeChain->globalData->topCallFrame = newCallFrame;
-    CallFrameClosure result = { callFrame, newCallFrame, function, functionExecutable, scopeChain->globalData, oldEnd, scopeChain, codeBlock->numParameters(), argumentCountIncludingThis };
+    newCallFrame->init(codeBlock, 0, scope, callFrame->addHostCallFrameFlag(), argumentCountIncludingThis, function);  
+    scope->globalData()->topCallFrame = newCallFrame;
+    CallFrameClosure result = { callFrame, newCallFrame, function, functionExecutable, scope->globalData(), oldEnd, scope, codeBlock->numParameters(), argumentCountIncludingThis };
     return result;
 }
 
@@ -1238,6 +1258,9 @@ JSValue Interpreter::execute(CallFrameClosure& closure)
         SamplingTool::CallRecord callRecord(m_sampler.get());
         
         m_reentryDepth++;  
+#if ENABLE(LLINT_C_LOOP)
+        result = LLInt::CLoop::execute(closure.newCallFrame, llint_function_for_call_prologue);
+#else // !ENABLE(LLINT_C_LOOP)
 #if ENABLE(JIT)
 #if ENABLE(CLASSIC_INTERPRETER)
         if (closure.newCallFrame->globalData().canUseJIT())
@@ -1246,10 +1269,12 @@ JSValue Interpreter::execute(CallFrameClosure& closure)
 #if ENABLE(CLASSIC_INTERPRETER)
         else
 #endif
-#endif
+#endif // ENABLE(JIT)
 #if ENABLE(CLASSIC_INTERPRETER)
             result = privateExecute(Normal, &m_registerFile, closure.newCallFrame);
 #endif
+#endif // !ENABLE(LLINT_C_LOOP)
+
         m_reentryDepth--;
     }
 
@@ -1264,41 +1289,39 @@ void Interpreter::endRepeatCall(CallFrameClosure& closure)
     m_registerFile.shrink(closure.oldEnd);
 }
 
-JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSValue thisValue, ScopeChainNode* scopeChain, int globalRegisterOffset)
+JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSValue thisValue, JSScope* scope, int globalRegisterOffset)
 {
     ASSERT(isValidThisObject(thisValue, callFrame));
-    ASSERT(!scopeChain->globalData->exception);
+    ASSERT(!scope->globalData()->exception);
     ASSERT(!callFrame->globalData().isCollectorBusy());
     if (callFrame->globalData().isCollectorBusy())
         return jsNull();
 
-    DynamicGlobalObjectScope globalObjectScope(*scopeChain->globalData, scopeChain->globalObject.get());
+    DynamicGlobalObjectScope globalObjectScope(*scope->globalData(), scope->globalObject());
 
     if (m_reentryDepth >= MaxSmallThreadReentryDepth && m_reentryDepth >= callFrame->globalData().maxReentryDepth)
         return checkedReturn(throwStackOverflowError(callFrame));
 
-    JSObject* compileError = eval->compile(callFrame, scopeChain);
+    JSObject* compileError = eval->compile(callFrame, scope);
     if (UNLIKELY(!!compileError))
         return checkedReturn(throwError(callFrame, compileError));
     EvalCodeBlock* codeBlock = &eval->generatedBytecode();
 
     JSObject* variableObject;
-    for (ScopeChainNode* node = scopeChain; ; node = node->next.get()) {
+    for (JSScope* node = scope; ; node = node->next()) {
         ASSERT(node);
-        if (JSScope::objectAtScope(node)->isVariableObject() && !JSScope::objectAtScope(node)->isNameScopeObject()) {
-            variableObject = jsCast<JSSymbolTableObject*>(JSScope::objectAtScope(node));
+        if (node->isVariableObject() && !node->isNameScopeObject()) {
+            variableObject = node;
             break;
         }
     }
 
     unsigned numVariables = codeBlock->numVariables();
     int numFunctions = codeBlock->numberOfFunctionDecls();
-    bool pushedScope = false;
     if (numVariables || numFunctions) {
         if (codeBlock->isStrictMode()) {
-            variableObject = StrictEvalActivation::create(callFrame);
-            scopeChain = scopeChain->push(variableObject);
-            pushedScope = true;
+            scope = StrictEvalActivation::create(callFrame);
+            variableObject = scope;
         }
         // Scope for BatchedTransitionOptimizer
         BatchedTransitionOptimizer optimizer(callFrame->globalData(), variableObject);
@@ -1314,22 +1337,19 @@ JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSValue
         for (int i = 0; i < numFunctions; ++i) {
             FunctionExecutable* function = codeBlock->functionDecl(i);
             PutPropertySlot slot;
-            variableObject->methodTable()->put(variableObject, callFrame, function->name(), function->make(callFrame, scopeChain), slot);
+            variableObject->methodTable()->put(variableObject, callFrame, function->name(), JSFunction::create(callFrame, function, scope), slot);
         }
     }
 
     Register* oldEnd = m_registerFile.end();
     Register* newEnd = m_registerFile.begin() + globalRegisterOffset + codeBlock->m_numCalleeRegisters;
-    if (!m_registerFile.grow(newEnd)) {
-        if (pushedScope)
-            scopeChain->pop();
+    if (!m_registerFile.grow(newEnd))
         return checkedReturn(throwStackOverflowError(callFrame));
-    }
 
     CallFrame* newCallFrame = CallFrame::create(m_registerFile.begin() + globalRegisterOffset);
 
     ASSERT(codeBlock->numParameters() == 1); // 1 parameter for 'this'.
-    newCallFrame->init(codeBlock, 0, scopeChain, callFrame->addHostCallFrameFlag(), codeBlock->numParameters(), 0);
+    newCallFrame->init(codeBlock, 0, scope, callFrame->addHostCallFrameFlag(), codeBlock->numParameters(), 0);
     newCallFrame->setThisValue(thisValue);
 
     TopCallFrameSetter topCallFrame(callFrame->globalData(), newCallFrame);
@@ -1343,18 +1363,22 @@ JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSValue
 
         m_reentryDepth++;
         
+#if ENABLE(LLINT_C_LOOP)
+        result = LLInt::CLoop::execute(newCallFrame, llint_eval_prologue);
+#else // !ENABLE(LLINT_C_LOOP)
 #if ENABLE(JIT)
 #if ENABLE(CLASSIC_INTERPRETER)
         if (callFrame->globalData().canUseJIT())
 #endif
-            result = eval->generatedJITCode().execute(&m_registerFile, newCallFrame, scopeChain->globalData);
+            result = eval->generatedJITCode().execute(&m_registerFile, newCallFrame, scope->globalData());
 #if ENABLE(CLASSIC_INTERPRETER)
         else
 #endif
-#endif
+#endif // ENABLE(JIT)
 #if ENABLE(CLASSIC_INTERPRETER)
             result = privateExecute(Normal, &m_registerFile, newCallFrame);
 #endif
+#endif // !ENABLE(LLINT_C_LOOP)
         m_reentryDepth--;
     }
 
@@ -1362,8 +1386,6 @@ JSValue Interpreter::execute(EvalExecutable* eval, CallFrame* callFrame, JSValue
         profiler->didExecute(callFrame, eval->sourceURL(), eval->lineNo());
 
     m_registerFile.shrink(oldEnd);
-    if (pushedScope)
-        scopeChain->pop();
     return checkedReturn(result);
 }
 
@@ -1396,16 +1418,14 @@ NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHook
 }
     
 #if ENABLE(CLASSIC_INTERPRETER)
-NEVER_INLINE ScopeChainNode* Interpreter::createExceptionScope(CallFrame* callFrame, const Instruction* vPC)
+NEVER_INLINE JSScope* Interpreter::createNameScope(CallFrame* callFrame, const Instruction* vPC)
 {
-    int dst = vPC[1].u.operand;
     CodeBlock* codeBlock = callFrame->codeBlock();
-    Identifier& property = codeBlock->identifier(vPC[2].u.operand);
-    JSValue value = callFrame->r(vPC[3].u.operand).jsValue();
-    JSObject* scope = JSNameScope::create(callFrame, property, value, DontDelete);
-    callFrame->uncheckedR(dst) = JSValue(scope);
-
-    return callFrame->scopeChain()->push(scope);
+    Identifier& property = codeBlock->identifier(vPC[1].u.operand);
+    JSValue value = callFrame->r(vPC[2].u.operand).jsValue();
+    unsigned attributes = vPC[3].u.operand;
+    JSNameScope* scope = JSNameScope::create(callFrame, property, value, attributes);
+    return scope;
 }
 
 NEVER_INLINE void Interpreter::tryCachePutByID(CallFrame* callFrame, CodeBlock* codeBlock, Instruction* vPC, JSValue baseValue, const PutPropertySlot& slot)
@@ -1630,6 +1650,8 @@ NEVER_INLINE void Interpreter::uncacheGetByID(CodeBlock*, Instruction* vPC)
 
 #endif // ENABLE(CLASSIC_INTERPRETER)
 
+#if !ENABLE(LLINT_C_LOOP)
+
 JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFile, CallFrame* callFrame)
 {
     // One-time initialization of our address tables. We have to put this code
@@ -1715,9 +1737,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             UPDATE_BYTECODE_OFFSET();
 #else
     #define DEFINE_OPCODE(opcode) opcode: UPDATE_BYTECODE_OFFSET();
-#endif
+#endif // !ENABLE(OPCODE_STATS)
     NEXT_INSTRUCTION();
-#else
+#else // !ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
     #define NEXT_INSTRUCTION() SAMPLE(codeBlock, vPC); goto interpreterLoopStart
 #if ENABLE(OPCODE_STATS)
     #define DEFINE_OPCODE(opcode) \
@@ -1730,7 +1752,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
     while (1) { // iterator loop begins
     interpreterLoopStart:;
     switch (vPC->u.opcode)
-#endif
+#endif // !ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
     {
     DEFINE_OPCODE(op_new_object) {
         /* new_object dst(r)
@@ -1788,7 +1810,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             exceptionValue = createSyntaxError(callFrame, "Invalid flags supplied to RegExp constructor.");
             goto vm_throw;
         }
-        callFrame->uncheckedR(dst) = JSValue(RegExpObject::create(*globalData, callFrame->lexicalGlobalObject(), callFrame->scopeChain()->globalObject->regExpStructure(), regExp));
+        callFrame->uncheckedR(dst) = JSValue(RegExpObject::create(*globalData, callFrame->lexicalGlobalObject(), callFrame->scope()->globalObject()->regExpStructure(), regExp));
 
         vPC += OPCODE_LENGTH(op_new_regexp);
         NEXT_INSTRUCTION();
@@ -2371,14 +2393,32 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
            JSC API*). Raises an exception if register constructor is not
            an valid parameter for instanceof.
         */
-        int base = vPC[1].u.operand;
+        int dst = vPC[1].u.operand;
+        int value = vPC[2].u.operand;
+        int base = vPC[3].u.operand;
+        int target = vPC[4].u.operand;
+
         JSValue baseVal = callFrame->r(base).jsValue();
 
-        if (isInvalidParamForInstanceOf(callFrame, baseVal, exceptionValue))
-            goto vm_throw;
+        if (baseVal.isObject()) {
+            TypeInfo info = asObject(baseVal)->structure()->typeInfo();
+            if (info.implementsDefaultHasInstance()) {
+                vPC += OPCODE_LENGTH(op_check_has_instance);
+                NEXT_INSTRUCTION();
+            }
+            if (info.implementsHasInstance()) {
+                JSValue baseVal = callFrame->r(base).jsValue();
+                bool result = asObject(baseVal)->methodTable()->customHasInstance(asObject(baseVal), callFrame, callFrame->r(value).jsValue());
+                CHECK_FOR_EXCEPTION();
+                callFrame->uncheckedR(dst) = jsBoolean(result);
 
-        vPC += OPCODE_LENGTH(op_check_has_instance);
-        NEXT_INSTRUCTION();
+                vPC += target;
+                NEXT_INSTRUCTION();
+            }
+        }
+
+        exceptionValue = createInvalidParamError(callFrame, "instanceof" , baseVal);
+        goto vm_throw;
     }
     DEFINE_OPCODE(op_instanceof) {
         /* instanceof dst(r) value(r) constructor(r) constructorProto(r)
@@ -2395,14 +2435,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         */
         int dst = vPC[1].u.operand;
         int value = vPC[2].u.operand;
-        int base = vPC[3].u.operand;
-        int baseProto = vPC[4].u.operand;
+        int baseProto = vPC[3].u.operand;
 
-        JSValue baseVal = callFrame->r(base).jsValue();
-
-        ASSERT(!isInvalidParamForInstanceOf(callFrame, baseVal, exceptionValue));
-
-        bool result = asObject(baseVal)->methodTable()->hasInstance(asObject(baseVal), callFrame, callFrame->r(value).jsValue(), callFrame->r(baseProto).jsValue());
+        bool result = JSObject::defaultHasInstance(callFrame, callFrame->r(value).jsValue(), callFrame->r(baseProto).jsValue());
         CHECK_FOR_EXCEPTION();
         callFrame->uncheckedR(dst) = jsBoolean(result);
 
@@ -2651,6 +2686,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         vPC += OPCODE_LENGTH(op_get_global_var_watchable);
         NEXT_INSTRUCTION();
     }
+    DEFINE_OPCODE(op_init_global_const)
     DEFINE_OPCODE(op_put_global_var) {
         /* put_global_var globalObject(c) registerPointer(n) value(r)
          
@@ -2665,6 +2701,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         vPC += OPCODE_LENGTH(op_put_global_var);
         NEXT_INSTRUCTION();
     }
+    DEFINE_OPCODE(op_init_global_const_check)
     DEFINE_OPCODE(op_put_global_var_check) {
         /* put_global_var_check globalObject(c) registerPointer(n) value(r)
          
@@ -2691,9 +2728,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         int index = vPC[2].u.operand;
         int skip = vPC[3].u.operand;
 
-        ScopeChainNode* scopeChain = callFrame->scopeChain();
-        ScopeChainIterator iter = scopeChain->begin();
-        ScopeChainIterator end = scopeChain->end();
+        JSScope* scope = callFrame->scope();
+        ScopeChainIterator iter = scope->begin();
+        ScopeChainIterator end = scope->end();
         ASSERT_UNUSED(end, iter != end);
         ASSERT(codeBlock == callFrame->codeBlock());
         bool checkTopLevel = codeBlock->codeType() == FunctionCode && codeBlock->needsFullScopeChain();
@@ -2706,9 +2743,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ++iter;
             ASSERT_UNUSED(end, iter != end);
         }
-        ASSERT((*iter)->isVariableObject());
-        JSVariableObject* scope = jsCast<JSVariableObject*>(iter.get());
-        callFrame->uncheckedR(dst) = scope->registerAt(index).get();
+        ASSERT(iter->isVariableObject());
+        JSVariableObject* variableObject = jsCast<JSVariableObject*>(iter.get());
+        callFrame->uncheckedR(dst) = variableObject->registerAt(index).get();
         ASSERT(callFrame->r(dst).jsValue());
         vPC += OPCODE_LENGTH(op_get_scoped_var);
         NEXT_INSTRUCTION();
@@ -2721,9 +2758,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         int skip = vPC[2].u.operand;
         int value = vPC[3].u.operand;
 
-        ScopeChainNode* scopeChain = callFrame->scopeChain();
-        ScopeChainIterator iter = scopeChain->begin();
-        ScopeChainIterator end = scopeChain->end();
+        JSScope* scope = callFrame->scope();
+        ScopeChainIterator iter = scope->begin();
+        ScopeChainIterator end = scope->end();
         ASSERT(codeBlock == callFrame->codeBlock());
         ASSERT_UNUSED(end, iter != end);
         bool checkTopLevel = codeBlock->codeType() == FunctionCode && codeBlock->needsFullScopeChain();
@@ -2737,10 +2774,10 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ASSERT_UNUSED(end, iter != end);
         }
 
-        ASSERT((*iter)->isVariableObject());
-        JSVariableObject* scope = jsCast<JSVariableObject*>(iter.get());
+        ASSERT(iter->isVariableObject());
+        JSVariableObject* variableObject = jsCast<JSVariableObject*>(iter.get());
         ASSERT(callFrame->r(value).jsValue());
-        scope->registerAt(index).set(*globalData, scope, callFrame->r(value).jsValue());
+        variableObject->registerAt(index).set(*globalData, variableObject, callFrame->r(value).jsValue());
         vPC += OPCODE_LENGTH(op_put_scoped_var);
         NEXT_INSTRUCTION();
     }
@@ -2778,7 +2815,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         JSObject* baseObject = asObject(baseVal);
         PropertySlot slot(baseVal);
         if (!baseObject->getPropertySlot(callFrame, ident, slot)) {
-            exceptionValue = createErrorForInvalidGlobalAssignment(callFrame, ident.ustring());
+            exceptionValue = createErrorForInvalidGlobalAssignment(callFrame, ident.string());
             goto vm_throw;
         }
 
@@ -3578,8 +3615,8 @@ skip_id_custom_self:
             uint32_t i = subscript.asUInt32();
             if (isJSArray(baseValue)) {
                 JSArray* jsArray = asArray(baseValue);
-                if (jsArray->canGetIndex(i))
-                    result = jsArray->getIndex(i);
+                if (jsArray->canGetIndexQuickly(i))
+                    result = jsArray->getIndexQuickly(i);
                 else
                     result = jsArray->JSArray::get(callFrame, i);
             } else if (isJSString(baseValue) && asString(baseValue)->canGetIndex(i))
@@ -3620,8 +3657,8 @@ skip_id_custom_self:
             uint32_t i = subscript.asUInt32();
             if (isJSArray(baseValue)) {
                 JSArray* jsArray = asArray(baseValue);
-                if (jsArray->canSetIndex(i))
-                    jsArray->setIndex(*globalData, i, callFrame->r(value).jsValue());
+                if (jsArray->canSetIndexQuickly(i))
+                    jsArray->setIndexQuickly(*globalData, i, callFrame->r(value).jsValue());
                 else
                     jsArray->JSArray::putByIndex(jsArray, callFrame, i, callFrame->r(value).jsValue(), codeBlock->isStrictMode());
             } else
@@ -3695,7 +3732,7 @@ skip_id_custom_self:
 
         JSValue arrayValue = callFrame->r(base).jsValue();
         ASSERT(isJSArray(arrayValue));
-        asArray(arrayValue)->putDirectIndex(callFrame, property, callFrame->r(value).jsValue(), false);
+        asArray(arrayValue)->putDirectIndex(callFrame, property, callFrame->r(value).jsValue());
 
         vPC += OPCODE_LENGTH(op_put_by_index);
         NEXT_INSTRUCTION();
@@ -4227,7 +4264,7 @@ skip_id_custom_self:
         int shouldCheck = vPC[3].u.operand;
         ASSERT(codeBlock->codeType() != FunctionCode || !codeBlock->needsFullScopeChain() || callFrame->r(codeBlock->activationRegister()).jsValue());
         if (!shouldCheck || !callFrame->r(dst).jsValue())
-            callFrame->uncheckedR(dst) = JSValue(codeBlock->functionDecl(func)->make(callFrame, callFrame->scopeChain()));
+            callFrame->uncheckedR(dst) = JSValue(JSFunction::create(callFrame, codeBlock->functionDecl(func), callFrame->scope()));
 
         vPC += OPCODE_LENGTH(op_new_func);
         NEXT_INSTRUCTION();
@@ -4245,19 +4282,7 @@ skip_id_custom_self:
         
         ASSERT(codeBlock->codeType() != FunctionCode || !codeBlock->needsFullScopeChain() || callFrame->r(codeBlock->activationRegister()).jsValue());
         FunctionExecutable* function = codeBlock->functionExpr(funcIndex);
-        JSFunction* func = function->make(callFrame, callFrame->scopeChain());
-
-        /* 
-            The Identifier in a FunctionExpression can be referenced from inside
-            the FunctionExpression's FunctionBody to allow the function to call
-            itself recursively. However, unlike in a FunctionDeclaration, the
-            Identifier in a FunctionExpression cannot be referenced from and
-            does not affect the scope enclosing the FunctionExpression.
-         */
-        if (!function->name().isNull()) {
-            JSNameScope* functionScopeObject = JSNameScope::create(callFrame, function->name(), func, ReadOnly | DontDelete);
-            func->setScope(*globalData, func->scope()->push(functionScopeObject));
-        }
+        JSFunction* func = JSFunction::create(callFrame, function, callFrame->scope());
 
         callFrame->uncheckedR(dst) = JSValue(func);
 
@@ -4285,7 +4310,7 @@ skip_id_custom_self:
 
         if (isHostFunction(funcVal, globalFuncEval)) {
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call_eval), callFrame->scopeChain(), callFrame, argCount, jsCast<JSFunction*>(funcVal));
+            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call_eval), callFrame->scope(), callFrame, argCount, jsCast<JSFunction*>(funcVal));
 
             JSValue result = eval(newCallFrame);
             if ((exceptionValue = globalData->exception))
@@ -4321,9 +4346,9 @@ skip_id_custom_self:
         CallType callType = getCallData(v, callData);
 
         if (callType == CallTypeJS) {
-            ScopeChainNode* callDataScopeChain = callData.js.scopeChain;
+            JSScope* callDataScope = callData.js.scope;
 
-            JSObject* error = callData.js.functionExecutable->compileForCall(callFrame, callDataScopeChain);
+            JSObject* error = callData.js.functionExecutable->compileForCall(callFrame, callDataScope);
             if (UNLIKELY(!!error)) {
                 exceptionValue = error;
                 goto vm_throw;
@@ -4338,7 +4363,7 @@ skip_id_custom_self:
                 goto vm_throw;
             }
 
-            callFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_call), callDataScopeChain, previousCallFrame, argCount, jsCast<JSFunction*>(v));
+            callFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_call), callDataScope, previousCallFrame, argCount, jsCast<JSFunction*>(v));
             codeBlock = newCodeBlock;
             ASSERT(codeBlock == callFrame->codeBlock());
             *topCallFrameSlot = callFrame;
@@ -4352,9 +4377,9 @@ skip_id_custom_self:
         }
 
         if (callType == CallTypeHost) {
-            ScopeChainNode* scopeChain = callFrame->scopeChain();
+            JSScope* scope = callFrame->scope();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call), scopeChain, callFrame, argCount, asObject(v));
+            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call), scope, callFrame, argCount, asObject(v));
             JSValue returnValue;
             {
                 *topCallFrameSlot = newCallFrame;
@@ -4401,9 +4426,9 @@ skip_id_custom_self:
         CallType callType = getCallData(v, callData);
         
         if (callType == CallTypeJS) {
-            ScopeChainNode* callDataScopeChain = callData.js.scopeChain;
+            JSScope* callDataScope = callData.js.scope;
 
-            JSObject* error = callData.js.functionExecutable->compileForCall(callFrame, callDataScopeChain);
+            JSObject* error = callData.js.functionExecutable->compileForCall(callFrame, callDataScope);
             if (UNLIKELY(!!error)) {
                 exceptionValue = error;
                 goto vm_throw;
@@ -4416,7 +4441,7 @@ skip_id_custom_self:
                 goto vm_throw;
             }
 
-            newCallFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_call_varargs), callDataScopeChain, callFrame, argCount, jsCast<JSFunction*>(v));
+            newCallFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_call_varargs), callDataScope, callFrame, argCount, jsCast<JSFunction*>(v));
             codeBlock = newCodeBlock;
             callFrame = newCallFrame;
             ASSERT(codeBlock == callFrame->codeBlock());
@@ -4431,8 +4456,8 @@ skip_id_custom_self:
         }
         
         if (callType == CallTypeHost) {
-            ScopeChainNode* scopeChain = callFrame->scopeChain();
-            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call_varargs), scopeChain, callFrame, argCount, asObject(v));
+            JSScope* scope = callFrame->scope();
+            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_call_varargs), scope, callFrame, argCount, asObject(v));
             
             JSValue returnValue;
             {
@@ -4455,50 +4480,43 @@ skip_id_custom_self:
         goto vm_throw;
     }
     DEFINE_OPCODE(op_tear_off_activation) {
-        /* tear_off_activation activation(r) arguments(r)
+        /* tear_off_activation activation(r)
 
            Copy locals and named parameters from the register file to the heap.
-           Point the bindings in 'activation' and 'arguments' to this new backing
-           store. (Note that 'arguments' may not have been created. If created,
-           'arguments' already holds a copy of any extra / unnamed parameters.)
+           Point the bindings in 'activation' to this new backing store.
 
            This opcode appears before op_ret in functions that require full scope chains.
         */
 
         int activation = vPC[1].u.operand;
-        int arguments = vPC[2].u.operand;
         ASSERT(codeBlock->needsFullScopeChain());
         JSValue activationValue = callFrame->r(activation).jsValue();
-        if (activationValue) {
+        if (activationValue)
             asActivation(activationValue)->tearOff(*globalData);
-
-            if (JSValue argumentsValue = callFrame->r(unmodifiedArgumentsRegister(arguments)).jsValue())
-                asArguments(argumentsValue)->didTearOffActivation(*globalData, asActivation(activationValue));
-        } else if (JSValue argumentsValue = callFrame->r(unmodifiedArgumentsRegister(arguments)).jsValue()) {
-            if (!codeBlock->isStrictMode())
-                asArguments(argumentsValue)->tearOff(callFrame);
-        }
 
         vPC += OPCODE_LENGTH(op_tear_off_activation);
         NEXT_INSTRUCTION();
     }
     DEFINE_OPCODE(op_tear_off_arguments) {
-        /* tear_off_arguments arguments(r)
+        /* tear_off_arguments arguments(r) activation(r)
 
            Copy named parameters from the register file to the heap. Point the
-           bindings in 'arguments' to this new backing store. (Note that
-           'arguments' may not have been created. If created, 'arguments' already
-           holds a copy of any extra / unnamed parameters.)
+           bindings in 'arguments' to this new backing store. (If 'activation'
+           was also copied to the heap, 'arguments' will point to its storage.)
 
            This opcode appears before op_ret in functions that don't require full
            scope chains, but do use 'arguments'.
         */
 
-        int src1 = vPC[1].u.operand;
-        ASSERT(!codeBlock->needsFullScopeChain() && codeBlock->ownerExecutable()->usesArguments());
-
-        if (JSValue arguments = callFrame->r(unmodifiedArgumentsRegister(src1)).jsValue())
-            asArguments(arguments)->tearOff(callFrame);
+        int arguments = vPC[1].u.operand;
+        int activation = vPC[2].u.operand;
+        ASSERT(codeBlock->usesArguments());
+        if (JSValue argumentsValue = callFrame->r(unmodifiedArgumentsRegister(arguments)).jsValue()) {
+            if (JSValue activationValue = callFrame->r(activation).jsValue())
+                asArguments(argumentsValue)->didTearOffActivation(callFrame, asActivation(activationValue));
+            else
+                asArguments(argumentsValue)->tearOff(callFrame);
+        }
 
         vPC += OPCODE_LENGTH(op_tear_off_arguments);
         NEXT_INSTRUCTION();
@@ -4599,7 +4617,7 @@ skip_id_custom_self:
         if (!callFrame->r(activationReg).jsValue()) {
             JSActivation* activation = JSActivation::create(*globalData, callFrame, static_cast<FunctionExecutable*>(codeBlock->ownerExecutable()));
             callFrame->r(activationReg) = JSValue(activation);
-            callFrame->setScopeChain(callFrame->scopeChain()->push(activation));
+            callFrame->setScope(activation);
         }
         vPC += OPCODE_LENGTH(op_create_activation);
         NEXT_INSTRUCTION();
@@ -4703,9 +4721,9 @@ skip_id_custom_self:
         ConstructType constructType = getConstructData(v, constructData);
 
         if (constructType == ConstructTypeJS) {
-            ScopeChainNode* callDataScopeChain = constructData.js.scopeChain;
+            JSScope* callDataScope = constructData.js.scope;
 
-            JSObject* error = constructData.js.functionExecutable->compileForConstruct(callFrame, callDataScopeChain);
+            JSObject* error = constructData.js.functionExecutable->compileForConstruct(callFrame, callDataScope);
             if (UNLIKELY(!!error)) {
                 exceptionValue = error;
                 goto vm_throw;
@@ -4720,7 +4738,7 @@ skip_id_custom_self:
                 goto vm_throw;
             }
 
-            callFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_construct), callDataScopeChain, previousCallFrame, argCount, jsCast<JSFunction*>(v));
+            callFrame->init(newCodeBlock, vPC + OPCODE_LENGTH(op_construct), callDataScope, previousCallFrame, argCount, jsCast<JSFunction*>(v));
             codeBlock = newCodeBlock;
             *topCallFrameSlot = callFrame;
             vPC = newCodeBlock->instructions().begin();
@@ -4732,9 +4750,9 @@ skip_id_custom_self:
         }
 
         if (constructType == ConstructTypeHost) {
-            ScopeChainNode* scopeChain = callFrame->scopeChain();
+            JSScope* scope = callFrame->scope();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_construct), scopeChain, callFrame, argCount, asObject(v));
+            newCallFrame->init(0, vPC + OPCODE_LENGTH(op_construct), scope, callFrame, argCount, asObject(v));
 
             JSValue returnValue;
             {
@@ -4783,22 +4801,20 @@ skip_id_custom_self:
 
         NEXT_INSTRUCTION();
     }
-    DEFINE_OPCODE(op_push_scope) {
-        /* push_scope scope(r)
+    DEFINE_OPCODE(op_push_with_scope) {
+        /* push_with_scope scope(r)
 
            Converts register scope to object, and pushes it onto the top
-           of the current scope chain.  The contents of the register scope
-           are replaced by the result of toObject conversion of the scope.
+           of the scope chain.
         */
         int scope = vPC[1].u.operand;
         JSValue v = callFrame->r(scope).jsValue();
         JSObject* o = v.toObject(callFrame);
         CHECK_FOR_EXCEPTION();
 
-        callFrame->uncheckedR(scope) = JSValue(o);
-        callFrame->setScopeChain(callFrame->scopeChain()->push(JSWithScope(callFrame, o)));
+        callFrame->setScope(JSWithScope::create(callFrame, o));
 
-        vPC += OPCODE_LENGTH(op_push_scope);
+        vPC += OPCODE_LENGTH(op_push_with_scope);
         NEXT_INSTRUCTION();
     }
     DEFINE_OPCODE(op_pop_scope) {
@@ -4806,7 +4822,7 @@ skip_id_custom_self:
 
            Removes the top item from the current scope chain.
         */
-        callFrame->setScopeChain(callFrame->scopeChain()->pop());
+        callFrame->setScope(callFrame->scope()->next());
 
         vPC += OPCODE_LENGTH(op_pop_scope);
         NEXT_INSTRUCTION();
@@ -4884,10 +4900,10 @@ skip_id_custom_self:
         int count = vPC[1].u.operand;
         int target = vPC[2].u.operand;
 
-        ScopeChainNode* tmp = callFrame->scopeChain();
+        JSScope* tmp = callFrame->scope();
         while (count--)
-            tmp = tmp->pop();
-        callFrame->setScopeChain(tmp);
+            tmp = tmp->next();
+        callFrame->setScope(tmp);
 
         vPC += target;
         NEXT_INSTRUCTION();
@@ -4896,16 +4912,15 @@ skip_id_custom_self:
     // Appease GCC
     goto *(&&skip_new_scope);
 #endif
-    DEFINE_OPCODE(op_push_new_scope) {
-        /* new_scope dst(r) property(id) value(r)
+    DEFINE_OPCODE(op_push_name_scope) {
+        /* new_scope property(id) value(r) attributes(unsigned)
          
-           Constructs a new NameScopeObject with property set to value.  That scope
-           object is then pushed onto the ScopeChain.  The scope object is then stored
-           in dst for GC.
+           Constructs a name scope of the form { property<attributes>: value },
+           and pushes it onto the scope chain.
          */
-        callFrame->setScopeChain(createExceptionScope(callFrame, vPC));
+        callFrame->setScope(createNameScope(callFrame, vPC));
 
-        vPC += OPCODE_LENGTH(op_push_new_scope);
+        vPC += OPCODE_LENGTH(op_push_name_scope);
         NEXT_INSTRUCTION();
     }
 #if ENABLE(COMPUTED_GOTO_CLASSIC_INTERPRETER)
@@ -4956,7 +4971,7 @@ skip_id_custom_self:
            original constructor, using constant message as the
            message string. The result is thrown.
         */
-        UString message = callFrame->r(vPC[1].u.operand).jsValue().toString(callFrame)->value(callFrame);
+        String message = callFrame->r(vPC[1].u.operand).jsValue().toString(callFrame)->value(callFrame);
         exceptionValue = JSValue(createReferenceError(callFrame, message));
         goto vm_throw;
     }
@@ -5002,7 +5017,7 @@ skip_id_custom_self:
             accessor->setGetter(callFrame->globalData(), asObject(getter));
         if (!setter.isUndefined())
             accessor->setSetter(callFrame->globalData(), asObject(setter));
-        baseObj->putDirectAccessor(callFrame->globalData(), ident, accessor, Accessor);
+        baseObj->putDirectAccessor(callFrame, ident, accessor, Accessor);
 
         vPC += OPCODE_LENGTH(op_put_getter_setter);
         NEXT_INSTRUCTION();
@@ -5086,24 +5101,14 @@ skip_id_custom_self:
 #endif // ENABLE(CLASSIC_INTERPRETER)
 }
 
+#endif // !ENABLE(LLINT_C_LOOP)
+
+
 JSValue Interpreter::retrieveArgumentsFromVMCode(CallFrame* callFrame, JSFunction* function) const
 {
     CallFrame* functionCallFrame = findFunctionCallFrameFromVMCode(callFrame, function);
     if (!functionCallFrame)
         return jsNull();
-
-    CodeBlock* codeBlock = functionCallFrame->someCodeBlockForPossiblyInlinedCode();
-    if (codeBlock->usesArguments()) {
-        ASSERT(codeBlock->codeType() == FunctionCode);
-        int argumentsRegister = codeBlock->argumentsRegister();
-        int realArgumentsRegister = unmodifiedArgumentsRegister(argumentsRegister);
-        if (JSValue arguments = functionCallFrame->uncheckedR(argumentsRegister).jsValue())
-            return arguments;
-        JSValue arguments = JSValue(Arguments::create(callFrame->globalData(), functionCallFrame));
-        functionCallFrame->r(argumentsRegister) = arguments;
-        functionCallFrame->r(realArgumentsRegister) = arguments;
-        return arguments;
-    }
 
     Arguments* arguments = Arguments::create(functionCallFrame->globalData(), functionCallFrame);
     arguments->tearOff(functionCallFrame);
@@ -5140,11 +5145,11 @@ JSValue Interpreter::retrieveCallerFromVMCode(CallFrame* callFrame, JSFunction* 
     return caller;
 }
 
-void Interpreter::retrieveLastCaller(CallFrame* callFrame, int& lineNumber, intptr_t& sourceID, UString& sourceURL, JSValue& function) const
+void Interpreter::retrieveLastCaller(CallFrame* callFrame, int& lineNumber, intptr_t& sourceID, String& sourceURL, JSValue& function) const
 {
     function = JSValue();
     lineNumber = -1;
-    sourceURL = UString();
+    sourceURL = String();
 
     CallFrame* callerFrame = callFrame->callerFrame();
     if (callerFrame->hasHostCallFrameFlag())

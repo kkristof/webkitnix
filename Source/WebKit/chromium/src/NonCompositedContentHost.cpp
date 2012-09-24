@@ -42,13 +42,13 @@ NonCompositedContentHost::NonCompositedContentHost(WebViewImpl* webView)
     : m_webView(webView)
     , m_opaque(true)
     , m_showDebugBorders(false)
-    , m_deviceScaleFactor(1.0)
 {
     m_graphicsLayer = WebCore::GraphicsLayer::create(this);
 #ifndef NDEBUG
     m_graphicsLayer->setName("non-composited content");
 #endif
     m_graphicsLayer->setDrawsContent(true);
+    m_graphicsLayer->setAppliesPageScale(true);
     WebContentLayer* layer = static_cast<WebCore::GraphicsLayerChromium*>(m_graphicsLayer.get())->contentLayer();
     layer->setUseLCDText(true);
     layer->layer()->setOpaque(true);
@@ -88,7 +88,21 @@ void NonCompositedContentHost::setScrollLayer(WebCore::GraphicsLayer* layer)
     ASSERT(haveScrollLayer());
 }
 
-void NonCompositedContentHost::setViewport(const WebCore::IntSize& viewportSize, const WebCore::IntSize& contentsSize, const WebCore::IntPoint& scrollPosition, const WebCore::IntPoint& scrollOrigin, float deviceScale)
+static void setScrollbarBoundsContainPageScale(WebCore::GraphicsLayer* layer, WebCore::GraphicsLayer* clipLayer)
+{
+    // Scrollbars are attached outside the root clip rect, so skip the
+    // clipLayer subtree.
+    if (layer == clipLayer)
+        return;
+
+    for (size_t i = 0; i < layer->children().size(); ++i)
+        setScrollbarBoundsContainPageScale(layer->children()[i], clipLayer);
+
+    if (layer->children().isEmpty())
+        layer->setAppliesPageScale(true);
+}
+
+void NonCompositedContentHost::setViewport(const WebCore::IntSize& viewportSize, const WebCore::IntSize& contentsSize, const WebCore::IntPoint& scrollPosition, const WebCore::IntPoint& scrollOrigin)
 {
     if (!haveScrollLayer())
         return;
@@ -102,8 +116,6 @@ void NonCompositedContentHost::setViewport(const WebCore::IntSize& viewportSize,
     // Due to the possibility of pinch zoom, the noncomposited layer is always
     // assumed to be scrollable.
     layer->setScrollable(true);
-    m_deviceScaleFactor = deviceScale;
-    m_graphicsLayer->deviceOrPageScaleFactorChanged();
     m_graphicsLayer->setSize(contentsSize);
 
     // In RTL-style pages, the origin of the initial containing block for the
@@ -121,6 +133,12 @@ void NonCompositedContentHost::setViewport(const WebCore::IntSize& viewportSize,
         m_graphicsLayer->setNeedsDisplay();
     } else if (visibleRectChanged)
         m_graphicsLayer->setNeedsDisplay();
+
+    WebCore::GraphicsLayer* clipLayer = m_graphicsLayer->parent()->parent();
+    WebCore::GraphicsLayer* rootLayer = clipLayer;
+    while (rootLayer->parent())
+        rootLayer = rootLayer->parent();
+    setScrollbarBoundsContainPageScale(rootLayer, clipLayer);
 }
 
 bool NonCompositedContentHost::haveScrollLayer()

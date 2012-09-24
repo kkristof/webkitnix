@@ -31,6 +31,7 @@
 
 #include "WorkerScriptController.h"
 
+#include "JSDOMBinding.h"
 #include "JSDedicatedWorkerContext.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
@@ -135,7 +136,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, Script
     m_workerContextWrapper->globalData().timeoutChecker.start();
 
     JSValue evaluationException;
-    JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), sourceCode.jsSourceCode(), m_workerContextWrapper.get(), &evaluationException);
+    JSC::evaluate(exec, sourceCode.jsSourceCode(), m_workerContextWrapper.get(), &evaluationException);
 
     m_workerContextWrapper->globalData().timeoutChecker.stop();
 
@@ -188,12 +189,12 @@ bool WorkerScriptController::isExecutionForbidden() const
     return m_executionForbidden;
 }
 
-void WorkerScriptController::disableEval()
+void WorkerScriptController::disableEval(const String& errorMessage)
 {
     initScriptIfNeeded();
     JSLockHolder lock(globalData());
 
-    m_workerContextWrapper->setEvalEnabled(false);
+    m_workerContextWrapper->setEvalEnabled(false, errorMessage);
 }
 
 } // namespace WebCore

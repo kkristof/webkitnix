@@ -733,7 +733,7 @@ void CachedResourceLoader::preload(CachedResource::Type type, ResourceRequest& r
     UNUSED_PARAM(referencedFromBody);
 
     bool delaySubresourceLoad = true;
-#if PLATFORM(IOS)
+#if PLATFORM(IOS) || PLATFORM(CHROMIUM)
     delaySubresourceLoad = false;
 #endif
     if (delaySubresourceLoad) {
@@ -880,11 +880,11 @@ void CachedResourceLoader::printPreloadStats()
 
 void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
-    MemoryClassInfo info(memoryObjectInfo, this, MemoryInstrumentation::Loader);
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
     info.addHashMap(m_documentResources);
     for (DocumentResourceMap::const_iterator i = m_documentResources.begin(); i != m_documentResources.end(); ++i) {
-        info.addInstrumentedMember(i->first);
-        info.addInstrumentedMember(i->second);
+        info.addMember(i->first);
+        info.addMember(i->second);
     }
     info.addHashSet(m_validatedURLs);
     if (m_preloads)

@@ -38,6 +38,7 @@
 #include "JSScriptProfile.h"
 #include "JSTestCallback.h"
 #include "JSTestObj.h"
+#include "JSTestSubObj.h"
 #include "JSa.h"
 #include "JSb.h"
 #include "JSbool.h"
@@ -135,6 +136,7 @@ static const HashTableValue JSTestObjTableValues[] =
 #endif
     { "cachedAttribute1", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjCachedAttribute1), (intptr_t)0, NoIntrinsic },
     { "cachedAttribute2", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjCachedAttribute2), (intptr_t)0, NoIntrinsic },
+    { "anyAttribute", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjAnyAttribute), (intptr_t)setJSTestObjAnyAttribute, NoIntrinsic },
     { "contentDocument", DontDelete | ReadOnly, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjContentDocument), (intptr_t)0, NoIntrinsic },
     { "mutablePoint", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjMutablePoint), (intptr_t)setJSTestObjMutablePoint, NoIntrinsic },
     { "immutablePoint", DontDelete, (intptr_t)static_cast<PropertySlot::GetValueFunc>(jsTestObjImmutablePoint), (intptr_t)setJSTestObjImmutablePoint, NoIntrinsic },
@@ -401,7 +403,7 @@ JSValue jsTestObjReadOnlyStringAttr(ExecState* exec, JSValue slotBase, PropertyN
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->readOnlyStringAttr());
+    JSValue result = jsStringWithCache(exec, impl->readOnlyStringAttr());
     return result;
 }
 
@@ -429,7 +431,7 @@ JSValue jsTestObjConstructorStaticStringAttr(ExecState* exec, JSValue slotBase, 
 {
     UNUSED_PARAM(slotBase);
     UNUSED_PARAM(exec);
-    JSValue result = jsString(exec, TestObj::staticStringAttr());
+    JSValue result = jsStringWithCache(exec, TestObj::staticStringAttr());
     return result;
 }
 
@@ -437,7 +439,7 @@ JSValue jsTestObjConstructorStaticStringAttr(ExecState* exec, JSValue slotBase, 
 JSValue jsTestObjConstructorTestSubObj(ExecState* exec, JSValue slotBase, PropertyName)
 {
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
-    return JSTestSubObj::getConstructor(exec, castedThis);
+    return JSTestSubObj::getConstructor(exec, castedThis->globalObject());
 }
 
 
@@ -496,7 +498,7 @@ JSValue jsTestObjStringAttr(ExecState* exec, JSValue slotBase, PropertyName)
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->stringAttr());
+    JSValue result = jsStringWithCache(exec, impl->stringAttr());
     return result;
 }
 
@@ -536,7 +538,7 @@ JSValue jsTestObjReflectedStringAttr(ExecState* exec, JSValue slotBase, Property
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->getAttribute(WebCore::HTMLNames::reflectedstringattrAttr));
+    JSValue result = jsStringWithCache(exec, impl->getAttribute(WebCore::HTMLNames::reflectedstringattrAttr));
     return result;
 }
 
@@ -576,7 +578,7 @@ JSValue jsTestObjReflectedURLAttr(ExecState* exec, JSValue slotBase, PropertyNam
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->getURLAttribute(WebCore::HTMLNames::reflectedurlattrAttr));
+    JSValue result = jsStringWithCache(exec, impl->getURLAttribute(WebCore::HTMLNames::reflectedurlattrAttr));
     return result;
 }
 
@@ -586,7 +588,7 @@ JSValue jsTestObjReflectedStringAttr(ExecState* exec, JSValue slotBase, Property
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->getAttribute(WebCore::HTMLNames::customContentStringAttrAttr));
+    JSValue result = jsStringWithCache(exec, impl->getAttribute(WebCore::HTMLNames::customContentStringAttrAttr));
     return result;
 }
 
@@ -616,7 +618,7 @@ JSValue jsTestObjReflectedCustomURLAttr(ExecState* exec, JSValue slotBase, Prope
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->getURLAttribute(WebCore::HTMLNames::customContentURLAttrAttr));
+    JSValue result = jsStringWithCache(exec, impl->getURLAttribute(WebCore::HTMLNames::customContentURLAttrAttr));
     return result;
 }
 
@@ -657,7 +659,7 @@ JSValue jsTestObjStringAttrWithGetterException(ExecState* exec, JSValue slotBase
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     ExceptionCode ec = 0;
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSC::JSValue result = jsString(exec, impl->stringAttrWithGetterException(ec));
+    JSC::JSValue result = jsStringWithCache(exec, impl->stringAttrWithGetterException(ec));
     setDOMException(exec, ec);
     return result;
 }
@@ -668,7 +670,7 @@ JSValue jsTestObjStringAttrWithSetterException(ExecState* exec, JSValue slotBase
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->stringAttrWithSetterException());
+    JSValue result = jsStringWithCache(exec, impl->stringAttrWithSetterException());
     return result;
 }
 
@@ -814,7 +816,7 @@ JSValue jsTestObjConditionalAttr3(ExecState* exec, JSValue slotBase, PropertyNam
 JSValue jsTestObjConditionalAttr4Constructor(ExecState* exec, JSValue slotBase, PropertyName)
 {
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
-    return JSTestObjectA::getConstructor(exec, castedThis);
+    return JSTestObjectA::getConstructor(exec, castedThis->globalObject());
 }
 
 #endif
@@ -823,7 +825,7 @@ JSValue jsTestObjConditionalAttr4Constructor(ExecState* exec, JSValue slotBase, 
 JSValue jsTestObjConditionalAttr5Constructor(ExecState* exec, JSValue slotBase, PropertyName)
 {
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
-    return JSTestObjectB::getConstructor(exec, castedThis);
+    return JSTestObjectB::getConstructor(exec, castedThis->globalObject());
 }
 
 #endif
@@ -832,7 +834,7 @@ JSValue jsTestObjConditionalAttr5Constructor(ExecState* exec, JSValue slotBase, 
 JSValue jsTestObjConditionalAttr6Constructor(ExecState* exec, JSValue slotBase, PropertyName)
 {
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
-    return JSTestObjectC::getConstructor(exec, castedThis);
+    return JSTestObjectC::getConstructor(exec, castedThis->globalObject());
 }
 
 #endif
@@ -844,7 +846,7 @@ JSValue jsTestObjCachedAttribute1(ExecState* exec, JSValue slotBase, PropertyNam
     if (JSValue cachedValue = castedThis->m_cachedAttribute1.get())
         return cachedValue;
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = impl->cachedAttribute1() ? impl->cachedAttribute1()->deserialize(exec, castedThis->globalObject(), 0) : jsNull();
+    JSValue result = (impl->cachedAttribute1().hasNoValue() ? jsNull() : impl->cachedAttribute1().jsValue());
     castedThis->m_cachedAttribute1.set(exec->globalData(), castedThis, result);
     return result;
 }
@@ -857,8 +859,18 @@ JSValue jsTestObjCachedAttribute2(ExecState* exec, JSValue slotBase, PropertyNam
     if (JSValue cachedValue = castedThis->m_cachedAttribute2.get())
         return cachedValue;
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = impl->cachedAttribute2() ? impl->cachedAttribute2()->deserialize(exec, castedThis->globalObject(), 0) : jsNull();
+    JSValue result = (impl->cachedAttribute2().hasNoValue() ? jsNull() : impl->cachedAttribute2().jsValue());
     castedThis->m_cachedAttribute2.set(exec->globalData(), castedThis, result);
+    return result;
+}
+
+
+JSValue jsTestObjAnyAttribute(ExecState* exec, JSValue slotBase, PropertyName)
+{
+    JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
+    UNUSED_PARAM(exec);
+    TestObj* impl = static_cast<TestObj*>(castedThis->impl());
+    JSValue result = (impl->anyAttribute().hasNoValue() ? jsNull() : impl->anyAttribute().jsValue());
     return result;
 }
 
@@ -936,7 +948,7 @@ JSValue jsTestObjHash(ExecState* exec, JSValue slotBase, PropertyName)
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(slotBase));
     UNUSED_PARAM(exec);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    JSValue result = jsString(exec, impl->hash());
+    JSValue result = jsStringWithCache(exec, impl->hash());
     return result;
 }
 
@@ -967,7 +979,7 @@ void JSTestObj::put(JSCell* cell, ExecState* exec, PropertyName propertyName, JS
 void setJSTestObjConstructorStaticStringAttr(ExecState* exec, JSObject*, JSValue value)
 {
     UNUSED_PARAM(exec);
-    TestObj::setStaticStringAttr(ustringToString(value.isEmpty() ? UString() : value.toString(exec)->value(exec)));
+    TestObj::setStaticStringAttr(value.isEmpty() ? String() : value.toString(exec)->value(exec));
 }
 
 
@@ -1021,7 +1033,7 @@ void setJSTestObjStringAttr(ExecState* exec, JSObject* thisObject, JSValue value
     UNUSED_PARAM(exec);
     JSTestObj* castedThis = jsCast<JSTestObj*>(thisObject);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    impl->setStringAttr(ustringToString(value.isEmpty() ? UString() : value.toString(exec)->value(exec)));
+    impl->setStringAttr(value.isEmpty() ? String() : value.toString(exec)->value(exec));
 }
 
 
@@ -1170,7 +1182,7 @@ void setJSTestObjStringAttrWithGetterException(ExecState* exec, JSObject* thisOb
     JSTestObj* castedThis = jsCast<JSTestObj*>(thisObject);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
     ExceptionCode ec = 0;
-    impl->setStringAttrWithGetterException(ustringToString(value.isEmpty() ? UString() : value.toString(exec)->value(exec)), ec);
+    impl->setStringAttrWithGetterException(value.isEmpty() ? String() : value.toString(exec)->value(exec), ec);
     setDOMException(exec, ec);
 }
 
@@ -1181,7 +1193,7 @@ void setJSTestObjStringAttrWithSetterException(ExecState* exec, JSObject* thisOb
     JSTestObj* castedThis = jsCast<JSTestObj*>(thisObject);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
     ExceptionCode ec = 0;
-    impl->setStringAttrWithSetterException(ustringToString(value.isEmpty() ? UString() : value.toString(exec)->value(exec)), ec);
+    impl->setStringAttrWithSetterException(value.isEmpty() ? String() : value.toString(exec)->value(exec), ec);
     setDOMException(exec, ec);
 }
 
@@ -1350,6 +1362,15 @@ void setJSTestObjConditionalAttr6Constructor(ExecState* exec, JSObject* thisObje
 
 #endif
 
+void setJSTestObjAnyAttribute(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    UNUSED_PARAM(exec);
+    JSTestObj* castedThis = jsCast<JSTestObj*>(thisObject);
+    TestObj* impl = static_cast<TestObj*>(castedThis->impl());
+    impl->setAnyAttribute(exec->globalData(), value);
+}
+
+
 void setJSTestObjMutablePoint(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
@@ -1433,7 +1454,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionVoidMethodWithArgs(ExecSt
     long long Arg(static_cast<long long>(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toInteger(exec)));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     TestObj* objArg(toTestObj(MAYBE_MISSING_PARAMETER(exec, 2, DefaultIsUndefined)));
@@ -1469,7 +1490,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionMethodWithArgs(ExecState*
     long long Arg(static_cast<long long>(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toInteger(exec)));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     TestObj* objArg(toTestObj(MAYBE_MISSING_PARAMETER(exec, 2, DefaultIsUndefined)));
@@ -1506,7 +1527,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionObjMethodWithArgs(ExecSta
     long long Arg(static_cast<long long>(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toInteger(exec)));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     TestObj* objArg(toTestObj(MAYBE_MISSING_PARAMETER(exec, 2, DefaultIsUndefined)));
@@ -1563,7 +1584,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionMethodThatRequiresAllArgs
     if (exec->argumentCount() < 2)
         return throwVMError(exec, createNotEnoughArgumentsError(exec));
     ExceptionCode ec = 0;
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     TestObj* objArg(toTestObj(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined)));
@@ -1681,7 +1702,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionAddEventListener(ExecStat
     JSValue listener = exec->argument(1);
     if (!listener.isObject())
         return JSValue::encode(jsUndefined());
-    impl->addEventListener(ustringToAtomicString(exec->argument(0).toString(exec)->value(exec)), JSEventListener::create(asObject(listener), castedThis, false, currentWorld(exec)), exec->argument(2).toBoolean(exec));
+    impl->addEventListener(exec->argument(0).toString(exec)->value(exec), JSEventListener::create(asObject(listener), castedThis, false, currentWorld(exec)), exec->argument(2).toBoolean(exec));
     return JSValue::encode(jsUndefined());
 }
 
@@ -1696,7 +1717,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionRemoveEventListener(ExecS
     JSValue listener = exec->argument(1);
     if (!listener.isObject())
         return JSValue::encode(jsUndefined());
-    impl->removeEventListener(ustringToAtomicString(exec->argument(0).toString(exec)->value(exec)), JSEventListener::create(asObject(listener), castedThis, false, currentWorld(exec)).get(), exec->argument(2).toBoolean(exec));
+    impl->removeEventListener(exec->argument(0).toString(exec)->value(exec), JSEventListener::create(asObject(listener), castedThis, false, currentWorld(exec)).get(), exec->argument(2).toBoolean(exec));
     return JSValue::encode(jsUndefined());
 }
 
@@ -1939,7 +1960,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionMethodWithOptionalString(
         return JSValue::encode(jsUndefined());
     }
 
-    const String& str(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& str(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     impl->methodWithOptionalString(str);
@@ -1954,7 +1975,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionMethodWithOptionalStringI
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(thisValue));
     ASSERT_GC_OBJECT_INHERITS(castedThis, &JSTestObj::s_info);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    const String& str(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& str(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     impl->methodWithOptionalStringIsUndefined(str);
@@ -1969,7 +1990,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionMethodWithOptionalStringI
     JSTestObj* castedThis = jsCast<JSTestObj*>(asObject(thisValue));
     ASSERT_GC_OBJECT_INHERITS(castedThis, &JSTestObj::s_info);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
-    const String& str(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsNullString).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsNullString).toString(exec)->value(exec)));
+    const String& str(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsNullString).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsNullString).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     impl->methodWithOptionalStringIsNullString(str);
@@ -2047,7 +2068,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionConditionalMethod1(ExecSt
     ASSERT_GC_OBJECT_INHERITS(castedThis, &JSTestObj::s_info);
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
 
-    JSC::JSValue result = jsString(exec, impl->conditionalMethod1());
+    JSC::JSValue result = jsStringWithCache(exec, impl->conditionalMethod1());
     return JSValue::encode(result);
 }
 
@@ -2096,7 +2117,7 @@ static EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionOverloadedMethod1(
     TestObj* objArg(toTestObj(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined)));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     impl->overloadedMethod(objArg, strArg);
@@ -2140,7 +2161,7 @@ static EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionOverloadedMethod3(
     TestObj* impl = static_cast<TestObj*>(castedThis->impl());
     if (exec->argumentCount() < 1)
         return throwVMError(exec, createNotEnoughArgumentsError(exec));
-    const String& strArg(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& strArg(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     impl->overloadedMethod(strArg);
@@ -2348,7 +2369,7 @@ static EncodedJSValue JSC_HOST_CALL jsTestObjConstructorFunctionOverloadedMethod
 {
     if (exec->argumentCount() < 1)
         return throwVMError(exec, createNotEnoughArgumentsError(exec));
-    const String& type(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& type(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     TestObj::overloadedMethod1(type);
@@ -2571,7 +2592,7 @@ EncodedJSValue JSC_HOST_CALL jsTestObjPrototypeFunctionStrictFunction(ExecState*
     if (exec->argumentCount() < 3)
         return throwVMError(exec, createNotEnoughArgumentsError(exec));
     ExceptionCode ec = 0;
-    const String& str(ustringToString(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? UString() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec)));
+    const String& str(MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).isEmpty() ? String() : MAYBE_MISSING_PARAMETER(exec, 0, DefaultIsUndefined).toString(exec)->value(exec));
     if (exec->hadException())
         return JSValue::encode(jsUndefined());
     float a(MAYBE_MISSING_PARAMETER(exec, 1, DefaultIsUndefined).toFloat(exec));

@@ -407,7 +407,7 @@ void PluginView::webPageDestroyed()
 #if PLATFORM(MAC)    
 void PluginView::setWindowIsVisible(bool windowIsVisible)
 {
-    if (!m_plugin)
+    if (!m_isInitialized || !m_plugin)
         return;
 
     m_plugin->windowVisibilityChanged(windowIsVisible);
@@ -550,15 +550,8 @@ JSObject* PluginView::scriptObject(JSGlobalObject* globalObject)
     if (m_isWaitingForSynchronousInitialization)
         return 0;
 
-    // If the plug-in exists but is not initialized then we're still initializing asynchronously.
-    // We need to wait here until initialization has either succeeded or failed.
-    if (m_plugin->isBeingAsynchronouslyInitialized()) {
-        m_isWaitingForSynchronousInitialization = true;
-        m_plugin->waitForAsynchronousInitialization();
-        m_isWaitingForSynchronousInitialization = false;
-    }
-
-    // The plug-in can be null here if it failed to initialize.
+    // We might not have started initialization of the plug-in yet, the plug-in might be in the middle
+    // of being initializing asynchronously, or initialization might have previously failed.
     if (!m_isInitialized || !m_plugin)
         return 0;
 
@@ -575,6 +568,17 @@ JSObject* PluginView::scriptObject(JSGlobalObject* globalObject)
     UNUSED_PARAM(globalObject);
     return 0;
 #endif
+}
+
+void PluginView::storageBlockingStateChanged()
+{
+    // The plug-in can be null here if it failed to initialize.
+    if (!m_isInitialized || !m_plugin)
+        return;
+
+    bool storageBlockingPolicy = !frame()->document()->securityOrigin()->canAccessPluginStorage(frame()->tree()->top()->document()->securityOrigin());
+
+    m_plugin->storageBlockingStateChanged(storageBlockingPolicy);
 }
 
 void PluginView::privateBrowsingStateChanged(bool privateBrowsingEnabled)
@@ -637,7 +641,7 @@ void PluginView::setFrameRect(const WebCore::IntRect& rect)
     viewGeometryDidChange();
 }
 
-void PluginView::paint(GraphicsContext* context, const IntRect& dirtyRect)
+void PluginView::paint(GraphicsContext* context, const IntRect& /*dirtyRect*/)
 {
     if (!m_plugin || !m_isInitialized)
         return;
@@ -785,13 +789,19 @@ void PluginView::viewGeometryDidChange()
     transform.translate(scaledLocationInRootViewCoordinates.x(), scaledLocationInRootViewCoordinates.y());
     transform.scale(pageScaleFactor);
 
-    // FIXME: This clip rect isn't correct.
-    // But it is still important distinguish between empty and non-empty rects so we can notify the plug-in when it becomes invisible.
+    // FIXME: The way we calculate this clip rect isn't correct.
+    // But it is still important to distinguish between empty and non-empty rects so we can notify the plug-in when it becomes invisible.
     // Making the rect actually correct is covered by https://bugs.webkit.org/show_bug.cgi?id=95362
-    IntRect clipRect = clipRectInWindowCoordinates();
-    if (!clipRect.isEmpty())
-        clipRect = boundsRect();
-        
+    IntRect clipRect = boundsRect();
+    
+    // FIXME: We can only get a semi-reliable answer from clipRectInWindowCoordinates() when the page is not scaled.
+    // Fixing that is tracked in <rdar://problem/9026611> - Make the Widget hierarchy play nicely with transforms, for zoomed plug-ins and iframes
+    if (pageScaleFactor == 1) {
+        clipRect = clipRectInWindowCoordinates();
+        if (!clipRect.isEmpty())
+            clipRect = boundsRect();
+    }
+    
     m_plugin->geometryDidChange(size(), clipRect, transform);
 }
 
@@ -1265,6 +1275,9 @@ bool PluginView::isPrivateBrowsingEnabled()
 {
     // If we can't get the real setting, we'll assume that private browsing is enabled.
     if (!frame())
+        return true;
+
+    if (!frame()->document()->securityOrigin()->canAccessPluginStorage(frame()->tree()->top()->document()->securityOrigin()))
         return true;
 
     Settings* settings = frame()->settings();

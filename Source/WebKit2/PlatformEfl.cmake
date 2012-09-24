@@ -1,13 +1,5 @@
-LIST(APPEND WebKit2_LINK_FLAGS
-    ${CAIRO_LDFLAGS}
-    ${ECORE_X_LDFLAGS}
-    ${EDJE_LDFLAGS}
-    ${EFLDEPS_LDFLAGS}
-    ${EFREET_LDFLAGS}
-    ${EVAS_LDFLAGS}
-)
-
 LIST(APPEND WebKit2_SOURCES
+    Platform/efl/LoggingEfl.cpp
     Platform/efl/ModuleEfl.cpp
     Platform/efl/WorkQueueEfl.cpp
     Platform/unix/SharedMemoryUnix.cpp
@@ -25,11 +17,16 @@ LIST(APPEND WebKit2_SOURCES
     Shared/efl/NativeWebKeyboardEventEfl.cpp
     Shared/efl/NativeWebWheelEventEfl.cpp
     Shared/efl/NativeWebMouseEventEfl.cpp
+    Shared/efl/NativeWebTouchEventEfl.cpp
     Shared/efl/ProcessExecutablePathEfl.cpp
     Shared/efl/WebEventFactory.cpp
 
+    Shared/linux/WebMemorySamplerLinux.cpp
+
     Shared/soup/PlatformCertificateInfo.cpp
     Shared/soup/WebCoreArgumentCodersSoup.cpp
+
+    UIProcess/DefaultUndoController.cpp
 
     UIProcess/API/C/efl/WKView.cpp
     
@@ -56,6 +53,7 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/API/efl/ewk_main.cpp
     UIProcess/API/efl/ewk_navigation_policy_decision.cpp
     UIProcess/API/efl/ewk_popup_menu_item.cpp
+    UIProcess/API/efl/ewk_settings.cpp
     UIProcess/API/efl/ewk_url_request.cpp
     UIProcess/API/efl/ewk_url_response.cpp
     UIProcess/API/efl/ewk_url_scheme_request.cpp
@@ -93,9 +91,6 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/Downloads/efl/DownloadSoupErrorsEfl.cpp
     WebProcess/Downloads/soup/DownloadSoup.cpp
 
-    WebProcess/efl/WebProcessEfl.cpp
-    WebProcess/efl/WebProcessMainEfl.cpp
-
     WebProcess/InjectedBundle/efl/InjectedBundleEfl.cpp
 
     WebProcess/WebCoreSupport/efl/WebContextMenuClientEfl.cpp
@@ -103,9 +98,14 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/WebCoreSupport/efl/WebErrorsEfl.cpp
     WebProcess/WebCoreSupport/efl/WebPopupMenuEfl.cpp
 
+    WebProcess/WebCoreSupport/soup/WebFrameNetworkingContext.cpp
+
     WebProcess/WebPage/efl/WebInspectorEfl.cpp
     WebProcess/WebPage/efl/WebPageEfl.cpp
 
+    WebProcess/efl/WebProcessMainEfl.cpp
+
+    WebProcess/soup/WebProcessSoup.cpp
     WebProcess/soup/WebSoupRequestManager.cpp
     WebProcess/soup/WebKitSoupRequestGeneric.cpp
     WebProcess/soup/WebKitSoupRequestInputStream.cpp
@@ -134,13 +134,17 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/WebProcess/efl"
     "${WEBKIT2_DIR}/WebProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/efl"
+    "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/soup"
     "${WTF_DIR}/wtf/gobject"
     ${CAIRO_INCLUDE_DIRS}
-    ${ECORE_X_INCLUDE_DIRS}
+    ${ECORE_INCLUDE_DIRS}
+    ${ECORE_EVAS_INCLUDE_DIRS}
     ${EDJE_INCLUDE_DIRS}
-    ${EFLDEPS_INCLUDE_DIRS}
     ${EFREET_INCLUDE_DIRS}
+    ${EINA_INCLUDE_DIRS}
     ${EVAS_INCLUDE_DIRS}
+    ${HARFBUZZ_INCLUDE_DIRS}
+    ${LIBSOUP_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
     ${LIBXSLT_INCLUDE_DIRS}
     ${SQLITE_INCLUDE_DIRS}
@@ -149,12 +153,22 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     ${WTF_DIR}
 )
 
+IF (WTF_USE_3D_GRAPHICS)
+    LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
+        "${THIRDPARTY_DIR}/ANGLE/include/GLSLANG"
+    )
+ENDIF ()
+
 LIST(APPEND WebKit2_LIBRARIES
     ${CAIRO_LIBRARIES}
-    ${ECORE_X_LIBRARIES}
-    ${EFLDEPS_LIBRARIES}
+    ${ECORE_LIBRARIES}
+    ${ECORE_EVAS_LIBRARIES}
+    ${EDJE_LIBRARIES}
     ${EFREET_LIBRARIES}
+    ${EINA_LIBRARIES}
+    ${EVAS_LIBRARIES}
     ${Freetype_LIBRARIES}
+    ${HARFBUZZ_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${SQLITE_LIBRARIES}
@@ -184,8 +198,6 @@ LIST (APPEND WebProcess_LIBRARIES
     ${SQLITE_LIBRARIES}
 )
 
-ADD_DEFINITIONS(-DDEFAULT_THEME_PATH=\"${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/themes\")
-
 ADD_CUSTOM_TARGET(forwarding-headerEfl
     COMMAND ${PERL_EXECUTABLE} ${WEBKIT2_DIR}/Scripts/generate-forwarding-headers.pl ${WEBKIT2_DIR} ${DERIVED_SOURCES_WEBKIT2_DIR}/include efl
 )
@@ -210,6 +222,8 @@ SET (EWebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_main.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_navigation_policy_decision.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_popup_menu_item.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_settings.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_touch.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_url_request.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_url_response.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/efl/ewk_url_scheme_request.h"
@@ -248,8 +262,10 @@ ENDIF()
 
 SET(WEBKIT2_EFL_TEST_DIR "${WEBKIT2_DIR}/UIProcess/API/efl/tests")
 SET(TEST_RESOURCES_DIR ${WEBKIT2_EFL_TEST_DIR}/resources)
+SET(TEST_INJECTED_BUNDLE_DIR ${WEBKIT2_EFL_TEST_DIR}/InjectedBundle)
 
 ADD_DEFINITIONS(-DTEST_RESOURCES_DIR=\"${TEST_RESOURCES_DIR}\"
+    -DTEST_LIB_DIR=\"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\"
     -DTEST_THEME_DIR=\"${THEME_BINARY_DIR}\"
     -DGTEST_LINKED_AS_SHARED_LIBRARY=1
     -DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
@@ -274,7 +290,9 @@ SET(EWK2UnitTests_BINARIES
     test_ewk2_cookie_manager
     test_ewk2_download_job
     test_ewk2_eina_shared_string
+    test_ewk2_refptr_evas_object
     test_ewk2_intents
+    test_ewk2_settings
     test_ewk2_view
 )
 
@@ -285,6 +303,8 @@ IF (ENABLE_API_TESTS)
         SET_TESTS_PROPERTIES(${testName} PROPERTIES TIMEOUT 60)
         TARGET_LINK_LIBRARIES(${testName} ${EWK2UnitTests_LIBRARIES} ewk2UnitTestUtils)
     ENDFOREACH ()
+
+    ADD_LIBRARY(ewk2UnitTestInjectedBundleSample SHARED ${TEST_INJECTED_BUNDLE_DIR}/injected_bundle_sample.cpp)
 ENDIF ()
 
 IF (ENABLE_INSPECTOR)
