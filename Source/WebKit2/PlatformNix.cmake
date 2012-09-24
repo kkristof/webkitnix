@@ -293,6 +293,50 @@ ADD_DEFINITIONS(-DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
     -DPLUGINPROCESSNAME=\"${PluginProcess_EXECUTABLE_NAME}\"
 )
 
+IF (ENABLE_API_TESTS)
+    SET(WEBKIT2_NIX_TEST_DIR "${WEBKIT2_DIR}/UIProcess/API/nix/tests")
+
+    ADD_DEFINITIONS(-DTEST_THEME_DIR=\"${THEME_BINARY_DIR}\"
+        -DGTEST_LINKED_AS_SHARED_LIBRARY=1
+        -DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
+        -DWEBPROCESSNAME=\"${WebProcess_EXECUTABLE_NAME}\"
+        -DPLUGINPROCESSNAME=\"${PluginProcess_EXECUTABLE_NAME}\"
+    )
+
+    SET(NIX_TEST_LIBRARIES
+        ${WebKit2_LIBRARY_NAME}
+        gtest
+    )
+
+    ADD_LIBRARY(NixUnitTestUtils
+        ${WEBKIT2_NIX_TEST_DIR}/UnitTestUtils/NixUnitTestBase.cpp
+        ${WEBKIT2_NIX_TEST_DIR}/UnitTestUtils/NixUnitTestEnvironment.cpp
+        ${WEBKIT2_NIX_TEST_DIR}/UnitTestUtils/NixUnitTestMain.cpp
+    )
+    ADD_DEPENDENCIES(NixUnitTestUtils ${ForwardingNetworkHeaders_NAME})
+
+    SET(NIX_TEST_BINARIES
+        test_nix_webview
+    )
+
+    LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
+        ${GLIB_INCLUDE_DIRS}
+        ${CAIRO_INCLUDE_DIRS}
+        ${DERIVED_SOURCES_WEBKIT2_DIR}/include
+        ${WEBKIT2_DIR}/UIProcess/API/nix
+        ${WEBKIT2_DIR}
+        ${CMAKE_SOURCE_DIR}/Source
+        ${WTF_DIR}
+        ${THIRDPARTY_DIR}/gtest/include
+    )
+    FOREACH (testName ${NIX_TEST_BINARIES})
+        ADD_EXECUTABLE(${testName} ${WEBKIT2_NIX_TEST_DIR}/${testName}.cpp)
+        ADD_TEST(${testName} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${testName})
+        SET_TESTS_PROPERTIES(${testName} PROPERTIES TIMEOUT 60)
+        TARGET_LINK_LIBRARIES(${testName} ${NIX_TEST_LIBRARIES} NixUnitTestUtils)
+    ENDFOREACH ()
+ENDIF ()
+
 IF (ENABLE_INSPECTOR)
     SET(WK2_WEB_INSPECTOR_DIR ${CMAKE_BINARY_DIR}/WebKit2/nix/webinspector)
     SET(WK2_WEB_INSPECTOR_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
