@@ -59,9 +59,6 @@ fast/encoding/denormalised-voiced-japanese-chars.html
 fast/encoding/idn-security.html
 fast/encoding/mailto-always-utf-8.html
 
-# Need a more complete WTR
-fast/events
-
 fast/css/absolute-child-with-percent-height-inside-relative-parent.html
 fast/css/acid2-pixel.html
 fast/css/acid2.html
