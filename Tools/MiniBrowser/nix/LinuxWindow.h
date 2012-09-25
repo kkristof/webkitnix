@@ -2,8 +2,8 @@
 #define LinuxWindow_h
 
 #include "XlibEventSource.h"
+#include <EGL/egl.h>
 #include <GL/gl.h>
-#include <GL/glx.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <utility>
@@ -39,16 +39,19 @@ private:
     // XlibEventSource::Client.
     virtual void handleXEvent(const XEvent&);
 
+    Window createXWindow(EGLint visualID);
     void updateSizeIfNeeded(int width, int height);
 
-    Display* m_display;
     LinuxWindowClient* m_client;
-    Window m_rootWindow;
-    XVisualInfo* m_visualInfo;
-    Colormap m_colormap;
-    Window m_window;
-    GLXContext m_glContext;
     XlibEventSource* m_eventSource;
+
+    Display* m_display;
+    Window m_rootWindow;
+    Window m_window;
+
+    EGLDisplay m_eglDisplay;
+    EGLSurface m_surface;
+    EGLContext m_context;
 
     int m_width;
     int m_height;

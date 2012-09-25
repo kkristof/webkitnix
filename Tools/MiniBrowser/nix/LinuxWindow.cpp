@@ -6,59 +6,67 @@
 
 Atom wmDeleteMessageAtom;
 
+static void error(const char* message)
+{
+    fprintf(stderr, "%s\n", message);
+    exit(1);
+}
+
 LinuxWindow::LinuxWindow(LinuxWindowClient* client)
-    : m_display(XOpenDisplay(0))
-    , m_visualInfo(0)
-    , m_client(client)
+    : m_client(client)
+    , m_eventSource(0)
+    , m_display(XOpenDisplay(0))
     , m_width(800)
     , m_height(600)
-    , m_eventSource(0)
 {
-    if (!m_display) {
-        printf("Error: couldn't connect to X server\n");
-        exit(1);
-    }
+    if (!m_display)
+        error("Error: couldn't connect to X server\n");
 
-    m_rootWindow = DefaultRootWindow(m_display);
+    m_eglDisplay = eglGetDisplay(m_display);
+    if (!m_eglDisplay)
+        error("Error: eglGetDisplay() failed\n");
 
-    GLint attributes[] = {
-        GLX_RGBA,
-        GLX_DEPTH_SIZE, 24,
-        GLX_DOUBLEBUFFER,
-        None };
-    m_visualInfo = glXChooseVisual(m_display, 0, attributes);
-    if (!m_visualInfo) {
-        printf("Error: couldn't get a visual\n");
-        exit(1);
-    }
+    if (!eglInitialize(m_eglDisplay, 0, 0))
+        error("Error: eglInitialize() failed\n");
 
-    m_colormap = XCreateColormap(m_display, m_rootWindow, m_visualInfo->visual, AllocNone);
+    static const EGLint attributes[] = {
+        EGL_DEPTH_SIZE, 24,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_NONE
+    };
 
-    XSetWindowAttributes setAttributes;
-    setAttributes.colormap = m_colormap;
-    setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
+    EGLConfig config;
+    EGLint configCount;
+    if (!eglChooseConfig(m_eglDisplay, attributes, &config, 1, &configCount))
+        error("Error: couldn't get an EGL visual config\n");
+
+    EGLint visualID;
+    if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_NATIVE_VISUAL_ID, &visualID))
+        error("Error: couldn't get an EGL visual config\n");
 
     m_eventSource = new XlibEventSource(m_display, this);
+    m_window = createXWindow(visualID);
 
-    m_window = XCreateWindow(m_display, m_rootWindow, 0, 0, m_width, m_height, 0, m_visualInfo->depth, InputOutput, m_visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
+    eglBindAPI(EGL_OPENGL_API);
+    m_context = eglCreateContext(m_eglDisplay, config, EGL_NO_CONTEXT, 0);
+    if (!m_context)
+        error("Error: eglCreateContext failed\n");
 
-    wmDeleteMessageAtom = XInternAtom(m_display, "WM_DELETE_WINDOW", False);
-    XSetWMProtocols(m_display, m_window, &wmDeleteMessageAtom, 1);
+    m_surface = eglCreateWindowSurface(m_eglDisplay, config, m_window, 0);
 
-    XMapWindow(m_display, m_window);
-    XStoreName(m_display, m_window, "MiniBrowser");
-
-    m_glContext = glXCreateContext(m_display, m_visualInfo, 0, GL_TRUE);
-    glXMakeCurrent(m_display, m_window, m_glContext);
-
+    makeCurrent();
     glEnable(GL_DEPTH_TEST);
 }
 
 LinuxWindow::~LinuxWindow()
 {
     delete m_eventSource;
-    glXMakeCurrent(m_display, None, 0);
-    glXDestroyContext(m_display, m_glContext);
+
+    eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroyContext(m_eglDisplay, m_context);
+    eglDestroySurface(m_eglDisplay, m_surface);
+    eglTerminate(m_eglDisplay);
+
     XDestroyWindow(m_display, m_window);
     XCloseDisplay(m_display);
 }
@@ -70,12 +78,12 @@ std::pair<int, int> LinuxWindow::size() const
 
 void LinuxWindow::makeCurrent()
 {
-    glXMakeCurrent(m_display, m_window, m_glContext);
+    eglMakeCurrent(m_eglDisplay, m_surface, m_surface, m_context);
 }
 
 void LinuxWindow::swapBuffers()
 {
-    glXSwapBuffers(m_display, m_window);
+    eglSwapBuffers(m_eglDisplay, m_surface);
 }
 
 void LinuxWindow::handleXEvent(const XEvent& event)
@@ -112,6 +120,33 @@ void LinuxWindow::handleXEvent(const XEvent& event)
         m_client->handlePointerMoveEvent(reinterpret_cast<const XPointerMovedEvent&>(event));
         break;
     }
+}
+
+Window LinuxWindow::createXWindow(EGLint visualID)
+{
+    XVisualInfo visualInfoTemplate;
+    int visualInfoCount;
+    visualInfoTemplate.visualid = visualID;
+    XVisualInfo* visualInfo = XGetVisualInfo(m_display, VisualIDMask, &visualInfoTemplate, &visualInfoCount);
+    if (!visualInfo)
+        error("Error: couldn't get X visual\n");
+
+    Window rootWindow = DefaultRootWindow(m_display);
+
+    XSetWindowAttributes setAttributes;
+    setAttributes.colormap = XCreateColormap(m_display, rootWindow, visualInfo->visual, AllocNone);
+    setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
+
+    Window window = XCreateWindow(m_display, rootWindow, 0, 0, m_width, m_height, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
+    XFree(visualInfo);
+
+    wmDeleteMessageAtom = XInternAtom(m_display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(m_display, window, &wmDeleteMessageAtom, 1);
+
+    XMapWindow(m_display, window);
+    XStoreName(m_display, window, "MiniBrowser");
+
+    return window;
 }
 
 void LinuxWindow::updateSizeIfNeeded(int width, int height)
