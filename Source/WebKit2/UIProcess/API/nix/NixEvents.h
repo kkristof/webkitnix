@@ -24,7 +24,8 @@ struct WK_EXPORT InputEvent {
         ControlKey  = 1 << 1,
         AltKey      = 1 << 2,
         MetaKey     = 1 << 3,
-        CapsLockKey = 1 << 4
+        CapsLockKey = 1 << 4,
+        NumLockKey  = 1 << 5
     };
 
     InputEvent() { }
@@ -41,6 +42,7 @@ struct WK_EXPORT InputEvent {
     bool altKey() const { return modifiers & AltKey; }
     bool metaKey() const { return modifiers & MetaKey; }
     bool capsLockKey() const { return modifiers & CapsLockKey; }
+    bool numLockKey() const { return modifiers & NumLockKey; }
 
     Type type;
     unsigned modifiers;
@@ -530,7 +532,12 @@ struct WK_EXPORT KeyEvent : public InputEvent {
         Key_unknown = 0x01ffffff
     };
 
+    // If a symbol has both lower and upper cases available, pass upper case as "key".
     Key key;
+    // Use "shouldUseUpperCase" to disambiguate whether you really want to use its upper case.
+    bool shouldUseUpperCase;
+    // isKeypad is needed to distinguish on WebKit some keys (e.g. KEY_9 becomes VK_NUMPAD9).
+    bool isKeypad;
     KeyEvent() {}
 };
 

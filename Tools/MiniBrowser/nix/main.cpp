@@ -95,27 +95,66 @@ static NavigationCommand checkNavigationCommand(const KeySym keySym, const unsig
     return NoNavigation;
 }
 
+static inline bool isKeypadKeysym(const KeySym symbol)
+{
+    // Following keypad symbols are specified on Xlib Programming Manual (section: Keyboard Encoding).
+    return (symbol >= 0xFF80 && symbol <= 0xFFBD);
+}
+
+static KeySym chooseSymbolForXKeyEvent(const XKeyEvent& event, bool* useUpperCase)
+{
+    KeySym firstSymbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), 0);
+    KeySym secondSymbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), 1);
+    KeySym lowerCaseSymbol, upperCaseSymbol, chosenSymbol;
+    XConvertCase(firstSymbol, &lowerCaseSymbol, &upperCaseSymbol);
+    bool numLockModifier = event.state & Mod2Mask;
+    bool capsLockModifier = event.state & LockMask;
+    bool shiftModifier = event.state & ShiftMask;
+    if (numLockModifier && isKeypadKeysym(secondSymbol)) {
+        chosenSymbol = shiftModifier ? firstSymbol : secondSymbol;
+    } else if (lowerCaseSymbol == upperCaseSymbol) {
+        chosenSymbol = shiftModifier ? secondSymbol : firstSymbol;
+    } else if (shiftModifier == capsLockModifier)
+        chosenSymbol = firstSymbol;
+    else
+        chosenSymbol = secondSymbol;
+
+    *useUpperCase = (lowerCaseSymbol != upperCaseSymbol && chosenSymbol == upperCaseSymbol);
+    XConvertCase(chosenSymbol, &lowerCaseSymbol, &upperCaseSymbol);
+    return upperCaseSymbol;
+}
+
+static Nix::KeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const KeySym& symbol, bool useUpperCase)
+{
+    Nix::KeyEvent ev;
+    ev.type = (event.type == KeyPress) ? Nix::InputEvent::KeyDown : Nix::InputEvent::KeyUp;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    ev.shouldUseUpperCase = useUpperCase;
+    ev.isKeypad = isKeypadKeysym(symbol);
+    ev.key = convertXKeySymToNativeKeycode(symbol);
+    return ev;
+}
+
 void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
 {
     if (!m_webView)
         return;
 
-    Nix::KeyEvent ev;
-    ev.type = Nix::InputEvent::KeyDown;
-    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    KeySym symbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), ev.shiftKey() ? 1 : 0);
+    bool shouldUseUpperCase;
+    KeySym symbol = chooseSymbolForXKeyEvent(event, &shouldUseUpperCase);
     NavigationCommand command = checkNavigationCommand(symbol, event.state);
-    if (command == BackNavigation) {
+    switch (command) {
+    case BackNavigation:
         WKPageGoBack(pageRef());
         return;
-    }
-    if (command == ForwardNavigation) {
+    case ForwardNavigation:
         WKPageGoForward(pageRef());
         return;
+    default:
+        Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
+        m_webView->sendEvent(ev);
     }
-    ev.key = convertXKeySymToNativeKeycode(symbol);
-    m_webView->sendEvent(ev);
 }
 
 void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
@@ -123,14 +162,11 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     if (!m_webView)
         return;
 
-    Nix::KeyEvent ev;
-    ev.type = Nix::InputEvent::KeyUp;
-    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    KeySym symbol = XLookupKeysym(const_cast<XKeyEvent*>(&event), ev.shiftKey() ? 1 : 0);
+    bool shouldUseUpperCase;
+    KeySym symbol = chooseSymbolForXKeyEvent(event, &shouldUseUpperCase);
     if (checkNavigationCommand(symbol, event.state) != NoNavigation)
         return;
-    ev.key = convertXKeySymToNativeKeycode(symbol);
+    Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
     m_webView->sendEvent(ev);
 }
 

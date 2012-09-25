@@ -167,13 +167,15 @@ static unsigned getModifiers(WKEventModifiers modifiersRef)
     return modifiers;
 }
 
-Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers)
+Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers, bool shouldUseUpperCase, bool isKeypad)
 {
     Nix::KeyEvent* ev = new Nix::KeyEvent();
     ev->type = type;
     ev->key = static_cast<Nix::KeyEvent::Key>(code);
     ev->modifiers = modifiers;
     ev->timestamp = m_time;
+    ev->shouldUseUpperCase = shouldUseUpperCase;
+    ev->isKeypad = isKeypad;
     return ev;
 }
 
@@ -181,8 +183,8 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
 {
     WTF::String key = WebKit::toWTFString(keyRef);
     unsigned modifiers = getModifiers(wkModifiers);
-    // FIXME: Handle keypad symbols properly. Right now we are ignoring them.
     bool isKeypad = (location == DOMKeyLocationNumpad);
+    bool shouldUseUpperCase = false;
 
     unsigned code = 0;
     if (key.length() == 1) {
@@ -237,8 +239,10 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
                 modifiers -= Nix::InputEvent::MetaKey;
                 code = Nix::KeyEvent::Key_PageDown;
             }
-        } else
+        } else {
+            shouldUseUpperCase = isASCIIUpper(code);
             code = toASCIIUpper(code);
+        }
     } else {
         if (key.startsWith('F') && key.length() <= 3) {
             key.remove(0, 1);
@@ -271,8 +275,8 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
             code = Nix::KeyEvent::Key_Menu;
     }
 
-    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers));
-    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers));
+    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers, shouldUseUpperCase, isKeypad));
+    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers, shouldUseUpperCase, isKeypad));
 }
 
 #if ENABLE(TOUCH_EVENTS)

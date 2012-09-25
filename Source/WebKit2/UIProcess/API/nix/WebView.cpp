@@ -878,10 +878,9 @@ static int windowsKeyCodeForKeyEvent(KeyEvent::Key keycode, bool isKeypad)
 
 static String keyTextForNixKeyEvent(const KeyEvent& event)
 {
-    if (event.key >= KeyEvent::Key_Space && event.key <= KeyEvent::Key_AsciiTilde) {
-        bool shouldUseUpperCase = event.shiftKey();
-        return String::format("%c", shouldUseUpperCase ? toASCIIUpper((int) event.key) : toASCIILower((int) event.key));
-    }
+    int keycode = static_cast<int>(event.key);
+    if (isASCIIPrintable(keycode))
+        return String::format("%c", event.shouldUseUpperCase ? toASCIIUpper(keycode) : toASCIILower(keycode));
 
     switch (event.key) {
     case KeyEvent::Key_Tab:
@@ -903,7 +902,7 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
     const WTF::String unmodifiedText = text;
     bool isAutoRepeat = false;
     bool isSystemKey = false;
-    bool isKeypad = false;
+    bool isKeypad = event.isKeypad;
     const WTF::String keyIdentifier = keyIdentifierForNixKeyCode(event.key);
     int windowsVirtualKeyCode = windowsKeyCodeForKeyEvent(event.key, isKeypad);
     int nativeVirtualKeyCode = 0;

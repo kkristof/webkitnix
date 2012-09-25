@@ -38,6 +38,14 @@ static int convertXEventModifiersToNativeModifiers(int s)
         ret |= InputEvent::ShiftKey;
     if (s & ControlMask)
         ret |= InputEvent::ControlKey;
+    if (s & LockMask)
+        ret |= InputEvent::CapsLockKey;
+    if (s & Mod1Mask)
+        ret |= InputEvent::AltKey;
+    if (s & Mod2Mask)
+        ret |= InputEvent::NumLockKey;
+    if (s & Mod4Mask)
+        ret |= InputEvent::MetaKey;
     return ret;
 }
 
