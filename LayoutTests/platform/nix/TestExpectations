@@ -54,6 +54,7 @@ fast/xsl/sort-locale.xml [ Skip ]
 scrollbars/scroll-rtl-or-bt-layer.html [ Skip ]
 scrollbars/scrollbar-click-does-not-blur-content.html [ Skip ]
 scrollbars/scrollbar-iframe-click-does-not-blur-content.html [ Skip ]
+userscripts/user-style-all-frames.html [ Skip ]
 
 # Missing testRunner.enableAutoResizeMode
 fast/autoresize [ Skip ]
@@ -714,14 +715,15 @@ scrollbars/scrollbars-on-positioned-content.html [ Skip ]
 security/block-test-no-port.html [ Skip ]
 security/block-test.html [ Skip ]
 svg [ Skip ]
-transforms/2d/compound-transforms-vs-containers.html [ Missing ]
-transforms/2d/hindi-rotated.html [ Missing ]
-transforms/2d/transform-fixed-container.html [ Missing ]
-transforms/2d/zoom-menulist.html [ Missing ]
+transforms/2d/compound-transforms-vs-containers.html [ Skip ]
+transforms/2d/hindi-rotated.html [ Skip ]
+transforms/2d/transform-fixed-container.html [ Skip ]
+transforms/2d/zoom-menulist.html [ Skip ]
 transitions/default-timing-function.html [ Skip ]
 transitions/move-after-transition.html [ Skip ]
 transitions/svg-text-shadow-transition.html [ Skip ]
 transitions/transition-end-event-rendering.html [ Skip ]
+userscripts/script-run-at-end.html [ Skip ]
 
 ################################################################################
 # NEED MORE TRIAGING, MORE THAN 50% FAILING
@@ -762,6 +764,5 @@ inspector [ Skip ]
 perf [ Skip ]
 pointer-lock [ Skip ]
 storage [ Skip ]
-userscripts [ Skip ]
 
 ################################################################################
