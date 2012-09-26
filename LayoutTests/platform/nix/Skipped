@@ -50,6 +50,11 @@ canvas/philip/tests/2d.text.draw.space.collapse.space.html
 canvas/philip/tests/2d.text.draw.space.collapse.start.html
 canvas/philip/tests/2d.text.measure.width.space.html
 canvas/philip/tests/type.prototype.html
+fast/xsl/sort-locale.xml
+scrollbars/scroll-rtl-or-bt-layer.html
+scrollbars/scrollbar-click-does-not-blur-content.html
+scrollbars/scrollbar-iframe-click-does-not-blur-content.html
+
 
 # Missing testRunner.enableAutoResizeMode
 fast/autoresize
@@ -191,6 +196,7 @@ sputnik/Unicode/Unicode_510/S7.6_A5.3_T2.html
 
 # Many tests needing new rebaselines
 # the generic results are using a viewport of 800 pixels
+fast/xsl/xslt-mismatched-tags-in-xslt.xml
 tables
 transitions/cross-fade-background-image.html
 transitions/cross-fade-border-image.html
@@ -534,6 +540,17 @@ fast/tokenizer/003.html
 fast/tokenizer/missing-style-end-tag-1.html
 fast/tokenizer/missing-style-end-tag-2.html
 fast/tokenizer/script-after-frameset.html
+fast/xsl/document-function.xml
+fast/xsl/xslt-enc-cyr.xml
+fast/xsl/xslt-enc.xml
+fast/xsl/xslt-enc16.xml
+fast/xsl/xslt-enc16to16.xml
+fast/xsl/xslt-entity.xml
+fast/xsl/xslt-extra-content-at-end.xml
+fast/xsl/xslt-import-depth.xml
+fast/xsl/xslt-missing-namespace-in-xslt.xml
+fast/xsl/xslt-relative-path.xml
+fast/xsl/xslt_unicode.xml
 fonts
 mathml/presentation/attributes.xhtml
 mathml/presentation/fenced-mi.xhtml
@@ -565,6 +582,14 @@ printing/setPrinting.html
 printing/simultaneous-position-float-change.html
 printing/single-line-must-not-be-split-into-two-pages.html
 printing/width-overflow.html
+scrollbars/basic-scrollbar.html
+scrollbars/custom-scrollbar-with-incomplete-style.html
+scrollbars/disabled-scrollbar.html
+scrollbars/listbox-scrollbar-combinations.html
+scrollbars/overflow-scrollbar-combinations.html
+scrollbars/scrollbar-buttons.html
+scrollbars/scrollbar-orientation.html
+scrollbars/scrollbars-on-positioned-content.html
 security/block-test-no-port.html
 security/block-test.html
 svg
@@ -606,14 +631,11 @@ fast/text
 fast/text-autosizing
 fast/transforms
 fast/writing-mode
-fast/xsl
 http
 ietestcenter/css3
 inspector
 perf
-platform
 pointer-lock
-scrollbars
 storage
 transforms
 userscripts
