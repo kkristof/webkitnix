@@ -56,6 +56,10 @@ my @testsToSkip = (
     "ecma/Date/15.9.5.14.js",
     "ecma/Date/15.9.5.31-1.js",
     "ecma/Date/15.9.5.34-1.js",
+    # Tests failing when running in BRT timezone
+    "ecma/Date/15.9.5.28-1.js",
+    "ecma/Date/15.9.5.29-1.js",
+    "ecma/Date/15.9.5.35-1.js",
 );
 
 my $jsDriverArgs = "-L " . join(" ", @testsToSkip);
