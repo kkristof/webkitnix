@@ -120,6 +120,7 @@
 #include "TextIterator.h"
 #include "Timer.h"
 #include "TraceEvent.h"
+#include "ValidationMessageClientImpl.h"
 #include "WebAccessibilityObject.h"
 #include "WebActiveWheelFlingParameters.h"
 #include "WebAutofillClient.h"
@@ -436,6 +437,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_navigatorContentUtilsClient(NavigatorContentUtilsClientImpl::create(this))
 #endif
     , m_flingModifier(0)
+    , m_validationMessage(ValidationMessageClientImpl::create(*client))
 {
     // WebKit/win/WebView.cpp does the same thing, except they call the
     // KJS specific wrapper around this method. We need to have threading
@@ -450,6 +452,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.backForwardClient = BackForwardListChromium::create(this);
+    // FIXME: Set pageClients.validationMessageClient when Chromium-side implementation is done.
 
     m_page = adoptPtr(new Page(pageClients));
 #if ENABLE(MEDIA_STREAM)
@@ -479,6 +482,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 #endif
 
     m_page->setGroupName(pageGroupName);
+
+    unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
+    m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
 
 #if ENABLE(PAGE_VISIBILITY_API)
     if (m_client)
@@ -1818,9 +1824,6 @@ void WebViewImpl::composite(bool)
         ASSERT(isAcceleratedCompositingActive());
         if (!page())
             return;
-
-        if (m_pageOverlays)
-            m_pageOverlays->update();
 
         m_layerTreeView->composite();
     }

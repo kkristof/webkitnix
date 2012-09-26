@@ -209,30 +209,7 @@ bool PlatformSupport::cookiesEnabled(const Document* document)
 #if OS(WINDOWS)
 bool PlatformSupport::ensureFontLoaded(HFONT font)
 {
-    WebSandboxSupport* ss = WebKit::Platform::current()->sandboxSupport();
-
-    // if there is no sandbox, then we can assume the font
-    // was able to be loaded successfully already
-    return ss ? ss->ensureFontLoaded(font) : true;
 }
-#endif
-
-#if OS(DARWIN)
-bool PlatformSupport::loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID)
-{
-    WebSandboxSupport* ss = WebKit::Platform::current()->sandboxSupport();
-    if (ss)
-        return ss->loadFont(srcFont, out, fontID);
-
-    // This function should only be called in response to an error loading a
-    // font due to being blocked by the sandbox.
-    // This by definition shouldn't happen if there is no sandbox support.
-    ASSERT_NOT_REACHED();
-    *out = 0;
-    *fontID = 0;
-    return false;
-}
-#elif OS(UNIX)
 #endif
 
 // Indexed Database -----------------------------------------------------------

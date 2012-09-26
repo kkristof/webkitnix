@@ -1,3 +1,374 @@
+2012-09-26  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [chromium] Do not dispatch touch-events to plugins unless they explicitly request for touch-events.
+        https://bugs.webkit.org/show_bug.cgi?id=97685
+
+        Reviewed by Adam Barth.
+
+        Plugins need to call setIsAcceptingTouchEvents if they want to receive touch-events. So
+        avoid dispatching touch-events to plugins unless they have explicitly requested for them.
+
+        * src/WebPluginContainerImpl.cpp:
+
+2012-09-26  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium][Win] Remove ensureFontLoaded from PlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=97696
+
+        Reviewed by Adam Barth.
+
+        Part of a refactoring series. See tracking bug 82948.
+
+        * src/PlatformSupport.cpp:
+        (WebCore::PlatformSupport::ensureFontLoaded):
+
+2012-09-26  Leandro Gracia Gil  <leandrogracia@chromium.org>
+
+        [Chromium] Fix find-in-page corner case for detached frames
+        https://bugs.webkit.org/show_bug.cgi?id=97688
+
+        Reviewed by Adam Barth.
+
+        Adds a check to prevent crashes when running find-in-page requests
+        on detached frames.
+
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::scopeStringMatches):
+
+2012-09-26  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: NMI: replace manual JS external resources counting with MemoryInstrumentation
+        https://bugs.webkit.org/show_bug.cgi?id=97662
+
+        Reviewed by Yury Semikhatsky.
+
+        Old schema used sizeInBytes method on StringImpl. This method works incorrect for substrings.
+        Also we'd like to know exact pointers to strings and buffers for verification purposes.
+
+        * tests/MemoryInstrumentationTest.cpp:
+        (WebCore::TEST):
+        (WebCore):
+
+2012-09-25  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: extract HashSet instrumentation from core NMI code and put it into MemoryInstrumentationHashSet.h
+        https://bugs.webkit.org/show_bug.cgi?id=97198
+
+        Reviewed by Yury Semikhatsky.
+
+        Current implementation has overloads for HashSet.
+        This prevents us from instrumenting complex cases like Vector<HashSet<...> >.
+
+        * tests/MemoryInstrumentationTest.cpp:
+        (WebCore::TEST):
+        (WebCore):
+
+2012-09-25  Andrey Kosyakov  <caseq@chromium.org>
+
+        Web Inspector: [chromium] add a test for inspector overlay update frequency
+        https://bugs.webkit.org/show_bug.cgi?id=97567
+
+        Reviewed by Yury Semikhatsky.
+
+        Added a test for reasonable number of frames caused by inspector page overlay.
+        We expect changes in nodes being inspected to cause an update, while just idling
+        should not cause large numbers of unexpected updates.
+
+        * src/js/Tests.js:
+        (.TestSuite.prototype.testPageOverlayUpdate):
+        (.TestSuite.prototype.testPageOverlayUpdate.innerAddRecord):
+        (.TestSuite.prototype.testPageOverlayUpdate.populatePage):
+        (.TestSuite.prototype.testPageOverlayUpdate.step2):
+        (.TestSuite.prototype.testPageOverlayUpdate.step4):
+        (.TestSuite.prototype.testPageOverlayUpdate.step5):
+
+2012-09-26  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: compare objects counted by the memory instrumentation with those allocated in the heap
+        https://bugs.webkit.org/show_bug.cgi?id=97641
+
+        Reviewed by Pavel Feldman.
+
+        Added code that allows to check if all objects counted by the memory instrumentation
+        were allocated by the underlying memory allocator. It requires support
+        from the memory allocator this is why WebDevToolsAgentClient API is extended with a
+        method that allows to visit pointers to all live heap objects if the memory allocator
+        supports that.
+
+        The code should only be used for debugging purposes.
+
+        * public/WebDevToolsAgentClient.h:
+        (AllocatedObjectVisitor):
+        (WebKit::WebDevToolsAgentClient::AllocatedObjectVisitor::~AllocatedObjectVisitor):
+        (WebKit::WebDevToolsAgentClient::visitAllocatedObjects):
+        (WebDevToolsAgentClient):
+        * src/InspectorClientImpl.cpp:
+        (WebKit):
+        (WebKit::InspectorClientImpl::getAllocatedObjects):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit):
+        (WebKit::WebDevToolsAgentImpl::getAllocatedObjects):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2012-09-26  Yoshifumi Inoue  <yosin@chromium.org>
+
+        Rename ENABLE_INPUT_TYPE_MULTIPLE_FIELDS to ENABLE_INPUT_MULTIPLE_FIELDS_UI
+        https://bugs.webkit.org/show_bug.cgi?id=97640
+
+        Reviewed by Kent Tamura.
+
+        This patch renames ENABLE_INPUT_TYPE_TIME MULTIPLE_FIELDS feature 
+        flag to ENABLE_INPUT_MULTIPLE_FIELDS_UI for implementing multiple 
+        fields date/time input UI other than input type "time".
+
+        * features.gypi:
+        * src/LocalizedStrings.cpp:
+        (WebCore):
+        * tests/DateTimeFormatTest.cpp:
+        * tests/LocaleMacTest.cpp:
+        (LocaleMacTest):
+        * tests/LocaleWinTest.cpp:
+        (LocaleWinTest):
+        * tests/LocalizedDateICUTest.cpp:
+        * tests/LocalizedNumberICUTest.cpp:
+
+2012-09-25  Alpha Lam  <hclam@chromium.org>
+
+        Unreviewed. Roll DEPS for Chromium.
+
+        * DEPS:
+
+2012-09-25  Beth Dakin  <bdakin@apple.com>
+
+        https://bugs.webkit.org/show_bug.cgi?id=95397
+        Need to merge didFirstVisuallyNonEmptyLayout and 
+        didNewFirstVisuallyNonEmptyLayout
+        -and corresponding-
+        <rdar://problem/10791680>
+
+        Reviewed by Sam Weinig.
+
+        Remove dispatchDidFirstLayout, 
+        dispatchDidFirstVisuallyNonEmptyLayout, and 
+        dispatchDidNewFirstVisuallyNonEmptyLayout. Their functionality 
+        is now replaced by dispatchDidLayout(LayoutMilestoneOptions)
+        * src/FrameLoaderClientImpl.cpp:
+        (WebKit::FrameLoaderClientImpl::dispatchDidLayout):
+        * src/FrameLoaderClientImpl.h:
+        (FrameLoaderClientImpl):
+
+        It is now necessary to opt into getting any of the 
+        "layout milestone" notifications.
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::WebHelperPluginImpl::initPage):
+        * src/WebPagePopupImpl.cpp:
+        (WebKit::WebPagePopupImpl::initPage):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+
+2012-09-25  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: One transaction coordinator per database
+        https://bugs.webkit.org/show_bug.cgi?id=97501
+
+        Reviewed by Tony Chang.
+
+        Remove obsolete argument.
+
+        * tests/IDBDatabaseBackendTest.h:
+
+2012-09-25  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r129517.
+        http://trac.webkit.org/changeset/129517
+        https://bugs.webkit.org/show_bug.cgi?id=97582
+
+        Link errors in chromium (Requested by alecf on #webkit).
+
+        * public/WebUserMediaRequest.h:
+        (WebUserMediaRequest):
+        * src/WebUserMediaRequest.cpp:
+
+2012-09-25  Dominic Mazzoni  <dmazzoni@google.com>
+
+        AX: Chromium doesn't pass accessibility text range and line number tests
+        https://bugs.webkit.org/show_bug.cgi?id=97246
+
+        Reviewed by Chris Fleizach.
+
+        Use improved implementation of AccessibilityRenderObject::lineBreaks
+        and implement methods to get the line number of the selection and
+        to set the text range.
+
+        Enables four existing tests to pass on Chromium:
+        Tests: accessibility/textarea-insertion-point-line-number.html
+               accessibility/textarea-line-for-index.html
+               accessibility/textarea-selected-text-range.html
+               accessibility/textbox-role-reports-selection.html
+
+        * public/WebAccessibilityObject.h:
+        (WebAccessibilityObject):
+        * src/WebAccessibilityObject.cpp:
+        (WebKit::WebAccessibilityObject::selectionEndLineNumber):
+        (WebKit):
+        (WebKit::WebAccessibilityObject::selectionStartLineNumber):
+        (WebKit::WebAccessibilityObject::setSelectedTextRange):
+        (WebKit::WebAccessibilityObject::lineBreaks):
+
+2012-09-25  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Update getUserMedia to match the latest specification
+        https://bugs.webkit.org/show_bug.cgi?id=97540
+
+        Reviewed by Adam Barth.
+
+        http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermedia
+        Navigator.getUserMedia is changed so that the audio and video members can either
+        be a bool or a constraints object.
+
+        * public/WebUserMediaRequest.h:
+        (WebKit):
+        (WebUserMediaRequest):
+        * src/WebUserMediaRequest.cpp:
+        (WebKit::WebUserMediaRequest::audioConstraints):
+        (WebKit):
+        (WebKit::WebUserMediaRequest::videoConstraints):
+
+2012-09-24  Andrey Kosyakov  <caseq@chromium.org>
+
+        [chromium] adding a page overlay causes endless update loop when accelerated compositing is used
+        https://bugs.webkit.org/show_bug.cgi?id=97466
+
+        Reviewed by James Robinson.
+
+        Do not update overlays in composite() -- doing so ultimately causes invalidation
+        of the view, hence another update and another call do composite(). Overlays should be
+        updated only when their content changes.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::composite):
+
+2012-09-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: extract Vector instrumentation from core NMI code into MemoryInstrumentationVector.h header.
+        https://bugs.webkit.org/show_bug.cgi?id=96650
+
+        Reviewed by Vsevolod Vlasov.
+
+        Test for instrumented vector.
+
+        * tests/MemoryInstrumentationTest.cpp:
+        (WebCore::InstrumentedOwner::InstrumentedOwner):
+        (WebCore::TEST):
+        (WebCore):
+
+2012-09-24  Benjamin Poulain  <bpoulain@apple.com>
+
+        Fix Geolocation error reporting in the test support
+        https://bugs.webkit.org/show_bug.cgi?id=97386
+
+        Reviewed by Sam Weinig.
+
+        * public/WebGeolocationClientMock.h:
+        (WebGeolocationClientMock):
+        * src/WebGeolocationClientMock.cpp:
+        (WebKit::WebGeolocationClientMock::setMockGeolocationPositionUnavailableError):
+
+2012-09-24  Kent Tamura  <tkent@chromium.org>
+
+        [Chromium] Implement ValidationMessageClient for Chromium
+        https://bugs.webkit.org/show_bug.cgi?id=97167
+
+        Reviewed by Hajime Morita.
+
+        Introduce ValidationMessageClientImpl. However actual popup
+        implementation should be done in WebViewClient.
+
+        * WebKit.gyp: Add ValidationMessageClientImpl.{cpp,h}.
+        * public/WebViewClient.h:
+        (WebKit::WebViewClient::showValidationMessage): Added.
+        (WebKit::WebViewClient::hideValidationMessage): Added.
+        * src/ValidationMessageClientImpl.cpp: Added.
+        (WebKit::ValidationMessageClientImpl::ValidationMessageClientImpl):
+        (WebKit::ValidationMessageClientImpl::create):
+        (WebKit::ValidationMessageClientImpl::~ValidationMessageClientImpl):
+        Make sure that a popup is closed.
+        (WebKit::ValidationMessageClientImpl::showValidationMessage):
+        Implementataion of ValidationMessageClient::showValidationMessage.
+        minimumSecondToShowValidationMessage and secondPerCharacter are same as
+        the corresponding values in the current Shadow DOM implementation.
+        (WebKit::ValidationMessageClientImpl::hideValidationMessage):
+        Implementataion of ValidationMessageClient::hideValidationMessage.
+        (WebKit::ValidationMessageClientImpl::isValidationMessageVisible):
+        Implementataion of ValidationMessageClient::isValidationMessageVisible.
+        (WebKit::ValidationMessageClientImpl::hideCurrentValidationMessage):
+        This is a callback function for the timer.
+        * src/ValidationMessageClientImpl.h: Added.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+         - Initialize m_validationMessage.
+         - Add a comment for PageClients.
+        * src/WebViewImpl.h:
+        Add m_validationMessage.
+
+2012-09-24  Mihai Parparita  <mihaip@chromium.org>
+
+        [Chromium] Remove WebRuntimeFeatures::{enablePushState,isPushStateEnabled}
+        https://bugs.webkit.org/show_bug.cgi?id=97506
+
+        Reviewed by Adam Barth.
+
+        These methods have been no-ops since r127674. All Chromium code that
+        called them was removed with http://crrev.com/155205.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+
+2012-09-24  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium][Mac] Remove loadFont from PlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=97360
+
+        Reviewed by Adam Barth.
+
+        Part of a refactoring series. See tracking bug 82948.
+
+        * src/PlatformSupport.cpp:
+        (WebCore):
+
+2012-09-24  Tony Chang  <tony@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-09-24  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Add setters to WebFilterOperation for IPC pickling
+        https://bugs.webkit.org/show_bug.cgi?id=97147
+
+        Reviewed by James Robinson.
+
+        * tests/FilterOperationsTest.cpp:
+        (WebKit):
+        (WebKit::TEST):
+
+2012-09-24  Patrick Gansterer  <paroga@webkit.org>
+
+        Remove remaining WTF_DEPRECATED_STRING_OPERATORS from cpp files
+        https://bugs.webkit.org/show_bug.cgi?id=97412
+
+        Reviewed by Adam Barth.
+
+        * src/WebPageSerializerImpl.cpp:
+        (WebKit::WebPageSerializerImpl::openTagToString): Replaced operator+= with StringBuilder::append().
+        (WebKit::WebPageSerializerImpl::endTagToString): Ditto.
+
 2012-09-24  Yury Semikhatsky  <yurys@chromium.org>
 
         Unreviewed, rolling out r122243.

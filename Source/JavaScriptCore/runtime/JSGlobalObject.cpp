@@ -373,7 +373,7 @@ void ObjectsWithBrokenIndexingFinder::operator()(JSCell* cell)
     // a different global object that have prototypes from our global object.
     bool foundGlobalObject = false;
     for (JSObject* current = object; ;) {
-        if (current->unwrappedGlobalObject() == m_globalObject) {
+        if (current->globalObject() == m_globalObject) {
             foundGlobalObject = true;
             break;
         }
@@ -500,6 +500,11 @@ void JSGlobalObject::visitChildren(JSCell* cell, SlotVisitor& visitor)
     visitor.append(&thisObject->m_regExpStructure);
     visitor.append(&thisObject->m_stringObjectStructure);
     visitor.append(&thisObject->m_internalFunctionStructure);
+}
+
+JSObject* JSGlobalObject::toThisObject(JSCell* cell, ExecState*)
+{
+    return jsCast<JSGlobalObject*>(cell)->globalThis();
 }
 
 ExecState* JSGlobalObject::globalExec()

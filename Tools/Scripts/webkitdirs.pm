@@ -2548,8 +2548,11 @@ EOF
 
 sub argumentsForRunAndDebugMacWebKitApp()
 {
-    my @args = @ARGV;
+    my @args = ();
     push @args, ("-ApplePersistenceIgnoreState", "YES") if !isSnowLeopard() && checkForArgumentAndRemoveFromArrayRef("--no-saved-state", \@args);
+    push @args, ("-WebKit2UseXPCServiceForWebProcess", "YES") if shouldUseXPCServiceForWebProcess();
+    unshift @args, @ARGV;
+
     return @args;
 }
 
@@ -2562,10 +2565,6 @@ sub runMacWebKitApp($;$)
     $ENV{WEBKIT_UNSET_DYLD_FRAMEWORK_PATH} = "YES";
 
     setUpGuardMallocIfNeeded();
-
-    if (shouldUseXPCServiceForWebProcess()) {
-        $ENV{WEBKIT_USE_XPC_SERVICE_FOR_WEB_PROCESS} = "YES";
-    }
 
     if (defined($useOpenCommand) && $useOpenCommand == USE_OPEN_COMMAND) {
         return system("open", "-W", "-a", $appPath, "--args", argumentsForRunAndDebugMacWebKitApp());
@@ -2604,9 +2603,6 @@ sub execMacWebKitAppForDebugging($)
 
     my @architectureFlags = ($architectureSwitch, architecture());
     if (!shouldTargetWebProcess()) {
-        if (shouldUseXPCServiceForWebProcess()) {
-            $ENV{WEBKIT_USE_XPC_SERVICE_FOR_WEB_PROCESS} = "YES";
-        }
         print "Starting @{[basename($appPath)]} under $debugger with DYLD_FRAMEWORK_PATH set to point to built WebKit in $productDir.\n";
         exec { $debuggerPath } $debuggerPath, @architectureFlags, $argumentsSeparator, $appPath, argumentsForRunAndDebugMacWebKitApp() or die;
     } else {

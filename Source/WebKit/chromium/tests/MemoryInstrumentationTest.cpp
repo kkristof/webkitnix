@@ -36,11 +36,16 @@
 
 #include <gtest/gtest.h>
 
+#include <wtf/ArrayBuffer.h>
 #include <wtf/HashSet.h>
+#include <wtf/MemoryInstrumentationArrayBufferView.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/CString.h>
+#include <wtf/text/StringHash.h>
 #include <wtf/text/StringImpl.h>
 #include <wtf/text/WTFString.h>
 
@@ -235,6 +240,7 @@ class InstrumentedOwner {
 public:
     template<typename V>
     InstrumentedOwner(const V& value) : m_value(value) { }
+    InstrumentedOwner() { }
     void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     {
         MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
@@ -365,6 +371,104 @@ TEST(MemoryInstrumentationTest, detectReportMemoryUsageMethod)
         EXPECT_EQ(sizeof(InstrumentedTemplate<NotInstrumented>), impl.reportedSizeForAllTypes());
         EXPECT_EQ(1, visitedObjects.size());
     }
+}
+
+TEST(MemoryInstrumentationTest, vectorZeroInlineCapacity)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+    InstrumentedOwner<Vector<int> > vectorOwner(16);
+    impl.addRootObject(vectorOwner);
+    EXPECT_EQ(16 * sizeof(int), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(1, visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, vectorFieldWithInlineCapacity)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+    InstrumentedOwner<Vector<int, 4> > vectorOwner;
+    impl.addRootObject(vectorOwner);
+    EXPECT_EQ(static_cast<size_t>(0), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(0, visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, vectorFieldWithInlineCapacityResized)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+    InstrumentedOwner<Vector<int, 4> > vectorOwner;
+    vectorOwner.m_value.reserveCapacity(8);
+    impl.addRootObject(vectorOwner);
+    EXPECT_EQ(8 * sizeof(int), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(1, visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, heapAllocatedVectorWithInlineCapacity)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+    InstrumentedOwner<OwnPtr<Vector<int, 4> > > vectorOwner;
+    vectorOwner.m_value = adoptPtr(new Vector<int, 4>());
+    impl.addRootObject(vectorOwner);
+    EXPECT_EQ(sizeof(Vector<int, 4>), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(1, visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, heapAllocatedVectorWithInlineCapacityResized)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+    InstrumentedOwner<OwnPtr<Vector<int, 4> > > vectorOwner;
+    vectorOwner.m_value = adoptPtr(new Vector<int, 4>());
+    vectorOwner.m_value->reserveCapacity(8);
+    impl.addRootObject(vectorOwner);
+    EXPECT_EQ(8 * sizeof(int) + sizeof(Vector<int, 4>), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(2, visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, vectorWithInstrumentedType)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+
+    typedef Vector<String> StringVector;
+    OwnPtr<StringVector> value = adoptPtr(new StringVector());
+    size_t count = 10;
+    for (size_t i = 0; i < count; ++i)
+        value->append("string");
+    InstrumentedOwner<StringVector* > root(value.get());
+    impl.addRootObject(root);
+    EXPECT_EQ(sizeof(StringVector) + sizeof(String) * value->capacity() + sizeof(StringImpl) * value->size(), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(count + 2, (size_t)visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, hashSetWithInstrumentedType)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+
+    typedef HashSet<String> ValueType;
+    OwnPtr<ValueType> value = adoptPtr(new ValueType());
+    size_t count = 10;
+    for (size_t i = 0; i < count; ++i)
+        value->add(String::number(i));
+    InstrumentedOwner<ValueType* > root(value.get());
+    impl.addRootObject(root);
+    EXPECT_EQ(sizeof(ValueType) + sizeof(String) * value->capacity() + sizeof(StringImpl) * value->size(), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(count + 2, (size_t)visitedObjects.size());
+}
+
+TEST(MemoryInstrumentationTest, arrayBuffer)
+{
+    VisitedObjects visitedObjects;
+    MemoryInstrumentationImpl impl(visitedObjects);
+
+    typedef InstrumentedTemplate<RefPtr<ArrayBuffer> > ValueType;
+    ValueType value(ArrayBuffer::create(1000, sizeof(int)));
+    impl.addRootObject(value);
+    EXPECT_EQ(sizeof(int) * 1000 + sizeof(ArrayBuffer), impl.reportedSizeForAllTypes());
+    EXPECT_EQ(2, visitedObjects.size());
 }
 
 } // namespace

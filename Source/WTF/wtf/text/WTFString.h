@@ -414,6 +414,7 @@ public:
 #endif
 
     WTF_EXPORT_STRING_API static String make8BitFrom16BitSource(const UChar*, size_t);
+    WTF_EXPORT_STRING_API static String make16BitFrom8BitSource(const LChar*, size_t);
 
     // String::fromUTF8 will return a null string if
     // the input data contains invalid UTF-8 sequences.
@@ -465,10 +466,6 @@ private:
 #if PLATFORM(QT)
 QDataStream& operator<<(QDataStream& stream, const String& str);
 QDataStream& operator>>(QDataStream& stream, String& str);
-#endif
-
-#ifdef WTF_DEPRECATED_STRING_OPERATORS
-inline String& operator+=(String& a, const String& b) { a.append(b); return a; }
 #endif
 
 inline bool operator==(const String& a, const String& b) { return equal(a.impl(), b.impl()); }

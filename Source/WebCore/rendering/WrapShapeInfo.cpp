@@ -71,10 +71,6 @@ WrapShapeInfo* WrapShapeInfo::wrapShapeInfoForRenderBlock(const RenderBlock* blo
 
 bool WrapShapeInfo::isWrapShapeInfoEnabledForRenderBlock(const RenderBlock* block)
 {
-    // FIXME: Bug 89705: Enable shape inside for vertical writing modes
-    if (!block->isHorizontalWritingMode())
-        return false;
-
     // FIXME: Bug 89707: Enable shape inside for non-rectangular shapes
     BasicShape* shape = block->style()->wrapShapeInside();
     return (shape && shape->type() == BasicShape::BASIC_SHAPE_RECTANGLE);
@@ -85,13 +81,6 @@ void WrapShapeInfo::removeWrapShapeInfoForRenderBlock(const RenderBlock* block)
     if (!block->style() || !block->style()->wrapShapeInside())
         return;
     wrapShapeInfoMap().remove(block);
-}
-
-bool WrapShapeInfo::hasSegments() const
-{
-    // All line positions within a shape should have at least one segment
-    ASSERT(lineState() != LINE_INSIDE_SHAPE || m_segments.size());
-    return m_segments.size();
 }
 
 void WrapShapeInfo::computeShapeSize(LayoutUnit logicalWidth, LayoutUnit logicalHeight)
@@ -107,26 +96,20 @@ void WrapShapeInfo::computeShapeSize(LayoutUnit logicalWidth, LayoutUnit logical
     BasicShape* shape = m_block->style()->wrapShapeInside();
     ASSERT(shape);
 
-    m_shape = ExclusionShape::createExclusionShape(shape, logicalWidth, logicalHeight);
+    m_shape = ExclusionShape::createExclusionShape(shape, logicalWidth, logicalHeight, m_block->style()->writingMode());
     ASSERT(m_shape);
 }
 
-bool WrapShapeInfo::computeSegmentsForLine(LayoutUnit lineTop)
+bool WrapShapeInfo::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineBottom)
 {
+    ASSERT(lineTop <= lineBottom);
     m_lineTop = lineTop;
+    m_lineBottom = lineBottom;
     m_segments.clear();
 
-    if (lineState() == LINE_INSIDE_SHAPE) {
+    if (lineOverlapsShapeBounds()) {
         ASSERT(m_shape);
-
-        Vector<ExclusionInterval> intervals;
-        m_shape->getInsideIntervals(lineTop, lineTop, intervals); // FIXME: Bug 95479, workaround for now
-        for (size_t i = 0; i < intervals.size(); i++) {
-            LineSegment segment;
-            segment.logicalLeft = intervals[i].x1;
-            segment.logicalRight = intervals[i].x2;
-            m_segments.append(segment);
-        }
+        m_shape->getIncludedIntervals(lineTop, std::min(lineBottom, shapeLogicalBottom()), m_segments);
     }
     return m_segments.size();
 }

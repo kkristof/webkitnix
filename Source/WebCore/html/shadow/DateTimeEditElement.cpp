@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#if ENABLE(INPUT_TYPE_TIME_MULTIPLE_FIELDS)
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeEditElement.h"
 
 #include "DateComponents.h"
@@ -374,6 +374,8 @@ void DateTimeEditElement::readOnlyStateChanged()
 
 void DateTimeEditElement::resetFields()
 {
+    for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
+        m_fields[fieldIndex]->removeEventHandler();
     m_fields.shrink(0);
 }
 
@@ -450,26 +452,19 @@ void DateTimeEditElement::updateUIState()
     }
 }
 
+String DateTimeEditElement::value() const
+{
+    if (!m_editControlOwner)
+        return emptyString();
+    return m_editControlOwner->formatDateTimeFieldsState(valueAsDateTimeFieldsState());
+}
+
 DateTimeFieldsState DateTimeEditElement::valueAsDateTimeFieldsState() const
 {
     DateTimeFieldsState dateTimeFieldsState;
     for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
         m_fields[fieldIndex]->populateDateTimeFieldsState(dateTimeFieldsState);
     return dateTimeFieldsState;
-}
-
-double DateTimeEditElement::valueAsDouble() const
-{
-    double value = 0;
-
-    for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-        const DateTimeFieldElement* const field = m_fields[fieldIndex];
-        if (!field->hasValue())
-            return std::numeric_limits<double>::quiet_NaN();
-        value += field->valueAsDouble();
-    }
-
-    return value;
 }
 
 } // namespace WebCore
