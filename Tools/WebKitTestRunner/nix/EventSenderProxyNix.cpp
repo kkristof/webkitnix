@@ -242,6 +242,8 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
         } else {
             shouldUseUpperCase = isASCIIUpper(code);
             code = toASCIIUpper(code);
+            if (shouldUseUpperCase)
+                modifiers |= Nix::InputEvent::ShiftKey;
         }
     } else {
         if (key.startsWith('F') && key.length() <= 3) {

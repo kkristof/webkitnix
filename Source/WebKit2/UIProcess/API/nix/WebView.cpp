@@ -887,6 +887,7 @@ static String keyTextForNixKeyEvent(const KeyEvent& event)
     case KeyEvent::Key_Backtab:
         return "\t";
     case KeyEvent::Key_Enter:
+    case KeyEvent::Key_Return:
         return "\r";
     default:
         break;
