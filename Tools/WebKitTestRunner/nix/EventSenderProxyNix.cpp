@@ -108,6 +108,22 @@ void EventSenderProxy::updateClickCountForButton(int button)
     m_clickButton = button;
 }
 
+static unsigned convertToNixModifiers(WKEventModifiers modifiersRef)
+{
+    unsigned modifiers = 0;
+
+    if (modifiersRef & kWKEventModifiersControlKey)
+        modifiers |= Nix::InputEvent::ControlKey;
+    if (modifiersRef & kWKEventModifiersShiftKey)
+        modifiers |= Nix::InputEvent::ShiftKey;
+    if (modifiersRef & kWKEventModifiersAltKey)
+        modifiers |= Nix::InputEvent::AltKey;
+    if (modifiersRef & kWKEventModifiersMetaKey)
+        modifiers |= Nix::InputEvent::MetaKey;
+
+    return modifiers;
+}
+
 Nix::MouseEvent* EventSenderProxy::createMouseEvent(Nix::InputEvent::Type type, unsigned button, WKEventModifiers wkModifiers)
 {
     Nix::MouseEvent* ev = new Nix::MouseEvent;
@@ -158,22 +174,6 @@ void EventSenderProxy::leapForward(int milliseconds)
 {
     eventQueue[endOfQueue].delay = milliseconds;
     m_time += milliseconds;
-}
-
-static unsigned getModifiers(WKEventModifiers modifiersRef)
-{
-    unsigned modifiers = 0;
-
-    if (modifiersRef & kWKEventModifiersControlKey)
-        modifiers |= Nix::InputEvent::ControlKey;
-    if (modifiersRef & kWKEventModifiersShiftKey)
-        modifiers |= Nix::InputEvent::ShiftKey;
-    if (modifiersRef & kWKEventModifiersAltKey)
-        modifiers |= Nix::InputEvent::AltKey;
-    if (modifiersRef & kWKEventModifiersMetaKey)
-        modifiers |= Nix::InputEvent::MetaKey;
-
-    return modifiers;
 }
 
 Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned nixModifiers, bool shouldUseUpperCase, bool isKeypad)
