@@ -37,6 +37,7 @@ public:
 
 private:
     void handleWheelEvent(const XButtonPressedEvent&);
+    void updateClickCount(const XButtonPressedEvent&);
 
     void updateDisplay();
 
@@ -45,6 +46,11 @@ private:
     LinuxWindow* m_window;
     Nix::WebView* m_webView;
     GMainLoop* m_mainLoop;
+    double m_lastClickTime;
+    int m_lastClickX;
+    int m_lastClickY;
+    int m_lastClickButton;
+    unsigned m_clickCount;
 };
 
 MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
@@ -53,6 +59,11 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     , m_window(new LinuxWindow(this))
     , m_webView(0)
     , m_mainLoop(mainLoop)
+    , m_clickCount(0)
+    , m_lastClickTime(0)
+    , m_lastClickButton(0)
+    , m_lastClickX(0)
+    , m_lastClickY(0)
 {
     WKPreferencesRef preferences = WKPageGroupGetPreferences(m_pageGroup.get());
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
@@ -178,7 +189,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     Nix::WheelEvent ev;
     ev.type = Nix::InputEvent::Wheel;
     ev.modifiers = 0;
-    ev.timestamp = event.time;
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     ev.x = event.x;
     ev.y = event.y;
     ev.globalX = event.x_root;
@@ -186,6 +197,24 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     ev.delta = pixelsPerStep * (event.button == 4 ? 1 : -1);
     ev.orientation = event.state & Mod1Mask ? Nix::WheelEvent::Horizontal : Nix::WheelEvent::Vertical;
     m_webView->sendEvent(ev);
+}
+
+static const double doubleClickInterval = 300;
+
+void MiniBrowser::updateClickCount(const XButtonPressedEvent& event)
+{
+    if (m_lastClickX != event.x
+        || m_lastClickY != event.y
+        || m_lastClickButton != event.button
+        || event.time - m_lastClickTime >= doubleClickInterval)
+        m_clickCount = 1;
+    else
+        ++m_clickCount;
+
+    m_lastClickX = event.x;
+    m_lastClickY = event.y;
+    m_lastClickButton = event.button;
+    m_lastClickTime = event.time;
 }
 
 void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
@@ -198,6 +227,8 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
         return;
     }
 
+    updateClickCount(event);
+
     Nix::MouseEvent ev;
     ev.type = Nix::InputEvent::MouseDown;
     ev.button = convertXEventButtonToNativeMouseButton(event.button);
@@ -205,9 +236,9 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.y = event.y;
     ev.globalX = event.x_root;
     ev.globalY = event.y_root;
-    ev.clickCount = 1;
+    ev.clickCount = m_clickCount;
     ev.modifiers = 0;
-    ev.timestamp = event.time;
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     m_webView->sendEvent(ev);
 }
 
@@ -223,9 +254,9 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.y = event.y;
     ev.globalX = event.x_root;
     ev.globalY = event.y_root;
-    ev.clickCount = 1;
+    ev.clickCount = 0;
     ev.modifiers = 0;
-    ev.timestamp = event.time;
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     m_webView->sendEvent(ev);
 }
 
@@ -243,7 +274,7 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.globalY = event.y_root;
     ev.clickCount = 0;
     ev.modifiers = 0;
-    ev.timestamp = event.time;
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     m_webView->sendEvent(ev);
 }
 

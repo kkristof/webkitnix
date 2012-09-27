@@ -85,9 +85,18 @@ EventSenderProxy::EventSenderProxy(TestController* testController)
     isReplayingEvents = false;
 }
 
+static const double doubleClickInterval = 300;
+
+static inline double convertToNixTimestamp(double ms)
+{
+    return ms / 1000.0;
+}
+
 void EventSenderProxy::updateClickCountForButton(int button)
 {
-    if (m_time - m_clickTime < 1 && m_position == m_clickPosition && button == m_clickButton) {
+    if (m_time - m_clickTime <= doubleClickInterval
+        && m_position == m_clickPosition
+        && button == m_clickButton) {
         ++m_clickCount;
         m_clickTime = m_time;
         return;
@@ -104,7 +113,7 @@ Nix::MouseEvent* EventSenderProxy::createMouseEvent(Nix::InputEvent::Type type, 
     Nix::MouseEvent* ev = new Nix::MouseEvent;
     ev->type = type;
     ev->modifiers = wkModifiers;
-    ev->timestamp = m_time;
+    ev->timestamp = convertToNixTimestamp(m_time);
     ev->button = (Nix::MouseEvent::Button) button;
     ev->x = m_position.x;
     ev->y = m_position.y;
@@ -173,7 +182,7 @@ Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsi
     ev->type = type;
     ev->key = static_cast<Nix::KeyEvent::Key>(code);
     ev->modifiers = modifiers;
-    ev->timestamp = m_time;
+    ev->timestamp = convertToNixTimestamp(m_time);
     ev->shouldUseUpperCase = shouldUseUpperCase;
     ev->isKeypad = isKeypad;
     return ev;
