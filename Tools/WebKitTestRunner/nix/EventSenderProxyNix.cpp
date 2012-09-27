@@ -112,7 +112,7 @@ Nix::MouseEvent* EventSenderProxy::createMouseEvent(Nix::InputEvent::Type type, 
 {
     Nix::MouseEvent* ev = new Nix::MouseEvent;
     ev->type = type;
-    ev->modifiers = wkModifiers;
+    ev->modifiers = convertToNixModifiers(wkModifiers);
     ev->timestamp = convertToNixTimestamp(m_time);
     ev->button = (Nix::MouseEvent::Button) button;
     ev->x = m_position.x;
@@ -176,12 +176,12 @@ static unsigned getModifiers(WKEventModifiers modifiersRef)
     return modifiers;
 }
 
-Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers, bool shouldUseUpperCase, bool isKeypad)
+Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned nixModifiers, bool shouldUseUpperCase, bool isKeypad)
 {
     Nix::KeyEvent* ev = new Nix::KeyEvent();
     ev->type = type;
     ev->key = static_cast<Nix::KeyEvent::Key>(code);
-    ev->modifiers = modifiers;
+    ev->modifiers = nixModifiers;
     ev->timestamp = convertToNixTimestamp(m_time);
     ev->shouldUseUpperCase = shouldUseUpperCase;
     ev->isKeypad = isKeypad;
@@ -191,7 +191,7 @@ Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsi
 void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers, unsigned location)
 {
     WTF::String key = WebKit::toWTFString(keyRef);
-    unsigned modifiers = getModifiers(wkModifiers);
+    unsigned modifiers = convertToNixModifiers(wkModifiers);
     bool isKeypad = (location == DOMKeyLocationNumpad);
     bool shouldUseUpperCase = false;
 

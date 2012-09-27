@@ -188,7 +188,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 
     Nix::WheelEvent ev;
     ev.type = Nix::InputEvent::Wheel;
-    ev.modifiers = 0;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     ev.x = event.x;
     ev.y = event.y;
@@ -237,7 +237,7 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.globalX = event.x_root;
     ev.globalY = event.y_root;
     ev.clickCount = m_clickCount;
-    ev.modifiers = 0;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     m_webView->sendEvent(ev);
 }
@@ -256,7 +256,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.globalY = event.y_root;
     ev.clickCount = 0;
     ev.modifiers = 0;
-    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
     m_webView->sendEvent(ev);
 }
 
@@ -273,7 +273,7 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.globalX = event.x_root;
     ev.globalY = event.y_root;
     ev.clickCount = 0;
-    ev.modifiers = 0;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     m_webView->sendEvent(ev);
 }
