@@ -48,6 +48,8 @@
 #include <WebCore/Scrollbar.h>
 #include <wtf/text/WTFString.h>
 
+#include <WebKit2/WebView.h>
+
 using namespace WebCore;
 using namespace WebKit;
 
@@ -89,6 +91,12 @@ public:
 
     virtual bool isActive() const;
     virtual void setActive(bool);
+
+    virtual void setTransparentBackground(bool);
+    virtual bool transparentBackground() const;
+
+    virtual void setDrawBackground(bool);
+    virtual bool drawBackground() const;
 
     virtual void paintToCurrentGLContext();
 
@@ -198,6 +206,26 @@ WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, W
 void WebViewImpl::initialize()
 {
     m_webPageProxy->initializeWebPage();
+}
+
+void WebViewImpl::setTransparentBackground(bool value)
+{
+    m_webPageProxy->setDrawsTransparentBackground(value);
+}
+
+bool WebViewImpl::transparentBackground() const
+{
+    return m_webPageProxy->drawsTransparentBackground();
+}
+
+void WebViewImpl::setDrawBackground(bool value)
+{
+    m_webPageProxy->setDrawsBackground(value);
+}
+
+bool WebViewImpl::drawBackground() const
+{
+    return m_webPageProxy->drawsBackground();
 }
 
 int WebViewImpl::width() const
