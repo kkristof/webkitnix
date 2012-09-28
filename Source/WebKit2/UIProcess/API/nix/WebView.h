@@ -50,6 +50,12 @@ public:
     virtual void setDrawBackground(bool) = 0;
     virtual bool drawBackground() const = 0;
 
+    virtual void setScale(double) = 0;
+    virtual double scale() const  = 0;
+
+    virtual int visibleContentWidth() const = 0;
+    virtual int visibleContentHeight() const = 0;
+
     virtual void paintToCurrentGLContext() = 0;
 
     virtual WKPageRef pageRef() = 0;
