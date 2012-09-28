@@ -26,7 +26,7 @@
 #include <dlfcn.h>
 #endif
 
-#if PLATFORM(NIX)
+#if PLATFORM(NIX) && USE(EGL)
 #include <EGL/egl.h>
 #endif
 
@@ -46,7 +46,7 @@ static void* getProcAddress(const char* procName)
 {
     return reinterpret_cast<void*>(QOpenGLContext::currentContext()->getProcAddress(procName));
 }
-#elif PLATFORM(NIX)
+#elif PLATFORM(NIX) && USE(EGL)
 static void* getProcAddress(const char* procName)
 {
     return reinterpret_cast<void*>(eglGetProcAddress(procName));

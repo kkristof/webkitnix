@@ -40,6 +40,7 @@ class GLContextGLX : public GLContext {
     WTF_MAKE_NONCOPYABLE(GLContextGLX);
 public:
     static PassOwnPtr<GLContextGLX> createContext(XID window, GLContext* sharingContext);
+    static PassOwnPtr<GLContextGLX> createFromCurrentGLContext();
     static PassOwnPtr<GLContextGLX> createWindowContext(XID window, GLContext* sharingContext);
 
     virtual ~GLContextGLX();

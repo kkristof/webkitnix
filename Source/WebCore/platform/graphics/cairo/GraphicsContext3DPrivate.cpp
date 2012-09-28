@@ -33,7 +33,11 @@
 #endif
 
 #if PLATFORM(NIX)
+#if USE(EGL)
 #include "GLContextEGL.h"
+#else
+#include "GLContextGLX.h"
+#endif
 #endif
 
 using namespace std;
@@ -54,8 +58,14 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
         m_glContext = GLContext::createOffscreenContext(GLContext::sharingContext());
         break;
     case GraphicsContext3D::RenderToCurrentGLContext:
+        // TODO: Move these *::createFromCurrentGLContext to GLContext and remove this ifdef
+        //       when the Nix port goes upstream.
 #ifdef PLATFORM(NIX)
+    #if USE(EGL)
         m_glContext = GLContextEGL::createFromCurrentGLContext();
+    #else
+        m_glContext = GLContextGLX::createFromCurrentGLContext();
+    #endif
 #endif
         break;
     case GraphicsContext3D::RenderDirectlyToHostWindow:

@@ -224,6 +224,23 @@ PassOwnPtr<GLContextGLX> GLContextGLX::createContext(XID window, GLContext* shar
     return context.release();
 }
 
+PassOwnPtr<GLContextGLX> GLContextGLX::createFromCurrentGLContext()
+{
+    static bool initialized = false;
+    static bool success = true;
+    if (!initialized) {
+        success = initializeOpenGLShims();
+        initialized = true;
+    }
+    if (!success)
+        return nullptr;
+
+    GLXContext context = glXGetCurrentContext();
+    if (!context)
+        fprintf(stderr, "Warning: No GLX context found!\n");
+    return adoptPtr(new GLContextGLX(context));
+}
+
 GLContextGLX::GLContextGLX(GLXContext context)
     : m_context(context)
     , m_window(0)

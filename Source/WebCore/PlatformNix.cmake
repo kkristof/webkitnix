@@ -231,9 +231,19 @@ IF (WTF_USE_3D_GRAPHICS)
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/graphics/opengl"
     "${WEBCORE_DIR}/platform/graphics/texmap"
-    "${WEBCORE_DIR}/platform/graphics/egl"
-    ${EGL_INCLUDE_DIR}
   )
+
+  IF (WTF_USE_EGL)
+    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
+      "${WEBCORE_DIR}/platform/graphics/egl"
+      ${EGL_INCLUDE_DIR}
+    )
+  ELSE ()
+    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
+      "${WEBCORE_DIR}/platform/graphics/glx"
+    )
+  ENDIF ()
+
   LIST(APPEND WebCore_LIBRARIES
     ${OPENGL_gl_LIBRARY}
     ${EGL_LIBRARY}
@@ -244,7 +254,6 @@ IF (WTF_USE_3D_GRAPHICS)
     platform/graphics/cairo/GLContext.cpp
     platform/graphics/cairo/GraphicsContext3DCairo.cpp
     platform/graphics/cairo/GraphicsContext3DPrivate.cpp
-    platform/graphics/egl/GLContextEGL.cpp
     platform/graphics/opengl/Extensions3DOpenGL.cpp
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
@@ -252,6 +261,16 @@ IF (WTF_USE_3D_GRAPHICS)
     platform/graphics/texmap/TextureMapperGL.cpp
     platform/graphics/texmap/TextureMapperShaderManager.cpp
   )
+
+  IF (WTF_USE_EGL)
+    LIST(APPEND WebCore_SOURCES
+        platform/graphics/egl/GLContextEGL.cpp
+    )
+  ELSE ()
+    LIST(APPEND WebCore_SOURCES
+        platform/graphics/glx/GLContextGLX.cpp
+    )
+  ENDIF ()
 ENDIF ()
 
 ADD_DEFINITIONS(-DWTF_USE_CROSS_PLATFORM_CONTEXT_MENUS=1

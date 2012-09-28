@@ -62,6 +62,7 @@ my $cmakeArgs;
 my $onlyWebKitProject = 0;
 my $noWebKit2 = 0;
 my $coverageSupport = 0;
+my $egl = 0;
 my $startTime = time();
 
 my @features = getFeatureOptionList();
@@ -137,6 +138,8 @@ Usage: $programName [options] [options to pass to build system]
   --only-webkit                     Build only the WebKit project
   --no-webkit2                      Omit WebKit2 code from the build
 
+  --egl                             Use EGL instead of GLX (Nix only)
+
 EOF
 
 my %options = (
@@ -152,6 +155,7 @@ my %options = (
     'only-webkit' => \$onlyWebKitProject,
     'no-webkit2' => \$noWebKit2,
     'coverage' => \$coverageSupport,
+    'egl' => \$egl,
 );
 
 # Build usage text and options list from features
@@ -321,13 +325,13 @@ if (isChromium()) {
 
 if (isNix()) {
     if ($noWebKit2) {
-        print STDERR "Nix is a WebKit2 port, you can't disable it!\n";
+        print STDERR "Nix is a WebKit2 port, you can't disable WebKit2 on it!\n";
         exit 1;
     }
 
     # By default we build using all of the available CPUs.
     $makeArgs .= ($makeArgs ? " " : "") . "-j" . numberOfCPUs() if $makeArgs !~ /-j\s*\d+/;
-    $cmakeArgs .= ($cmakeArgs ? " " : "") . "-DENABLE_WEBKIT=OFF" . (!$noWebKit2 ? " -DENABLE_WEBKIT2=ON" : "");
+    $cmakeArgs .= ($cmakeArgs ? " " : "") . "-DENABLE_WEBKIT=OFF -DENABLE_WEBKIT2=ON" . ($egl ? " -DWTF_USE_EGL=ON" : "");
 
     # We remove CMakeCache to avoid the bots to reuse cached flags when
     # we enable new features. This forces a reconfiguration.
