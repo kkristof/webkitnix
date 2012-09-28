@@ -75,7 +75,10 @@
                     { "name": "efl-linux-slave-3", "platform": "efl" },
                     { "name": "efl-linux-slave-4", "platform": "efl" },
 
-                    { "name": "mips-1", "platform": "qt-mipsel"}
+                    { "name": "mips-1", "platform": "qt-mipsel"},
+
+                    { "name": "nix-ubuntu64desktop", "platform": "nix" },
+                    { "name": "nix-ubuntu64desktop2", "platform": "nix" }
                   ],
 
     "builders":   [ { "name": "Apple SnowLeopard Release (Build)", "type": "Build", "builddir": "snowleopard-release",
@@ -338,6 +341,16 @@
                       "name": "EFL Linux 32-bit Release (Build)", "type": "Build", "builddir": "efl-linux-32-release",
                       "platform": "efl", "configuration": "release", "architectures": ["i386"],
                       "slavenames": ["efl-linux-slave-3"]
+                    },
+                    {
+                      "name": "Nix Linux 64-bit Release", "type": "BuildAndTest", "builddir": "nix-linux-64-release",
+                      "platform": "nix", "configuration": "release", "architectures": ["x86_64"],
+                      "slavenames": ["nix-ubuntu64desktop"]
+                    },
+                    {
+                      "name": "Nix Linux 64-bit Debug", "type": "BuildAndTest", "builddir": "nix-linux-64-debug",
+                      "platform": "nix", "configuration": "debug", "architectures": ["x86_64"],
+                      "slavenames": ["nix-ubuntu64desktop2"]
                     }
                   ],
 
@@ -349,7 +362,8 @@
                                        "Chromium Win Release", "Chromium Mac Release", "Chromium Linux Release",
                                        "Chromium Android Release",
                                        "EFL Linux 64-bit Release", "EFL Linux 64-bit Debug", "EFL Linux 32-bit Release (Build)", "EFL Linux 64-bit Debug WK2",
-                                       "WinCairo Release", "WinCE Release (Build)"]
+                                       "WinCairo Release", "WinCE Release (Build)",
+                                       "Nix Linux 64-bit Release", "Nix Linux 64-bit Debug"]
                     },
                     { "type": "PlatformSpecificScheduler", "platform": "mac-snowleopard", "branch": "trunk", "treeStableTimer": 45.0, 
                       "builderNames": ["Apple SnowLeopard Release (Build)", "Apple SnowLeopard Debug (Build)"] 
