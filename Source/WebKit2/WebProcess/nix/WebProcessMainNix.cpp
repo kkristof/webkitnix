@@ -27,15 +27,20 @@
 #include "config.h"
 #include "WebProcessMainNix.h"
 
+#define LIBSOUP_USE_UNSTABLE_REQUEST_API
+
 #include "CoordinatedGraphicsLayer.h"
 #include "ProxyResolverSoup.h"
 #include "WKBase.h"
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/RunLoop.h>
 #include <WebKit2/WebProcess.h>
+#include <libsoup/soup-cache.h>
 #include <runtime/InitializeThreading.h>
 #include <unistd.h>
 #include <wtf/MainThread.h>
+#include <wtf/gobject/GOwnPtr.h>
+#include <wtf/gobject/GRefPtr.h>
 
 
 using namespace WebCore;
@@ -70,7 +75,17 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
 
     int socket = atoi(argv[1]);
     WebProcess::shared().initialize(socket, RunLoop::main());
+
+    // Set SOUP cache.
+    GOwnPtr<char> soupCacheDirectory(g_build_filename(g_get_user_cache_dir(), g_get_prgname(), NULL));
+    GRefPtr<SoupCache> soupCache = adoptGRef(soup_cache_new(soupCacheDirectory.get(), SOUP_CACHE_SINGLE_USER));
+    soup_session_add_feature(session, SOUP_SESSION_FEATURE(soupCache.get()));
+    soup_cache_load(soupCache.get());
+
     RunLoop::run();
+
+    soup_cache_flush(soupCache.get());
+    soup_cache_dump(soupCache.get());
 
     return 0;
 }
