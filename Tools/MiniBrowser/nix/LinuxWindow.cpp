@@ -1,59 +1,35 @@
 #include "LinuxWindow.h"
 
+#include <GL/gl.h>
+#include <X11/Xutil.h>
 #include <cstdio>
 #include <cstdlib>
 #include <glib.h>
 
-Atom wmDeleteMessageAtom;
-
-static void error(const char* message)
+void fatalError(const char* message)
 {
-    fprintf(stderr, "%s\n", message);
+    fprintf(stderr, "Error: %s\n", message);
     exit(1);
 }
+
+Atom wmDeleteMessageAtom;
 
 LinuxWindow::LinuxWindow(LinuxWindowClient* client)
     : m_client(client)
     , m_eventSource(0)
     , m_display(XOpenDisplay(0))
+    , m_glContextData(0)
     , m_width(800)
     , m_height(600)
 {
     if (!m_display)
-        error("Error: couldn't connect to X server\n");
+        fatalError("couldn't connect to X server\n");
 
-    m_eglDisplay = eglGetDisplay(m_display);
-    if (!m_eglDisplay)
-        error("Error: eglGetDisplay() failed\n");
-
-    if (!eglInitialize(m_eglDisplay, 0, 0))
-        error("Error: eglInitialize() failed\n");
-
-    static const EGLint attributes[] = {
-        EGL_DEPTH_SIZE, 24,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-        EGL_NONE
-    };
-
-    EGLConfig config;
-    EGLint configCount;
-    if (!eglChooseConfig(m_eglDisplay, attributes, &config, 1, &configCount))
-        error("Error: couldn't get an EGL visual config\n");
-
-    EGLint visualID;
-    if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_NATIVE_VISUAL_ID, &visualID))
-        error("Error: couldn't get an EGL visual config\n");
-
+    VisualID visualID = setupXVisualID();
     m_eventSource = new XlibEventSource(m_display, this);
     m_window = createXWindow(visualID);
 
-    eglBindAPI(EGL_OPENGL_API);
-    m_context = eglCreateContext(m_eglDisplay, config, EGL_NO_CONTEXT, 0);
-    if (!m_context)
-        error("Error: eglCreateContext failed\n");
-
-    m_surface = eglCreateWindowSurface(m_eglDisplay, config, m_window, 0);
-
+    createGLContext();
     makeCurrent();
     glEnable(GL_DEPTH_TEST);
 }
@@ -61,12 +37,7 @@ LinuxWindow::LinuxWindow(LinuxWindowClient* client)
 LinuxWindow::~LinuxWindow()
 {
     delete m_eventSource;
-
-    eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    eglDestroyContext(m_eglDisplay, m_context);
-    eglDestroySurface(m_eglDisplay, m_surface);
-    eglTerminate(m_eglDisplay);
-
+    destroyGLContext();
     XDestroyWindow(m_display, m_window);
     XCloseDisplay(m_display);
 }
@@ -74,16 +45,6 @@ LinuxWindow::~LinuxWindow()
 std::pair<int, int> LinuxWindow::size() const
 {
     return std::make_pair(m_width, m_height);
-}
-
-void LinuxWindow::makeCurrent()
-{
-    eglMakeCurrent(m_eglDisplay, m_surface, m_surface, m_context);
-}
-
-void LinuxWindow::swapBuffers()
-{
-    eglSwapBuffers(m_eglDisplay, m_surface);
 }
 
 void LinuxWindow::handleXEvent(const XEvent& event)
@@ -122,14 +83,14 @@ void LinuxWindow::handleXEvent(const XEvent& event)
     }
 }
 
-Window LinuxWindow::createXWindow(EGLint visualID)
+Window LinuxWindow::createXWindow(VisualID visualID)
 {
     XVisualInfo visualInfoTemplate;
     int visualInfoCount;
     visualInfoTemplate.visualid = visualID;
     XVisualInfo* visualInfo = XGetVisualInfo(m_display, VisualIDMask, &visualInfoTemplate, &visualInfoCount);
     if (!visualInfo)
-        error("Error: couldn't get X visual\n");
+        fatalError("couldn't get X visual\n");
 
     Window rootWindow = DefaultRootWindow(m_display);
 

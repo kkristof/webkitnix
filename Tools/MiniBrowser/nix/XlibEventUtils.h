@@ -3,13 +3,14 @@
 
 #include "XKeyMappingTable.h"
 #include <NixEvents.h>
+#include <X11/keysym.h>
 #include <ctype.h>
 #include <glib.h>
 
-using namespace Nix;
-
-static KeyEvent::Key convertXKeySymToNativeKeycode(unsigned int keysym)
+static Nix::KeyEvent::Key convertXKeySymToNativeKeycode(unsigned int keysym)
 {
+    using namespace Nix;
+
     for (int i = 0; XKeySymMappingTable[i]; i += 2) {
         if (XKeySymMappingTable[i] == keysym)
             return static_cast<KeyEvent::Key>(XKeySymMappingTable[i+1]);
@@ -33,6 +34,8 @@ static KeyEvent::Key convertXKeySymToNativeKeycode(unsigned int keysym)
 
 static int convertXEventModifiersToNativeModifiers(int s)
 {
+    using namespace Nix;
+
     int ret = 0;
     if (s & ShiftMask)
         ret |= InputEvent::ShiftKey;
@@ -49,8 +52,10 @@ static int convertXEventModifiersToNativeModifiers(int s)
     return ret;
 }
 
-static MouseEvent::Button convertXEventButtonToNativeMouseButton(unsigned int mouseButton)
+static Nix::MouseEvent::Button convertXEventButtonToNativeMouseButton(unsigned int mouseButton)
 {
+    using namespace Nix;
+
     switch (mouseButton) {
     case Button1:
         return MouseEvent::LeftButton;

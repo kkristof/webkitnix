@@ -2,11 +2,11 @@
 #define LinuxWindow_h
 
 #include "XlibEventSource.h"
-#include <EGL/egl.h>
-#include <GL/gl.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <utility>
+
+void fatalError(const char* message);
 
 class LinuxWindowClient {
 public:
@@ -36,10 +36,16 @@ public:
     Display* display() const { return m_display; }
 
 private:
+    struct GLContextData;
+
+    VisualID setupXVisualID();
+    void createGLContext();
+    void destroyGLContext();
+
     // XlibEventSource::Client.
     virtual void handleXEvent(const XEvent&);
 
-    Window createXWindow(EGLint visualID);
+    Window createXWindow(VisualID visualID);
     void updateSizeIfNeeded(int width, int height);
 
     LinuxWindowClient* m_client;
@@ -49,9 +55,7 @@ private:
     Window m_rootWindow;
     Window m_window;
 
-    EGLDisplay m_eglDisplay;
-    EGLSurface m_surface;
-    EGLContext m_context;
+    GLContextData* m_glContextData;
 
     int m_width;
     int m_height;
