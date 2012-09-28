@@ -56,6 +56,9 @@ public:
     virtual int visibleContentWidth() const = 0;
     virtual int visibleContentHeight() const = 0;
 
+    virtual void setOpacity(double) = 0;
+    virtual double opacity() const = 0;
+
     virtual void paintToCurrentGLContext() = 0;
 
     virtual WKPageRef pageRef() = 0;

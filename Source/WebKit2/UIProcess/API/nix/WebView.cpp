@@ -70,6 +70,7 @@ public:
         , m_visible(true)
         , m_active(true)
         , m_scale(1.0)
+        , m_opacity(1.0)
     {
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
     }
@@ -107,6 +108,10 @@ public:
 
     virtual int visibleContentWidth() const { return m_size.width() / m_scale; }
     virtual int visibleContentHeight() const { return m_size.height() / m_scale; }
+
+
+    virtual void setOpacity(double opacity) { m_opacity = opacity < 0.0 ? 0.0 : opacity > 1.0 ? 1.0 : opacity; }
+    virtual double opacity() const { return m_opacity; }
 
     virtual void paintToCurrentGLContext();
 
@@ -206,6 +211,7 @@ private:
     IntPoint m_lastCursorPosition;
     IntPoint m_scrollPosition;
     double m_scale;
+    double m_opacity;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -476,7 +482,7 @@ void WebViewImpl::paintToCurrentGLContext()
     cairo_matrix_multiply(&transform, &transform, &viewTransform);
 
     FloatRect rect(x, y, width, height);
-    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), 1.0, rect);
+    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
 }
 
 void WebViewImpl::processDidCrash()
