@@ -52,7 +52,6 @@ private:
     XlibEventSource* m_eventSource;
 
     Display* m_display;
-    Window m_rootWindow;
     Window m_window;
 
     GLContextData* m_glContextData;

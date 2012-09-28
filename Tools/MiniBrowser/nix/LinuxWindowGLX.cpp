@@ -11,8 +11,6 @@ VisualID LinuxWindow::setupXVisualID()
 {
     m_glContextData = new GLContextData;
 
-    m_rootWindow = DefaultRootWindow(m_display);
-
     GLint attributes[] = {
         GLX_RGBA,
         GLX_DEPTH_SIZE, 24,
