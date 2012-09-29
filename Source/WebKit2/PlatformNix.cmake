@@ -31,6 +31,7 @@ LIST(APPEND WebKit2_SOURCES
 
     UIProcess/nix/TextCheckerNix.cpp
     UIProcess/nix/WebContextNix.cpp
+    UIProcess/nix/WebFullScreenManagerProxyNix.cpp
     UIProcess/nix/WebInspectorProxyNix.cpp
     UIProcess/nix/WebPageProxyNix.cpp
     UIProcess/nix/WebPreferencesNix.cpp

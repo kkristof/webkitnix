@@ -31,6 +31,9 @@
 #include "Connection.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
+#if PLATFORM(NIX)
+#include <WebView.h>
+#endif
 
 namespace CoreIPC {
 class ArgumentDecoder;
@@ -63,6 +66,8 @@ typedef QQuickWebView PlatformWebView;
 typedef WebKitWebViewBase PlatformWebView;
 #elif PLATFORM(EFL)
 typedef Evas_Object PlatformWebView;
+#elif PLATFORM(NIX)
+typedef Nix::WebView PlatformWebView;
 #endif
 
 class WebPageProxy;
