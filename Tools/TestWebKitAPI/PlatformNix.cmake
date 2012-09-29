@@ -88,3 +88,38 @@ SET(test_webkit2_api_fail_BINARIES
 # Flaky test, fails on Release but passes on Debug:
 #
 #   UserMessage
+
+
+# WebKitNix API tests
+ADD_LIBRARY(TestWebKitNixAPIBase
+    ${test_main_SOURCES}
+    ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
+    ${TESTWEBKITAPI_DIR}/JavaScriptTest.cpp
+    ${TESTWEBKITAPI_DIR}/PlatformUtilities.cpp
+    ${TESTWEBKITAPI_DIR}/TestsController.cpp
+)
+
+ADD_DEPENDENCIES(TestWebKitNixAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersForTestWebKitAPI_NAME} ${ForwardingNetworkHeadersForTestWebKitAPI_NAME})
+
+SET(test_webkitnix_api_BINARIES
+    WebViewPaintToCurrentGLContext
+)
+
+INCLUDE_DIRECTORIES(
+    ${TESTWEBKITAPI_DIR}/nix
+)
+
+SET(test_webkitnix_api_LIBRARIES
+    TestWebKitNixAPIBase
+    ${WTF_LIBRARY_NAME}
+    ${JavaScriptCore_LIBRARY_NAME}
+    ${WebKit2_LIBRARY_NAME}
+    gtest
+)
+
+FOREACH(testName ${test_webkitnix_api_BINARIES})
+    ADD_EXECUTABLE(test_webkitnix_api_${testName} ${TESTWEBKITAPI_DIR}/Tests/nix/${testName}.cpp)
+    ADD_TEST(test_webkitnix_api_${testName} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_webkitnix_api_${testName})
+    SET_TESTS_PROPERTIES(test_webkitnix_api_${testName} PROPERTIES TIMEOUT 60)
+    TARGET_LINK_LIBRARIES(test_webkitnix_api_${testName} ${test_webkitnix_api_LIBRARIES})
+ENDFOREACH()
