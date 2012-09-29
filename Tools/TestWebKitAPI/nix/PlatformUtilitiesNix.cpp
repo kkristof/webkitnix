@@ -29,8 +29,31 @@
 
 #include <glib.h>
 
+static GMainLoop* mainLoop = 0;
+
 namespace TestWebKitAPI {
 namespace Util {
+
+static gboolean checkTestFinished(gpointer userData)
+{
+    bool* done = static_cast<bool*>(userData);
+
+    if (*done)
+        g_main_loop_quit(mainLoop);
+
+    return !*done;
+}
+
+void run(bool* done)
+{
+    ASSERT(!mainLoop);
+    mainLoop = g_main_loop_new(0, false);
+
+    g_idle_add(checkTestFinished, done);
+    g_main_loop_run(mainLoop);
+    g_main_loop_unref(mainLoop);
+    mainLoop = 0;
+}
 
 void sleep(double seconds)
 {
@@ -54,12 +77,6 @@ WKStringRef createInjectedBundlePath()
 WKURLRef URLForNonExistentResource()
 {
     return WKURLCreateWithUTF8CString("file:///does-not-exist.html");
-}
-
-void run(bool* done)
-{
-    while (!*done)
-        g_main_context_iteration(0, true);
 }
 
 } // namespace Util
