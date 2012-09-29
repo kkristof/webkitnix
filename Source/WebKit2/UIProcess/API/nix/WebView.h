@@ -44,6 +44,12 @@ public:
     virtual bool isActive() const = 0;
     virtual void setActive(bool) = 0;
 
+    virtual void setTransparentBackground(bool) = 0;
+    virtual bool transparentBackground() const = 0;
+
+    virtual void setDrawBackground(bool) = 0;
+    virtual bool drawBackground() const = 0;
+
     virtual void paintToCurrentGLContext() = 0;
 
     virtual WKPageRef pageRef() = 0;
