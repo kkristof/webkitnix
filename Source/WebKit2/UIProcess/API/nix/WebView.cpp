@@ -66,6 +66,11 @@ public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
         : m_client(client)
         , m_webPageProxy(context->createWebPage(this, pageGroup))
+        , m_focused(true)
+        , m_visible(true)
+        , m_active(true)
+        , m_scale(1.0)
+        , m_opacity(1.0)
     {
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
     }
@@ -97,6 +102,16 @@ public:
 
     virtual void setDrawBackground(bool);
     virtual bool drawBackground() const;
+
+    virtual void setScale(double);
+    virtual double scale() const { return m_scale; }
+
+    virtual int visibleContentWidth() const { return m_size.width() / m_scale; }
+    virtual int visibleContentHeight() const { return m_size.height() / m_scale; }
+
+
+    virtual void setOpacity(double opacity) { m_opacity = opacity < 0.0 ? 0.0 : opacity > 1.0 ? 1.0 : opacity; }
+    virtual double opacity() const { return m_opacity; }
 
     virtual void paintToCurrentGLContext();
 
@@ -195,6 +210,8 @@ private:
     IntSize m_size;
     IntPoint m_lastCursorPosition;
     IntPoint m_scrollPosition;
+    double m_scale;
+    double m_opacity;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -228,6 +245,12 @@ bool WebViewImpl::drawBackground() const
     return m_webPageProxy->drawsBackground();
 }
 
+void WebViewImpl::setScale(double scale)
+{
+    m_scale = scale;
+    setSize(m_size.width(), m_size.height());
+}
+
 int WebViewImpl::width() const
 {
     return m_size.width();
@@ -241,15 +264,16 @@ int WebViewImpl::height() const
 void WebViewImpl::setSize(int width, int height)
 {
     m_size = IntSize(width, height);
-    m_webPageProxy->setViewportSize(m_size);
+
+    IntSize visibleSize = IntSize(visibleContentWidth(), visibleContentHeight());
+    m_webPageProxy->setViewportSize(visibleSize);
 
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
         return;
 
-    drawingArea->setSize(m_size, IntSize());
-    const float scale = 1.0;
-    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, m_size), scale, FloatPoint());
+    drawingArea->setSize(visibleSize, IntSize());
+    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, visibleSize), m_scale, FloatPoint());
 }
 
 void WebViewImpl::setScrollPosition(int x, int y)
@@ -262,8 +286,7 @@ void WebViewImpl::setScrollPosition(int x, int y)
     if (!drawingArea)
         return;
 
-    const float scale = 1.0;
-    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, m_size), scale, FloatPoint());
+    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, IntSize(visibleContentWidth(), visibleContentHeight())), m_scale, FloatPoint());
 }
 
 bool WebViewImpl::isFocused() const
@@ -451,11 +474,15 @@ void WebViewImpl::paintToCurrentGLContext()
     cairo_matrix_t scrollTransform;
     cairo_matrix_init_translate(&scrollTransform, -m_scrollPosition.x(), -m_scrollPosition.y());
 
+    cairo_matrix_t scaleTransform;
+    cairo_matrix_init_scale(&scaleTransform, m_scale, m_scale);
+
     cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &scrollTransform, &viewTransform);
+    cairo_matrix_multiply(&transform, &scrollTransform, &scaleTransform);
+    cairo_matrix_multiply(&transform, &transform, &viewTransform);
 
     FloatRect rect(x, y, width, height);
-    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), 1.0, rect);
+    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
 }
 
 void WebViewImpl::processDidCrash()
@@ -465,7 +492,7 @@ void WebViewImpl::processDidCrash()
 
 void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 {
-    setScrollPosition(point.x(), point.y());
+//    setScrollPosition(point.x(), point.y());
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
@@ -479,8 +506,12 @@ void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
     cairo_matrix_t invertedScrollTransform;
     cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
 
+    cairo_matrix_t invertedScaleTransform;
+    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / m_scale, 1.0 / m_scale);
+
     cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScrollTransform);
+    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScaleTransform);
+    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
 
     cairo_matrix_transform_point(&transform, &x, &y);
 }
