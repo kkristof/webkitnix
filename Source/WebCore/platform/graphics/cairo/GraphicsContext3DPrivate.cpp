@@ -60,7 +60,7 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
     case GraphicsContext3D::RenderToCurrentGLContext:
         // TODO: Move these *::createFromCurrentGLContext to GLContext and remove this ifdef
         //       when the Nix port goes upstream.
-#ifdef PLATFORM(NIX)
+#if PLATFORM(NIX)
     #if USE(EGL)
         m_glContext = GLContextEGL::createFromCurrentGLContext();
     #else

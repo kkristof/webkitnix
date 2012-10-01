@@ -238,7 +238,9 @@ PassOwnPtr<GLContextGLX> GLContextGLX::createFromCurrentGLContext()
     GLXContext context = glXGetCurrentContext();
     if (!context)
         fprintf(stderr, "Warning: No GLX context found!\n");
-    return adoptPtr(new GLContextGLX(context));
+    GLContextGLX* glxWrapper = new GLContextGLX(context);
+    glxWrapper->m_ownsContext = false;
+    return adoptPtr(glxWrapper);
 }
 
 GLContextGLX::GLContextGLX(GLXContext context)
@@ -247,6 +249,7 @@ GLContextGLX::GLContextGLX(GLXContext context)
     , m_pbuffer(0)
     , m_pixmap(0)
     , m_glxPixmap(0)
+    , m_ownsContext(true)
 {
     addActiveContext(this);
 }
@@ -257,13 +260,14 @@ GLContextGLX::GLContextGLX(GLXContext context, Pixmap pixmap, GLXPixmap glxPixma
     , m_pbuffer(0)
     , m_pixmap(pixmap)
     , m_glxPixmap(glxPixmap)
+    , m_ownsContext(true)
 {
     addActiveContext(this);
 }
 
 GLContextGLX::~GLContextGLX()
 {
-    if (m_context) {
+    if (m_context && m_ownsContext) {
         // This may be necessary to prevent crashes with NVidia's closed source drivers. Originally
         // from Mozilla's 3D canvas implementation at: http://bitbucket.org/ilmari/canvas3d/
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

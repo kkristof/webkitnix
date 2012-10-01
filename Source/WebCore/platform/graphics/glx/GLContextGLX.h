@@ -71,6 +71,7 @@ private:
     GLXPbuffer m_pbuffer;
     Pixmap m_pixmap;
     GLXPixmap m_glxPixmap;
+    bool m_ownsContext;
 };
 
 } // namespace WebCore
