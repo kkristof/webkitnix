@@ -1,6 +1,5 @@
 #include "config.h"
 
-#include "EGLUtilities.h"
 #include "PlatformUtilities.h"
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
