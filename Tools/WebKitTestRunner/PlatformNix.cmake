@@ -52,3 +52,10 @@ LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES
 ADD_DEFINITIONS(-DFONTS_CONF_DIR="${TOOLS_DIR}/DumpRenderTree/gtk/fonts"
                 -DDOWNLOADED_FONTS_DIR="${CMAKE_SOURCE_DIR}/WebKitBuild/Dependencies/Source/webkitgtk-test-fonts-0.0.3"
                 -DTHEME_DIR="${THEME_BINARY_DIR}")
+
+SET(ImageDiff_SOURCES
+    ${WEBKIT_TESTRUNNER_DIR}/nix/ImageDiff.cpp
+)
+ADD_EXECUTABLE(ImageDiff ${ImageDiff_SOURCES})
+TARGET_LINK_LIBRARIES(ImageDiff ${PNG_LIBRARY})
+SET_TARGET_PROPERTIES(ImageDiff PROPERTIES FOLDER "Tools")
