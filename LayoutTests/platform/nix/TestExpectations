@@ -299,6 +299,16 @@ fast/scrolling/scrollbar-tickmarks-hittest.html [ Skip ]
 fast/workers/shared-worker-load-error.html [ Skip ]
 fast/xsl/xslt-mismatched-tags-in-xslt.xml
 
+fullscreen/full-screen-iframe-allowed.html [ Skip ]
+fullscreen/full-screen-iframe-legacy.html [ Skip ]
+fullscreen/full-screen-placeholder.html [ Skip ]
+fullscreen/full-screen-render-inline.html [ Skip ]
+fullscreen/parent-flow-inline-with-block-child.html [ Skip ]
+fullscreen/video-controls-drag.html [ Skip ]
+fullscreen/video-controls-override.html [ Skip ]
+fullscreen/video-controls-timeline.html [ Skip ]
+fullscreen/video-specified-size.html [ Skip ]
+
 loader/go-back-to-different-window-size.html [ Skip ]
 printing/iframe-print.html [ Skip ]
 printing/page-count-percentage-height.html [ Skip ]

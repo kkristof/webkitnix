@@ -32,7 +32,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #if PLATFORM(NIX)
-#include <WebView.h>
+#include <nix/WebView.h>
 #endif
 
 namespace CoreIPC {
@@ -54,7 +54,7 @@ class QQuickWebView;
 #endif
 
 namespace WebKit {
-    
+
 #if PLATFORM(MAC)
 typedef WKView PlatformWebView;
 #elif PLATFORM(WIN)
