@@ -43,6 +43,10 @@ public:
     explicit NativeWebTouchEvent(const QTouchEvent*, const QTransform& fromItemTransform);
 #elif PLATFORM(EFL)
     NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const Evas_Point*, double timestamp);
+#elif PLATFORM(NIX)
+    NativeWebTouchEvent(const WebTouchEvent& event)
+        : WebTouchEvent(event)
+    { }
 #endif
 
 #if PLATFORM(QT)

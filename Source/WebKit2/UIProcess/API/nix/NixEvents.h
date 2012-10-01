@@ -2,6 +2,7 @@
 #define NixEvents_h
 
 #include <WebKit2/WKBase.h>
+#include <vector>
 
 namespace Nix {
 
@@ -539,6 +540,32 @@ struct WK_EXPORT KeyEvent : public InputEvent {
     // isKeypad is needed to distinguish on WebKit some keys (e.g. KEY_9 becomes VK_NUMPAD9).
     bool isKeypad;
     KeyEvent() {}
+};
+
+
+struct WK_EXPORT TouchPoint {
+    enum TouchState {
+        TouchReleased,
+        TouchPressed,
+        TouchMoved,
+        TouchStationary,
+        TouchCancelled
+    };
+
+    TouchState state;
+    int x;
+    int y;
+    int globalX;
+    int globalY;
+    int verticalRadius;
+    int horizontalRadius;
+    float rotationAngle;
+    float pressure;
+    unsigned id;
+};
+
+struct WK_EXPORT TouchEvent : public InputEvent {
+    std::vector<TouchPoint> touchPoints;
 };
 
 }

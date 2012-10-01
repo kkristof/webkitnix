@@ -201,6 +201,7 @@ private:
     void sendMouseEvent(const Nix::MouseEvent&);
     void sendWheelEvent(const Nix::WheelEvent&);
     void sendKeyEvent(const Nix::KeyEvent&);
+    void sendTouchEvent(const Nix::TouchEvent& event);
 
     WebViewClient* m_client;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
@@ -352,6 +353,14 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
         return WebEvent::KeyDown;
     case Nix::InputEvent::KeyUp:
         return WebEvent::KeyUp;
+    case Nix::InputEvent::TouchStart:
+        return WebEvent::TouchStart;
+    case Nix::InputEvent::TouchMove:
+        return WebEvent::TouchMove;
+    case Nix::InputEvent::TouchEnd:
+        return WebEvent::TouchEnd;
+    case Nix::InputEvent::TouchCancel:
+        return WebEvent::TouchCancel;
     default:
         notImplemented();
     }
@@ -413,9 +422,28 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
         case InputEvent::TouchMove:
         case InputEvent::TouchEnd:
         case InputEvent::TouchCancel:
-            notImplemented();
+            sendTouchEvent(static_cast<const Nix::TouchEvent&>(event));
             break;
     }
+}
+
+static WebPlatformTouchPoint::TouchPointState convertToWebTouchState(const Nix::TouchPoint::TouchState& state)
+{
+    switch (state) {
+    case Nix::TouchPoint::TouchReleased:
+        return WebPlatformTouchPoint::TouchReleased;
+    case Nix::TouchPoint::TouchPressed:
+        return WebPlatformTouchPoint::TouchPressed;
+    case Nix::TouchPoint::TouchMoved:
+        return WebPlatformTouchPoint::TouchMoved;
+    case Nix::TouchPoint::TouchStationary:
+        return WebPlatformTouchPoint::TouchStationary;
+    case Nix::TouchPoint::TouchCancelled:
+        return WebPlatformTouchPoint::TouchCancelled;
+    default:
+        notImplemented();
+    }
+    return WebPlatformTouchPoint::TouchCancelled;
 }
 
 void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
@@ -438,6 +466,31 @@ void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 
     WebMouseEvent webEvent(type, button, position, globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
     m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(webEvent));
+}
+
+void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
+{
+    WebEvent::Type type = convertToWebEventType(event.type);
+    Vector<WebPlatformTouchPoint> touchPoints;
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
+
+    for (size_t i = 0; i < event.touchPoints.size(); ++i) {
+        const Nix::TouchPoint& touch = event.touchPoints[i];
+        uint32_t id = static_cast<uint32_t>(touch.id);
+        WebPlatformTouchPoint::TouchPointState state = convertToWebTouchState(touch.state);
+        IntPoint screenPosition = IntPoint(touch.globalX, touch.globalY);
+        IntPoint position = IntPoint(touch.x, touch.y);
+        IntSize radius = IntSize(touch.horizontalRadius, touch.verticalRadius);
+        float rotationAngle = touch.rotationAngle;
+        float force = touch.pressure;
+
+        WebPlatformTouchPoint webTouchPoint = WebPlatformTouchPoint(id, state, screenPosition, position, radius, rotationAngle, force);
+        touchPoints.append(webTouchPoint);
+    }
+
+    WebTouchEvent webEvent(type, touchPoints, modifiers, timestamp);
+    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(webEvent));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
