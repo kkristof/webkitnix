@@ -7,33 +7,52 @@
 #include <WebKit2/WKRetainPtr.h>
 #include <WebView.h>
 
-static bool didFinishLoad = false;
+namespace TestWebKitAPI {
+
+static bool didFinishLoadAndRepaint = false;
+static Nix::WebView* webView = 0;
+
+static void didForceRepaint(WKErrorRef, void*)
+{
+    didFinishLoadAndRepaint = true;
+}
 
 static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const void*)
 {
-    didFinishLoad = true;
+    WKPageForceRepaint(page, 0, didForceRepaint);
 }
 
 namespace {
 
-class EmptyWebViewClient : public Nix::WebViewClient {
+class TestWebViewClient : public Nix::WebViewClient {
 public:
-    void viewNeedsDisplay(int, int, int, int) { }
+    void viewNeedsDisplay(int, int, int, int) {
+        // FIXME: We need to paint to consume the frame, I'm not sure
+        // if there's other way to force it.
+        glClear(GL_COLOR_BUFFER_BIT);
+        webView->paintToCurrentGLContext();
+    }
     void webProcessCrashed(WKStringRef) {}
     void webProcessRelaunched() {}
 };
 
-}
+} // namespace
 
-namespace TestWebKitAPI {
+static void waitForLoadURLAndRepaint(const char* resource)
+{
+    WKRetainPtr<WKURLRef> urlRef = adoptWK(Util::createURLForResource(resource, "html"));
+    WKPageLoadURL(webView->pageRef(), urlRef.get());
+    Util::run(&didFinishLoadAndRepaint);
+    didFinishLoadAndRepaint = false;
+}
 
 TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     WKRetainPtr<WKPageGroupRef> pageGroup = adoptWK(WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("")));
 
-    EmptyWebViewClient client;
-    Nix::WebView* webView = Nix::WebView::create(context.get(), pageGroup.get(), &client);
+    TestWebViewClient client;
+    webView = Nix::WebView::create(context.get(), pageGroup.get(), &client);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
 
@@ -63,11 +82,8 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     EXPECT_EQ(0xFF, clearedSample[3]);
 
     glClear(GL_COLOR_BUFFER_BIT);
-    WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
-    WKPageLoadURL(webView->pageRef(), redUrl.get());
-    // FIXME: We need to use WKPageForceRepaint() here.
-    Util::run(&didFinishLoad);
-    didFinishLoad = false;
+    waitForLoadURLAndRepaint("../nix/red-background");
+    webView->paintToCurrentGLContext();
 
     unsigned char redSample[4];
     glReadPixels(0, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &redSample);
@@ -75,6 +91,17 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     EXPECT_EQ(0x00, redSample[1]);
     EXPECT_EQ(0x00, redSample[2]);
     EXPECT_EQ(0xFF, redSample[3]);
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    waitForLoadURLAndRepaint("../nix/green-background");
+    webView->paintToCurrentGLContext();
+
+    unsigned char greenSample[4];
+    glReadPixels(0, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &greenSample);
+    EXPECT_EQ(0x00, greenSample[0]);
+    EXPECT_EQ(0xFF, greenSample[1]);
+    EXPECT_EQ(0x00, greenSample[2]);
+    EXPECT_EQ(0xFF, greenSample[3]);
 }
 
 } // TestWebKitAPI
