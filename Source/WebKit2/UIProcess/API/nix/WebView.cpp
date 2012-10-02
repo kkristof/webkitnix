@@ -202,6 +202,7 @@ private:
     void sendWheelEvent(const Nix::WheelEvent&);
     void sendKeyEvent(const Nix::KeyEvent&);
     void sendTouchEvent(const Nix::TouchEvent& event);
+    void sendGestureEvent(const Nix::GestureEvent& event);
 
     WebViewClient* m_client;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
@@ -361,6 +362,8 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
         return WebEvent::TouchEnd;
     case Nix::InputEvent::TouchCancel:
         return WebEvent::TouchCancel;
+    case Nix::InputEvent::GestureSingleTap:
+        return WebEvent::GestureSingleTap;
     default:
         notImplemented();
     }
@@ -424,6 +427,11 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
         case InputEvent::TouchCancel:
             sendTouchEvent(static_cast<const Nix::TouchEvent&>(event));
             break;
+        case InputEvent::GestureSingleTap:
+            sendGestureEvent(static_cast<const Nix::GestureEvent&>(event));
+            break;
+        default:
+            notImplemented();
     }
 }
 
@@ -1025,6 +1033,24 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
 
     WebKeyboardEvent webEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
     m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(webEvent));
+}
+
+void WebViewImpl::sendGestureEvent(const GestureEvent& event)
+{
+    WebEvent::Type type = convertToWebEventType(event.type);
+    double x = event.x;
+    double y = event.y;
+    transformPointToViewCoordinates(x, y);
+    IntPoint position = IntPoint(x, y);
+    IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
+    IntSize area = IntSize(event.width, event.height);
+    FloatPoint delta = FloatPoint(event.deltaX, event.deltaY);
+
+    WebGestureEvent webEvent(type, position, globalPosition, modifiers, timestamp, area, delta);
+    m_webPageProxy->handleGestureEvent(webEvent);
+
 }
 
 } // namespace Nix

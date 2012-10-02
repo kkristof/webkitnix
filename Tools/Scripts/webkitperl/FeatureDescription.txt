@@ -54,6 +54,7 @@ ftpdir                     ENABLE_FTPDIR                        Toggle FTP Direc
 fullscreen-api             ENABLE_FULLSCREEN_API                Toggle Fullscreen API support
 gamepad                    ENABLE_GAMEPAD                       Toggle Gamepad support
 geolocation                ENABLE_GEOLOCATION                   Toggle Geolocation support
+gesture-events             ENABLE_GESTURE_EVENTS                Toggle Gesture Events support
 glib                       ENABLE_GLIB_SUPPORT                  Toggle Glib support
 high-dpi-canvas            ENABLE_HIGH_DPI_CANVAS               Toggle High DPI Canvas support
 icon-database              ENABLE_ICONDATABASE                  Toggle Icondatabase support

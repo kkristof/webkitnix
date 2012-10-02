@@ -17,7 +17,8 @@ struct WK_EXPORT InputEvent {
         TouchStart,
         TouchMove,
         TouchEnd,
-        TouchCancel
+        TouchCancel,
+        GestureSingleTap
     };
 
     enum Modifiers {
@@ -566,6 +567,17 @@ struct WK_EXPORT TouchPoint {
 
 struct WK_EXPORT TouchEvent : public InputEvent {
     std::vector<TouchPoint> touchPoints;
+};
+
+struct WK_EXPORT GestureEvent : public InputEvent {
+    int x;
+    int y;
+    int globalX;
+    int globalY;
+    int width;
+    int height;
+    float deltaX;
+    float deltaY;
 };
 
 }
