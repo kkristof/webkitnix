@@ -1,4 +1,5 @@
 #include "LinuxWindow.h"
+#include "TouchMocker.h"
 #include "XlibEventUtils.h"
 #include <GL/gl.h>
 #include <WebKit2/WKPreferences.h>
@@ -9,6 +10,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <cstdio>
+#include <cstring>
 #include <glib.h>
 
 #include <wtf/Platform.h>
@@ -36,6 +38,8 @@ public:
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
 
+    void setTouchEmulationMode(bool status);
+
 private:
     void handleWheelEvent(const XButtonPressedEvent&);
     void updateClickCount(const XButtonPressedEvent&);
@@ -52,6 +56,7 @@ private:
     int m_lastClickY;
     int m_lastClickButton;
     unsigned m_clickCount;
+    TouchMocker* m_touchMocker;
 };
 
 MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
@@ -65,6 +70,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     , m_lastClickButton(0)
     , m_lastClickX(0)
     , m_lastClickY(0)
+    , m_touchMocker(0)
 {
     WKPreferencesRef preferences = WKPageGroupGetPreferences(m_pageGroup.get());
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
@@ -88,6 +94,20 @@ MiniBrowser::~MiniBrowser()
 {
     delete m_webView;
     delete m_window;
+    if (m_touchMocker)
+        delete m_touchMocker;
+}
+
+void MiniBrowser::setTouchEmulationMode(bool status)
+{
+    if (bool(m_touchMocker) == status)
+        return;
+
+    if (m_touchMocker) {
+        delete m_touchMocker;
+        m_touchMocker = 0;
+    } else
+        m_touchMocker = new TouchMocker(m_webView);
 }
 
 enum NavigationCommand {
@@ -179,6 +199,8 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     if (checkNavigationCommand(symbol, event.state) != NoNavigation)
         return;
     Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
+    if (m_touchMocker && m_touchMocker->handleKeyRelease(ev))
+        return;
     m_webView->sendEvent(ev);
 }
 
@@ -240,6 +262,8 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.clickCount = m_clickCount;
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    if (m_touchMocker && m_touchMocker->handleMousePress(ev))
+        return;
     m_webView->sendEvent(ev);
 }
 
@@ -250,14 +274,16 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
 
     Nix::MouseEvent ev;
     ev.type = Nix::InputEvent::MouseUp;
-    ev.button = convertXEventButtonToNativeMouseButton(event.button),
+    ev.button = convertXEventButtonToNativeMouseButton(event.button);
     ev.x = event.x;
     ev.y = event.y;
     ev.globalX = event.x_root;
     ev.globalY = event.y_root;
     ev.clickCount = 0;
-    ev.modifiers = 0;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
+    if (m_touchMocker && m_touchMocker->handleMouseRelease(ev))
+        return;
     m_webView->sendEvent(ev);
 }
 
@@ -276,6 +302,8 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.clickCount = 0;
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    if (m_touchMocker && m_touchMocker->handleMouseMove(ev))
+        return;
     m_webView->sendEvent(ev);
 }
 
@@ -331,8 +359,24 @@ int main(int argc, char* argv[])
 
     MiniBrowser* browser = new MiniBrowser(mainLoop);
 
-    const char* url = argc > 1 ? argv[1] : "http://www.google.com";
+    const char* url = 0;
+    bool shouldEmulateTouch = false;
+
+    for (int i = 1; i < argc; ++i) {
+        if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--touch-emulation-mode"))
+            shouldEmulateTouch = true;
+        else
+            url = argv[i];
+    }
+    if (!url)
+        url = "http://www.google.com";
+
     WKPageLoadURL(browser->pageRef(), WKURLCreateWithUTF8CString(url));
+    if (shouldEmulateTouch) {
+        printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
+        browser->setTouchEmulationMode(true);
+    }
+
 
     g_main_loop_run(mainLoop);
 
