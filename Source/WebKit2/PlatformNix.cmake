@@ -104,6 +104,17 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/"
 )
 
+IF (ENABLE_INSPECTOR_SERVER)
+    LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
+       "${WEBKIT2_DIR}/UIProcess/InspectorServer"
+    )
+
+    LIST(APPEND WebKit2_SOURCES
+        UIProcess/InspectorServer/nix/WebSocketServerNix.cpp
+        UIProcess/InspectorServer/nix/WebInspectorServerNix.cpp
+    )
+ENDIF ()
+
 IF (WTF_USE_3D_GRAPHICS)
     LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
         "${THIRDPARTY_DIR}/ANGLE/include/GLSLANG"
@@ -313,6 +324,7 @@ IF (ENABLE_INSPECTOR)
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${WEBCORE_DIR}/inspector/front-end ${WK2_WEB_INSPECTOR_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy ${WEBCORE_DIR}/English.lproj/localizedStrings.js ${WK2_WEB_INSPECTOR_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy ${DERIVED_SOURCES_WEBCORE_DIR}/InspectorBackendCommands.js ${WK2_WEB_INSPECTOR_DIR}/InspectorBackendCommands.js
+        COMMAND ${CMAKE_COMMAND} -E copy ${WEBKIT2_DIR}/UIProcess/InspectorServer/front-end/inspectorPageIndex.html ${WK2_WEB_INSPECTOR_DIR}
         DEPENDS ${WebCore_LIBRARY_NAME}
     )
     INSTALL(DIRECTORY ${WK2_WEB_INSPECTOR_DIR}
@@ -323,3 +335,4 @@ IF (ENABLE_INSPECTOR)
                        PATTERN "*.gif"
                        PATTERN "*.png")
 ENDIF ()
+

@@ -32,7 +32,40 @@
 #include <WebCore/NotImplemented.h>
 #include <wtf/gobject/GOwnPtr.h>
 
+#if ENABLE(INSPECTOR_SERVER)
+#include "WebInspectorServer.h"
+#endif
+
 namespace WebKit {
+
+static void initInspectorServer()
+{
+#if ENABLE(INSPECTOR_SERVER)
+    static bool initialized = false;
+    if (initialized)
+        return;
+
+    initialized = true;
+    String envStr(g_getenv("WEBKIT_INSPECTOR_SERVER"));
+
+    if (!envStr.isNull()) {
+        String bindAddress = "127.0.0.1";
+        unsigned short port = 25555;
+
+        Vector<String> result;
+        envStr.split(":", result);
+
+        if (result.size() == 2) {
+            bindAddress = result[0];
+            bool ok = false;
+            port = result[1].toInt(&ok);
+            if (!ok)
+                port = 2999;
+        }
+        WebInspectorServer::shared().listen(bindAddress, port);
+    }
+#endif
+}
 
 String WebContext::applicationCacheDirectory()
 {
@@ -42,7 +75,7 @@ String WebContext::applicationCacheDirectory()
 
 void WebContext::platformInitializeWebProcess(WebProcessCreationParameters&)
 {
-    notImplemented();
+    initInspectorServer();
 }
 
 void WebContext::platformInvalidateContext()

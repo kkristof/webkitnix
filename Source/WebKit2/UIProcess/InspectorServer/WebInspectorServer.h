@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Apple Inc. All Rights Reserved.
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -61,7 +62,7 @@ private:
     virtual void didCloseWebSocketConnection(WebSocketServerConnection*);
 
     bool platformResourceForPath(const String& path, Vector<char>& data, String& contentType);
-#if (PLATFORM(QT) || PLATFORM(GTK))
+#if (PLATFORM(QT) || PLATFORM(GTK)) || PLATFORM(NIX)
     void buildPageList(Vector<char>& data, String& contentType);
 #endif
 

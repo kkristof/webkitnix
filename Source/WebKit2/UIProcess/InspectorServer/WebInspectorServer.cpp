@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Apple Inc. All Rights Reserved.
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -94,7 +95,7 @@ void WebInspectorServer::unregisterPage(int pageId)
         closeConnection(0, connection);
 }
 
-#if !PLATFORM(QT)
+#if !PLATFORM(QT) && !PLATFORM(NIX)
 String WebInspectorServer::inspectorUrlForPageID(int)
 {
     return String();

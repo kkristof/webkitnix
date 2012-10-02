@@ -89,6 +89,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
     WKPreferencesRef preferences = WKPageGroupGetPreferences(m_pageGroup.get());
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
     WKPreferencesSetFrameFlatteningEnabled(preferences, true);
+    WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
 
     m_webView = Nix::WebView::create(m_context.get(), m_pageGroup.get(), this);
     m_webView->initialize();

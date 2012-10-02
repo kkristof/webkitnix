@@ -59,6 +59,7 @@ SET(WebKit2_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/dom"
     "${WEBCORE_DIR}/dom/default"
     "${WEBCORE_DIR}/editing"
+    "${WEBCORE_DIR}/fileapi"
     "${WEBCORE_DIR}/history"
     "${WEBCORE_DIR}/html"
     "${WEBCORE_DIR}/html/shadow"

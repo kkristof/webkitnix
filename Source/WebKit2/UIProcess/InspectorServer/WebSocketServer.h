@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Apple Inc. All Rights Reserved.
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,7 +38,7 @@
 namespace WebKit {
 class QtTcpServerHandler;
 }
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX) //FIXME: should be USE(SOUP) instead
 #include <gio/gio.h>
 #include <wtf/gobject/GRefPtr.h>
 #endif
@@ -81,7 +82,7 @@ private:
     unsigned short m_port;
 #if PLATFORM(QT)
     OwnPtr<QtTcpServerHandler> m_tcpServerHandler;
-#elif PLATFORM(GTK)
+#elif PLATFORM(GTK) || PLATFORM(NIX)
     GRefPtr<GSocketService> m_socketService;
 #endif
 

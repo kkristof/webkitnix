@@ -69,6 +69,7 @@ input-type-month           ENABLE_INPUT_TYPE_MONTH              Toggle Input Typ
 input-type-time            ENABLE_INPUT_TYPE_TIME               Toggle Input Type Time support
 input-type-week            ENABLE_INPUT_TYPE_WEEK               Toggle Input Type Week support
 inspector                  ENABLE_INSPECTOR                     Toggle Inspector support
+inspector-server           ENABLE_INSPECTOR_SERVER              Toggle Remote Inspector Server support
 javascript-debugger        ENABLE_JAVASCRIPT_DEBUGGER           Toggle JavaScript Debugger support
 javascript-jit             ENABLE_JIT                           Toggle JustInTime javascript support
 legacy-notifications       ENABLE_LEGACY_NOTIFICATIONS          Toggle Legacy Notifications support
