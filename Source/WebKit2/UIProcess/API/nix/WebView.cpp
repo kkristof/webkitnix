@@ -194,6 +194,7 @@ public:
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
 
 private:
+    LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
     void transformPointToViewCoordinates(double& x, double& y);
@@ -225,6 +226,7 @@ WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, W
 void WebViewImpl::initialize()
 {
     m_webPageProxy->initializeWebPage();
+    layerTreeRenderer()->setActive(true);
 }
 
 void WebViewImpl::setTransparentBackground(bool value)
@@ -507,21 +509,29 @@ static TransformationMatrix toTransformationMatrix(const cairo_matrix_t& matrix)
     return TransformationMatrix(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
 }
 
-void WebViewImpl::paintToCurrentGLContext()
+LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
-        return;
+        return 0;
 
     LayerTreeCoordinatorProxy* coordinatorProxy = drawingArea->layerTreeCoordinatorProxy();
     if (!coordinatorProxy)
-        return;
+        return 0;
 
     LayerTreeRenderer* renderer = coordinatorProxy->layerTreeRenderer();
     if (!renderer)
+        return 0;
+
+    return renderer;
+}
+
+void WebViewImpl::paintToCurrentGLContext()
+{
+    LayerTreeRenderer* renderer = layerTreeRenderer();
+    if (!renderer)
         return;
 
-    renderer->setActive(true);
     renderer->syncRemoteContent();
 
     cairo_matrix_t viewTransform = m_client->viewToScreenTransform();
