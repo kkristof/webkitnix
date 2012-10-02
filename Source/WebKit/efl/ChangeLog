@@ -1,3 +1,103 @@
+2012-10-02  Krzysztof Czech  <k.czech@samsung.com>
+
+        [EFL][UT] Refactoring an implementation of testing framework for wk1.
+        https://bugs.webkit.org/show_bug.cgi?id=94925
+
+        Reviewed by Gyuyoung Kim.
+
+        The reason of changing, was to adjust current implementation to use gtest features
+        related to cleaning (SetUp, TearDown), cleaning code in terms of useless methods
+        and lastly to make framework easier to use.
+
+        * tests/UnitTestUtils/EWKTestBase.cpp:
+        (EWKUnitTests::EWKTestBase::EWKTestBase):
+        (EWKUnitTests::EWKTestBase::webView): Returns current webview.
+        (EWKUnitTests::EWKTestBase::SetUp):
+        Before test is started, SetUp is called.
+        Used this to initialize test view.
+        (EWKUnitTests::EWKTestBase::onLoadFinished):
+        (EWKUnitTests::EWKTestBase::waitUntilLoadFinished): It waits till test page will be properly loaded.
+        (EWKUnitTests::EWKTestBase::loadUrl): Starts loading test page.
+        * tests/UnitTestUtils/EWKTestBase.h:
+        * tests/UnitTestUtils/EWKTestEnvironment.cpp:
+        Used to have global SetUp and TearDown.
+        Global SetUp starts initialization of webkit wherease
+        global TearDown shuts it down. Generally we would like to have
+        only one initialization of webkit while tests are executed.
+        (EWKUnitTests):
+        (EWKUnitTests::EWKTestEnvironment::EWKTestEnvironment):
+        (EWKUnitTests::EWKTestEnvironment::SetUp): Starts initialization of webkit.
+        (EWKUnitTests::EWKTestEnvironment::TearDown): Shuts down of webkit.
+        * tests/UnitTestUtils/EWKTestEnvironment.h:
+        (EWKUnitTests):
+        (EWKTestEnvironment):
+        (EWKUnitTests::EWKTestEnvironment::useX11Window):
+        * tests/UnitTestUtils/EWKTestView.cpp:
+        (EWKUnitTests::EWKTestView::EWKTestView):
+        (EWKUnitTests::EWKTestView::init): Starts initialization of test view.
+        * tests/UnitTestUtils/EWKTestView.h:
+        (EWKTestView):
+        * tests/test_ewk_view.cpp: adjusted current unit tests to new implementation.
+        (TEST_F):
+        * tests/test_runner.cpp: entry point of all tests.
+        (parseCustomArguments):
+        (main):
+
+2012-10-01  Brady Eidson  <beidson@apple.com>
+
+        Remove the Safari 2 -> Safari 3 icon database import code.
+        https://bugs.webkit.org/show_bug.cgi?id=98113
+
+        Reviewed by Maciej Stachowiak.
+
+        Nuke the performImport() IconDatabaseClient method.
+
+        * WebCoreSupport/IconDatabaseClientEfl.cpp:
+        * WebCoreSupport/IconDatabaseClientEfl.h:
+
+2012-09-28  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        Code inside FrameLoaderClient::canShowMIMEType() implementations can be shared among different WK ports
+        https://bugs.webkit.org/show_bug.cgi?id=97547
+
+        Reviewed by Adam Barth.
+
+        Newly added WebCore::MIMETypeRegistry::canShowMIMEType() function is used
+        inside WebCore::FrameLoaderClientEfl::canShowMIMEType().
+
+        * WebCoreSupport/FrameLoaderClientEfl.cpp:
+        (WebCore::FrameLoaderClientEfl::canShowMIMEType):
+
+2012-09-28  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][DRT] EFL DRT should disable visited links tracking by default
+        https://bugs.webkit.org/show_bug.cgi?id=97881
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added aux DumpRenderTreeSupportEfl::setShouldTrackVisitedLinks() function.
+
+        * WebCoreSupport/DumpRenderTreeSupportEfl.cpp:
+        (DumpRenderTreeSupportEfl::setShouldTrackVisitedLinks):
+        * WebCoreSupport/DumpRenderTreeSupportEfl.h:
+
+2012-09-27  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL] No way to exit video fullscreen mode once entered
+        https://bugs.webkit.org/show_bug.cgi?id=97631
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Fix default theme so that we have 2 fullscreen buttons, one
+        to enter fullscreen mode and another to exit it.
+
+        New icon by Alexander Shalamov.
+
+        * DefaultTheme/widget/mediacontrol/fullscreenbutton/enterfullscreenbutton.png: Added.
+        * DefaultTheme/widget/mediacontrol/fullscreenbutton/exitfullscreenbutton.png: Added.
+        * DefaultTheme/widget/mediacontrol/fullscreenbutton/fullscreen_button.edc:
+        * DefaultTheme/widget/mediacontrol/fullscreenbutton/fullscreenbutton.png: Removed.
+
 2012-09-26  Jinwoo Song  <jinwoo7.song@samsung.com>
 
         [EFL] Fix the typo in the ewk_view_fullscreen_exit()

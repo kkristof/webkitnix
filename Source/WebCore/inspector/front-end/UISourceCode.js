@@ -35,12 +35,14 @@
  * @implements {WebInspector.ContentProvider}
  * @param {string} url
  * @param {WebInspector.ContentProvider} contentProvider
+ * @param {boolean} isEditable
  */
-WebInspector.UISourceCode = function(url, contentProvider)
+WebInspector.UISourceCode = function(url, contentProvider, isEditable)
 {
     this._url = url;
     this._parsedURL = new WebInspector.ParsedURL(url);
     this._contentProvider = contentProvider;
+    this._isEditable = isEditable;
     this.isContentScript = false;
     /**
      * @type Array.<function(?string,boolean,string)>
@@ -201,10 +203,10 @@ WebInspector.UISourceCode.prototype = {
          */
         function callback(content, contentEncoded, mimeType)
         {
-            if (typeof content === "undefined")
+            if (typeof content !== "string")
                 return;
 
-            this._setContent(/** @type {string} */ content);
+            this._setContent(content);
         }
 
         this.requestOriginalContent(callback.bind(this));
@@ -223,10 +225,10 @@ WebInspector.UISourceCode.prototype = {
          */
         function revert(content, contentEncoded, mimeType)
         {
-            if (typeof content === "undefined")
+            if (typeof content !== "string")
                 return;
 
-            this._setContent(/** @type {string} */ content);
+            this._setContent(content);
             this._clearRevisionHistory();
             this.history = [];
             callback(this);
@@ -253,7 +255,7 @@ WebInspector.UISourceCode.prototype = {
      */
     isEditable: function()
     {
-        return false;
+        return this._isEditable;
     },
 
     /**
@@ -348,7 +350,9 @@ WebInspector.UISourceCode.prototype = {
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
-        this._contentProvider.searchInContent(query, caseSensitive, isRegex, callback);
+        var content = this.content();
+        var provider = content ? new WebInspector.StaticContentProvider(this._contentProvider.contentType(), content) : this._contentProvider;
+        provider.searchInContent(query, caseSensitive, isRegex, callback);
     },
 
     /**
@@ -368,8 +372,16 @@ WebInspector.UISourceCode.prototype = {
             callbacks[i](content, contentEncoded, mimeType);
 
         if (this._formatOnLoad) {
+            function formattedCallback()
+            {
+                for (var i = 0; i < this._pendingFormattedCallbacks.length; ++i)
+                    this._pendingFormattedCallbacks[i]();
+                delete this._pendingFormattedCallbacks;
+                
+            }
+
             delete this._formatOnLoad;
-            this.setFormatted(true);
+            this.setFormatted(true, formattedCallback.bind(this));
         }
     },
 
@@ -484,8 +496,10 @@ WebInspector.UISourceCode.prototype = {
     {
         callback = callback || function() {};
         if (!this.contentLoaded()) {
+            if (!this._pendingFormattedCallbacks)
+                this._pendingFormattedCallbacks = [];
+            this._pendingFormattedCallbacks.push(callback);
             this._formatOnLoad = formatted;
-            callback();
             return;
         }
 
@@ -528,7 +542,6 @@ WebInspector.UISourceCode.prototype = {
                 delete this._togglingFormatter;
                 this._formatterMapping = formatterMapping;
                 this.updateLiveLocations();
-                this.formattedChanged();
                 callback();
             }
         }
@@ -551,12 +564,8 @@ WebInspector.UISourceCode.prototype = {
         this._sourceMapping = sourceMapping;
     },
 
-    formattedChanged: function()
-    {
-    }
+    __proto__: WebInspector.Object.prototype
 }
-
-WebInspector.UISourceCode.prototype.__proto__ = WebInspector.Object.prototype;
 
 /**
  * @interface
@@ -567,7 +576,8 @@ WebInspector.UISourceCodeProvider = function()
 
 WebInspector.UISourceCodeProvider.Events = {
     UISourceCodeAdded: "UISourceCodeAdded",
-    UISourceCodeReplaced: "UISourceCodeReplaced",
+    TemporaryUISourceCodeAdded: "TemporaryUISourceCodeAdded",
+    TemporaryUISourceCodeRemoved: "TemporaryUISourceCodeRemoved",
     UISourceCodeRemoved: "UISourceCodeRemoved"
 }
 

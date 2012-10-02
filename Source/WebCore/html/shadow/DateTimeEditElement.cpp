@@ -64,9 +64,12 @@ private:
     virtual void visitLiteral(const String&) OVERRIDE FINAL;
 
     DateTimeEditElement& m_editElement;
-    const DateComponents& m_dateValue;
-    const StepRange& m_stepRange;
+    const DateComponents m_dateValue;
+    const StepRange m_stepRange;
     Localizer& m_localizer;
+    const String m_placeholderForDay;
+    const String m_placeholderForMonth;
+    const String m_placeholderForYear;
 };
 
 DateTimeEditBuilder::DateTimeEditBuilder(DateTimeEditElement& elemnt, const DateTimeEditElement::LayoutParameters& layoutParameters, const DateComponents& dateValue)
@@ -74,6 +77,9 @@ DateTimeEditBuilder::DateTimeEditBuilder(DateTimeEditElement& elemnt, const Date
     , m_dateValue(dateValue)
     , m_stepRange(layoutParameters.stepRange)
     , m_localizer(layoutParameters.localizer)
+    , m_placeholderForDay(layoutParameters.placeholderForDay)
+    , m_placeholderForMonth(layoutParameters.placeholderForMonth)
+    , m_placeholderForYear(layoutParameters.placeholderForYear)
 {
 }
 
@@ -95,6 +101,10 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int)
     Document* const document = m_editElement.document();
 
     switch (fieldType) {
+    case DateTimeFormat::FieldTypeDayOfMonth:
+        m_editElement.addField(DateTimeDayFieldElement::create(document, m_editElement, m_placeholderForDay));
+        return;
+
     case DateTimeFormat::FieldTypeHour11:
         m_editElement.addField(DateTimeHourFieldElement::create(document, m_editElement, 0, 11));
         return;
@@ -118,6 +128,11 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int)
             field->setReadOnly();
         return;
     }
+
+    case DateTimeFormat::FieldTypeMonth:
+        // We always use "MM", two digits month, even if "M", "MMM", "MMMM", or "MMMMM".
+        m_editElement.addField(DateTimeMonthFieldElement::create(document, m_editElement, m_placeholderForMonth));
+        return;
 
     case DateTimeFormat::FieldTypePeriod:
         m_editElement.addField(DateTimeAMPMFieldElement::create(document, m_editElement, m_localizer.timeAMPMLabels()));
@@ -143,6 +158,14 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int)
             field->setReadOnly();
         return;
     }
+
+    case DateTimeFormat::FieldTypeWeekOfYear:
+        m_editElement.addField(DateTimeWeekFieldElement::create(document, m_editElement));
+        return;
+
+    case DateTimeFormat::FieldTypeYear:
+        m_editElement.addField(DateTimeYearFieldElement::create(document, m_editElement, m_placeholderForYear));
+        return;
 
     default:
         return;
@@ -365,6 +388,11 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
     RefPtr<SpinButtonElement> spinButton = SpinButtonElement::create(document(), *this);
     m_spinButton = spinButton.get();
     appendChild(spinButton);
+}
+
+AtomicString DateTimeEditElement::localeIdentifier() const
+{
+    return m_editControlOwner ? m_editControlOwner->localeIdentifier() : nullAtom;
 }
 
 void DateTimeEditElement::readOnlyStateChanged()

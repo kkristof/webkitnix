@@ -51,17 +51,18 @@ public:
     virtual ~LocaleICU();
 
     // For LocalizedDate
-    double parseLocalizedDate(const String&);
-    String formatLocalizedDate(const DateComponents&);
+    virtual double parseDateTime(const String&, DateComponents::Type) OVERRIDE;
+    virtual String formatDateTime(const DateComponents&) OVERRIDE;
 #if ENABLE(CALENDAR_PICKER)
-    String localizedDateFormatText();
+    virtual String dateFormatText() OVERRIDE;
 
-    const Vector<String>& monthLabels();
-    const Vector<String>& weekDayShortLabels();
-    unsigned firstDayOfWeek();
+    virtual const Vector<String>& monthLabels() OVERRIDE;
+    virtual const Vector<String>& weekDayShortLabels() OVERRIDE;
+    virtual unsigned firstDayOfWeek() OVERRIDE;
 #endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+    virtual String dateFormat() OVERRIDE;
     virtual String timeFormat() OVERRIDE;
     virtual String shortTimeFormat() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;

@@ -1647,8 +1647,6 @@
         ['exclude', 'platform/network/ResourceHandle\\.cpp$'],
         ['exclude', 'platform/sql/SQLiteFileSystem\\.cpp$'],
         ['exclude', 'platform/text/LocaleToScriptMappingICU\\.cpp$'],
-        ['exclude', 'platform/text/LocalizedDateNone\\.cpp$'],
-        ['exclude', 'platform/text/LocalizedNumberNone\\.cpp$'],
         ['exclude', 'platform/text/TextEncodingDetectorNone\\.cpp$'],
       ],
       'conditions': [
@@ -1777,16 +1775,11 @@
 
             ['include', 'WebKit/mac/WebCoreSupport/WebSystemInterface\\.mm$'],
 
-            # We use LocalizedDateMac.cpp and LocalizedNumberMac.mm with
-            # LocaleMac.mm instead of LocalizedDateICU.cpp in order to apply
-            # system locales.
+            # We use LocaleMac.mm instead of LocaleICU.cpp in order to
+            # apply system locales.
             ['exclude', 'platform/text/LocaleICU\\.cpp$'],
             ['exclude', 'platform/text/LocaleICU\\.h$'],
-            ['exclude', 'platform/text/LocalizedDateICU\\.cpp$'],
-            ['exclude', 'platform/text/LocalizedNumberICU\\.cpp$'],
             ['include', 'platform/text/mac/LocaleMac\\.mm$'],
-            ['include', 'platform/text/mac/LocalizedDateMac\\.cpp$'],
-            ['include', 'platform/text/mac/LocalizedNumberMac\\.mm$'],
 
             # The Mac uses platform/mac/KillRingMac.mm instead of the dummy
             # implementation.
@@ -1863,12 +1856,8 @@
 
             ['exclude', 'platform/text/LocaleICU\\.cpp$'],
             ['exclude', 'platform/text/LocaleICU\\.h$'],
-            ['exclude', 'platform/text/LocalizedDateICU\.cpp$'],
-            ['exclude', 'platform/text/LocalizedNumberICU\.cpp$'],
-            ['include', 'platform/text/LocalizedDateWin\.cpp$'],
             ['include', 'platform/text/LocaleWin\.cpp$'],
             ['include', 'platform/text/LocaleWin\.h$'],
-            ['include', 'platform/text/win/LocalizedNumberWin\\.cpp$'],
           ],
         },{ # OS!="win"
           'sources/': [
@@ -1949,6 +1938,9 @@
       'type': 'static_library',
       'dependencies': [
         'webcore_prerequisites',
+      ],
+      'defines': [
+        'WEBKIT_IMPLEMENTATION=1',
       ],
       'sources': [
         '<@(webcore_privateheader_files)',

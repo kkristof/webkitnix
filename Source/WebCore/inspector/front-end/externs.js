@@ -110,7 +110,8 @@ DOMApplicationCache.prototype.DOWNLOADING = 3;
 DOMApplicationCache.prototype.UPDATEREADY = 4;
 DOMApplicationCache.prototype.OBSOLETE = 5;
 
-
+/** @type {Node} */
+Range.prototype.startContainer;
 
 // Inspector Backend
 var InspectorBackend = {}
@@ -261,11 +262,6 @@ WebInspector.showPanel = function(panel)
  * @type {string} 
  */
 WebInspector.inspectedPageDomain;
-
-/**
- * @type {WebInspector.UserAgentSupport} 
- */
-WebInspector.userAgentSupport;
 
 WebInspector.isCompactMode = function() { return false; }
 

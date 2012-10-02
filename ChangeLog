@@ -1,3 +1,49 @@
+2012-10-01  Keishi Hattori  <keishi@webkit.org>
+
+        Calendar picker should use zero as default step base
+        https://bugs.webkit.org/show_bug.cgi?id=97976
+
+        Reviewed by Kent Tamura.
+
+        * ManualTests/forms/calendar-picker.html: Added stepBase parameters.
+
+2012-09-28  Mariusz Grzegorczyk  <mariusz.g@samsung.com>
+
+        [WK2][GTK][EFL] Share WebKit2-GTK plugin process implementation with EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=91844
+
+        Reviewed by Simon Hausmann.
+
+        Turn on Netscape Plugin API by default  for WebKit2-Efl.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-09-28  Alpha Lam  <hclam@chromium.org>
+
+        REGRESSION(r122215) - CachedImage::likelyToBeUsedSoon crashes on accessing a deleted CachedImageClient
+        https://bugs.webkit.org/show_bug.cgi?id=97749
+
+        Reviewed by James Robinson.
+
+        Added a manual test to demonstrate drag image and crashing.
+
+        * ManualTests/drag-image-no-crash.html: Added.
+
+2012-09-27  Keishi Hattori  <keishi@webkit.org>
+
+        SuggestionPicker should support rtl
+        https://bugs.webkit.org/show_bug.cgi?id=97555
+
+        Reviewed by Kent Tamura.
+
+        * ManualTests/forms/calendar-picker.html: Added tests for Arabic with datalist.
+
+2012-09-27  Patrick Gansterer  <paroga@webkit.org>
+
+        [WINCE] Enable JIT by default
+
+        * Source/cmake/OptionsWinCE.cmake:
+
 2012-09-26  Martin Robinson  <mrobinson@igalia.com>
 
         [GTK] Use XDamage to simplify RedirectedXCompositeWindow

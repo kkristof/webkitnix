@@ -359,7 +359,6 @@ public:
     bool cssStickyPositionEnabled() const;
     bool cssRegionsEnabled() const;
 #if ENABLE(CSS_REGIONS)
-    PassRefPtr<WebKitNamedFlow> webkitGetFlowByName(const String&);
     PassRefPtr<DOMNamedFlowCollection> webkitGetNamedFlows();
 #endif
 
@@ -541,7 +540,7 @@ public:
     PassRefPtr<RenderStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<RenderStyle> styleForPage(int pageIndex);
 
-    void registerCustomFont(PassOwnPtr<FontData>);
+    void registerCustomFont(PassRefPtr<FontData>);
 
     // Returns true if page box (margin boxes and page borders) is visible.
     bool isPageBoxVisible(int pageIndex);
@@ -713,7 +712,8 @@ public:
     void scheduleForcedStyleRecalc();
     void scheduleStyleRecalc();
     void unscheduleStyleRecalc();
-    bool isPendingStyleRecalc() const;
+    bool hasPendingStyleRecalc() const;
+    bool hasPendingForcedStyleRecalc() const;
     void styleRecalcTimerFired(Timer<Document>*);
 
     void registerNodeListCache(DynamicNodeListCacheBase*);
@@ -1159,7 +1159,8 @@ public:
 
     bool inStyleRecalc() { return m_inStyleRecalc; }
 
-    Localizer& getLocalizer(const AtomicString& locale);
+    // Return a Localizer for the default locale if the argument is null or empty.
+    Localizer& getCachedLocalizer(const AtomicString& locale = nullAtom);
 
 protected:
     Document(Frame*, const KURL&, bool isXHTML, bool isHTML);
@@ -1255,7 +1256,7 @@ private:
     // do eventually load.
     PendingSheetLayout m_pendingSheetLayout;
 
-    Vector<OwnPtr<FontData> > m_customFonts;
+    Vector<RefPtr<FontData> > m_customFonts;
 
     Frame* m_frame;
     RefPtr<DOMWindow> m_domWindow;
