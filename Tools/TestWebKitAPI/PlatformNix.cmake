@@ -122,6 +122,7 @@ INCLUDE_DIRECTORIES(
 
 SET(test_webkitnix_api_LIBRARIES
     TestWebKitNixAPIBase
+    ${OPENGL_LIBRARIES}
     ${WTF_LIBRARY_NAME}
     ${JavaScriptCore_LIBRARY_NAME}
     ${WebKit2_LIBRARY_NAME}
