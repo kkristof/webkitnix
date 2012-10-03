@@ -83,10 +83,9 @@
 #include "WrappedResourceResponse.h"
 #include "platform/WebURL.h"
 #include "platform/WebURLError.h"
-#include "platform/WebVector.h"
 #include <public/Platform.h>
 #include <public/WebMimeRegistry.h>
-
+#include <public/WebVector.h>
 #include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
@@ -126,7 +125,7 @@ void FrameLoaderClientImpl::frameLoaderDestroyed()
     // serves to keep us alive until the FrameLoader is done with us.  The
     // FrameLoader calls this method when it's going away.  Therefore, we balance
     // out that extra reference, which may cause 'this' to be deleted.
-    m_webFrame->closing();
+    ASSERT(!m_webFrame->frame());
     m_webFrame->deref();
 }
 

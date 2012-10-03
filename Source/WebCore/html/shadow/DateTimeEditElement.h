@@ -58,13 +58,17 @@ public:
         virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const = 0;
         virtual bool isEditControlOwnerDisabled() const = 0;
         virtual bool isEditControlOwnerReadOnly() const = 0;
+        virtual AtomicString localeIdentifier() const = 0;
     };
 
     struct LayoutParameters {
         String dateTimeFormat;
         String fallbackDateTimeFormat;
         Localizer& localizer;
-        const StepRange& stepRange;
+        const StepRange stepRange;
+        String placeholderForDay;
+        String placeholderForMonth;
+        String placeholderForYear;
 
         LayoutParameters(Localizer& localizer, const StepRange& stepRange)
             : localizer(localizer)
@@ -123,6 +127,7 @@ private:
     virtual void fieldValueChanged() OVERRIDE FINAL;
     virtual bool focusOnNextField(const DateTimeFieldElement&) OVERRIDE FINAL;
     virtual bool focusOnPreviousField(const DateTimeFieldElement&) OVERRIDE FINAL;
+    virtual AtomicString localeIdentifier() const OVERRIDE FINAL;
 
     // SpinButtonElement::SpinButtonOwner functions.
     virtual void focusAndSelectSpinButtonOwner() OVERRIDE FINAL;

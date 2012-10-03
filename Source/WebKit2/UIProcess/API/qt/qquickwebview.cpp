@@ -268,6 +268,7 @@ QQuickWebViewPrivate::QQuickWebViewPrivate(QQuickWebView* viewport)
     , filePicker(0)
     , databaseQuotaDialog(0)
     , colorChooser(0)
+    , m_betweenLoadCommitAndFirstFrame(false)
     , m_useDefaultContentItemSize(true)
     , m_navigatorQtObjectEnabled(false)
     , m_renderToOffscreenBuffer(false)
@@ -370,6 +371,7 @@ void QQuickWebViewPrivate::loadDidCommit()
     Q_Q(QQuickWebView);
     ASSERT(q->loading());
 
+    m_betweenLoadCommitAndFirstFrame = true;
     emit q->navigationHistoryChanged();
     emit q->titleChanged();
 }
@@ -453,6 +455,10 @@ void QQuickWebViewPrivate::setNeedsDisplay()
         return;
     }
 
+    if (m_betweenLoadCommitAndFirstFrame) {
+        emit q->experimental()->loadVisuallyCommitted();
+        m_betweenLoadCommitAndFirstFrame = false;
+    }
     q->page()->update();
 }
 
@@ -478,8 +484,6 @@ void QQuickWebViewPrivate::didRelaunchProcess()
 {
     qWarning("WARNING: The web process has been successfully restarted.");
 
-    // Reset to default so that the later update can reach the web process.
-    webPageProxy->setCustomDeviceScaleFactor(0);
     webPageProxy->drawingArea()->setSize(viewSize(), IntSize());
 
     updateViewportSize();
@@ -877,13 +881,6 @@ void QQuickWebViewFlickablePrivate::pageDidRequestScroll(const QPoint& pos)
         m_pageViewportController->pageDidRequestScroll(pos);
 }
 
-void QQuickWebViewFlickablePrivate::didChangeContentsSize(const QSize& newSize)
-{
-    QQuickWebViewPrivate::didChangeContentsSize(newSize);
-    pageView->setContentsSize(newSize); // emits contentsSizeChanged()
-    m_pageViewportController->didChangeContentsSize(newSize);
-}
-
 void QQuickWebViewFlickablePrivate::handleMouseEvent(QMouseEvent* event)
 {
     if (!pageView->eventHandler())
@@ -1233,7 +1230,7 @@ void QQuickWebViewExperimental::setDevicePixelRatio(qreal devicePixelRatio)
     if (0 >= devicePixelRatio || devicePixelRatio == this->devicePixelRatio())
         return;
 
-    d->webPageProxy->setCustomDeviceScaleFactor(devicePixelRatio);
+    d->webPageProxy->setIntrinsicDeviceScaleFactor(devicePixelRatio);
     emit devicePixelRatioChanged();
 }
 

@@ -91,7 +91,7 @@ SET(test_webkit2_api_fail_BINARIES
 
 
 # WebKitNix API tests
-ADD_LIBRARY(TestWebKitNixAPIBase
+SET(TestWebKitNixAPIBase_SOURCES
     ${test_main_SOURCES}
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
     ${TESTWEBKITAPI_DIR}/JavaScriptTest.cpp
@@ -99,6 +99,17 @@ ADD_LIBRARY(TestWebKitNixAPIBase
     ${TESTWEBKITAPI_DIR}/TestsController.cpp
 )
 
+SET(TestWebKitNixAPIBase_LIBRARIES)
+
+IF (WTF_USE_EGL)
+  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesEGL.cpp)
+  LIST(APPEND TestWebKitNixAPIBase_LIBRARIES ${EGL_LIBRARY})
+ELSE ()
+  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesGLX.cpp)
+ENDIF ()
+
+ADD_LIBRARY(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_SOURCES})
+TARGET_LINK_LIBRARIES(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_LIBRARIES})
 ADD_DEPENDENCIES(TestWebKitNixAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersForTestWebKitAPI_NAME} ${ForwardingNetworkHeadersForTestWebKitAPI_NAME})
 
 SET(test_webkitnix_api_BINARIES
@@ -111,6 +122,7 @@ INCLUDE_DIRECTORIES(
 
 SET(test_webkitnix_api_LIBRARIES
     TestWebKitNixAPIBase
+    ${OPENGL_LIBRARIES}
     ${WTF_LIBRARY_NAME}
     ${JavaScriptCore_LIBRARY_NAME}
     ${WebKit2_LIBRARY_NAME}

@@ -1364,21 +1364,11 @@ static bool handleMouseEvent(const WebMouseEvent& mouseEvent, WebPage* page, boo
             if (isContextClick(platformMouseEvent))
                 handled = handleContextMenuEvent(platformMouseEvent, page);
 #endif
-#if PLATFORM(GTK)
-            bool gtkMouseButtonPressHandled = page->handleMousePressedEvent(platformMouseEvent);
-            handled = handled || gtkMouseButtonPressHandled;
-#endif
+            return handled;
+        }
+        case PlatformEvent::MouseReleased:
+            return frame->eventHandler()->handleMouseReleaseEvent(platformMouseEvent);
 
-            return handled;
-        }
-        case PlatformEvent::MouseReleased: {
-            bool handled = frame->eventHandler()->handleMouseReleaseEvent(platformMouseEvent);
-#if PLATFORM(QT)
-            if (!handled)
-                handled = page->handleMouseReleaseEvent(platformMouseEvent);
-#endif
-            return handled;
-        }
         case PlatformEvent::MouseMoved:
             if (onlyUpdateScrollbars)
                 return frame->eventHandler()->passMouseMovedEventToScrollbars(platformMouseEvent);
@@ -1790,6 +1780,22 @@ void WebPage::didReceivePolicyDecision(uint64_t frameID, uint64_t listenerID, ui
     frame->didReceivePolicyDecision(listenerID, static_cast<PolicyAction>(policyAction), downloadID);
 }
 
+void WebPage::didStartPageTransition()
+{
+    m_drawingArea->setLayerTreeStateIsFrozen(true);
+}
+
+void WebPage::didCompletePageTransition()
+{
+#if PLATFORM(QT)
+    if (m_mainFrame->coreFrame()->view()->delegatesScrolling())
+        // Wait until the UI process sent us the visible rect it wants rendered.
+        send(Messages::WebPageProxy::PageTransitionViewportReady());
+    else
+#endif
+        m_drawingArea->setLayerTreeStateIsFrozen(false);
+}
+
 void WebPage::show()
 {
     send(Messages::WebPageProxy::ShowPage());
@@ -2139,6 +2145,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
 
     settings->setShouldRespectImageOrientation(store.getBoolValueForKey(WebPreferencesKey::shouldRespectImageOrientationKey()));
     settings->setStorageBlockingPolicy(static_cast<SecurityOrigin::StorageBlockingPolicy>(store.getUInt32ValueForKey(WebPreferencesKey::storageBlockingPolicyKey())));
+    settings->setCookieEnabled(store.getBoolValueForKey(WebPreferencesKey::cookieEnabledKey()));
 
     settings->setDiagnosticLoggingEnabled(store.getBoolValueForKey(WebPreferencesKey::diagnosticLoggingEnabledKey()));
 

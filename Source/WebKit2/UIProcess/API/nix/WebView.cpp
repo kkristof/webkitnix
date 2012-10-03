@@ -195,6 +195,7 @@ public:
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
 
 private:
+    LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
     void transformPointToViewCoordinates(double& x, double& y);
@@ -203,6 +204,7 @@ private:
     void sendWheelEvent(const Nix::WheelEvent&);
     void sendKeyEvent(const Nix::KeyEvent&);
     void sendTouchEvent(const Nix::TouchEvent& event);
+    void sendGestureEvent(const Nix::GestureEvent& event);
 
     WebViewClient* m_client;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
@@ -225,6 +227,7 @@ WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, W
 void WebViewImpl::initialize()
 {
     m_webPageProxy->initializeWebPage();
+    layerTreeRenderer()->setActive(true);
 }
 
 void WebViewImpl::setTransparentBackground(bool value)
@@ -362,6 +365,8 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
         return WebEvent::TouchEnd;
     case Nix::InputEvent::TouchCancel:
         return WebEvent::TouchCancel;
+    case Nix::InputEvent::GestureSingleTap:
+        return WebEvent::GestureSingleTap;
     default:
         notImplemented();
     }
@@ -425,6 +430,11 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
         case InputEvent::TouchCancel:
             sendTouchEvent(static_cast<const Nix::TouchEvent&>(event));
             break;
+        case InputEvent::GestureSingleTap:
+            sendGestureEvent(static_cast<const Nix::GestureEvent&>(event));
+            break;
+        default:
+            notImplemented();
     }
 }
 
@@ -500,21 +510,29 @@ static TransformationMatrix toTransformationMatrix(const cairo_matrix_t& matrix)
     return TransformationMatrix(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
 }
 
-void WebViewImpl::paintToCurrentGLContext()
+LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
-        return;
+        return 0;
 
     LayerTreeCoordinatorProxy* coordinatorProxy = drawingArea->layerTreeCoordinatorProxy();
     if (!coordinatorProxy)
-        return;
+        return 0;
 
     LayerTreeRenderer* renderer = coordinatorProxy->layerTreeRenderer();
     if (!renderer)
+        return 0;
+
+    return renderer;
+}
+
+void WebViewImpl::paintToCurrentGLContext()
+{
+    LayerTreeRenderer* renderer = layerTreeRenderer();
+    if (!renderer)
         return;
 
-    renderer->setActive(true);
     renderer->syncRemoteContent();
 
     cairo_matrix_t viewTransform = m_client->viewToScreenTransform();
@@ -1026,6 +1044,24 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
 
     WebKeyboardEvent webEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
     m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(webEvent));
+}
+
+void WebViewImpl::sendGestureEvent(const GestureEvent& event)
+{
+    WebEvent::Type type = convertToWebEventType(event.type);
+    double x = event.x;
+    double y = event.y;
+    transformPointToViewCoordinates(x, y);
+    IntPoint position = IntPoint(x, y);
+    IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
+    IntSize area = IntSize(event.width, event.height);
+    FloatPoint delta = FloatPoint(event.deltaX, event.deltaY);
+
+    WebGestureEvent webEvent(type, position, globalPosition, modifiers, timestamp, area, delta);
+    m_webPageProxy->handleGestureEvent(webEvent);
+
 }
 
 } // namespace Nix

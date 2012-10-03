@@ -1031,6 +1031,7 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(m_frame->view() == this);
 
     Document* document = m_frame->document();
+    ASSERT(!document->inPageCache());
     bool subtree;
     RenderObject* root;
 
@@ -3050,10 +3051,9 @@ bool FrameView::hasCustomScrollbars() const
 
 FrameView* FrameView::parentFrameView() const
 {
-    if (Widget* parentView = parent()) {
-        if (parentView->isFrameView())
-            return static_cast<FrameView*>(parentView);
-    }
+    if (Frame* parentFrame = m_frame->tree()->parent())
+        return parentFrame->view();
+
     return 0;
 }
 

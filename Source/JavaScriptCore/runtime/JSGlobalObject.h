@@ -27,6 +27,7 @@
 #include "JSSegmentedVariableObject.h"
 #include "JSWeakObjectMapRefInternal.h"
 #include "NumberPrototype.h"
+#include "SpecialPointer.h"
 #include "StringPrototype.h"
 #include "StructureChain.h"
 #include "Watchpoint.h"
@@ -145,6 +146,8 @@ namespace JSC {
         WriteBarrier<Structure> m_regExpStructure;
         WriteBarrier<Structure> m_stringObjectStructure;
         WriteBarrier<Structure> m_internalFunctionStructure;
+        
+        void* m_specialPointers[Special::TableSize]; // Special pointers used by the LLInt and JIT.
 
         Debugger* m_debugger;
 
@@ -281,6 +284,12 @@ namespace JSC {
         Structure* regExpStructure() const { return m_regExpStructure.get(); }
         Structure* stringObjectStructure() const { return m_stringObjectStructure.get(); }
 
+        void* actualPointerFor(Special::Pointer pointer)
+        {
+            ASSERT(pointer < Special::TableSize);
+            return m_specialPointers[pointer];
+        }
+
         WatchpointSet* masqueradesAsUndefinedWatchpoint() { return m_masqueradesAsUndefinedWatchpoint.get(); }
         WatchpointSet* havingABadTimeWatchpoint() { return m_havingABadTimeWatchpoint.get(); }
         
@@ -367,13 +376,14 @@ namespace JSC {
 
         JS_EXPORT_PRIVATE static JSC::JSObject* toThisObject(JSC::JSCell*, JSC::ExecState*);
 
+        JS_EXPORT_PRIVATE void setGlobalThis(JSGlobalData&, JSObject* globalThis);
+
     private:
         friend class LLIntOffsetsExtractor;
         
         // FIXME: Fold reset into init.
         JS_EXPORT_PRIVATE void init(JSObject* thisValue);
         void reset(JSValue prototype);
-        void setGlobalThis(JSGlobalData&, JSObject* globalThis);
 
         void createThrowTypeError(ExecState*);
 

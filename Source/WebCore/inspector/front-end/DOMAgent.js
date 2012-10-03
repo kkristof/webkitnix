@@ -76,7 +76,7 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
         this._renumber();
     }
 
-    if (payload.shadowRoots && WebInspector.experimentsSettings.showShadowDOM.isEnabled()) {
+    if (payload.shadowRoots && WebInspector.settings.showShadowDOM.get()) {
         for (var i = 0; i < payload.shadowRoots.length; ++i) {
             var root = payload.shadowRoots[i];
             var node = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, true, root);
@@ -770,7 +770,9 @@ WebInspector.DOMDocument = function(domAgent, payload)
     this._listeners = {};
 }
 
-WebInspector.DOMDocument.prototype.__proto__ = WebInspector.DOMNode.prototype;
+WebInspector.DOMDocument.prototype = {
+    __proto__: WebInspector.DOMNode.prototype
+}
 
 /**
  * @extends {WebInspector.Object}
@@ -1333,10 +1335,10 @@ WebInspector.DOMAgent.prototype = {
 
         this.dispatchEventToListeners(WebInspector.DOMAgent.Events.UndoRedoRequested);
         DOMAgent.redo(callback);
-    }
-}
+    },
 
-WebInspector.DOMAgent.prototype.__proto__ = WebInspector.Object.prototype;
+    __proto__: WebInspector.Object.prototype
+}
 
 /**
  * @constructor

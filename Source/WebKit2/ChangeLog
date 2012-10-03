@@ -1,3 +1,1234 @@
+2012-10-02  Hugo Parente Lima  <hugo.lima@openbossa.org>
+
+        [WK2] PageViewportControllerClient.h uses WebCore class without declaring them
+        https://bugs.webkit.org/show_bug.cgi?id=98070
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This patch just add forward declarations for code correctness.
+
+        * UIProcess/PageViewportControllerClient.h:
+        (WebCore):
+
+2012-10-02  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        Fix tst_QQuickWebView::scrollRequest after r130029
+        https://bugs.webkit.org/show_bug.cgi?id=98045
+
+        Reviewed by Simon Hausmann.
+
+        The test needs to show the window and wait for the loadVisuallyCommitted()
+        signal like did in the QML API auto tests.
+
+        * UIProcess/API/qt/tests/qquickwebview/tst_qquickwebview.cpp:
+        (tst_QQuickWebView::scrollRequest):
+        * UIProcess/API/qt/tests/util.cpp:
+        (waitForViewportReady):
+        * UIProcess/API/qt/tests/util.h:
+
+2012-10-02  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Use correct gtest macro for testing true/false
+        https://bugs.webkit.org/show_bug.cgi?id=98142
+
+        Reviewed by Laszlo Gombos.
+
+        Using EXPECT_EQ(true/false, ...) makes clang trip when it tries to convert
+        true/false to a pointer. Tests should use EXPECT_TRUE/FALSE instead.
+
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (showPopupMenu):
+        (TEST_F):
+
+2012-10-01  Brady Eidson  <beidson@apple.com>
+
+        Remove the Safari 2 -> Safari 3 icon database import code.
+        https://bugs.webkit.org/show_bug.cgi?id=98113
+
+        Reviewed by Maciej Stachowiak.
+
+        Nuke the performImport() IconDatabaseClient method.
+
+        * UIProcess/WebIconDatabase.cpp:
+        (WebKit):
+        * UIProcess/WebIconDatabase.h:
+        (WebIconDatabase):
+
+2012-10-01  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Fix compilation warnings
+        https://bugs.webkit.org/show_bug.cgi?id=98020
+
+        Reviewed by Gyuyoung Kim.
+
+        Fix compilation warnings related to ewk_view.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (_ewk_view_feed_touch_event_using_touch_point_list_of_evas):
+        (_ewk_view_on_touch_down):
+        (_ewk_view_on_touch_up):
+        (_ewk_view_on_touch_move):
+        * UIProcess/API/efl/ewk_view_ui_client.cpp:
+        (exceededDatabaseQuota):
+
+2012-10-01  Claudio Saavedra  <csaavedra@igalia.com>
+
+        [GTK][WK2] Save the download uri as file metadata
+        https://bugs.webkit.org/show_bug.cgi?id=98043
+
+        Reviewed by Carlos Garcia Campos.
+
+        gio/gvfs can store file metadata, let's use this to
+        store the download uri.
+
+        * WebProcess/Downloads/soup/DownloadSoup.cpp:
+        (WebKit::DownloadClient::didReceiveResponse): Save
+        the download uri as metadata.
+
+2012-10-01  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] Device pixel ratio lost upon relaunch of the web process
+        https://bugs.webkit.org/show_bug.cgi?id=97908
+
+        Reviewed by Jocelyn Turcotte.
+
+        Use setIntrinsicDeviceScaleFactor instead of setCustomDeviceScaleFactor
+        when setting the device pixel ratio to make the setting permanent.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::didRelaunchProcess):
+        (QQuickWebViewExperimental::setDevicePixelRatio):
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Fix viewport QML auto tests after the viewport changes
+        https://bugs.webkit.org/show_bug.cgi?id=97781
+
+        Reviewed by Simon Hausmann.
+
+        Since the viewport controller has to hold any QML-side viewport updates
+        while it applies and render the new requested position, this has the
+        effect of blocking all those tests if the view is not visible (thus
+        disabling the tile rendering completely in the web process).
+        The viewport should be unlocked after the first rendered frame for
+        static contents.
+
+        Fix those tests by forcing the QQuickView to be visible and by making
+        them wait for the first frame rather than the earlier end of provisional load.
+
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_doubleTapToZoom.qml:
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_fitToView.qml:
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_wheelEventHandling.qml:
+        * UIProcess/API/qt/tests/qmltests/common/TestWebView.qml:
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Add a loadVisuallyCommitted() signal
+        https://bugs.webkit.org/show_bug.cgi?id=97780
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This signal is emitted when the first DidRenderFrame message is received from
+        the web process after loadCommitted.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::QQuickWebViewPrivate):
+        (QQuickWebViewPrivate::loadDidCommit):
+        (QQuickWebViewPrivate::setNeedsDisplay):
+        * UIProcess/API/qt/qquickwebview_p.h:
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Move Qt-only related methods from WebPageProxy.cpp to WebPageProxyQt.cpp
+
+        Reviewed by Simon Hausmann.
+
+        * UIProcess/WebPageProxy.cpp:
+        * UIProcess/qt/WebPageProxyQt.cpp:
+        (WebKit::WebPageProxy::didFindZoomableArea):
+        (WebKit):
+        (WebKit::WebPageProxy::findZoomableAreaForPoint):
+        (WebKit::WebPageProxy::didReceiveMessageFromNavigatorQtObject):
+        (WebKit::WebPageProxy::authenticationRequiredRequest):
+        (WebKit::WebPageProxy::proxyAuthenticationRequiredRequest):
+        (WebKit::WebPageProxy::certificateVerificationRequest):
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Decide when to apply a scrolled position to the viewport based on the rect covered by the tiles
+        https://bugs.webkit.org/show_bug.cgi?id=97777
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This patch achieves two things:
+        - Apply a short scroll position request directly if we already have rendered tiles
+          at this position.
+        - Since our visible rect request is asynchronous, the next frame might not always
+          be the one covering this position. This will wait for a frame that does to apply it.
+
+        * UIProcess/API/qt/raw/qrawwebview_p_p.h:
+        (QRawWebViewPrivate::didRenderFrame):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::didRenderFrame):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/PageClient.h:
+        (PageClient):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didCommitLoad):
+        (WebKit::PageViewportController::didRenderFrame):
+        (WebKit::PageViewportController::pageDidRequestScroll):
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/qt/QtPageClient.cpp:
+        (WebKit::QtPageClient::didRenderFrame):
+        * UIProcess/qt/QtPageClient.h:
+        (QtPageClient):
+        * UIProcess/qt/WebPageProxyQt.cpp:
+        (WebKit::WebPageProxy::didRenderFrame):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (WebCore::CoordinatedGraphicsLayer::coverRect):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Delay viewport position, scale and contents size updates until tiles are rendered
+        https://bugs.webkit.org/show_bug.cgi?id=97775
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        A few events from the web process can cause the viewport position or scale to be
+        adjusted in the UI process:
+        - Scroll position request
+        - Viewport attributes (initialScale, minimumScale)
+        - Contents size change
+
+        We previously applied those updates directly to the viewport, which would then in turn
+        produce a corresponding visible rect request to the web process to render the contents
+        at the new position/scale. This could leave the viewport showing the old content, either
+        by scaling the tiles, or by showing checkerboard if no contents was rendered at this
+        position yet. When the web process was done rendering new tiles, the proper tiles
+        were then shown to the user.
+        Since many of these updates happen during page load, all producing an iterative adjustment
+        to the viewport, this could show sharpness and position jitter until the final rendering
+        was done.
+
+        This patch makes those updates go through the PageViewportController first and then to the
+        QQuickWebView rather than the other way around, and keep them pending until the
+        LayerTreeHostProxy reports that the new tiles are ready to be shown. Since the rendering
+        is blocked until the page first layout is done, this apply the modifications to
+        the viewport only once when the first frame is ready to be shown.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewFlickablePrivate):
+        * UIProcess/API/qt/raw/qrawwebview_p_p.h:
+        (QRawWebViewPrivate::didRenderFrame):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::didRenderFrame):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/PageClient.h:
+        (PageClient):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didCommitLoad):
+        (WebKit::PageViewportController::didChangeContentsSize):
+        (WebKit::PageViewportController::didRenderFrame):
+        (WebKit::PageViewportController::initialViewportReady):
+        (WebKit::PageViewportController::pageDidRequestScroll):
+        (WebKit::PageViewportController::didChangeContentsVisibility):
+        (WebKit::PageViewportController::resumeContent):
+        (WebKit::PageViewportController::applyScaleAfterRenderingContents):
+        (WebKit):
+        (WebKit::PageViewportController::applyPositionAfterRenderingContents):
+        (WebKit::PageViewportController::updateMinimumScaleToFit):
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+        * UIProcess/PageViewportControllerClient.h:
+        (PageViewportControllerClient):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::didChangeContentsSize):
+        * UIProcess/qt/PageViewportControllerClientQt.h:
+        (PageViewportControllerClientQt):
+        * UIProcess/qt/QtPageClient.cpp:
+        (WebKit::QtPageClient::didRenderFrame):
+        (WebKit):
+        (WebKit::QtPageClient::didChangeContentsSize):
+        * UIProcess/qt/QtPageClient.h:
+        (QtPageClient):
+        * UIProcess/qt/QtWebPageLoadClient.cpp:
+        (WebKit::QtWebPageLoadClient::didCommitLoad):
+        * UIProcess/qt/WebPageProxyQt.cpp:
+        (WebKit::WebPageProxy::didRenderFrame):
+        (WebKit):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+
+2012-09-27  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Wait for the UI process before re-enabling rendering during page load
+        https://bugs.webkit.org/show_bug.cgi?id=97773
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        During page navigation, WebCore might ask asynchronously the UI process to
+        scroll to an anchor or restored history position and the UI process will
+        return the corresponding visible rect to be rendered by the web process.
+
+        To avoid rendering tiles for the invalidated area by the new page layout at
+        the wrong position, we should do an extra message round-trip to the UI
+        process before resuming the rendering.
+        Assuming that all messages are handled in order by both the web and UI process,
+        sending the round-trip request in the web process once we sent all scroll
+        requests, contents size and viewport attributes updates and then handling
+        the round-trip response, we make sure that final visible rect request have
+        been handled already.
+
+        * UIProcess/API/qt/raw/qrawwebview.cpp:
+        (QRawWebViewPrivate::pageTransitionViewportReady):
+        * UIProcess/API/qt/raw/qrawwebview_p_p.h:
+        (QRawWebViewPrivate):
+        * UIProcess/PageClient.h:
+        (PageClient):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::pageTransitionViewportReady):
+        (WebKit):
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/WebPageProxy.messages.in:
+        * UIProcess/qt/QtPageClient.cpp:
+        (WebKit::QtPageClient::pageTransitionViewportReady):
+        (WebKit):
+        * UIProcess/qt/QtPageClient.h:
+        (QtPageClient):
+        * UIProcess/qt/WebPageProxyQt.cpp:
+        (WebKit::WebPageProxy::commitPageTransitionViewport):
+        (WebKit):
+        (WebKit::WebPageProxy::pageTransitionViewportReady):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::WebFrameLoaderClient):
+        (WebKit::WebFrameLoaderClient::dispatchDidLayout):
+        (WebKit::WebFrameLoaderClient::frameLoadCompleted):
+        (WebKit::WebFrameLoaderClient::provisionalLoadStarted):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.h:
+        (WebFrameLoaderClient):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::didStartPageTransition):
+        (WebKit):
+        (WebKit::WebPage::didCompletePageTransition):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+        * WebProcess/WebPage/qt/WebPageQt.cpp:
+        (WebKit::WebPage::commitPageTransitionViewport):
+        (WebKit):
+
+2012-10-01  Alberto Garcia  <agarcia@igalia.com>
+
+        WebPrintOperationGtk destructor should be virtual
+        https://bugs.webkit.org/show_bug.cgi?id=98002
+
+        Reviewed by Carlos Garcia Campos.
+
+        WebPrintOperationGtk is an abstract class which can be deleted
+        using a pointer to itself, yet its destructor is not virtual.
+        Fixes -Wdelete-non-virtual-dtor.
+
+        * WebProcess/WebPage/gtk/WebPrintOperationGtk.h:
+        (WebPrintOperationGtk):
+
+2012-09-30  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        [WK2][GTK] Add API to get the favicon for a WebKitWebView
+        https://bugs.webkit.org/show_bug.cgi?id=96477
+
+        Reviewed by Carlos Garcia Campos.
+
+        Provide a new simple API to synchronously try to get the favicon
+        associated with a WebView, if any, and to keep track of changes on
+        it, through a new GObject property.
+
+        * UIProcess/API/gtk/WebKitWebView.cpp:
+        (_WebKitWebViewPrivate):
+        (webkitWebViewIconReadyCallback): Callback to handle the
+        'icon-ready' signal coming from WebKitFaviconDatabase.
+        (webkitWebViewWatchForChangesInFavicon): Connects to the
+        'icon-ready' signal from WebKitFaviconDatabase, to keep track of
+        changes in favicons, that must be related to the current view.
+        (webkitWebViewDisconnectFaviconDatabaseSignalHandlers):
+        Disconnects the handler for 'icon-ready' if needed.
+        (webkitWebViewGetProperty): Updated for the new "favicon" property .
+        (webkitWebViewFinalize): Disconnect the new signal handler.
+        (webkit_web_view_class_init): Definition of the new property.
+        (webkitWebViewEmitLoadChanged): Make sure we will be watching for
+        changes in the favicon from WEBKIT_LOAD_STARTED on.
+        (webkit_web_view_get_favicon): New API funtcion, returning the
+        current favicon for the WebView, if any, or NULL otherwise.
+        * UIProcess/API/gtk/WebKitWebView.h:
+
+        Internally expose a way to try to get the favicon associated to a
+        page URL synchronously, through WebKitFaviconDatabase.
+
+        * UIProcess/API/gtk/WebKitFaviconDatabase.cpp:
+        (webkitFaviconDatabaseGetFaviconSync): New internal function, it
+        will return either 0 or a valid pointer to a cairo_surface_t.
+        * UIProcess/API/gtk/WebKitFaviconDatabasePrivate.h:
+
+        Add unit tests for checking this new API.
+
+        * UIProcess/API/gtk/tests/TestWebKitFaviconDatabase.cpp:
+        (testWebViewFavicon): New unit test.
+        (beforeAll): Add the test to the test suite.
+
+2012-09-30  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        [WK2][GTK] Fix issues with WebKitFaviconDatabase in debug builds
+        https://bugs.webkit.org/show_bug.cgi?id=97966
+
+        Reviewed by Carlos Garcia Campos.
+
+        Fix failing ASSERTs detected when running the unit tests from
+        TestWebKitFaviconDatabase in debug builds.
+
+        * UIProcess/API/gtk/WebKitFaviconDatabase.cpp:
+        (webkitFaviconDatabaseDispose): Close IconDatabase here, which is
+        the right place to do it according to GObject documentation.
+        (webkitFaviconDatabaseFinalize): Just destroy the private data
+        structure and chain up to parent class's finalize method.
+        (webkit_favicon_database_class_init): Override dispose method.
+
+        * UIProcess/API/gtk/tests/TestWebKitFaviconDatabase.cpp:
+        (webkitFaviconDatabaseFinalizedCallback): Delete files when the
+        WebKitFaviconDatabase is being finalized, since by that time the
+        IconDatabase from WebCore will be already closed.
+        (afterAll): Add a weak reference to WebKitFaviconDatabase and
+        provide a GWeakNotify callback (webkitFaviconDatabaseFinalizedCallback).
+
+2012-09-29  Byungwoo Lee  <bw80.lee@samsung.com>
+
+        [EFL] Fix build error : Link webkit2 library to ewk2UnitTestInjectedBundleSample.
+        https://bugs.webkit.org/show_bug.cgi?id=97622
+
+        Reviewed by Gyuyoung Kim.
+
+        There is no dependency between ewk2UnitTestInjectedBundleSample and
+        webkit2 library.
+
+        Because of this, on the first build, compiler tries to build
+        injected_bundle_sample.cpp before the forwarding headers are created.
+        This makes build error that the header file 'WebKit2/WKBaseSoup.h'
+        cannot be found.
+
+        To prevent this, webkit2 library is linked to ewk2UnitTestInjectedBundleSample.
+
+        * PlatformEfl.cmake:
+
+2012-09-28  Mariusz Grzegorczyk  <mariusz.g@samsung.com>
+
+        [WK2][GTK][EFL] Share WebKit2-GTK plugin process implementation with EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=91844
+
+        Reviewed by Simon Hausmann.
+
+        Implement windowless plugin and functions needed to launch PluginProcess.
+
+        * GNUmakefile.am: Change files and folders related to plugin process from gtk to unix.
+        * GNUmakefile.list.am: Change files and folders related to plugin process from gtk to unix.
+        * Platform/Logging.cpp: Add Plugins channel for LOG.
+        (WebKit):
+        (WebKit::getChannelFromName):
+        (WebKit::initializeLogChannelsIfNecessary):
+        * Platform/Logging.h:
+        (WebKit):
+        * PlatformEfl.cmake: Add files needed by plugin process.
+        * PluginProcess/unix/PluginControllerProxyUnix.cpp: Renamed from Source/WebKit2/PluginProcess/gtk/PluginControllerProxyGtk.cpp.
+        (WebKit):
+        (WebKit::PluginControllerProxy::platformInitialize): Add macros for gtk/efl differents.
+        (WebKit::PluginControllerProxy::platformDestroy):
+        (WebKit::PluginControllerProxy::platformGeometryDidChange):
+        * PluginProcess/unix/PluginProcessMainUnix.cpp: Renamed from Source/WebKit2/PluginProcess/gtk/PluginProcessMainGtk.cpp.
+        (WebKit):
+        (WebKit::webkitXError):
+        (WebKit::PluginProcessMainUnix):
+        * PluginProcess/unix/PluginProcessMainUnix.h: Renamed from Source/WebKit2/PluginProcess/gtk/PluginProcessMainGtk.h.
+        (WebKit):
+        * PluginProcess/unix/PluginProcessUnix.cpp: Renamed from Source/WebKit2/PluginProcess/gtk/PluginProcessGtk.cpp.
+        (WebKit):
+        (WebKit::PluginProcess::platformInitialize):
+        * UIProcess/Plugins/unix/PluginProcessProxyUnix.cpp: Renamed from Source/WebKit2/UIProcess/Plugins/gtk/PluginProcessProxyGtk.cpp.
+        (WebKit):
+        (WebKit::PluginProcessProxy::platformInitializePluginProcess):
+        (WebKit::PluginProcessProxy::scanPlugin):
+        * UIProcess/efl/WebPageProxyEfl.cpp: Add stubs.
+        (WebKit::WebPageProxy::createPluginContainer):
+        (WebKit):
+        (WebKit::WebPageProxy::windowedPluginGeometryDidChange):
+        * WebProcess/Plugins/Netscape/unix/PluginProxyUnix.cpp: Renamed from Source/WebKit2/WebProcess/Plugins/Netscape/gtk/PluginProxyGtk.cpp.
+        (WebKit):
+        (WebKit::PluginProxy::needsBackingStore):
+        * WebProcess/Plugins/Netscape/x11/NetscapePluginX11.cpp: Plugin's windowless implementation.
+        (WebKit::getPluginDisplay):
+        (WebKit::x11Screen):
+        (WebKit::displayDepth):
+        (WebKit::rootWindowID):
+        (WebKit::NetscapePlugin::x11HostDisplay):
+        (WebKit::NetscapePlugin::platformPaint):
+        * config.h:
+        * unix/PluginMainUnix.cpp: Renamed from Source/WebKit2/gtk/PluginMainGtk.cpp.
+        (main):
+
+2012-09-28  Anders Carlsson  <andersca@apple.com>
+
+        Remove Java bridge
+        https://bugs.webkit.org/show_bug.cgi?id=97954
+
+        Reviewed by Sam Weinig.
+
+        The Java bridge is not used by any port; Mac now has a NPAPI Java plug-in.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.h:
+        (WebFrameLoaderClient):
+
+2012-09-28  Dan Bernstein  <mitz@apple.com>
+
+        <rdar://problem/12398537> WebKit2 lacks API for disabling document.cookie like -[WebView _setCookieEnabled:]
+        https://bugs.webkit.org/show_bug.cgi?id=97939
+
+        Reviewed by Sam Weinig.
+
+        * Shared/WebPreferencesStore.h:
+        (WebKit): Defined CookieEnabled key with a default value of true.
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetCookieEnabled): Added this setter.
+        (WKPreferencesGetCookieEnabled): Added this getter.
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences): Added a call to Settings::setCookieEnabled to push the
+        preference into Settings.
+
+2012-09-28  Sam Weinig  <sam@webkit.org>
+
+        Fix pluralization of Info.plist key.
+
+        Rubber-stamped by Anders Carlsson.
+
+        * WebProcessService/Info.plist:
+        * WebProcessServiceForWebKitDevelopment/Info.plist:
+        It's _MultipleInstances, not _MultipleInstance. :(
+
+2012-09-28  Anders Carlsson  <andersca@apple.com>
+
+        Pass the correct path length to _NSGetExecutablePath
+        https://bugs.webkit.org/show_bug.cgi?id=97935
+
+        Reviewed by Sam Weinig.
+
+        * WebProcessServiceForWebKitDevelopment/WebProcessServiceForWebKitDevelopmentMain.mm:
+        (WebProcessServiceForWebKitDevelopmentEventHandler):
+        Initialize pathLength before passing it to _NSGetExecutablePath.
+
+2012-09-28  Alberto Garcia  <agarcia@igalia.com>
+
+        WebKitLoaderClient: add missing initializer.
+        https://bugs.webkit.org/show_bug.cgi?id=97930
+
+        Reviewed by Martin Robinson.
+
+        WKPageLoaderClient is missing the initializer for the didLayout
+        field. Fixes -Wmissing-field-initializers.
+
+        * UIProcess/API/gtk/WebKitLoaderClient.cpp:
+        (attachLoaderClientToView):
+
+2012-09-28  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        Code inside FrameLoaderClient::canShowMIMEType() implementations can be shared among different WK ports
+        https://bugs.webkit.org/show_bug.cgi?id=97547
+
+        Reviewed by Adam Barth.
+
+        Newly added WebCore::MIMETypeRegistry::canShowMIMEType() function is used
+        inside WebKit::WebPageProxy::canShowMIMEType() and WKBundlePageCanShowMIMEType().
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::canShowMIMEType):
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageCanShowMIMEType):
+
+2012-09-28  Byungwoo Lee  <bw80.lee@samsung.com>
+
+        [EFL][WK2] {Vibration,Battery,NetworkInfo}Provider should contain WKContextRef instead of proxy.
+        https://bugs.webkit.org/show_bug.cgi?id=97839
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        VibrationProvider has WKRetainPtr<WKVibrationRef> m_wkVibrationRef
+        which has reference for object WebVibrationProxy.
+        The WebVibrationProxy instance is a member of WebContext who has it
+        as RefPtr<WebVibrationProxy>.
+
+        A member of one class is shared with another class, but there is no
+        relation between the two classes.
+
+        This can become a problem when WebContext is deleted before the
+        VibrationProvider, WebVibrationProxy will be alive without WebContext,
+        because VibrationProvider also has the reference for WebVibrationProxy.
+
+        This is a problem because WebVibrationProxy should be a member of
+        WebContext.
+
+        To prevent this, I changed the VibrationProvider to have
+        WKRetainPtr<WKContextRef> instead of WKRetainPtr<WKVibrationRef>.
+        Same for BatteryProvider and NetworkInfoProvider.
+
+        * UIProcess/API/efl/BatteryProvider.cpp:
+        (BatteryProvider::create):
+        (BatteryProvider::BatteryProvider):
+        (BatteryProvider::didChangeBatteryStatus):
+        * UIProcess/API/efl/BatteryProvider.h:
+        (BatteryProvider):
+        * UIProcess/API/efl/NetworkInfoProvider.cpp:
+        (NetworkInfoProvider::create):
+        (NetworkInfoProvider::NetworkInfoProvider):
+        * UIProcess/API/efl/NetworkInfoProvider.h:
+        (NetworkInfoProvider):
+        * UIProcess/API/efl/VibrationProvider.cpp:
+        (VibrationProvider::create):
+        (VibrationProvider::VibrationProvider):
+        * UIProcess/API/efl/VibrationProvider.h:
+        (VibrationProvider):
+        * UIProcess/API/efl/ewk_context.cpp:
+        (_Ewk_Context::_Ewk_Context):
+
+2012-09-28  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        [WK2][GTK] Implement new Favicons API
+        https://bugs.webkit.org/show_bug.cgi?id=96476
+
+        Reviewed by Carlos Garcia Campos.
+
+        New object wrapping the internal IconDatabase from WebCore,
+        providing a simple asynchronous API to retrieve the favicon
+        associated to a page URL, and two more functions to simple query
+        the internal database for the URI of the icon associated to a
+        page, if any, and to clear the state of the internal database.
+
+        * UIProcess/API/gtk/WebKitFaviconDatabase.cpp: Added.
+        (_WebKitFaviconDatabasePrivate):
+        (webkit_favicon_database_init):
+        (webkitFaviconDatabaseFinalize):
+        (webkit_favicon_database_class_init):
+        (GetFaviconSurfaceAsyncData): New structure used to pass data
+        across the asynchronous implementation of get_favicon().
+        (GetFaviconSurfaceAsyncData::~GetFaviconSurfaceAsyncData):
+        Disconnects the cancellable if needed.
+        (getIconSurfaceSynchronously): Synchronously returns a pointer to
+        the cairo_surface with the icon's data, if available.
+        (deletePendingIconRequests): Removes the full list of
+        icon requests for a page URL.
+        (processPendingIconsForURI): Process any icon request that
+        might be still pending.
+        (iconDataReadyForPageURLCallback): Called from WebIconDatabase
+        when new data is ready for a favicon.
+        (webkitFaviconDatabaseCreate): Create the WebKitFaviconDatabase
+        object and initializes the API client for WKIconDatabaseClient.
+        (getOrCreatePendingIconRequests): Returns (if available) or
+        creates a new icon request, to be appended to the list of requests
+        for the same page URL.
+        (getIconSurfaceCancelled): Handle the case of a request being
+        cancelled. Must happen on the main thread.
+        (getIconSurfaceCancelledCallback): Callback used with
+        g_cancellable_connect(), which ensure getIconSurfaceCancelled() is
+        called from the main thread.
+        (setErrorForAsyncResult): Helper to set errors in the result.
+        (webkit_favicon_database_error_quark): New function, providint the
+        new error domain for errors of type WebKitFaviconDatabaseError.
+        (webkit_favicon_database_get_favicon): New API function, providing
+        an asynchronous mechanism to query the favicon for a page URL.
+        (webkit_favicon_database_get_favicon_finish): New API function to
+        finish the asyncrhonous request started with get_favicon().
+        (webkit_favicon_database_get_favicon_uri): New API function
+        to easily retrieve, if available, the URI of a favicon.
+        (webkit_favicon_database_clear): New API function to clear the
+        state of the internal icon database.
+        * UIProcess/API/gtk/WebKitFaviconDatabase.h: Added.
+        (_WebKitFaviconDatabase):
+        (_WebKitFaviconDatabaseClass):
+        * UIProcess/API/gtk/WebKitFaviconDatabasePrivate.h: Added to
+        internally expose webkitFaviconDatabaseCreate() to WebKitWebContext.
+        * UIProcess/API/gtk/WebKitPrivate.h: Import WebKit2/WKIconDatabase.h.
+        * GNUmakefile.list.am: Added new files.
+
+        Add a new getter in WebIconDatabase for m_urlImportCompleted.
+
+        * UIProcess/WebIconDatabase.cpp:
+        (WebKit::WebIconDatabase::isUrlImportCompleted): Added this simple
+        getter to allow knowing from WebKitFaviconDatabase whether the
+        initial import has finished, needed for making some decisions.
+        (WebKit):
+        * UIProcess/WebIconDatabase.h:
+        (WebIconDatabase):
+
+        New API in WebKitWebContext to allow obtaining a valid instance of
+        WebKitFaviconDatabase and to set/get the local path to be used.
+
+        * UIProcess/API/gtk/WebKitWebContext.cpp:
+        (_WebKitWebContextPrivate):
+        (webkit_web_context_set_favicon_database_path): New API to allow
+        setting a path for the icon database, other than the default one.
+        (webkit_web_context_get_favicon_database_path): New API to
+        retrieve the path for the icon database currently in use.
+        (webkit_web_context_get_favicon_database): New API to get a valid
+        and properly initialized instance of WebKitFaviconDatabase.
+        * UIProcess/API/gtk/WebKitWebContext.h:
+
+        Make sure we have a default path set for the icon database.
+
+        * UIProcess/gtk/WebContextGtk.cpp:
+        (WebKit::WebContext::platformDefaultIconDatabasePath): Return the
+        default path to be used for the icon database.
+
+        Add unit tests for checking this new API.
+
+        * UIProcess/API/gtk/tests/TestWebKitFaviconDatabase.cpp: Added.
+        (serverCallback): Callback for the test server.
+        (testSetDirectory): New unit test, checks the ability to set and
+        get a specific directory path for the icon database.
+        (testClearDatabase): New unit test, checks the ability to clear
+        the data in the icon database.
+        (testGetFavicon): New unit test, checks the ability to get a
+        favicon from the icon database in different situations.
+        (testGetFaviconURI): New unit test, checks the ability to retrieve
+        the URI for the favicon, if any, associated to a web page.
+        (deleteDatabaseFiles): Helper function to remove temporary files.
+        (beforeAll): Initialize the test server and add the unit tests.
+        (afterAll): Delete the test server and clean up.
+
+2012-09-28  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL] Unreviewed test fixes after r129892.
+
+        * UIProcess/API/efl/tests/test_ewk2_context.cpp:
+        (TEST_F): Fix a copy&paste error that changed the test
+        expectations.
+        * UIProcess/API/efl/tests/test_ewk2_cookie_manager.cpp:
+        (TEST_F): Revert the change here since it was already in the right
+        format before.
+
+2012-09-28  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Some expected and actual parameters in unit tests are reversed
+        https://bugs.webkit.org/show_bug.cgi?id=97624
+
+        Reviewed by Laszlo Gombos.
+
+        According to the gtest guide, ASSERT_XXX, EXPECT_XXX(expected, actual) are recommended
+        but some unit tests do not follow this.(http://code.google.com/p/googletest/wiki/Primer)
+        Google Test's failure messages are optimized for this convention.
+
+        * UIProcess/API/efl/tests/test_ewk2_back_forward_list.cpp:
+        (TEST_F):
+        * UIProcess/API/efl/tests/test_ewk2_context.cpp:
+        (schemeRequestCallback):
+        (TEST_F):
+        * UIProcess/API/efl/tests/test_ewk2_cookie_manager.cpp:
+        (TEST_F):
+        * UIProcess/API/efl/tests/test_ewk2_download_job.cpp:
+        (on_download_requested):
+        (on_download_finished):
+        * UIProcess/API/efl/tests/test_ewk2_intents.cpp:
+        (onIntentServiceRegistration):
+        (onIntentReceived):
+        (TEST_F):
+        * UIProcess/API/efl/tests/test_ewk2_refptr_evas_object.cpp:
+        (TEST_F):
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (TEST_F):
+        (onFormAboutToBeSubmitted):
+        (checkBasicPopupMenuItem):
+        (showPopupMenu):
+        (showColorPicker):
+
+2012-09-28  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt] QRawWebView tests are broke after r129545
+        https://bugs.webkit.org/show_bug.cgi?id=97907
+
+        Reviewed by Noam Rosenthal.
+
+        The issue here is that we set up the page loader client before initializing the page
+        so the message we send in WebPageProxy::initializeLoaderClient will be lost since the
+        page does not exists at the web process side yet. The trivial fix would be to reorder
+        initialization. In this patch I also moved to the new model of observing layout changes
+        via WKPageDidLayoutCallback since the old one will be deprecated at some time.
+
+        * UIProcess/API/qt/tests/qrawwebview/tst_qrawwebview.cpp:
+        (WebView::WebView):
+        (WebView::didLayout):
+
+2012-09-28  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        Unreviewed, rolling out r129863.
+        http://trac.webkit.org/changeset/129863
+        https://bugs.webkit.org/show_bug.cgi?id=97173
+
+        Broken debug WK2 layout test
+
+        * PlatformEfl.cmake:
+        * UIProcess/API/efl/EWebKit2.h:
+        * UIProcess/API/efl/ewk_context.cpp:
+        (_Ewk_Context::_Ewk_Context):
+        (_Ewk_Context::~_Ewk_Context):
+        * UIProcess/API/efl/ewk_main.cpp:
+        (ewk_init):
+        (ewk_shutdown):
+        * UIProcess/API/efl/ewk_main.h: Added.
+        * UIProcess/API/efl/ewk_main_private.h: Removed.
+        * UIProcess/API/efl/tests/UnitTestUtils/EWK2UnitTestBase.cpp:
+        (EWK2UnitTest::EWK2UnitTestBase::SetUp):
+        (EWK2UnitTest::EWK2UnitTestBase::TearDown):
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+
+2012-09-28  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] exceededDatabaseQuota event is not handled
+        https://bugs.webkit.org/show_bug.cgi?id=97882
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Handle exceededDatabaseQuota callback from WKPageUIClient so
+        that we let the browser a chance to decide what to do when
+        the database quota is reached. If the browser does not handle
+        this, then we return a realistic default quota (5MB as
+        recommended by the spec).
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_database_quota_exceeded):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/ewk_view_private.h:
+        * UIProcess/API/efl/ewk_view_ui_client.cpp:
+        (exceededDatabaseQuota):
+        (ewk_view_ui_client_attach):
+
+2012-09-28  Kai Koehne  <kai.koehne@digia.com>
+
+        [Qt] Use qInstallMessageHandler() 
+        https://bugs.webkit.org/show_bug.cgi?id=96648
+
+        Reviewed by Jocelyn Turcotte.
+
+        qInstallMsgHandler() got deprecated in Qt 5.
+
+        * PluginProcess/qt/PluginProcessMainQt.cpp:
+        (WebKit::messageHandler):
+        (WebKit::PluginProcessMain):
+        * UIProcess/API/qt/tests/util.cpp:
+        (messageHandler):
+        (suppressDebugOutput):
+        * qt/MainQt.cpp:
+        (messageHandler):
+        (main):
+
+2012-09-28  Byungwoo Lee  <bw80.lee@samsung.com>
+
+        [EFL][WK2] Clear provider on destructor of {Vibration,Battery,NetworkInfo}Provider.
+        https://bugs.webkit.org/show_bug.cgi?id=97528
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Constructor of {Vibration,Battery,NetworkInfo}Provider set provider
+        but the destructor of the classes doesn't clear provider.
+        This can make a problem about accessing dangling pointer.
+
+        For preventing this problem, clear provider on destructor.
+
+        * UIProcess/API/efl/BatteryProvider.cpp:
+        (BatteryProvider::~BatteryProvider):
+        * UIProcess/API/efl/NetworkInfoProvider.cpp:
+        (NetworkInfoProvider::~NetworkInfoProvider):
+        * UIProcess/API/efl/VibrationProvider.cpp:
+        (VibrationProvider::~VibrationProvider):
+
+2012-09-28  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] NetworkInfo provider is not initialized in Ewk_Context
+        https://bugs.webkit.org/show_bug.cgi?id=97865
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Initialize NetworkInfo provider for EFL port in Ewk_Context
+        with the other providers.
+
+        * UIProcess/API/efl/ewk_context.cpp:
+        (_Ewk_Context):
+        (_Ewk_Context::_Ewk_Context):
+
+2012-09-28  Eunmi Lee  <eunmi15.lee@samsung.com>
+
+        [EFL][WK2] Refactoring initialization and shutdown codes of EFL libraries.
+        https://bugs.webkit.org/show_bug.cgi?id=97173
+
+        Reviewed by Gyuyoung Kim.
+
+        Initialize and shutdown the EFL libraries in the ewk_main.cpp for ui
+        process and WebProcessMainEfl.cpp for web process.
+        Additionally, initialization and shutdown are done when ewk_context is
+        created and deleted, so ewk_{init,shutdown} APIs are changed to
+        internal function and applications don't have to call them.
+
+        * PlatformEfl.cmake:
+        * UIProcess/API/efl/EWebKit2.h:
+        * UIProcess/API/efl/ewk_context.cpp:
+        (_Ewk_Context::_Ewk_Context):
+        (_Ewk_Context::~_Ewk_Context):
+        * UIProcess/API/efl/ewk_main.cpp:
+        (ewk_init):
+        (ewk_shutdown):
+        * UIProcess/API/efl/ewk_main.h: Removed.
+        * UIProcess/API/efl/ewk_main_private.h: Added.
+        * UIProcess/API/efl/tests/UnitTestUtils/EWK2UnitTestBase.cpp:
+        (EWK2UnitTest::EWK2UnitTestBase::SetUp):
+        (EWK2UnitTest::EWK2UnitTestBase::TearDown):
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+
+2012-09-27  Beth Dakin  <bdakin@apple.com>
+
+        https://bugs.webkit.org/show_bug.cgi?id=97823
+        Need to bump the WKBundlePageLoaderClient version after the addition of didLayout
+
+        Reviewed by Brady Eidson.
+
+        Bump the version.
+        * Shared/APIClientTraits.cpp:
+        (WebKit):
+        * Shared/APIClientTraits.h:
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.h:
+
+2012-09-27  Helder Correia  <helder.correia@nokia.com>
+
+        [Cairo] Unnecessary creation of ShareableBitmap's for directly composited images
+        https://bugs.webkit.org/show_bug.cgi?id=97745
+
+        Reviewed by Martin Robinson.
+
+        In LayerTreeCoordinator::adoptImageBackingStore(), there is a
+        PLATFORM(QT) code path to check for identical images, but nothing is
+        done for Cairo, which results in the occurrence of avoidable resource
+        allocations.
+
+        The issue happens in e.g. http://www.webkit.org/blog-files/leaves/,
+        where there are many leaves flying around while they're produced out of
+        only four bitmaps.
+
+        This patch uses pointers to cairo_surface_t's as the key to the hashmap
+        that caches bitmaps. This can be safely done since we own the references.
+        We artificially increment the surface references in adoptImageBackingStore()
+        and decrement them in releaseImageBackingStore().
+
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::adoptImageBackingStore):
+        (WebKit::LayerTreeCoordinator::releaseImageBackingStore):
+
+2012-09-27  Anders Carlsson  <andersca@apple.com>
+
+        Stop using dispatch_get_current_queue
+        https://bugs.webkit.org/show_bug.cgi?id=97806
+        <rdar://problem/12379094>
+
+        Reviewed by Mark Rowe.
+
+        * Platform/mac/WorkQueueMac.cpp:
+        (WorkQueueAndFunction::WorkQueueAndFunction):
+        (WorkQueueAndFunction):
+        (WorkQueue::executeFunction):
+        (WorkQueue::dispatch):
+        (WorkQueue::dispatchAfterDelay):
+        Keep track of the associated work queue so we can get it in WorkQueue::executeFunction.
+
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::setUpTerminationNotificationHandler):
+        We don't care about which queue the termination notification is delivered on since we only want to call
+        waitpid on the child pid so we can just use a global queue.
+
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (-[WKWebInspectorProxyObjCAdapter inspectedViewFrameDidChange:]):
+        Use dispatch_get_main_queue here.
+
+2012-09-27  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        [WK2] IconDatabase: Add a way to notify when icon data is available
+        https://bugs.webkit.org/show_bug.cgi?id=63945
+
+        Rubber stamped by Anders Carlsson.
+
+        Update version of WKIconDatabaseClient and API traits.
+
+        * Shared/APIClientTraits.cpp:
+        (WebKit):
+        * Shared/APIClientTraits.h:
+        * UIProcess/API/C/WKIconDatabase.h:
+
+2012-09-27  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt][WK2] REGRESSION(r128980): It broke all QRawWebView API test
+        https://bugs.webkit.org/show_bug.cgi?id=97561
+
+        Reviewed by Noam Rosenthal.
+
+        Make sure we always send the very first RenderNextFrame message.
+        Before r128980 it was working accidentally because in the common
+        case the web process sent a DeleteCompositingLayer message at some
+        point before the forced repaint would time out and we was sending
+        the first RenderNextFrame when reacting to that.
+
+        * UIProcess/API/qt/raw/qrawwebview.cpp:
+        (QRawWebView::setActive): Set the LayerTreeRenderer to active
+        as well. In the QQuickWebView case it is handled by the QtWebPageSGNode.
+        (QRawWebView::layerTreeRenderer): Added a convenience getter
+        for the LayerTreeRenderer.
+        (QRawWebView::paint):
+        * UIProcess/API/qt/raw/qrawwebview_p.h:
+        (WebKit):
+        * UIProcess/API/qt/tests/qrawwebview/tst_qrawwebview.cpp:
+        (tst_qrawwebview::tst_qrawwebview): Added a call to addQtWebProcessToPath
+        to make my and the follower users of this test easier.
+
+2012-09-27  Eunmi Lee  <eunmi15.lee@samsung.com>
+
+        [EFL][WK2] Process touch events using mouse and multi events of Evas.
+        https://bugs.webkit.org/show_bug.cgi?id=96906
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Provide default behavior for processing touch events in the ewk_view if
+        application wants to use it.
+        We can to process touch events using mouse and multi events because the
+        Evas creates mouse events for first touch and multi events for second and
+        third touch. It can be modified when Evas starts to support event type
+        for touch events.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (_Ewk_View_Private_Data):
+        (_Ewk_View_Private_Data::_Ewk_View_Private_Data):
+        (_ewk_view_feed_touch_event_using_touch_point_list_of_evas):
+        (_ewk_view_on_touch_down):
+        (_ewk_view_on_touch_up):
+        (_ewk_view_on_touch_move):
+        (ewk_view_touch_events_enabled_set):
+        (ewk_view_touch_events_enabled_get):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/tests/UnitTestUtils/EWK2UnitTestBase.cpp:
+        (EWK2UnitTest::EWK2UnitTestBase::mouseDown):
+        (EWK2UnitTest):
+        (EWK2UnitTest::EWK2UnitTestBase::mouseUp):
+        (EWK2UnitTest::EWK2UnitTestBase::mouseMove):
+        (EWK2UnitTest::EWK2UnitTestBase::multiDown):
+        (EWK2UnitTest::EWK2UnitTestBase::multiUp):
+        (EWK2UnitTest::EWK2UnitTestBase::multiMove):
+        * UIProcess/API/efl/tests/UnitTestUtils/EWK2UnitTestBase.h:
+        (EWK2UnitTestBase):
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (TEST_F):
+
+2012-09-27  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Add callback functions for WKPageFindClient
+        https://bugs.webkit.org/show_bug.cgi?id=97431
+
+        Reviewed by Laszlo Gombos.
+
+        Add didFailToFindString() and didCountStringMatches() for WKPageFindClient's callback functions.
+        The unit test for didFindString() and didFailToFindString() have beend added. The unit test for
+        didCountStringMatches() needs a API which wraps the WKPageCountStringMatches but it is not exists yet.
+        Additionaly, I changed the 'unsinged int' to 'unsigned' in the parameter type and removed unnecessary
+        type conversion.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_text_find):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/ewk_view_find_client.cpp:
+        (didFindString):
+        (didFailToFindString):
+        (didCountStringMatches):
+        (ewk_view_find_client_attach):
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (onTextFound):
+        (TEST_F):
+
+2012-09-27  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        Unify event handling of middle mouse button.
+        https://bugs.webkit.org/show_bug.cgi?id=97690
+
+        Reviewed by Tony Chang.
+
+        Remove Qt and GTK port specific handling of middle mouse button press.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::handleMouseEvent):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/gtk/WebPageGtk.cpp:
+        (WebKit):
+        * WebProcess/WebPage/qt/WebPageQt.cpp:
+
+2012-09-27  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2] Injected bundle API implementation should use toWTFString()
+        https://bugs.webkit.org/show_bug.cgi?id=97766
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Injected bundle API implementation should call toWTFString() rather than convert
+        WKStringRef and WKURLRef to their impls and then call string() method directly.
+        The rational for that are both safety (toWTFString checks the given pointer) and
+        code readability.
+
+        * WebProcess/InjectedBundle/API/c/WKBundle.cpp:
+        (WKBundlePostMessage):
+        (WKBundlePostSynchronousMessage):
+        (WKBundleOverrideBoolPreferenceForTestRunner):
+        (WKBundleAddOriginAccessWhitelistEntry):
+        (WKBundleRemoveOriginAccessWhitelistEntry):
+        (WKBundleClearApplicationCacheForOrigin):
+        (WKBundleGetAppCacheUsageForOrigin):
+        (WKBundleSetApplicationCacheOriginQuota):
+        (WKBundleResetApplicationCacheOriginQuota):
+        (WKBundlePageNumberForElementById):
+        (WKBundleSetUserStyleSheetLocation):
+        (WKBundleSetWebNotificationPermission):
+        * WebProcess/InjectedBundle/API/c/WKBundleFrame.cpp:
+        (WKBundleFramePauseAnimationOnElementWithId):
+        (WKBundleFramePauseTransitionOnElementWithId):
+        (WKBundleFrameAllowsFollowingLink):
+        (WKBundleFrameCopySuggestedFilenameForResourceWithURL):
+        (WKBundleFrameCopyMIMETypeForResourceWithURL):
+        (WKBundleFrameSetTextDirection):
+        * WebProcess/InjectedBundle/API/c/WKBundleInspector.cpp:
+        (WKBundleInspectorEvaluateScriptForTest):
+        * WebProcess/InjectedBundle/API/c/WKBundleIntent.cpp:
+        (WKBundleIntentCreate):
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageExecuteEditingCommand):
+        (WKBundlePageIsEditingCommandEnabled):
+        (WKBundlePageHasLocalDataForURL):
+        (WKBundlePageFindString):
+        (WKBundlePageSetComposition):
+        (WKBundlePageConfirmCompositionWithText):
+        (WKBundlePageCanShowMIMEType):
+
+2012-09-27  Mario Sanchez Prada  <msanchez@igalia.com>
+
+        [WK2] IconDatabase: Add a way to notify when icon data is available
+        https://bugs.webkit.org/show_bug.cgi?id=63945
+
+        Reviewed by Anders Carlsson.
+
+        Provide new API to notify the API layer when icon data is
+        available, and use it from the implementation layer when needed,
+        that is, either when the data has been loaded from the network or
+        imported from disk.
+
+        Added new callback to WKIconDatabaseClient API.
+
+        * UIProcess/API/C/WKIconDatabase.h: Added new callback.
+        * UIProcess/WebIconDatabaseClient.cpp:
+        (WebKit::WebIconDatabaseClient::iconDataReadyForPageURL):
+        Implementation of the new callback at this level in the UI
+        process, by using its implementation in the API layer if present.
+        * UIProcess/WebIconDatabaseClient.h:
+        (WebIconDatabaseClient): Added new callback.
+
+        Implemented WebFrameLoaderClient::dispatchDidReceiveIcon, so we
+        get notified in the UI process when loading a new icon.
+
+        * UIProcess/WebIconDatabase.messages.in: Added new message to
+        notify the UI process: DidReceiveIconForPageURL.
+        * UIProcess/WebIconDatabase.cpp:
+        (WebKit::WebIconDatabase::notifyIconDataReadyForPageURL): New
+        private helper function to notify the API layer both that new icon
+        data is ready and that the icon has changed.
+        (WebKit::WebIconDatabase::didReceiveIconForPageURL):
+        Implementation of the new message added, by calling
+        notifyIconDataReadyForPageURL() to notify the API layer.
+        (WebKit::WebIconDatabase::didImportIconDataForPageURL): Call
+        notifyIconDataReadyForPageURL() from here as well.
+        * UIProcess/WebIconDatabase.h: Added new prototypes.
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDidReceiveIcon): Send a
+        message to the UI process telling a new icon has been received.
+
+2012-09-26  Sam Weinig  <sam@webkit.org>
+
+        Fix XPCServices symlink to not be to an absolute path
+        in the build products directory.
+
+        Reviewed by Dan Bernstein.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2012-09-26  Anders Carlsson  <andersca@apple.com>
+
+        Stop using CFURLCreateDataAndPropertiesFromResource
+        https://bugs.webkit.org/show_bug.cgi?id=97728
+        <rdar://problem/12379035>
+
+        Reviewed by Tim Horton.
+
+        Replace a call to CFURLCreateDataAndPropertiesFromResource with -[NSData initWithContentsOfURL:]
+        and add the necessary casts to make the compiler happy.
+
+        * Shared/Plugins/Netscape/mac/NetscapePluginModuleMac.mm:
+        (WebKit::contentsOfPropertyListAtURL):
+
+2012-09-26  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Update WebPageProxy::reattachToWebProcess() for multi-web process mode
+        https://bugs.webkit.org/show_bug.cgi?id=97726
+
+        Reviewed by Anders Carlsson.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::ensureSharedWebProcess): createNewWebProcess() now takes care
+        of adding the new process to m_processes.
+        (WebKit::WebContext::createNewWebProcess): Every time we call this function, we need
+        to add the result to m_processes. Better do it internally to avoid mistakes.
+        (WebKit::WebContext::warmInitialProcess): Updated for the above.
+        (WebKit::WebContext::createWebPage): Ditto.
+        (WebKit::WebContext::relaunchProcessIfNecessary): This function makes no sense in
+        multi-web process mode. Assert that we didnt get here accidentally.
+
+        * UIProcess/WebContext.h: (WebKit::WebContext::sendToAllProcessesRelaunchingThemIfNecessary):
+        Only call relaunchProcessIfNecessary in single process mode. The functionality that
+        needs this behavior will be greatly refactored for multi-web process.
+
+        * UIProcess/WebPageProxy.cpp: (WebKit::WebPageProxy::reattachToWebProcess):
+        We already know that we need a new process, "relaunch if necessary" is not the
+        right logic. Also added a few more assertions checking that process state is
+        as expected.
+        
+        * UIProcess/WebResourceCacheManagerProxy.cpp:
+        (WebKit::WebResourceCacheManagerProxy::getCacheOrigins): Removed relaunchProcessIfNecessary().
+        It will be called inside sendToAllProcessesRelaunchingThemIfNecessary().
+
+        * UIProcess/Plugins/WebPluginSiteDataManager.cpp:
+        (WebKit::WebPluginSiteDataManager::getSitesWithData): Ditto.
+        (WebKit::WebPluginSiteDataManager::clearSiteData): Ditto.
+
 2012-09-26  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Don't use the C API internally in WebKitJavascriptResult

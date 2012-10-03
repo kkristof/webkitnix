@@ -34,7 +34,6 @@
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
 #include "Language.h"
-#include "LocalizedDate.h"
 #include "LocalizedStrings.h"
 #include <wtf/DateMath.h>
 #include <wtf/PassOwnPtr.h>
@@ -118,8 +117,10 @@ NSDateFormatter* LocaleMac::createShortDateFormatter()
     return createDateTimeFormatter(m_locale.get(), NSDateFormatterShortStyle, NSDateFormatterNoStyle);
 }
 
-double LocaleMac::parseDate(const String& input)
+double LocaleMac::parseDateTime(const String& input, DateComponents::Type type)
 {
+    if (type != DateComponents::Date)
+        return std::numeric_limits<double>::quiet_NaN();
     RetainPtr<NSDateFormatter> formatter(AdoptNS, createShortDateFormatter());
     NSDate *date = [formatter.get() dateFromString:input];
     if (!date)
@@ -127,8 +128,10 @@ double LocaleMac::parseDate(const String& input)
     return [date timeIntervalSince1970] * msPerSecond;
 }
 
-String LocaleMac::formatDate(const DateComponents& dateComponents)
+String LocaleMac::formatDateTime(const DateComponents& dateComponents)
 {
+    if (dateComponents.type() != DateComponents::Date)
+        return String();
     RetainPtr<NSDateFormatter> formatter(AdoptNS, createShortDateFormatter());
     NSTimeInterval interval = dateComponents.millisecondsSinceEpoch() / msPerSecond;
     return String([formatter.get() stringFromDate:[NSDate dateWithTimeIntervalSince1970:interval]]);
@@ -247,6 +250,12 @@ NSDateFormatter* LocaleMac::createTimeFormatter()
 NSDateFormatter* LocaleMac::createShortTimeFormatter()
 {
     return createDateTimeFormatter(m_locale.get(), NSDateFormatterNoStyle, NSDateFormatterShortStyle);
+}
+
+String LocaleMac::dateFormat()
+{
+    // FIXME: We should have real implementation of LocaleMac::dateFormat().
+    return emptyString();
 }
 
 String LocaleMac::timeFormat()

@@ -308,6 +308,11 @@ PassRefPtr<SharedBuffer> WebPage::cachedResponseDataForURL(const KURL&)
     return 0;
 }
 
+void WebPage::commitPageTransitionViewport()
+{
+    m_drawingArea->setLayerTreeStateIsFrozen(false);
+}
+
 static Frame* targetFrameForEditing(WebPage* page)
 {
     Frame* targetFrame = page->corePage()->focusController()->focusedOrMainFrame();
@@ -438,23 +443,6 @@ void WebPage::hidePopupMenu()
 
     m_activePopupMenu->client()->popupDidHide();
     m_activePopupMenu = 0;
-}
-
-bool WebPage::handleMouseReleaseEvent(const PlatformMouseEvent& platformMouseEvent)
-{
-#ifndef QT_NO_CLIPBOARD
-    if (platformMouseEvent.button() != WebCore::MiddleButton)
-        return false;
-
-    if (qApp->clipboard()->supportsSelection()) {
-        WebCore::Frame* focusFrame = m_page->focusController()->focusedOrMainFrame();
-        if (focusFrame) {
-            focusFrame->editor()->command(AtomicString("PasteGlobalSelection")).execute();
-            return true;
-        }
-    }
-#endif
-    return false;
 }
 
 } // namespace WebKit
