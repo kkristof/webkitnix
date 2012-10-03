@@ -105,6 +105,9 @@ private:
     void sendTouchEvent(Ewk_Touch_Event_Type);
 #endif
 #elif PLATFORM(NIX)
+#if ENABLE(TOUCH_EVENTS)
+    void sendCurrentTouchEvent(Nix::InputEvent::Type touchType);
+#endif
     void sendOrQueueEvent(Nix::InputEvent*);
     Nix::MouseEvent* createMouseEvent(Nix::InputEvent::Type type, unsigned int button, WKEventModifiers wkModifiers);
     Nix::KeyEvent* createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers, bool shouldUseUpperCase = false, bool isKeypad = false);

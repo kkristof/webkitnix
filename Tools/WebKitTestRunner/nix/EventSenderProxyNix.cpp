@@ -72,6 +72,11 @@ static WTREvent eventQueue[1024];
 static unsigned endOfQueue;
 static bool isReplayingEvents;
 
+static std::vector<Nix::TouchPoint> touchPoints;
+static unsigned touchModifiers;
+static int touchVerticalRadius;
+static int touchHorizontalRadius;
+
 EventSenderProxy::EventSenderProxy(TestController* testController)
     : m_testController(testController)
     , m_time(0)
@@ -83,6 +88,10 @@ EventSenderProxy::EventSenderProxy(TestController* testController)
     memset(eventQueue, 0, sizeof(eventQueue));
     endOfQueue = 0;
     isReplayingEvents = false;
+    touchPoints.clear();
+    touchModifiers = 0;
+    touchVerticalRadius = 0;
+    touchHorizontalRadius = 0;
 }
 
 static const double doubleClickInterval = 300;
@@ -293,57 +302,113 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
 #if ENABLE(TOUCH_EVENTS)
 void EventSenderProxy::addTouchPoint(int x, int y)
 {
-    notImplemented();
+    unsigned lowestId = 0;
+    for (size_t i = 0; i < touchPoints.size(); i++) {
+        if (touchPoints[i].id == lowestId)
+            lowestId++;
+    }
+
+    Nix::TouchPoint touch;
+    touch.id = lowestId;
+    touch.state = Nix::TouchPoint::TouchPressed;
+    touch.x = x;
+    touch.y = y;
+    touch.globalX = x;
+    touch.globalY = y;
+    touch.verticalRadius = touchVerticalRadius;
+    touch.horizontalRadius = touchHorizontalRadius;
+    touch.rotationAngle = 0.0;
+    touch.pressure = 1.0;
+    touchPoints.push_back(touch);
 }
 
 void EventSenderProxy::updateTouchPoint(int index, int x, int y)
 {
-    notImplemented();
-}
+    ASSERT(index >= 0 && index < currentTouchPoints.size());
 
-void EventSenderProxy::setTouchModifier(WKEventModifiers modifier, bool enable)
-{
-    notImplemented();
-}
-
-void EventSenderProxy::touchStart()
-{
-    notImplemented();
-}
-
-void EventSenderProxy::touchMove()
-{
-    notImplemented();
-}
-
-void EventSenderProxy::touchEnd()
-{
-    notImplemented();
-}
-
-void EventSenderProxy::touchCancel()
-{
-    notImplemented();
-}
-
-void EventSenderProxy::clearTouchPoints()
-{
-    notImplemented();
+    Nix::TouchPoint& touch = touchPoints[index];
+    touch.state = Nix::TouchPoint::TouchMoved;
+    touch.x = x;
+    touch.y = y;
+    touch.globalX = x;
+    touch.globalY = y;
+    touch.verticalRadius = touchVerticalRadius;
+    touch.horizontalRadius = touchHorizontalRadius;
 }
 
 void EventSenderProxy::releaseTouchPoint(int index)
 {
-    notImplemented();
+    ASSERT(index >= 0 && index < currentTouchPoints.size());
+
+    Nix::TouchPoint& touch = touchPoints[index];
+    touch.state = Nix::TouchPoint::TouchReleased;
 }
 
 void EventSenderProxy::cancelTouchPoint(int index)
 {
-    notImplemented();
+    ASSERT(index >= 0 && index < currentTouchPoints.size());
+
+    Nix::TouchPoint& touch = touchPoints[index];
+    touch.state = Nix::TouchPoint::TouchCancelled;
+}
+
+void EventSenderProxy::setTouchModifier(WKEventModifiers wkModifier, bool enable)
+{
+    unsigned modifier = convertToNixModifiers(wkModifier);
+    if (enable)
+        touchModifiers |= modifier;
+    else
+        touchModifiers &= ~modifier;
+}
+
+void EventSenderProxy::sendCurrentTouchEvent(Nix::InputEvent::Type touchType)
+{
+    Nix::TouchEvent* ev = new Nix::TouchEvent();
+    ev->modifiers = touchModifiers;
+    ev->timestamp = convertToNixTimestamp(m_time);
+    ev->type = touchType;
+    ev->touchPoints = touchPoints;
+    sendOrQueueEvent(ev);
+
+    for (size_t i = 0; i < touchPoints.size(); ++i) {
+        Nix::TouchPoint& touchPoint = touchPoints[i];
+        if (touchPoint.state == Nix::TouchPoint::TouchReleased) {
+            touchPoints.erase(touchPoints.begin() + i);
+            --i;
+        } else
+            touchPoint.state = Nix::TouchPoint::TouchStationary;
+    }
+}
+
+void EventSenderProxy::touchStart()
+{
+    sendCurrentTouchEvent(Nix::InputEvent::TouchStart);
+}
+
+void EventSenderProxy::touchMove()
+{
+    sendCurrentTouchEvent(Nix::InputEvent::TouchMove);
+}
+
+void EventSenderProxy::touchEnd()
+{
+    sendCurrentTouchEvent(Nix::InputEvent::TouchEnd);
+}
+
+void EventSenderProxy::touchCancel()
+{
+    sendCurrentTouchEvent(Nix::InputEvent::TouchCancel);
+}
+
+void EventSenderProxy::clearTouchPoints()
+{
+    touchPoints.clear();
 }
 
 void EventSenderProxy::setTouchPointRadius(int radiusX, int radiusY)
 {
-    notImplemented();
+    touchHorizontalRadius = radiusX;
+    touchVerticalRadius = radiusY;
 }
 
 #endif
