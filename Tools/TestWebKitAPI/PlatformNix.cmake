@@ -112,8 +112,8 @@ ADD_LIBRARY(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_SOURCES})
 TARGET_LINK_LIBRARIES(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_LIBRARIES})
 ADD_DEPENDENCIES(TestWebKitNixAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersForTestWebKitAPI_NAME} ${ForwardingNetworkHeadersForTestWebKitAPI_NAME})
 
-SET(test_webkitnix_api_BINARIES
-    WebViewPaintToCurrentGLContext
+LIST(APPEND bundle_harness_SOURCES
+    ${TESTWEBKITAPI_DIR}/Tests/nix/WebViewWebProcessCrashed_Bundle.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -129,9 +129,26 @@ SET(test_webkitnix_api_LIBRARIES
     gtest
 )
 
+SET(test_webkitnix_api_BINARIES
+    WebViewPaintToCurrentGLContext
+)
+
+SET(test_webkitnix_api_fail_BINARIES
+    WebViewWebProcessCrashed
+)
+
 FOREACH(testName ${test_webkitnix_api_BINARIES})
     ADD_EXECUTABLE(test_webkitnix_api_${testName} ${TESTWEBKITAPI_DIR}/Tests/nix/${testName}.cpp)
     ADD_TEST(test_webkitnix_api_${testName} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_webkitnix_api_${testName})
     SET_TESTS_PROPERTIES(test_webkitnix_api_${testName} PROPERTIES TIMEOUT 60)
     TARGET_LINK_LIBRARIES(test_webkitnix_api_${testName} ${test_webkitnix_api_LIBRARIES})
+ENDFOREACH()
+
+# We don't run tests that are expected to fail. We could use the WILL_FAIL
+# property, but it reports failure when the test crashes or timeouts and would
+# make the bot red.
+
+FOREACH(testName ${test_webkitnix_api_fail_BINARIES})
+    ADD_EXECUTABLE(test_webkitnix_api_fail_${testName} ${TESTWEBKITAPI_DIR}/Tests/nix/${testName}.cpp)
+    TARGET_LINK_LIBRARIES(test_webkitnix_api_fail_${testName} ${test_webkitnix_api_LIBRARIES})
 ENDFOREACH()
