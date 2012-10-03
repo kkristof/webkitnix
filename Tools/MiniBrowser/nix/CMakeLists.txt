@@ -24,11 +24,11 @@ SET(MiniBrowser_INCLUDE_DIRECTORIES
     ${EGL_INCLUDE_DIR}
 )
 
-IF (WTF_USE_GLX)
-  LIST(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowGLX.cpp)
-ELSE ()
+IF (WTF_USE_EGL)
   LIST(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowEGL.cpp)
   LIST(APPEND MiniBrowser_LIBRARIES ${EGL_LIBRARY})
+ELSE ()
+  LIST(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowGLX.cpp)
 ENDIF ()
 
 INCLUDE_DIRECTORIES(${MiniBrowser_INCLUDE_DIRECTORIES})

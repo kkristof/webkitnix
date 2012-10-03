@@ -268,7 +268,7 @@ IF (WTF_USE_3D_GRAPHICS)
     )
   ELSE ()
     LIST(APPEND WebCore_SOURCES
-        platform/graphics/glx/GLContextGLX.cpp
+        platform/graphics/glx/GLContextFromCurrentGLX.cpp
     )
   ENDIF ()
 ENDIF ()

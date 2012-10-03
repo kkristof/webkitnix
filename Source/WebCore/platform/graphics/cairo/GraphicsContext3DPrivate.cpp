@@ -36,7 +36,7 @@
 #if USE(EGL)
 #include "GLContextEGL.h"
 #else
-#include "GLContextGLX.h"
+#include "GLContextFromCurrentGLX.h"
 #endif
 #endif
 
@@ -64,7 +64,9 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
     #if USE(EGL)
         m_glContext = GLContextEGL::createFromCurrentGLContext();
     #else
-        m_glContext = GLContextGLX::createFromCurrentGLContext();
+        // TODO: Merge implementations of GLContextFromCurrentGLX and GLContextGLX. Currently split to
+        // avoid conflicts.
+        m_glContext = GLContextFromCurrentGLX::createFromCurrentGLContext();
     #endif
 #endif
         break;
