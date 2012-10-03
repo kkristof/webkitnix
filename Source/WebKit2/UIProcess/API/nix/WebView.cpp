@@ -48,6 +48,7 @@
 #include <WebCore/Scrollbar.h>
 #include <wtf/text/WTFString.h>
 
+#include <WebKit2/NixEvents.h>
 #include <WebKit2/WebView.h>
 
 using namespace WebCore;
