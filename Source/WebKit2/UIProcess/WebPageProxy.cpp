@@ -78,6 +78,8 @@
 #include "WebProtectionSpace.h"
 #include "WebSecurityOrigin.h"
 #include "WebURLRequest.h"
+#include <CoreIPC/ArgumentEncoder.h>
+#include <CoreIPC/ArgumentDecoder.h>
 #include <WebCore/DragController.h>
 #include <WebCore/DragData.h>
 #include <WebCore/DragSession.h>
@@ -1390,15 +1392,57 @@ void WebPageProxy::terminateProcess()
 }
 
 #if !USE(CF) || defined(BUILDING_QT__)
-PassRefPtr<WebData> WebPageProxy::sessionStateData(WebPageProxySessionStateFilterCallback, void* /*context*/) const
+static uint64_t CurrentSessionDataVersion = 1;
+PassRefPtr<WebData> WebPageProxy::sessionStateData(WebPageProxySessionStateFilterCallback filter, void* context) const
 {
-    // FIXME: Return session state data for saving Page state.
-    return 0;
+    OwnPtr<CoreIPC::ArgumentEncoder> encoder = CoreIPC::ArgumentEncoder::create(CurrentSessionDataVersion);
+    unsigned index = m_backForwardList->currentIndex();
+    const BackForwardListItemVector& entries = m_backForwardList->entries();
+    BackForwardListItemVector filtered;
+    WKPageRef pageRef = toAPI(const_cast<WebPageProxy*>(this));
+    for (unsigned i = 0; i < entries.size(); ++i) {
+        if (filter && !filter(pageRef, WKPageGetSessionHistoryURLValueType(), toURLRef(entries[i]->originalURL().impl()), context)) {
+            if (i < index)
+                --index;
+            continue;
+        }
+        filtered.append(entries[i]);
+    }
+    SessionState state(filtered, index);
+    state.encode(encoder.get());
+    return WebData::create(encoder->buffer(), encoder->bufferSize());
 }
 
-void WebPageProxy::restoreFromSessionStateData(WebData*)
+void WebPageProxy::restoreFromSessionStateData(WebData* data)
 {
-    // FIXME: Restore the Page from the passed in session state data.
+    // Clear the back/forward list even if the list is empty.
+    m_backForwardList->clear();
+    if (!data)
+        return;
+
+    CoreIPC::ArgumentDecoder decoder(data->bytes(), data->size());
+
+    // destinationID() holds the version.
+    if (decoder.destinationID() != CurrentSessionDataVersion)
+        return;
+
+    SessionState state;
+    if (!SessionState::decode(&decoder, state))
+        return;
+
+    const BackForwardListItemVector& entries = state.list();
+    if (state.isEmpty())
+        return;
+
+    for (size_t i = 0; i < entries.size(); ++i) {
+        WebBackForwardListItem* item = entries[i].get();
+        m_backForwardList->addItem(item);
+        process()->registerNewWebBackForwardListItem(item);
+        if (i == state.currentIndex())
+            setPendingAPIRequestURL(item->url());
+    }
+
+    process()->send(Messages::WebPage::RestoreSessionAndNavigateToCurrentItem(state), m_pageID);
 }
 #endif
 
