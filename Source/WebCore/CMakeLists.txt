@@ -144,6 +144,7 @@ SET(WebCore_IDL_FILES
     Modules/battery/BatteryManager.idl
     Modules/battery/NavigatorBattery.idl
 
+    Modules/filesystem/DataTransferItemFileSystem.idl
     Modules/filesystem/DirectoryEntry.idl
     Modules/filesystem/DirectoryEntrySync.idl
     Modules/filesystem/DirectoryReader.idl
@@ -165,6 +166,7 @@ SET(WebCore_IDL_FILES
     Modules/filesystem/FileWriterCallback.idl
     Modules/filesystem/FileWriter.idl
     Modules/filesystem/FileWriterSync.idl
+    Modules/filesystem/HTMLInputElementFileSystem.idl
     Modules/filesystem/Metadata.idl
     Modules/filesystem/MetadataCallback.idl
     Modules/filesystem/WorkerContextFileSystem.idl
@@ -412,7 +414,6 @@ SET(WebCore_IDL_FILES
     fileapi/FileList.idl
     fileapi/FileReader.idl
     fileapi/FileReaderSync.idl
-    fileapi/WebKitBlobBuilder.idl
 
     html/DOMFormData.idl
     html/DOMSettableTokenList.idl
@@ -795,6 +796,7 @@ SET(WebCore_SOURCES
     Modules/filesystem/FileWriter.cpp
     Modules/filesystem/FileWriterBase.cpp
     Modules/filesystem/FileWriterSync.cpp
+    Modules/filesystem/HTMLInputElementFileSystem.cpp
     Modules/filesystem/LocalFileSystem.cpp
     Modules/filesystem/WorkerContextFileSystem.cpp
     

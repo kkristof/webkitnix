@@ -508,8 +508,8 @@ namespace WebCore {
         void setDeviceHeight(int height) { m_deviceHeight = height; }
         int deviceHeight() const { return m_deviceHeight; }
 
-        void setForceCompositingMode(bool flag) { m_forceCompositingMode = flag; }
-        bool forceCompositingMode() { return m_forceCompositingMode; }
+        void setForceCompositingMode(bool flag);
+        bool forceCompositingMode() const { return m_forceCompositingMode; }
 
         void setShouldInjectUserScriptsInInitialEmptyDocument(bool flag) { m_shouldInjectUserScriptsInInitialEmptyDocument = flag; }
         bool shouldInjectUserScriptsInInitialEmptyDocument() { return m_shouldInjectUserScriptsInInitialEmptyDocument; }
@@ -632,6 +632,9 @@ namespace WebCore {
 
         void setDiagnosticLoggingEnabled(bool enabled) { m_diagnosticLoggingEnabled = enabled; }
         bool diagnosticLoggingEnabled() const { return m_diagnosticLoggingEnabled; }
+
+        void setApplyPageScaleFactorInCompositor(bool enabled) { m_applyPageScaleFactorInCompositor = enabled; }
+        bool applyPageScaleFactorInCompositor() const { return m_applyPageScaleFactorInCompositor; }
 
     private:
         explicit Settings(Page*);
@@ -818,9 +821,11 @@ namespace WebCore {
 
         bool m_scrollingPerformanceLoggingEnabled : 1;
 
+        bool m_applyPageScaleFactorInCompositor : 1;
+
         Timer<Settings> m_setImageLoadingSettingsTimer;
         void imageLoadingSettingsTimerFired(Timer<Settings>*);
-        
+
         double m_incrementalRenderingSuppressionTimeoutInSeconds;
 
 #if USE(AVFOUNDATION)

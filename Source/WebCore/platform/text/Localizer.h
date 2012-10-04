@@ -72,6 +72,14 @@ public:
     // Note: Some platforms return same value as timeFormat().
     virtual String shortTimeFormat();
 
+    // Returns a date-time format in Unicode TR35 LDML. It should have a second
+    // field.
+    String dateTimeFormatWithSecond();
+
+    // Returns a date-time format in Unicode TR35 LDML. It should have no second
+    // field.
+    String dateTimeFormatWithoutSecond();
+
     // Returns localized period field(AM/PM) strings.
     virtual const Vector<String>& timeAMPMLabels();
 #endif
@@ -101,10 +109,12 @@ public:
     // 00:00:00.000 UTC.
     virtual double parseDateTime(const String&, DateComponents::Type) = 0;
 
+    enum FormatType { FormatTypeUnspecified, FormatTypeShort, FormatTypeMedium };
+
     // Serializes the specified date into a formatted date string to
     // display to the user. If an implementation doesn't support
     // localized dates the function should return an empty string.
-    virtual String formatDateTime(const DateComponents&) = 0;
+    virtual String formatDateTime(const DateComponents&, FormatType = FormatTypeUnspecified);
 
     virtual ~Localizer();
 

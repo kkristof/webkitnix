@@ -41,6 +41,7 @@ namespace WebKit {
 
 WebGeolocationManager::WebGeolocationManager(WebProcess* process)
     : m_process(process)
+    , m_didAddMessageReceiver(false)
 {
 }
 
@@ -55,6 +56,11 @@ void WebGeolocationManager::didReceiveMessage(CoreIPC::Connection* connection, C
 
 void WebGeolocationManager::registerWebPage(WebPage* page)
 {
+    if (!m_didAddMessageReceiver) {
+        m_process->connection()->addMessageReceiver(CoreIPC::MessageClassWebGeolocationManager, this);
+        m_didAddMessageReceiver = true;
+    }
+
     bool wasEmpty = m_pageSet.isEmpty();
 
     m_pageSet.add(page);

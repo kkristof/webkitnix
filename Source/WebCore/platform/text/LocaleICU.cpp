@@ -182,10 +182,10 @@ double LocaleICU::parseDateTime(const String& input, DateComponents::Type type)
     return date;
 }
 
-String LocaleICU::formatDateTime(const DateComponents& dateComponents)
+String LocaleICU::formatDateTime(const DateComponents& dateComponents, FormatType formatType)
 {
     if (dateComponents.type() != DateComponents::Date)
-        return String();
+        return Localizer::formatDateTime(dateComponents, formatType);
     if (!initializeShortDateFormat())
         return String();
     double input = dateComponents.millisecondsSinceEpoch();
@@ -413,8 +413,12 @@ void LocaleICU::initializeDateTimeFormat()
 
 String LocaleICU::dateFormat()
 {
-    // FIXME: We should have real implementation of LocaleICU::dateFormat().
-    return emptyString();
+    if (!m_dateFormat.isEmpty())
+        return m_dateFormat;
+    if (!initializeShortDateFormat())
+        return ASCIILiteral("dd/MM/yyyy");
+    m_dateFormat = getDateFormatPattern(m_shortDateFormat);
+    return m_dateFormat;
 }
 
 String LocaleICU::timeFormat()

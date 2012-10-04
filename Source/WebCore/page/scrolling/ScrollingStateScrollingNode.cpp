@@ -58,6 +58,7 @@ ScrollingStateScrollingNode::ScrollingStateScrollingNode(ScrollingStateScrolling
     , m_changedProperties(stateNode->changedProperties())
     , m_viewportRect(stateNode->viewportRect())
     , m_contentsSize(stateNode->contentsSize())
+    , m_nonFastScrollableRegion(stateNode->nonFastScrollableRegion())
     , m_wheelEventHandlerCount(stateNode->wheelEventHandlerCount())
     , m_shouldUpdateScrollLayerPositionOnMainThread(stateNode->shouldUpdateScrollLayerPositionOnMainThread())
     , m_horizontalScrollElasticity(stateNode->horizontalScrollElasticity())
@@ -76,9 +77,15 @@ ScrollingStateScrollingNode::~ScrollingStateScrollingNode()
 {
 }
 
-PassOwnPtr<ScrollingStateNode> ScrollingStateScrollingNode::cloneNode()
+PassOwnPtr<ScrollingStateNode> ScrollingStateScrollingNode::cloneAndResetNode()
 {
     OwnPtr<ScrollingStateScrollingNode> clone = adoptPtr(new ScrollingStateScrollingNode(this));
+
+    // Now that this node is cloned, reset our change properties.
+    setScrollLayerDidChange(false);
+    resetChangedProperties();
+
+    cloneAndResetChildNodes(clone.get());
     return clone.release();
 }
 

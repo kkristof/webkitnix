@@ -174,8 +174,7 @@ static void unfocus(WKPageRef page, const void* clientInfo)
 
 static void decidePolicyForGeolocationPermissionRequest(WKPageRef, WKFrameRef, WKSecurityOriginRef, WKGeolocationPermissionRequestRef permissionRequest, const void* clientInfo)
 {
-    TestController* testController = static_cast<TestController*>(const_cast<void*>(clientInfo));
-    testController->handleGeolocationPermissionRequest(permissionRequest);
+    TestController::shared().handleGeolocationPermissionRequest(permissionRequest);
 }
 
 WKPageRef TestController::createOtherPage(WKPageRef oldPage, WKURLRequestRef, WKDictionaryRef, WKEventModifiers, WKEventMouseButton, const void*)
@@ -491,12 +490,7 @@ bool TestController::resetStateToConsistentValues()
     WKPreferencesSetArtificialPluginInitializationDelayEnabled(preferences, false);
     WKPreferencesSetTabToLinksEnabled(preferences, false);
     WKPreferencesSetInteractiveFormValidationEnabled(preferences, true);
-
-// [Qt][WK2]REGRESSION(r104881):It broke hundreds of tests
-// FIXME: https://bugs.webkit.org/show_bug.cgi?id=76247
-#if !PLATFORM(QT)
     WKPreferencesSetMockScrollbarsEnabled(preferences, true);
-#endif
 
 #if !PLATFORM(QT)
     static WKStringRef standardFontFamily = WKStringCreateWithUTF8CString("Times");
@@ -1033,12 +1027,13 @@ void TestController::decidePolicyForGeolocationPermissionRequestIfPossible()
         return;
 
     for (size_t i = 0; i < m_geolocationPermissionRequests.size(); ++i) {
-        WKGeolocationPermissionRequestRef& permissionRequest = m_geolocationPermissionRequests[i];
+        WKGeolocationPermissionRequestRef permissionRequest = m_geolocationPermissionRequests[i].get();
         if (m_isGeolocationPermissionAllowed)
             WKGeolocationPermissionRequestAllow(permissionRequest);
         else
             WKGeolocationPermissionRequestDeny(permissionRequest);
     }
+    m_geolocationPermissionRequests.clear();
 }
 
 void TestController::decidePolicyForNotificationPermissionRequest(WKPageRef page, WKSecurityOriginRef origin, WKNotificationPermissionRequestRef request, const void* clientInfo)

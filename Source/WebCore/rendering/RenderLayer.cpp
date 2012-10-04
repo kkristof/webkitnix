@@ -109,9 +109,7 @@
 #include "SVGNames.h"
 #endif
 
-#if PLATFORM(CHROMIUM) || PLATFORM(BLACKBERRY)
-// FIXME: border radius clipping triggers too-slow path on Chromium
-// https://bugs.webkit.org/show_bug.cgi?id=69866
+#if PLATFORM(BLACKBERRY)
 #define DISABLE_ROUNDED_CORNER_CLIPPING
 #endif
 
@@ -1806,7 +1804,8 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
                 if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
                     frameElement = static_cast<HTMLFrameElement*>(ownerElement);
 
-                if (frameElement && frameElement->scrollingMode() != ScrollbarAlwaysOff) {
+                if ((frameElement && frameElement->scrollingMode() != ScrollbarAlwaysOff)
+                    || (!frameView->frame()->eventHandler()->autoscrollInProgress() && !frameView->wasScrolledByUser())) {
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect exposeRect = getRectToExpose(viewRect, rect, alignX, alignY);
 
@@ -3177,6 +3176,8 @@ void RenderLayer::paintLayerContents(RenderLayer* rootLayer, GraphicsContext* co
         calculateRects(rootLayer, region, (localPaintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects, paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect,
             IgnoreOverlayScrollbarSize, localPaintFlags & PaintLayerPaintingOverflowContents ? IgnoreOverflowClip : RespectOverflowClip);
         paintOffset = toPoint(layerBounds.location() - renderBoxLocation() + subPixelAccumulation);
+        if (this == rootLayer)
+            paintOffset = roundedIntPoint(paintOffset);
     }
 
     bool forceBlackText = paintBehavior & PaintBehaviorForceBlackText;
@@ -4882,10 +4883,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     updateScrollCornerStyle();
     updateResizerStyle();
 
-#if ENABLE(CSS_FILTERS)
-    bool backingDidCompositeLayers = isComposited() && backing()->canCompositeFilters();
-#endif
-
     updateDescendantDependentFlags();
     updateTransform();
 #if ENABLE(CSS_COMPOSITING)
@@ -4907,11 +4904,14 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 
 #if ENABLE(CSS_FILTERS)
     updateOrRemoveFilterEffect();
+#if USE(ACCELERATED_COMPOSITING)
+    bool backingDidCompositeLayers = isComposited() && backing()->canCompositeFilters();
     if (isComposited() && backingDidCompositeLayers && !backing()->canCompositeFilters()) {
         // The filters used to be drawn by platform code, but now the platform cannot draw them anymore.
         // Fallback to drawing them in software.
         setBackingNeedsRepaint();
     }
+#endif
 #endif
 }
 

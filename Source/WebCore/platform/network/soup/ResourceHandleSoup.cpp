@@ -240,6 +240,11 @@ SoupSession* ResourceHandleInternal::soupSession()
     return sessionFromContext(m_context.get());
 }
 
+uint64_t ResourceHandleInternal::initiatingPageID()
+{
+    return (m_context && m_context->isValid()) ? m_context->initiatingPageID() : 0;
+}
+
 ResourceHandle::~ResourceHandle()
 {
     cleanupSoupRequestOperation(this, true);
@@ -376,6 +381,7 @@ static void cleanupSoupRequestOperation(ResourceHandle* handle, bool isDestroyin
     if (d->m_soupMessage) {
         g_signal_handlers_disconnect_matched(d->m_soupMessage.get(), G_SIGNAL_MATCH_DATA,
                                              0, 0, 0, 0, handle);
+        g_object_set_data(G_OBJECT(d->m_soupMessage.get()), "handle", 0);
         d->m_soupMessage.clear();
     }
 
@@ -680,6 +686,18 @@ static void networkEventCallback(SoupMessage*, GSocketClientEvent event, GIOStre
 }
 #endif
 
+static const char* gSoupRequestInitiaingPageIDKey = "wk-soup-request-initiaing-page-id";
+
+static void setSoupRequestInitiaingPageID(SoupRequest* request, uint64_t initiatingPageID)
+{
+    if (!initiatingPageID)
+        return;
+
+    uint64_t* initiatingPageIDPtr = static_cast<uint64_t*>(fastMalloc(sizeof(uint64_t)));
+    *initiatingPageIDPtr = initiatingPageID;
+    g_object_set_data_full(G_OBJECT(request), g_intern_static_string(gSoupRequestInitiaingPageIDKey), initiatingPageIDPtr, fastFree);
+}
+
 static bool startHTTPRequest(ResourceHandle* handle)
 {
     ASSERT(handle);
@@ -701,6 +719,8 @@ static bool startHTTPRequest(ResourceHandle* handle)
         d->m_soupRequest = 0;
         return false;
     }
+
+    setSoupRequestInitiaingPageID(d->m_soupRequest.get(), d->initiatingPageID());
 
     d->m_soupMessage = adoptGRef(soup_request_http_get_message(SOUP_REQUEST_HTTP(d->m_soupRequest.get())));
     if (!d->m_soupMessage)
@@ -855,8 +875,10 @@ void ResourceHandle::platformSetDefersLoading(bool defersLoading)
 
     // Except when canceling a possible timeout timer, we only need to take action here to UN-defer loading.
     if (defersLoading) {
-        g_source_destroy(d->m_timeoutSource.get());
-        d->m_timeoutSource.clear();
+        if (d->m_timeoutSource) {
+            g_source_destroy(d->m_timeoutSource.get());
+            d->m_timeoutSource.clear();
+        }
         return;
     }
 
@@ -1003,7 +1025,7 @@ static gboolean requestTimeoutCallback(gpointer data)
     ResourceError timeoutError("WebKitNetworkError", gTimeoutError, d->m_firstRequest.url().string(), "Request timed out");
     timeoutError.setIsTimeout(true);
     client->didFail(handle.get(), timeoutError);
-    cleanupSoupRequestOperation(handle.get());
+    handle->cancel();
 
     return FALSE;
 }
@@ -1032,6 +1054,8 @@ static bool startNonHTTPRequest(ResourceHandle* handle, KURL url)
 
     // balanced by a deref() in cleanupSoupRequestOperation, which should always run
     handle->ref();
+
+    setSoupRequestInitiaingPageID(d->m_soupRequest.get(), d->initiatingPageID());
 
     // Send the request only if it's not been explicitly deferred.
     if (!d->m_defersLoading) {
@@ -1072,6 +1096,12 @@ SoupSession* ResourceHandle::defaultSession()
     }
 
     return session;
+}
+
+uint64_t ResourceHandle::getSoupRequestInitiaingPageID(SoupRequest* request)
+{
+    uint64_t* initiatingPageIDPtr = static_cast<uint64_t*>(g_object_get_data(G_OBJECT(request), gSoupRequestInitiaingPageIDKey));
+    return initiatingPageIDPtr ? *initiatingPageIDPtr : 0;
 }
 
 }

@@ -192,6 +192,7 @@ fast/sub-pixel/table-rows-no-gaps.html
 fast/sub-pixel/sub-pixel-accumulates-to-layers.html
 fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html
 fast/sub-pixel/snap-negative-location.html
+fast/sub-pixel/zoomed-image-tiles.html
 
 # fast/events/pagehide-timeout.html, pageshow-pagehide-on-back-cached-with-frames.html, and
 # pageshow-pagehide-on-back-cached.html flakey on Lion Intel Debug WebKit testers.
@@ -278,9 +279,6 @@ webkit.org/b/96580 css3/filters/custom/filter-fallback-to-software.html [ ImageO
 # new fast/load tests fail https://bugs.webkit.org/show_bug.cgi?id=96832
 webkit.org/b/96832 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Failure ]
 webkit.org/b/96832 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Failure ]
-
-# Failure, most likely in WTR implementation of geolocation provider
-webkit.org/b/98081 fast/dom/Geolocation/maximum-age.html [ Failure ]
 
 ### END OF (1) Classified failures with bug reports
 ########################################

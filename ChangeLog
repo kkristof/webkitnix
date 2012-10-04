@@ -1,3 +1,45 @@
+2012-10-04  Balazs Kelemen  <kbalazs@webkit.org>
+
+        Don't allow to disable compositing in forced compositing mode
+        https://bugs.webkit.org/show_bug.cgi?id=98048
+
+        Reviewed by Jocelyn Turcotte.
+
+        Export Settings::setAcceleratedCompositingEnabled because it has been deinlined.
+
+        * Source/autotools/symbols.filter:
+
+2012-10-03  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL] Default.edj should be generated although ENABLE_WEBKIT disabled.
+        https://bugs.webkit.org/show_bug.cgi?id=97753
+
+        Reviewed by Laszlo Gombos.
+
+        default.edj is used in both webkit/efl and webkit2/efl.
+        However, it has been generated only when ENABLE_WEBKIT is enabled.
+
+        This patch separates the script which generates default.edj
+        from source/webkit/platformefl.cmake.
+
+        * Source/CMakeLists.txt:
+        * Source/PlatformEfl.cmake: Added to generate custom target for default theme.
+        * Source/cmake/OptionsEfl.cmake:
+        Moved directory generation from WebKit/PlatformEfl.cmake
+        because THEME_BINARY_DIR is used for both Default Theme and control theme in Tools.
+
+2012-10-03  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] Implementing the NetworkInfo API for BB port 
+        https://bugs.webkit.org/show_bug.cgi?id=98273
+
+        Reviewed by Rob Buis.
+
+        Adding references to new classes added to support BlackBerry's
+        NetworkInfo implementation.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
 2012-10-01  Keishi Hattori  <keishi@webkit.org>
 
         Calendar picker should use zero as default step base

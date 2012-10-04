@@ -203,6 +203,7 @@ fast/dom/shadow/focus-navigation-with-distributed-nodes.html
 fast/dom/shadow/form-in-shadow.html
 fast/dom/shadow/get-element-by-id-in-shadow-mutation.html
 fast/dom/shadow/get-element-by-id-in-shadow-root.html
+fast/dom/shadow/has-shadow-insertion-point.html
 fast/dom/shadow/iframe-shadow.html
 fast/dom/shadow/invalidate-distribution.html
 fast/dom/shadow/insertion-point-list-menu-crash.html
@@ -322,6 +323,7 @@ fast/sub-pixel/table-rows-no-gaps.html
 fast/sub-pixel/sub-pixel-accumulates-to-layers.html
 fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html
 fast/sub-pixel/snap-negative-location.html
+fast/sub-pixel/zoomed-image-tiles.html
 
 # USE(V8)
 
@@ -397,10 +399,6 @@ http/tests/inspector/compiler-source-mapping-debug.html
 #[Qt] inspector/styles/svg-style.xhtml fails
 # https://bugs.webkit.org/show_bug.cgi?id=79068
 inspector/styles/svg-style.xhtml
-
-# REGRESSION(r126717): It made inspector/styles/media-queries.html fail/flakey
-# https://bugs.webkit.org/show_bug.cgi?id=95070
-inspector/styles/media-queries.html
 
 # Microdata DOM API is not yet enabled.
 # https://bugs.webkit.org/show_bug.cgi?id=68610
@@ -749,11 +747,6 @@ http/tests/inspector/resource-main-cookies.php
 # https://bugs.webkit.org/show_bug.cgi?id=75614
 http/tests/workers/terminate-during-sync-operation.html
 
-# [Qt] DumpRenderTree converts "file:///" to a path differently
-# https://bugs.webkit.org/show_bug.cgi?id=76563
-http/tests/misc/drag-over-iframe-invalid-source-crash.html
-http/tests/misc/iframe-invalid-source-crash.html
-
 # Needs custom policy delegate enhancement to log downloads
 http/tests/download
 
@@ -764,18 +757,9 @@ http/tests/download
 # will not be in the output.
 http/tests/misc/redirect-to-external-url.html
 
-# [Qt] new test http/tests/misc/xslt-bad-import.html is failing
-# https://bugs.webkit.org/show_bug.cgi?id=72252
-http/tests/misc/xslt-bad-import.html
-
 # [Qt] http/tests/cookies/js-get-and-set-http-only-cookie.html failing since introduction in r119947
 # https://bugs.webkit.org/show_bug.cgi?id=87208
 http/tests/cookies/js-get-and-set-http-only-cookie.html
-
-# [Qt] new tests introduced in r122528 fail
-# https://bugs.webkit.org/show_bug.cgi?id=91218
-http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html
-http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_xserver_redirect.html
 
 # =========================================================================== #
 #       Failing xmlhttprequest tests                                          #
@@ -814,10 +798,6 @@ editing/pasteboard/paste-xml.xhtml
 # https://bugs.webkit.org/show_bug.cgi?id=72430
 editing/pasteboard/data-transfer-items-image-png.html
 
-# REGRESSION(r96870): editing/pasteboard/smart-paste-008.html fails on non-Mac
-# https://bugs.webkit.org/show_bug.cgi?id=69587
-editing/pasteboard/smart-paste-008.html
-
 # ============================================================================= #
 # Failing editing/deleting tests
 # ============================================================================= #
@@ -850,9 +830,6 @@ editing/selection/fake-drag.html
 editing/selection/select-from-textfield-outwards.html
 editing/selection/move-left-right.html
 editing/selection/move-past-trailing-space.html
-
-# https://bugs.webkit.org/show_bug.cgi?id=52883
-editing/selection/rtl-move-selection-right-left.html
 
 # [Qt] editing tests fails after r54980
 # https://bugs.webkit.org/show_bug.cgi?id=35145
@@ -968,10 +945,6 @@ plugins/embed-attributes-style.html
 # https://bugs.webkit.org/show_bug.cgi?id=60722
 http/tests/plugins/plugin-document-has-focus.html
 
-# [Qt] wrong ref count of npobject
-# https://bugs.webkit.org/show_bug.cgi?id=49749
-plugins/refcount-leaks.html
-
 # [Qt] plugins/netscape-plugin-page-cache-works.html fails
 # https://bugs.webkit.org/show_bug.cgi?id=74482
 plugins/netscape-plugin-page-cache-works.html
@@ -1006,14 +979,8 @@ sputnik/Conformance/15_Native_Objects/15.8_Math/15.8.2/15.8.2.18_tan/S15.8.2.18_
 # =========================================================================== #
 # Fluctuating/flakey tests
 # =========================================================================== #
-animations/3d/transform-origin-vs-functions.html
-animations/change-one-anim.html
 fast/frames/sandboxed-iframe-plugins.html
-fast/frames/sandboxed-iframe-scripting.html
-fast/frames/sandboxed-iframe-storage.html
 http/tests/cookies/simple-cookies-max-age.html
-
-transitions/change-values-during-transition.html
 
 # http/tests/inspector/resource-har-conversion.html is failing on the release bot after r63191
 # webkit.org/b/42162
@@ -1022,15 +989,6 @@ http/tests/inspector/resource-har-conversion.html
 # [Qt] Some inspector test fail intermittently
 # https://bugs.webkit.org/show_bug.cgi?id=42090
 http/tests/inspector/network/network-size.html
-# This test consistently fails if run with --singly flag
-inspector/timeline/timeline-paint.html
-
-# [Qt] New fails caused by change(s) between r79317-r79320.
-inspector/debugger/open-close-open.html
-
-# [Qt] fast/frames/flattening/frameset-flattening-subframesets.html fails intermittently on Qt bot
-# Fails caused by layoutTestController.display() in fast/frames/flattening/frameset-flattening-subframe-resize.html
-# https://bugs.webkit.org/show_bug.cgi?id=37334
 
 # Tests that currently fail but perhaps used to work at some point.
 fast/dom/open-and-close-by-DOM.html
@@ -1044,10 +1002,6 @@ fast/text/monospace-width-cache.html
 fast/forms/listbox-width-change.html
 fast/forms/plaintext-mode-2.html
 fast/forms/menulist-width-change.html
-
-# Flaky Test: fast/events/tabindex-focus-blur-all.html
-# https://bugs.webkit.org/show_bug.cgi?id=52115
-fast/events/tabindex-focus-blur-all.html
 
 # [Qt] http/tests/misc/link-rel-icon-beforeload.html is flakey
 # https://bugs.webkit.org/show_bug.cgi?id=63518
@@ -1325,12 +1279,6 @@ css3/filters/custom/effect-custom-parameters.html
 css3/filters/custom/filter-repaint-custom-clipped.html
 css3/filters/custom/filter-repaint-custom-rotated.html
 css3/filters/custom/filter-repaint-custom.html
-
-# ERROR: TestRunner::overridePreference() does not support the 'WebKitDisplayImagesKey' preference
-# http://trac.webkit.org/changeset/129462
-fast/loader/display-image-unset-allows-cached-image-load.html
-fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html
-fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html
 
 # ReferenceError: Can't find variable: MediaKeyError
 # http://trac.webkit.org/changeset/114067
@@ -2680,13 +2628,6 @@ inspector/timeline/timeline-frames.html
 inspector/elements/edit-dom-actions.html
 jquery/data.html
 
-# [Qt] css2.1/20110323/text-indent-intrinsic-00* fail
-# https://bugs.webkit.org/show_bug.cgi?id=91772
-css2.1/20110323/text-indent-intrinsic-001.htm
-css2.1/20110323/text-indent-intrinsic-002.htm
-css2.1/20110323/text-indent-intrinsic-003.htm
-css2.1/20110323/text-indent-intrinsic-004.htm
-
 # [Qt] new test introduced in r123205 fails on Qt
 # https://bugs.webkit.org/show_bug.cgi?id=91967
 inspector/styles/protocol-css-regions-commands.html
@@ -2731,8 +2672,6 @@ inspector/timeline/timeline-decode-resize.html
 # REGRESSION(r126852): It broke inspector tests
 # https://bugs.webkit.org/show_bug.cgi?id=95176
 http/tests/inspector-enabled/console-clear-arguments-on-frame-navigation.html
-http/tests/inspector-enabled/contentSecurityPolicy-blocks-setInterval.html
-http/tests/inspector-enabled/contentSecurityPolicy-blocks-setTimeout.html
 
 # [Qt] New svg/custom/clamped-masking-clipping.svg asserts
 # https://bugs.webkit.org/show_bug.cgi?id=95431
@@ -2918,6 +2857,3 @@ webkit.org/b/94005 css2.1/20110323/word-spacing-remove-space-003.htm [ ImageOnly
 webkit.org/b/94005 css2.1/20110323/word-spacing-remove-space-006.htm [ ImageOnlyFailure ]
 webkit.org/b/94006 fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 
-# [Qt] REGRESSION(r130160): It made 2 tests crash
-webkit.org/b/98158 svg/text/text-fonts-02-t.svg [ Crash Pass ]
-webkit.org/b/98158 http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Crash Pass ]

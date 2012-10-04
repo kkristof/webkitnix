@@ -672,9 +672,6 @@ fast/dom/inline-event-attributes-release.html
 fast/profiler/stop-profiling-after-setTimeout.html
 fast/profiler/dead-time.html
 
-# The Mac port does not support the legacy WebKitBlobBuilder class.
-fast/files/blob-builder-crash.html
-
 # [Mac] inspector/debugger/linkifier.html is flakey
 # https://bugs.webkit.org/show_bug.cgi?id=85319
 inspector/debugger/linkifier.html
@@ -700,6 +697,7 @@ fast/sub-pixel/table-rows-no-gaps.html
 fast/sub-pixel/sub-pixel-accumulates-to-layers.html
 fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html
 fast/sub-pixel/snap-negative-location.html
+fast/sub-pixel/zoomed-image-tiles.html
 
 # No CORS support for media elements is implemented yet.
 http/tests/security/video-cross-origin-readback.html

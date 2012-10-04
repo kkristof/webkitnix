@@ -625,6 +625,8 @@ public:
 
     bool isValid();
 
+    PassRefPtr<ImmutableArray> relatedPages() const;
+
     const String& urlAtProcessExit() const { return m_urlAtProcessExit; }
     WebFrameProxy::LoadState loadStateAtProcessExit() const { return m_loadStateAtProcessExit; }
 
@@ -998,6 +1000,10 @@ private:
     void dictationAlternatives(uint64_t dictationContext, Vector<String>& result);
 #endif
 #endif // PLATFORM(MAC)
+
+#if USE(SOUP)
+    void didReceiveURIRequest(String uriString, uint64_t requestID);
+#endif
 
     void clearLoadDependentCallbacks();
 

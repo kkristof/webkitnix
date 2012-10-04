@@ -13,6 +13,7 @@ webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Failure 
 webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-cntl-y-001.html [ ImageOnlyFailure Slow ]
 webkit.org/b/82097 editing/selection/move-by-word-visually-crash-test-5.html [ Pass Slow ]
 webkit.org/b/79679 [ Debug ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
+webkit.org/b/79679 [ Mac Release ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
 webkit.org/b/92287 [ Linux Mac Win ] fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow ]
 webkit.org/b/92287 [ Linux Mac Win ] platform/chromium/virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow ]
 crbug.com/24182 [ Debug ] fast/css/large-list-of-rules-crash.html [ Pass Slow ]
@@ -82,6 +83,7 @@ crbug.com/24182 [ Android Debug ] editing/selection/caret-at-bidi-boundary.html 
 crbug.com/24182 [ Android Debug ] fast/css/css-selector-deeply-nested.html [ Pass Slow ]
 crbug.com/65862 storage/indexeddb [ Pass Slow ]
 crbug.com/24182 [ Win Debug ] platform/chromium/virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Slow ]
+webkit.org/b/24182 [ Debug ] fast/dom/css-delete-doc.html [ Pass Slow ]
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Linux Win Debug ] inspector [ Pass Slow ]
@@ -984,11 +986,6 @@ http/tests/inspector/network/network-content-replacement-embed.html [ WontFix ]
 webkit.org/b/91435 [ Linux Win ] http/tests/inspector/extensions-ignore-cache.html [ Pass Timeout ]
 webkit.org/b/91435 [ Linux ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 webkit.org/b/91435 [ Win Release ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
-webkit.org/b/91435 [ Linux Win Release ] inspector/debugger/live-edit.html [ Failure Pass ]
-webkit.org/b/91435 [ Linux Win Debug ] inspector/debugger/live-edit.html [ Failure Pass Slow ]
-crbug.com/89357 [ Mac ] http/tests/inspector/extensions-ignore-cache.html [ Skip ]
-crbug.com/89357 [ Mac ] inspector/timeline/timeline-network-received-data.html [ Skip ]
-crbug.com/89357 [ Mac ] inspector/debugger/live-edit.html [ Skip ]
 
 # Add support for inspector layout tests on Mac.
 crbug.com/89357 [ Mac ] inspector
@@ -1036,8 +1033,6 @@ webkit.org/b/75186 [ Linux ] http/tests/inspector-enabled/dedicated-workers-list
 webkit.org/b/75647 http/tests/inspector/network/download.html [ Pass Timeout ]
 
 webkit.org/b/78810 [ Linux Win Debug ] inspector/debugger/script-formatter-console.html [ Pass Slow ]
-
-webkit.org/b/93225 [ Linux Win Debug ] http/tests/inspector/indexeddb/database-structure.html [ Crash ]
 
 # -----------------------------------------------------------------
 # Editing tests
@@ -1954,7 +1949,7 @@ webkit.org/b/44199 [ Release ] perf/class-list-remove.html [ Failure Pass Slow ]
 webkit.org/b/71652 [ Android Linux Mac Release ] perf/document-contains.html [ Pass Slow ]
 webkit.org/b/72372 [ Win Release ] perf/document-contains.html [ Pass Slow ]
 webkit.org/b/67921 [ Android Release ] perf/show-hide-table-rows.html [ Timeout ]
-webkit.org/b/67921 [ Linux Mac Win Release ] perf/show-hide-table-rows.html [ Pass Slow ]
+webkit.org/b/67921 [ Linux Mac Win Release ] perf/show-hide-table-rows.html [ Failure Pass Slow ]
 webkit.org/b/44199 [ Release ] perf/clone-with-focus.html [ Failure Pass ]
 webkit.org/b/44199 [ Release ] perf/typing-at-end-of-line.html [ Failure Pass ]
 webkit.org/b/44199 webkit.org/b/63057 [ Release ] perf/array-binary-search.html [ Failure Pass Slow ]
@@ -2353,7 +2348,12 @@ crbug.com/79110 [ Android Linux Win ] fast/overflow/infiniteRecursionGuard.html 
 # Regression caused by r83628.
 crbug.com/79241 http/tests/misc/favicon-loads-with-icon-loading-override.html [ Failure ]
 
-crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers1.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers2.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers3.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers4.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers5.html [ Failure Pass ]
+crbug.com/79857 [ Debug ] fast/events/popup-blocking-timers6.html [ Failure Pass ]
 
 crbug.com/79859 [ Android Linux Debug ] fast/css/create_element_align.xhtml [ Pass Timeout ]
 
@@ -2441,7 +2441,7 @@ crbug.com/83504 [ Mac ] fast/css/custom-font-xheight.html [ Failure Pass ]
 webkit.org/b/61169 [ Android Linux Win ] css3/images/optimize-contrast-canvas.html [ ImageOnlyFailure ]
 webkit.org/b/61169 [ Android Linux Win ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 
-webkit.org/b/92710 fast/forms/date/calendar-picker-appearance.html [ ImageOnlyFailure Pass ]
+webkit.org/b/92710 fast/forms/date/calendar-picker-appearance.html [ ImageOnlyFailure Pass Timeout ]
 
 # New test added in r87324
 crbug.com/83994 [ Win ] platform/win/plugins/call-javascript-that-destroys-plugin.html [ Failure ]
@@ -2523,12 +2523,27 @@ webkit.org/b/67915 [ Android Linux Win ] fast/borders/borderRadiusDashed06.html 
 
 webkit.org/b/95365 fast/loader/reload-zero-byte-plugin.html
 
-# Performance issues with border radius clipping on Chromium not yet resolved
-crbug.com/97716 fast/clip/overflow-border-radius-composited.html [ ImageOnlyFailure ]
-# Consistently failing as of about r95590
-crbug.com/97716 fast/clip/overflow-border-radius-fixed-position.html [ ImageOnlyFailure ]
-crbug.com/97716 fast/clip/overflow-border-radius-transformed.html [ ImageOnlyFailure ]
-crbug.com/97716 fast/clip/overflow-border-radius-combinations.html [ ImageOnlyFailure ]
+webkit.org/b/68196 fast/clip/overflow-border-radius-composited.html [ ImageOnlyFailure ]
+
+# Needs rebaseline
+webkit.org/b/69866 [ Android Mac Win ] fast/clip/overflow-border-radius-combinations.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] fast/clip/overflow-border-radius-fixed-position.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] fast/clip/overflow-border-radius-transformed.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] http/tests/media/video-buffered-range-contains-currentTime.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/audio-controls-rendering.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Mac Win ] media/audio-repaint.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/controls-after-reload.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/controls-strict.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/controls-styling-strict.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/controls-styling.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/controls-without-preload.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/track/track-cue-rendering-horizontal.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/track/track-cue-rendering-vertical.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/video-controls-rendering.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/video-display-toggle.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/video-no-audio.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/video-playing-and-pause.html [ ImageOnlyFailure ]
+webkit.org/b/69866 [ Android Mac Win ] media/video-zoom-controls.html [ ImageOnlyFailure ]
 
 # Caused by r92618
 webkit.org/b/65874 fast/js/preventExtensions.html [ Failure ]
@@ -2788,7 +2803,7 @@ webkit.org/b/81145 [ Lion ] platform/chromium/virtual/softwarecompositing/iframe
 webkit.org/b/81145 [ Lion ] fast/frames/invalid.html [ Failure ImageOnlyFailure Pass Slow ]
 webkit.org/b/81145 [ Lion ] fast/repaint/background-scaling.html [ ImageOnlyFailure ]
 webkit.org/b/81145 [ Lion ] fast/repaint/scale-page-shrink.html [ ImageOnlyFailure ]
-webkit.org/b/81145 [ Lion ] platform/chromium/compositing/tiny-layer-rotated.html [ ImageOnlyFailure ]
+webkit.org/b/81145 [ Debug ] platform/chromium/compositing/tiny-layer-rotated.html [ ImageOnlyFailure Pass ]
 webkit.org/b/81145 [ Lion ] editing/inserting/insert-3907422-fix.html [ Failure ]
 webkit.org/b/81145 [ Lion ] editing/pasteboard/paste-text-002.html [ Failure ]
 webkit.org/b/81145 [ Lion ] editing/pasteboard/paste-text-003.html [ Failure ]
@@ -3392,8 +3407,6 @@ webkit.org/b/95246 http/tests/security/mixedContent/filesystem-url-in-iframe.htm
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
 webkit.org/b/95581 http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
-webkit.org/b/94261 [ Debug ] http/tests/inspector/indexeddb/resources-panel.html [ Crash Pass Timeout ]
-
 # ENABLE_ACCELERATED_OVERFLOW_SCROLLING is not currently enabled in Chromium.
 webkit.org/b/94353 compositing/overflow/scrolling-content-clip-to-viewport.html [ Failure ]
 webkit.org/b/94353 platform/chromium/virtual/softwarecompositing/overflow/scrolling-content-clip-to-viewport.html [ Failure ]
@@ -3508,7 +3521,8 @@ crbug.com/145590 [ Android ] http/tests/security/video-cross-origin-readback.htm
 crbug.com/145590 [ Android ] media/W3C/video/canPlayType/canPlayType_two_implies_one_5.html [ Failure ]
 crbug.com/145590 [ Android ] media/W3C/video/canPlayType/canPlayType_two_implies_one_6.html [ Failure ]
 crbug.com/145590 [ Android ] media/audio-data-url.html [ Failure ]
-crbug.com/145590 [ Android ] media/audio-repaint.html [ Failure Timeout ]
+# ImageOnlyFailure was added because of webkit.org/b/69866
+crbug.com/145590 [ Android ] media/audio-repaint.html [ ImageOnlyFailure Failure Timeout ]
 crbug.com/145590 [ Android ] media/encrypted-media/encrypted-media-events.html [ Timeout ]
 crbug.com/145590 [ Android ] media/encrypted-media/encrypted-media-not-loaded.html [ Failure ]
 crbug.com/145590 [ Android ] media/encrypted-media/encrypted-media-syntax.html [ Failure ]
@@ -3633,14 +3647,23 @@ webkit.org/b/97672 fast/js/dfg-array-push-slow-put.html [ Failure ]
 # Failing, again, after r129712
 webkit.org/b/97672 http/tests/security/xss-eval.html [ Failure ]
 
-# Flaky from some time before r128376
-webkit.org/b/97900 [ Win Debug ] media/audio-repaint.html [ ImageOnlyFailure Pass ]
-
 # Expected to fail until WebGL extension implementation lands
 webkit.org/b/96961 fast/canvas/webgl/oes-vertex-array-object.html [ Failure Pass ]
 webkit.org/b/96961 platform/chromium/virtual/gpu/fast/canvas/webgl/oes-vertex-array-object.html [ Failure Pass ]
 
-webkit.org/b/97558 platform/chromium/fast/forms/date/date-suggestion-picker-appearance-rtl.html [ ImageOnlyFailure Pass ]
+webkit.org/b/98094 platform/chromium/fast/forms/time/time-suggestion-picker-appearance.html [ ImageOnlyFailure Pass ]
+webkit.org/b/98094 platform/chromium/fast/forms/time/time-suggestion-picker-appearance-with-scroll-bar.html [ ImageOnlyFailure Pass ]
+webkit.org/b/98094 platform/chromium/fast/forms/time/time-suggestion-picker-appearance-rtl.html [ ImageOnlyFailure Pass ]
+
+webkit.org/b/98390 fast/forms/date/calendar-picker-appearance-pre-100.html [ Timeout ] 
+webkit.org/b/98390 fast/forms/date/calendar-picker-key-operations.html [ Timeout ] 
+webkit.org/b/98390 fast/forms/date/calendar-picker-mouse-operations.html [ Timeout ] 
+webkit.org/b/98390 fast/forms/date/calendar-picker-with-step.html [ Timeout ] 
+webkit.org/b/98390 platform/chromium/fast/forms/date/date-suggestion-picker-appearance-rtl.html [ Timeout ] 
+webkit.org/b/98390 platform/chromium/fast/forms/date/date-suggestion-picker-appearance-with-scroll-bar.html [ Timeout ] 
+webkit.org/b/98390 platform/chromium/fast/forms/date/date-suggestion-picker-appearance.html [ Timeout ] 
+webkit.org/b/98390 platform/chromium/fast/forms/date/date-suggestion-picker-key-operations.html [ Timeout ] 
+
 
 # Numerous failures in software compositing.
 crbug.com/152953 [ Mac ] platform/chromium/virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ ImageOnlyFailure ]
@@ -3708,3 +3731,12 @@ crbug.com/152007 platform/chromium/virtual/softwarecompositing/color-matching/im
 crbug.com/152007 platform/chromium/virtual/softwarecompositing/geometry/bounds-ignores-hidden-dynamic-negzindex.html [ ImageOnlyFailure ]
 crbug.com/152007 [ Linux Mac ] platform/chromium/virtual/softwarecompositing/geometry/clipping-foreground.html [ ImageOnlyFailure ]
 crbug.com/152007 platform/chromium/virtual/softwarecompositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
+
+# Sometimes missing the scrollbar.
+webkit.org/b/98198 tables/mozilla/marvin/backgr_index.html [ ImageOnlyFailure Failure Pass ]
+webkit.org/b/98198 tables/mozilla_expected_failures/marvin/backgr_border-table-cell.html [ ImageOnlyFailure Failure Pass ]
+
+webkit.org/b/98192 [ Win Debug ] fast/js/dfg-cross-global-object-inline-new-array-with-elements.html [ Failure Pass ]
+webkit.org/b/98192 [ Win Debug ] fast/js/post-message-numeric-property.html [ Failure Pass ]
+
+webkit.org/b/98275 media/event-queue-crash.html [ Skip ]

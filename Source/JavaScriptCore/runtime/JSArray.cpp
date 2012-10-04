@@ -245,7 +245,7 @@ void JSArray::getOwnNonIndexPropertyNames(JSObject* object, ExecState* exec, Pro
     JSObject::getOwnNonIndexPropertyNames(thisObject, exec, propertyNames, mode);
 }
 
-// This method makes room in the vector, but leaves the new space uncleared.
+// This method makes room in the vector, but leaves the new space for count slots uncleared.
 bool JSArray::unshiftCountSlowCase(JSGlobalData& globalData, bool addToFront, unsigned count)
 {
     ArrayStorage* storage = ensureArrayStorage(globalData);
@@ -505,7 +505,7 @@ void JSArray::push(ExecState* exec, JSValue value)
     }
 }
 
-bool JSArray::shiftCount(ExecState* exec, unsigned count)
+bool JSArray::shiftCount(ExecState* exec, unsigned startIndex, unsigned count)
 {
     ASSERT(count > 0);
     
@@ -522,20 +522,44 @@ bool JSArray::shiftCount(ExecState* exec, unsigned count)
     if (!oldLength)
         return true;
     
+    unsigned length = oldLength - count;
+    
     storage->m_numValuesInVector -= count;
-    storage->setLength(oldLength - count);
+    storage->setLength(length);
     
     unsigned vectorLength = storage->vectorLength();
+    if (!vectorLength)
+        return true;
+    
+    if (startIndex >= vectorLength)
+        return true;
+    
+    if (startIndex + count > vectorLength)
+        count = vectorLength - startIndex;
+    
+    unsigned usedVectorLength = min(vectorLength, oldLength);
+    
+    vectorLength -= count;
+    storage->setVectorLength(vectorLength);
+    
     if (vectorLength) {
-        count = min(vectorLength, (unsigned)count);
-        
-        vectorLength -= count;
-        storage->setVectorLength(vectorLength);
-        
-        if (vectorLength) {
+        if (startIndex < usedVectorLength - (startIndex + count)) {
+            if (startIndex) {
+                memmove(
+                    storage->m_vector + count,
+                    storage->m_vector,
+                    sizeof(JSValue) * startIndex);
+            }
             m_butterfly = m_butterfly->shift(structure(), count);
             storage = m_butterfly->arrayStorage();
             storage->m_indexBias += count;
+        } else {
+            memmove(
+                storage->m_vector + startIndex,
+                storage->m_vector + startIndex + count,
+                sizeof(JSValue) * (usedVectorLength - (startIndex + count)));
+            for (unsigned i = usedVectorLength - count; i < usedVectorLength; ++i)
+                storage->m_vector[i].clear();
         }
     }
     return true;

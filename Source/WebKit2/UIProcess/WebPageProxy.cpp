@@ -108,6 +108,10 @@
 #include "ArgumentCodersGtk.h"
 #endif
 
+#if USE(SOUP)
+#include "WebSoupRequestManagerProxy.h"
+#endif
+
 #ifndef NDEBUG
 #include <wtf/RefCountedLeakCounter.h>
 #endif
@@ -275,6 +279,21 @@ bool WebPageProxy::isValid()
         return false;
 
     return m_isValid;
+}
+
+PassRefPtr<ImmutableArray> WebPageProxy::relatedPages() const
+{
+    Vector<WebPageProxy*> pages = m_process->pages();
+    ASSERT(pages.contains(this));
+
+    Vector<RefPtr<APIObject> > result;
+    result.reserveCapacity(pages.size() - 1);
+    for (size_t i = 0; i < pages.size(); ++i) {
+        if (pages[i] != this)
+            result.append(pages[i]);
+    }
+
+    return ImmutableArray::adopt(result);
 }
 
 void WebPageProxy::initializeLoaderClient(const WKPageLoaderClient* loadClient)
@@ -929,6 +948,14 @@ void WebPageProxy::setViewportSize(const IntSize& size)
         return;
 
     m_process->send(Messages::WebPage::SetViewportSize(size), m_pageID);
+}
+
+void WebPageProxy::commitPageTransitionViewport()
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::CommitPageTransitionViewport(), m_pageID);
 }
 #endif
 
@@ -4061,5 +4088,12 @@ void WebPageProxy::dictationAlternatives(uint64_t dictationContext, Vector<Strin
 #endif
 
 #endif // PLATFORM(MAC)
+
+#if USE(SOUP)
+void WebPageProxy::didReceiveURIRequest(String uriString, uint64_t requestID)
+{
+    m_process->context()->soupRequestManagerProxy()->didReceiveURIRequest(uriString, this, requestID);
+}
+#endif
 
 } // namespace WebKit
