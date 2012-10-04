@@ -324,7 +324,7 @@ void EventSenderProxy::addTouchPoint(int x, int y)
 
 void EventSenderProxy::updateTouchPoint(int index, int x, int y)
 {
-    ASSERT(index >= 0 && index < currentTouchPoints.size());
+    ASSERT(index >= 0 && index < touchPoints.size());
 
     Nix::TouchPoint& touch = touchPoints[index];
     touch.state = Nix::TouchPoint::TouchMoved;
@@ -338,7 +338,7 @@ void EventSenderProxy::updateTouchPoint(int index, int x, int y)
 
 void EventSenderProxy::releaseTouchPoint(int index)
 {
-    ASSERT(index >= 0 && index < currentTouchPoints.size());
+    ASSERT(index >= 0 && index < touchPoints.size());
 
     Nix::TouchPoint& touch = touchPoints[index];
     touch.state = Nix::TouchPoint::TouchReleased;
@@ -346,7 +346,7 @@ void EventSenderProxy::releaseTouchPoint(int index)
 
 void EventSenderProxy::cancelTouchPoint(int index)
 {
-    ASSERT(index >= 0 && index < currentTouchPoints.size());
+    ASSERT(index >= 0 && index < touchPoints.size());
 
     Nix::TouchPoint& touch = touchPoints[index];
     touch.state = Nix::TouchPoint::TouchCancelled;
