@@ -381,7 +381,7 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
 
 static WebEvent::Modifiers convertToWebEventModifiers(unsigned modifiers)
 {
-    unsigned webModifiers;
+    unsigned webModifiers = 0;
     if (modifiers & InputEvent::ShiftKey)
         webModifiers |= WebEvent::ShiftKey;
     if (modifiers & InputEvent::ControlKey)
@@ -442,25 +442,6 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
         default:
             notImplemented();
     }
-}
-
-static WebPlatformTouchPoint::TouchPointState convertToWebTouchState(const Nix::TouchPoint::TouchState& state)
-{
-    switch (state) {
-    case Nix::TouchPoint::TouchReleased:
-        return WebPlatformTouchPoint::TouchReleased;
-    case Nix::TouchPoint::TouchPressed:
-        return WebPlatformTouchPoint::TouchPressed;
-    case Nix::TouchPoint::TouchMoved:
-        return WebPlatformTouchPoint::TouchMoved;
-    case Nix::TouchPoint::TouchStationary:
-        return WebPlatformTouchPoint::TouchStationary;
-    case Nix::TouchPoint::TouchCancelled:
-        return WebPlatformTouchPoint::TouchCancelled;
-    default:
-        notImplemented();
-    }
-    return WebPlatformTouchPoint::TouchCancelled;
 }
 
 void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
