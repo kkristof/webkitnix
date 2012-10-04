@@ -17,11 +17,13 @@ INCLUDE_DIRECTORIES(${LIBSOUP_INCLUDE_DIRS}
 
 SET(test_main_SOURCES
     ${TESTWEBKITAPI_DIR}/nix/main.cpp
+    ${TESTWEBKITAPI_DIR}/nix/MainLoop.cpp
 )
 
 SET(bundle_harness_SOURCES
     ${TESTWEBKITAPI_DIR}/nix/InjectedBundleControllerNix.cpp
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
+    ${TESTWEBKITAPI_DIR}/nix/MainLoop.cpp
 )
 
 SET(webkit2_api_harness_SOURCES

@@ -27,9 +27,8 @@
 #include "config.h"
 #include "PlatformUtilities.h"
 
+#include "MainLoop.h"
 #include <glib.h>
-
-static GMainLoop* mainLoop = 0;
 
 namespace TestWebKitAPI {
 namespace Util {
@@ -39,25 +38,20 @@ static gboolean checkTestFinished(gpointer userData)
     bool* done = static_cast<bool*>(userData);
 
     if (*done)
-        g_main_loop_quit(mainLoop);
+        g_main_loop_quit(mainLoop());
 
     return !*done;
 }
 
 void run(bool* done)
 {
-    ASSERT(!mainLoop);
-    mainLoop = g_main_loop_new(0, false);
-
     g_idle_add(checkTestFinished, done);
-    g_main_loop_run(mainLoop);
-    g_main_loop_unref(mainLoop);
-    mainLoop = 0;
+    g_main_loop_run(mainLoop());
 }
 
 void sleep(double seconds)
 {
-    sleep(seconds);
+    g_usleep(seconds * 1000000);
 }
 
 WKURLRef createURLForResource(const char* resource, const char* extension)
