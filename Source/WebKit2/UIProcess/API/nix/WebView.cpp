@@ -67,23 +67,6 @@ void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool)
 
 }
 
-static cairo_matrix_t getTransformMatrix(cairo_matrix_t viewTransform, IntPoint scrollPosition, double scale)
-{
-    cairo_matrix_invert(&viewTransform);
-
-    cairo_matrix_t invertedScrollTransform;
-    cairo_matrix_init_translate(&invertedScrollTransform, scrollPosition.x(), scrollPosition.y());
-
-    cairo_matrix_t invertedScaleTransform;
-    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / scale, 1.0 / scale);
-
-    cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &viewTransform, &invertedScaleTransform);
-    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
-
-    return transform;
-}
-
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -220,6 +203,7 @@ private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
+    cairo_matrix_t screenToViewMatrix();
     void transformPointToViewCoordinates(double& x, double& y);
 
     void sendMouseEvent(const Nix::MouseEvent&);
@@ -503,8 +487,7 @@ void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 
 void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
 {
-    cairo_matrix_t transformMatrix = getTransformMatrix(m_client->viewToScreenTransform(), m_scrollPosition, m_scale);
-    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, transformMatrix));
+    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, screenToViewMatrix()));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
@@ -573,9 +556,27 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
 }
 
+cairo_matrix_t WebViewImpl::screenToViewMatrix()
+{
+    cairo_matrix_t invertedViewTransform = m_client->viewToScreenTransform();
+    cairo_matrix_invert(&invertedViewTransform);
+
+    cairo_matrix_t invertedScrollTransform;
+    cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
+
+    cairo_matrix_t invertedScaleTransform;
+    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / m_scale, 1.0 / m_scale);
+
+    cairo_matrix_t transform;
+    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScaleTransform);
+    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
+
+    return transform;
+}
+
 void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
 {
-    cairo_matrix_t transformMatrix = getTransformMatrix(m_client->viewToScreenTransform(), m_scrollPosition, m_scale);
+    cairo_matrix_t transformMatrix = screenToViewMatrix();
     cairo_matrix_transform_point(&transformMatrix, &x, &y);
 }
 
