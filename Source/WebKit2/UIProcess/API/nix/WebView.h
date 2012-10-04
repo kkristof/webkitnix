@@ -18,6 +18,7 @@ public:
 
     virtual void webProcessCrashed(WKStringRef url) = 0;
     virtual void webProcessRelaunched() = 0;
+    virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
 };
 
 class WK_EXPORT WebView {

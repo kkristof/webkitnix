@@ -62,6 +62,28 @@ cairo_matrix_t WebViewClient::viewToScreenTransform()
     return identityTransform;
 }
 
+void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool)
+{
+
+}
+
+static cairo_matrix_t getTransformMatrix(cairo_matrix_t viewTransform, IntPoint scrollPosition, double scale)
+{
+    cairo_matrix_invert(&viewTransform);
+
+    cairo_matrix_t invertedScrollTransform;
+    cairo_matrix_init_translate(&invertedScrollTransform, scrollPosition.x(), scrollPosition.y());
+
+    cairo_matrix_t invertedScaleTransform;
+    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / scale, 1.0 / scale);
+
+    cairo_matrix_t transform;
+    cairo_matrix_multiply(&transform, &viewTransform, &invertedScaleTransform);
+    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
+
+    return transform;
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -165,7 +187,7 @@ public:
     virtual void doneWithGestureEvent(const WebGestureEvent&, bool wasEventHandled) { notImplemented(); }
 #endif
 #if ENABLE(TOUCH_EVENTS)
-    virtual void doneWithTouchEvent(const NativeWebTouchEvent&, bool wasEventHandled) { notImplemented(); }
+    virtual void doneWithTouchEvent(const NativeWebTouchEvent&, bool wasEventHandled);
 #endif
 
     virtual PassRefPtr<WebPopupMenuProxy> createPopupMenuProxy(WebPageProxy*) { notImplemented(); return PassRefPtr<WebPopupMenuProxy>(); }
@@ -481,27 +503,8 @@ void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 
 void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
 {
-    WebEvent::Type type = convertToWebEventType(event.type);
-    Vector<WebPlatformTouchPoint> touchPoints;
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
-    double timestamp = event.timestamp;
-
-    for (size_t i = 0; i < event.touchPoints.size(); ++i) {
-        const Nix::TouchPoint& touch = event.touchPoints[i];
-        uint32_t id = static_cast<uint32_t>(touch.id);
-        WebPlatformTouchPoint::TouchPointState state = convertToWebTouchState(touch.state);
-        IntPoint screenPosition = IntPoint(touch.globalX, touch.globalY);
-        IntPoint position = IntPoint(touch.x, touch.y);
-        IntSize radius = IntSize(touch.horizontalRadius, touch.verticalRadius);
-        float rotationAngle = touch.rotationAngle;
-        float force = touch.pressure;
-
-        WebPlatformTouchPoint webTouchPoint = WebPlatformTouchPoint(id, state, screenPosition, position, radius, rotationAngle, force);
-        touchPoints.append(webTouchPoint);
-    }
-
-    WebTouchEvent webEvent(type, touchPoints, modifiers, timestamp);
-    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(webEvent));
+    cairo_matrix_t transformMatrix = getTransformMatrix(m_client->viewToScreenTransform(), m_scrollPosition, m_scale);
+    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, transformMatrix));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
@@ -572,20 +575,8 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 
 void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
 {
-    cairo_matrix_t invertedViewTransform = m_client->viewToScreenTransform();
-    cairo_matrix_invert(&invertedViewTransform);
-
-    cairo_matrix_t invertedScrollTransform;
-    cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
-
-    cairo_matrix_t invertedScaleTransform;
-    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / m_scale, 1.0 / m_scale);
-
-    cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScaleTransform);
-    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
-
-    cairo_matrix_transform_point(&transform, &x, &y);
+    cairo_matrix_t transformMatrix = getTransformMatrix(m_client->viewToScreenTransform(), m_scrollPosition, m_scale);
+    cairo_matrix_transform_point(&transformMatrix, &x, &y);
 }
 
 void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
@@ -1063,5 +1054,12 @@ void WebViewImpl::sendGestureEvent(const GestureEvent& event)
     m_webPageProxy->handleGestureEvent(webEvent);
 
 }
+
+#if ENABLE(TOUCH_EVENTS)
+void WebViewImpl::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
+{
+    m_client->doneWithTouchEvent(event.nativeEvent(), wasEventHandled);
+}
+#endif
 
 } // namespace Nix

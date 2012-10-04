@@ -17,6 +17,8 @@ LIST(APPEND WebKit2_SOURCES
     Shared/cairo/ShareableBitmapCairo.cpp
 
     Shared/nix/LayerTreeContextNix.cpp
+    Shared/nix/NativeWebTouchEventNix.cpp
+    Shared/nix/WebEventFactoryNix.cpp
     Shared/gtk/ProcessExecutablePathGtk.cpp
 
     Shared/soup/PlatformCertificateInfo.cpp
@@ -79,6 +81,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/network/soup"
     "${WEBCORE_DIR}/svg/graphics"
     "${WEBKIT2_DIR}/Shared/soup"
+    "${WEBKIT2_DIR}/Shared/nix"
     "${WEBKIT2_DIR}/UIProcess/API/C/soup"
     "${WEBKIT2_DIR}/UIProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
@@ -94,6 +97,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     ${LIBSOUP_INCLUDE_DIRS}
     ${WTF_DIR}
     ${HARFBUZZ_INCLUDE_DIRS}
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/"
 )
 
 IF (WTF_USE_3D_GRAPHICS)

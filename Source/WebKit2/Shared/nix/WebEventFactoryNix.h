@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2011 Benjamin Poulain <benjamin@webkit.org>
+ * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,47 +25,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NativeWebTouchEvent_h
-#define NativeWebTouchEvent_h
+#ifndef WebEventFactory_h
+#define WebEventFactory_h
 
 #include "WebEvent.h"
 
-#if PLATFORM(QT)
-#include <QTouchEvent>
-#elif PLATFORM(EFL)
-#include "ewk_touch.h"
-#include <Evas.h>
-#elif PLATFORM(NIX)
-#include <NixEvents.h>
-#include <cairo.h>
+#if ENABLE(TOUCH_EVENTS)
+#include <NativeWebTouchEvent.h>
 #endif
 
 namespace WebKit {
 
-class NativeWebTouchEvent : public WebTouchEvent {
+class WebEventFactory {
 public:
-#if PLATFORM(QT)
-    explicit NativeWebTouchEvent(const QTouchEvent*, const QTransform& fromItemTransform);
-#elif PLATFORM(EFL)
-    NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const Evas_Point*, double timestamp);
-#elif PLATFORM(NIX)
-    NativeWebTouchEvent(const Nix::TouchEvent& event, const cairo_matrix_t& fromItemTransform);
-#endif
-
-#if PLATFORM(QT)
-    const QTouchEvent* nativeEvent() const { return &m_nativeEvent; }
-#elif PLATFORM(NIX)
-    const Nix::TouchEvent nativeEvent() const { return m_nativeEvent; }
-#endif
-
-private:
-#if PLATFORM(QT)
-    const QTouchEvent m_nativeEvent;
-#elif PLATFORM(NIX)
-    const Nix::TouchEvent m_nativeEvent;
+#if ENABLE(TOUCH_EVENTS)
+    static WebTouchEvent createWebTouchEvent(const Nix::TouchEvent&, const cairo_matrix_t& fromItemTransform);
 #endif
 };
 
 } // namespace WebKit
 
-#endif // NativeWebTouchEvent_h
+#endif // WebEventFactory_h
