@@ -1,5 +1,7 @@
 #include "TouchMocker.h"
 
+#include <GL/gl.h>
+
 // On single touches, every mouse interaction is used as touch event.
 // But while you keep Control key pressed, some mouse events may be ignored,
 // like mouse moves. Holding that key means you're building a multi-touch event,
@@ -29,6 +31,27 @@ TouchMocker::TouchMocker(WebView* webView)
     : m_webView(webView)
 {
     m_mapTouchIdToTouchPoint.clear();
+}
+
+void TouchMocker::paintTouchPoints() const
+{
+    if (m_mapTouchIdToTouchPoint.empty())
+        return;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, m_webView->width(), m_webView->height(), 0, -1, 1);
+
+    std::map<unsigned, TouchPoint>::const_iterator it;
+    for (it = m_mapTouchIdToTouchPoint.begin(); it != m_mapTouchIdToTouchPoint.end(); ++it) {
+        const TouchPoint& touch = it->second;
+        double x1 = touch.x - touch.horizontalRadius;
+        double y1 = touch.y - touch.verticalRadius;
+        double x2 = touch.x + touch.horizontalRadius;
+        double y2 = touch.y + touch.verticalRadius;
+        glColor3d(1.0, 0.0, 1.0);
+        glRectd(x1, y1, x2, y2);
+    }
 }
 
 bool TouchMocker::handleMousePress(const MouseEvent& event)

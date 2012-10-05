@@ -199,8 +199,10 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
     if (checkNavigationCommand(symbol, event.state) != NoNavigation)
         return;
     Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
-    if (m_touchMocker && m_touchMocker->handleKeyRelease(ev))
+    if (m_touchMocker && m_touchMocker->handleKeyRelease(ev)) {
+        updateDisplay();
         return;
+    }
     m_webView->sendEvent(ev);
 }
 
@@ -262,8 +264,10 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.clickCount = m_clickCount;
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    if (m_touchMocker && m_touchMocker->handleMousePress(ev))
+    if (m_touchMocker && m_touchMocker->handleMousePress(ev)) {
+        updateDisplay();
         return;
+    }
     m_webView->sendEvent(ev);
 }
 
@@ -282,8 +286,10 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.clickCount = 0;
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
-    if (m_touchMocker && m_touchMocker->handleMouseRelease(ev))
+    if (m_touchMocker && m_touchMocker->handleMouseRelease(ev)) {
+        updateDisplay();
         return;
+    }
     m_webView->sendEvent(ev);
 }
 
@@ -302,8 +308,10 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.clickCount = 0;
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    if (m_touchMocker && m_touchMocker->handleMouseMove(ev))
+    if (m_touchMocker && m_touchMocker->handleMouseMove(ev)) {
+        updateDisplay();
         return;
+    }
     m_webView->sendEvent(ev);
 }
 
@@ -333,6 +341,8 @@ void MiniBrowser::updateDisplay()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_webView->paintToCurrentGLContext();
+    if (m_touchMocker)
+        m_touchMocker->paintTouchPoints();
 
     m_window->swapBuffers();
 }

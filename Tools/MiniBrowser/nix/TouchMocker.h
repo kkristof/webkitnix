@@ -15,6 +15,8 @@ public:
     bool handleMouseMove(const MouseEvent& event);
     bool handleKeyRelease(const KeyEvent& event);
 
+    void paintTouchPoints() const;
+
 private:
     void trackTouchPoint(unsigned id, TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
     void updateTouchPointsState(TouchPoint::TouchState state);
