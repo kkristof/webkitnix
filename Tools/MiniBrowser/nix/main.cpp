@@ -367,7 +367,7 @@ int main(int argc, char* argv[])
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
 
-    MiniBrowser* browser = new MiniBrowser(mainLoop);
+    MiniBrowser browser(mainLoop);
 
     const char* url = 0;
     bool shouldEmulateTouch = false;
@@ -381,15 +381,14 @@ int main(int argc, char* argv[])
     if (!url)
         url = "http://www.google.com";
 
-    WKPageLoadURL(browser->pageRef(), WKURLCreateWithUTF8CString(url));
+    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url));
     if (shouldEmulateTouch) {
         printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
-        browser->setTouchEmulationMode(true);
+        browser.setTouchEmulationMode(true);
     }
 
 
     g_main_loop_run(mainLoop);
 
-    delete browser;
     g_main_loop_unref(mainLoop);
 }
