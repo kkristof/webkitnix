@@ -10,16 +10,17 @@ using namespace Nix;
 class TouchMocker {
 public:
     TouchMocker(WebView*);
-    bool handleMousePress(const MouseEvent& event);
-    bool handleMouseRelease(const MouseEvent& event);
-    bool handleMouseMove(const MouseEvent& event);
-    bool handleKeyRelease(const KeyEvent& event);
+
+    bool handleMousePress(const MouseEvent&);
+    bool handleMouseRelease(const MouseEvent&);
+    bool handleMouseMove(const MouseEvent&);
+    bool handleKeyRelease(const KeyEvent&);
 
     void paintTouchPoints() const;
 
 private:
     void trackTouchPoint(unsigned id, TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
-    void updateTouchPointsState(TouchPoint::TouchState state);
+    void updateTouchPointsState(TouchPoint::TouchState);
     void releaseTouchPoints(double timestamp);
 
     void prepareTouchEvent(TouchPoint::TouchState state, double timestamp);
