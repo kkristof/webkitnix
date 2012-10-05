@@ -33,8 +33,15 @@ TouchMocker::TouchMocker(WebView* webView)
     m_mapTouchIdToTouchPoint.clear();
 }
 
-void TouchMocker::paintTouchPoints() const
+void TouchMocker::setNeedsRepaint(bool needsRepaint)
 {
+    m_needsRepaint = needsRepaint;
+}
+
+void TouchMocker::paintTouchPoints()
+{
+    setNeedsRepaint(false);
+
     if (m_mapTouchIdToTouchPoint.empty())
         return;
 
@@ -62,13 +69,16 @@ bool TouchMocker::handleMousePress(const MouseEvent& event)
     trackTouchPoint(id, state, event.x, event.y, event.globalX, event.globalY);
     prepareTouchEvent(state, event.timestamp);
     sendCurrentTouchEvent();
+    setNeedsRepaint(true);
     return true;
 }
 
 bool TouchMocker::handleMouseRelease(const MouseEvent& event)
 {
-    if (isSingleTouch(event))
+    if (isSingleTouch(event)) {
         releaseTouchPoints(event.timestamp);
+        setNeedsRepaint(true);
+    }
     return true;
 }
 
@@ -79,6 +89,7 @@ bool TouchMocker::handleMouseMove(const MouseEvent& event)
         trackTouchPoint(touchId, TouchPoint::TouchMoved, event.x, event.y, event.globalX, event.globalY);
         prepareTouchEvent(TouchPoint::TouchMoved, event.timestamp);
         sendCurrentTouchEvent();
+        setNeedsRepaint(true);
     }
     return true;
 }
@@ -86,6 +97,7 @@ bool TouchMocker::handleMouseMove(const MouseEvent& event)
 bool TouchMocker::handleKeyRelease(const KeyEvent& event)
 {
     if (event.key == KeyEvent::Key_Control) {
+        setNeedsRepaint(!m_mapTouchIdToTouchPoint.empty());
         releaseTouchPoints(event.timestamp);
         return true;
     }

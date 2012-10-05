@@ -16,7 +16,8 @@ public:
     bool handleMouseMove(const MouseEvent&);
     bool handleKeyRelease(const KeyEvent&);
 
-    void paintTouchPoints() const;
+    void paintTouchPoints();
+    bool needsRepaint() const { return m_needsRepaint; }
 
 private:
     void trackTouchPoint(unsigned id, TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
@@ -27,11 +28,13 @@ private:
     void sendCurrentTouchEvent();
 
     void sendGestureSingleTap(int x, int y, int globalX, int globalY);
+    void setNeedsRepaint(bool needsRepaint);
 
     std::map<unsigned, TouchPoint> m_mapTouchIdToTouchPoint;
     WebView* m_webView;
     double m_timestamp;
     InputEvent::Type m_touchType;
+    bool m_needsRepaint;
 };
 
 

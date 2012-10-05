@@ -200,7 +200,8 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
         return;
     Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
     if (m_touchMocker && m_touchMocker->handleKeyRelease(ev)) {
-        updateDisplay();
+        if (m_touchMocker->needsRepaint())
+            updateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -265,7 +266,8 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     if (m_touchMocker && m_touchMocker->handleMousePress(ev)) {
-        updateDisplay();
+        if (m_touchMocker->needsRepaint())
+            updateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -287,7 +289,8 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
     if (m_touchMocker && m_touchMocker->handleMouseRelease(ev)) {
-        updateDisplay();
+        if (m_touchMocker->needsRepaint())
+            updateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -309,7 +312,8 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     if (m_touchMocker && m_touchMocker->handleMouseMove(ev)) {
-        updateDisplay();
+        if (m_touchMocker->needsRepaint())
+            updateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
