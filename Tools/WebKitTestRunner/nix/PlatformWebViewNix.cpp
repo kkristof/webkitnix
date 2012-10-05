@@ -25,9 +25,16 @@
 
 class WTRWebViewClient : public Nix::WebViewClient {
 public:
+    WTRWebViewClient() : Nix::WebViewClient(), m_view(0) {}
     void viewNeedsDisplay(int x, int y, int width, int height) {}
     void webProcessCrashed(WKStringRef) {}
     void webProcessRelaunched() {}
+    void pageDidRequestScroll(int x, int y) { if (m_view) m_view->setScrollPosition(x, y); }
+
+    void setView(Nix::WebView* view) { m_view = view; }
+
+private:
+    Nix::WebView* m_view;
 };
 
 using namespace WebKit;
@@ -38,6 +45,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
     m_webViewClient = new WTRWebViewClient;
     m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
+    static_cast<WTRWebViewClient*>(m_webViewClient)->setView(m_view);
     m_view->initialize();
     WKPageSetUseFixedLayout(m_view->pageRef(), true);
     m_window = 0;

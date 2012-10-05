@@ -37,6 +37,7 @@ public:
     virtual void viewNeedsDisplay(int, int, int, int) { updateDisplay(); }
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
+    virtual void pageDidRequestScroll(int x, int y) { m_webView->setScrollPosition(x, y); }
 
     void setTouchEmulationMode(bool enabled);
 

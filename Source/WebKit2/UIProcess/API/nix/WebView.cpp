@@ -531,7 +531,7 @@ void WebViewImpl::processDidCrash()
 
 void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 {
-//    setScrollPosition(point.x(), point.y());
+    m_client->pageDidRequestScroll(point.x(), point.y());
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
