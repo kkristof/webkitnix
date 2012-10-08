@@ -72,6 +72,8 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     , m_lastClickY(0)
     , m_touchMocker(0)
 {
+    g_main_loop_ref(m_mainLoop);
+
     WKPreferencesRef preferences = WKPageGroupGetPreferences(m_pageGroup.get());
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
     WKPreferencesSetFrameFlatteningEnabled(preferences, true);
@@ -92,6 +94,8 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
 
 MiniBrowser::~MiniBrowser()
 {
+    g_main_loop_unref(m_mainLoop);
+
     delete m_webView;
     delete m_window;
     if (m_touchMocker)
