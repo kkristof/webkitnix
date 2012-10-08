@@ -47,7 +47,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
     m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
     static_cast<WTRWebViewClient*>(m_webViewClient)->setView(m_view);
     m_view->initialize();
-    WKPageSetUseFixedLayout(m_view->pageRef(), true);
+    m_view->setSize(800, 600);
     m_window = 0;
 }
 
