@@ -38,6 +38,9 @@ OBJC_CLASS NSView;
 typedef union _GdkEvent GdkEvent;
 #elif PLATFORM(EFL)
 #include <Evas.h>
+#elif PLATFORM(NIX)
+#include <NixEvents.h>
+#include <cairo.h>
 #endif
 
 namespace WebKit {
@@ -58,10 +61,7 @@ public:
     NativeWebMouseEvent(const Evas_Event_Mouse_Up*, const Evas_Point*);
     NativeWebMouseEvent(const Evas_Event_Mouse_Move*, const Evas_Point*);
 #elif PLATFORM(NIX)
-    NativeWebMouseEvent(const WebMouseEvent& event)
-        : WebMouseEvent(event)
-        , m_nativeEvent(0)
-    { }
+    NativeWebMouseEvent(const Nix::MouseEvent& event, const cairo_matrix_t& fromItemTransform, WebCore::IntPoint* lastCursorPosition);
 #endif
 
 #if USE(APPKIT)
@@ -72,8 +72,10 @@ public:
     const QMouseEvent* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(GTK)
     const GdkEvent* nativeEvent() const { return m_nativeEvent.get(); }
-#elif PLATFORM(EFL) || PLATFORM(NIX)
+#elif PLATFORM(EFL)
     const void* nativeEvent() const { return m_nativeEvent; }
+#elif PLATFORM(NIX)
+    const Nix::MouseEvent nativeEvent() const { return m_nativeEvent; }
 #endif
 
 private:
@@ -85,8 +87,10 @@ private:
     QMouseEvent* m_nativeEvent;
 #elif PLATFORM(GTK)
     GOwnPtr<GdkEvent> m_nativeEvent;
-#elif PLATFORM(EFL) || PLATFORM(NIX)
+#elif PLATFORM(EFL)
     const void* m_nativeEvent;
+#elif PLATFORM(NIX)
+    const Nix::MouseEvent m_nativeEvent;
 #endif
 };
 

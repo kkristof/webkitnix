@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,36 +23,34 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEventFactoryNix_h
-#define WebEventFactoryNix_h
+#ifndef NativeWebGestureEvent_h
+#define NativeWebGestureEvent_h
 
 #include "WebEvent.h"
 
-#include <NativeWebMouseEvent.h>
-#include <NativeWebWheelEvent.h>
-#include <NativeWebKeyboardEvent.h>
-#if ENABLE(GESTURE_EVENTS)
-#include <NativeWebGestureEvent.h>
-#endif
-#if ENABLE(TOUCH_EVENTS)
-#include <NativeWebTouchEvent.h>
+#if PLATFORM(NIX)
+#include <NixEvents.h>
+#include <cairo.h>
 #endif
 
 namespace WebKit {
 
-class WebEventFactory {
+class NativeWebGestureEvent : public WebGestureEvent {
 public:
-    static WebMouseEvent createWebMouseEvent(const Nix::MouseEvent&, const cairo_matrix_t& fromItemTransform, WebCore::IntPoint* lastCursorPosition);
-    static WebWheelEvent createWebWheelEvent(const Nix::WheelEvent&, const cairo_matrix_t& fromItemTransform);
-    static WebKeyboardEvent createWebKeyboardEvent(const Nix::KeyEvent&);
-#if ENABLE(GESTURE_EVENTS)
-    static WebGestureEvent createWebGestureEvent(const Nix::GestureEvent&, const cairo_matrix_t& fromItemTransform);
+#if PLATFORM(NIX)
+    NativeWebGestureEvent(const Nix::GestureEvent& event, const cairo_matrix_t& fromItemTransform);
 #endif
-#if ENABLE(TOUCH_EVENTS)
-    static WebTouchEvent createWebTouchEvent(const Nix::TouchEvent&, const cairo_matrix_t& fromItemTransform);
+
+#if PLATFORM(NIX)
+    const Nix::GestureEvent nativeEvent() const { return m_nativeEvent; }
+#endif
+
+private:
+#if PLATFORM(NIX)
+    const Nix::GestureEvent m_nativeEvent;
 #endif
 };
 
 } // namespace WebKit
 
-#endif // WebEventFactoryNix_h
+#endif // NativeWebGestureEvent_h

@@ -38,6 +38,9 @@ OBJC_CLASS NSView;
 typedef union _GdkEvent GdkEvent;
 #elif PLATFORM(EFL)
 #include <Evas.h>
+#elif PLATFORM(NIX)
+#include <NixEvents.h>
+#include <cairo.h>
 #endif
 
 namespace WebKit {
@@ -56,9 +59,7 @@ public:
 #elif PLATFORM(EFL)
     NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const Evas_Point*);
 #elif PLATFORM(NIX)
-    NativeWebWheelEvent(const WebWheelEvent& event)
-        : WebWheelEvent(event)
-    { }
+    NativeWebWheelEvent(const Nix::WheelEvent& event, const cairo_matrix_t& fromItemTransform);
 #endif
 
 #if USE(APPKIT)
@@ -72,7 +73,7 @@ public:
 #elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(NIX)
-    const void* nativeEvent() const { return 0; }
+    const Nix::WheelEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
@@ -86,6 +87,8 @@ private:
     GOwnPtr<GdkEvent> m_nativeEvent;
 #elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* m_nativeEvent;
+#elif PLATFORM(NIX)
+    const Nix::WheelEvent m_nativeEvent;
 #endif
 };
 
