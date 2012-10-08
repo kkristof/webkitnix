@@ -18,7 +18,13 @@
 
 class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient {
 public:
-    MiniBrowser(GMainLoop*);
+
+    enum Mode {
+        MobileMode,
+        DesktopMode
+    };
+
+    MiniBrowser(GMainLoop* mainLoop, Mode mode);
     virtual ~MiniBrowser();
 
     WKPageRef pageRef() const { return m_webView->pageRef(); }
@@ -40,6 +46,7 @@ public:
     virtual void pageDidRequestScroll(int x, int y) { m_webView->setScrollPosition(x, y); }
 
     void setTouchEmulationMode(bool enabled);
+    Mode mode() const { return m_mode; }
 
 private:
     void handleWheelEvent(const XButtonPressedEvent&);
@@ -58,9 +65,10 @@ private:
     int m_lastClickButton;
     unsigned m_clickCount;
     TouchMocker* m_touchMocker;
+    Mode m_mode;
 };
 
-MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
+MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
     : m_context(AdoptWK, WKContextCreate())
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString(""))))
     , m_window(new LinuxWindow(this))
@@ -72,6 +80,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     , m_lastClickX(0)
     , m_lastClickY(0)
     , m_touchMocker(0)
+    , m_mode(mode)
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -82,8 +91,8 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop)
     m_webView = Nix::WebView::create(m_context.get(), m_pageGroup.get(), this);
     m_webView->initialize();
 
-    // TODO: Couldn't make it show anything without fixed layout, maybe a sizing related problem.
-    WKPageSetUseFixedLayout(m_webView->pageRef(), true);
+    if (m_mode == MobileMode)
+        WKPageSetUseFixedLayout(pageRef(), true);
 
     std::pair<int, int> size = m_window->size();
     m_webView->setSize(size.first, size.second);
@@ -371,30 +380,31 @@ int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
 
-    GMainLoop* mainLoop = g_main_loop_new(0, false);
-
-    MiniBrowser browser(mainLoop);
-
     const char* url = 0;
-    bool shouldEmulateTouch = false;
+    MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
+    bool touchEmulationEnabled = false;
 
     for (int i = 1; i < argc; ++i) {
-        if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--touch-emulation-mode"))
-            shouldEmulateTouch = true;
+        if (!strcmp(argv[i], "--desktop"))
+            browserMode = MiniBrowser::DesktopMode;
+        else if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--touch-emulation"))
+            touchEmulationEnabled = true;
         else
             url = argv[i];
     }
     if (!url)
         url = "http://www.google.com";
 
-    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url));
-    if (shouldEmulateTouch) {
+    GMainLoop* mainLoop = g_main_loop_new(0, false);
+    MiniBrowser browser(mainLoop, browserMode);
+
+    if (browser.mode() == MiniBrowser::MobileMode || touchEmulationEnabled) {
         printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
         browser.setTouchEmulationMode(true);
     }
 
+    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url));
 
     g_main_loop_run(mainLoop);
-
     g_main_loop_unref(mainLoop);
 }
