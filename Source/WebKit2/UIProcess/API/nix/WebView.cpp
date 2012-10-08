@@ -153,7 +153,7 @@ public:
 
     virtual void setCursor(const Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
-    virtual void didChangeViewportProperties(const ViewportAttributes&) { notImplemented(); }
+    virtual void didChangeViewportProperties(const ViewportAttributes&);
 
     virtual void registerEditCommand(PassRefPtr<WebEditCommandProxy>, WebPageProxy::UndoOrRedo) { notImplemented(); }
     virtual void clearAllEditCommands() { notImplemented(); }
@@ -535,6 +535,14 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
+}
+
+void WebViewImpl::didChangeViewportProperties(const ViewportAttributes& attributes)
+{
+    if (!m_webPageProxy->useFixedLayout())
+        return;
+
+    setScale(m_size.width() / attributes.layoutSize.width());
 }
 
 cairo_matrix_t WebViewImpl::screenToViewMatrix()
