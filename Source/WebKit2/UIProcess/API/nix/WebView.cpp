@@ -277,7 +277,9 @@ void WebViewImpl::setSize(int width, int height)
     m_size = IntSize(width, height);
 
     IntSize visibleSize = IntSize(visibleContentWidth(), visibleContentHeight());
-    m_webPageProxy->setViewportSize(visibleSize);
+
+    if (m_webPageProxy->useFixedLayout())
+        m_webPageProxy->setViewportSize(visibleSize);
 
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
