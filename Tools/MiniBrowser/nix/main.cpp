@@ -38,7 +38,7 @@ public:
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
 
-    void setTouchEmulationMode(bool status);
+    void setTouchEmulationMode(bool enabled);
 
 private:
     void handleWheelEvent(const XButtonPressedEvent&);
@@ -98,20 +98,17 @@ MiniBrowser::~MiniBrowser()
 
     delete m_webView;
     delete m_window;
-    if (m_touchMocker)
-        delete m_touchMocker;
+    delete m_touchMocker;
 }
 
-void MiniBrowser::setTouchEmulationMode(bool status)
+void MiniBrowser::setTouchEmulationMode(bool enabled)
 {
-    if (bool(m_touchMocker) == status)
-        return;
-
-    if (m_touchMocker) {
+    if (enabled && !m_touchMocker) {
+        m_touchMocker = new TouchMocker(m_webView);
+    } else if (!enabled && m_touchMocker) {
         delete m_touchMocker;
         m_touchMocker = 0;
-    } else
-        m_touchMocker = new TouchMocker(m_webView);
+    }
 }
 
 enum NavigationCommand {
