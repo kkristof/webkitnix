@@ -1,6 +1,8 @@
 #include "TouchMocker.h"
 
 #include <GL/gl.h>
+#include <cassert>
+#include "touchTexture.h"
 
 // On single touches, every mouse interaction is used as touch event.
 // But while you keep Control key pressed, some mouse events may be ignored,
@@ -30,7 +32,12 @@ static bool isSingleTouch(const InputEvent& event)
 TouchMocker::TouchMocker(WebView* webView)
     : m_webView(webView)
 {
-    m_mapTouchIdToTouchPoint.clear();
+    loadTouchPointTexture();
+}
+
+TouchMocker::~TouchMocker()
+{
+    glDeleteTextures(1, &m_touchTextureId);
 }
 
 void TouchMocker::setNeedsRepaint(bool needsRepaint)
@@ -40,14 +47,29 @@ void TouchMocker::setNeedsRepaint(bool needsRepaint)
 
 void TouchMocker::paintTouchPoints()
 {
+    static float vertexData[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    static const float texCoords[] = { 0, 0, 1, 0, 0, 1, 1, 1};
+
     setNeedsRepaint(false);
 
     if (m_mapTouchIdToTouchPoint.empty())
         return;
 
+    glPushMatrix();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, m_webView->width(), m_webView->height(), 0, -1, 1);
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY_EXT);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+    glVertexPointer(3, GL_FLOAT, 0, vertexData);
+
+    glBindTexture(GL_TEXTURE_2D, m_touchTextureId);
 
     std::map<unsigned, TouchPoint>::const_iterator it;
     for (it = m_mapTouchIdToTouchPoint.begin(); it != m_mapTouchIdToTouchPoint.end(); ++it) {
@@ -56,9 +78,18 @@ void TouchMocker::paintTouchPoints()
         double y1 = touch.y - touch.verticalRadius;
         double x2 = touch.x + touch.horizontalRadius;
         double y2 = touch.y + touch.verticalRadius;
-        glColor3d(1.0, 0.0, 1.0);
-        glRectd(x1, y1, x2, y2);
+
+        vertexData[0] = x1;
+        vertexData[1] = y1;
+        vertexData[3] = x2;
+        vertexData[4] = y1;
+        vertexData[6] = x1;
+        vertexData[7] = y2;
+        vertexData[9] = x2;
+        vertexData[10] = y2;
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
+    glPopMatrix();
 }
 
 bool TouchMocker::handleMousePress(const MouseEvent& event)
@@ -205,4 +236,15 @@ void TouchMocker::sendGestureSingleTap(int x, int y, int globalX, int globalY)
     gestureEvent.deltaY = 0.0;
 
     m_webView->sendEvent(gestureEvent);
+}
+
+void TouchMocker::loadTouchPointTexture()
+{
+    // Texture data size, 64x64 RGBA
+    assert(sizeof(texData) == 64 * 64 * 4);
+    glGenTextures(1, &m_touchTextureId);
+    glBindTexture(GL_TEXTURE_2D, m_touchTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
 }

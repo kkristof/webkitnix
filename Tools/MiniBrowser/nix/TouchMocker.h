@@ -10,6 +10,7 @@ using namespace Nix;
 class TouchMocker {
 public:
     TouchMocker(WebView*);
+    ~TouchMocker();
 
     bool handleMousePress(const MouseEvent&);
     bool handleMouseRelease(const MouseEvent&);
@@ -29,12 +30,14 @@ private:
 
     void sendGestureSingleTap(int x, int y, int globalX, int globalY);
     void setNeedsRepaint(bool needsRepaint);
+    void loadTouchPointTexture();
 
     std::map<unsigned, TouchPoint> m_mapTouchIdToTouchPoint;
     WebView* m_webView;
     double m_timestamp;
     InputEvent::Type m_touchType;
     bool m_needsRepaint;
+    unsigned m_touchTextureId;
 };
 
 
