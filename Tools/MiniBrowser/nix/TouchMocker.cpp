@@ -241,7 +241,7 @@ void TouchMocker::sendGestureSingleTap(int x, int y, int globalX, int globalY)
 void TouchMocker::loadTouchPointTexture()
 {
     // Texture data size, 64x64 RGBA
-    assert(sizeof(texData) == 64 * 64 * 4);
+    assert(sizeof(textureData) == 64 * 64 * 4);
     glGenTextures(1, &m_touchTextureId);
     glBindTexture(GL_TEXTURE_2D, m_touchTextureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
