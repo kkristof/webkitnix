@@ -33,12 +33,19 @@
 #include <cairo.h>
 #endif
 
+#if PLATFORM(QT)
+#include <QTouchEvent>
+#include <QTransform>
+#endif
+
 namespace WebKit {
 
 class NativeWebGestureEvent : public WebGestureEvent {
 public:
 #if PLATFORM(NIX)
     NativeWebGestureEvent(const Nix::GestureEvent& event, const cairo_matrix_t& fromItemTransform);
+#elif PLATFORM(QT)
+    NativeWebGestureEvent(const QTouchEvent::TouchPoint&, const WebEvent::Type&, const QTransform& fromItemTransform);
 #endif
 
 #if PLATFORM(NIX)

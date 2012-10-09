@@ -29,11 +29,11 @@
 
 #include "WebEvent.h"
 
-QT_BEGIN_NAMESPACE
-
-#if ENABLE(TOUCH_EVENTS)
-class QTouchEvent;
+#if ENABLE(TOUCH_EVENTS) || ENABLE(GESTURE_EVENTS)
+#include <QTouchEvent>
 #endif
+
+QT_BEGIN_NAMESPACE
 
 class QMouseEvent;
 class QWheelEvent;
@@ -50,6 +50,9 @@ public:
     static WebKeyboardEvent createWebKeyboardEvent(QKeyEvent*);
 #if ENABLE(TOUCH_EVENTS)
     static WebTouchEvent createWebTouchEvent(const QTouchEvent*, const QTransform& fromItemTransform);
+#endif
+#if ENABLE(GESTURE_EVENTS)
+    static WebGestureEvent createWebGestureEvent(const QTouchEvent::TouchPoint&, const WebEvent::Type&, const QTransform& fromItemTransform);
 #endif
 };
 

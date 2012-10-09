@@ -19,6 +19,7 @@ public:
     virtual void webProcessCrashed(WKStringRef url) = 0;
     virtual void webProcessRelaunched() = 0;
     virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
+    virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
     virtual void pageDidRequestScroll(int x, int y) {}
 };
 

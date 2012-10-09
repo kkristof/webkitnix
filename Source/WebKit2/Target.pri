@@ -908,6 +908,12 @@ enable?(TOUCH_EVENTS) {
         Shared/qt/NativeWebTouchEventQt.cpp
 }
 
+enable?(GESTURE_EVENTS) {
+    HEADERS += \
+        Shared/NativeWebGestureEvent.h
+    SOURCES += \
+        Shared/qt/NativeWebGestureEventQt.cpp
+}
 
 enable?(GEOLOCATION): QT += location
 

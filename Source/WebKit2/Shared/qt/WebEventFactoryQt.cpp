@@ -225,4 +225,17 @@ WebTouchEvent WebEventFactory::createWebTouchEvent(const QTouchEvent* event, con
 }
 #endif
 
+WebGestureEvent WebEventFactory::createWebGestureEvent(const QTouchEvent::TouchPoint& point, const WebEvent::Type& gestureType, const QTransform& fromItemTransform)
+{
+    WebEvent::Type type             = gestureType;
+    IntPoint position               = fromItemTransform.map(point.pos()).toPoint();
+    IntPoint screenPosition         = point.screenPos().toPoint();
+    WebEvent::Modifiers modifiers   = WebEvent::Modifiers(0);
+    double timestamp                = 0;
+    IntSize area                    = IntSize(point.rect().size().toSize());
+    FloatPoint delta                = FloatPoint(0, 0);
+
+    return WebGestureEvent(type, position, screenPosition, modifiers, timestamp, area, delta);
+}
+
 } // namespace WebKit

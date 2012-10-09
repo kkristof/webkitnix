@@ -257,7 +257,7 @@ void QtPageClient::updateTextInputState()
 }
 
 #if ENABLE(GESTURE_EVENTS)
-void QtPageClient::doneWithGestureEvent(const WebGestureEvent& event, bool wasEventHandled)
+void QtPageClient::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
 {
     ASSERT(m_eventHandler);
     m_eventHandler->doneWithGestureEvent(event, wasEventHandled);

@@ -68,6 +68,11 @@ void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool)
 
 }
 
+void WebViewClient::doneWithGestureEvent(const GestureEvent&, bool)
+{
+
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -168,7 +173,7 @@ public:
 
     virtual void doneWithKeyEvent(const NativeWebKeyboardEvent&, bool wasEventHandled) { notImplemented(); }
 #if ENABLE(GESTURE_EVENTS)
-    virtual void doneWithGestureEvent(const WebGestureEvent&, bool wasEventHandled) { notImplemented(); }
+    virtual void doneWithGestureEvent(const NativeWebGestureEvent&, bool wasEventHandled);
 #endif
 #if ENABLE(TOUCH_EVENTS)
     virtual void doneWithTouchEvent(const NativeWebTouchEvent&, bool wasEventHandled);
@@ -509,6 +514,13 @@ void WebViewImpl::sendGestureEvent(const GestureEvent& event)
 void WebViewImpl::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
 {
     m_client->doneWithTouchEvent(event.nativeEvent(), wasEventHandled);
+}
+#endif
+
+#if ENABLE(GESTURE_EVENTS)
+void WebViewImpl::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
+{
+    m_client->doneWithGestureEvent(event.nativeEvent(), wasEventHandled);
 }
 #endif
 

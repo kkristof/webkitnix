@@ -344,7 +344,7 @@ IntRect PageClientImpl::windowToScreen(const IntRect& rect)
 }
 
 #if ENABLE(GESTURE_EVENTS)
-void PageClientImpl::doneWithGestureEvent(const WebGestureEvent&, bool wasEventHandled)
+void PageClientImpl::doneWithGestureEvent(const NativeWebGestureEvent&, bool wasEventHandled)
 {
     notImplemented();
 }

@@ -57,7 +57,7 @@ class NativeWebKeyboardEvent;
 class NativeWebTouchEvent;
 #endif
 #if ENABLE(GESTURE_EVENTS)
-class WebGestureEvent;
+class NativeWebGestureEvent;
 #endif
 class WebContextMenuProxy;
 class WebEditCommandProxy;
@@ -172,7 +172,7 @@ public:
     
     virtual void doneWithKeyEvent(const NativeWebKeyboardEvent&, bool wasEventHandled) = 0;
 #if ENABLE(GESTURE_EVENTS)
-    virtual void doneWithGestureEvent(const WebGestureEvent&, bool wasEventHandled) = 0;
+    virtual void doneWithGestureEvent(const NativeWebGestureEvent&, bool wasEventHandled) = 0;
 #endif
 #if ENABLE(TOUCH_EVENTS)
     virtual void doneWithTouchEvent(const NativeWebTouchEvent&, bool wasEventHandled) = 0;
