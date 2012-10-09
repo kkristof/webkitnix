@@ -102,7 +102,10 @@ class NixPort(Port, PulseAudioSanitizer):
         return search_paths
 
     def expectations_files(self):
-        return list(reversed([self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in self._search_paths()]))
+        paths = self._search_paths()
+        if self.get_option('webkit_test_runner'):
+            paths.append('wk2')
+        return list(reversed([self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in paths]))
 
     def show_results_html_file(self, results_filename):
         # FIXME: We should find a way to share this implmentation with Gtk,

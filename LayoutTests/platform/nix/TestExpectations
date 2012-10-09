@@ -350,6 +350,56 @@ transitions/suspend-transform-transition.html [ Skip ]
 transitions/svg-transitions.html [ Skip ]
 webarchive/loading/javascript-url-iframe-crash.html [ Skip ]
 
+# Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
+fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
+
+# Tests requiring drag and drop
+fast/events/prevent-drag-to-navigate.html [ Skip ]
+fast/events/moving-text-should-fire-drop-and-dragend-events-2.html [ Skip ]
+fast/events/moving-text-should-fire-drop-and-dragend-events.html [ Skip ]
+fast/events/input-element-display-none-in-dragleave-crash.html [ Skip ]
+fast/events/prevent-drag-to-navigate.html [ Skip ]
+fast/events/drag-display-none-element.html [ Skip ]
+fast/events/drag-file-crash.html [ Skip ]
+fast/events/drag-to-navigate.html [ Skip ]
+fast/events/drop-handler-should-not-stop-navigate.html [ Skip ]
+fast/events/drop-with-file-paths.html [ Skip ]
+fast/events/dropzone-004.html [ Skip ]
+fast/events/file-input-hidden-in-ondrop.html [ Skip ]
+
+# Tests failing due to input boxes being stacked instead of
+# displayed on the same line (see related https://bugs.webkit.org/show_bug.cgi?id=92551)
+fast/events/js-keyboard-event-creation.html [ Skip ]
+
+# Nix should handle (left|right) (control|alt|shift) keys
+# Link to resolved GTK bug about the same problem: https://bugs.webkit.org/show_bug.cgi?id=87221
+fast/events/keydown-leftright-keys.html [ Skip ]
+
+# Document.write tests are flaky/crashing randomly when running with the other tests.
+fast/parser/document-write-ignores-later-network-bytes.html [ Crash Pass ]
+fast/parser/document-write-into-initial-document.html [ Crash Pass ]
+fast/parser/document-write-noscript.html [ Crash Pass ]
+fast/parser/document-write-noscript.html [ Crash Pass ]
+fast/parser/document-write-onload-clear.html [ Crash Pass ]
+fast/parser/document-write-onload-nesting.html [ Crash Pass ]
+fast/parser/document-write-onload-ordering.html [ Crash Pass ]
+fast/parser/double-write-from-closed-iframe.html [ Crash Pass ]
+
+# Tries to set data with a different encoding. Whenever another attribute is set to
+# the value '#', the returned data is null.
+fast/loader/data-url-encoding-html.html [ Failure ]
+fast/loader/data-url-encoding-svg.html [ Failure ]
+
+# Failing with message:
+# CONSOLE MESSAGE: line 10: INDEX_SIZE_ERR: DOM Exception 1: Index or size was negative, or greater than the allowed value.
+fast/css/import-style-update.html [ Failure ]
+
+# Failing with message:
+# CONSOLE MESSAGE: line 20: TypeError: 'undefined' is not an object (evaluating 'top.document.getElementsByTagName('a')[0].dispatchEvent')
+fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html [ Failure ]
+fast/events/attribute-listener-cloned-from-frameless-doc-context.html [ Failure ]
+fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html [ Failure ]
+fast/events/attribute-listener-extracted-from-frameless-doc-context.html [ Failure ]
 
 #############################################################
 # DISABLED APIS
