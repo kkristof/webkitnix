@@ -37,6 +37,9 @@
 namespace WebKit {
 class QtTcpServerHandler;
 }
+#elif PLATFORM(GTK)
+#include <gio/gio.h>
+#include <wtf/gobject/GRefPtr.h>
 #endif
 
 namespace WebCore {
@@ -78,7 +81,10 @@ private:
     unsigned short m_port;
 #if PLATFORM(QT)
     OwnPtr<QtTcpServerHandler> m_tcpServerHandler;
+#elif PLATFORM(GTK)
+    GRefPtr<GSocketService> m_socketService;
 #endif
+
     friend class WebSocketServerConnection;
 };
 
