@@ -26,6 +26,7 @@ public:
     // TODO: Used only as a key in HashMaps, see if we can change WebKit code to not
     // rely on this anymore (at least in our platform).
     virtual PlatformGraphicsContext3D platformContext() { return this; }
+    virtual void waitNative() { return; }
 
 private:
     static bool initialize();

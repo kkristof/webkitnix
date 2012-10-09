@@ -21,8 +21,12 @@
 
 #if USE(OPENGL)
 
+#if USE(EGL)
 #include "GLContextEGL.h"
+#endif
+#if USE(GLX)
 #include "GLContextGLX.h"
+#endif
 #include <wtf/MainThread.h>
 
 #if PLATFORM(X11)
