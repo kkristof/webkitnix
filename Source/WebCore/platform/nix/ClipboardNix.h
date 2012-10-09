@@ -40,7 +40,7 @@ public:
     String getData(const String&) const;
     bool setData(const String&, const String&);
 
-    HashSet<String> types() const;
+    ListHashSet<String> types() const;
     virtual PassRefPtr<FileList> files() const;
 
     IntPoint dragLocation() const;

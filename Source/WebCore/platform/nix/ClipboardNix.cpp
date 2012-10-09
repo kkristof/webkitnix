@@ -77,10 +77,10 @@ bool ClipboardNix::setData(const String&, const String&)
     return false;
 }
 
-HashSet<String> ClipboardNix::types() const
+ListHashSet<String> ClipboardNix::types() const
 {
     notImplemented();
-    return HashSet<String>();
+    return ListHashSet<String>();
 }
 
 PassRefPtr<FileList> ClipboardNix::files() const
