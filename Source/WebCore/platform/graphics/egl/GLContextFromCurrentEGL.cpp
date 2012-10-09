@@ -1,18 +1,18 @@
 #include "config.h"
-#include "GLContextEGL.h"
+#include "GLContextFromCurrentEGL.h"
 
 #include "OpenGLShims.h"
 
 namespace WebCore {
 
-PassOwnPtr<GLContextEGL> GLContextEGL::createFromCurrentGLContext()
+PassOwnPtr<GLContextFromCurrentEGL> GLContextFromCurrentEGL::createFromCurrentGLContext()
 {
     if (!initialize())
         return nullptr;
-    return adoptPtr(new GLContextEGL());
+    return adoptPtr(new GLContextFromCurrentEGL());
 }
 
-GLContextEGL::GLContextEGL()
+GLContextFromCurrentEGL::GLContextFromCurrentEGL()
     : m_display(eglGetCurrentDisplay())
     , m_surface(eglGetCurrentSurface(EGL_DRAW))
     , m_context(eglGetCurrentContext())
@@ -20,13 +20,13 @@ GLContextEGL::GLContextEGL()
 
 }
 
-bool GLContextEGL::makeContextCurrent()
+bool GLContextFromCurrentEGL::makeContextCurrent()
 {
     GLContext::makeContextCurrent();
     return eglMakeCurrent(m_display, m_surface, m_surface, m_context);
 }
 
-bool GLContextEGL::initialize()
+bool GLContextFromCurrentEGL::initialize()
 {
     static bool initialized = false;
     static bool success = true;

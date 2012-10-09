@@ -1,5 +1,5 @@
-#ifndef GLContextEGL_h
-#define GLContextEGL_h
+#ifndef GLContextFromCurrentEGL_h
+#define GLContextFromCurrentEGL_h
 
 #include "GLContext.h"
 #include "NotImplemented.h"
@@ -7,11 +7,11 @@
 
 namespace WebCore {
 
-class GLContextEGL : public GLContext {
-    WTF_MAKE_NONCOPYABLE(GLContextEGL);
+class GLContextFromCurrentEGL : public GLContext {
+    WTF_MAKE_NONCOPYABLE(GLContextFromCurrentEGL);
 public:
     // TODO: Add support for Offscreen buffers.
-    static PassOwnPtr<GLContextEGL> createFromCurrentGLContext();
+    static PassOwnPtr<GLContextFromCurrentEGL> createFromCurrentGLContext();
 
     virtual bool makeContextCurrent();
 
@@ -30,7 +30,7 @@ public:
 private:
     static bool initialize();
 
-    GLContextEGL();
+    GLContextFromCurrentEGL();
 
     EGLDisplay m_display;
     EGLSurface m_surface;
@@ -39,4 +39,4 @@ private:
 
 } // namespace WebCore
 
-#endif // GLContextEGL_h
+#endif // GLContextFromCurrentEGL_h

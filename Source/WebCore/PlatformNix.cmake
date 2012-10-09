@@ -264,7 +264,7 @@ IF (WTF_USE_3D_GRAPHICS)
 
   IF (WTF_USE_EGL)
     LIST(APPEND WebCore_SOURCES
-        platform/graphics/egl/GLContextEGL.cpp
+        platform/graphics/egl/GLContextFromCurrentEGL.cpp
     )
   ELSE ()
     LIST(APPEND WebCore_SOURCES

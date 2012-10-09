@@ -34,7 +34,7 @@
 
 #if PLATFORM(NIX)
 #if USE(EGL)
-#include "GLContextEGL.h"
+#include "GLContextFromCurrentEGL.h"
 #else
 #include "GLContextFromCurrentGLX.h"
 #endif
@@ -62,7 +62,7 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
         //       when the Nix port goes upstream.
 #if PLATFORM(NIX)
     #if USE(EGL)
-        m_glContext = GLContextEGL::createFromCurrentGLContext();
+        m_glContext = GLContextFromCurrentEGL::createFromCurrentGLContext();
     #else
         // TODO: Merge implementations of GLContextFromCurrentGLX and GLContextGLX. Currently split to
         // avoid conflicts.
