@@ -277,13 +277,13 @@ void RenderLayerCompositor::scheduleLayerFlush()
     if (!page)
         return;
 
-    page->chrome()->client()->scheduleCompositingLayerSync();
+    page->chrome()->client()->scheduleCompositingLayerFlush();
 }
 
 void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
 {
-    // FrameView::syncCompositingStateIncludingSubframes() flushes each subframe,
-    // but GraphicsLayer::syncCompositingState() will cross frame boundaries
+    // FrameView::flushCompositingStateIncludingSubframes() flushes each subframe,
+    // but GraphicsLayer::flushCompositingState() will cross frame boundaries
     // if the GraphicsLayers are connected (the RootLayerAttachedViaEnclosingFrame case).
     // As long as we're not the root of the flush, we can bail.
     if (!isFlushRoot && rootLayerAttachment() == RootLayerAttachedViaEnclosingFrame)
@@ -297,7 +297,7 @@ void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
         if (frameView) {
             // FIXME: Passing frameRect() is correct only when RenderLayerCompositor uses a ScrollLayer (as in WebKit2)
             // otherwise, the passed clip rect needs to take scrolling into account
-            rootLayer->syncCompositingState(frameView->frameRect());
+            rootLayer->flushCompositingState(frameView->frameRect());
         }
     }
     
@@ -493,6 +493,12 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
                 repaintOnCompositingChange(layer);
 
             layer->ensureBacking();
+
+            if (layer->isRootLayer()) {
+                layer->backing()->attachToScrollingCoordinator();
+                if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+                    scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
+            }
 
             // This layer and all of its descendants have cached repaints rects that are relative to
             // the repaint container, so change when compositing changes; we need to update them here.
@@ -1935,13 +1941,10 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
 void RenderLayerCompositor::documentBackgroundColorDidChange()
 {
     RenderLayerBacking* backing = rootRenderLayer()->backing();
-    if (!backing)
+    if (!backing || !backing->usingTileCache())
         return;
 
     GraphicsLayer* graphicsLayer = backing->graphicsLayer();
-    if (!graphicsLayer->client()->usingTileCache(graphicsLayer))
-        return;
-
     Color backgroundColor = m_renderView->frameView()->documentBackgroundColor();
     if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
         backgroundColor = Color::white;
@@ -2307,9 +2310,6 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             break;
         }
     }
-
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
 
     m_rootLayerAttachment = attachment;
     rootLayerAttachmentChanged();

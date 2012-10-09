@@ -80,6 +80,7 @@
 #include "RenderInline.h"
 #include "RenderMarquee.h"
 #include "RenderReplica.h"
+#include "RenderSVGResourceClipper.h"
 #include "RenderScrollbar.h"
 #include "RenderScrollbarPart.h"
 #include "RenderTheme.h"
@@ -1754,6 +1755,21 @@ void RenderLayer::scrollTo(int x, int y)
         renderer()->node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
 }
 
+static inline bool frameElementAndViewPermitScroll(HTMLFrameElement* frameElement, FrameView* frameView) 
+{
+    // If scrollbars aren't explicitly forbidden, permit scrolling.
+    if (frameElement && frameElement->scrollingMode() != ScrollbarAlwaysOff)
+        return true;
+
+    // If scrollbars are forbidden, user initiated scrolls should obviously be ignored.
+    if (frameView->wasScrolledByUser())
+        return false;
+
+    // Forbid autoscrolls when scrollbars are off, but permits other programmatic scrolls,
+    // like navigation to an anchor.
+    return !frameView->frame()->eventHandler()->autoscrollInProgress();
+}
+
 void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     RenderLayer* parentLayer = 0;
@@ -1804,8 +1820,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
                 if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
                     frameElement = static_cast<HTMLFrameElement*>(ownerElement);
 
-                if ((frameElement && frameElement->scrollingMode() != ScrollbarAlwaysOff)
-                    || (!frameView->frame()->eventHandler()->autoscrollInProgress() && !frameView->wasScrolledByUser())) {
+                if (frameElementAndViewPermitScroll(frameElement, frameView)) {
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect exposeRect = getRectToExpose(viewRect, rect, alignX, alignY);
 
@@ -2628,7 +2643,7 @@ void RenderLayer::updateScrollbarsAfterLayout()
         m_vBar->setProportion(clientHeight, m_scrollSize.height());
     }
 
-    updateScrollableAreaSet((hasHorizontalOverflow || hasVerticalOverflow) && scrollsOverflow());
+    updateScrollableAreaSet((hasHorizontalOverflow || hasVerticalOverflow) && scrollsOverflow() && allowsScrolling());
 }
 
 void RenderLayer::updateScrollInfoAfterLayout()
@@ -2889,7 +2904,7 @@ void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, 
     paintLayer(this, context, enclosingIntRect(damageRect), LayoutSize(), paintBehavior, paintingRoot, region, &overlapTestRequests, paintFlags);
     OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     for (OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it)
-        it->first->setOverlapTestResult(false);
+        it->key->setOverlapTestResult(false);
 }
 
 void RenderLayer::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot)
@@ -2958,11 +2973,11 @@ static void performOverlapTests(OverlapTestRequestMap& overlapTestRequests, cons
     OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     LayoutRect boundingBox = layer->boundingBox(rootLayer);
     for (OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it) {
-        if (!boundingBox.intersects(it->second))
+        if (!boundingBox.intersects(it->value))
             continue;
 
-        it->first->setOverlapTestResult(true);
-        overlappedRequestClients.append(it->first);
+        it->key->setOverlapTestResult(true);
+        overlappedRequestClients.append(it->key);
     }
     for (size_t i = 0; i < overlappedRequestClients.size(); ++i)
         overlapTestRequests.remove(overlappedRequestClients[i]);
@@ -3139,6 +3154,16 @@ void RenderLayer::paintLayerContents(RenderLayer* rootLayer, GraphicsContext* co
             ShapeClipPathOperation* clipPath = static_cast<ShapeClipPathOperation*>(style->clipPath());
             context->clipPath(clipPath->path(calculateLayerBounds(this, rootLayer, 0)), clipPath->windRule());
         }
+#if ENABLE(SVG)
+        else if (style->clipPath()->getOperationType() == ClipPathOperation::REFERENCE) {
+            ReferenceClipPathOperation* referenceClipPathOperation = static_cast<ReferenceClipPathOperation*>(style->clipPath());
+            Document* document = renderer()->document();
+            // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
+            Element* clipPath = document ? document->getElementById(referenceClipPathOperation->fragment()) : 0;
+            if (clipPath && clipPath->renderer() && clipPath->renderer()->isSVGResourceContainer())
+                static_cast<RenderSVGResourceClipper*>(clipPath->renderer())->applyClippingToContext(renderer(), calculateLayerBounds(this, rootLayer, 0), paintDirtyRect, context);
+        }
+#endif
     }
 
 #if ENABLE(CSS_FILTERS)
@@ -4836,7 +4861,7 @@ void RenderLayer::updateScrollbarsAfterStyleChange(const RenderStyle* oldStyle)
     }
 
     if (!m_scrollDimensionsDirty)
-        updateScrollableAreaSet((hasHorizontalOverflow() || hasVerticalOverflow()) && scrollsOverflow());
+        updateScrollableAreaSet((hasHorizontalOverflow() || hasVerticalOverflow()) && scrollsOverflow() && allowsScrolling());
 }
 
 void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)

@@ -2142,15 +2142,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\interpreter\JSStack.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\interpreter\JSStack.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\interpreter\Register.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\interpreter\RegisterFile.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\interpreter\RegisterFile.h"
 				>
 			</File>
 			<File
@@ -2457,6 +2457,14 @@
 				RelativePath="..\..\heap\HeapRootVisitor.h"
 				>
 			</File>
+            <File
+                RelativePath="..\..\heap\HeapStatistics.cpp"
+            >
+            </File>
+            <File
+                RelativePath="..\..\heap\HeapStatistics.h"
+            >
+            </File>
 			<File
 				RelativePath="..\..\heap\Local.h"
 				>

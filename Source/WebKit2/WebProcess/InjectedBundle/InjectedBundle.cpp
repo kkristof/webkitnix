@@ -61,6 +61,7 @@
 #include <WebCore/PageVisibilityState.h>
 #include <WebCore/PrintContext.h>
 #include <WebCore/ResourceHandle.h>
+#include <WebCore/ResourceLoadScheduler.h>
 #include <WebCore/ScriptController.h>
 #include <WebCore/SecurityOrigin.h>
 #include <WebCore/SecurityPolicy.h>
@@ -579,7 +580,7 @@ void InjectedBundle::didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageID 
 
 void InjectedBundle::setPageVisibilityState(WebPage* page, int state, bool isInitialState)
 {
-#if ENABLE(PAGE_VISIBILITY_API)
+#if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     page->corePage()->setVisibilityState(static_cast<PageVisibilityState>(state), isInitialState);
 #endif
 }
@@ -644,6 +645,16 @@ uint64_t InjectedBundle::webNotificationID(JSContextRef jsContext, JSValueRef js
 void InjectedBundle::setTabKeyCyclesThroughElements(WebPage* page, bool enabled)
 {
     page->corePage()->setTabKeyCyclesThroughElements(enabled);
+}
+
+void InjectedBundle::setSerialLoadingEnabled(bool enabled)
+{
+    resourceLoadScheduler()->setSerialLoadingEnabled(enabled);
+}
+
+void InjectedBundle::dispatchPendingLoadRequests()
+{
+    resourceLoadScheduler()->servePendingRequests();
 }
 
 } // namespace WebKit

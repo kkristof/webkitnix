@@ -113,6 +113,8 @@ WK_EXPORT void WKBundleSetPageVisibilityState(WKBundleRef bundle, WKBundlePageRe
 WK_EXPORT size_t WKBundleGetWorkerThreadCount(WKBundleRef bundle);
 
 WK_EXPORT void WKBundleSetTabKeyCyclesThroughElements(WKBundleRef bundle, WKBundlePageRef page, bool enabled);
+WK_EXPORT void WKBundleSetSerialLoadingEnabled(WKBundleRef bundle, bool enabled);
+WK_EXPORT void WKBundleDispatchPendingLoadRequests(WKBundleRef bundle);
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,101 @@
+2012-10-09  Simon Pena  <spena@igalia.com>
+
+        [GTK] Add support for running JavaScript from GResources
+        https://bugs.webkit.org/show_bug.cgi?id=98488
+
+        Reviewed by Carlos Garcia Campos.
+
+        GResources allow embedding certain resources, frequently used, in a "bundle"
+        which can be kept separated or stored in the binary. This patch adds
+        support for running JavaScript from GResources.
+
+        * configure.ac: Add support for compiling GResources
+
+2012-10-09  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK build fix after r130689.
+
+        Adding a required symbol to symbols.filter.
+
+        * Source/autotools/symbols.filter:
+
+2012-10-08  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Add minimum version information for tool dependencies
+        https://bugs.webkit.org/show_bug.cgi?id=97592
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Capture the minimum version information for the tools that are required
+        to build the EFL port (or more generally WebKit).
+
+        * CMakeLists.txt:
+
+2012-10-08  Dongwoo Joshua Im  <dw.im@samsung.com>
+
+        [EFL] Fix build break when WEB_AUDIO is enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=98635
+
+        Unreviewed build fix.
+
+        Build error is occurred because of the new flag, ENABLE_LEGACY_WEB_AUDIO,
+        which was introduced by https://bugs.webkit.org/show_bug.cgi?id=97050.
+
+        * Source/cmakeconfig.h.cmake: Add ENABLE_LEGACY_WEB_AUDIO.
+
+2012-10-08  Joone Hur  <joone.hur@intel.com>
+
+        [EFL] Add support for -webkit-sticky
+        https://bugs.webkit.org/show_bug.cgi?id=95182
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Turn on CSS sticky position by default for WebKitEfl,
+        but most of the CSS sticky position test cases still do not pass on WK1.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-10-05  José Dapena Paz  <jdapena@igalia.com>
+
+        [GTK] Add support for creating EGL contexts
+        https://bugs.webkit.org/show_bug.cgi?id=77921
+
+        Reviewed by Martin Robinson.
+
+        This patch adds support for EGL, using OpenGL and OpenGL ES 2. Both
+        options are set up on compile time, with the configure options
+        --enable-egl and --enable-gles2.
+
+        The implementation only adds support for EGL on top of X11, to
+        isolate the changes to the minimum. More changes should come
+        later to enable EGL for other targets (as Wayland).
+
+        * GNUmakefile.am:
+        * configure.ac: new configure options --enable-egl and --enable-gles2.
+
+2012-10-04  Rob Buis  <rbuis@rim.com>
+
+        [BlackBerry] Sync up CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=98442
+
+        Reviewed by Gyuyoung Kim.
+
+        Amongst others some internal paths changed.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2012-10-04  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL] Add libxml 2.8.0 to jhbuild
+        https://bugs.webkit.org/show_bug.cgi?id=98418
+
+        Reviewed by Laszlo Gombos.
+
+        Bump dependency for libxml to 2.8.0 to match
+        jhbuild.
+
+        * Source/cmake/OptionsEfl.cmake:
+
 2012-10-04  Balazs Kelemen  <kbalazs@webkit.org>
 
         Don't allow to disable compositing in forced compositing mode

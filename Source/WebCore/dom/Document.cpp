@@ -2665,6 +2665,14 @@ double Document::minimumTimerInterval() const
     return p->settings()->minDOMTimerInterval();
 }
 
+double Document::timerAlignmentInterval() const
+{
+    Page* p = page();
+    if (!p)
+        return ScriptExecutionContext::timerAlignmentInterval();
+    return p->settings()->domTimerAlignmentInterval();
+}
+
 EventTarget* Document::errorEventTarget()
 {
     return domWindow();
@@ -4050,14 +4058,25 @@ void Document::setInPageCache(bool flag)
     m_inPageCache = flag;
 
     FrameView* v = view();
+    Page* page = this->page();
+
     if (flag) {
         ASSERT(!m_savedRenderer);
         m_savedRenderer = renderer();
         if (v) {
+            // FIXME: There is some scrolling related work that needs to happen whenever a page goes into the
+            // page cache and similar work that needs to occur when it comes out. This is where we do the work
+            // that needs to happen when we enter, and the work that needs to happen when we exit is in
+            // HistoryController::restoreScrollPositionAndViewState(). It can't be here because this function is
+            // called too early on in the process of a page exiting the cache for that work to be possible in this
+            // function. It would be nice if there was more symmetry here.
+            // https://bugs.webkit.org/show_bug.cgi?id=98698
             v->cacheCurrentScrollPosition();
-            if (page() && page()->mainFrame() == m_frame)
+            if (page && page->mainFrame() == m_frame) {
                 v->resetScrollbarsAndClearContentsSize();
-            else
+                if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+                    scrollingCoordinator->clearStateTree();
+            } else
                 v->resetScrollbars();
         }
         m_styleRecalcTimer.stop();
@@ -4431,10 +4450,10 @@ PassRefPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
 {
     NamedCollectionMap::AddResult result = m_windowNamedItemCollections.add(name, 0);
     if (!result.isNewEntry)
-        return result.iterator->second;
+        return result.iterator->value;
 
     RefPtr<HTMLNameCollection> collection = HTMLNameCollection::create(this, WindowNamedItems, name);
-    result.iterator->second = collection.get();
+    result.iterator->value = collection.get();
     return collection.release();
 }
 
@@ -4442,10 +4461,10 @@ PassRefPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name
 {
     NamedCollectionMap::AddResult result = m_documentNamedItemCollections.add(name, 0);
     if (!result.isNewEntry)
-        return result.iterator->second;
+        return result.iterator->value;
 
     RefPtr<HTMLNameCollection> collection = HTMLNameCollection::create(this, DocumentNamedItems, name);
-    result.iterator->second = collection.get();
+    result.iterator->value = collection.get();
     return collection.release();
 }
 
@@ -4783,7 +4802,7 @@ CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const 
 
 HTMLCanvasElement* Document::getCSSCanvasElement(const String& name)
 {
-    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).iterator->second;
+    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).iterator->value;
     if (!element)
         element = HTMLCanvasElement::create(this);
     return element.get();
@@ -5943,19 +5962,19 @@ PassRefPtr<ElementAttributeData> Document::cachedImmutableAttributeData(const El
     unsigned cacheHash = cacheKey.hash();
 
     ImmutableAttributeDataCache::iterator cacheIterator = m_immutableAttributeDataCache.add(cacheHash, nullptr).iterator;
-    if (cacheIterator->second && cacheIterator->second->key != cacheKey)
+    if (cacheIterator->value && cacheIterator->value->key != cacheKey)
         cacheHash = 0;
 
     RefPtr<ElementAttributeData> attributeData;
-    if (cacheHash && cacheIterator->second)
-        attributeData = cacheIterator->second->value;
+    if (cacheHash && cacheIterator->value)
+        attributeData = cacheIterator->value->value;
     else
         attributeData = ElementAttributeData::createImmutable(attributes);
 
-    if (!cacheHash || cacheIterator->second)
+    if (!cacheHash || cacheIterator->value)
         return attributeData.release();
 
-    cacheIterator->second = adoptPtr(new ImmutableAttributeDataCacheEntry(ImmutableAttributeDataCacheKey(element->tagQName(), attributeData->immutableAttributeArray(), attributeData->length()), attributeData));
+    cacheIterator->value = adoptPtr(new ImmutableAttributeDataCacheEntry(ImmutableAttributeDataCacheKey(element->tagQName(), attributeData->immutableAttributeArray(), attributeData->length()), attributeData));
 
     return attributeData.release();
 }
@@ -5972,8 +5991,8 @@ Localizer& Document::getCachedLocalizer(const AtomicString& locale)
         localeKey = defaultLanguage();
     LocaleToLocalizerMap::AddResult result = m_localizerCache.add(localeKey, nullptr);
     if (result.isNewEntry)
-        result.iterator->second = Localizer::create(localeKey);
-    return *(result.iterator->second);
+        result.iterator->value = Localizer::create(localeKey);
+    return *(result.iterator->value);
 }
 
 } // namespace WebCore

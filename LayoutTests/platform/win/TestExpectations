@@ -142,6 +142,8 @@ fast/text/atsui-pointtooffset-calls-cg.html
 fast/text/cg-vs-atsui.html
 fast/text/atsui-spacing-features.html
 
+webkit.org/b/98718 svg/animations/animate-css-xml-attributeType.html [ Failure Pass ]
+
 # <rdar://problem/5718773> Support a minimum antialiased font size
 svg/hixie/text/003.html
 svg/hixie/text/003a.xml
@@ -186,6 +188,9 @@ fast/events/keydown-numpad-keys.html
 
 # No button tracked
 fast/events/mouseover-button.html
+
+# New test added for https://bugs.webkit.org/show_bug.cgi?id=98452 needs platform specific results
+fast/text/vertical-rl-rtl-linebreak.html [ Failure ]
 
 # The eqqivalent of option-tab doesn not exist in Boomer <rdar://problem/5137230>
 fast/events/frame-tab-focus.html
@@ -1721,7 +1726,7 @@ fast/repaint/scroll-inside-table-cell.html
 fast/repaint/scroll-relative-table-inside-table-cell.html
 fast/table/cell-pref-width-invalidation.html
 
-# The inner <input> should now grow to take the full cell's height.
+# <input> should be horizontal.
 fast/table/colspanMinWidth-vertical.html
 
 # Requires ENABLE(MEDIA_CAPTURE)
@@ -1985,6 +1990,7 @@ plugins/nested-plugin-objects.html
 fast/css/word-space-extra.html
 
 # ENABLE(INPUT_MULTIPLE_FIELDS_UI) is disabled
+fast/forms/date-multiple-fields
 fast/forms/month-multiple-fields
 fast/forms/time-multiple-fields
 fast/forms/week-multiple-fields
@@ -2319,9 +2325,15 @@ svg/custom/clip-mask-negative-scale.svg
 #https://bugs.webkit.org/show_bug.cgi?id=98095
 inspector/debugger/dynamic-script-tag.html
 
+#https://bugs.webkit.org/show_bug.cgi?id=98306
+css3/flexbox/flexbox-baseline.html
+
 # https://bugs.webkit.org/show_bug.cgi?id=98169
 http/tests/inspector/csp-injected-content-warning-contains-stacktrace.html
 http/tests/inspector/csp-inline-warning-contains-stacktrace.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=98209
 fast/text/international/float-as-only-child-of-isolate-crash.html
+
+# HIDDEN_PAGE_DOM_TIMER_THROTTLING is disabled
+fast/dom/timer-throttling-hidden-page.html

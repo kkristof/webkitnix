@@ -432,6 +432,12 @@ webkit.org/b/84635 fast/dom/HTMLDialogElement [ Skip ]
 webkit.org/b/92942 fast/dom/Proximity
 webkit.org/b/92942 fast/events/constructors/device-proximity-event-constructor.html
 
+# CSS compositing is not yet enabled.
+Bug(GTK) css3/compositing [ Skip ]
+
+# HIDDEN_PAGE_DOM_TIMER_THROTTLING is not enabled
+fast/dom/timer-throttling-hidden-page.html [ WontFix ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Expected failures
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -528,6 +534,8 @@ webkit.org/b/89650 [ Debug ] svg/W3C-SVG-1.1/animate-elem-81-t.svg [ Failure Pas
 webkit.org/b/89650 svg/W3C-SVG-1.1/animate-elem-82-t.svg [ Failure Pass ]
 webkit.org/b/89650 [ Debug ] svg/W3C-SVG-1.1/animate-elem-85-t.svg [ Failure Pass ]
 webkit.org/b/89650 svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass ]
+
+webkit.org/b/98718 svg/animations/animate-css-xml-attributeType.html [ Failure Pass ]
 
 webkit.org/b/80158 plugins/netscape-plugin-page-cache-works.html [ Failure Pass ]
 
@@ -648,6 +656,11 @@ webkit.org/b/98350 accessibility/aria-invalid.html [ Timeout ]
 webkit.org/b/73003 [ Release ] editing/spelling/spellcheck-async.html [ Timeout ]
 webkit.org/b/73003 [ Release ] editing/spelling/spellcheck-paste.html [ Timeout ]
 webkit.org/b/50740 [ Release ] editing/spelling/spellcheck-queue.html [ Timeout ]
+
+webkit.org/b/98729 fast/events/attribute-listener-cloned-from-frameless-doc-context.html [ Timeout ]
+webkit.org/b/98729 fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html [ Timeout ]
+webkit.org/b/98729 fast/events/attribute-listener-extracted-from-frameless-doc-context.html [ Timeout ]
+webkit.org/b/98729 fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html [ Timeout ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests timing out
@@ -1119,11 +1132,12 @@ webkit.org/b/68855 editing/selection/select-bidi-run.html [ Failure ]
 webkit.org/b/65709 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ]
 
 # missing multipart/x-mixed-replace support in libsoup
-webkit.org/b/68979 http/tests/multipart/invalid-image-data.html
-webkit.org/b/68979 http/tests/multipart/load-last-non-html-frame.php [ Failure ]
-webkit.org/b/68979 http/tests/multipart/multipart-replace-non-html-content.php [ Failure ]
-webkit.org/b/68979 http/tests/multipart/policy-ignore-crash.php [ Failure ]
-webkit.org/b/68979 http/tests/multipart/stop-crash.html [ Skip ]
+webkit.org/b/94515 http/tests/multipart/invalid-image-data.html
+webkit.org/b/94515 http/tests/multipart/load-last-non-html-frame.php [ Failure ]
+webkit.org/b/94515 http/tests/multipart/multipart-replace-non-html-content.php [ Failure ]
+webkit.org/b/94515 http/tests/multipart/policy-ignore-crash.php [ Failure ]
+webkit.org/b/94515 http/tests/multipart/stop-crash.html [ Skip ]
+webkit.org/b/94515 http/tests/multipart/multipart-html.php [ Failure ]
 
 # Fails because it does not throw a couple of expected exceptions
 Bug(GTK) http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure ]
@@ -1180,9 +1194,6 @@ webkit.org/b/76564 fast/workers/worker-crash-with-invalid-location.html [ Failur
 webkit.org/b/81320 editing/pasteboard/copy-two-pasteboard-types-both-work.html [ Failure ]
 
 webkit.org/b/82020 plugins/netscape-dom-access-and-reload.html [ Failure ]
-
-# The inner <input> should now grow to take the full cell's height.
-Bug(GTK) fast/table/colspanMinWidth-vertical.html [ Failure ]
 
 # EditorClient::checkTextOfParagraph() is not implemented.
 Bug(GTK) editing/spelling/spelling-marker-description.html [ Failure ]
@@ -1293,8 +1304,6 @@ webkit.org/b/74219 fast/regions/positioned-objects-block-static-spanning-regions
 
 webkit.org/b/89231 fast/js/global-constructors.html [ Failure ]
 
-webkit.org/b/91009 [ Debug ] fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
-
 # Skip tests in fast/text/shaping
 webkit.org/b/90951 fast/text/shaping
 
@@ -1317,6 +1326,7 @@ webkit.org/b/94009 css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 
 webkit.org/b/94083 media/video-controls-fullscreen-volume.html [ Skip ]
 
+Bug(GTK) fast/forms/date-multiple-fields [ Skip ]
 webkit.org/b/97299 fast/forms/month-multiple-fields
 webkit.org/b/94186 fast/forms/time-multiple-fields
 webkit.org/b/97877 fast/forms/week-multiple-fields
@@ -1364,6 +1374,25 @@ webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-complex-shadow.html [ 
 webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-only-shadow.html [ ImageOnlyFailure ]
 
 webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
+
+# Missing support in DRT for Geolocation's Coordinate attributes.
+Bug(GTK) fast/dom/Geolocation/coordinates-interface-attributes.html [ Failure ]
+
+webkit.org/b/98585 fast/exclusions/shape-inside/shape-inside-rounded-rectangle-003.html [ ImageOnlyFailure ]
+
+webkit.org/b/98587 fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ ImageOnlyFailure ]
+
+webkit.org/b/98612 [ Release ] fast/dom/gc-dom-tree-lifetime.html [ Failure ]
+
+webkit.org/b/98613 css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
+webkit.org/b/98613 css3/masking/clip-path-reference.html [ ImageOnlyFailure ]
+
+webkit.org/b/98729 fast/css/import-style-update.html [ Failure ]
+webkit.org/b/98729 fast/html/link-rel-stylesheet.html [ Failure ]
+webkit.org/b/98729 fast/loader/data-url-encoding-html.html [ Failure ]
+webkit.org/b/98729 fast/loader/data-url-encoding-svg.html [ Failure ]
+webkit.org/b/98729 fast/spatial-navigation/snav-iframe-nested.html [ Failure ]
+webkit.org/b/98729 svg/custom/object-data-href.html [ ImageOnlyFailure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

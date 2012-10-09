@@ -32,6 +32,7 @@
 #include "MarkedBlock.h"
 #include "MarkedBlockSet.h"
 #include "MarkedSpace.h"
+#include "Options.h"
 #include "SlotVisitor.h"
 #include "WeakHandleOwner.h"
 #include "WriteBarrierSupport.h"
@@ -54,11 +55,11 @@ namespace JSC {
     class JITStubRoutine;
     class JSCell;
     class JSGlobalData;
+    class JSStack;
     class JSValue;
     class LiveObjectIterator;
     class LLIntOffsetsExtractor;
     class MarkedArgumentBuffer;
-    class RegisterFile;
     class WeakGCHandlePool;
     class SlotVisitor;
 
@@ -182,6 +183,7 @@ namespace JSC {
         friend class MarkedBlock;
         friend class CopiedSpace;
         friend class SlotVisitor;
+        friend class HeapStatistics;
         template<typename T> friend void* allocateCell(Heap&);
         template<typename T> friend void* allocateCell(Heap&, size_t);
 
@@ -208,7 +210,7 @@ namespace JSC {
         void zombifyDeadObjects();
         void markDeadObjects();
 
-        RegisterFile& registerFile();
+        JSStack& stack();
         BlockAllocator& blockAllocator();
 
         const HeapType m_heapType;
@@ -258,6 +260,8 @@ namespace JSC {
 
     inline bool Heap::shouldCollect()
     {
+        if (Options::gcMaxHeapSize())
+            return m_bytesAllocated > Options::gcMaxHeapSize() && m_isSafeToCollect && m_operationInProgress == NoOperation;
 #if ENABLE(GGC)
         return m_objectSpace.nurseryWaterMark() >= m_minBytesPerCycle && m_isSafeToCollect && m_operationInProgress == NoOperation;
 #else
@@ -351,7 +355,7 @@ namespace JSC {
     {
         ProtectCountSet::iterator end = m_protectedValues.end();
         for (ProtectCountSet::iterator it = m_protectedValues.begin(); it != end; ++it)
-            functor(it->first);
+            functor(it->key);
         m_handleSet.forEachStrongHandle(functor, m_protectedValues);
 
         return functor.returnValue();

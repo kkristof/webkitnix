@@ -782,6 +782,19 @@ TiledBacking* FrameView::tiledBacking()
     return backing->graphicsLayer()->tiledBacking();
 }
 
+uint64_t FrameView::scrollLayerID() const
+{
+    RenderView* root = rootRenderer(this);
+    if (!root)
+        return 0;
+
+    RenderLayerBacking* backing = root->layer()->backing();
+    if (!backing)
+        return 0;
+
+    return backing->scrollLayerID();
+}
+
 #if ENABLE(RUBBER_BANDING)
 GraphicsLayer* FrameView::layerForOverhangAreas() const
 {
@@ -792,7 +805,7 @@ GraphicsLayer* FrameView::layerForOverhangAreas() const
 }
 #endif
 
-bool FrameView::syncCompositingStateForThisFrame(Frame* rootFrameForSync)
+bool FrameView::flushCompositingStateForThisFrame(Frame* rootFrameForFlush)
 {
     RenderView* root = rootRenderer(this);
     if (!root)
@@ -809,7 +822,7 @@ bool FrameView::syncCompositingStateForThisFrame(Frame* rootFrameForSync)
     // visible flash to occur. Instead, stop the deferred repaint timer and repaint immediately.
     flushDeferredRepaints();
 
-    root->compositor()->flushPendingLayerChanges(rootFrameForSync == m_frame);
+    root->compositor()->flushPendingLayerChanges(rootFrameForFlush == m_frame);
 
     return true;
 }
@@ -888,16 +901,16 @@ bool FrameView::isEnclosedInCompositingLayer() const
     return false;
 }
     
-bool FrameView::syncCompositingStateIncludingSubframes()
+bool FrameView::flushCompositingStateIncludingSubframes()
 {
 #if USE(ACCELERATED_COMPOSITING)
-    bool allFramesSynced = syncCompositingStateForThisFrame(m_frame.get());
+    bool allFramesFlushed = flushCompositingStateForThisFrame(m_frame.get());
     
     for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->traverseNext(m_frame.get())) {
-        bool synced = child->view()->syncCompositingStateForThisFrame(m_frame.get());
-        allFramesSynced &= synced;
+        bool flushed = child->view()->flushCompositingStateForThisFrame(m_frame.get());
+        allFramesFlushed &= flushed;
     }
-    return allFramesSynced;
+    return allFramesFlushed;
 #else // USE(ACCELERATED_COMPOSITING)
     return true;
 #endif
@@ -3195,7 +3208,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 
 #if USE(ACCELERATED_COMPOSITING)
     if (!p->paintingDisabled() && !document->printing())
-        syncCompositingStateForThisFrame(m_frame.get());
+        flushCompositingStateForThisFrame(m_frame.get());
 #endif
 
     PaintBehavior oldPaintBehavior = m_paintBehavior;

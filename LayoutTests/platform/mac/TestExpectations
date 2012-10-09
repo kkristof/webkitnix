@@ -479,10 +479,6 @@ fast/events/platform-wheelevent-paging-y-in-non-scrolling-page.html
 fast/events/platform-wheelevent-paging-y-in-scrolling-div.html
 fast/events/platform-wheelevent-paging-y-in-scrolling-page.html
 
-# https://bugs.webkit.org/show_bug.cgi?id=70989
-fast/canvas/webgl/attrib-location-length-limits.html
-fast/canvas/webgl/uniform-location-length-limits.html
-
 # Web Intents is not yet enabled.
 webintents/
 
@@ -807,6 +803,7 @@ platform/mac/plugins/root-object-premature-delete-crash.html
 css3/flexbox/flex-rounding.html
 
 # ENABLE(INPUT_MULTIPLE_FIELDS_UI) is disabled
+fast/forms/date-multiple-fields
 fast/forms/month-multiple-fields
 fast/forms/time-multiple-fields
 fast/forms/week-multiple-fields
@@ -824,7 +821,6 @@ fast/repaint/repaint-across-writing-mode-boundary.html
 fast/ruby/base-shorter-than-text.html
 fast/text/emphasis-vertical.html
 fast/text/international/text-spliced-font.html
-fast/writing-mode/Kusa-Makura-background-canvas.html
 fast/writing-mode/border-vertical-lr.html
 fast/writing-mode/fallback-orientation.html
 fast/writing-mode/japanese-lr-selection.html
@@ -1188,6 +1184,8 @@ webkit.org/b/89116 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-specu
 webkit.org/b/89116 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-suraceScale-prop.html [ ImageOnlyFailure Pass ]
 webkit.org/b/89116 svg/filters/feLighting-crash.svg [ ImageOnlyFailure Pass ]
 
+webkit.org/b/98718 svg/animations/animate-css-xml-attributeType.html [ Failure Pass ]
+
 # Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=79682
 webkit.org/b/79682 svg/repaint/text-mask-update.svg [ Failure ImageOnlyFailure Missing Pass ]
 
@@ -1310,3 +1308,9 @@ webkit.org/b/95501 http/tests/security/inactive-document-with-empty-security-ori
 
 # Paints black behind the test image instead of the expected green.
 webkit.org/b/95707 http/tests/images/png-partial-load-no-alpha.html [ ImageOnlyFailure ]
+
+# Requires TestRunner displayInvalidatedRegion() support.
+webkit.org/b/98523 fast/images/repaint-subrect-grid.html [ Failure ]
+
+# Rendering/Layout issue of CJK vertical text with some font.
+webkit.org/b/98560 fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ ImageOnlyFailure ]

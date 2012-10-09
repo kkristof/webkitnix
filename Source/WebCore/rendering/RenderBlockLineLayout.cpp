@@ -290,6 +290,14 @@ static inline LayoutUnit borderPaddingMarginEnd(RenderInline* child)
     return child->marginEnd() + child->paddingEnd() + child->borderEnd();
 }
 
+static bool shouldAddBorderPaddingMargin(RenderObject* child, bool &checkSide)
+{
+    if (!child || (child->isText() && !toRenderText(child)->textLength()))
+        return true;
+    checkSide = false;
+    return checkSide;
+}
+
 static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, bool end = true)
 {
     unsigned lineDepth = 1;
@@ -297,10 +305,12 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     RenderObject* parent = child->parent();
     while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
-        if (start && !child->previousSibling())
+        if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
             extraWidth += borderPaddingMarginStart(parentAsRenderInline);
-        if (end && !child->nextSibling())
+        if (end && shouldAddBorderPaddingMargin(child->nextSibling(), end))
             extraWidth += borderPaddingMarginEnd(parentAsRenderInline);
+        if (!start && !end)
+            return extraWidth;
         child = parent;
         parent = child->parent();
     }
@@ -711,14 +721,14 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     if (!fallbackFonts.isEmpty()) {
         ASSERT(run->m_box->isText());
         GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.add(toInlineTextBox(run->m_box), make_pair(Vector<const SimpleFontData*>(), GlyphOverflow())).iterator;
-        ASSERT(it->second.first.isEmpty());
-        copyToVector(fallbackFonts, it->second.first);
+        ASSERT(it->value.first.isEmpty());
+        copyToVector(fallbackFonts, it->value.first);
         run->m_box->parent()->clearDescendantsHaveSameLineHeightAndBaseline();
     }
     if ((glyphOverflow.top || glyphOverflow.bottom || glyphOverflow.left || glyphOverflow.right)) {
         ASSERT(run->m_box->isText());
         GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.add(toInlineTextBox(run->m_box), make_pair(Vector<const SimpleFontData*>(), GlyphOverflow())).iterator;
-        it->second.second = glyphOverflow;
+        it->value.second = glyphOverflow;
         run->m_box->clearKnownToHaveNoOverflow();
     }
 }

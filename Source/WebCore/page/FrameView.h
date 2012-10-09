@@ -121,7 +121,7 @@ public:
 #if USE(ACCELERATED_COMPOSITING)
     void updateCompositingLayersAfterStyleChange();
     void updateCompositingLayersAfterLayout();
-    bool syncCompositingStateForThisFrame(Frame* rootFrameForSync);
+    bool flushCompositingStateForThisFrame(Frame* rootFrameForFlush);
 
     void clearBackingStores();
     void restoreBackingStores();
@@ -131,6 +131,10 @@ public:
     void setNeedsOneShotDrawingSynchronization();
 
     virtual TiledBacking* tiledBacking() OVERRIDE;
+
+    // In the future when any ScrollableArea can have a node in th ScrollingTree, this should
+    // become a virtual function on ScrollableArea.
+    uint64_t scrollLayerID() const;
 #endif
 
     bool hasCompositedContent() const;
@@ -140,8 +144,8 @@ public:
     bool isEnclosedInCompositingLayer() const;
 
     // Only used with accelerated compositing, but outside the #ifdef to make linkage easier.
-    // Returns true if the sync was completed.
-    bool syncCompositingStateIncludingSubframes();
+    // Returns true if the flush was completed.
+    bool flushCompositingStateIncludingSubframes();
 
     // Returns true when a paint with the PaintBehaviorFlattenCompositingLayers flag set gives
     // a faithful representation of the content.

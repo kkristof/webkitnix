@@ -82,6 +82,7 @@ SOURCES += \
     heap/BlockAllocator.cpp \
     heap/GCThreadSharedData.cpp \
     heap/Heap.cpp \
+    heap/HeapStatistics.cpp \
     heap/HeapTimer.cpp \
     heap/IncrementalSweeper.cpp \
     heap/JITStubRoutineSet.cpp \
@@ -137,7 +138,7 @@ SOURCES += \
     interpreter/AbstractPC.cpp \
     interpreter/CallFrame.cpp \
     interpreter/Interpreter.cpp \
-    interpreter/RegisterFile.cpp \
+    interpreter/JSStack.cpp \
     jit/ExecutableAllocatorFixedVMPool.cpp \
     jit/ExecutableAllocator.cpp \
     jit/HostCallReturnValue.cpp \

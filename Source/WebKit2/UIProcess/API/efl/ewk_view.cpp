@@ -44,6 +44,7 @@
 #include "ewk_popup_menu_item.h"
 #include "ewk_popup_menu_item_private.h"
 #include "ewk_private.h"
+#include "ewk_resource.h"
 #include "ewk_settings_private.h"
 #include "ewk_view_find_client_private.h"
 #include "ewk_view_form_client_private.h"
@@ -52,7 +53,6 @@
 #include "ewk_view_private.h"
 #include "ewk_view_resource_load_client_private.h"
 #include "ewk_view_ui_client_private.h"
-#include "ewk_web_resource.h"
 #include <Ecore_Evas.h>
 #include <Edje.h>
 #include <WebCore/Cursor.h>
@@ -79,7 +79,7 @@ static const char EWK_VIEW_TYPE_STR[] = "EWK2_View";
 
 static const int defaultCursorSize = 16;
 
-typedef HashMap<uint64_t, Ewk_Web_Resource*> LoadingResourcesMap;
+typedef HashMap<uint64_t, Ewk_Resource*> LoadingResourcesMap;
 static void _ewk_view_priv_loading_resources_clear(LoadingResourcesMap& loadingResourcesMap);
 
 struct _Ewk_View_Private_Data {
@@ -89,7 +89,7 @@ struct _Ewk_View_Private_Data {
 #endif
     RefPtr<WebPageProxy> pageProxy;
 
-    WKEinaSharedString uri;
+    WKEinaSharedString url;
     WKEinaSharedString title;
     WKEinaSharedString theme;
     WKEinaSharedString customEncoding;
@@ -362,6 +362,24 @@ static void _ewk_view_on_key_up(void* data, Evas*, Evas_Object*, void* eventInfo
     smartData->api->key_up(smartData, upEvent);
 }
 
+static void _ewk_view_on_show(void* data, Evas*, Evas_Object*, void* /*eventInfo*/)
+{
+    Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
+    EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
+    priv->pageProxy->viewStateDidChange(WebPageProxy::ViewIsVisible);
+}
+
+static void _ewk_view_on_hide(void* data, Evas*, Evas_Object*, void* /*eventInfo*/)
+{
+    Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
+    EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
+
+    // This call may look wrong, but we really need to pass ViewIsVisible here.
+    // viewStateDidChange() itself is responsible for actually setting the visibility to Visible or Hidden
+    // depending on what WebPageProxy::isViewVisible() returns, this simply triggers the process.
+    priv->pageProxy->viewStateDidChange(WebPageProxy::ViewIsVisible);
+}
+
 #if ENABLE(TOUCH_EVENTS)
 static inline void _ewk_view_feed_touch_event_using_touch_point_list_of_evas(Evas_Object* ewkView, Ewk_Touch_Event_Type type)
 {
@@ -426,7 +444,7 @@ static void _ewk_view_priv_loading_resources_clear(LoadingResourcesMap& loadingR
     LoadingResourcesMap::iterator it = loadingResourcesMap.begin();
     LoadingResourcesMap::iterator end = loadingResourcesMap.end();
     for ( ; it != end; ++it)
-        ewk_web_resource_unref(it->second);
+        ewk_resource_unref(it->value);
 
     loadingResourcesMap.clear();
 }
@@ -481,6 +499,8 @@ static void _ewk_view_smart_add(Evas_Object* ewkView)
     CONNECT(EVAS_CALLBACK_MOUSE_WHEEL, _ewk_view_on_mouse_wheel);
     CONNECT(EVAS_CALLBACK_KEY_DOWN, _ewk_view_on_key_down);
     CONNECT(EVAS_CALLBACK_KEY_UP, _ewk_view_on_key_up);
+    CONNECT(EVAS_CALLBACK_SHOW, _ewk_view_on_show);
+    CONNECT(EVAS_CALLBACK_HIDE, _ewk_view_on_hide);
 #undef CONNECT
 }
 
@@ -859,11 +879,11 @@ Ewk_Context* ewk_view_context_get(const Evas_Object* ewkView)
 
 /**
  * @internal
- * The uri of view was changed by the frame loader.
+ * The url of view was changed by the frame loader.
  *
- * Emits signal: "uri,changed" with pointer to new uri string.
+ * Emits signal: "url,changed" with pointer to new url string.
  */
-void ewk_view_uri_update(Evas_Object* ewkView)
+void ewk_view_url_update(Evas_Object* ewkView)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
@@ -872,32 +892,32 @@ void ewk_view_uri_update(Evas_Object* ewkView)
     if (activeURL.isEmpty())
         return;
 
-    if (priv->uri == activeURL.utf8().data())
+    if (priv->url == activeURL.utf8().data())
         return;
 
-    priv->uri = activeURL.utf8().data();
-    const char* callbackArgument = static_cast<const char*>(priv->uri);
-    evas_object_smart_callback_call(ewkView, "uri,changed", const_cast<char*>(callbackArgument));
+    priv->url = activeURL.utf8().data();
+    const char* callbackArgument = static_cast<const char*>(priv->url);
+    evas_object_smart_callback_call(ewkView, "url,changed", const_cast<char*>(callbackArgument));
 }
 
-Eina_Bool ewk_view_uri_set(Evas_Object* ewkView, const char* uri)
+Eina_Bool ewk_view_url_set(Evas_Object* ewkView, const char* url)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(uri, false);
+    EINA_SAFETY_ON_NULL_RETURN_VAL(url, false);
 
-    priv->pageProxy->loadURL(uri);
-    ewk_view_uri_update(ewkView);
+    priv->pageProxy->loadURL(url);
+    ewk_view_url_update(ewkView);
 
     return true;
 }
 
-const char* ewk_view_uri_get(const Evas_Object* ewkView)
+const char* ewk_view_url_get(const Evas_Object* ewkView)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, 0);
 
-    return priv->uri;
+    return priv->url;
 }
 
 Eina_Bool ewk_view_reload(Evas_Object* ewkView)
@@ -906,7 +926,7 @@ Eina_Bool ewk_view_reload(Evas_Object* ewkView)
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
 
     priv->pageProxy->reload(/*reloadFromOrigin*/ false);
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
 
     return true;
 }
@@ -917,7 +937,7 @@ Eina_Bool ewk_view_reload_bypass_cache(Evas_Object* ewkView)
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
 
     priv->pageProxy->reload(/*reloadFromOrigin*/ true);
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
 
     return true;
 }
@@ -946,15 +966,15 @@ Ewk_Settings* ewk_view_settings_get(const Evas_Object* ewkView)
  *
  * Emits signal: "resource,request,new" with pointer to resource request.
  */
-void ewk_view_resource_load_initiated(Evas_Object* ewkView, uint64_t resourceIdentifier, Ewk_Web_Resource* resource, Ewk_Url_Request* request)
+void ewk_view_resource_load_initiated(Evas_Object* ewkView, uint64_t resourceIdentifier, Ewk_Resource* resource, Ewk_Url_Request* request)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
 
-    Ewk_Web_Resource_Request resourceRequest = {resource, request, 0};
+    Ewk_Resource_Request resourceRequest = {resource, request, 0};
 
     // Keep the resource internally to reuse it later.
-    priv->loadingResourcesMap.add(resourceIdentifier, ewk_web_resource_ref(resource));
+    priv->loadingResourcesMap.add(resourceIdentifier, ewk_resource_ref(resource));
 
     evas_object_smart_callback_call(ewkView, "resource,request,new", &resourceRequest);
 }
@@ -973,8 +993,8 @@ void ewk_view_resource_load_response(Evas_Object* ewkView, uint64_t resourceIden
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Web_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Web_Resource_Load_Response resourceLoadResponse = {resource, response};
+    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Load_Response resourceLoadResponse = {resource, response};
     evas_object_smart_callback_call(ewkView, "resource,request,response", &resourceLoadResponse);
 }
 
@@ -984,7 +1004,7 @@ void ewk_view_resource_load_response(Evas_Object* ewkView, uint64_t resourceIden
  *
  * Emits signal: "resource,request,finished" with pointer to the resource load error.
  */
-void ewk_view_resource_load_failed(Evas_Object* ewkView, uint64_t resourceIdentifier, Ewk_Web_Error* error)
+void ewk_view_resource_load_failed(Evas_Object* ewkView, uint64_t resourceIdentifier, Ewk_Error* error)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
@@ -992,8 +1012,8 @@ void ewk_view_resource_load_failed(Evas_Object* ewkView, uint64_t resourceIdenti
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Web_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Web_Resource_Load_Error resourceLoadError = {resource, error};
+    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Load_Error resourceLoadError = {resource, error};
     evas_object_smart_callback_call(ewkView, "resource,request,failed", &resourceLoadError);
 }
 
@@ -1011,10 +1031,10 @@ void ewk_view_resource_load_finished(Evas_Object* ewkView, uint64_t resourceIden
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Web_Resource* resource = priv->loadingResourcesMap.take(resourceIdentifier);
+    Ewk_Resource* resource = priv->loadingResourcesMap.take(resourceIdentifier);
     evas_object_smart_callback_call(ewkView, "resource,request,finished", resource);
 
-    ewk_web_resource_unref(resource);
+    ewk_resource_unref(resource);
 }
 
 /**
@@ -1031,8 +1051,8 @@ void ewk_view_resource_request_sent(Evas_Object* ewkView, uint64_t resourceIdent
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Web_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Web_Resource_Request resourceRequest = {resource, request, redirectResponse};
+    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Request resourceRequest = {resource, request, redirectResponse};
 
     evas_object_smart_callback_call(ewkView, "resource,request,sent", &resourceRequest);
 }
@@ -1299,7 +1319,7 @@ void ewk_view_download_job_requested(Evas_Object* ewkView, Ewk_Download_Job* dow
  *
  * Emits signal: "download,failed" with pointer to a Ewk_Download_Job_Error.
  */
-void ewk_view_download_job_failed(Evas_Object* ewkView, Ewk_Download_Job* download, Ewk_Web_Error* error)
+void ewk_view_download_job_failed(Evas_Object* ewkView, Ewk_Download_Job* download, Ewk_Error* error)
 {
     Ewk_Download_Job_Error downloadError = { download, error };
     evas_object_smart_callback_call(ewkView, "download,failed", &downloadError);
@@ -1410,11 +1430,11 @@ void ewk_view_form_submission_request_new(Evas_Object* ewkView, Ewk_Form_Submiss
  * @internal
  * Reports load failed with error information.
  *
- * Emits signal: "load,error" with pointer to Ewk_Web_Error.
+ * Emits signal: "load,error" with pointer to Ewk_Error.
  */
-void ewk_view_load_error(Evas_Object* ewkView, const Ewk_Web_Error* error)
+void ewk_view_load_error(Evas_Object* ewkView, const Ewk_Error* error)
 {
-    evas_object_smart_callback_call(ewkView, "load,error", const_cast<Ewk_Web_Error*>(error));
+    evas_object_smart_callback_call(ewkView, "load,error", const_cast<Ewk_Error*>(error));
 }
 
 /**
@@ -1425,7 +1445,7 @@ void ewk_view_load_error(Evas_Object* ewkView, const Ewk_Web_Error* error)
  */
 void ewk_view_load_finished(Evas_Object* ewkView)
 {
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
     evas_object_smart_callback_call(ewkView, "load,finished", 0);
 }
 
@@ -1433,11 +1453,11 @@ void ewk_view_load_finished(Evas_Object* ewkView)
  * @internal
  * Reports view provisional load failed with error information.
  *
- * Emits signal: "load,provisional,failed" with pointer to Ewk_Web_Error.
+ * Emits signal: "load,provisional,failed" with pointer to Ewk_Error.
  */
-void ewk_view_load_provisional_failed(Evas_Object* ewkView, const Ewk_Web_Error* error)
+void ewk_view_load_provisional_failed(Evas_Object* ewkView, const Ewk_Error* error)
 {
-    evas_object_smart_callback_call(ewkView, "load,provisional,failed", const_cast<Ewk_Web_Error*>(error));
+    evas_object_smart_callback_call(ewkView, "load,provisional,failed", const_cast<Ewk_Error*>(error));
 }
 
 /**
@@ -1448,7 +1468,7 @@ void ewk_view_load_provisional_failed(Evas_Object* ewkView, const Ewk_Web_Error*
  */
 void ewk_view_load_provisional_redirect(Evas_Object* ewkView)
 {
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
     evas_object_smart_callback_call(ewkView, "load,provisional,redirect", 0);
 }
 
@@ -1467,7 +1487,7 @@ void ewk_view_load_provisional_started(Evas_Object* ewkView)
     // the loadingResources HashMap to start clean.
     _ewk_view_priv_loading_resources_clear(priv->loadingResourcesMap);
 
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
     evas_object_smart_callback_call(ewkView, "load,provisional,started", 0);
 }
 
@@ -1503,7 +1523,7 @@ Eina_Bool ewk_view_html_string_load(Evas_Object* ewkView, const char* html, cons
         priv->pageProxy->loadAlternateHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "", String::fromUTF8(unreachableUrl));
     else
         priv->pageProxy->loadHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "");
-    ewk_view_uri_update(ewkView);
+    ewk_view_url_update(ewkView);
 
     return true;
 }
@@ -1586,8 +1606,7 @@ Eina_Bool ewk_view_text_find(Evas_Object* ewkView, const char* text, Ewk_Find_Op
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(text, false);
 
-    WKRetainPtr<WKStringRef> findText(AdoptWK, WKStringCreateWithUTF8CString(text));
-    WKPageFindString(toAPI(priv->pageProxy.get()), findText.get(), static_cast<WKFindOptions>(options), maxMatchCount);
+    priv->pageProxy->findString(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
 
     return true;
 }
@@ -1597,7 +1616,18 @@ Eina_Bool ewk_view_text_find_highlight_clear(Evas_Object* ewkView)
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
 
-    WKPageHideFindUI(toAPI(priv->pageProxy.get()));
+    priv->pageProxy->hideFindUI();
+
+    return true;
+}
+
+Eina_Bool ewk_view_text_matches_count(Evas_Object* ewkView, const char* text, Ewk_Find_Options options, unsigned maxMatchCount)
+{
+    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
+    EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, false);
+    EINA_SAFETY_ON_NULL_RETURN_VAL(text, false);
+
+    priv->pageProxy->countStringMatches(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
 
     return true;
 }

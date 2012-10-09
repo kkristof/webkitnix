@@ -571,7 +571,7 @@ public:
 
     bool willGoToBackForwardItemCallbackEnabled() const { return m_willGoToBackForwardItemCallbackEnabled; }
 
-#if ENABLE(PAGE_VISIBILITY_API)
+#if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     void setVisibilityState(int visibilityState, bool isInitialState);
 #endif
 
@@ -822,7 +822,7 @@ private:
 
     RefPtr<WebCore::Node> m_gestureTargetNode;
 #elif PLATFORM(GTK)
-    WebPageAccessibilityObject* m_accessibilityObject;
+    GRefPtr<WebPageAccessibilityObject> m_accessibilityObject;
 
 #if USE(TEXTURE_MAPPER_GL)
     // Our view's window in the UI process.
