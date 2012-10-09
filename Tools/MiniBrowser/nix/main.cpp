@@ -12,6 +12,8 @@
 #include <cstdio>
 #include <cstring>
 #include <glib.h>
+#include <string>
+#include <fstream>
 
 #include <wtf/Platform.h>
 #include <WebKit2/WKRetainPtr.h>
@@ -380,7 +382,7 @@ int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
 
-    const char* url = 0;
+    std::string url;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
 
@@ -392,8 +394,13 @@ int main(int argc, char* argv[])
         else
             url = argv[i];
     }
-    if (!url)
+
+    if (url.empty()) {
         url = "http://www.google.com";
+    } else if (url.find("http") != 0 && url.find("file://") != 0) {
+        std::ifstream localFile(url.c_str());
+        url.insert(0, localFile ? "file://" : "http://");
+    }
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
     MiniBrowser browser(mainLoop, browserMode);
@@ -403,7 +410,7 @@ int main(int argc, char* argv[])
         browser.setTouchEmulationMode(true);
     }
 
-    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url));
+    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
 
     g_main_loop_run(mainLoop);
     g_main_loop_unref(mainLoop);
