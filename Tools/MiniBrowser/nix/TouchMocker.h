@@ -5,6 +5,14 @@
 #include <WebView.h>
 #include <map>
 
+struct MockedTouchPoint : public Nix::TouchPoint {
+    // Means there is a mouse button pressed and the next mouse move
+    // will update this touch point.
+    bool selected;
+
+    MockedTouchPoint();
+};
+
 class TouchMocker {
 public:
     TouchMocker(Nix::WebView*);
@@ -18,20 +26,20 @@ public:
     void paintTouchPoints();
 
 private:
-    void trackTouchPoint(unsigned id, Nix::TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
+    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
     void updateTouchPointsState(Nix::TouchPoint::TouchState);
     void releaseTouchPoints(double timestamp);
 
-    void prepareTouchEvent(Nix::TouchPoint::TouchState state, double timestamp);
-    void sendCurrentTouchEvent();
+    void sendCurrentTouchEvent(Nix::TouchPoint::TouchState state, double timestamp);
 
-    void sendGestureSingleTap(int x, int y, int globalX, int globalY);
+    void sendGestureSingleTap(double timestamp, int x, int y, int globalX, int globalY);
     void loadTouchPointTexture();
 
-    std::map<unsigned, Nix::TouchPoint> m_mapTouchIdToTouchPoint;
     Nix::WebView* m_webView;
-    double m_timestamp;
     Nix::InputEvent::Type m_touchType;
+    typedef std::map<Nix::MouseEvent::Button, MockedTouchPoint> TouchMap;
+    TouchMap m_touchPoints;
+
     unsigned m_touchTextureId;
 };
 

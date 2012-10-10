@@ -7,23 +7,17 @@
 using namespace Nix;
 
 // On single touches, every mouse interaction is used as touch event.
-// But while you keep Control key pressed, some mouse events may be ignored,
-// like mouse moves. Holding that key means you're building a multi-touch event,
-// so every time you click with a certain mouse button, it will either press or
-// move a given touch point. So to release all touches, just release Control key.
+// Holding CTRL key means you're building a multi-touch event and each mouse,
+// button represents a touch point. All touch points will be released when
+// you release the CTRL key.
 
-static unsigned touchIdForMouseButton(MouseEvent::Button button)
+MockedTouchPoint::MockedTouchPoint()
 {
-    switch (button) {
-    case MouseEvent::LeftButton:
-        return 1;
-    case MouseEvent::MiddleButton:
-        return 2;
-    case MouseEvent::RightButton:
-        return 3;
-    default:
-        return 4;
-    }
+    verticalRadius = 20;
+    horizontalRadius = 20;
+    rotationAngle = 0.0;
+    pressure = 1.0;
+    selected = false;
 }
 
 static bool isSingleTouch(const InputEvent& event)
@@ -47,7 +41,7 @@ void TouchMocker::paintTouchPoints()
     static float vertexData[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     static const float texCoords[] = { 0, 0, 1, 0, 0, 1, 1, 1};
 
-    if (m_mapTouchIdToTouchPoint.empty())
+    if (m_touchPoints.empty())
         return;
 
     glPushMatrix();
@@ -66,8 +60,8 @@ void TouchMocker::paintTouchPoints()
 
     glBindTexture(GL_TEXTURE_2D, m_touchTextureId);
 
-    std::map<unsigned, TouchPoint>::const_iterator it;
-    for (it = m_mapTouchIdToTouchPoint.begin(); it != m_mapTouchIdToTouchPoint.end(); ++it) {
+    TouchMap::const_iterator it;
+    for (it = m_touchPoints.begin(); it != m_touchPoints.end(); ++it) {
         const TouchPoint& touch = it->second;
         double x1 = touch.x - touch.horizontalRadius;
         double y1 = touch.y - touch.verticalRadius;
@@ -89,31 +83,36 @@ void TouchMocker::paintTouchPoints()
 
 bool TouchMocker::handleMousePress(const MouseEvent& event)
 {
-    unsigned id = touchIdForMouseButton(event.button);
-    bool shouldPress = !m_mapTouchIdToTouchPoint.count(id);
-    TouchPoint::TouchState state = shouldPress ? TouchPoint::TouchPressed : TouchPoint::TouchMoved;
-    trackTouchPoint(id, state, event.x, event.y, event.globalX, event.globalY);
-    prepareTouchEvent(state, event.timestamp);
-    sendCurrentTouchEvent();
+    TouchPoint::TouchState state = m_touchPoints.count(event.button) ? TouchPoint::TouchMoved : TouchPoint::TouchPressed;
+
+    trackTouchPoint(event.button, state, event.x, event.y, event.globalX, event.globalY);
+    sendCurrentTouchEvent(state, event.timestamp);
+    m_touchPoints[event.button].selected = true;
     return true;
 }
 
 bool TouchMocker::handleMouseRelease(const MouseEvent& event)
 {
-    if (isSingleTouch(event)) {
+    if (isSingleTouch(event))
         releaseTouchPoints(event.timestamp);
-    }
+    else
+        m_touchPoints[event.button].selected = false;
     return true;
 }
 
 bool TouchMocker::handleMouseMove(const MouseEvent& event)
 {
-    if (isSingleTouch(event) && m_mapTouchIdToTouchPoint.size() == 1) {
-        unsigned touchId = m_mapTouchIdToTouchPoint.begin()->first;
-        trackTouchPoint(touchId, TouchPoint::TouchMoved, event.x, event.y, event.globalX, event.globalY);
-        prepareTouchEvent(TouchPoint::TouchMoved, event.timestamp);
-        sendCurrentTouchEvent();
+    if (m_touchPoints.empty())
+        return false;
+
+    TouchMap::const_iterator it = m_touchPoints.begin();
+    for (; it != m_touchPoints.end(); ++it) {
+        if (it->second.selected) {
+            trackTouchPoint(it->first, TouchPoint::TouchMoved, event.x, event.y, event.globalX, event.globalY);
+            sendCurrentTouchEvent(TouchPoint::TouchMoved, event.timestamp);
+        }
     }
+
     return true;
 }
 
@@ -128,93 +127,77 @@ bool TouchMocker::handleKeyRelease(const KeyEvent& event)
 
 void TouchMocker::releaseTouchPoints(double timestamp)
 {
-    if (m_mapTouchIdToTouchPoint.empty())
+    if (m_touchPoints.empty())
         return;
 
     // FIXME: When we have proper gesture recognition, this code should move away.
     TouchPoint touch;
     bool shouldDoSingleTap = false;
-    if (m_mapTouchIdToTouchPoint.size() == 1) {
+    if (m_touchPoints.size() == 1) {
         // Keep track of the single touch we have so far to emit it as SingleTap afterwards.
-        touch = m_mapTouchIdToTouchPoint.begin()->second;
+        touch = m_touchPoints.begin()->second;
         shouldDoSingleTap = true;
     }
 
     updateTouchPointsState(TouchPoint::TouchReleased);
-    prepareTouchEvent(TouchPoint::TouchReleased, timestamp);
-    sendCurrentTouchEvent();
-    m_mapTouchIdToTouchPoint.clear();
+    sendCurrentTouchEvent(TouchPoint::TouchReleased, timestamp);
+
+    m_touchPoints.clear();
 
     if (shouldDoSingleTap)
-        sendGestureSingleTap(touch.x, touch.y, touch.globalX, touch.globalY);
+        sendGestureSingleTap(timestamp, touch.x, touch.y, touch.globalX, touch.globalY);
 }
 
 void TouchMocker::updateTouchPointsState(TouchPoint::TouchState state)
 {
-    std::map<unsigned, TouchPoint>::iterator it;
-    for (it = m_mapTouchIdToTouchPoint.begin(); it != m_mapTouchIdToTouchPoint.end(); ++it)
+    TouchMap::iterator it = m_touchPoints.begin();
+    for (; it != m_touchPoints.end(); ++it)
         it->second.state = state;
 }
 
-void TouchMocker::trackTouchPoint(unsigned id, TouchPoint::TouchState state, int x, int y, int globalX, int globalY)
+void TouchMocker::trackTouchPoint(MouseEvent::Button id, TouchPoint::TouchState state, int x, int y, int globalX, int globalY)
 {
     // While we update some touch's state the others should be on stationary state.
     updateTouchPointsState(TouchPoint::TouchStationary);
 
-    TouchPoint touch;
-    touch.id = id;
+    MockedTouchPoint& touch = m_touchPoints[id];
+    touch.id = static_cast<unsigned>(id);
     touch.state = state;
     touch.x = x;
     touch.y = y;
     touch.globalX = globalX;
     touch.globalY = globalY;
-    // FIXME: Hardcoded values for now, if these are proven to be useful we need to change it.
-    touch.verticalRadius = 20;
-    touch.horizontalRadius = 20;
-    touch.rotationAngle = 0.0;
-    touch.pressure = 1.0;
-
-    m_mapTouchIdToTouchPoint[id] = touch;
 }
 
-void TouchMocker::prepareTouchEvent(TouchPoint::TouchState state, double timestamp)
+void TouchMocker::sendCurrentTouchEvent(TouchPoint::TouchState state, double timestamp)
 {
+    TouchEvent ev;
+    ev.timestamp = timestamp;
+
     switch (state) {
     case TouchPoint::TouchPressed:
-        m_touchType = InputEvent::TouchStart;
+        ev.type = InputEvent::TouchStart;
         break;
     case TouchPoint::TouchMoved:
-        m_touchType = InputEvent::TouchMove;
+        ev.type = InputEvent::TouchMove;
         break;
     case TouchPoint::TouchReleased:
-        m_touchType = InputEvent::TouchEnd;
+        ev.type = InputEvent::TouchEnd;
         break;
     }
 
-    m_timestamp = timestamp;
-}
-
-void TouchMocker::sendCurrentTouchEvent()
-{
-    if (m_mapTouchIdToTouchPoint.empty())
-        return;
-
-    TouchEvent ev;
-    ev.type = m_touchType;
-    ev.timestamp = m_timestamp;
-    ev.touchPoints.clear();
-    std::map<unsigned, TouchPoint>::iterator it;
-    for (it = m_mapTouchIdToTouchPoint.begin(); it != m_mapTouchIdToTouchPoint.end(); ++it)
+    TouchMap::iterator it = m_touchPoints.begin();
+    for (; it != m_touchPoints.end(); ++it)
         ev.touchPoints.push_back(it->second);
 
     m_webView->sendEvent(ev);
 }
 
-void TouchMocker::sendGestureSingleTap(int x, int y, int globalX, int globalY)
+void TouchMocker::sendGestureSingleTap(double timestamp, int x, int y, int globalX, int globalY)
 {
     GestureEvent gestureEvent;
     gestureEvent.type = InputEvent::GestureSingleTap;
-    gestureEvent.timestamp = m_timestamp;
+    gestureEvent.timestamp = timestamp;
     gestureEvent.modifiers = 0;
     gestureEvent.x = x;
     gestureEvent.y = y;
