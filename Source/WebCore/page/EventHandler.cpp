@@ -2570,7 +2570,6 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
     return defaultPrevented;
 }
 
-#if ENABLE(CONTEXT_MENU)
 bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent)
 {
 #if OS(ANDROID)
@@ -2583,9 +2582,12 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
             return true;
     }
 #endif
+#if ENABLE(CONTEXT_MENUS)
     return sendContextMenuEventForGesture(gestureEvent);
+#else
+    return false;
+#endif
 }
-#endif //ENABLE(CONTEXT_MENU)
 
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
 {
