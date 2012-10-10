@@ -64,7 +64,7 @@ private:
     double m_lastClickTime;
     int m_lastClickX;
     int m_lastClickY;
-    int m_lastClickButton;
+    Nix::MouseEvent::Button m_lastClickButton;
     unsigned m_clickCount;
     TouchMocker* m_touchMocker;
     Mode m_mode;
@@ -76,11 +76,11 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
     , m_window(new LinuxWindow(this))
     , m_webView(0)
     , m_mainLoop(mainLoop)
-    , m_clickCount(0)
     , m_lastClickTime(0)
-    , m_lastClickButton(0)
     , m_lastClickX(0)
     , m_lastClickY(0)
+    , m_lastClickButton(Nix::MouseEvent::NoButton)
+    , m_clickCount(0)
     , m_touchMocker(0)
     , m_mode(mode)
 {
@@ -253,7 +253,7 @@ void MiniBrowser::updateClickCount(const XButtonPressedEvent& event)
 
     m_lastClickX = event.x;
     m_lastClickY = event.y;
-    m_lastClickButton = event.button;
+    m_lastClickButton = convertXEventButtonToNativeMouseButton(event.button);
     m_lastClickTime = event.time;
 }
 
