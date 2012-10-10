@@ -83,14 +83,12 @@ void Widget::setCursor(const Cursor& cursor)
 
 void Widget::show()
 {
-    if (!platformWidget())
-         return;
+    notImplemented();
 }
 
 void Widget::hide()
 {
-    if (!platformWidget())
-         return;
+    notImplemented();
 }
 
 void Widget::paint(GraphicsContext* context, const IntRect&)
