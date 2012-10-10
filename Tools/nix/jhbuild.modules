@@ -20,8 +20,6 @@
       href="https://github.com"/>
   <repository type="tarball" name="sourceware.org"
       href="ftp://sourceware.org"/>
-  <repository type="tarball" name="p11-glue.freedesktop.org"
-      href="http://p11-glue.freedesktop.org"/>
   <repository type="tarball" name="ftp.gnome.org"
       href="http://ftp.gnome.org"/>
   <repository type="git" name="git.gnome.org"
@@ -72,13 +70,6 @@
             hash="sha256:9a987aef8c50d9bcfdfdc9f012f8bd0de6095cc1a5524e62c1a037deb8dacbfe"
             md5sum="647ee8ed266f9a4117c8d0a4855b3d3e"/>
   </tarball>
-
-  <autotools id="p11-kit">
-    <branch module="/releases/p11-kit-0.12.tar.gz" version="0.12"
-             repo="p11-glue.freedesktop.org"
-             hash="sha256:4db792def545a3c8ae12e7e4ef166d7620cb445c00a5a984ab7c4a3b35f0be00"
-             md5sum="029aa2a3a103e7eb81b4aa731b93539e"/>
-  </autotools>
 
   <autotools id="glib"
              autogenargs="--disable-dtrace">
