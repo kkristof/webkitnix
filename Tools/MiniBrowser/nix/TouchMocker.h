@@ -16,7 +16,6 @@ public:
     bool handleKeyRelease(const Nix::KeyEvent&);
 
     void paintTouchPoints();
-    bool needsRepaint() const { return m_needsRepaint; }
 
 private:
     void trackTouchPoint(unsigned id, Nix::TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
@@ -27,14 +26,12 @@ private:
     void sendCurrentTouchEvent();
 
     void sendGestureSingleTap(int x, int y, int globalX, int globalY);
-    void setNeedsRepaint(bool needsRepaint);
     void loadTouchPointTexture();
 
     std::map<unsigned, Nix::TouchPoint> m_mapTouchIdToTouchPoint;
     Nix::WebView* m_webView;
     double m_timestamp;
     Nix::InputEvent::Type m_touchType;
-    bool m_needsRepaint;
     unsigned m_touchTextureId;
 };
 

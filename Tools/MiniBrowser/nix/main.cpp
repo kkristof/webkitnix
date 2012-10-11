@@ -9,6 +9,7 @@
 #include <WebView.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <glib.h>
@@ -17,6 +18,10 @@
 
 #include <wtf/Platform.h>
 #include <WebKit2/WKRetainPtr.h>
+
+extern "C" {
+static gboolean callUpdateDisplay(gpointer);
+}
 
 class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient {
 public:
@@ -32,7 +37,7 @@ public:
     WKPageRef pageRef() const { return m_webView->pageRef(); }
 
     // LinuxWindowClient.
-    virtual void handleExposeEvent() { updateDisplay(); }
+    virtual void handleExposeEvent() { scheduleUpdateDisplay(); }
     virtual void handleKeyPressEvent(const XKeyPressedEvent&);
     virtual void handleKeyReleaseEvent(const XKeyReleasedEvent&);
     virtual void handleButtonPressEvent(const XButtonPressedEvent&);
@@ -42,7 +47,7 @@ public:
     virtual void handleClosed();
 
     // Nix::WebViewClient.
-    virtual void viewNeedsDisplay(int, int, int, int) { updateDisplay(); }
+    virtual void viewNeedsDisplay(int, int, int, int) { scheduleUpdateDisplay(); }
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
     virtual void pageDidRequestScroll(int x, int y) { m_webView->setScrollPosition(x, y); }
@@ -55,6 +60,7 @@ private:
     void updateClickCount(const XButtonPressedEvent&);
 
     void updateDisplay();
+    void scheduleUpdateDisplay();
 
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
@@ -68,6 +74,9 @@ private:
     unsigned m_clickCount;
     TouchMocker* m_touchMocker;
     Mode m_mode;
+    bool m_displayUpdateScheduled;
+
+    friend gboolean callUpdateDisplay(gpointer);
 };
 
 MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
@@ -83,6 +92,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
     , m_clickCount(0)
     , m_touchMocker(0)
     , m_mode(mode)
+    , m_displayUpdateScheduled(false)
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -214,8 +224,7 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
         return;
     Nix::KeyEvent ev = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
     if (m_touchMocker && m_touchMocker->handleKeyRelease(ev)) {
-        if (m_touchMocker->needsRepaint())
-            updateDisplay();
+        scheduleUpdateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -280,8 +289,7 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     if (m_touchMocker && m_touchMocker->handleMousePress(ev)) {
-        if (m_touchMocker->needsRepaint())
-            updateDisplay();
+        scheduleUpdateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -303,8 +311,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
     if (m_touchMocker && m_touchMocker->handleMouseRelease(ev)) {
-        if (m_touchMocker->needsRepaint())
-            updateDisplay();
+        scheduleUpdateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -326,8 +333,7 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
     if (m_touchMocker && m_touchMocker->handleMouseMove(ev)) {
-        if (m_touchMocker->needsRepaint())
-            updateDisplay();
+        scheduleUpdateDisplay();
         return;
     }
     m_webView->sendEvent(ev);
@@ -363,6 +369,25 @@ void MiniBrowser::updateDisplay()
         m_touchMocker->paintTouchPoints();
 
     m_window->swapBuffers();
+}
+
+static gboolean callUpdateDisplay(gpointer data)
+{
+    MiniBrowser* browser = reinterpret_cast<MiniBrowser*>(data);
+
+    assert(m_displayUpdateScheduled);
+    browser->m_displayUpdateScheduled = false;
+    browser->updateDisplay();
+    return 0;
+}
+
+void MiniBrowser::scheduleUpdateDisplay()
+{
+    if (m_displayUpdateScheduled)
+        return;
+
+    m_displayUpdateScheduled = true;
+    g_timeout_add(0, callUpdateDisplay, this);
 }
 
 void MiniBrowser::webProcessCrashed(WKStringRef url)
