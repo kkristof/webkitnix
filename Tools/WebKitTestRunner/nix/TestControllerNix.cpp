@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2010 Igalia S.L.
- * Copyright (C) 2012 Instituto Nokia de Tecnologia
+ * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
