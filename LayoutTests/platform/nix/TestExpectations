@@ -357,6 +357,7 @@ fast/events/drop-with-file-paths.html [ Skip ]
 fast/events/dropzone-004.html [ Skip ]
 fast/events/file-input-hidden-in-ondrop.html [ Skip ]
 fast/events/selectstart-by-drag.html [ Skip ]
+fast/css/draggable-region-parser.html [ Skip ]
 
 # Tests failing due to input boxes being stacked instead of
 # displayed on the same line (see related https://bugs.webkit.org/show_bug.cgi?id=92551)
