@@ -4,6 +4,8 @@
 #include <cassert>
 #include "touchTexture.h"
 
+using namespace Nix;
+
 // On single touches, every mouse interaction is used as touch event.
 // But while you keep Control key pressed, some mouse events may be ignored,
 // like mouse moves. Holding that key means you're building a multi-touch event,
