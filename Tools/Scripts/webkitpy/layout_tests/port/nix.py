@@ -38,6 +38,9 @@ from webkitpy.layout_tests.port.pulseaudio_sanitizer import PulseAudioSanitizer
 class NixPort(Port, PulseAudioSanitizer):
     port_name = 'nix'
 
+    def _wk2_port_name(self):
+        return 'nix'
+
     def __init__(self, *args, **kwargs):
         super(NixPort, self).__init__(*args, **kwargs)
 
@@ -105,7 +108,7 @@ class NixPort(Port, PulseAudioSanitizer):
         paths = self._search_paths()
         if self.get_option('webkit_test_runner'):
             paths.append('wk2')
-        return list(reversed([self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in paths]))
+        return [self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in paths]
 
     def show_results_html_file(self, results_filename):
         # FIXME: We should find a way to share this implmentation with Gtk,
