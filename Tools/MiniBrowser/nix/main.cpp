@@ -375,7 +375,7 @@ static gboolean callUpdateDisplay(gpointer data)
 {
     MiniBrowser* browser = reinterpret_cast<MiniBrowser*>(data);
 
-    assert(m_displayUpdateScheduled);
+    assert(browser->m_displayUpdateScheduled);
     browser->m_displayUpdateScheduled = false;
     browser->updateDisplay();
     return 0;
