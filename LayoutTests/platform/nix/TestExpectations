@@ -391,6 +391,13 @@ fast/events/attribute-listener-cloned-from-frameless-doc-context.html [ Failure 
 fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html [ Failure ]
 fast/events/attribute-listener-extracted-from-frameless-doc-context.html [ Failure ]
 
+# Failing due to strange error when doing '__proto__'.localeCompare('1') inside NamedThingComparator.
+# When run inside WTR *on* the buildbot, the command above returns 1, while the JSC on the same buildbot
+# and desktop machines and WTR on desktop returns -1, the expected value.
+# This causes the order of the printed data to change, causing the failure.
+# The printed data is correct, though.
+inspector-protocol/runtime-getProperties.html [ Failure ]
+
 #############################################################
 # DISABLED APIS
 #############################################################
