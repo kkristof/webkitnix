@@ -84,6 +84,7 @@ void ewk_view_resource_request_sent(Evas_Object* ewkView, uint64_t resourceIdent
 void ewk_view_text_found(Evas_Object* ewkView, unsigned int matchCount);
 void ewk_view_url_update(Evas_Object* ewkView);
 void ewk_view_contents_size_changed(const Evas_Object* ewkView, const WebCore::IntSize&);
+void ewk_view_back_forward_list_changed(Evas_Object* ewkView);
 
 Evas_Object* ewk_view_base_add(Evas* canvas, WKContextRef, WKPageGroupRef);
 
@@ -94,6 +95,7 @@ void ewk_view_intent_request_new(Evas_Object* ewkView, const Ewk_Intent* ewkInte
 void ewk_view_intent_service_register(Evas_Object* ewkView, const Ewk_Intent_Service* ewkIntentService);
 #endif
 
+const Evas_Object* ewk_view_from_page_get(const WebKit::WebPageProxy*);
 WebKit::WebPageProxy* ewk_view_page_get(const Evas_Object* ewkView);
 WebCore::IntSize ewk_view_size_get(const Evas_Object* ewkView);
 

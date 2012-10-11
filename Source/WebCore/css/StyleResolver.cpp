@@ -107,6 +107,7 @@
 #include "ShadowData.h"
 #include "ShadowRoot.h"
 #include "ShadowValue.h"
+#include "SiblingTraversalStrategies.h"
 #include "SkewTransformOperation.h"
 #include "StyleBuilder.h"
 #include "StyleCachedImage.h"
@@ -139,7 +140,7 @@
 #include "WebKitCSSFilterValue.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
+#if ENABLE(DASHBOARD_SUPPORT)
 #include "DashboardRegion.h"
 #endif
 
@@ -712,7 +713,7 @@ void StyleResolver::sortAndTransferMatchedRules(MatchResult& result)
 
 void StyleResolver::matchScopedAuthorRules(MatchResult& result, bool includeEmptyRules)
 {
-#if ENABLE(STYLE_SCOPED)
+#if ENABLE(STYLE_SCOPED) || ENABLE(SHADOW_DOM)
     if (!m_scopeResolver || !m_scopeResolver->hasScopedStyles())
         return;
 
@@ -996,10 +997,8 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
         return 0;
     if (!parent || !parent->isStyledElement())
         return 0;
-#if ENABLE(STYLE_SCOPED)
     if (parent->hasScopedHTMLStyleChild())
         return 0;
-#endif
     StyledElement* p = static_cast<StyledElement*>(parent);
     if (p->inlineStyle())
         return 0;
@@ -1037,15 +1036,16 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     return 0;
 }
 
-bool StyleResolver::matchesRuleSet(RuleSet* ruleSet)
+bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
 {
     if (!ruleSet)
         return false;
     m_matchedRules.clear();
 
     int firstRuleIndex = -1, lastRuleIndex = -1;
+    m_checker.setMode(SelectorChecker::SharingRules);
     collectMatchingRules(ruleSet, firstRuleIndex, lastRuleIndex, false);
-
+    m_checker.setMode(SelectorChecker::ResolvingStyle);
     if (m_matchedRules.isEmpty())
         return false;
     m_matchedRules.clear();
@@ -1179,14 +1179,10 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
         return false;
     if (element->fastGetAttribute(cellpaddingAttr) != m_element->fastGetAttribute(cellpaddingAttr))
         return false;
-
     if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
         return false;
-
-#if ENABLE(STYLE_SCOPED)
     if (element->hasScopedHTMLStyleChild())
         return false;
-#endif
 
 #if ENABLE(PROGRESS_ELEMENT)
     if (element->hasTagName(progressTag)) {
@@ -1293,10 +1289,8 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
     if (parentStylePreventsSharing(m_parentStyle))
         return 0;
-#if ENABLE(STYLE_SCOPED)
     if (m_styledElement->hasScopedHTMLStyleChild())
         return 0;
-#endif
 
     // Check previous siblings and their cousins.
     unsigned count = 0;
@@ -1315,10 +1309,10 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
 
     // Can't share if sibling rules apply. This is checked at the end as it should rarely fail.
-    if (matchesRuleSet(m_siblingRuleSet.get()))
+    if (styleSharingCandidateMatchesRuleSet(m_siblingRuleSet.get()))
         return 0;
     // Can't share if attribute rules apply.
-    if (matchesRuleSet(m_uncommonAttributeRuleSet.get()))
+    if (styleSharingCandidateMatchesRuleSet(m_uncommonAttributeRuleSet.get()))
         return 0;
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (parentStylePreventsSharing(m_parentStyle))
@@ -3318,13 +3312,8 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         setTextSizeAdjust(primitiveValue->getIdent() == CSSValueAuto);
         return;
     }
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
 #if ENABLE(DASHBOARD_SUPPORT)
     case CSSPropertyWebkitDashboardRegion:
-#endif
-#if ENABLE(WIDGET_REGION)
-    case CSSPropertyWebkitWidgetRegion:
-#endif
     {
         HANDLE_INHERIT_AND_INITIAL(dashboardRegions, DashboardRegions)
         if (!primitiveValue)
@@ -3362,8 +3351,17 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             region = region->m_next.get();
         }
 
-        m_element->document()->setHasDashboardRegions(true);
+        m_element->document()->setHasAnnotatedRegions(true);
 
+        return;
+    }
+#endif
+#if ENABLE(WIDGET_REGION)
+    case CSSPropertyWebkitAppRegion: {
+        if (!primitiveValue || !primitiveValue->getIdent())
+            return;
+        m_style->setDraggableRegionMode(primitiveValue->getIdent() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
+        m_element->document()->setHasAnnotatedRegions(true);
         return;
     }
 #endif

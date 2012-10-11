@@ -27699,6 +27699,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\loader\ResourceBuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\loader\ResourceBuffer.h"
+				>
+			</File>
+			<File
 				RelativePath="..\loader\ResourceLoader.cpp"
 				>
 			</File>
@@ -37700,6 +37708,10 @@
 			</File>
 			<File
 				RelativePath="..\css\ShadowValue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\css\SiblingTraversalStrategies.h"
 				>
 			</File>
 			<File

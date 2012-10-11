@@ -93,21 +93,6 @@ sputnik/Unicode/Unicode_510/S7.6_A3.2.html
 sputnik/Unicode/Unicode_510/S7.6_A5.3_T1.html
 sputnik/Unicode/Unicode_510/S7.6_A5.3_T2.html
 
-# A testcase for this failure is already in cairo tree, but has not yet been fixed.
-# Cairo commit http://cgit.freedesktop.org/cairo/commit/?id=4d4056872db94573183473610ad1d81d5439fdc6
-# https://bugs.webkit.org/show_bug.cgi?id=54471
-canvas/philip/tests/2d.path.arc.selfintersect.1.html
-canvas/philip/tests/2d.path.arc.shape.3.html
-
-# A testcase for this failure is already in cairo tree, but has not yet been fixed.
-# Cairo commit http://cgit.freedesktop.org/cairo/commit/?id=303f56a2d34a23d933a02fa625873211fb51eb3b
-canvas/philip/tests/2d.path.rect.selfintersect.html
-
-# Strangely set miter limit - calculations suggest it should be 1.414 (and the test passes
-# with miter limit set to that) but perhaps there are special steps to be taken because the
-# rectangle has zero height.
-canvas/philip/tests/2d.path.rect.zero.6.html
-
 # Rendering of multipart images is broken: this test times out
 # https://bugs.webkit.org/show_bug.cgi?id=54251
 http/tests/multipart/invalid-image-data-standalone.html
@@ -381,7 +366,7 @@ inspector/debugger/dom-breakpoints.html
 inspector/timeline/timeline-receive-response-event.html
 
 # ENABLE(WIDGET_REGION) is disabled
-fast/css/widget-region-parser.html
+fast/css/draggable-region-parser.html
 
 # http://webkit.org/b/96828
 fast/canvas/webgl/oes-vertex-array-object.html
@@ -664,7 +649,6 @@ webkit.org/b/98621 media/video-controls-rendering.html [ Failure Pass ]
 webkit.org/b/74219 fast/regions/positioned-objects-block-static-spanning-regions-rtl.html [ ImageOnlyFailure ]
 
 # CSS Regions issues.
-webkit.org/b/97208 fast/regions/webkit-flow-inlines-inside-regions-bounds-vertical-rl.html [ Missing ]
 webkit.org/b/97209 fast/regions/webkit-flow-floats-inside-regions-bounds.html [ Missing ]
 
 # Needs inner spin button to respect -webkit-inner-spin-button style
@@ -1061,13 +1045,16 @@ webkit.org/b/61932 [ Debug ] jquery/manipulation.html [ Failure Pass Timeout ]
 # These test -apple- prefixed CSS properties, which we don't support.
 fast/css/apple-prefix.html [ WontFix ]
 
-webkit.org/b/75747 fast/css/color-correction-on-background-image.html [ Failure ]
-webkit.org/b/75747 fast/css/color-correction-on-backgrounds.html [ Failure ]
-webkit.org/b/75747 fast/css/color-correction-on-box-shadow.html [ Failure ]
-webkit.org/b/75747 fast/css/color-correction-on-text-shadow.html [ Failure ]
-webkit.org/b/75747 fast/css/color-correction-untagged-images.html [ Failure ]
+webkit.org/b/75747 fast/css/color-correction-backgrounds-and-text.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-on-background-image.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-on-backgrounds.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-on-box-shadow.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-on-text-shadow.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-on-text.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction-untagged-images.html [ Missing Failure ]
+webkit.org/b/75747 fast/css/color-correction.html [ Missing Failure ]
 
-webkit.org/b/65536 fast/css/text-rendering.html [ Failure ]
+webkit.org/b/65536 fast/css/text-rendering.html [ Missing Failure ]
 
 webkit.org/b/49142 fast/css/style-scoped [ Failure ]
 
@@ -1297,9 +1284,6 @@ webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main
 # Looks like missing multipart/x-mixed-replace support in libsoup. Failing on both GTK and EFL.
 webkit.org/b/68979 http/tests/multipart/multipart-replace-non-html-content.php [ Failure ]
 
-# Test added by Mac port, rendering results totally different on EFL.
-webkit.org/b/91477 fast/multicol/shrink-to-column-height-for-pagination.html [ Missing ]
-
 # These tests are failing after r122528.
 webkit.org/b/91210 http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html [ Failure ]
 webkit.org/b/91210 http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_xserver_redirect.html [ Failure ]
@@ -1359,8 +1343,6 @@ webkit.org/b/97109 tables/mozilla/bugs/bug99948.html [ Pass ]
 # New test introduced in r125790 fails
 webkit.org/b/94341 inspector/timeline/timeline-decode-resize.html [ Failure ]
 
-webkit.org/b/94690 fast/dom/shadow/shadowdom-dynamic-styling.html [ Failure ]
-
 # Fails after r126350
 webkit.org/b/94788 media/track/track-cue-rendering-snap-to-lines-not-set.html [ Failure ]
 
@@ -1395,7 +1377,6 @@ webkit.org/b/96881 http/tests/security/frameNavigation/xss-DENIED-plugin-navigat
 webkit.org/b/96881 http/tests/security/storage-blocking-strengthened-plugin.html [ Failure ]
 webkit.org/b/96881 http/tests/security/storage-blocking-strengthened-private-browsing-plugin.html [ Failure ]
 webkit.org/b/96881 java [ Skip ]
-webkit.org/b/96881 plugins [ Skip ]
 webkit.org/b/96881 userscripts/user-script-plugin-document.html [ Failure ]
 
 # Ref tests added in r130592 that are failing on both EFL and GTK ports
@@ -1419,8 +1400,6 @@ webkit.org/b/97077 inspector/extensions/extensions-panel.html [ Failure ]
 # Fails on the bots.
 webkit.org/b/97968 media/unsupported-rtsp.html [ Failure ]
 
-webkit.org/b/98306 css3/flexbox/flexbox-baseline.html [ Failure Missing ]
-
 webkit.org/b/98587 fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ ImageOnlyFailure ]
 
 # Needs rebaseline eventually
@@ -1431,11 +1410,6 @@ webkit.org/b/97990 mathml/presentation/mo-stretch.html [ Failure ]
 webkit.org/b/97990 mathml/presentation/roots.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/row-alignment.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/subsup.xhtml [ Failure ]
-
-# r130231 introcudes a regression for some complex font cases:
-webkit.org/b/98247 fast/text/atsui-multiple-renderers.html [ Failure ]
-webkit.org/b/98247 fast/text/atsui-spacing-features.html [ Failure ]
-webkit.org/b/98247 fast/text/wide-zero-width-space.html [ Failure ]
 
 # Occasionally fails if run after right after
 # fast/selectors/unqualified-hover-quirks.html or itself.
@@ -1451,3 +1425,10 @@ webkit.org/b/98729 fast/html/link-rel-stylesheet.html [ Failure ]
 webkit.org/b/98729 fast/loader/data-url-encoding-html.html [ Failure ]
 webkit.org/b/98729 fast/loader/data-url-encoding-svg.html [ Failure ]
 webkit.org/b/98729 fast/spatial-navigation/snav-iframe-nested.html [ Failure ]
+
+# Skipped until the prefix is removed.
+webkit.org/b/98953 http/tests/w3c/webperf/approved/HighResolutionTime [ Skip ]
+
+# New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
+webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
+

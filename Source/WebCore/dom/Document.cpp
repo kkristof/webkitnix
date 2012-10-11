@@ -462,8 +462,8 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_savedRenderer(0)
     , m_designMode(inherit)
 #if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
-    , m_hasDashboardRegions(false)
-    , m_dashboardRegionsDirty(false)
+    , m_hasAnnotatedRegions(false)
+    , m_annotatedRegionsDirty(false)
 #endif
     , m_createRenderers(true)
     , m_inPageCache(false)
@@ -529,7 +529,12 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
 
     m_markers = adoptPtr(new DocumentMarkerController);
 
-    m_cachedResourceLoader = adoptPtr(new CachedResourceLoader(this));
+    if (m_frame)
+        m_cachedResourceLoader = m_frame->loader()->activeDocumentLoader()->cachedResourceLoader();
+    if (!m_cachedResourceLoader)
+        m_cachedResourceLoader = CachedResourceLoader::create(0);
+    m_cachedResourceLoader->setDocument(this);
+
 #if ENABLE(LINK_PRERENDER)
     m_prerenderer = Prerenderer::create(this);
 #endif
@@ -651,6 +656,11 @@ Document::~Document()
         m_mediaQueryMatcher->documentDestroyed();
 
     clearStyleResolver(); // We need to destory CSSFontSelector before destroying m_cachedResourceLoader.
+
+    // It's possible for multiple Documents to end up referencing the same CachedResourceLoader (e.g., SVGImages
+    // load the initial empty document and the SVGDocument with the same DocumentLoader).
+    if (m_cachedResourceLoader->document() == this)
+        m_cachedResourceLoader->setDocument(0);
     m_cachedResourceLoader.clear();
 
     // We must call clearRareData() here since a Document class inherits TreeScope
@@ -950,9 +960,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionCo
             ec = NAMESPACE_ERR;
             return 0;
         }
-        RefPtr<Element> newElement = createElement(oldElement->tagQName(), ec);
-        if (ec)
-            return 0;
+        RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
 
         newElement->cloneDataFromElement(*oldElement);
 
@@ -3344,15 +3352,15 @@ void Document::activeChainNodeDetached(Node* node)
 }
 
 #if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
-const Vector<DashboardRegionValue>& Document::dashboardRegions() const
+const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const
 {
-    return m_dashboardRegions;
+    return m_annotatedRegions;
 }
 
-void Document::setDashboardRegions(const Vector<DashboardRegionValue>& regions)
+void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 {
-    m_dashboardRegions = regions;
-    setDashboardRegionsDirty(false);
+    m_annotatedRegions = regions;
+    setAnnotatedRegionsDirty(false);
 }
 #endif
 
@@ -5063,9 +5071,17 @@ void Document::requestFullScreenForElement(Element* element, unsigned short flag
         // There is a previously-established user preference, security risk, or platform limitation.
         if (!page() || !page()->settings()->fullScreenEnabled())
             break;
-        
-        if (!page()->chrome()->client()->supportsFullScreenForElement(element, flags & Element::ALLOW_KEYBOARD_INPUT))
-            break;
+
+        if (!page()->chrome()->client()->supportsFullScreenForElement(element, flags & Element::ALLOW_KEYBOARD_INPUT)) {
+            // The new full screen API does not accept a "flags" parameter, so fall back to disallowing
+            // keyboard input if the chrome client refuses to allow keyboard input.
+            if (!inLegacyMozillaMode && flags & Element::ALLOW_KEYBOARD_INPUT) {
+                flags &= ~Element::ALLOW_KEYBOARD_INPUT;
+                if (!page()->chrome()->client()->supportsFullScreenForElement(element, false))
+                    break;
+            } else
+                break;
+        }
 
         // 2. Let doc be element's node document. (i.e. "this")
         Document* currentDoc = this;
@@ -5892,8 +5908,8 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_contentLanguage);
     info.addMember(m_documentNamedItemCollections);
     info.addMember(m_windowNamedItemCollections);
-#if ENABLE(DASHBOARD_SUPPORT)
-    info.addMember(m_dashboardRegions);
+#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
+    info.addMember(m_annotatedRegions);
 #endif
     info.addMember(m_cssCanvasElements);
     info.addMember(m_iconURLs);

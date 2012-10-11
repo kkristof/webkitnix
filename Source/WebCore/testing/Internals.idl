@@ -57,6 +57,7 @@ module window {
         boolean isValidContentSelect(in Element contentElement) raises(DOMException);
         Node treeScopeRootNode(in Node node) raises (DOMException);
         Node parentTreeScope(in Node node) raises (DOMException);
+        NodeList distributedNodes(in Element insertionPoint) raises(DOMException);
 
         Node nextSiblingByWalker(in Node node) raises(DOMException);
         Node firstChildByWalker(in Node node) raises(DOMException);
@@ -157,7 +158,9 @@ module window {
         void suspendAnimations(in Document document) raises (DOMException);
         void resumeAnimations(in Document document) raises (DOMException);
 
-        DOMString layerTreeAsText(in Document document) raises (DOMException);
+        // Flags for layerTreeAsText.
+        const unsigned short LAYER_TREE_INCLUDES_VISIBLE_RECTS = 1;
+        DOMString layerTreeAsText(in Document document, in [Optional] unsigned short flags) raises (DOMException);
 
         void garbageCollectDocumentResources(in Document document) raises (DOMException);
 

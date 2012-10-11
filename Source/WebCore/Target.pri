@@ -843,6 +843,7 @@ SOURCES += \
     loader/Prerenderer.cpp \
     loader/PrerendererClient.cpp \
     loader/NavigationScheduler.cpp \
+    loader/ResourceBuffer.cpp \
     loader/ResourceLoader.cpp \
     loader/ResourceLoadNotifier.cpp \
     loader/ResourceLoadScheduler.cpp \
@@ -1485,6 +1486,7 @@ HEADERS += \
     css/RGBColor.h \
     css/SelectorChecker.h \
     css/ShadowValue.h \
+    css/SiblingTraversalStrategies.h \
     css/StyleMedia.h \
     css/StyleBuilder.h \
     css/StylePropertySet.h \
@@ -1963,6 +1965,7 @@ HEADERS += \
     loader/Prerenderer.h \
     loader/PrerendererClient.h \
     loader/ProgressTracker.h \
+    loader/ResourceBuffer.h \
     loader/ResourceLoader.h \
     loader/SubresourceLoader.h \
     loader/SubstituteData.h \
@@ -2147,6 +2150,7 @@ HEADERS += \
     platform/graphics/ShadowBlur.h \
     platform/graphics/SimpleFontData.h \
     platform/graphics/surfaces/GraphicsSurface.h \
+    platform/graphics/surfaces/GraphicsSurfaceToken.h \
     platform/graphics/SurrogatePairAwareTextIterator.h \
     platform/graphics/texmap/GraphicsLayerTextureMapper.h \
     platform/graphics/texmap/TextureMapper.h \

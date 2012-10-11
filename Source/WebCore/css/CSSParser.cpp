@@ -110,7 +110,7 @@
 #include "WebKitCSSShaderValue.h"
 #endif
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
+#if ENABLE(DASHBOARD_SUPPORT)
 #include "DashboardRegion.h"
 #endif
 
@@ -1522,6 +1522,8 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
         }
         if (!b && (unitflags & FInteger) && value->isInt)
             b = true;
+        if (!b && (unitflags & FPositiveInteger) && value->isInt && value->fValue > 0)
+            b = true;
         break;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         b = (unitflags & FPercent);
@@ -2436,7 +2438,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = !id && validUnit(value, FInteger | FNonNeg, CSSQuirksMode);
+            validPrimitive = !id && validUnit(value, FPositiveInteger, CSSQuirksMode);
         break;
     case CSSPropertyWebkitColumnGap:         // normal | <length>
         if (id == CSSValueNormal)
@@ -2515,18 +2517,20 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
 #if ENABLE(DASHBOARD_SUPPORT)
     case CSSPropertyWebkitDashboardRegion: // <dashboard-region> | <dashboard-region>
-#endif
-#if ENABLE(WIDGET_REGION)
-    case CSSPropertyWebkitWidgetRegion:
-#endif
         if (value->unit == CSSParserValue::Function || id == CSSValueNone)
             return parseDashboardRegions(propId, important);
         break;
 #endif
     // End Apple-specific properties
+
+#if ENABLE(WIDGET_REGION)
+    case CSSPropertyWebkitAppRegion:
+        if (id >= CSSValueDrag && id <= CSSValueNoDrag)
+            validPrimitive = true;
+        break;
+#endif
 
 #if ENABLE(TOUCH_EVENTS)
     case CSSPropertyWebkitTapHighlightColor:
@@ -4208,7 +4212,7 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
 }
 
 
-#if ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION)
+#if ENABLE(DASHBOARD_SUPPORT)
 
 #define DASHBOARD_REGION_NUM_PARAMETERS  6
 #define DASHBOARD_REGION_SHORT_NUM_PARAMETERS  2
@@ -4261,32 +4265,7 @@ bool CSSParser::parseDashboardRegions(CSSPropertyID propId, bool important)
         // dashboard-region(label, type) or dashboard-region(label type)
         // dashboard-region(label, type) or dashboard-region(label type)
         CSSParserValueList* args = value->function->args.get();
-        if (!args) {
-            valid = false;
-            break;
-        }
-        bool validFunctionName = false;
-#if ENABLE(DASHBOARD_SUPPORT)
-        static const char dashboardRegionFunctionName[] = "dashboard-region(";
-        if (equalIgnoringCase(value->function->name, dashboardRegionFunctionName)) {
-            validFunctionName = true;
-#if ENABLE(DASHBOARD_SUPPORT) && ENABLE(WIDGET_REGION)
-            // Keep track of function name when both features are enabled. 
-            region->m_cssFunctionName = dashboardRegionFunctionName;
-#endif
-        }
-#endif
-#if ENABLE(WIDGET_REGION)
-        static const char widgetRegionFunctionName[] = "region(";
-        if (equalIgnoringCase(value->function->name, widgetRegionFunctionName)) {
-            validFunctionName = true;
-#if ENABLE(DASHBOARD_SUPPORT) && ENABLE(WIDGET_REGION)
-            // Keep track of function name when both features are enabled. 
-            region->m_cssFunctionName = widgetRegionFunctionName;
-#endif
-        }
-#endif
-        if (!validFunctionName) {
+        if (!equalIgnoringCase(value->function->name, "dashboard-region(") || !args) {
             valid = false;
             break;
         }
@@ -4372,7 +4351,7 @@ bool CSSParser::parseDashboardRegions(CSSPropertyID propId, bool important)
     return valid;
 }
 
-#endif /* ENABLE(DASHBOARD_SUPPORT) || ENABLE(WIDGET_REGION) */
+#endif /* ENABLE(DASHBOARD_SUPPORT) */
 
 PassRefPtr<CSSValue> CSSParser::parseCounterContent(CSSParserValueList* args, bool counters)
 {
@@ -9840,8 +9819,10 @@ MediaQuerySet* CSSParser::createMediaQuerySet()
 
 StyleRuleBase* CSSParser::createImportRule(const CSSParserString& url, MediaQuerySet* media)
 {
-    if (!media || !m_allowImportRules)
+    if (!media || !m_allowImportRules) {
+        popRuleData();
         return 0;
+    }
     RefPtr<StyleRuleImport> rule = StyleRuleImport::create(url, media);
     StyleRuleImport* result = rule.get();
     m_parsedRules.append(rule.release());
@@ -9953,6 +9934,7 @@ StyleRuleBase* CSSParser::createFontFaceRule()
             // have 'initial' value and cannot 'inherit' from parent.
             // See http://dev.w3.org/csswg/css3-fonts/#font-family-desc
             clearProperties();
+            popRuleData();
             return 0;
         }
     }
@@ -10042,7 +10024,8 @@ StyleRuleBase* CSSParser::createPageRule(PassOwnPtr<CSSParserSelector> pageSelec
         pageRule = rule.get();
         m_parsedRules.append(rule.release());
         processAndAddNewRuleToSourceTreeIfNeeded();
-    }
+    } else
+        popRuleData();
     clearProperties();
     return pageRule;
 }
@@ -10055,8 +10038,10 @@ void CSSParser::setReusableRegionSelectorVector(CSSSelectorVector* selectors)
 
 StyleRuleBase* CSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
 {
-    if (!cssRegionsEnabled() || !regionSelector || !rules)
+    if (!cssRegionsEnabled() || !regionSelector || !rules) {
+        popRuleData();
         return 0;
+    }
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 

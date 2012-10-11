@@ -2,9 +2,6 @@
     "slaves":     [ { "name": "test-slave", "platform": "*" },
 
                   
-                    { "name": "apple-xserve-4", "platform": "mac-snowleopard" },
-                    { "name": "apple-xserve-9", "platform": "mac-snowleopard" },	
-
                     { "name": "apple-macpro-3", "platform": "mac-lion" },
                     { "name": "apple-macpro-4", "platform": "mac-lion" },
                     { "name": "apple-macpro-5", "platform": "mac-lion" },	
@@ -81,15 +78,7 @@
                     { "name": "nix-ubuntu64desktop2", "platform": "nix" }
                   ],
 
-    "builders":   [ { "name": "Apple SnowLeopard Release (Build)", "type": "Build", "builddir": "snowleopard-release",
-                      "platform": "mac-snowleopard", "configuration": "release", "architectures": ["x86_64"],
-                      "slavenames": ["apple-xserve-4"]
-                    },
-                    { "name": "Apple SnowLeopard Debug (Build)", "type": "Build", "builddir": "snowleopard-debug",
-                      "platform": "mac-snowleopard", "configuration": "debug", "architectures": ["x86_64"],
-                      "slavenames": ["apple-xserve-9"]
-                    },
-                    { "name": "Apple Lion (Leaks)", "type": "BuildAndTestLeaks", "builddir": "lion-leaks",
+    "builders":   [ { "name": "Apple Lion (Leaks)", "type": "BuildAndTestLeaks", "builddir": "lion-leaks",
                       "platform": "mac-lion", "configuration": "debug", "architectures": ["x86_64"],
                       "slavenames": ["apple-macpro-3"]
                     },
@@ -364,9 +353,6 @@
                                        "EFL Linux 64-bit Release", "EFL Linux 64-bit Debug", "EFL Linux 32-bit Release (Build)", "EFL Linux 64-bit Debug WK2",
                                        "WinCairo Release", "WinCE Release (Build)",
                                        "Nix Linux 64-bit Release", "Nix Linux 64-bit Debug"]
-                    },
-                    { "type": "PlatformSpecificScheduler", "platform": "mac-snowleopard", "branch": "trunk", "treeStableTimer": 45.0, 
-                      "builderNames": ["Apple SnowLeopard Release (Build)", "Apple SnowLeopard Debug (Build)"] 
                     },
                     { "type": "PlatformSpecificScheduler", "platform": "mac-lion", "branch": "trunk", "treeStableTimer": 45.0,
                       "builderNames": ["Apple Lion Release (Build)", "Apple Lion Debug (Build)", "Apple Lion (Leaks)"]
