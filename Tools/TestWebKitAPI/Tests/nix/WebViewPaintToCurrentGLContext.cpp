@@ -49,10 +49,9 @@ static void waitForLoadURLAndRepaint(const char* resource)
 TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
-    WKRetainPtr<WKPageGroupRef> pageGroup = adoptWK(WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("")));
 
     TestWebViewClient client;
-    webView = Nix::WebView::create(context.get(), pageGroup.get(), &client);
+    webView = Nix::WebView::create(context.get(), 0, &client);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
 

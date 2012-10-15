@@ -81,7 +81,7 @@ private:
 
 MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
     : m_context(AdoptWK, WKContextCreate())
-    , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString(""))))
+    , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("MiniBrowser"))))
     , m_window(new LinuxWindow(this))
     , m_webView(0)
     , m_mainLoop(mainLoop)
