@@ -8,6 +8,9 @@
 
 void fatalError(const char* message);
 
+const int DEFAULT_WIDTH = 800;
+const int DEFAULT_HEIGHT = 600;
+
 class LinuxWindowClient {
 public:
     virtual ~LinuxWindowClient() { };
@@ -24,7 +27,7 @@ public:
 
 class LinuxWindow : public XlibEventSource::Client {
 public:
-    LinuxWindow(LinuxWindowClient*);
+    LinuxWindow(LinuxWindowClient*, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT);
     ~LinuxWindow();
 
     std::pair<int, int> size() const;

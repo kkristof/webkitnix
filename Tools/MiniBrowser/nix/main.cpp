@@ -31,7 +31,7 @@ public:
         DesktopMode
     };
 
-    MiniBrowser(GMainLoop* mainLoop, Mode mode);
+    MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height);
     virtual ~MiniBrowser();
 
     WKPageRef pageRef() const { return m_webView->pageRef(); }
@@ -79,10 +79,10 @@ private:
     friend gboolean callUpdateDisplay(gpointer);
 };
 
-MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode)
+MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height)
     : m_context(AdoptWK, WKContextCreate())
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("MiniBrowser"))))
-    , m_window(new LinuxWindow(this))
+    , m_window(new LinuxWindow(this, width, height))
     , m_webView(0)
     , m_mainLoop(mainLoop)
     , m_lastClickTime(0)
@@ -408,6 +408,8 @@ int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
 
+    int width = DEFAULT_WIDTH;
+    int height = DEFAULT_HEIGHT;
     std::string url;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
@@ -417,7 +419,16 @@ int main(int argc, char* argv[])
             browserMode = MiniBrowser::DesktopMode;
         else if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--touch-emulation"))
             touchEmulationEnabled = true;
-        else
+        else if (!strcmp(argv[i], "--window-size")) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "--window-size requires an argument.\n");
+                return 1;
+            }
+            if (sscanf(argv[++i], "%dx%d", &width, &height) != 2) {
+                fprintf(stderr, "--window-size format is WIDTHxHEIGHT.\n");
+                return 1;
+            }
+        } else
             url = argv[i];
     }
 
@@ -429,7 +440,7 @@ int main(int argc, char* argv[])
     }
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
-    MiniBrowser browser(mainLoop, browserMode);
+    MiniBrowser browser(mainLoop, browserMode, width, height);
 
     if (browser.mode() == MiniBrowser::MobileMode || touchEmulationEnabled) {
         printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");

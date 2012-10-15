@@ -14,13 +14,13 @@ void fatalError(const char* message)
 
 Atom wmDeleteMessageAtom;
 
-LinuxWindow::LinuxWindow(LinuxWindowClient* client)
+LinuxWindow::LinuxWindow(LinuxWindowClient* client, int width, int height)
     : m_client(client)
     , m_eventSource(0)
     , m_display(XOpenDisplay(0))
     , m_glContextData(0)
-    , m_width(800)
-    , m_height(600)
+    , m_width(width)
+    , m_height(height)
 {
     if (!m_display)
         fatalError("couldn't connect to X server\n");
