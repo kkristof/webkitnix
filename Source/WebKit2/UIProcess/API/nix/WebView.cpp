@@ -140,6 +140,7 @@ public:
     virtual bool isViewWindowActive() { return m_active; }
     virtual bool isViewInWindow() { return true; } // FIXME
     virtual IntSize viewSize() { return m_size; }
+    virtual IntSize contentsSize() { return m_contentsSize; }
     virtual void processDidCrash();
     virtual void didRelaunchProcess() { m_client->webProcessRelaunched(); }
 
@@ -155,7 +156,7 @@ public:
 
     virtual void handleDownloadRequest(DownloadProxy*) { notImplemented(); }
 
-    virtual void didChangeContentsSize(const IntSize&) { notImplemented(); }
+    virtual void didChangeContentsSize(const IntSize& size);
 
     virtual void setCursor(const Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
@@ -208,6 +209,7 @@ public:
 private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
+    void adjustScrollPosition();
 
     cairo_matrix_t screenToViewMatrix();
     void transformPointToViewCoordinates(double& x, double& y);
@@ -224,6 +226,7 @@ private:
     bool m_visible;
     bool m_active;
     IntSize m_size;
+    IntSize m_contentsSize;
     IntPoint m_lastCursorPosition;
     IntPoint m_scrollPosition;
     double m_scale;
@@ -301,11 +304,36 @@ void WebViewImpl::setScrollPosition(int x, int y)
         return;
     m_scrollPosition = IntPoint(x, y);
 
+    adjustScrollPosition();
+
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
         return;
 
     drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, IntSize(visibleContentWidth(), visibleContentHeight())), m_scale, FloatPoint());
+}
+
+void WebViewImpl::adjustScrollPosition()
+{
+    int x = m_scrollPosition.x();
+    int y = m_scrollPosition.y();
+
+    int rightBoundary = m_contentsSize.width() - visibleContentWidth();
+    int bottomBoundary = m_contentsSize.height() - visibleContentHeight();
+
+    if (x < 0)
+        x = 0;
+    else if (x > rightBoundary)
+        x = rightBoundary;
+    if (y < 0)
+        y = 0;
+    else if (y > bottomBoundary)
+        y = bottomBoundary;
+
+    if (m_scrollPosition.x() == x && m_scrollPosition.y() == y)
+        return;
+
+    m_scrollPosition = IntPoint(x, y);
 }
 
 bool WebViewImpl::isFocused() const
@@ -461,6 +489,12 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
+}
+
+void WebViewImpl::didChangeContentsSize(const IntSize& size)
+{
+    m_contentsSize = size;
+    adjustScrollPosition();
 }
 
 void WebViewImpl::didChangeViewportProperties(const ViewportAttributes& attributes)

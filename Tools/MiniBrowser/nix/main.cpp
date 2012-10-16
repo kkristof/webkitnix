@@ -51,6 +51,7 @@ public:
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
     virtual void pageDidRequestScroll(int x, int y) { m_webView->setScrollPosition(x, y); }
+    virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
 
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
@@ -75,6 +76,7 @@ private:
     TouchMocker* m_touchMocker;
     Mode m_mode;
     bool m_displayUpdateScheduled;
+    Nix::TouchPoint m_previousTouchPoint;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -402,6 +404,21 @@ void MiniBrowser::webProcessCrashed(WKStringRef url)
 void MiniBrowser::webProcessRelaunched()
 {
     fprintf(stdout, "The web process has been restarted.\n");
+}
+
+void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool wasEventHandled)
+{
+    if (wasEventHandled)
+        return;
+    const Nix::TouchPoint& touchPoint = touchEvent.touchPoints[0];
+    if (touchEvent.type == Nix::InputEvent::TouchStart) {
+        m_previousTouchPoint = touchPoint;
+    } else if (touchEvent.type == Nix::InputEvent::TouchMove) {
+        int dx = m_previousTouchPoint.x - touchPoint.x;
+        int dy = m_previousTouchPoint.y - touchPoint.y;
+        m_webView->setScrollPosition(m_webView->scrollX() + dx, m_webView->scrollY() + dy);
+        m_previousTouchPoint = touchPoint;
+    }
 }
 
 int main(int argc, char* argv[])
