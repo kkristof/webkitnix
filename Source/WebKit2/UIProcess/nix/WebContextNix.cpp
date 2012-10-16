@@ -101,4 +101,16 @@ String WebContext::platformDefaultLocalStorageDirectory() const
     return WebCore::filenameToString(storageDirectory.get());
 }
 
+String WebContext::platformDefaultDiskCacheDirectory() const
+{
+    notImplemented();
+    return String();
+}
+
+String WebContext::platformDefaultCookieStorageDirectory() const
+{
+    notImplemented();
+    return String();
+}
+
 } // namespace WebKit

@@ -340,6 +340,13 @@ transitions/suspend-transform-transition.html [ Skip ]
 transitions/svg-transitions.html [ Skip ]
 webarchive/loading/javascript-url-iframe-crash.html [ Skip ]
 
+# Returning null to computedStyle.cssValueType (--webkit-blend-mode related)
+transitions/blendmode-transitions.html [ Failure ]
+
+# Flaky tests after merge (86011c4 6d39b95)
+fast/events/selectstart-by-single-click-with-shift.html [ Failure Pass ]
+fast/loader/submit-form-while-parsing-2.html [ Failure Pass ]
+
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
 
