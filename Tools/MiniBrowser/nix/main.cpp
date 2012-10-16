@@ -50,7 +50,8 @@ public:
     virtual void viewNeedsDisplay(int, int, int, int) { scheduleUpdateDisplay(); }
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
-    virtual void pageDidRequestScroll(int x, int y) { m_webView->setScrollPosition(x, y); }
+    virtual void pageDidRequestScroll(int x, int y);
+    virtual void didChangeContentsSize(int width, int height);
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
 
     void setTouchEmulationMode(bool enabled);
@@ -62,6 +63,8 @@ private:
 
     void updateDisplay();
     void scheduleUpdateDisplay();
+    void adjustScrollPositionToBoundaries(int* x, int* y);
+    void adjustScrollPosition();
 
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
@@ -77,6 +80,8 @@ private:
     Mode m_mode;
     bool m_displayUpdateScheduled;
     Nix::TouchPoint m_previousTouchPoint;
+    int m_contentsWidth;
+    int m_contentsHeight;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -392,6 +397,31 @@ void MiniBrowser::scheduleUpdateDisplay()
     g_timeout_add(0, callUpdateDisplay, this);
 }
 
+void MiniBrowser::adjustScrollPositionToBoundaries(int* x, int* y)
+{
+    int rightBoundary = m_contentsWidth - m_webView->visibleContentWidth();
+    int bottomBoundary = m_contentsHeight - m_webView->visibleContentHeight();
+
+    if (*x < 0)
+        *x = 0;
+    else if (*x > rightBoundary)
+        *x = rightBoundary;
+    if (*y < 0)
+        *y = 0;
+    else if (*y > bottomBoundary)
+        *y = bottomBoundary;
+}
+
+void MiniBrowser::adjustScrollPosition()
+{
+    int x = m_webView->scrollX();
+    int y = m_webView->scrollY();
+    adjustScrollPositionToBoundaries(&x, &y);
+    if (x == m_webView->scrollX() && y == m_webView->scrollY())
+        return;
+    m_webView->setScrollPosition(x, y);
+}
+
 void MiniBrowser::webProcessCrashed(WKStringRef url)
 {
     size_t urlStringSize =  WKStringGetMaximumUTF8CStringSize(url);
@@ -406,6 +436,19 @@ void MiniBrowser::webProcessRelaunched()
     fprintf(stdout, "The web process has been restarted.\n");
 }
 
+void MiniBrowser::pageDidRequestScroll(int x, int y)
+{
+    adjustScrollPositionToBoundaries(&x, &y);
+    m_webView->setScrollPosition(x, y);
+}
+
+void MiniBrowser::didChangeContentsSize(int width, int height)
+{
+    m_contentsWidth = width;
+    m_contentsHeight = height;
+    adjustScrollPosition();
+}
+
 void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool wasEventHandled)
 {
     if (wasEventHandled)
@@ -414,10 +457,15 @@ void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool was
     if (touchEvent.type == Nix::InputEvent::TouchStart) {
         m_previousTouchPoint = touchPoint;
     } else if (touchEvent.type == Nix::InputEvent::TouchMove) {
-        int dx = m_previousTouchPoint.x - touchPoint.x;
-        int dy = m_previousTouchPoint.y - touchPoint.y;
-        m_webView->setScrollPosition(m_webView->scrollX() + dx, m_webView->scrollY() + dy);
+        // When the user is panning around the contents we don't force the page scroll position
+        // to respect any boundaries other than the physical constraints of the device from where
+        // the user input came. This will be adjusted after the user interaction ends.
+        int x = m_webView->scrollX() + m_previousTouchPoint.x - touchPoint.x;
+        int y = m_webView->scrollY() + m_previousTouchPoint.y - touchPoint.y;
+        m_webView->setScrollPosition(x, y);
         m_previousTouchPoint = touchPoint;
+    } else if (touchEvent.type == Nix::InputEvent::TouchEnd) {
+        adjustScrollPosition();
     }
 }
 
