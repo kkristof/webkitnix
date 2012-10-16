@@ -100,8 +100,6 @@ const GlobalObjectMethodTable JSGlobalObject::s_globalObjectMethodTable = { &all
 @end
 */
 
-ASSERT_CLASS_FITS_IN_CELL(JSGlobalObject);
-
 // Default number of ticks before a timeout check should be done.
 static const int initialTickCountThreshold = 255;
 
@@ -358,7 +356,8 @@ ObjectsWithBrokenIndexingFinder::ObjectsWithBrokenIndexingFinder(
 inline bool hasBrokenIndexing(JSObject* object)
 {
     // This will change if we have more indexing types.
-    return !!(object->structure()->indexingType() & (HasArrayStorage | HasContiguous));
+    IndexingType type = object->structure()->indexingType();
+    return hasContiguous(type) || hasFastArrayStorage(type);
 }
 
 void ObjectsWithBrokenIndexingFinder::operator()(JSCell* cell)

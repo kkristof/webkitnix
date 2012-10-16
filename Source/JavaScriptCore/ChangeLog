@@ -1,3 +1,1073 @@
+2012-10-16  Balazs Kilvady  <kilvadyb@homejinni.com>
+
+        MIPS assembler coding-style fix.
+        https://bugs.webkit.org/show_bug.cgi?id=99359
+
+        Reviewed by Oliver Hunt.
+
+        Coding style fix of existing MIPS assembler header files.
+
+        * assembler/MIPSAssembler.h:
+        (JSC::MIPSAssembler::addiu):
+        (JSC::MIPSAssembler::addu):
+        (JSC::MIPSAssembler::subu):
+        (JSC::MIPSAssembler::mul):
+        (JSC::MIPSAssembler::andInsn):
+        (JSC::MIPSAssembler::andi):
+        (JSC::MIPSAssembler::nor):
+        (JSC::MIPSAssembler::orInsn):
+        (JSC::MIPSAssembler::ori):
+        (JSC::MIPSAssembler::xorInsn):
+        (JSC::MIPSAssembler::xori):
+        (JSC::MIPSAssembler::slt):
+        (JSC::MIPSAssembler::sltu):
+        (JSC::MIPSAssembler::sltiu):
+        (JSC::MIPSAssembler::sll):
+        (JSC::MIPSAssembler::sllv):
+        (JSC::MIPSAssembler::sra):
+        (JSC::MIPSAssembler::srav):
+        (JSC::MIPSAssembler::srl):
+        (JSC::MIPSAssembler::srlv):
+        (JSC::MIPSAssembler::lbu):
+        (JSC::MIPSAssembler::lw):
+        (JSC::MIPSAssembler::lwl):
+        (JSC::MIPSAssembler::lwr):
+        (JSC::MIPSAssembler::lhu):
+        (JSC::MIPSAssembler::sb):
+        (JSC::MIPSAssembler::sh):
+        (JSC::MIPSAssembler::sw):
+        (JSC::MIPSAssembler::addd):
+        (JSC::MIPSAssembler::subd):
+        (JSC::MIPSAssembler::muld):
+        (JSC::MIPSAssembler::divd):
+        (JSC::MIPSAssembler::lwc1):
+        (JSC::MIPSAssembler::ldc1):
+        (JSC::MIPSAssembler::swc1):
+        (JSC::MIPSAssembler::sdc1):
+        (MIPSAssembler):
+        (JSC::MIPSAssembler::relocateJumps):
+        (JSC::MIPSAssembler::linkWithOffset):
+        * assembler/MacroAssemblerMIPS.h:
+        (JSC::MacroAssemblerMIPS::add32):
+        (JSC::MacroAssemblerMIPS::and32):
+        (JSC::MacroAssemblerMIPS::sub32):
+        (MacroAssemblerMIPS):
+        (JSC::MacroAssemblerMIPS::load8):
+        (JSC::MacroAssemblerMIPS::load32):
+        (JSC::MacroAssemblerMIPS::load32WithUnalignedHalfWords):
+        (JSC::MacroAssemblerMIPS::load16):
+        (JSC::MacroAssemblerMIPS::store8):
+        (JSC::MacroAssemblerMIPS::store16):
+        (JSC::MacroAssemblerMIPS::store32):
+        (JSC::MacroAssemblerMIPS::nearCall):
+        (JSC::MacroAssemblerMIPS::test8):
+        (JSC::MacroAssemblerMIPS::test32):
+
+2012-10-16  Yuqiang Xian  <yuqiang.xian@intel.com>
+
+        Refactor MacroAssembler interfaces to differentiate the pointer operands from the 64-bit integer operands
+        https://bugs.webkit.org/show_bug.cgi?id=99154
+
+        Reviewed by Gavin Barraclough.
+
+        In current JavaScriptCore implementation for JSVALUE64 platform (i.e.,
+        the X64 platform), we assume that the JSValue size is same to the
+        pointer size, and thus EncodedJSValue is simply type defined as a
+        "void*". In the JIT compiler, we also take this assumption and invoke
+        the same macro assembler interfaces for both JSValue and pointer
+        operands. We need to differentiate the operations on pointers from the
+        operations on JSValues, and let them invoking different macro
+        assembler interfaces. For example, we now use the interface of
+        "loadPtr" to load either a pointer or a JSValue, and we need to switch
+        to using "loadPtr" to load a pointer and some new "load64" interface
+        to load a JSValue. This would help us supporting other JSVALUE64
+        platforms where pointer size is not necessarily 64-bits, for example
+        x32 (bug #99153).
+
+        The major modification I made is to introduce the "*64" interfaces in
+        the MacroAssembler for those operations on JSValues, keep the "*Ptr"
+        interfaces for those operations on real pointers, and go through all
+        the JIT compiler code to correct the usage.
+
+        This is the first part of the work, i.e, to add the *64 interfaces to
+        the MacroAssembler.
+
+        * assembler/AbstractMacroAssembler.h: Add the Imm64 interfaces.
+        (AbstractMacroAssembler):
+        (JSC::AbstractMacroAssembler::TrustedImm64::TrustedImm64):
+        (TrustedImm64):
+        (JSC::AbstractMacroAssembler::Imm64::Imm64):
+        (Imm64):
+        (JSC::AbstractMacroAssembler::Imm64::asTrustedImm64):
+        * assembler/MacroAssembler.h: map <foo>Ptr methods to <foo>64 for X86_64.
+        (MacroAssembler):
+        (JSC::MacroAssembler::peek64):
+        (JSC::MacroAssembler::poke):
+        (JSC::MacroAssembler::poke64):
+        (JSC::MacroAssembler::addPtr):
+        (JSC::MacroAssembler::andPtr):
+        (JSC::MacroAssembler::negPtr):
+        (JSC::MacroAssembler::orPtr):
+        (JSC::MacroAssembler::rotateRightPtr):
+        (JSC::MacroAssembler::subPtr):
+        (JSC::MacroAssembler::xorPtr):
+        (JSC::MacroAssembler::loadPtr):
+        (JSC::MacroAssembler::loadPtrWithAddressOffsetPatch):
+        (JSC::MacroAssembler::loadPtrWithCompactAddressOffsetPatch):
+        (JSC::MacroAssembler::storePtr):
+        (JSC::MacroAssembler::storePtrWithAddressOffsetPatch):
+        (JSC::MacroAssembler::movePtrToDouble):
+        (JSC::MacroAssembler::moveDoubleToPtr):
+        (JSC::MacroAssembler::comparePtr):
+        (JSC::MacroAssembler::testPtr):
+        (JSC::MacroAssembler::branchPtr):
+        (JSC::MacroAssembler::branchTestPtr):
+        (JSC::MacroAssembler::branchAddPtr):
+        (JSC::MacroAssembler::branchSubPtr):
+        (JSC::MacroAssembler::shouldBlindDouble):
+        (JSC::MacroAssembler::shouldBlind):
+        (JSC::MacroAssembler::RotatedImm64::RotatedImm64):
+        (RotatedImm64):
+        (JSC::MacroAssembler::rotationBlindConstant):
+        (JSC::MacroAssembler::loadRotationBlindedConstant):
+        (JSC::MacroAssembler::move):
+        (JSC::MacroAssembler::and64):
+        (JSC::MacroAssembler::store64):
+        * assembler/MacroAssemblerX86Common.h:
+        (JSC::MacroAssemblerX86Common::shouldBlindForSpecificArch):
+        (MacroAssemblerX86Common):
+        (JSC::MacroAssemblerX86Common::move):
+        * assembler/MacroAssemblerX86_64.h: Add the <foo>64 methods for X86_64.
+        (JSC::MacroAssemblerX86_64::branchAdd32):
+        (JSC::MacroAssemblerX86_64::add64):
+        (MacroAssemblerX86_64):
+        (JSC::MacroAssemblerX86_64::and64):
+        (JSC::MacroAssemblerX86_64::neg64):
+        (JSC::MacroAssemblerX86_64::or64):
+        (JSC::MacroAssemblerX86_64::rotateRight64):
+        (JSC::MacroAssemblerX86_64::sub64):
+        (JSC::MacroAssemblerX86_64::xor64):
+        (JSC::MacroAssemblerX86_64::load64):
+        (JSC::MacroAssemblerX86_64::load64WithAddressOffsetPatch):
+        (JSC::MacroAssemblerX86_64::load64WithCompactAddressOffsetPatch):
+        (JSC::MacroAssemblerX86_64::store64):
+        (JSC::MacroAssemblerX86_64::store64WithAddressOffsetPatch):
+        (JSC::MacroAssemblerX86_64::move64ToDouble):
+        (JSC::MacroAssemblerX86_64::moveDoubleTo64):
+        (JSC::MacroAssemblerX86_64::compare64):
+        (JSC::MacroAssemblerX86_64::branch64):
+        (JSC::MacroAssemblerX86_64::branchTest64):
+        (JSC::MacroAssemblerX86_64::test64):
+        (JSC::MacroAssemblerX86_64::branchAdd64):
+        (JSC::MacroAssemblerX86_64::branchSub64):
+        (JSC::MacroAssemblerX86_64::branchPtrWithPatch):
+        (JSC::MacroAssemblerX86_64::storePtrWithPatch):
+
+2012-10-15  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Make CopiedSpace and MarkedSpace regions independent
+        https://bugs.webkit.org/show_bug.cgi?id=99222
+
+        Reviewed by Filip Pizlo.
+
+        Right now CopiedSpace and MarkedSpace have the same block size and share the same regions, 
+        but there's no reason that they can't have different block sizes while still sharing the 
+        same underlying regions. We should factor the two "used" lists of regions apart so that 
+        MarkedBlocks and CopiedBlocks can be different sizes. Regions will still be a uniform size 
+        so that when they become empty they may be shared between the CopiedSpace and the MarkedSpace, 
+        since benchmarks indicate that sharing is a boon for performance.
+
+        * heap/BlockAllocator.cpp:
+        (JSC::BlockAllocator::BlockAllocator):
+        * heap/BlockAllocator.h:
+        (JSC):
+        (Region):
+        (JSC::Region::create): We now have a fixed size for Regions so that empty regions can continue to 
+        be shared between the MarkedSpace and CopiedSpace. Once they are used for a specific type of block,
+        however, they can only be used for that type of block until they become empty again.
+        (JSC::Region::createCustomSize):
+        (JSC::Region::Region):
+        (JSC::Region::~Region):
+        (JSC::Region::reset):
+        (BlockAllocator):
+        (JSC::BlockAllocator::RegionSet::RegionSet):
+        (RegionSet):
+        (JSC::BlockAllocator::tryAllocateFromRegion): We change this function so that it correctly 
+        moves blocks between empty, partial, and full lists.
+        (JSC::BlockAllocator::allocate):
+        (JSC::BlockAllocator::allocateCustomSize):
+        (JSC::BlockAllocator::deallocate): Ditto.
+        (JSC::CopiedBlock):
+        (JSC::MarkedBlock):
+        (JSC::BlockAllocator::regionSetFor): We use this so that we can use the same allocate/deallocate
+        functions with different RegionSets. We specialize the function for each type of block that we 
+        want to allocate.
+        * heap/CopiedBlock.h:
+        (CopiedBlock):
+        * heap/CopiedSpace.h:
+        (CopiedSpace):
+        * heap/HeapBlock.h:
+        (HeapBlock):
+        * heap/MarkedBlock.cpp:
+        (JSC::MarkedBlock::MarkedBlock): For oversize MarkedBlocks, if the block size gets too big we can 
+        underflow the endAtom, which will cause us to segfault when we try to sweep a block. If we're a 
+        custom size MarkedBlock we need to calculate endAtom so it doesn't underflow.
+
+2012-10-14  Filip Pizlo  <fpizlo@apple.com>
+
+        JIT::JIT fails to initialize all of its fields
+        https://bugs.webkit.org/show_bug.cgi?id=99283
+
+        Reviewed by Andreas Kling.
+
+        There were two groups of such fields, all of which are eventually initialized
+        prior to use inside of privateCompile(). But it's safer to make sure that they
+        are initialized in the constructor as well, since we may use the JIT to do a
+        stub compile without calling into privateCompile().
+        
+        Unsigned index fields for dynamic repatching meta-data: this change
+        initializes them to UINT_MAX, so we should crash if we try to use those
+        indices without initializing them.
+        
+        Boolean flags for value profiling: this change initializes them to false, so
+        we at worst turn off value profiling.
+
+        * jit/JIT.cpp:
+        (JSC::JIT::JIT):
+
+2012-10-15  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        We should avoid weakCompareAndSwap when parallel GC is disabled
+        https://bugs.webkit.org/show_bug.cgi?id=99331
+
+        Reviewed by Filip Pizlo.
+
+        CopiedBlock::reportLiveBytes and didEvacuateBytes uses weakCompareAndSwap, which some platforms 
+        don't support. For platforms that don't have parallel GC enabled, we should just use a normal store.
+
+        * heap/CopiedBlock.h:
+        (JSC::CopiedBlock::reportLiveBytes):
+        (JSC::CopiedBlock::didEvacuateBytes):
+
+2012-10-15  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Fix make distcheck.
+
+        * GNUmakefile.list.am: Add missing header file.
+
+2012-10-14  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should handle polymorphic array modes by eagerly transforming arrays into the most general applicable form
+        https://bugs.webkit.org/show_bug.cgi?id=99269
+
+        Reviewed by Geoffrey Garen.
+
+        This kills off a bunch of code for "polymorphic" array modes in the DFG. It should
+        also be a performance win for code that uses a lot of array storage arrays.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::fromObserved):
+        (JSC::DFG::modeAlreadyChecked):
+        (JSC::DFG::modeToString):
+        * dfg/DFGArrayMode.h:
+        (DFG):
+        (JSC::DFG::modeUsesButterfly):
+        (JSC::DFG::modeIsJSArray):
+        (JSC::DFG::mayStoreToTail):
+        (JSC::DFG::mayStoreToHole):
+        (JSC::DFG::canCSEStorage):
+        (JSC::DFG::modeSupportsLength):
+        (JSC::DFG::benefitsFromStructureCheck):
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::checkArray):
+        (JSC::DFG::FixupPhase::blessArrayOperation):
+        * dfg/DFGGraph.h:
+        (JSC::DFG::Graph::byValIsPure):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::jumpSlowForUnwantedArrayMode):
+        (JSC::DFG::SpeculativeJIT::checkArray):
+        (JSC::DFG::SpeculativeJIT::arrayify):
+        (DFG):
+        (JSC::DFG::SpeculativeJIT::compileGetArrayLength):
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::putByValWillNeedExtraRegister):
+        (SpeculativeJIT):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2012-10-14  Filip Pizlo  <fpizlo@apple.com>
+
+        REGRESSION(126886): Fat binary builds don't know how to handle architecture variants to which the LLInt is agnostic
+        https://bugs.webkit.org/show_bug.cgi?id=99270
+
+        Reviewed by Geoffrey Garen.
+
+        The fix is to hash cons the offsets based on configuration index, not the offsets
+        themselves.
+
+        * offlineasm/offsets.rb:
+
+2012-10-13  Filip Pizlo  <fpizlo@apple.com>
+
+        IndexingType should not have a bit for each type
+        https://bugs.webkit.org/show_bug.cgi?id=98997
+
+        Reviewed by Oliver Hunt.
+
+        Somewhat incidentally, the introduction of butterflies led to each indexing
+        type being represented by a unique bit. This is superficially nice since it
+        allows you to test if a structure corresponds to a particular indexing type
+        by saying !!(structure->indexingType() & TheType). But the downside is that
+        given the 8 bits we have for the m_indexingType field, that leaves only a
+        small number of possible indexing types if we have one per bit.
+        
+        This changeset changes the indexing type to be:
+        
+        Bit #1: Tells you if you're an array.
+        
+        Bits #2 - #5: 16 possible indexing types, including the blank type for
+            objects that don't have indexed properties.
+        
+        Bits #6-8: Auxiliary bits that we could use for other things. Currently we
+            just use one of those bits, for MayHaveIndexedAccessors.
+        
+        This is performance-neutral, and is primarily intended to give us more
+        breathing room for introducing new inferred array modes.
+
+        * assembler/AbstractMacroAssembler.h:
+        (JSC::AbstractMacroAssembler::JumpList::jumps):
+        * assembler/MacroAssembler.h:
+        (MacroAssembler):
+        (JSC::MacroAssembler::patchableBranch32):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::patchableBranch32):
+        (MacroAssemblerARMv7):
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::modeAlreadyChecked):
+        * dfg/DFGRepatch.cpp:
+        (JSC::DFG::tryCacheGetByID):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::speculationCheck):
+        (JSC::DFG::SpeculativeJIT::forwardSpeculationCheck):
+        (JSC::DFG::SpeculativeJIT::jumpSlowForUnwantedArrayMode):
+        (DFG):
+        (JSC::DFG::SpeculativeJIT::checkArray):
+        (JSC::DFG::SpeculativeJIT::arrayify):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::emitAllocateJSArray):
+        (JSC::JIT::chooseArrayMode):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emit_op_get_by_val):
+        (JSC::JIT::emitContiguousGetByVal):
+        (JSC::JIT::emitArrayStorageGetByVal):
+        (JSC::JIT::emit_op_put_by_val):
+        (JSC::JIT::emitContiguousPutByVal):
+        (JSC::JIT::emitArrayStoragePutByVal):
+        (JSC::JIT::privateCompilePatchGetArrayLength):
+        * jit/JITPropertyAccess32_64.cpp:
+        (JSC::JIT::emit_op_get_by_val):
+        (JSC::JIT::emitContiguousGetByVal):
+        (JSC::JIT::emitArrayStorageGetByVal):
+        (JSC::JIT::emit_op_put_by_val):
+        (JSC::JIT::emitContiguousPutByVal):
+        (JSC::JIT::emitArrayStoragePutByVal):
+        (JSC::JIT::privateCompilePatchGetArrayLength):
+        * llint/LowLevelInterpreter.asm:
+        * llint/LowLevelInterpreter32_64.asm:
+        * llint/LowLevelInterpreter64.asm:
+        * runtime/IndexingType.h:
+        (JSC):
+        (JSC::hasIndexedProperties):
+        (JSC::hasContiguous):
+        (JSC::hasFastArrayStorage):
+        (JSC::hasArrayStorage):
+        (JSC::shouldUseSlowPut):
+        * runtime/JSGlobalObject.cpp:
+        (JSC):
+        * runtime/StructureTransitionTable.h:
+        (JSC::newIndexingType):
+
+2012-10-14  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG structure check hoisting should attempt to ignore side effects and make transformations that are sound even in their presence
+        https://bugs.webkit.org/show_bug.cgi?id=99262
+
+        Reviewed by Oliver Hunt.
+
+        This hugely simplifies the structure check hoisting phase. It will no longer be necessary
+        to modify it when the effectfulness of operations changes. This also enables the hoister
+        to hoist effectful things in the future.
+        
+        The downside is that the hoister may end up adding strictly more checks than were present
+        in the original code, if the code truly has a lot of side-effects. I don't see evidence
+        of this happening. This patch does have some speed-ups and some slow-downs, but is
+        neutral in the average, and the slow-downs do not appear to have more structure checks
+        than ToT.
+
+        * dfg/DFGStructureCheckHoistingPhase.cpp:
+        (JSC::DFG::StructureCheckHoistingPhase::run):
+        (JSC::DFG::StructureCheckHoistingPhase::noticeStructureCheck):
+        (StructureCheckHoistingPhase):
+        (CheckData):
+        (JSC::DFG::StructureCheckHoistingPhase::CheckData::CheckData):
+
+2012-10-14  Filip Pizlo  <fpizlo@apple.com>
+
+        Fix the build of universal binary with ARMv7s of JavaScriptCore
+
+        * llint/LLIntOfflineAsmConfig.h:
+        * llint/LowLevelInterpreter.asm:
+
+2012-10-13  Filip Pizlo  <fpizlo@apple.com>
+
+        Array length array profiling is broken in the baseline JIT
+        https://bugs.webkit.org/show_bug.cgi?id=99258
+
+        Reviewed by Oliver Hunt.
+
+        The code generator for array length stubs calls into
+        emitArrayProfilingSiteForBytecodeIndex(), which emits profiling only if
+        canBeOptimized() returns true. But m_canBeOptimized is only initialized during
+        full method compiles, so in a stub compile it may (or may not) be false, meaning
+        that we may, or may not, get meaningful profiling info.
+        
+        This appeared to not affect too many programs since the LLInt has good array
+        length array profiling.
+
+        * jit/JIT.h:
+        (JSC::JIT::compilePatchGetArrayLength):
+
+2012-10-14  Patrick Gansterer  <paroga@webkit.org>
+
+        Build fix for WinCE after r131089.
+
+        WinCE does not support getenv().
+
+        * runtime/Options.cpp:
+        (JSC::overrideOptionWithHeuristic):
+
+2012-10-12  Kangil Han  <kangil.han@samsung.com>
+
+        Fix build error on DFGSpeculativeJIT32_64.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=99234
+
+        Reviewed by Anders Carlsson.
+
+        Seems BUG 98608 causes build error on 32bit machine so fix it.
+
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2012-10-12  Filip Pizlo  <fpizlo@apple.com>
+
+        Contiguous array allocation should always be inlined
+        https://bugs.webkit.org/show_bug.cgi?id=98608
+
+        Reviewed by Oliver Hunt and Mark Hahnenberg.
+
+        This inlines contiguous array allocation in the most obvious way possible.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * assembler/MacroAssembler.h:
+        (JSC::MacroAssembler::branchSubPtr):
+        (MacroAssembler):
+        * assembler/MacroAssemblerX86_64.h:
+        (JSC::MacroAssemblerX86_64::branchSubPtr):
+        (MacroAssemblerX86_64):
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGCCallHelpers.h:
+        (JSC::DFG::CCallHelpers::setupArgumentsWithExecState):
+        (CCallHelpers):
+        * dfg/DFGCallArrayAllocatorSlowPathGenerator.h: Added.
+        (DFG):
+        (CallArrayAllocatorSlowPathGenerator):
+        (JSC::DFG::CallArrayAllocatorSlowPathGenerator::CallArrayAllocatorSlowPathGenerator):
+        (JSC::DFG::CallArrayAllocatorSlowPathGenerator::generateInternal):
+        (CallArrayAllocatorWithVariableSizeSlowPathGenerator):
+        (JSC::DFG::CallArrayAllocatorWithVariableSizeSlowPathGenerator::CallArrayAllocatorWithVariableSizeSlowPathGenerator):
+        (JSC::DFG::CallArrayAllocatorWithVariableSizeSlowPathGenerator::generateInternal):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::emitAllocateJSArray):
+        (DFG):
+        (JSC::DFG::SpeculativeJIT::compileAllocatePropertyStorage):
+        (JSC::DFG::SpeculativeJIT::compileReallocatePropertyStorage):
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+        (SpeculativeJIT):
+        (JSC::DFG::SpeculativeJIT::emitAllocateBasicStorage):
+        (JSC::DFG::SpeculativeJIT::emitAllocateBasicJSObject):
+        (JSC::DFG::SpeculativeJIT::emitAllocateJSFinalObject):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2012-10-12  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Race condition during CopyingPhase can lead to deadlock
+        https://bugs.webkit.org/show_bug.cgi?id=99226
+
+        Reviewed by Filip Pizlo.
+
+        The main thread calls startCopying() for each of the GCThreads at the beginning of the copy phase. 
+        It then proceeds to start copying. If copying completes before one of the GCThreads wakes up, the 
+        main thread will set m_currentPhase back to NoPhase, the GCThread will wake up, see that there's 
+        nothing to do, and then it will go back to sleep without ever calling CopyVisitor::doneCopying() 
+        to return its borrowed block to the CopiedSpace. CopiedSpace::doneCopying() will then sleep forever 
+        waiting on the block.
+
+        The fix for this is to make sure we call CopiedSpace::doneCopying() on the main thread before we 
+        call GCThreadSharedData::didFinishCopying(), which sets the m_currentPhase flag to NoPhase. This 
+        way we will wait until all threads have woken up and given back their borrowed blocks before 
+        clearing the flag.
+
+        * heap/Heap.cpp:
+        (JSC::Heap::copyBackingStores):
+
+2012-10-12  Anders Carlsson  <andersca@apple.com>
+
+        Move macros from Parser.h to Parser.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=99217
+
+        Reviewed by Andreas Kling.
+
+        There are a bunch of macros in Parser.h that are only used in Parser.cpp. Move them to Parser.cpp
+        so they won't pollute the global namespace.
+        * parser/Parser.cpp:
+        * parser/Parser.h:
+        (JSC):
+
+2012-10-12  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Another build fix after r131213
+
+        Added some symbol magic to placate the linker on some platforms.
+
+        * JavaScriptCore.order:
+
+2012-10-12  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Build fix after r131213
+
+        Removed an unused variable that was making compilers unhappy.
+
+        * heap/GCThread.cpp:
+        (JSC::GCThread::GCThread):
+        * heap/GCThread.h:
+        (GCThread):
+        * heap/GCThreadSharedData.cpp:
+        (JSC::GCThreadSharedData::GCThreadSharedData):
+
+2012-10-09  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Copying collection shouldn't require O(live bytes) memory overhead
+        https://bugs.webkit.org/show_bug.cgi?id=98792
+
+        Reviewed by Filip Pizlo.
+
+        Currently our copying collection occurs simultaneously with the marking phase. We'd like 
+        to be able to reuse CopiedBlocks as soon as they become fully evacuated, but this is not 
+        currently possible because we don't know the liveness statistics of each old CopiedBlock 
+        until marking/copying has already finished. Instead, we have to allocate additional memory 
+        from the OS to use as our working set of CopiedBlocks while copying. We then return the 
+        fully evacuated old CopiedBlocks back to the block allocator, thus giving our copying phase 
+        an O(live bytes) overhead.
+
+        To fix this, we should instead split the copying phase apart from the marking phase. This 
+        way we have full liveness data for each CopiedBlock during the copying phase so that we 
+        can reuse them the instant they become fully evacuated. With the additional liveness data 
+        that each CopiedBlock accumulates, we can add some additional heuristics to the collector. 
+        For example, we can calculate our global Heap fragmentation and only choose to do a copying 
+        phase if that fragmentation exceeds some limit. As another example, we can skip copying 
+        blocks that are already above a particular fragmentation limit, which allows older objects 
+        to coalesce into blocks that are rarely copied.
+
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * heap/CopiedBlock.h:
+        (CopiedBlock):
+        (JSC::CopiedBlock::CopiedBlock): Added support for tracking live bytes in a CopiedBlock in a 
+        thread-safe fashion.
+        (JSC::CopiedBlock::reportLiveBytes): Adds a number of live bytes to the block in a thread-safe 
+        fashion using compare and swap.
+        (JSC):
+        (JSC::CopiedBlock::didSurviveGC): Called when a block survives a single GC without being 
+        evacuated. This could be called for a couple reasons: (a) the block was pinned or (b) we 
+        decided not to do any copying. A block can become pinned for a few reasons: (1) a pointer into 
+        the block was found during the conservative scan. (2) the block was deemed full enough to 
+        not warrant any copying. (3) The block is oversize and was found to be live. 
+        (JSC::CopiedBlock::didEvacuateBytes): Called when some number of bytes are copied from this 
+        block. If the number of live bytes ever hits zero, the block will return itself to the 
+        BlockAllocator to be recycled.
+        (JSC::CopiedBlock::canBeRecycled): Indicates that a block has no live bytes and can be 
+        immediately recycled. This is used for blocks that are found to have zero live bytes at the 
+        beginning of the copying phase.
+        (JSC::CopiedBlock::shouldEvacuate): This function returns true if the current fragmentation 
+        of the block is above our fragmentation threshold, and false otherwise.
+        (JSC::CopiedBlock::isPinned): Added an accessor for the pinned flag
+        (JSC::CopiedBlock::liveBytes): 
+        * heap/CopiedSpace.cpp:
+        (JSC::CopiedSpace::CopiedSpace):
+        (JSC::CopiedSpace::doneFillingBlock): Changed so that we can exchange our filled block for a 
+        fresh block. This avoids the situation where a thread returns its borrowed block, it's the last 
+        borrowed block, so CopiedSpace thinks that copying has completed, and it starts doing all of the 
+        copying phase cleanup. In actuality, the thread wanted another block after returning the current 
+        block. So we allow the thread to atomically exchange its block for another block.
+        (JSC::CopiedSpace::startedCopying): Added the calculation of global Heap fragmentation to 
+        determine if the copying phase should commence. We include the MarkedSpace in our fragmentation 
+        calculation by assuming that the MarkedSpace is 0% fragmented since we can reuse any currently 
+        free memory in it (i.e. we ignore any internal fragmentation in the MarkedSpace). While we're 
+        calculating the fragmentation of CopiedSpace, we also return any free blocks we find along the 
+        way (meaning liveBytes() == 0).
+        (JSC):
+        (JSC::CopiedSpace::doneCopying): We still have to iterate over all the blocks, regardless of
+        whether the copying phase took place or not so that we can reset all of the live bytes counters 
+        and un-pin any pinned blocks.
+        * heap/CopiedSpace.h:
+        (CopiedSpace):
+        (JSC::CopiedSpace::shouldDoCopyPhase):
+        * heap/CopiedSpaceInlineMethods.h:
+        (JSC::CopiedSpace::recycleEvacuatedBlock): This function is distinct from recycling a borrowed block 
+        because a borrowed block hasn't been added to the CopiedSpace yet, but an evacuated block is still
+        currently in CopiedSpace, so we have to make sure we properly remove all traces of the block from 
+        CopiedSpace before returning it to BlockAllocator.
+        (JSC::CopiedSpace::recycleBorrowedBlock): Renamed to indicate the distinction mentioned above.
+        * heap/CopyVisitor.cpp: Added.
+        (JSC):
+        (JSC::CopyVisitor::CopyVisitor):
+        (JSC::CopyVisitor::copyFromShared): Main function for any thread participating in the copying phase.
+        Grabs chunks of MarkedBlocks from the shared list and copies the backing store of anybody who needs
+        it until there are no more chunks to copy.
+        * heap/CopyVisitor.h: Added.
+        (JSC):
+        (CopyVisitor):
+        * heap/CopyVisitorInlineMethods.h: Added.
+        (JSC):
+        (GCCopyPhaseFunctor):
+        (JSC::GCCopyPhaseFunctor::GCCopyPhaseFunctor):
+        (JSC::GCCopyPhaseFunctor::operator()):
+        (JSC::CopyVisitor::checkIfShouldCopy): We don't have to check shouldEvacuate() because all of those 
+        checks are done during the marking phase.
+        (JSC::CopyVisitor::allocateNewSpace): 
+        (JSC::CopyVisitor::allocateNewSpaceSlow):
+        (JSC::CopyVisitor::startCopying): Initialization function for a thread that is about to start copying.
+        (JSC::CopyVisitor::doneCopying):
+        (JSC::CopyVisitor::didCopy): This callback is called by an object that has just successfully copied its
+        backing store. It indicates to the CopiedBlock that somebody has just finished evacuating some number of 
+        bytes from it, and, if the CopiedBlock now has no more live bytes, can be recycled immediately.
+        * heap/GCThread.cpp: Added.
+        (JSC):
+        (JSC::GCThread::GCThread): This is a new class that encapsulates a single thread responsible for participating 
+        in a specific set of GC phases. Currently, that set of phases includes Mark, Copy, and Exit. Each thread 
+        monitors a shared variable in its associated GCThreadSharedData. The main thread updates this m_currentPhase
+        variable as collection progresses through the various phases. Parallel marking still works exactly like it 
+        has. In other words, the "run loop" for each of the GC threads sits above any individual phase, thus keeping 
+        the separate phases of the collector orthogonal.
+        (JSC::GCThread::threadID):
+        (JSC::GCThread::initializeThreadID):
+        (JSC::GCThread::slotVisitor):
+        (JSC::GCThread::copyVisitor):
+        (JSC::GCThread::waitForNextPhase):
+        (JSC::GCThread::gcThreadMain):
+        (JSC::GCThread::gcThreadStartFunc):
+        * heap/GCThread.h: Added.
+        (JSC):
+        (GCThread):
+        * heap/GCThreadSharedData.cpp: The GCThreadSharedData now has a list of GCThread objects rather than raw 
+        ThreadIdentifiers.
+        (JSC::GCThreadSharedData::resetChildren):
+        (JSC::GCThreadSharedData::childVisitCount):
+        (JSC::GCThreadSharedData::GCThreadSharedData):
+        (JSC::GCThreadSharedData::~GCThreadSharedData):
+        (JSC::GCThreadSharedData::reset):
+        (JSC::GCThreadSharedData::didStartMarking): Callback to let the GCThreadSharedData know that marking has 
+        started and updates the m_currentPhase variable and notifies the GCThreads accordingly.
+        (JSC::GCThreadSharedData::didFinishMarking): Ditto for finishing marking. 
+        (JSC::GCThreadSharedData::didStartCopying): Ditto for starting the copying phase.
+        (JSC::GCThreadSharedData::didFinishCopying): Ditto for finishing copying. 
+        * heap/GCThreadSharedData.h:
+        (JSC):
+        (GCThreadSharedData):
+        (JSC::GCThreadSharedData::getNextBlocksToCopy): Atomically gets the next chunk of work for a copying thread.
+        * heap/Heap.cpp:
+        (JSC::Heap::Heap):
+        (JSC::Heap::markRoots):
+        (JSC):
+        (JSC::Heap::copyBackingStores): Responsible for setting up the copying phase, notifying the copying threads, 
+        and doing any copying work if necessary.
+        (JSC::Heap::collect):
+        * heap/Heap.h:
+        (Heap):
+        (JSC):
+        (JSC::CopyFunctor::CopyFunctor):
+        (CopyFunctor):
+        (JSC::CopyFunctor::operator()):
+        * heap/IncrementalSweeper.cpp: Changed the incremental sweeper to have a reference to the list of MarkedBlocks 
+        that need sweeping, since this now resides in the Heap so that it can be easily shared by the GCThreads.
+        (JSC::IncrementalSweeper::IncrementalSweeper):
+        (JSC::IncrementalSweeper::startSweeping):
+        * heap/IncrementalSweeper.h:
+        (JSC):
+        (IncrementalSweeper):
+        * heap/SlotVisitor.cpp:
+        (JSC::SlotVisitor::setup):
+        (JSC::SlotVisitor::drainFromShared): We no longer do any copying-related work here.
+        (JSC):
+        * heap/SlotVisitor.h:
+        (SlotVisitor):
+        * heap/SlotVisitorInlineMethods.h:
+        (JSC):
+        (JSC::SlotVisitor::copyLater): Notifies the CopiedBlock that there are some live bytes that may need 
+        to be copied.
+        * runtime/Butterfly.h:
+        (JSC):
+        (Butterfly):
+        * runtime/ButterflyInlineMethods.h:
+        (JSC::Butterfly::createUninitializedDuringCollection): Uses the new CopyVisitor.
+        * runtime/ClassInfo.h:
+        (MethodTable): Added new "virtual" function copyBackingStore to method table.
+        (JSC):
+        * runtime/JSCell.cpp:
+        (JSC::JSCell::copyBackingStore): Default implementation that does nothing.
+        (JSC):
+        * runtime/JSCell.h:
+        (JSC):
+        (JSCell):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::copyButterfly): Does the actual copying of the butterfly.
+        (JSC):
+        (JSC::JSObject::visitButterfly): Calls copyLater for the butterfly.
+        (JSC::JSObject::copyBackingStore): 
+        * runtime/JSObject.h:
+        (JSObject):
+        (JSC::JSCell::methodTable):
+        (JSC::JSCell::inherits):
+        * runtime/Options.h: Added two new constants, minHeapUtilization and minCopiedBlockUtilization, 
+        to govern the amount of fragmentation we allow before doing copying.
+        (JSC):
+
+2012-10-12  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG array allocation calls should not return an encoded JSValue
+        https://bugs.webkit.org/show_bug.cgi?id=99196
+
+        Reviewed by Mark Hahnenberg.
+
+        The array allocation operations now return a pointer instead. This makes it
+        easier to share code between 32-bit and 64-bit.
+
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2012-10-01  Jer Noble  <jer.noble@apple.com>
+
+        Enable ENCRYPTED_MEDIA support on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=98044
+
+        Reviewed by Anders Carlsson.
+
+        Enable the ENCRYPTED_MEDIA flag.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-10-12  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed. It should be possible to build JSC on ARMv7.
+
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::patchableBranchPtr):
+
+2012-10-11  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        BlockAllocator should use regions as its VM allocation abstraction
+        https://bugs.webkit.org/show_bug.cgi?id=99107
+
+        Reviewed by Geoffrey Garen.
+
+        Currently the BlockAllocator allocates a single block at a time directly from the OS. Our block 
+        allocations are on the large-ish side (64 KB) to amortize across many allocations the expense of 
+        mapping new virtual memory from the OS. These large blocks are then shared between the MarkedSpace 
+        and the CopiedSpace. This design makes it difficult to vary the size of the blocks in different 
+        parts of the Heap while still allowing us to amortize the VM allocation costs.
+
+        We should redesign the BlockAllocator so that it has a layer of indirection between blocks that are 
+        used by the allocator/collector and our primary unit of VM allocation from the OS. In particular, 
+        the BlockAllocator should allocate Regions of virtual memory from the OS, which are then subdivided 
+        into one or more Blocks to be used in our custom allocators. This design has the following nice properties:
+
+        1) We can remove the knowledge of PageAllocationAligned from HeapBlocks. Each HeapBlock will now 
+           only know what Region it belongs to. The Region maintains all the metadata for how to allocate 
+           and deallocate virtual memory from the OS.
+
+        2) We can easily allocate in larger chunks than we need to satisfy a particular request for a Block. 
+           We can then continue to amortize our VM allocation costs while allowing for smaller block sizes, 
+           which should increase locality in the mutator when allocating, lazy sweeping, etc.
+
+        3) By encapsulating the logic of where our memory comes from inside of the Region class, we can more 
+           easily transition over to allocating VM from a specific range of pre-reserved address space. This 
+           will be a necessary step along the way to 32-bit pointers.
+
+        This particular patch will not change the size of MarkedBlocks or CopiedBlocks, nor will it change how 
+        much VM we allocate per failed Block request. It only sets up the data structures that we need to make 
+        these changes in future patches.
+
+        Most of the changes in this patch relate to the addition of the Region class to be used by the 
+        BlockAllocator and the threading of changes made to BlockAllocator's interface through to the call sites.
+
+        * heap/BlockAllocator.cpp: The BlockAllocator now has three lists that track the three disjoint sets of
+        Regions that it cares about: empty regions, partially full regions, and completely full regions. 
+        Empty regions have no blocks currently in use and can be freed immediately if the freeing thread 
+        determines they should be. Partial regions have some blocks used, but aren't completely in use yet. 
+        These regions are preferred for recycling before empty regions to mitigate fragmentation within regions.
+        Completely full regions are no longer able to be used for allocations. Regions move between these 
+        three lists as they are created and their constituent blocks are allocated and deallocated.
+        (JSC::BlockAllocator::BlockAllocator):
+        (JSC::BlockAllocator::~BlockAllocator):
+        (JSC::BlockAllocator::releaseFreeRegions):
+        (JSC::BlockAllocator::waitForRelativeTimeWhileHoldingLock):
+        (JSC::BlockAllocator::waitForRelativeTime):
+        (JSC::BlockAllocator::blockFreeingThreadMain):
+        * heap/BlockAllocator.h:
+        (JSC):
+        (DeadBlock):
+        (JSC::DeadBlock::DeadBlock):
+        (Region):
+        (JSC::Region::blockSize):
+        (JSC::Region::isFull):
+        (JSC::Region::isEmpty):
+        (JSC::Region::create): This function is responsible for doing the actual VM allocation. This should be the 
+        only function in the entire JSC object runtime that calls out the OS for virtual memory allocation.
+        (JSC::Region::Region):
+        (JSC::Region::~Region):
+        (JSC::Region::allocate):
+        (JSC::Region::deallocate):
+        (BlockAllocator):
+        (JSC::BlockAllocator::tryAllocateFromRegion): Helper function that encapsulates checking a particular list 
+        of regions for a free block.
+        (JSC::BlockAllocator::allocate):
+        (JSC::BlockAllocator::allocateCustomSize): This function is responsible for allocating one-off custom size 
+        regions for use in oversize allocations in both the MarkedSpace and the CopiedSpace. These regions are not 
+        tracked by the BlockAllocator. The only pointer to them is in the HeapBlock that is returned. These regions 
+        contain exactly one block.
+        (JSC::BlockAllocator::deallocate):
+        (JSC::BlockAllocator::deallocateCustomSize): This function is responsible for deallocating one-off custom size
+        regions. The regions are deallocated back to the OS eagerly.
+        * heap/CopiedBlock.h: Re-worked CopiedBlocks to use Regions instead of PageAllocationAligned.
+        (CopiedBlock):
+        (JSC::CopiedBlock::createNoZeroFill):
+        (JSC::CopiedBlock::create):
+        (JSC::CopiedBlock::CopiedBlock):
+        (JSC::CopiedBlock::payloadEnd):
+        (JSC::CopiedBlock::capacity):
+        * heap/CopiedSpace.cpp:
+        (JSC::CopiedSpace::~CopiedSpace):
+        (JSC::CopiedSpace::tryAllocateOversize):
+        (JSC::CopiedSpace::tryReallocateOversize):
+        (JSC::CopiedSpace::doneCopying):
+        * heap/CopiedSpaceInlineMethods.h:
+        (JSC::CopiedSpace::allocateBlockForCopyingPhase):
+        (JSC::CopiedSpace::allocateBlock):
+        * heap/HeapBlock.h:
+        (JSC::HeapBlock::destroy):
+        (JSC::HeapBlock::HeapBlock):
+        (JSC::HeapBlock::region):
+        (HeapBlock):
+        * heap/MarkedAllocator.cpp:
+        (JSC::MarkedAllocator::allocateBlock):
+        * heap/MarkedBlock.cpp:
+        (JSC::MarkedBlock::create):
+        (JSC::MarkedBlock::MarkedBlock):
+        * heap/MarkedBlock.h:
+        (JSC::MarkedBlock::capacity):
+        * heap/MarkedSpace.cpp:
+        (JSC::MarkedSpace::freeBlock):
+
+2012-10-11  Filip Pizlo  <fpizlo@apple.com>
+
+        UInt32ToNumber and OSR exit should be aware of copy propagation and correctly recover both versions of a variable that was subject to a UInt32ToNumber cast
+        https://bugs.webkit.org/show_bug.cgi?id=99100
+        <rdar://problem/12480955>
+
+        Reviewed by Michael Saboff and Mark Hahnenberg.
+
+        Fixed by forcing UInt32ToNumber to use a different register. This "undoes" the copy propagation that we
+        would have been doing, since it has no performance effect in this case and has the benefit of making the
+        OSR exit compiler a lot simpler.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileUInt32ToNumber):
+
+2012-10-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed some more static assumptions about inline object capacity
+        https://bugs.webkit.org/show_bug.cgi?id=98603
+
+        Reviewed by Filip Pizlo.
+
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::emitAllocateBasicJSObject): Use JSObject::allocationSize()
+        for a little more flexibility. We still pass it a constant inline capacity
+        because the JIT doesn't have a strategy for selecting a size class based
+        on non-constant capacity yet. "INLINE_STORAGE_CAPACITY" is a marker for
+        code that makes static assumptions about object size.
+
+        * jit/JITInlineMethods.h:
+        (JSC::JIT::emitAllocateBasicJSObject):
+        * llint/LLIntData.cpp:
+        (JSC::LLInt::Data::performAssertions):
+        * llint/LowLevelInterpreter32_64.asm:
+        * llint/LowLevelInterpreter64.asm: Ditto for the rest of our many execution engines.
+
+        * runtime/JSObject.h:
+        (JSC::JSObject::allocationSize):
+        (JSC::JSFinalObject::finishCreation):
+        (JSC::JSFinalObject::create): New helper function for computing object
+        size dynamically, since we plan to have objects of different sizes.
+
+        (JSC::JSFinalObject::JSFinalObject): Note that our m_inlineStorage used
+        to auto-generate an implicit C++ constructor with default null initialization.
+        This memory is not observed in its uninitialized state, and our LLInt and
+        JIT allocators do not initialize it, so I did not add any explicit code
+        to do so, now that the implicit code is gone.
+
+        (JSC::JSObject::offsetOfInlineStorage): Changed the math here to match
+        inlineStorageUnsafe(), since we can rely on an explicit data member anymore.
+
+2012-10-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Enable RUNTIME_HEURISTICS all the time, for easier testing
+        https://bugs.webkit.org/show_bug.cgi?id=99090
+
+        Reviewed by Filip Pizlo.
+
+        I find myself using this a lot, and there doesn't seem to be an obvious
+        reason to compile it out, since it only runs once at startup.
+
+        * runtime/Options.cpp:
+        (JSC::overrideOptionWithHeuristic):
+        (JSC::Options::initialize):
+        * runtime/Options.h: Removed the #ifdef.
+
+2012-10-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed ASSERT_CLASS_FITS_IN_CELL
+        https://bugs.webkit.org/show_bug.cgi?id=97634
+
+        Reviewed by Mark Hahnenberg.
+
+        Our collector now supports arbitrarily sized objects, so the ASSERT is not needed.
+
+        * API/JSCallbackFunction.cpp:
+        * API/JSCallbackObject.cpp:
+        * heap/MarkedSpace.h:
+        * jsc.cpp:
+        * runtime/Arguments.cpp:
+        * runtime/ArrayConstructor.cpp:
+        * runtime/ArrayPrototype.cpp:
+        * runtime/BooleanConstructor.cpp:
+        * runtime/BooleanObject.cpp:
+        * runtime/BooleanPrototype.cpp:
+        * runtime/DateConstructor.cpp:
+        * runtime/DatePrototype.cpp:
+        * runtime/Error.cpp:
+        * runtime/ErrorConstructor.cpp:
+        * runtime/ErrorPrototype.cpp:
+        * runtime/FunctionConstructor.cpp:
+        * runtime/FunctionPrototype.cpp:
+        * runtime/InternalFunction.cpp:
+        * runtime/JSActivation.cpp:
+        * runtime/JSArray.cpp:
+        * runtime/JSBoundFunction.cpp:
+        * runtime/JSFunction.cpp:
+        * runtime/JSGlobalObject.cpp:
+        * runtime/JSGlobalThis.cpp:
+        * runtime/JSNameScope.cpp:
+        * runtime/JSNotAnObject.cpp:
+        * runtime/JSONObject.cpp:
+        * runtime/JSObject.cpp:
+        * runtime/JSPropertyNameIterator.cpp:
+        * runtime/JSScope.cpp:
+        * runtime/JSWithScope.cpp:
+        * runtime/JSWrapperObject.cpp:
+        * runtime/MathObject.cpp:
+        * runtime/NameConstructor.cpp:
+        * runtime/NamePrototype.cpp:
+        * runtime/NativeErrorConstructor.cpp:
+        * runtime/NativeErrorPrototype.cpp:
+        * runtime/NumberConstructor.cpp:
+        * runtime/NumberObject.cpp:
+        * runtime/NumberPrototype.cpp:
+        * runtime/ObjectConstructor.cpp:
+        * runtime/ObjectPrototype.cpp:
+        * runtime/RegExpConstructor.cpp:
+        * runtime/RegExpMatchesArray.cpp:
+        * runtime/RegExpObject.cpp:
+        * runtime/RegExpPrototype.cpp:
+        * runtime/StringConstructor.cpp:
+        * runtime/StringObject.cpp:
+        * runtime/StringPrototype.cpp:
+        * testRegExp.cpp: Removed the ASSERT.
+
+2012-10-11  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should inline code blocks that use new_array_buffer
+        https://bugs.webkit.org/show_bug.cgi?id=98996
+
+        Reviewed by Geoffrey Garen.
+
+        This adds plumbing to drop in constant buffers from the inlinees to the inliner.
+        It's smart about not duplicating buffers needlessly but doesn't try to completely
+        hash-cons them, either.
+
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::numberOfConstantBuffers):
+        (JSC::CodeBlock::addConstantBuffer):
+        (JSC::CodeBlock::constantBufferAsVector):
+        (JSC::CodeBlock::constantBuffer):
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGByteCodeParser.cpp:
+        (ConstantBufferKey):
+        (JSC::DFG::ConstantBufferKey::ConstantBufferKey):
+        (JSC::DFG::ConstantBufferKey::operator==):
+        (JSC::DFG::ConstantBufferKey::hash):
+        (JSC::DFG::ConstantBufferKey::isHashTableDeletedValue):
+        (JSC::DFG::ConstantBufferKey::codeBlock):
+        (JSC::DFG::ConstantBufferKey::index):
+        (DFG):
+        (JSC::DFG::ConstantBufferKeyHash::hash):
+        (JSC::DFG::ConstantBufferKeyHash::equal):
+        (ConstantBufferKeyHash):
+        (WTF):
+        (ByteCodeParser):
+        (InlineStackEntry):
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        (JSC::DFG::ByteCodeParser::InlineStackEntry::InlineStackEntry):
+        * dfg/DFGCapabilities.h:
+        (JSC::DFG::canInlineOpcode):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
 2012-10-10  Zoltan Horvath  <zoltan@webkit.org>
 
         Pageload tests should measure memory usage

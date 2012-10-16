@@ -28,7 +28,6 @@
 
 #include "DownloadManager.h"
 #include "InjectedBundle.h"
-#include "InjectedBundleMessageKinds.h"
 #include "InjectedBundleUserMessageCoders.h"
 #include "SandboxExtension.h"
 #include "StatisticsData.h"
@@ -246,9 +245,6 @@ void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parame
         setDomainRelaxationForbiddenForURLScheme(parameters.urlSchemesForWhichDomainRelaxationIsForbidden[i]);
 
     setDefaultRequestTimeoutInterval(parameters.defaultRequestTimeoutInterval);
-
-    for (size_t i = 0; i < parameters.mimeTypesWithCustomRepresentation.size(); ++i)
-        m_mimeTypesWithCustomRepresentations.add(parameters.mimeTypesWithCustomRepresentation[i]);
 
     if (parameters.shouldAlwaysUseComplexTextCodePath)
         setAlwaysUsesComplexTextCodePath(true);
@@ -694,13 +690,6 @@ void WebProcess::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::Mes
         return;
     }
 #endif
-
-    if (messageID.is<CoreIPC::MessageClassInjectedBundle>()) {
-        if (!m_injectedBundle)
-            return;
-        m_injectedBundle->didReceiveMessage(connection, messageID, arguments);    
-        return;
-    }
     
     if (messageID.is<CoreIPC::MessageClassWebPageGroupProxy>()) {
         uint64_t pageGroupID = arguments->destinationID();
@@ -820,26 +809,6 @@ void WebProcess::removeMessagePortChannel(uint64_t channelID)
     m_messagePortChannels.remove(channelID);
 }
 #endif
-
-static bool canPluginHandleResponse(const ResourceResponse& response)
-{
-    String pluginPath;
-    bool blocked;
-
-    if (!WebProcess::shared().connection()->sendSync(Messages::WebProcessProxy::GetPluginPath(response.mimeType(), response.url().string()), Messages::WebProcessProxy::GetPluginPath::Reply(pluginPath, blocked), 0))
-        return false;
-
-    return !blocked && !pluginPath.isEmpty();
-}
-
-bool WebProcess::shouldUseCustomRepresentationForResponse(const ResourceResponse& response) const
-{
-    if (!m_mimeTypesWithCustomRepresentations.contains(response.mimeType()))
-        return false;
-
-    // If a plug-in exists that claims to support this response, it should take precedence over the custom representation.
-    return !canPluginHandleResponse(response);
-}
 
 void WebProcess::clearResourceCaches(ResourceCachesToClear resourceCachesToClear)
 {
@@ -1034,6 +1003,25 @@ void WebProcess::garbageCollectJavaScriptObjects()
 void WebProcess::setJavaScriptGarbageCollectorTimerEnabled(bool flag)
 {
     gcController().setJavaScriptGarbageCollectorTimerEnabled(flag);
+}
+
+void WebProcess::postInjectedBundleMessage(const CoreIPC::DataReference& messageData)
+{
+    InjectedBundle* injectedBundle = WebProcess::shared().injectedBundle();
+    if (!injectedBundle)
+        return;
+
+    CoreIPC::ArgumentDecoder messageDecoder(messageData.data(), messageData.size());
+
+    String messageName;
+    if (!messageDecoder.decode(messageName))
+        return;
+
+    RefPtr<APIObject> messageBody;
+    if (!messageDecoder.decode(InjectedBundleUserMessageDecoder(messageBody)))
+        return;
+
+    injectedBundle->didReceiveMessage(messageName, messageBody.get());
 }
 
 #if ENABLE(PLUGIN_PROCESS)

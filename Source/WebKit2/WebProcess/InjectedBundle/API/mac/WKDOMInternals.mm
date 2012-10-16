@@ -33,12 +33,17 @@
 #import <WebCore/Element.h>
 #import <WebCore/Node.h>
 #import <WebCore/Range.h>
+#import <WebCore/Text.h>
 
 // Classes to instantiate.
 #import "WKDOMElement.h"
 #import "WKDOMDocument.h"
+#import "WKDOMText.h"
 
 namespace WebKit {
+
+template<typename WebCoreType, typename WKDOMType>
+static WKDOMType toWKDOMType(WebCoreType impl, DOMCache<WebCoreType, WKDOMType>& cache);
 
 // -- Caches -- 
 
@@ -58,7 +63,7 @@ DOMCache<WebCore::Range*, WKDOMRange *>& WKDOMRangeCache()
 
 // -- Node and classes derived from Node. --
 
-static Class WKDOMClass(WebCore::Node* impl)
+static Class WKDOMNodeClass(WebCore::Node* impl)
 {
     switch (impl->nodeType()) {
     case WebCore::Node::ELEMENT_NODE:
@@ -66,6 +71,7 @@ static Class WKDOMClass(WebCore::Node* impl)
     case WebCore::Node::DOCUMENT_NODE:
         return [WKDOMDocument class];
     case WebCore::Node::TEXT_NODE:
+        return [WKDOMText class];
     case WebCore::Node::ATTRIBUTE_NODE:
     case WebCore::Node::CDATA_SECTION_NODE:
     case WebCore::Node::ENTITY_REFERENCE_NODE:
@@ -82,6 +88,11 @@ static Class WKDOMClass(WebCore::Node* impl)
     return nil;
 }
 
+static WKDOMNode *initWithImpl(WebCore::Node* impl)
+{
+    return [[WKDOMNodeClass(impl) alloc] _initWithImpl:impl];
+}
+
 WebCore::Node* toWebCoreNode(WKDOMNode *wrapper)
 {
     return wrapper ? wrapper->_impl.get() : 0;
@@ -89,14 +100,7 @@ WebCore::Node* toWebCoreNode(WKDOMNode *wrapper)
 
 WKDOMNode *toWKDOMNode(WebCore::Node* impl)
 {
-    if (!impl)
-        return nil;
-    if (WKDOMNode *wrapper = WKDOMNodeCache().get(impl))
-        return [[wrapper retain] autorelease];
-    WKDOMNode *wrapper = [[WKDOMClass(impl) alloc] _initWithImpl:impl];
-    if (!wrapper)
-        return nil;
-    return [wrapper autorelease];
+    return toWKDOMType<WebCore::Node*, WKDOMNode *>(impl, WKDOMNodeCache());
 }
 
 WebCore::Element* toWebCoreElement(WKDOMElement *wrapper)
@@ -119,21 +123,43 @@ WKDOMDocument *toWKDOMDocument(WebCore::Document* impl)
     return static_cast<WKDOMDocument*>(toWKDOMNode(static_cast<WebCore::Node*>(impl)));
 }
 
+WebCore::Text* toWebCoreText(WKDOMText *wrapper)
+{
+    return wrapper ? reinterpret_cast<WebCore::Text*>(wrapper->_impl.get()) : 0;
+}
+
+WKDOMText *toWKDOMText(WebCore::Text* impl)
+{
+    return static_cast<WKDOMText*>(toWKDOMNode(static_cast<WebCore::Node*>(impl)));
+}
+
 // -- Range. --
+
+static WKDOMRange *initWithImpl(WebCore::Range* impl)
+{
+    return [[WKDOMRange alloc] _initWithImpl:impl];
+}
 
 WebCore::Range* toWebCoreRange(WKDOMRange * wrapper)
 {
     return wrapper ? wrapper->_impl.get() : 0;
-
 }
 
 WKDOMRange *toWKDOMRange(WebCore::Range* impl)
 {
+    return toWKDOMType<WebCore::Range*, WKDOMRange *>(impl, WKDOMRangeCache());
+}
+
+// -- Helpers --
+
+template<typename WebCoreType, typename WKDOMType>
+static WKDOMType toWKDOMType(WebCoreType impl, DOMCache<WebCoreType, WKDOMType>& cache)
+{
     if (!impl)
         return nil;
-    if (WKDOMRange *wrapper = WKDOMRangeCache().get(impl))
+    if (WKDOMType wrapper = cache.get(impl))
         return [[wrapper retain] autorelease];
-    WKDOMRange *wrapper = [[WKDOMRange alloc] _initWithImpl:impl];
+    WKDOMType wrapper = initWithImpl(impl);
     if (!wrapper)
         return nil;
     return [wrapper autorelease];

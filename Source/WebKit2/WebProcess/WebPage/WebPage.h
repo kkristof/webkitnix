@@ -113,6 +113,7 @@ namespace WebCore {
     class Page;
     class PrintContext;
     class Range;
+    class ResourceResponse;
     class ResourceRequest;
     class SharedBuffer;
     class VisibleSelection;
@@ -318,6 +319,8 @@ public:
     void setPaginationBehavesLikeColumns(bool);
     void setPageLength(double);
     void setGapBetweenPages(double);
+
+    void postInjectedBundleMessage(const String& messageName, CoreIPC::ArgumentDecoder*);
 
     bool drawsBackground() const { return m_drawsBackground; }
     bool drawsTransparentBackground() const { return m_drawsTransparentBackground; }
@@ -579,6 +582,8 @@ public:
     uint64_t nativeWindowHandle() { return m_nativeWindowHandle; }
 #endif
 
+    bool shouldUseCustomRepresentationForResponse(const WebCore::ResourceResponse&) const;
+
     bool asynchronousPluginInitializationEnabled() const { return m_asynchronousPluginInitializationEnabled; }
     void setAsynchronousPluginInitializationEnabled(bool enabled) { m_asynchronousPluginInitializationEnabled = enabled; }
     bool asynchronousPluginInitializationEnabledForAllPlugins() const { return m_asynchronousPluginInitializationEnabledForAllPlugins; }
@@ -590,6 +595,15 @@ public:
 
     bool scrollingPerformanceLoggingEnabled() const { return m_scrollingPerformanceLoggingEnabled; }
     void setScrollingPerformanceLoggingEnabled(bool);
+
+#if PLATFORM(MAC)
+    bool pdfPluginEnabled() const { return m_pdfPluginEnabled; }
+    void setPDFPluginEnabled(bool enabled) { m_pdfPluginEnabled = enabled; }
+#endif
+
+#if PLATFORM(MAC)
+    static HashSet<String, CaseFoldingHash> pdfAndPostScriptMIMETypes();
+#endif
 
 private:
     WebPage(uint64_t pageID, const WebPageCreationParameters&);
@@ -794,6 +808,8 @@ private:
     bool m_scrollingPerformanceLoggingEnabled;
 
 #if PLATFORM(MAC)
+    bool m_pdfPluginEnabled;
+
     // Whether the containing window is visible or not.
     bool m_windowIsVisible;
 
@@ -900,6 +916,8 @@ private:
 
     bool m_cachedMainFrameIsPinnedToLeftSide;
     bool m_cachedMainFrameIsPinnedToRightSide;
+    bool m_cachedMainFrameIsPinnedToTopSide;
+    bool m_cachedMainFrameIsPinnedToBottomSide;
     bool m_canShortCircuitHorizontalWheelEvents;
     unsigned m_numWheelEventHandlers;
 
@@ -921,6 +939,8 @@ private:
     WebCore::PageVisibilityState m_visibilityState;
 #endif
     WebInspectorClient* m_inspectorClient;
+
+    HashSet<String, CaseFoldingHash> m_mimeTypesWithCustomRepresentations;
 };
 
 } // namespace WebKit

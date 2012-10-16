@@ -153,7 +153,6 @@ SET(WebKit2_SOURCES
     Shared/StatisticsData.cpp
     Shared/SurfaceUpdateInfo.cpp
     Shared/UpdateInfo.cpp
-    Shared/UserContentContainer.cpp
     Shared/VisitedLinkTable.cpp
     Shared/WebBackForwardListItem.cpp
     Shared/WebBatteryStatus.cpp
@@ -497,6 +496,8 @@ SET(WebKit2_MESSAGES_IN_FILES
     PluginProcess/PluginControllerProxy.messages.in
     PluginProcess/PluginProcess.messages.in
     PluginProcess/WebProcessConnection.messages.in
+
+    Shared/WebConnection.messages.in
 
     Shared/Plugins/NPObjectMessageReceiver.messages.in
 

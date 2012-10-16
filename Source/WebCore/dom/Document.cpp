@@ -3923,6 +3923,19 @@ String Document::lastModified() const
     return String::format("%02d/%02d/%04d %02d:%02d:%02d", date.month() + 1, date.monthDay(), date.fullYear(), date.hour(), date.minute(), date.second());
 }
 
+static bool isValidNameNonASCII(const LChar* characters, unsigned length)
+{
+    if (!isValidNameStart(characters[0]))
+        return false;
+
+    for (unsigned i = 1; i < length; ++i) {
+        if (!isValidNamePart(characters[i]))
+            return false;
+    }
+
+    return true;
+}
+
 static bool isValidNameNonASCII(const UChar* characters, unsigned length)
 {
     unsigned i = 0;
@@ -3963,16 +3976,20 @@ bool Document::isValidName(const String& name)
     if (!length)
         return false;
 
-    const UChar* characters;
     if (name.is8Bit()) {
-        if (isValidNameASCII(name.characters8(), length))
-            return true;
-        characters = name.characters();
-    } else {
-        characters = name.characters16();
+        const LChar* characters = name.characters8();
+
         if (isValidNameASCII(characters, length))
             return true;
+
+        return isValidNameNonASCII(characters, length);
     }
+
+    const UChar* characters = name.characters16();
+
+    if (isValidNameASCII(characters, length))
+        return true;
+
     return isValidNameNonASCII(characters, length);
 }
 
@@ -5541,7 +5558,7 @@ void Document::loadEventDelayTimerFired(Timer<Document>*)
 }
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
-int Document::webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
 {
     if (!m_scriptedAnimationController) {
 #if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)
@@ -5559,18 +5576,18 @@ int Document::webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallba
     return m_scriptedAnimationController->registerCallback(callback);
 }
 
-void Document::webkitCancelAnimationFrame(int id)
+void Document::cancelAnimationFrame(int id)
 {
     if (!m_scriptedAnimationController)
         return;
     m_scriptedAnimationController->cancelCallback(id);
 }
 
-void Document::serviceScriptedAnimations(DOMTimeStamp time)
+void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
     if (!m_scriptedAnimationController)
         return;
-    m_scriptedAnimationController->serviceScriptedAnimations(time);
+    m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 #endif
 

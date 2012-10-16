@@ -1,3 +1,184 @@
+2012-10-15  Peter Beverloo  <peter@chromium.org>
+
+        [Chromium] Enable FAST_MOBILE_SCROLLING for Android
+        https://bugs.webkit.org/show_bug.cgi?id=99401
+
+        Reviewed by Adam Barth.
+
+        * features.gypi: Add the define to the Android-only section.
+
+2012-10-15  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-10-15  Peter Beverloo  <peter@chromium.org>
+
+        [Chromium] The default target for Android builds should be "all" instead of "All"
+        https://bugs.webkit.org/show_bug.cgi?id=98879
+
+        Reviewed by Adam Barth.
+
+        The default gyp target for Android builds is being overridden in Chromium's
+        envsetup_functions.sh to "All" (whereas the rest of Chromium and WebKit use "all"),
+        because Android wants to use a different list of main targets. There is
+        no need to do this for the WebKit project, and it's breaking ninja.
+
+        * gyp_webkit:
+
+2012-10-15  Kent Tamura  <tkent@chromium.org>
+
+        LocaleMacTest.formatDate is failing on Mac 10.8
+        https://bugs.webkit.org/show_bug.cgi?id=99330
+
+        It seems OS X 10.8 and 10.7 return different date formats for ja_JP
+        locale. We should not test such locales.
+
+        * tests/LocaleMacTest.cpp:
+        (TEST_F): Remove a test for ja_JP locale.
+
+2012-10-15  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Pass type of error causing abort to IDBTransaction::onAbort
+        https://bugs.webkit.org/show_bug.cgi?id=99097
+
+        Reviewed by Tony Chang.
+
+        Plumbing to pass details about the cause of the transaction abort through to the
+        front end.
+
+        * public/WebIDBTransactionCallbacks.h:
+        (WebKit):
+        (WebKit::WebIDBTransactionCallbacks::onAbort):
+        * src/IDBTransactionCallbacksProxy.cpp:
+        (WebKit::IDBTransactionCallbacksProxy::onAbort):
+        * src/IDBTransactionCallbacksProxy.h:
+        (IDBTransactionCallbacksProxy):
+        * src/WebIDBTransactionCallbacksImpl.cpp:
+        (WebKit::WebIDBTransactionCallbacksImpl::onAbort):
+        * src/WebIDBTransactionCallbacksImpl.h:
+        (WebIDBTransactionCallbacksImpl):
+
+2012-10-15  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-10-14  Sam Weinig  <sam@webkit.org>
+
+        Make UserScript and UserStyleSheet value objects that are copyable
+        https://bugs.webkit.org/show_bug.cgi?id=99275
+
+        Reviewed by Tim Horton.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebView::addUserScript):
+        (WebKit::WebView::addUserStyleSheet):
+        Update for new PageGroup function signatures.
+
+2012-10-12  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Remove used frameForEnteredContext API
+        https://bugs.webkit.org/show_bug.cgi?id=99201
+
+        Reviewed by Eric Seidel.
+
+        No one in Chromium-land understands the difference between
+        frameForEnteredContext and frameForCurrentContext. Rather than give
+        folks a confusing choice, let's just expose the one we most often want
+        to use.
+
+        I've already removed all callers of frameForEnteredContext downstream.
+
+        * public/WebFrame.h:
+        * src/WebFrameImpl.cpp:
+        (WebKit):
+
+2012-10-12  Joshua Bell  <jsbell@chromium.org>
+
+        [Chromium] IndexedDB: WebKit API plumbing to pass abort reason code/message to script
+        https://bugs.webkit.org/show_bug.cgi?id=99193
+
+        Reviewed by Adam Barth.
+
+        Add database error (code, message) to payload for back-end to front-end abort call,
+        so that scripts can determine why the abort occurred - e.g. ConstraintError during
+        indexing. This API change allows the Chromium plumbing to land; the real implementation
+        is in http://webkit.org/b/99097 and will land later.
+
+        * public/WebIDBTransactionCallbacks.h:
+        (WebKit):
+        (WebIDBTransactionCallbacks):
+        (WebKit::WebIDBTransactionCallbacks::onAbort):
+
+2012-10-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-10-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-10-11  Kenichi Ishibashi  <bashi@chromium.org>
+
+        [Chromium] Use harfbuzz-ng by default on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=97281
+
+        Reviewed by Tony Chang.
+
+        * features.gypi: Enable WTF_USE_HARFBUZZ_NG when use_x11 == 1.
+
+2012-10-11  Nat Duca  <nduca@chromium.org>
+
+        Expose high-resolution on requestAnimationFrame callback
+        https://bugs.webkit.org/show_bug.cgi?id=66683
+
+        This changes requestAnimationFrame's animationStartTime argument
+        to be a high resolution DOM timestamp, per disucssion here:
+        http://lists.w3.org/Archives/Public/public-web-perf/2012Apr/0004.html
+
+        Reviewed by James Robinson.
+
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::animate):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::updateAnimations):
+
+2012-10-11  Jay Civelli  <jcivelli@chromium.org>
+
+        Test for a fix for a crasher when generating MHTML for a page containing SVG images.
+        https://bugs.webkit.org/show_bug.cgi?id=99105
+
+        Reviewed by Adam Barth.
+
+        * page/PageSerializer.cpp:
+        (WebCore::PageSerializer::serializeCSSStyleSheet):
+        (WebCore::PageSerializer::addImageToResources):
+
+2012-10-11  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Improve the comment describing mainWorldScriptContext
+        https://bugs.webkit.org/show_bug.cgi?id=99092
+
+        Reviewed by James Robinson.
+
+        * public/WebFrame.h:
+        (WebFrame):
+            - Add some more text about what this API does so that folks who
+              call it know what they need to worry about.
+
+2012-10-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
 2012-10-11  Mihai Balan  <mibalan@adobe.com>
 
         Always enable the experiments tab for WebKit nightly

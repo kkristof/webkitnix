@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011, 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
 
 #include "DownloadProxy.h"
 #include "ImmutableArray.h"
-#include "InjectedBundleMessageKinds.h"
 #include "Logging.h"
 #include "MutableDictionary.h"
 #include "SandboxExtension.h"
@@ -126,8 +125,14 @@ WebContext::WebContext(ProcessModel processModel, const String& injectedBundlePa
     , m_initialHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicyAlways)
 #endif
     , m_processTerminationEnabled(true)
+#if ENABLE(NETWORK_PROCESS)
+    , m_usesNetworkProcess(false)
+#endif
 {
-    
+    addMessageReceiver(CoreIPC::MessageClassWebContext, this);
+    addMessageReceiver(CoreIPC::MessageClassDownloadProxy, this);
+    addMessageReceiver(CoreIPC::MessageClassWebContextLegacy, this);
+
     // NOTE: These sub-objects must be initialized after m_messageReceiverMap..
     m_applicationCacheManagerProxy = WebApplicationCacheManagerProxy::create(this);
 #if ENABLE(BATTERY_STATUS)
@@ -178,7 +183,7 @@ WebContext::~WebContext()
 
     removeLanguageChangeObserver(this);
 
-    m_messageReceiverMap.clearAllMessageReceivers();
+    m_messageReceiverMap.invalidate();
 
     m_applicationCacheManagerProxy->invalidate();
     m_applicationCacheManagerProxy->clearContext();
@@ -308,6 +313,15 @@ void WebContext::textCheckerStateChanged()
     sendToAllProcesses(Messages::WebProcess::SetTextCheckerState(TextChecker::state()));
 }
 
+void WebContext::setUsesNetworkProcess(bool usesNetworkProcess)
+{
+#if ENABLE(NETWORK_PROCESS)
+    m_usesNetworkProcess = usesNetworkProcess;
+#else
+    UNUSED_PARAM(usesNetworkProcess);
+#endif
+}
+
 void WebContext::ensureSharedWebProcess()
 {
     if (m_processes.isEmpty())
@@ -316,6 +330,11 @@ void WebContext::ensureSharedWebProcess()
 
 PassRefPtr<WebProcessProxy> WebContext::createNewWebProcess()
 {
+#if ENABLE(NETWORK_PROCESS)
+    if (m_usesNetworkProcess)
+        ensureNetworkProcess();
+#endif
+
     RefPtr<WebProcessProxy> process = WebProcessProxy::create(this);
 
     WebProcessCreationParameters parameters;
@@ -335,6 +354,14 @@ PassRefPtr<WebProcessProxy> WebContext::createNewWebProcess()
     parameters.localStorageDirectory = localStorageDirectory();
     if (!parameters.localStorageDirectory.isEmpty())
         SandboxExtension::createHandleForReadWriteDirectory(parameters.localStorageDirectory, parameters.localStorageDirectoryExtensionHandle);
+
+    parameters.diskCacheDirectory = diskCacheDirectory();
+    if (!parameters.diskCacheDirectory.isEmpty())
+        SandboxExtension::createHandle(parameters.diskCacheDirectory, SandboxExtension::ReadWrite, parameters.diskCacheDirectoryExtensionHandle);
+
+    parameters.cookieStorageDirectory = cookieStorageDirectory();
+    if (!parameters.cookieStorageDirectory.isEmpty())
+        SandboxExtension::createHandle(parameters.cookieStorageDirectory, SandboxExtension::ReadWrite, parameters.cookieStorageDirectoryExtensionHandle);
 
     parameters.shouldTrackVisitedLinks = m_historyClient.shouldTrackVisitedLinks();
     parameters.cacheModel = m_cacheModel;
@@ -378,7 +405,12 @@ PassRefPtr<WebProcessProxy> WebContext::createNewWebProcess()
     if (m_processModel == ProcessModelSharedSecondaryProcess) {
         for (size_t i = 0; i != m_messagesToInjectedBundlePostedToEmptyContext.size(); ++i) {
             pair<String, RefPtr<APIObject> >& message = m_messagesToInjectedBundlePostedToEmptyContext[i];
-            process->deprecatedSend(InjectedBundleMessage::PostMessage, 0, CoreIPC::In(message.first, WebContextUserMessageEncoder(message.second.get())));
+
+            OwnPtr<CoreIPC::ArgumentEncoder> messageData = CoreIPC::ArgumentEncoder::create(0);
+
+            messageData->encode(message.first);
+            messageData->encode(WebContextUserMessageEncoder(message.second.get()));
+            process->send(Messages::WebProcess::PostInjectedBundleMessage(CoreIPC::DataReference(messageData->buffer(), messageData->bufferSize())), 0);
         }
         m_messagesToInjectedBundlePostedToEmptyContext.clear();
     } else
@@ -398,6 +430,16 @@ void WebContext::warmInitialProcess()
     createNewWebProcess();
     m_haveInitialEmptyProcess = true;
 }
+
+#if ENABLE(NETWORK_PROCESS)
+void WebContext::ensureNetworkProcess()
+{
+    if (m_networkProcess)
+        return;
+
+    m_networkProcess = NetworkProcessProxy::create();
+}
+#endif
 
 void WebContext::enableProcessTermination()
 {
@@ -588,10 +630,12 @@ void WebContext::postMessageToInjectedBundle(const String& messageName, APIObjec
 
     // FIXME: Return early if the message body contains any references to WKPageRefs/WKFrameRefs etc. since they're local to a process.
 
+    OwnPtr<CoreIPC::ArgumentEncoder> messageData = CoreIPC::ArgumentEncoder::create(0);
+    messageData->encode(messageName);
+    messageData->encode(WebContextUserMessageEncoder(messageBody));
+
     for (size_t i = 0; i < m_processes.size(); ++i) {
-        // FIXME: We should consider returning false from this function if the messageBody cannot be encoded.
-        // FIXME: Can we encode the message body outside the loop for all the processes?
-        m_processes[i]->deprecatedSend(InjectedBundleMessage::PostMessage, 0, CoreIPC::In(messageName, WebContextUserMessageEncoder(messageBody)));
+        m_processes[i]->send(Messages::WebProcess::PostInjectedBundleMessage(CoreIPC::DataReference(messageData->buffer(), messageData->bufferSize())), 0);
     }
 }
 
@@ -738,29 +782,26 @@ void WebContext::addMessageReceiver(CoreIPC::MessageClass messageClass, CoreIPC:
     m_messageReceiverMap.addMessageReceiver(messageClass, messageReceiver);
 }
 
-bool WebContext::knowsHowToHandleMessage(CoreIPC::MessageID messageID) const
+bool WebContext::dispatchMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* argumentDecoder)
 {
-    if (m_messageReceiverMap.knowsHowToHandleMessage(messageID))
-        return true;
-
-    return messageID.is<CoreIPC::MessageClassWebContext>()
-        || messageID.is<CoreIPC::MessageClassWebContextLegacy>()
-        || messageID.is<CoreIPC::MessageClassDownloadProxy>();
+    return m_messageReceiverMap.dispatchMessage(connection, messageID, argumentDecoder);
 }
 
-void WebContext::didReceiveMessage(WebProcessProxy* process, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments)
+bool WebContext::dispatchSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* argumentDecoder, OwnPtr<CoreIPC::ArgumentEncoder>& reply)
 {
-    if (m_messageReceiverMap.dispatchMessage(process->connection(), messageID, arguments))
-        return;
+    return m_messageReceiverMap.dispatchSyncMessage(connection, messageID, argumentDecoder, reply);
+}
 
+void WebContext::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments)
+{
     if (messageID.is<CoreIPC::MessageClassWebContext>()) {
-        didReceiveWebContextMessage(process->connection(), messageID, arguments);
+        didReceiveWebContextMessage(connection, messageID, arguments);
         return;
     }
 
     if (messageID.is<CoreIPC::MessageClassDownloadProxy>()) {
         if (DownloadProxy* downloadProxy = m_downloads.get(arguments->destinationID()).get())
-            downloadProxy->didReceiveDownloadProxyMessage(process->connection(), messageID, arguments);
+            downloadProxy->didReceiveDownloadProxyMessage(connection, messageID, arguments);
         
         return;
     }
@@ -769,7 +810,7 @@ void WebContext::didReceiveMessage(WebProcessProxy* process, CoreIPC::MessageID 
         case WebContextLegacyMessage::PostMessage: {
             String messageName;
             RefPtr<APIObject> messageBody;
-            WebContextUserMessageDecoder messageDecoder(messageBody, process);
+            WebContextUserMessageDecoder messageDecoder(messageBody, WebProcessProxy::fromConnection(connection));
             if (!arguments->decode(CoreIPC::Out(messageName, messageDecoder)))
                 return;
 
@@ -783,19 +824,16 @@ void WebContext::didReceiveMessage(WebProcessProxy* process, CoreIPC::MessageID 
     ASSERT_NOT_REACHED();
 }
 
-void WebContext::didReceiveSyncMessage(WebProcessProxy* process, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments, OwnPtr<CoreIPC::ArgumentEncoder>& reply)
+void WebContext::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments, OwnPtr<CoreIPC::ArgumentEncoder>& reply)
 {
-    if (m_messageReceiverMap.dispatchSyncMessage(process->connection(), messageID, arguments, reply))
-        return;
-
     if (messageID.is<CoreIPC::MessageClassWebContext>()) {
-        didReceiveSyncWebContextMessage(process->connection(), messageID, arguments, reply);
+        didReceiveSyncWebContextMessage(connection, messageID, arguments, reply);
         return;
     }
 
     if (messageID.is<CoreIPC::MessageClassDownloadProxy>()) {
         if (DownloadProxy* downloadProxy = m_downloads.get(arguments->destinationID()).get())
-            downloadProxy->didReceiveSyncDownloadProxyMessage(process->connection(), messageID, arguments, reply);
+            downloadProxy->didReceiveSyncDownloadProxyMessage(connection, messageID, arguments, reply);
         return;
     }
 
@@ -805,7 +843,7 @@ void WebContext::didReceiveSyncMessage(WebProcessProxy* process, CoreIPC::Messag
 
             String messageName;
             RefPtr<APIObject> messageBody;
-            WebContextUserMessageDecoder messageDecoder(messageBody, process);
+            WebContextUserMessageDecoder messageDecoder(messageBody, WebProcessProxy::fromConnection(connection));
             if (!arguments->decode(CoreIPC::Out(messageName, messageDecoder)))
                 return;
 
@@ -885,6 +923,22 @@ String WebContext::localStorageDirectory() const
         return m_overrideLocalStorageDirectory;
 
     return platformDefaultLocalStorageDirectory();
+}
+
+String WebContext::diskCacheDirectory() const
+{
+    if (!m_overrideDiskCacheDirectory.isEmpty())
+        return m_overrideDiskCacheDirectory;
+
+    return platformDefaultDiskCacheDirectory();
+}
+
+String WebContext::cookieStorageDirectory() const
+{
+    if (!m_overrideCookieStorageDirectory.isEmpty())
+        return m_overrideCookieStorageDirectory;
+
+    return platformDefaultCookieStorageDirectory();
 }
 
 void WebContext::setHTTPPipeliningEnabled(bool enabled)

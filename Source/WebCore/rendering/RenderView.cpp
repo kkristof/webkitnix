@@ -65,6 +65,7 @@ RenderView::RenderView(Node* node, FrameView* view)
     , m_layoutStateDisableCount(0)
     , m_renderQuoteHead(0)
     , m_renderCounterCount(0)
+    , m_layoutPhase(RenderViewNormalLayout)
 {
     // Clear our anonymous bit, set because RenderObject assumes
     // any renderer with document as the node is anonymous.
@@ -100,10 +101,9 @@ bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     return inside;
 }
 
-void RenderView::updateLogicalHeight()
+void RenderView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const
 {
-    if (!shouldUsePrintingLayout() && m_frameView)
-        setLogicalHeight(viewLogicalHeight());
+    computedValues.m_extent = (!shouldUsePrintingLayout() && m_frameView) ? LayoutUnit(viewLogicalHeight()) : logicalHeight;
 }
 
 void RenderView::updateLogicalWidth()
@@ -132,6 +132,28 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
     return child->isBox();
 }
 
+void RenderView::layoutContent(const LayoutState& state)
+{
+    UNUSED_PARAM(state);
+    ASSERT(needsLayout());
+
+    RenderBlock::layout();
+    if (hasRenderNamedFlowThreads())
+        flowThreadController()->layoutRenderNamedFlowThreads();
+#ifndef NDEBUG
+    checkLayoutState(state);
+#endif
+}
+
+#ifndef NDEBUG
+void RenderView::checkLayoutState(const LayoutState& state)
+{
+    ASSERT(layoutDelta() == LayoutSize());
+    ASSERT(!m_layoutStateDisableCount);
+    ASSERT(m_layoutState == &state);
+}
+#endif
+
 void RenderView::layout()
 {
     if (!document()->paginated())
@@ -154,6 +176,9 @@ void RenderView::layout()
     }
 
     ASSERT(!m_layoutState);
+    if (!needsLayout())
+        return;
+
     LayoutState state;
     // FIXME: May be better to push a clip and avoid issuing offscreen repaints.
     state.m_clipped = false;
@@ -163,20 +188,28 @@ void RenderView::layout()
     m_pageLogicalHeightChanged = false;
     m_layoutState = &state;
 
-    if (needsLayout()) {
-        RenderBlock::layout();
-        if (hasRenderNamedFlowThreads())
-            flowThreadController()->layoutRenderNamedFlowThreads();
+    m_layoutPhase = RenderViewNormalLayout;
+    bool needsTwoPassLayoutForAutoLogicalHeightRegions = hasRenderNamedFlowThreads() && flowThreadController()->hasAutoLogicalHeightRegions();
+
+    if (needsTwoPassLayoutForAutoLogicalHeightRegions)
+        flowThreadController()->resetRegionsOverrideLogicalContentHeight();
+
+    layoutContent(state);
+
+    if (needsTwoPassLayoutForAutoLogicalHeightRegions) {
+        m_layoutPhase = ConstrainedFlowThreadsLayoutInAutoLogicalHeightRegions;
+        flowThreadController()->markAutoLogicalHeightRegionsForLayout();
+        layoutContent(state);
     }
 
-    ASSERT(layoutDelta() == LayoutSize());
-    ASSERT(m_layoutStateDisableCount == 0);
-    ASSERT(m_layoutState == &state);
+#ifndef NDEBUG
+    checkLayoutState(state);
+#endif
     m_layoutState = 0;
     setNeedsLayout(false);
 }
 
-void RenderView::mapLocalToContainer(RenderLayerModelObject* repaintContainer, TransformState& transformState, MapLocalToContainerFlags mode, bool* wasFixed) const
+void RenderView::mapLocalToContainer(RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     // If a container was specified, and was not 0 or the RenderView,
     // then we should have found it by now.
@@ -214,12 +247,12 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
     return 0;
 }
 
-void RenderView::mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, TransformState& transformState) const
+void RenderView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
-    if (fixed && m_frameView)
+    if (mode & IsFixed && m_frameView)
         transformState.move(m_frameView->scrollOffsetForFixedPosition());
 
-    if (useTransforms && shouldUseTransformFromContainer(0)) {
+    if (mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
         getTransformFromContainer(0, LayoutSize(), t);
         transformState.applyTransform(t);
@@ -472,7 +505,7 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
         // RenderSelectionInfo::rect() is in the coordinates of the repaintContainer, so map to page coordinates.
         LayoutRect currRect = info->rect();
         if (RenderLayerModelObject* repaintContainer = info->repaintContainer()) {
-            FloatQuad absQuad = repaintContainer->localToAbsoluteQuad(FloatRect(currRect));
+            FloatQuad absQuad = repaintContainer->localToAbsoluteQuad(FloatRect(currRect), SnapOffsetForTransforms);
             currRect = absQuad.enclosingBoundingBox(); 
         }
         selRect.unite(currRect);

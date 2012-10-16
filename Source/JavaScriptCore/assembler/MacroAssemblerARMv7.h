@@ -1688,7 +1688,7 @@ public:
     PatchableJump patchableBranchPtr(RelationalCondition cond, Address left, TrustedImmPtr right = TrustedImmPtr(0))
     {
         m_makeJumpPatchable = true;
-        Jump result = branchPtr(cond, left, right);
+        Jump result = branch32(cond, left, TrustedImm32(right));
         m_makeJumpPatchable = false;
         return PatchableJump(result);
     }
@@ -1697,6 +1697,14 @@ public:
     {
         m_makeJumpPatchable = true;
         Jump result = branchTest32(cond, reg, mask);
+        m_makeJumpPatchable = false;
+        return PatchableJump(result);
+    }
+
+    PatchableJump patchableBranch32(RelationalCondition cond, RegisterID reg, TrustedImm32 imm)
+    {
+        m_makeJumpPatchable = true;
+        Jump result = branch32(cond, reg, imm);
         m_makeJumpPatchable = false;
         return PatchableJump(result);
     }

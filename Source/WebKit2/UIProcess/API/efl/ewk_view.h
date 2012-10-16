@@ -43,6 +43,7 @@
  *   when done to continue with the form submission. If the last reference is removed on a
  *   #Ewk_Form_Submission_Request and the form has not been submitted yet,
  *   ewk_form_submission_request_submit() will be called automatically.
+ * - "icon,changed", void: reports that the view's favicon has changed.
  * - "intent,request,new", Ewk_Intent*: reports new Web intent request.
  * - "intent,service,register", Ewk_Intent_Service*: reports new Web intent service registration.
  * - "load,error", const Ewk_Error*: reports main frame load failed.
@@ -64,6 +65,8 @@
  * - "resource,request,sent", const Ewk_Resource_Request*: a resource request was sent.
  * - "text,found", unsigned int*: the requested text was found and it gives the number of matches.
  * - "title,changed", const char*: title of the main frame was changed.
+ * - "tooltip,text,set", const char*: tooltip was set.
+ * - "tooltip,text,unset", void: tooltip was unset.
  * - "url,changed", const char*: url of the main frame was changed.
  * - "webprocess,crashed", Eina_Bool*: expects a @c EINA_TRUE if web process crash is handled; @c EINA_FALSE, otherwise.
  */
@@ -355,6 +358,18 @@ EAPI Eina_Bool ewk_view_url_set(Evas_Object *o, const char *url);
  * @return current URL on success or @c NULL on failure
  */
 EAPI const char *ewk_view_url_get(const Evas_Object *o);
+
+/**
+ * Returns the current icon URL of view object.
+ *
+ * It returns an internal string and should not
+ * be modified. The string is guaranteed to be stringshared.
+ *
+ * @param o view object to get current icon URL
+ *
+ * @return current icon URL on success or @c NULL if unavailable or on failure
+ */
+EAPI const char *ewk_view_icon_url_get(const Evas_Object *o);
 
 /**
  * Asks the main frame to reload the current document.
@@ -757,6 +772,26 @@ EAPI Eina_Bool ewk_view_touch_events_enabled_set(Evas_Object *o, Eina_Bool enabl
  * @return @c EINA_TRUE if the touch events are enabled or @c EINA_FALSE otherwise
  */
 EAPI Eina_Bool ewk_view_touch_events_enabled_get(const Evas_Object *o);
+
+/**
+ * Show the inspector to debug a web page.
+ *
+ * @param o The view to show the inspector.
+ *
+ * @return @c EINA_TRUE on success or @c EINA_FALSE on failure
+ *
+ * @see ewk_settings_developer_extras_enabled_set()
+ */
+EAPI Eina_Bool ewk_view_inspector_show(Evas_Object *o);
+
+/**
+ * Close the inspector
+ *
+ * @param o The view to close the inspector.
+ *
+ * @return @c EINA_TRUE on success or @c EINA_FALSE on failure
+ */
+EAPI Eina_Bool ewk_view_inspector_close(Evas_Object *o);
 
 #ifdef __cplusplus
 }

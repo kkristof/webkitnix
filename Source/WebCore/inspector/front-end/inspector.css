@@ -481,6 +481,10 @@ body.platform-mac .toolbar-item.close-right {
     display: none;
 }
 
+body.remote .toolbar-item.close-left, body.remote .toolbar-item.close-right {
+    display: none;
+}
+
 body:not(.platform-mac) .toolbar-item.close-left {
     display: none;
 }
@@ -751,8 +755,9 @@ button.status-bar-item.settings-status-bar-item:active {
     -webkit-mask-position: -160px -24px;
 }
 
-body.port-qt #dock-status-bar-item {
-    display: none
+body.remote .dock-status-bar-item,
+body.port-qt .dock-status-bar-item {
+    display: none;
 }
 
 .console-status-bar-item .glyph {
@@ -1020,6 +1025,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     color: rgb(15%, 15%, 15%);
 }
 
+ol.watch-expressions > li.hovered,
 .console-message:hover { 
     background-color: #F0F0F0;
 }
@@ -1370,7 +1376,6 @@ iframe.panel.extension {
     float: right;
     font-size: 10px;
     margin-left: 5px;
-    max-width: 55%;
     color: rgba(0, 0, 0, 0.7);
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1578,10 +1583,21 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 
 .properties-tree.watch-expressions {
     padding-bottom: 8px;
+    padding-left: 4px !important;
 }
 
-.properties-tree.watch-expressions li {
+.properties-tree.watch-expressions > li {
     padding-top: 2px;
+    padding-left: 4px;
+}
+
+.properties-tree.watch-expressions > li:not(.parent) {
+    margin-left: 1px;
+    padding-left: 15px;
+}
+
+.properties-tree.watch-expressions > li.hovered {
+    padding-right: 14px;
 }
 
 .watch-expressions > li.editing-sub-part .text-prompt {
@@ -1612,8 +1628,7 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
     background-repeat: no-repeat;
     border: 0 none transparent;
     position: absolute;
-    margin-left: -25px;
-    margin-top: 2px;
+    right: 8px;
     display: none;
 }
 

@@ -407,13 +407,14 @@ ALWAYS_INLINE bool JIT::isOperandConstantImmediateChar(unsigned src)
 
 template <typename ClassType, MarkedBlock::DestructorType destructorType, typename StructureType> inline void JIT::emitAllocateBasicJSObject(StructureType structure, RegisterID result, RegisterID storagePtr)
 {
+    size_t size = ClassType::allocationSize(INLINE_STORAGE_CAPACITY);
     MarkedAllocator* allocator = 0;
     if (destructorType == MarkedBlock::Normal)
-        allocator = &m_globalData->heap.allocatorForObjectWithNormalDestructor(sizeof(ClassType));
+        allocator = &m_globalData->heap.allocatorForObjectWithNormalDestructor(size);
     else if (destructorType == MarkedBlock::ImmortalStructure)
-        allocator = &m_globalData->heap.allocatorForObjectWithImmortalStructureDestructor(sizeof(ClassType));
+        allocator = &m_globalData->heap.allocatorForObjectWithImmortalStructureDestructor(size);
     else
-        allocator = &m_globalData->heap.allocatorForObjectWithoutDestructor(sizeof(ClassType));
+        allocator = &m_globalData->heap.allocatorForObjectWithoutDestructor(size);
     loadPtr(&allocator->m_freeList.head, result);
     addSlowCase(branchTestPtr(Zero, result));
 
@@ -451,7 +452,9 @@ inline void JIT::emitAllocateJSArray(unsigned valuesRegister, unsigned length, R
     size_t initialStorage = Butterfly::totalSize(0, 0, true, initialLength * sizeof(EncodedJSValue));
 
     loadPtr(m_codeBlock->globalObject()->addressOfArrayStructure(), scratch);
-    addSlowCase(branchTest8(Zero, Address(scratch, Structure::indexingTypeOffset()), TrustedImm32(HasContiguous)));
+    load8(Address(scratch, Structure::indexingTypeOffset()), storagePtr);
+    and32(TrustedImm32(IndexingShapeMask), storagePtr);
+    addSlowCase(branch32(NotEqual, storagePtr, TrustedImm32(ContiguousShape)));
 
     // We allocate the backing store first to ensure that garbage collection 
     // doesn't happen during JSArray initialization.
@@ -580,7 +583,7 @@ static inline bool arrayProfileSaw(ArrayProfile* profile, IndexingType capabilit
 
 inline JITArrayMode JIT::chooseArrayMode(ArrayProfile* profile)
 {
-    if (arrayProfileSaw(profile, HasArrayStorage))
+    if (arrayProfileSaw(profile, ArrayStorageShape))
         return JITArrayStorage;
     return JITContiguous;
 }

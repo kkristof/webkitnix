@@ -37,7 +37,6 @@ enum MessageClass {
     // Messages sent by the UI process to the web process.
     MessageClassAuthenticationManager,
     MessageClassDrawingArea,
-    MessageClassInjectedBundle,
     MessageClassLayerTreeCoordinator,
     MessageClassWebApplicationCacheManager,
     MessageClassWebBatteryManagerProxy,
@@ -66,6 +65,7 @@ enum MessageClass {
     MessageClassLayerTreeCoordinatorProxy,
     MessageClassWebApplicationCacheManagerProxy,
     MessageClassWebBatteryManager,
+    MessageClassWebConnection,
     MessageClassWebContext,
     MessageClassWebContextLegacy,
     MessageClassWebCookieManagerProxy,
@@ -105,6 +105,15 @@ enum MessageClass {
 
     // NPObject messages sent by both the plug-in process and the web process.
     MessageClassNPObjectMessageReceiver,
+
+    // Messages sent by the UI process to the network process.
+    MessageClassNetworkProcess,
+
+    // Messages sent by the UI process to the shared worker process.
+    MessageClassSharedWorkerProcess,
+
+    // Messages sent by the shared worker process to the UI process.
+    MessageClassSharedWorkerProcessProxy,
 };
 
 template<typename> struct MessageKindTraits { };

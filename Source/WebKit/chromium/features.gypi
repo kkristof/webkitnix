@@ -140,7 +140,6 @@
       'enable_touch_events%': 1,
       'enable_touch_icon_loading%' : 0,
       'enable_mutation_observers%': 1,
-      'use_harfbuzz_ng%': 0,
     },
     'use_accelerated_compositing%': '<(use_accelerated_compositing)',
     'enable_skia_text%': '<(enable_skia_text)',
@@ -152,6 +151,7 @@
           'ENABLE_ACCELERATED_OVERFLOW_SCROLLING=1',
           'ENABLE_CALENDAR_PICKER=0',
           'ENABLE_DATALIST_ELEMENT=0',
+          'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_INPUT_TYPE_COLOR=0',
           'ENABLE_JAVASCRIPT_I18N_API=0',
@@ -223,7 +223,7 @@
           'WTF_USE_SKIA_ON_MAC_CHROMIUM=1',
         ],
       }],
-      ['use_harfbuzz_ng==1', {
+      ['use_x11==1', {
         'feature_defines': [
           'WTF_USE_HARFBUZZ_NG=1',
         ],
