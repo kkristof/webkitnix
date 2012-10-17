@@ -121,11 +121,12 @@ public:
     virtual int visibleContentWidth() const { return m_size.width() / m_scale; }
     virtual int visibleContentHeight() const { return m_size.height() / m_scale; }
 
-
     virtual void setOpacity(double opacity) { m_opacity = opacity < 0.0 ? 0.0 : opacity > 1.0 ? 1.0 : opacity; }
     virtual double opacity() const { return m_opacity; }
 
     virtual void paintToCurrentGLContext();
+
+    virtual void commitViewportChanges();
 
     virtual WKPageRef pageRef();
 
@@ -218,12 +219,15 @@ private:
     void sendTouchEvent(const Nix::TouchEvent& event);
     void sendGestureEvent(const Nix::GestureEvent& event);
 
+    FloatRect visibleRect() const;
+
     WebViewClient* m_client;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
     bool m_focused;
     bool m_visible;
     bool m_active;
     IntSize m_size;
+    IntSize m_contentsSize;
     IntPoint m_lastCursorPosition;
     IntPoint m_scrollPosition;
     double m_scale;
@@ -264,8 +268,11 @@ bool WebViewImpl::drawBackground() const
 
 void WebViewImpl::setScale(double scale)
 {
+    if (m_scale == scale)
+        return;
+
     m_scale = scale;
-    setSize(m_size.width(), m_size.height());
+    commitViewportChanges();
 }
 
 int WebViewImpl::width() const
@@ -280,32 +287,28 @@ int WebViewImpl::height() const
 
 void WebViewImpl::setSize(int width, int height)
 {
-    m_size = IntSize(width, height);
+    IntSize newSize(width, height);
 
-    IntSize visibleSize = IntSize(visibleContentWidth(), visibleContentHeight());
-
-    if (m_webPageProxy->useFixedLayout())
-        m_webPageProxy->setViewportSize(visibleSize);
-
-    DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
-    if (!drawingArea)
+    if (m_size == newSize)
         return;
 
-    drawingArea->setSize(visibleSize, IntSize());
-    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, visibleSize), m_scale, FloatPoint());
+    m_size = newSize;
+    commitViewportChanges();
 }
 
 void WebViewImpl::setScrollPosition(int x, int y)
 {
     if (m_scrollPosition.x() == x && m_scrollPosition.y() == y)
         return;
+
+    FloatPoint trajectoryVector(x - m_scrollPosition.x(), y - m_scrollPosition.y());
     m_scrollPosition = IntPoint(x, y);
 
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
         return;
 
-    drawingArea->setVisibleContentsRect(IntRect(m_scrollPosition, IntSize(visibleContentWidth(), visibleContentHeight())), m_scale, FloatPoint());
+    drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
 }
 
 bool WebViewImpl::isFocused() const
@@ -420,6 +423,14 @@ LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
     return renderer;
 }
 
+FloatRect WebViewImpl::visibleRect() const
+{
+    FloatRect viewport(m_scrollPosition, FloatSize(visibleContentWidth(), visibleContentHeight()));
+    FloatRect visibleRect(0, 0, m_contentsSize.width(), m_contentsSize.height()) ;
+    visibleRect.intersect(viewport);
+    return visibleRect;
+}
+
 void WebViewImpl::paintToCurrentGLContext()
 {
     LayerTreeRenderer* renderer = layerTreeRenderer();
@@ -436,18 +447,36 @@ void WebViewImpl::paintToCurrentGLContext()
     cairo_matrix_transform_point(&viewTransform, &x, &y);
     cairo_matrix_transform_distance(&viewTransform, &width, &height);
 
-    cairo_matrix_t scrollTransform;
-    cairo_matrix_init_translate(&scrollTransform, -m_scrollPosition.x(), -m_scrollPosition.y());
-
+    // FIXME: We can create or own matrix ready and avoid some matrix multiplications
     cairo_matrix_t scaleTransform;
     cairo_matrix_init_scale(&scaleTransform, m_scale, m_scale);
 
     cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &scrollTransform, &scaleTransform);
-    cairo_matrix_multiply(&transform, &transform, &viewTransform);
+    cairo_matrix_multiply(&transform, &viewTransform, &scaleTransform);
+
+    if (m_webPageProxy->useFixedLayout()) {
+        cairo_matrix_t scrollTransform;
+        cairo_matrix_init_translate(&scrollTransform, -m_scrollPosition.x() * m_scale, -m_scrollPosition.y() * m_scale);
+        cairo_matrix_multiply(&transform, &transform, &scrollTransform);
+    }
 
     FloatRect rect(x, y, width, height);
     renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
+}
+
+void WebViewImpl::commitViewportChanges()
+{
+    DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
+
+    if (!drawingArea)
+        return;
+    if (m_webPageProxy->useFixedLayout()) {
+        m_webPageProxy->setViewportSize(m_size);
+        drawingArea->layerTreeCoordinatorProxy()->setContentsSize(m_contentsSize);
+    } else {
+        drawingArea->setSize(m_size, IntSize());
+    }
+    drawingArea->setVisibleContentsRect(visibleRect(), m_scale, FloatPoint());
 }
 
 void WebViewImpl::processDidCrash()
@@ -465,7 +494,9 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 
 void WebViewImpl::didChangeContentsSize(const IntSize& size)
 {
+    m_contentsSize = size;
     m_client->didChangeContentsSize(size.width(), size.height());
+    commitViewportChanges();
 }
 
 cairo_matrix_t WebViewImpl::screenToViewMatrix()

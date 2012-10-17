@@ -65,6 +65,7 @@ private:
     void scheduleUpdateDisplay();
     void adjustScrollPositionToBoundaries(int* x, int* y);
     void adjustScrollPosition();
+    void adjustScaleToFitContents();
 
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
@@ -350,8 +351,11 @@ void MiniBrowser::handleSizeChanged(int width, int height)
 {
     if (!m_webView)
         return;
-    printf("size changed to %dx%d\n", width, height);
+
     m_webView->setSize(width, height);
+
+    if (m_mode == MobileMode)
+        adjustScaleToFitContents();
 }
 
 void MiniBrowser::handleClosed()
@@ -412,6 +416,11 @@ void MiniBrowser::adjustScrollPositionToBoundaries(int* x, int* y)
         *y = bottomBoundary;
 }
 
+void MiniBrowser::adjustScaleToFitContents()
+{
+    m_webView->setScale(double(m_webView->width()) / m_contentsWidth);
+}
+
 void MiniBrowser::adjustScrollPosition()
 {
     int x = m_webView->scrollX();
@@ -446,6 +455,9 @@ void MiniBrowser::didChangeContentsSize(int width, int height)
 {
     m_contentsWidth = width;
     m_contentsHeight = height;
+
+    if (m_mode == MobileMode)
+        adjustScaleToFitContents();
     adjustScrollPosition();
 }
 
