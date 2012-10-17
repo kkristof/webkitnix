@@ -160,7 +160,7 @@ public:
 
     virtual void setCursor(const Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
-    virtual void didChangeViewportProperties(const ViewportAttributes&);
+    virtual void didChangeViewportProperties(const ViewportAttributes&) { notImplemented(); }
 
     virtual void registerEditCommand(PassRefPtr<WebEditCommandProxy>, WebPageProxy::UndoOrRedo) { notImplemented(); }
     virtual void clearAllEditCommands() { notImplemented(); }
@@ -495,14 +495,6 @@ void WebViewImpl::didChangeContentsSize(const IntSize& size)
 {
     m_contentsSize = size;
     adjustScrollPosition();
-}
-
-void WebViewImpl::didChangeViewportProperties(const ViewportAttributes& attributes)
-{
-    if (!m_webPageProxy->useFixedLayout())
-        return;
-
-    setScale(m_size.width() / attributes.layoutSize.width());
 }
 
 cairo_matrix_t WebViewImpl::screenToViewMatrix()
