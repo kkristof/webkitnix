@@ -460,8 +460,8 @@ void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool was
         // When the user is panning around the contents we don't force the page scroll position
         // to respect any boundaries other than the physical constraints of the device from where
         // the user input came. This will be adjusted after the user interaction ends.
-        int x = m_webView->scrollX() + m_previousTouchPoint.x - touchPoint.x;
-        int y = m_webView->scrollY() + m_previousTouchPoint.y - touchPoint.y;
+        int x = m_webView->scrollX() + ((m_previousTouchPoint.x - touchPoint.x) / m_webView->scale());
+        int y = m_webView->scrollY() + ((m_previousTouchPoint.y - touchPoint.y) / m_webView->scale());
         m_webView->setScrollPosition(x, y);
         m_previousTouchPoint = touchPoint;
     } else if (touchEvent.type == Nix::InputEvent::TouchEnd) {
