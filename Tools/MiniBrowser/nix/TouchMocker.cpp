@@ -144,8 +144,6 @@ void TouchMocker::releaseTouchPoints(double timestamp)
 
     m_touchPoints.clear();
 
-    if (shouldDoSingleTap)
-        sendGestureSingleTap(timestamp, touch.x, touch.y, touch.globalX, touch.globalY);
 }
 
 void TouchMocker::updateTouchPointsState(TouchPoint::TouchState state)
@@ -191,25 +189,6 @@ void TouchMocker::sendCurrentTouchEvent(TouchPoint::TouchState state, double tim
         ev.touchPoints.push_back(it->second);
 
     m_webView->sendEvent(ev);
-}
-
-void TouchMocker::sendGestureSingleTap(double timestamp, int x, int y, int globalX, int globalY)
-{
-    GestureEvent gestureEvent;
-    gestureEvent.type = InputEvent::GestureSingleTap;
-    gestureEvent.timestamp = timestamp;
-    gestureEvent.modifiers = 0;
-    gestureEvent.x = x;
-    gestureEvent.y = y;
-    gestureEvent.globalX = globalX;
-    gestureEvent.globalY = globalY;
-    // FIXME: Hardcoded values for now, if these are proven to be useful we need to change it.
-    gestureEvent.width = 20;
-    gestureEvent.height = 20;
-    gestureEvent.deltaX = 0.0;
-    gestureEvent.deltaY = 0.0;
-
-    m_webView->sendEvent(gestureEvent);
 }
 
 void TouchMocker::loadTouchPointTexture()

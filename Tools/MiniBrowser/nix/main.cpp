@@ -1,3 +1,4 @@
+#include "GestureRecognizer.h"
 #include "LinuxWindow.h"
 #include "TouchMocker.h"
 #include "XlibEventUtils.h"
@@ -24,7 +25,7 @@ extern "C" {
 static gboolean callUpdateDisplay(gpointer);
 }
 
-class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient {
+class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient, public GestureRecognizerClient {
 public:
 
     enum Mode {
@@ -56,6 +57,11 @@ public:
     virtual void didChangeContentsSize(int width, int height);
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
 
+    // GestureRecognizerClient.
+    virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
+    virtual void handlePanning(double timestamp, const Nix::TouchPoint&, const Nix::TouchPoint&);
+    virtual void handlePanningFinished(double timestamp);
+
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
 
@@ -84,10 +90,10 @@ private:
     TouchMocker* m_touchMocker;
     Mode m_mode;
     bool m_displayUpdateScheduled;
-    Nix::TouchPoint m_previousTouchPoint;
     int m_contentsWidth;
     int m_contentsHeight;
     cairo_matrix_t m_webViewTransform;
+    GestureRecognizer m_gestureRecognizer;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -106,6 +112,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     , m_touchMocker(0)
     , m_mode(mode)
     , m_displayUpdateScheduled(false)
+    , m_gestureRecognizer(GestureRecognizer(this))
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -480,20 +487,40 @@ void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool was
 {
     if (wasEventHandled)
         return;
-    const Nix::TouchPoint& touchPoint = touchEvent.touchPoints[0];
-    if (touchEvent.type == Nix::InputEvent::TouchStart) {
-        m_previousTouchPoint = touchPoint;
-    } else if (touchEvent.type == Nix::InputEvent::TouchMove) {
-        // When the user is panning around the contents we don't force the page scroll position
-        // to respect any boundaries other than the physical constraints of the device from where
-        // the user input came. This will be adjusted after the user interaction ends.
-        int x = m_webView->scrollX() + ((m_previousTouchPoint.x - touchPoint.x) / m_webView->scale());
-        int y = m_webView->scrollY() + ((m_previousTouchPoint.y - touchPoint.y) / m_webView->scale());
-        m_webView->setScrollPosition(x, y);
-        m_previousTouchPoint = touchPoint;
-    } else if (touchEvent.type == Nix::InputEvent::TouchEnd) {
-        adjustScrollPosition();
-    }
+    m_gestureRecognizer.handleTouchEvent(touchEvent);
+}
+
+void MiniBrowser::handleSingleTap(double timestamp, const Nix::TouchPoint& touchPoint)
+{
+    Nix::GestureEvent gestureEvent;
+    gestureEvent.type = Nix::InputEvent::GestureSingleTap;
+    gestureEvent.timestamp = timestamp;
+    gestureEvent.modifiers = 0;
+    gestureEvent.x = touchPoint.x;
+    gestureEvent.y = touchPoint.y;
+    gestureEvent.globalX = touchPoint.globalX;
+    gestureEvent.globalY = touchPoint.globalY;
+    gestureEvent.width = 20;
+    gestureEvent.height = 20;
+    gestureEvent.deltaX = 0.0;
+    gestureEvent.deltaY = 0.0;
+
+    m_webView->sendEvent(gestureEvent);
+}
+
+void MiniBrowser::handlePanning(double timestamp, const Nix::TouchPoint& previousTouchPoint, const Nix::TouchPoint& currentTouchPoint)
+{
+    // When the user is panning around the contents we don't force the page scroll position
+    // to respect any boundaries other than the physical constraints of the device from where
+    // the user input came. This will be adjusted after the user interaction ends.
+    int x = m_webView->scrollX() + ((previousTouchPoint.x - currentTouchPoint.x) / m_webView->scale());
+    int y = m_webView->scrollY() + ((previousTouchPoint.y - currentTouchPoint.y) / m_webView->scale());
+    m_webView->setScrollPosition(x, y);
+}
+
+void MiniBrowser::handlePanningFinished(double timestamp)
+{
+    adjustScrollPosition();
 }
 
 void MiniBrowser::scaleAtPoint(int x, int y, double delta)

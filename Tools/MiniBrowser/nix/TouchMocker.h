@@ -32,7 +32,6 @@ private:
 
     void sendCurrentTouchEvent(Nix::TouchPoint::TouchState state, double timestamp);
 
-    void sendGestureSingleTap(double timestamp, int x, int y, int globalX, int globalY);
     void loadTouchPointTexture();
 
     Nix::WebView* m_webView;
