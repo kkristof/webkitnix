@@ -46,3 +46,22 @@ $ Tools/Scripts/update-webkitnix-libs
 
 They are compiled and installed into WebKitBuild/Dependencies.
 
+
+Debugging
+=========
+
+Nix uses the same approach as EFL does to provide debugging support.
+It is available only in DEBUG mode.
+
+If you need to debug a crash in a WebProcess while executing the
+MiniBrowser you can set the WEB_PROCESS_CMD_PREFIX environment variable.
+It takes some time to load all needed symbols - so be patient.
+
+$ WEB_PROCESS_CMD_PREFIX="/usr/bin/xterm -title WebProcess -e gdb --args" \
+                                        WebKitBuild/Debug/bin/MiniBrowser
+
+The /usr/bin/xterm is necessary or gdb will run in the current terminal,
+which can get particularly confusing since it's running in the background,
+and if you're also running the main process in gdb, won't work at all
+(the two instances will fight over the terminal). It's necessary to pass the
+full path to the xterm binary otherwise it will fail.
