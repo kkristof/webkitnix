@@ -59,6 +59,7 @@ SET(test_webkit2_api_BINARIES
     ParentFrame
     PreventEmptyUserAgent
     PrivateBrowsingPushStateNoHistoryCallback
+    RestoreSessionStateContainingFormData
     WKConnection
     WKString
     WKStringJSString
@@ -73,7 +74,6 @@ SET(test_webkit2_api_fail_BINARIES
     NewFirstVisuallyNonEmptyLayoutForImages
     NewFirstVisuallyNonEmptyLayoutFrames
     NewFirstVisuallyNonEmptyLayoutFails
-    RestoreSessionStateContainingFormData
     ShouldGoToBackForwardListItem
     WKPageGetScaleFactorNotZero
 )
