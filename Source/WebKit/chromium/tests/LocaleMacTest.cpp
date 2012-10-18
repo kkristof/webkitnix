@@ -120,6 +120,12 @@ protected:
 #endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+    String monthFormat(const String& localeString)
+    {
+        OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
+        return locale->monthFormat();
+    }
+
     String timeFormat(const String& localeString)
     {
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
@@ -148,8 +154,8 @@ protected:
 
 TEST_F(LocaleMacTest, formatDate)
 {
-    EXPECT_STREQ("4/27/05", formatDate("en_US", 2005, April, 27).utf8().data());
-    EXPECT_STREQ("27/04/05", formatDate("fr_FR", 2005, April, 27).utf8().data());
+    EXPECT_STREQ("04/27/2005", formatDate("en_US", 2005, April, 27).utf8().data());
+    EXPECT_STREQ("27/04/2005", formatDate("fr_FR", 2005, April, 27).utf8().data());
     // Do not test ja_JP locale. OS X 10.8 and 10.7 have different formats.
 }
 
@@ -236,6 +242,16 @@ TEST_F(LocaleMacTest, isRTL)
 #endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+TEST_F(LocaleMacTest, monthFormat)
+{
+    EXPECT_STREQ("MMM yyyy", monthFormat("en_US").utf8().data());
+    EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88", monthFormat("ja_JP").utf8().data());
+
+    // fr_FR and ru return different results on OS versions.
+    //  "MMM yyyy" "LLL yyyy" on 10.6 and 10.7
+    //  "MMM y" "LLL y" on 10.8
+}
+
 TEST_F(LocaleMacTest, timeFormat)
 {
     EXPECT_STREQ("h:mm:ss a", timeFormat("en_US").utf8().data());

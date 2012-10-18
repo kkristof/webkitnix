@@ -85,6 +85,7 @@ LIST(APPEND WebCore_SOURCES
   platform/PlatformStrategies.cpp
   platform/posix/FileSystemPOSIX.cpp
   platform/text/efl/TextBreakIteratorInternalICUEfl.cpp
+  platform/text/enchant/TextCheckerEnchant.cpp
 )
 
 IF (ENABLE_BATTERY_STATUS)
@@ -284,9 +285,6 @@ IF (WTF_USE_3D_GRAPHICS)
     "${WEBCORE_DIR}/platform/graphics/opengl"
     "${WEBCORE_DIR}/platform/graphics/texmap"
   )
-  LIST(APPEND WebCore_LIBRARIES
-    ${OPENGL_gl_LIBRARY}
-  )
   LIST(APPEND WebCore_SOURCES
     platform/graphics/OpenGLShims.cpp
     platform/graphics/cairo/DrawingBufferCairo.cpp
@@ -326,3 +324,12 @@ IF (ENABLE_WEB_AUDIO)
   INSTALL(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
   ADD_DEFINITIONS(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
 ENDIF ()
+
+IF (ENABLE_SPELLCHECK)
+    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
+        ${ENCHANT_INCLUDE_DIRS}
+    )
+    LIST(APPEND WebCore_LIBRARIES
+        ${ENCHANT_LIBRARIES}
+    )
+ENDIF()

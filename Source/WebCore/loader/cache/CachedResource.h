@@ -210,7 +210,7 @@ public:
     bool errorOccurred() const { return (m_status == LoadError || m_status == DecodeError); }
     bool loadFailedOrCanceled() { return m_status == Canceled || m_status == LoadError; }
 
-    bool sendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
+    bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
     
     virtual void destroyDecodedData() { }
 
@@ -254,6 +254,8 @@ public:
 
 protected:
     virtual void checkNotify();
+
+    virtual void addAdditionalRequestHeaders(CachedResourceLoader*);
 
     void setEncodedSize(unsigned);
     void setDecodedSize(unsigned);
@@ -300,6 +302,8 @@ private:
 
     double currentAge() const;
     double freshnessLifetime() const;
+
+    void failBeforeStarting();
 
     RefPtr<CachedMetadata> m_cachedMetadata;
 

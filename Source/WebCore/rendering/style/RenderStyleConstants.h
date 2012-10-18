@@ -303,10 +303,6 @@ enum EListStyleType {
     NoneListStyle
 };
 
-enum StyleContentType {
-    CONTENT_NONE, CONTENT_OBJECT, CONTENT_TEXT, CONTENT_COUNTER, CONTENT_QUOTE
-};
-
 enum QuoteType {
     OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE
 };
@@ -473,7 +469,7 @@ enum WrapFlow { WrapFlowAuto, WrapFlowBoth, WrapFlowStart, WrapFlowEnd, WrapFlow
 
 enum WrapThrough { WrapThroughWrap, WrapThroughNone };
 
-#if ENABLE(WIDGET_REGION)
+#if ENABLE(DRAGGABLE_REGION)
 enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRegionNoDrag };
 #endif
 

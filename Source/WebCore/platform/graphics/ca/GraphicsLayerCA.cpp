@@ -280,7 +280,7 @@ GraphicsLayerCA::GraphicsLayerCA(GraphicsLayerClient* client)
 {
     PlatformCALayer::LayerType layerType = PlatformCALayer::LayerTypeWebLayer;
     if (client && client->shouldUseTileCache(this)) {
-        layerType = PlatformCALayer::LayerTypeTileCacheLayer;
+        layerType = PlatformCALayer::LayerTypePageTileCacheLayer;
         m_isPageTileCacheLayer = true;
     }
 
@@ -921,12 +921,13 @@ void GraphicsLayerCA::computeVisibleRect(TransformState& state)
 
     TransformationMatrix layerTransform;
     layerTransform.translate(m_position.x(), m_position.y());
-    
-    if (!transform().isIdentity()) {
+
+    TransformationMatrix currentTransform;
+    if (client() && client()->getCurrentTransform(this, currentTransform) && !currentTransform.isIdentity()) {
         FloatPoint3D absoluteAnchorPoint(anchorPoint());
         absoluteAnchorPoint.scale(size().width(), size().height(), 1);
         layerTransform.translate3d(absoluteAnchorPoint.x(), absoluteAnchorPoint.y(), absoluteAnchorPoint.z());
-        layerTransform.multiply(transform());
+        layerTransform.multiply(currentTransform);
         layerTransform.translate3d(-absoluteAnchorPoint.x(), -absoluteAnchorPoint.y(), -absoluteAnchorPoint.z());
     }
 
@@ -964,7 +965,7 @@ void GraphicsLayerCA::recursiveCommitChanges(const TransformState& state, float 
 #ifdef VISIBLE_TILE_WASH
     // Use having a transform as a key to making the tile wash layer. If every layer gets a wash,
     // they start to obscure useful information.
-    if (!m_transform.isIdentity() && !m_visibleTileWashLayer) {
+    if ((!m_transform.isIdentity() || m_usingTiledLayer) && !m_visibleTileWashLayer) {
         static Color washFillColor(255, 0, 0, 50);
         static Color washBorderColor(255, 0, 0, 100);
         
@@ -1015,6 +1016,9 @@ void GraphicsLayerCA::recursiveCommitChanges(const TransformState& state, float 
 
     commitLayerChangesAfterSublayers();
 
+    if (client() && m_layer->layerType() == PlatformCALayer::LayerTypeTileCacheLayer)
+        client()->notifyFlushBeforeDisplayRefresh(this);
+
     if (hadChanges && client())
         client()->didCommitChangesForLayer(this);
 }
@@ -1036,7 +1040,7 @@ void GraphicsLayerCA::platformCALayerPaintContents(GraphicsContext& context, con
 
 void GraphicsLayerCA::platformCALayerDidCreateTiles(const Vector<FloatRect>& dirtyRects)
 {
-    ASSERT(m_layer->layerType() == PlatformCALayer::LayerTypeTileCacheLayer);
+    ASSERT(m_layer->usesTileCacheLayer());
 
     for (size_t i = 0; i < dirtyRects.size(); ++i)
         setNeedsDisplayInRect(dirtyRects[i]);
@@ -2493,7 +2497,7 @@ bool GraphicsLayerCA::requiresTiledLayer(float pageScaleFactor) const
 
 void GraphicsLayerCA::swapFromOrToTiledLayer(bool useTiledLayer, float pageScaleFactor, const FloatPoint& positionRelativeToBase)
 {
-    ASSERT(m_layer->layerType() != PlatformCALayer::LayerTypeTileCacheLayer);
+    ASSERT(m_layer->layerType() != PlatformCALayer::LayerTypePageTileCacheLayer);
     ASSERT(useTiledLayer != m_usingTiledLayer);
     RefPtr<PlatformCALayer> oldLayer = m_layer;
     

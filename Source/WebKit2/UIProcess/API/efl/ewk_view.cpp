@@ -25,6 +25,7 @@
 #include "NativeWebMouseEvent.h"
 #include "NativeWebWheelEvent.h"
 #include "PageClientImpl.h"
+#include "RefPtrEfl.h"
 #include "WKAPICast.h"
 #include "WKColorPickerResultListener.h"
 #include "WKEinaSharedString.h"
@@ -45,6 +46,7 @@
 #include "ewk_popup_menu_item_private.h"
 #include "ewk_private.h"
 #include "ewk_resource.h"
+#include "ewk_resource_private.h"
 #include "ewk_settings_private.h"
 #include "ewk_view_find_client_private.h"
 #include "ewk_view_form_client_private.h"
@@ -83,8 +85,7 @@ static const char EWK_VIEW_TYPE_STR[] = "EWK2_View";
 
 static const int defaultCursorSize = 16;
 
-typedef HashMap<uint64_t, Ewk_Resource*> LoadingResourcesMap;
-static void _ewk_view_priv_loading_resources_clear(LoadingResourcesMap& loadingResourcesMap);
+typedef HashMap< uint64_t, RefPtr<Ewk_Resource> > LoadingResourcesMap;
 static void _ewk_view_on_favicon_changed(const char* pageURL, void* eventInfo);
 
 typedef HashMap<const WebPageProxy*, const Evas_Object*> PageViewMap;
@@ -111,7 +112,7 @@ static inline void removeFromPageViewMap(const Evas_Object* ewkView)
     pageViewMap().remove(ewk_view_page_get(ewkView));
 }
 
-struct _Ewk_View_Private_Data {
+struct Ewk_View_Private_Data {
     OwnPtr<PageClientImpl> pageClient;
 #if USE(COORDINATED_GRAPHICS)
     OwnPtr<EflViewportHandler> viewportHandler;
@@ -124,12 +125,12 @@ struct _Ewk_View_Private_Data {
     WKEinaSharedString customEncoding;
     WKEinaSharedString cursorGroup;
     WKEinaSharedString faviconURL;
-    Evas_Object* cursorObject;
+    RefPtr<Evas_Object> cursorObject;
     LoadingResourcesMap loadingResourcesMap;
-    Ewk_Back_Forward_List* backForwardList;
+    OwnPtr<Ewk_Back_Forward_List> backForwardList;
     OwnPtr<Ewk_Settings> settings;
     bool areMouseEventsEnabled;
-    WKColorPickerResultListenerRef colorPickerResultListener;
+    WKRetainPtr<WKColorPickerResultListenerRef> colorPickerResultListener;
     Ewk_Context* context;
 #if ENABLE(TOUCH_EVENTS)
     bool areTouchEventsEnabled;
@@ -148,11 +149,8 @@ struct _Ewk_View_Private_Data {
     Evas_GL_Surface* evasGlSurface;
 #endif
 
-    _Ewk_View_Private_Data()
-        : cursorObject(0)
-        , backForwardList(0)
-        , areMouseEventsEnabled(false)
-        , colorPickerResultListener(0)
+    Ewk_View_Private_Data()
+        : areMouseEventsEnabled(false)
         , context(0)
 #if ENABLE(TOUCH_EVENTS)
         , areTouchEventsEnabled(false)
@@ -169,22 +167,15 @@ struct _Ewk_View_Private_Data {
 #endif
     { }
 
-    ~_Ewk_View_Private_Data()
+    ~Ewk_View_Private_Data()
     {
-        _ewk_view_priv_loading_resources_clear(loadingResourcesMap);
-
         /* Unregister icon change callback */
         Ewk_Favicon_Database* iconDatabase = ewk_context_favicon_database_get(context);
         ewk_favicon_database_icon_change_callback_del(iconDatabase, _ewk_view_on_favicon_changed);
 
-        if (cursorObject)
-            evas_object_del(cursorObject);
-
-        ewk_back_forward_list_free(backForwardList);
-
         void* item;
         EINA_LIST_FREE(popupMenuItems, item)
-            ewk_popup_menu_item_free(static_cast<Ewk_Popup_Menu_Item*>(item));
+            delete static_cast<Ewk_Popup_Menu_Item*>(item);
     }
 };
 
@@ -261,7 +252,7 @@ static void _ewk_view_on_favicon_changed(const char* pageURL, void* eventInfo)
     Evas_Object* ewkView = static_cast<Evas_Object*>(eventInfo);
 
     const char* view_url = ewk_view_url_get(ewkView);
-    if (strcasecmp(view_url, pageURL))
+    if (!view_url || strcasecmp(view_url, pageURL))
         return;
 
     ewk_view_update_icon(ewkView);
@@ -483,17 +474,6 @@ static Ewk_View_Private_Data* _ewk_view_priv_new(Ewk_View_Smart_Data* smartData)
     return priv;
 }
 
-static void _ewk_view_priv_loading_resources_clear(LoadingResourcesMap& loadingResourcesMap)
-{
-    // Clear the loadingResources HashMap.
-    LoadingResourcesMap::iterator it = loadingResourcesMap.begin();
-    LoadingResourcesMap::iterator end = loadingResourcesMap.end();
-    for ( ; it != end; ++it)
-        ewk_resource_unref(it->value);
-
-    loadingResourcesMap.clear();
-}
-
 static void _ewk_view_priv_del(Ewk_View_Private_Data* priv)
 {
     ewk_context_unref(priv->context);
@@ -523,7 +503,7 @@ static void _ewk_view_smart_add(Evas_Object* ewkView)
 
     smartData->priv = _ewk_view_priv_new(smartData);
     if (!smartData->priv) {
-        EINA_LOG_CRIT("could not allocate _Ewk_View_Private_Data");
+        EINA_LOG_CRIT("could not allocate Ewk_View_Private_Data");
         evas_object_smart_data_set(ewkView, 0);
         free(smartData);
         return;
@@ -675,28 +655,26 @@ static void _ewk_view_smart_calculate(Evas_Object* ewkView)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
-    Evas_Coord x, y, width, height;
+
+#if USE(ACCELERATED_COMPOSITING)
+    bool needsNewSurface = false;
+#endif
 
     smartData->changed.any = false;
 
+    Evas_Coord x, y, width, height;
     evas_object_geometry_get(ewkView, &x, &y, &width, &height);
 
     if (smartData->changed.size) {
 #if USE(COORDINATED_GRAPHICS)
         priv->viewportHandler->updateViewportSize(IntSize(width, height));
 #endif
+#if USE(ACCELERATED_COMPOSITING)
+        needsNewSurface = priv->evasGlSurface;
+#endif
 
         if (priv->pageProxy->drawingArea())
             priv->pageProxy->drawingArea()->setSize(IntSize(width, height), IntSize());
-
-#if USE(ACCELERATED_COMPOSITING)
-        if (!priv->evasGlSurface)
-            return;
-        evas_gl_surface_destroy(priv->evasGl, priv->evasGlSurface);
-        priv->evasGlSurface = 0;
-        ewk_view_create_gl_surface(ewkView, IntSize(width, height));
-        ewk_view_display(ewkView, IntRect(IntPoint(), IntSize(width, height)));
-#endif
 
         smartData->view.w = width;
         smartData->view.h = height;
@@ -709,6 +687,15 @@ static void _ewk_view_smart_calculate(Evas_Object* ewkView)
         smartData->view.y = y;
         smartData->changed.position = false;
     }
+
+#if USE(ACCELERATED_COMPOSITING)
+    if (needsNewSurface) {
+        evas_gl_surface_destroy(priv->evasGl, priv->evasGlSurface);
+        priv->evasGlSurface = 0;
+        ewk_view_create_gl_surface(ewkView, IntSize(width, height));
+        ewk_view_display(ewkView, IntRect(IntPoint(), IntSize(width, height)));
+    }
+#endif
 }
 
 static void _ewk_view_smart_show(Evas_Object* ewkView)
@@ -832,7 +819,7 @@ static void _ewk_view_initialize(Evas_Object* ewkView, Ewk_Context* context, WKP
 #endif
     priv->pageProxy->initializeWebPage();
 
-    priv->backForwardList = ewk_back_forward_list_new(toAPI(priv->pageProxy->backForwardList()));
+    priv->backForwardList = Ewk_Back_Forward_List::create(toAPI(priv->pageProxy->backForwardList()));
     priv->settings = adoptPtr(new Ewk_Settings(WKPageGroupGetPreferences(WKPageGetPageGroup(toAPI(priv->pageProxy.get())))));
     priv->context = ewk_context_ref(context);
 
@@ -1039,7 +1026,7 @@ void ewk_view_resource_load_initiated(Evas_Object* ewkView, uint64_t resourceIde
     Ewk_Resource_Request resourceRequest = {resource, request, 0};
 
     // Keep the resource internally to reuse it later.
-    priv->loadingResourcesMap.add(resourceIdentifier, ewk_resource_ref(resource));
+    priv->loadingResourcesMap.add(resourceIdentifier, resource);
 
     evas_object_smart_callback_call(ewkView, "resource,request,new", &resourceRequest);
 }
@@ -1058,8 +1045,8 @@ void ewk_view_resource_load_response(Evas_Object* ewkView, uint64_t resourceIden
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Resource_Load_Response resourceLoadResponse = {resource, response};
+    RefPtr<Ewk_Resource> resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Load_Response resourceLoadResponse = {resource.get(), response};
     evas_object_smart_callback_call(ewkView, "resource,request,response", &resourceLoadResponse);
 }
 
@@ -1077,8 +1064,8 @@ void ewk_view_resource_load_failed(Evas_Object* ewkView, uint64_t resourceIdenti
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Resource_Load_Error resourceLoadError = {resource, error};
+    RefPtr<Ewk_Resource> resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Load_Error resourceLoadError = {resource.get(), error};
     evas_object_smart_callback_call(ewkView, "resource,request,failed", &resourceLoadError);
 }
 
@@ -1096,10 +1083,8 @@ void ewk_view_resource_load_finished(Evas_Object* ewkView, uint64_t resourceIden
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Resource* resource = priv->loadingResourcesMap.take(resourceIdentifier);
-    evas_object_smart_callback_call(ewkView, "resource,request,finished", resource);
-
-    ewk_resource_unref(resource);
+    RefPtr<Ewk_Resource> resource = priv->loadingResourcesMap.take(resourceIdentifier);
+    evas_object_smart_callback_call(ewkView, "resource,request,finished", resource.get());
 }
 
 /**
@@ -1116,8 +1101,8 @@ void ewk_view_resource_request_sent(Evas_Object* ewkView, uint64_t resourceIdent
     if (!priv->loadingResourcesMap.contains(resourceIdentifier))
         return;
 
-    Ewk_Resource* resource = priv->loadingResourcesMap.get(resourceIdentifier);
-    Ewk_Resource_Request resourceRequest = {resource, request, redirectResponse};
+    RefPtr<Ewk_Resource> resource = priv->loadingResourcesMap.get(resourceIdentifier);
+    Ewk_Resource_Request resourceRequest = {resource.get(), request, redirectResponse};
 
     evas_object_smart_callback_call(ewkView, "resource,request,sent", &resourceRequest);
 }
@@ -1262,15 +1247,11 @@ void ewk_view_cursor_set(Evas_Object* ewkView, const Cursor& cursor)
         return;
 
     priv->cursorGroup = group;
-
-    if (priv->cursorObject)
-        evas_object_del(priv->cursorObject);
-    priv->cursorObject = edje_object_add(smartData->base.evas);
+    priv->cursorObject = adoptRef(edje_object_add(smartData->base.evas));
 
     Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(smartData->base.evas);
-    if (!priv->theme || !edje_object_file_set(priv->cursorObject, priv->theme, group)) {
-        evas_object_del(priv->cursorObject);
-        priv->cursorObject = 0;
+    if (!priv->theme || !edje_object_file_set(priv->cursorObject.get(), priv->theme, group)) {
+        priv->cursorObject.clear();
 
         ecore_evas_object_cursor_set(ecoreEvas, 0, 0, 0, 0);
 #ifdef HAVE_ECORE_X
@@ -1281,27 +1262,27 @@ void ewk_view_cursor_set(Evas_Object* ewkView, const Cursor& cursor)
     }
 
     Evas_Coord width, height;
-    edje_object_size_min_get(priv->cursorObject, &width, &height);
+    edje_object_size_min_get(priv->cursorObject.get(), &width, &height);
     if (width <= 0 || height <= 0)
-        edje_object_size_min_calc(priv->cursorObject, &width, &height);
+        edje_object_size_min_calc(priv->cursorObject.get(), &width, &height);
     if (width <= 0 || height <= 0) {
         width = defaultCursorSize;
         height = defaultCursorSize;
     }
-    evas_object_resize(priv->cursorObject, width, height);
+    evas_object_resize(priv->cursorObject.get(), width, height);
 
     const char* data;
     int hotspotX = 0;
-    data = edje_object_data_get(priv->cursorObject, "hot.x");
+    data = edje_object_data_get(priv->cursorObject.get(), "hot.x");
     if (data)
         hotspotX = atoi(data);
 
     int hotspotY = 0;
-    data = edje_object_data_get(priv->cursorObject, "hot.y");
+    data = edje_object_data_get(priv->cursorObject.get(), "hot.y");
     if (data)
         hotspotY = atoi(data);
 
-    ecore_evas_object_cursor_set(ecoreEvas, priv->cursorObject, EVAS_LAYER_MAX, hotspotX, hotspotY);
+    ecore_evas_object_cursor_set(ecoreEvas, priv->cursorObject.get(), EVAS_LAYER_MAX, hotspotX, hotspotY);
 }
 
 void ewk_view_display(Evas_Object* ewkView, const IntRect& rect)
@@ -1314,7 +1295,7 @@ void ewk_view_display(Evas_Object* ewkView, const IntRect& rect)
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
 
     evas_gl_make_current(priv->evasGl, priv->evasGlSurface, priv->evasGlContext);
-    priv->viewportHandler->display(rect);
+    priv->viewportHandler->display(rect, IntPoint(smartData->view.x, smartData->view.y));
 #endif
 
     evas_object_image_data_update_add(smartData->image, rect.x(), rect.y(), rect.width(), rect.height());
@@ -1448,7 +1429,7 @@ Eina_Bool ewk_view_intent_deliver(Evas_Object* ewkView, Ewk_Intent* intent)
     EINA_SAFETY_ON_NULL_RETURN_VAL(intent, false);
 
     WebPageProxy* page = priv->pageProxy.get();
-    page->deliverIntentToFrame(page->mainFrame(), toImpl(ewk_intent_WKIntentDataRef_get(intent)));
+    page->deliverIntentToFrame(page->mainFrame(), toImpl(intent->wkIntent.get()));
 
     return true;
 #else
@@ -1477,7 +1458,7 @@ Ewk_Back_Forward_List* ewk_view_back_forward_list_get(const Evas_Object* ewkView
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv, 0);
 
-    return priv->backForwardList;
+    return priv->backForwardList.get();
 }
 
 void ewk_view_image_data_set(Evas_Object* ewkView, void* imageData, const IntSize& size)
@@ -1561,7 +1542,7 @@ void ewk_view_load_provisional_started(Evas_Object* ewkView)
 
     // The main frame started provisional load, we should clear
     // the loadingResources HashMap to start clean.
-    _ewk_view_priv_loading_resources_clear(priv->loadingResourcesMap);
+    priv->loadingResourcesMap.clear();
 
     ewk_view_url_update(ewkView);
     evas_object_smart_callback_call(ewkView, "load,provisional,started", 0);
@@ -1780,7 +1761,7 @@ void ewk_view_popup_menu_request(Evas_Object* ewkView, WebPopupMenuProxyEfl* pop
     Eina_List* popupItems = 0;
     size_t size = items.size();
     for (size_t i = 0; i < size; ++i)
-        popupItems = eina_list_append(popupItems, ewk_popup_menu_item_new(items[i]));
+        popupItems = eina_list_append(popupItems, Ewk_Popup_Menu_Item::create(items[i]).leakPtr());
     priv->popupMenuItems = popupItems;
 
     smartData->api->popup_menu_show(smartData, rect, static_cast<Ewk_Text_Direction>(textDirection), pageScaleFactor, popupItems, selectedIndex);
@@ -1802,7 +1783,7 @@ Eina_Bool ewk_view_popup_menu_close(Evas_Object* ewkView)
 
     void* item;
     EINA_LIST_FREE(priv->popupMenuItems, item)
-        ewk_popup_menu_item_free(static_cast<Ewk_Popup_Menu_Item*>(item));
+        delete static_cast<Ewk_Popup_Menu_Item*>(item);
 
     return true;
 }
@@ -1923,7 +1904,7 @@ WKEinaSharedString ewk_view_run_javascript_prompt(Evas_Object* ewkView, const WK
 #if ENABLE(INPUT_TYPE_COLOR)
 /**
  * @internal
- * Reqeusts to show external color picker.
+ * Requests to show external color picker.
  */
 void ewk_view_color_picker_request(Evas_Object* ewkView, int r, int g, int b, int a, WKColorPickerResultListenerRef listener)
 {
@@ -1938,7 +1919,7 @@ void ewk_view_color_picker_request(Evas_Object* ewkView, int r, int g, int b, in
 
 /**
  * @internal
- * Reqeusts to hide external color picker.
+ * Requests to hide external color picker.
  */
 void ewk_view_color_picker_dismiss(Evas_Object* ewkView)
 {
@@ -1946,7 +1927,7 @@ void ewk_view_color_picker_dismiss(Evas_Object* ewkView)
     EWK_VIEW_PRIV_GET_OR_RETURN(smartData, priv);
     EINA_SAFETY_ON_NULL_RETURN(smartData->api->input_picker_color_dismiss);
 
-    priv->colorPickerResultListener = 0;
+    priv->colorPickerResultListener.clear();
 
     smartData->api->input_picker_color_dismiss(smartData);
 }
@@ -1961,8 +1942,8 @@ Eina_Bool ewk_view_color_picker_color_set(Evas_Object* ewkView, int r, int g, in
 
     WebCore::Color color = WebCore::Color(r, g, b, a);
     const WKStringRef colorString = WKStringCreateWithUTF8CString(color.serialized().utf8().data());
-    WKColorPickerResultListenerSetColor(priv->colorPickerResultListener, colorString);
-    priv->colorPickerResultListener = 0;
+    WKColorPickerResultListenerSetColor(priv->colorPickerResultListener.get(), colorString);
+    priv->colorPickerResultListener.clear();
 
     return true;
 #else

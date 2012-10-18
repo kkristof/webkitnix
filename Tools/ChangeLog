@@ -1,3 +1,652 @@
+2012-10-18  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Improved support for silent builds
+
+        Reviewed by Tor Arne Vestbø.
+
+        Silence our extra compilers when CONFIG+=silent is set.
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2012-10-18  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Reduce memory pressure at link time with less compromise on speed of linking
+
+        Reviewed by Csaba Osztrogonác.
+
+        Revert r131718 that made us pass -fno-keep-memory to the linker for any
+        i386 builds. The downside of passing that option is that it slows down
+        the process of linking and as Ossy determined, release builds do _not_
+        take as much memory (2.x GB) for linking but much less (~350MB).
+
+        However there is one condition where even release builds do take up too
+        much memory, and that is when Qt is configured with
+        -separate-debug-info, because it adds a -g next to -O2. The recent
+        introduction of loading qt_build_config enabled us to read qmodule.pri,
+        which adds the -g if Qt is configured with -separate-debug-info. So
+        instead of playing with -fno-keep-memory (which is a last resort
+        measure for debug builds) we should tweak our existing mechanism of
+        dealing with the debug info:
+
+        production_build.prf tries to ensure that we use -g only in static
+        libraries that contain API facing code, so that we get nice backtraces
+        at least into the API layer. For other static libraries such as WebCore
+        we skip -g via CONFIG += no_debug_info. One of the conditions for
+        enabling this tweak is CONFIG(debug, debug|release). This patch adds
+        contains(QT_CONFIG,separate_debug_info) to the conditions.
+
+        The patch also extend the CONFIG += no_debug_info part with the removal
+        of no_separate_debug_info. There is no point in running an extra
+        build step to strip out debug info into a separate file if at the same
+        time we tell the compiler to not generate any debug info altogether.
+
+        * qmake/mkspecs/features/production_build.prf:
+        * qmake/mkspecs/features/unix/default_post.prf:
+
+2012-10-18  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt] OpenGL rendering is not possible on bots using Xvfb
+        https://bugs.webkit.org/show_bug.cgi?id=99463
+
+        Reviewed by Jocelyn Turcotte.
+
+        Added a workaround to be able to disallow UI side OpenGL rendering
+        if the environment is not suitable because it can be extremely slow
+        with a software backend.
+
+        * Scripts/webkitpy/layout_tests/port/qt.py:
+        (QtPort.setup_environ_for_server): Let the environment variable
+        QT_WEBKIT_DISABLE_UIPROCESS_DUMPPIXELS reach the driver. This variable
+        should be defined on bots that don't have a suitable OpenGL environment.
+        * WebKitTestRunner/PlatformWebView.h:
+        (PlatformWebView):
+        * WebKitTestRunner/qt/PlatformWebViewQt.cpp:
+        (WTR::WrapperWindow::handleStatusChanged): Don't try to create an OpenGL
+        surface and set the setRenderWithoutShowing flag on the window if the
+        variable is set.
+        (WTR::PlatformWebView::windowSnapshotImage):
+        (WTR::PlatformWebView::windowShapshotEnabled):
+        (WTR):
+        * WebKitTestRunner/qt/TestInvocationQt.cpp:
+        (WTR::TestInvocation::dumpPixelsAndCompareWithExpected): Use the old method
+        of evaluating pixel results if the snapshot is not supported, that is to check
+        the image we got from the web process. This is necessary for the bots to be able
+        to run ref tests.
+
+2012-10-15  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt] Implement pixel snapshot generation in WTR
+        https://bugs.webkit.org/show_bug.cgi?id=95992
+
+        Reviewed by Jocelyn Turcotte.
+
+        Switch the Qt implementation of the PlatformWebView to use
+        QQuickWindow::grabWindow to generate the pixel results. This way
+        we will go through the scenegraph and test the actual rendering backend.
+        We use QQuickWindowPrivate::setRenderWithoutShowing to avoid the need of
+        showing the window.
+
+        * WebKitTestRunner/Target.pri: Had to added a bunch
+        of modules to be able to use QQuickWindowPrivate.
+        * WebKitTestRunner/qt/PlatformWebViewQt.cpp:
+        (WTR::WrapperWindow::handleStatusChanged):
+        (WTR::PlatformWebView::windowSnapshotImage):
+
+2012-10-15  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt][WTR] Do a forced repaint before generating pixel results
+        https://bugs.webkit.org/show_bug.cgi?id=98654
+
+        Reviewed by Jocelyn Turcotte.
+
+        Do a forced repaint before grabbing the pixel snapshot. This extra
+        synchronisation is necessary with the CoordinatedGraphics rendering
+        backend because it has a fully asynchronous nature. This patch make
+        us using the window snapshot for pixel results which is necessary to
+        capture animations and other dynamic content. The actual grabbing of
+        the window has not been implemented in this patch. It will come in
+        a follow-up.
+
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::invoke):
+        (WTR::TestInvocation::dump): Store results in member variables.
+        Don't close output channels yet.
+        (WTR::TestInvocation::dumpResults): Added. This is where we dump
+        the results if no error happened.
+        (WTR):
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle):
+        * WebKitTestRunner/TestInvocation.h:
+        (TestInvocation):
+        * WebKitTestRunner/qt/PlatformWebViewQt.cpp:
+        (WTR::PlatformWebView::windowSnapshotImage):
+        * WebKitTestRunner/qt/TestInvocationQt.cpp:
+        (WTR::TestInvocation::forceRepaintDoneCallback):
+        (WTR):
+        (WTR::TestInvocation::dumpPixelsAndCompareWithExpected):
+
+2012-10-18  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Clean up variables controlling Qt module creation/handling
+
+        Reviewed by Tor Arne Vestbø.
+
+        We now depend on a Qt 5 version that is new enough to allow us to
+        clean this up. Qt's default_pre.prf uses MODULE_QMAKE_OUTDIR, but
+        the other MODULE_BASE_* variables are onl used in qmodule.prf.
+
+        * qmake/mkspecs/features/default_pre.prf:
+
+2012-10-18  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Reduce memory pressure during link time
+
+        Reviewed by Tor Arne Vestbø.
+
+        If possible always pass -fkeep-memory to the linker on i386. The
+        library has grown so big that we need this not only for i386 debug
+        builds but at least also for release.
+
+        * qmake/mkspecs/features/unix/default_post.prf:
+
+2012-10-17  Tor Arne Vestbø  <tor.arne.vestbo@digia.com>
+
+        [Qt] Modularize documentation for QtWebKit
+
+        Running 'make docs' would fail unless 'make qmake_all' was ran first,
+        but qmake_all involved generating all the derived sources, which seems
+        overly complex just for building documentation.
+
+        We solve this by preventing all subdirs except QtWebKit from having a
+        docs target. This would normally work fine on its own, but since we
+        use CONFIG += ordered, there's now a missing doc target for the
+        immediate dependency of the QtWebKit subdir. We solve this by adding
+        a dummy-target ourselves.
+
+        Finally, we clean up the qdocconf file to match the rest of the Qt
+        documentation modularization efforts.
+
+        Reviewed by Simon Hausmann.
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2012-10-17  Zoltan Horvath  <zoltan@webkit.org>
+
+        Remove the JSHeap memory measurement of the PageLoad performacetests since it creates bogus JSGlobalDatas
+        https://bugs.webkit.org/show_bug.cgi?id=99609 
+
+        Reviewed by Ryosuke Niwa.
+
+        Remove the implementation since it creates bogus JSGlobalDatas in the layout tests.
+
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (dump):
+
+2012-10-17  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] stop falling back to platform/mac for LayoutTest results
+        https://bugs.webkit.org/show_bug.cgi?id=99666
+
+        Reviewed by James Robinson.
+
+        Previously the Chromium ports would fall back to results in
+        platform/mac if a result was not found in platform/chromium-*.
+        This allowed us to share a lot of results w/ the Apple Mac port,
+        but often surprised people (especially at Apple ;) when changing
+        something in that directory would break a Chromium build.
+
+        The tests that are deleted in baselineoptimizer were for cases
+        that are no longer relevant or possible in the current fallback
+        graph.
+
+        * Scripts/webkitpy/common/checkout/baselineoptimizer_unittest.py:
+        (BaselineOptimizerTest.test_move_baselines):
+        (BaselineOptimizerTest.test_chromium_covers_mac_win_linux):
+        * Scripts/webkitpy/layout_tests/port/chromium_android.py:
+        (ChromiumAndroidPort):
+        * Scripts/webkitpy/layout_tests/port/chromium_linux.py:
+        (ChromiumLinuxPort):
+        * Scripts/webkitpy/layout_tests/port/chromium_mac.py:
+        (ChromiumMacPort):
+        * Scripts/webkitpy/layout_tests/port/chromium_win.py:
+        (ChromiumWinPort):
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+
+2012-10-17  Shashi Shekhar  <shashishekhar@google.com>
+
+        Remove redundant sdk_build parameter.
+        https://bugs.webkit.org/show_bug.cgi?id=99648
+
+        Reviewed by Adam Barth.
+
+        sdk_build parameter is no longer needed.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+        * TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:
+
+2012-10-17  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] AccessibilityUIElement::role() should be consistent across platforms wherever possible
+        https://bugs.webkit.org/show_bug.cgi?id=99640
+
+        Reviewed by Chris Fleizach.
+
+        Convert AtkRole instances to the Mac/Safari-style AXRole string.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (roleToString): New method to convert AtkRole instances to the Mac/Safari-style AXRole string
+        (AccessibilityUIElement::role): Output the Mac/Safair-style AXRole string rather than the AtkRole's name
+
+2012-10-17  Anders Carlsson  <andersca@apple.com>
+
+        Clean up Vector.h
+        https://bugs.webkit.org/show_bug.cgi?id=99622
+
+        Reviewed by Benjamin Poulain.
+
+        Remove ReversedProxy test.
+
+        * TestWebKitAPI/Tests/WTF/Vector.cpp:
+
+2012-10-17  Scott Graham  <scottmg@chromium.org>
+
+        Integer overflows/underflows in all Gamepad controller api calls.
+        https://bugs.webkit.org/show_bug.cgi?id=97262
+
+        Reviewed by Abhishek Arya.
+
+        Range check controller inputs. This code is not exposed to the web,
+        but makes fuzzers try less hard to break uninteresting code.
+
+        * DumpRenderTree/chromium/TestRunner/GamepadController.cpp:
+        (GamepadController::setButtonCount):
+        (GamepadController::setButtonData):
+        (GamepadController::setAxisCount):
+        (GamepadController::setAxisData):
+
+2012-10-17  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Unreviewed watchlist email change.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2012-10-17  Dan Carney  <dcarney@google.com>
+
+        Bind isolatedWorldSecurityOrigin to world
+        https://bugs.webkit.org/show_bug.cgi?id=99582
+
+        Reviewed by Adam Barth.
+
+        Added ability to unset isolatedWorldSecurityOrigin.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::setIsolatedWorldSecurityOrigin):
+
+2012-10-17  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Unreviewed watchlist addition.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2012-10-17  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        plugins: Allow a plugin to dictate whether it can receive drag events or not.
+        https://bugs.webkit.org/show_bug.cgi?id=99355
+
+        Reviewed by Tony Chang.
+
+        Update the TestWebPlugin to implement the new |canProcessDrag| interface.
+
+        * DumpRenderTree/chromium/TestWebPlugin.h:
+        (TestWebPlugin::canProcessDrag):
+
+2012-10-17  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Unreviewed. Create an accessibility watchlist.
+
+        * Scripts/webkitpy/common/config/committers.py:
+        * Scripts/webkitpy/common/config/watchlist:
+
+2012-10-17  Jochen Eisinger  <jochen@chromium.org>
+
+        [gyp] fix bundle resources for DumpRenderTree on mac
+        https://bugs.webkit.org/show_bug.cgi?id=99558
+
+        Reviewed by Adam Barth.
+
+        mac_bundle_resources doesn't propagate to targets that depend on it,
+        so I'm wrapping it in an all_dependent_settings block.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+
+2012-10-17  Harald Alvestrand  <hta@google.com>
+
+        Add myself to the MediaStream watchlist
+        https://bugs.webkit.org/show_bug.cgi?id=99589
+
+        Reviewed by Adam Barth.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2012-10-17  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][WTR] InjectedBundlePage::decidePolicyForNavigationAction() should print only filename part of local URLs
+        https://bugs.webkit.org/show_bug.cgi?id=99581
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Now InjectedBundlePage::decidePolicyForNavigationAction() prints only filename part of local URLs (URLs where scheme
+        equals to 'file').
+
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::decidePolicyForNavigationAction):
+
+2012-10-17  Harald Alvestrand  <hta@google.com>
+
+        Implement the Selector argument to RTCPeerConnection.getStats
+        https://bugs.webkit.org/show_bug.cgi?id=99460
+
+        Reviewed by Adam Barth.
+
+        The MockWebRTCPeerConnectionHandler will return one object only
+        when it gets a selector, and an even number when there is no selector.
+        This allows to verify that the argument is passed, but not its value.
+
+        * DumpRenderTree/chromium/MockWebRTCPeerConnectionHandler.cpp:
+        (MockWebRTCPeerConnectionHandler::getStats):
+
+2012-10-17  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        WebKitTestRunner needs layoutTestController.queueReload
+        https://bugs.webkit.org/show_bug.cgi?id=42672
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added implementation of testRunner.queueReload().
+
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp:
+        (WTR::InjectedBundle::queueReload):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::queueReload):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle):
+        * WebKitTestRunner/WorkQueueManager.cpp:
+        (WTR::WorkQueueManager::queueReload):
+        (WTR):
+        * WebKitTestRunner/WorkQueueManager.h:
+        (WorkQueueManager):
+
+2012-10-17  Mark Rowe  <mrowe@apple.com>
+
+        Fix the build with a newer version of clang.
+
+        Reviewed by Dan Bernstein.
+
+        Update to accommodate the renamed methods in WebCoreStatistics.
+
+        * DumpRenderTree/mac/PixelDumpSupportMac.mm:
+        (createPagedBitmapContext):
+
+2012-10-17  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        WebKitTestRunner needs testRunner.queueLoad
+        https://bugs.webkit.org/show_bug.cgi?id=42674
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added testRunner.queueLoad() and testRunner.queueBackNavigation() implementation to WTR including
+        Work Queue implementation. Work Queue is managed by WorkQueueManager which belongs to UI process
+        (as the needed functionality, like loading initiation, has to be invoked from UI process) and
+        exchanges messages with Injected bundle.
+
+        * WebKitTestRunner/CMakeLists.txt:
+        * WebKitTestRunner/GNUmakefile.am:
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp:
+        (WTR::InjectedBundle::InjectedBundle):
+        (WTR::InjectedBundle::didReceiveMessage):
+        (WTR::InjectedBundle::done):
+        (WTR::InjectedBundle::shouldProcessWorkQueue):
+        (WTR):
+        (WTR::InjectedBundle::processWorkQueue):
+        (WTR::InjectedBundle::queueBackNavigation):
+        (WTR::InjectedBundle::queueLoad):
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::didFailProvisionalLoadWithErrorForFrame):
+        (WTR::InjectedBundlePage::didFinishLoadForFrame):
+        (WTR::InjectedBundlePage::didFailLoadWithErrorForFrame):
+        (WTR::InjectedBundlePage::locationChangeForFrame):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.h:
+        (InjectedBundlePage):
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::queueBackNavigation):
+        (WTR):
+        (WTR::TestRunner::queueLoad):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+        * WebKitTestRunner/Target.pri:
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::resetStateToConsistentValues):
+        * WebKitTestRunner/TestController.h:
+        (WTR::TestController::workQueueManager):
+        (TestController):
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle):
+        (WTR::TestInvocation::didReceiveSynchronousMessageFromInjectedBundle):
+        * WebKitTestRunner/WebKitTestRunner.xcodeproj/project.pbxproj:
+        * WebKitTestRunner/WorkQueueManager.cpp: Added.
+        (WTR):
+        (WTR::mainPage):
+        (WTR::goToItemAtIndex):
+        (WTR::WorkQueueManager::WorkQueueManager):
+        (WTR::WorkQueueManager::clearWorkQueue):
+        (WTR::WorkQueueManager::processWorkQueue):
+        (WTR::WorkQueueManager::queueLoad):
+        (WTR::WorkQueueManager::queueBackNavigation):
+        (WTR::WorkQueueManager::enqueue):
+        * WebKitTestRunner/WorkQueueManager.h: Added.
+        (WTR):
+        (WorkQueueManager):
+        (WTR::WorkQueueManager::isWorkQueueEmpty):
+        (WorkQueueItem):
+        (WTR::WorkQueueManager::WorkQueueItem::~WorkQueueItem):
+        * WebKitTestRunner/win/WebKitTestRunner.vcproj:
+
+2012-10-16  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] Create Objective-C API for adding and removing user scripts
+        https://bugs.webkit.org/show_bug.cgi?id=99528
+
+        Reviewed by Anders Carlsson.
+
+        Add three new API tests.
+
+        * TestWebKitAPI/Tests/WebKit2ObjC/UserContentTest.mm:
+        (expectScriptValueIsString):
+        (expectScriptValueIsBoolean):
+        (expectScriptValueIsUndefined):
+
+2012-10-16  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] add Mountain Lion baselines
+        https://bugs.webkit.org/show_bug.cgi?id=99505
+
+        Reviewed by Ojan Vafai.
+
+        This change adds a temporary 10.8/MountainLion-specific
+        expectations file for Chromium so that the bot can be green
+        while we are updating all the baselines and triaging failures.
+
+        * Scripts/webkitpy/layout_tests/port/chromium_mac.py:
+        (ChromiumMacPort.expectations_files):
+        * Scripts/webkitpy/layout_tests/port/chromium_mac_unittest.py:
+        (ChromiumMacPortTest.test_ml_expectations):
+
+2012-10-16  Dima Gorbik  <dgorbik@apple.com>
+
+        Remove Platform.h include from the header files.
+        https://bugs.webkit.org/show_bug.cgi?id=98665
+
+        Reviewed by Eric Seidel.
+
+        We don't want other clients that include WebKit headers to know about Platform.h.
+
+        * DumpRenderTree/mac/MockGeolocationProvider.mm:
+
+2012-10-16  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Add the chromium API for RTCDataChannel
+        https://bugs.webkit.org/show_bug.cgi?id=99435
+
+        Reviewed by Adam Barth.
+
+        Adding mock support for WebRTCDataChannel.
+
+        * DumpRenderTree/chromium/MockWebRTCPeerConnectionHandler.cpp:
+        (StringDataTask):
+        (StringDataTask::StringDataTask):
+        (CharPtrDataTask):
+        (CharPtrDataTask::CharPtrDataTask):
+        (DataChannelReadyStateTask):
+        (DataChannelReadyStateTask::DataChannelReadyStateTask):
+        (RTCPeerConnectionReadyStateTask):
+        (RTCPeerConnectionReadyStateTask::RTCPeerConnectionReadyStateTask):
+        (MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler):
+        (MockWebRTCPeerConnectionHandler::initialize):
+        (MockWebRTCPeerConnectionHandler::stop):
+        (MockWebRTCPeerConnectionHandler::openDataChannel):
+        (MockWebRTCPeerConnectionHandler::closeDataChannel):
+        (MockWebRTCPeerConnectionHandler::sendStringData):
+        (MockWebRTCPeerConnectionHandler::sendRawData):
+        * DumpRenderTree/chromium/MockWebRTCPeerConnectionHandler.h:
+        (MockWebRTCPeerConnectionHandler):
+
+2012-10-16  Chris Rogers  <crogers@google.com>
+
+        Rename some AudioNodes
+        https://bugs.webkit.org/show_bug.cgi?id=99358
+
+        Reviewed by Daniel Bates.
+
+        * Scripts/do-webcore-rename:
+
+2012-10-16  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        Implement testRunner.dumpSelectionRect() in WebKitTestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=69545
+
+        Reviewed by Simon Fraser.
+
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::dump): Set the
+        kWKSnapshotOptionsPaintSelectionRectangle option if
+        testRunner.dumpSelectionRect() is called.
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (WTR::TestRunner::dumpSelectionRect):
+        (WTR::TestRunner::shouldDumpSelectionRect):
+        (TestRunner):
+
+2012-10-16  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r131461.
+        http://trac.webkit.org/changeset/131461
+        https://bugs.webkit.org/show_bug.cgi?id=99474
+
+        Broke win7 bots (Requested by danakj|gardening on #webkit).
+
+        * DumpRenderTree/chromium/TestEventPrinter.cpp:
+        * DumpRenderTree/chromium/TestEventPrinter.h:
+        (TestEventPrinter):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::dump):
+
+2012-10-16  Zoltan Horvath  <zoltan@webkit.org>
+
+        [chromium] Provide used JSHeap size in chromium's DRT for pageloadtest memory measurements
+        https://bugs.webkit.org/show_bug.cgi?id=99288
+
+        Reviewed by Ryosuke Niwa.
+
+        Provide used JSHeap size as we did it for the Apple port.
+
+        * DumpRenderTree/chromium/TestEventPrinter.cpp:
+        (TestEventPrinter::handleDumpMemoryHeader): Add new function to print the JSHeap memory result.
+        * DumpRenderTree/chromium/TestEventPrinter.h:
+        (TestEventPrinter): handleDumpMemoryHeader declaration.
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::dump): Dump JSHeap value.
+
+2012-10-16  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Fix nmake wipeclean on Windows
+
+        Reviewed by Tor Arne Vestbø.
+
+        Delete all subdirectories and no files instead of ".".
+
+        * qmake/mkspecs/features/configure.prf:
+
+2012-10-16  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Fix wipeclean on Windows
+
+        Reviewed by Csaba Osztrogonác.
+
+        Make sure to close the .qmake.cache file after opening it, otherwise it cannot be deleted on
+        a clean build because this process (build-webkit) is still using it due to Windows' exclusive
+        way of opening files.
+
+        * Scripts/webkitdirs.pm:
+        (buildQMakeProjects):
+
+2012-10-16  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Fix determination of changed files from SVN revisions
+
+        Reviewed by Csaba Osztrogonác.
+
+        isSVN() doesn't work from within the build directory, so change to the source directory before
+        doing any VCS operations.
+
+        * Scripts/VCSUtils.pm:
+        * Scripts/webkitdirs.pm:
+        (buildQMakeProjects):
+
+2012-10-16  Simon Hausmann  <simon.hausmann@digia.com>
+
+        Fix build-webkit bailing out of !isSVN() and !isGit()
+
+        Reviewed by Tor Arne Vestbø.
+
+        Added missing else case with early return.
+
+        * Scripts/VCSUtils.pm:
+
+2012-10-16  Simon Hausmann  <simon.hausmann@digia.com>, Tor Arne Vestbø <tor.arne.vestbo@digia.com>
+
+        [Qt] Add logic for triggering clean builds on changes to build system files
+
+        Reviewed by Csaba Osztrogonác.
+
+        Re-use the existing logic that gives us a range between old and new SVN revision and
+        parse the summarized output of diff to see if any of the changed files include files
+        that are part of the Qt build system. If they change we likely need a clean build and
+        trigger it just to be on the safe side and reduce the amount of manual intervention
+        needed on the Qt build bots.
+
+        * Scripts/VCSUtils.pm:
+        * Scripts/webkitdirs.pm:
+        (buildQMakeProjects):
+
 2012-10-16  Allan Sandfeld Jensen  <allan.jensen@digia.com>
 
         Fix the paths for QtGraphics related WebKit2 files.

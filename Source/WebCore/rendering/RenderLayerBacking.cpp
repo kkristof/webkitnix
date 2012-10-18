@@ -1373,10 +1373,12 @@ void RenderLayerBacking::setRequiresOwnBackingStore(bool requiresOwnBacking)
     if (requiresOwnBacking == m_requiresOwnBackingStore)
         return;
     
+    m_requiresOwnBackingStore = requiresOwnBacking;
+
     // This affects the answer to paintsIntoCompositedAncestor(), which in turn affects
     // cached clip rects, so when it changes we have to clear clip rects on descendants.
     m_owningLayer->clearClipRectsIncludingDescendants(PaintingClipRects);
-    m_requiresOwnBackingStore = requiresOwnBacking;
+    m_owningLayer->computeRepaintRectsIncludingDescendants();
     
     compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }
@@ -1535,6 +1537,18 @@ float RenderLayerBacking::deviceScaleFactor() const
 void RenderLayerBacking::didCommitChangesForLayer(const GraphicsLayer*) const
 {
     compositor()->didFlushChangesForLayer(m_owningLayer);
+}
+
+bool RenderLayerBacking::getCurrentTransform(const GraphicsLayer* graphicsLayer, TransformationMatrix& transform) const
+{
+    if (graphicsLayer != m_graphicsLayer)
+        return false;
+
+    if (m_owningLayer->hasTransform()) {
+        transform = m_owningLayer->currentTransform(RenderStyle::ExcludeTransformOrigin);
+        return true;
+    }
+    return false;
 }
 
 bool RenderLayerBacking::showDebugBorders(const GraphicsLayer*) const
@@ -1717,6 +1731,11 @@ void RenderLayerBacking::notifyFlushRequired(const GraphicsLayer*)
 {
     if (!renderer()->documentBeingDestroyed())
         compositor()->scheduleLayerFlush();
+}
+
+void RenderLayerBacking::notifyFlushBeforeDisplayRefresh(const GraphicsLayer* layer)
+{
+    compositor()->notifyFlushBeforeDisplayRefresh(layer);
 }
 
 // This is used for the 'freeze' API, for testing only.

@@ -193,12 +193,13 @@ fast/dom/shadow/adopt-node-with-shadow-root.html
 fast/dom/shadow/composed-shadow-tree-walker.html
 fast/dom/shadow/content-after-style.html
 fast/dom/shadow/content-element-api.html
+fast/dom/shadow/content-element-distributed-nodes.html
 fast/dom/shadow/content-element-move.html
 fast/dom/shadow/content-element-outside-shadow.html
 fast/dom/shadow/content-element-outside-shadow-style.html
 fast/dom/shadow/content-element-in-media-element.html
 fast/dom/shadow/content-element-in-meter-element.html
-fast/dom/shadow/distributed-nodes.html
+fast/dom/shadow/content-reprojection-dynamic.html
 fast/dom/shadow/drop-event-for-input-in-shadow.html
 fast/dom/shadow/drop-event-in-shadow.html
 fast/dom/shadow/elements-in-frameless-document.html
@@ -382,6 +383,7 @@ inspector/profiler/heap-snapshot-summary-sorting-instances.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
+inspector/debugger/live-edit-breakpoints.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=89652
 inspector/debugger/debugger-compile-and-run.html
@@ -441,7 +443,7 @@ fast/forms/month-multiple-fields
 fast/forms/time-multiple-fields
 fast/forms/week-multiple-fields
 
-# ENABLE(WIDGET_REGION) is disabled
+# ENABLE(DRAGGABLE_REGION) is disabled
 fast/css/draggable-region-parser.html
 
 # Text Autosizing is not enabled.
@@ -569,6 +571,7 @@ fast/images/exif-orientation-css.html
 fast/events/page-visibility-iframe-delete-test.html
 fast/events/page-visibility-iframe-move-test.html
 fast/events/page-visibility-iframe-propagation-test.html
+fast/events/page-visibility-null-view.html
 fast/events/page-visibility-transition-test.html
 
 # No CORS support for media elements is implemented yet.
@@ -584,6 +587,9 @@ fast/events/constructors/device-proximity-event-constructor.html
 
 # Missing support in DRT for Geolocation's Coordinate attributes.
 fast/dom/Geolocation/coordinates-interface-attributes.html
+
+# User Timing is not enabled
+webkit.org/b/84893 http/tests/w3c/webperf/submission/user-timing
 
 # =========================================================================== #
 #       Drag and Drop Support in DRT.                                         #
@@ -1373,10 +1379,6 @@ svg/animations/animate-text-nested-transforms.html
 # [Qt] fontCache related assertion revealed by r105143
 # https://bugs.webkit.org/show_bug.cgi?id=76534
 svg/carto.net/combobox.svg
-
-# [Qt] svg/custom/getBBox-path.svg fails
-# https://bugs.webkit.org/show_bug.cgi?id=71766
-svg/custom/getBBox-path.svg
 
 #[Qt] New svg/hittest tests introduced in r106882 fail
 #https://bugs.webkit.org/show_bug.cgi?id=77964
@@ -2412,6 +2414,9 @@ webkit.org/b/90951 fast/text/shaping
 webkit.org/b/91376 http/tests/security/sandboxed-iframe-modify-self.html [ Failure Pass ]
 webkit.org/b/91379 http/tests/security/contentSecurityPolicy/policy-does-not-affect-child.html [ Failure Pass ]
 webkit.org/b/91379 http/tests/security/contentSecurityPolicy/object-src-none-allowed.html [ Failure Pass ]
+
+webkit.org/b/98666 fast/events/touch/touch-slider.html [ Failure ]
+webkit.org/b/98666 media/video-playing-and-pause.html [ Failure ]
 
 webkit.org/b/93247 [ Debug ] fast/lists/list-marker-remove-crash.html [ Crash ]
 

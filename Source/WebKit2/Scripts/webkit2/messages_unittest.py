@@ -315,6 +315,7 @@ _expected_header = """/*
 
 #include "Arguments.h"
 #include "Connection.h"
+#include "MessageEncoder.h"
 #include "MessageID.h"
 #include "Plugin.h"
 #include <WebCore/KeyboardEvent.h>
@@ -323,7 +324,6 @@ _expected_header = """/*
 #include <wtf/Vector.h>
 
 namespace CoreIPC {
-    class ArgumentEncoder;
     class Connection;
     class DummyType;
     class MachPort;
@@ -655,7 +655,7 @@ bool GetPluginProcessConnection::DelayedReply::send(const CoreIPC::Connection::H
 {
     ASSERT(m_arguments);
     m_arguments->encode(connectionHandle);
-    bool result = m_connection->sendSyncReply(m_arguments.release());
+    bool result = m_connection->sendSyncReply(static_pointer_cast<CoreIPC::MessageEncoder>(m_arguments.release()));
     m_connection = nullptr;
     return result;
 }
@@ -674,7 +674,7 @@ TestMultipleAttributes::DelayedReply::~DelayedReply()
 bool TestMultipleAttributes::DelayedReply::send()
 {
     ASSERT(m_arguments);
-    bool result = m_connection->sendSyncReply(m_arguments.release());
+    bool result = m_connection->sendSyncReply(static_pointer_cast<CoreIPC::MessageEncoder>(m_arguments.release()));
     m_connection = nullptr;
     return result;
 }

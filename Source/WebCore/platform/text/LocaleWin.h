@@ -47,7 +47,6 @@ public:
     static PassOwnPtr<LocaleWin> create(LCID);
     ~LocaleWin();
     virtual double parseDateTime(const String&, DateComponents::Type) OVERRIDE;
-    virtual String formatDateTime(const DateComponents&, FormatType = FormatTypeUnspecified) OVERRIDE;
 #if ENABLE(CALENDAR_PICKER)
     virtual String dateFormatText() OVERRIDE;
     virtual const Vector<String>& monthLabels() OVERRIDE;
@@ -58,6 +57,7 @@ public:
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual String dateFormat() OVERRIDE;
+    virtual String monthFormat() OVERRIDE;
     virtual String timeFormat() OVERRIDE;
     virtual String shortTimeFormat() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
@@ -99,6 +99,7 @@ private:
     Vector<String> m_monthLabels;
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String m_dateFormat;
+    String m_monthFormat;
 #endif
 #if ENABLE(CALENDAR_PICKER)
     Vector<String> m_weekDayShortLabels;

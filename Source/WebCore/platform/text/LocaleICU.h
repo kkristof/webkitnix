@@ -51,7 +51,6 @@ public:
 
     // For LocalizedDate
     virtual double parseDateTime(const String&, DateComponents::Type) OVERRIDE;
-    virtual String formatDateTime(const DateComponents&, FormatType = FormatTypeUnspecified) OVERRIDE;
 #if ENABLE(CALENDAR_PICKER)
     virtual String dateFormatText() OVERRIDE;
 
@@ -63,6 +62,7 @@ public:
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual String dateFormat() OVERRIDE;
+    virtual String monthFormat() OVERRIDE;
     virtual String timeFormat() OVERRIDE;
     virtual String shortTimeFormat() OVERRIDE;
     virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
@@ -108,6 +108,7 @@ private:
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String m_dateFormat;
+    String m_monthFormat;
     UDateFormat* m_mediumTimeFormat;
     UDateFormat* m_shortTimeFormat;
     Vector<String> m_timeAMPMLabels;

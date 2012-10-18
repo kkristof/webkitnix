@@ -30,6 +30,7 @@
 #include "WKRetainPtr.h"
 #include "WKString.h"
 #include "WebContext.h"
+#include "WebIconDatabase.h"
 #include "ewk_context_download_client_private.h"
 #include "ewk_context_history_client_private.h"
 #include "ewk_context_private.h"
@@ -44,32 +45,37 @@
 #include <wtf/HashMap.h>
 #include <wtf/text/WTFString.h>
 
+#if ENABLE(SPELLCHECK)
+#include "ewk_settings.h"
+#include "ewk_text_checker_private.h"
+#endif
+
 using namespace WebCore;
 using namespace WebKit;
 
-struct _Ewk_Url_Scheme_Handler {
+struct Ewk_Url_Scheme_Handler {
     Ewk_Url_Scheme_Request_Cb callback;
     void* userData;
 
-    _Ewk_Url_Scheme_Handler()
+    Ewk_Url_Scheme_Handler()
         : callback(0)
         , userData(0)
     { }
 
-    _Ewk_Url_Scheme_Handler(Ewk_Url_Scheme_Request_Cb callback, void* userData)
+    Ewk_Url_Scheme_Handler(Ewk_Url_Scheme_Request_Cb callback, void* userData)
         : callback(callback)
         , userData(userData)
     { }
 };
 
-typedef HashMap<String, _Ewk_Url_Scheme_Handler> URLSchemeHandlerMap;
+typedef HashMap<String, Ewk_Url_Scheme_Handler> URLSchemeHandlerMap;
 
-struct _Ewk_Context {
+struct Ewk_Context {
     unsigned __ref; /**< the reference count of the object */
     WKRetainPtr<WKContextRef> context;
 
-    Ewk_Cookie_Manager* cookieManager;
-    Ewk_Favicon_Database* faviconDatabase;
+    OwnPtr<Ewk_Cookie_Manager> cookieManager;
+    OwnPtr<Ewk_Favicon_Database> faviconDatabase;
 #if ENABLE(BATTERY_STATUS)
     RefPtr<BatteryProvider> batteryProvider;
 #endif
@@ -79,18 +85,16 @@ struct _Ewk_Context {
 #if ENABLE(VIBRATION)
     RefPtr<VibrationProvider> vibrationProvider;
 #endif
-    HashMap<uint64_t, Ewk_Download_Job*> downloadJobs;
+    HashMap<uint64_t, RefPtr<Ewk_Download_Job> > downloadJobs;
 
     WKRetainPtr<WKSoupRequestManagerRef> requestManager;
     URLSchemeHandlerMap urlSchemeHandlers;
 
     Ewk_Context_History_Client historyClient;
 
-    _Ewk_Context(WKRetainPtr<WKContextRef> contextRef)
+    Ewk_Context(WKRetainPtr<WKContextRef> contextRef)
         : __ref(1)
         , context(contextRef)
-        , cookieManager(0)
-        , faviconDatabase(0)
         , requestManager(WKContextGetSoupRequestManager(contextRef.get()))
         , historyClient()
     {
@@ -119,20 +123,13 @@ struct _Ewk_Context {
         ewk_context_request_manager_client_attach(this);
         ewk_context_download_client_attach(this);
         ewk_context_history_client_attach(this);
-    }
-
-    ~_Ewk_Context()
-    {
-        if (cookieManager)
-            ewk_cookie_manager_free(cookieManager);
-
-        if (faviconDatabase)
-            ewk_favicon_database_free(faviconDatabase);
-
-        HashMap<uint64_t, Ewk_Download_Job*>::iterator it = downloadJobs.begin();
-        HashMap<uint64_t, Ewk_Download_Job*>::iterator end = downloadJobs.end();
-        for ( ; it != end; ++it)
-            ewk_download_job_unref(it->value);
+#if ENABLE(SPELLCHECK)
+        ewk_text_checker_client_attach();
+        if (ewk_settings_continuous_spell_checking_enabled_get()) {
+            // Load the default language.
+            ewk_settings_spell_checking_languages_set(0);
+        }
+#endif
     }
 };
 
@@ -160,9 +157,9 @@ Ewk_Cookie_Manager* ewk_context_cookie_manager_get(const Ewk_Context* ewkContext
     EINA_SAFETY_ON_NULL_RETURN_VAL(ewkContext, 0);
 
     if (!ewkContext->cookieManager)
-        const_cast<Ewk_Context*>(ewkContext)->cookieManager = ewk_cookie_manager_new(WKContextGetCookieManager(ewkContext->context.get()));
+        const_cast<Ewk_Context*>(ewkContext)->cookieManager = Ewk_Cookie_Manager::create(WKContextGetCookieManager(ewkContext->context.get()));
 
-    return ewkContext->cookieManager;
+    return ewkContext->cookieManager.get();
 }
 
 Ewk_Favicon_Database* ewk_context_favicon_database_get(const Ewk_Context* ewkContext)
@@ -170,15 +167,17 @@ Ewk_Favicon_Database* ewk_context_favicon_database_get(const Ewk_Context* ewkCon
     EINA_SAFETY_ON_NULL_RETURN_VAL(ewkContext, 0);
 
     if (!ewkContext->faviconDatabase) {
-        // Set database path.
-        WebContext* webContext = toImpl(ewkContext->context.get());
-        String databasePath = webContext->iconDatabasePath() + "/" + WebCore::IconDatabase::defaultDatabaseFilename();
-        webContext->setIconDatabasePath(databasePath);
-
-        const_cast<Ewk_Context*>(ewkContext)->faviconDatabase = ewk_favicon_database_new(WKContextGetIconDatabase(ewkContext->context.get()));
+        WKRetainPtr<WKIconDatabaseRef> iconDatabase = WKContextGetIconDatabase(ewkContext->context.get());
+        // Set the database path if it is not open yet.
+        if (!toImpl(iconDatabase.get())->isOpen()) {
+            WebContext* webContext = toImpl(ewkContext->context.get());
+            String databasePath = webContext->iconDatabasePath() + "/" + WebCore::IconDatabase::defaultDatabaseFilename();
+            webContext->setIconDatabasePath(databasePath);
+        }
+        const_cast<Ewk_Context*>(ewkContext)->faviconDatabase = Ewk_Favicon_Database::create(iconDatabase.get());
     }
 
-    return ewkContext->faviconDatabase;
+    return ewkContext->faviconDatabase.get();
 }
 
 WKContextRef ewk_context_WKContext_get(const Ewk_Context* ewkContext)
@@ -210,7 +209,7 @@ void ewk_context_download_job_add(Ewk_Context* ewkContext, Ewk_Download_Job* ewk
     if (ewkContext->downloadJobs.contains(downloadId))
         return;
 
-    ewkContext->downloadJobs.add(downloadId, ewk_download_job_ref(ewkDownload));
+    ewkContext->downloadJobs.add(downloadId, ewkDownload);
 }
 
 /**
@@ -222,7 +221,7 @@ Ewk_Download_Job* ewk_context_download_job_get(const Ewk_Context* ewkContext, ui
 {
     EINA_SAFETY_ON_NULL_RETURN_VAL(ewkContext, 0);
 
-    return ewkContext->downloadJobs.get(downloadId);
+    return ewkContext->downloadJobs.get(downloadId).get();
 }
 
 /**
@@ -233,9 +232,7 @@ Ewk_Download_Job* ewk_context_download_job_get(const Ewk_Context* ewkContext, ui
 void ewk_context_download_job_remove(Ewk_Context* ewkContext, uint64_t downloadId)
 {
     EINA_SAFETY_ON_NULL_RETURN(ewkContext);
-    Ewk_Download_Job* download = ewkContext->downloadJobs.take(downloadId);
-    if (download)
-        ewk_download_job_unref(download);
+    ewkContext->downloadJobs.remove(downloadId);
 }
 
 /**
@@ -260,7 +257,7 @@ void ewk_context_url_scheme_request_received(Ewk_Context* ewkContext, Ewk_Url_Sc
     EINA_SAFETY_ON_NULL_RETURN(ewkContext);
     EINA_SAFETY_ON_NULL_RETURN(schemeRequest);
 
-    _Ewk_Url_Scheme_Handler handler = ewkContext->urlSchemeHandlers.get(ewk_url_scheme_request_scheme_get(schemeRequest));
+    Ewk_Url_Scheme_Handler handler = ewkContext->urlSchemeHandlers.get(ewk_url_scheme_request_scheme_get(schemeRequest));
     if (!handler.callback)
         return;
 
@@ -296,7 +293,7 @@ Eina_Bool ewk_context_url_scheme_register(Ewk_Context* ewkContext, const char* s
     EINA_SAFETY_ON_NULL_RETURN_VAL(scheme, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(callback, false);
 
-    ewkContext->urlSchemeHandlers.set(String::fromUTF8(scheme), _Ewk_Url_Scheme_Handler(callback, userData));
+    ewkContext->urlSchemeHandlers.set(String::fromUTF8(scheme), Ewk_Url_Scheme_Handler(callback, userData));
     WKRetainPtr<WKStringRef> wkScheme(AdoptWK, WKStringCreateWithUTF8CString(scheme));
     WKSoupRequestManagerRegisterURIScheme(ewkContext->requestManager.get(), wkScheme.get());
 

@@ -192,6 +192,8 @@ void TestInvocation::invoke()
         goto end;
     }
 
+    dumpResults();
+
 end:
 #if ENABLE(INSPECTOR)
     if (m_gotInitialResponse)
@@ -233,6 +235,17 @@ void TestInvocation::dump(const char* textToStdout, const char* textToStderr, bo
         fputs("#EOF\n", stdout);
     fflush(stdout);
     fflush(stderr);
+}
+
+void TestInvocation::dumpResults()
+{
+    dump(toWTFString(m_textOutput.get()).utf8().data());
+
+    if (m_dumpPixels && m_pixelResult)
+        dumpPixelsAndCompareWithExpected(m_pixelResult.get(), m_repaintRects.get());
+
+    fputs("#EOF\n", stdout);
+    fflush(stdout);
 }
 
 bool TestInvocation::compareActualHashToExpectedAndDumpResults(const char actualHash[33])
@@ -278,26 +291,15 @@ void TestInvocation::didReceiveMessageFromInjectedBundle(WKStringRef messageName
         WKDictionaryRef messageBodyDictionary = static_cast<WKDictionaryRef>(messageBody);
 
         WKRetainPtr<WKStringRef> textOutputKey(AdoptWK, WKStringCreateWithUTF8CString("TextOutput"));
-        WKStringRef textOutput = static_cast<WKStringRef>(WKDictionaryGetItemForKey(messageBodyDictionary, textOutputKey.get()));
+        m_textOutput = static_cast<WKStringRef>(WKDictionaryGetItemForKey(messageBodyDictionary, textOutputKey.get()));
 
         WKRetainPtr<WKStringRef> pixelResultKey = adoptWK(WKStringCreateWithUTF8CString("PixelResult"));
-        WKImageRef pixelResult = static_cast<WKImageRef>(WKDictionaryGetItemForKey(messageBodyDictionary, pixelResultKey.get()));
-        ASSERT(!pixelResult || m_dumpPixels);
-        
+        m_pixelResult = static_cast<WKImageRef>(WKDictionaryGetItemForKey(messageBodyDictionary, pixelResultKey.get()));
+        ASSERT(!m_pixelResult || m_dumpPixels);
+
         WKRetainPtr<WKStringRef> repaintRectsKey = adoptWK(WKStringCreateWithUTF8CString("RepaintRects"));
-        WKArrayRef repaintRects = static_cast<WKArrayRef>(WKDictionaryGetItemForKey(messageBodyDictionary, repaintRectsKey.get()));        
+        m_repaintRects = static_cast<WKArrayRef>(WKDictionaryGetItemForKey(messageBodyDictionary, repaintRectsKey.get()));
 
-        // Dump text.
-        dump(toWTFString(textOutput).utf8().data());
-
-        // Dump pixels (if necessary).
-        if (m_dumpPixels && pixelResult)
-            dumpPixelsAndCompareWithExpected(pixelResult, repaintRects);
-
-        fputs("#EOF\n", stdout);
-        fflush(stdout);
-        fflush(stderr);
-        
         m_gotFinalMessage = true;
         TestController::shared().notifyDone();
         return;
@@ -430,6 +432,40 @@ void TestInvocation::didReceiveMessageFromInjectedBundle(WKStringRef messageName
         return;
     }
 
+    if (WKStringIsEqualToUTF8CString(messageName, "ProcessWorkQueue")) {
+        if (TestController::shared().workQueueManager().processWorkQueue()) {
+            WKRetainPtr<WKStringRef> messageName = adoptWK(WKStringCreateWithUTF8CString("WorkQueueProcessedCallback"));
+            WKContextPostMessageToInjectedBundle(TestController::shared().context(), messageName.get(), 0);
+        }
+        return;
+    }
+
+    if (WKStringIsEqualToUTF8CString(messageName, "QueueBackNavigation")) {
+        ASSERT(WKGetTypeID(messageBody) == WKUInt64GetTypeID());
+        uint64_t stepCount = WKUInt64GetValue(static_cast<WKUInt64Ref>(messageBody));
+        TestController::shared().workQueueManager().queueBackNavigation(stepCount);
+        return;
+    }
+
+    if (WKStringIsEqualToUTF8CString(messageName, "QueueLoad")) {
+        ASSERT(WKGetTypeID(messageBody) == WKDictionaryGetTypeID());
+        WKDictionaryRef loadDataDictionary = static_cast<WKDictionaryRef>(messageBody);
+
+        WKRetainPtr<WKStringRef> urlKey(AdoptWK, WKStringCreateWithUTF8CString("url"));
+        WKStringRef urlWK = static_cast<WKStringRef>(WKDictionaryGetItemForKey(loadDataDictionary, urlKey.get()));
+
+        WKRetainPtr<WKStringRef> targetKey(AdoptWK, WKStringCreateWithUTF8CString("target"));
+        WKStringRef targetWK = static_cast<WKStringRef>(WKDictionaryGetItemForKey(loadDataDictionary, targetKey.get()));
+
+        TestController::shared().workQueueManager().queueLoad(toWTFString(urlWK), toWTFString(targetWK));
+        return;
+    }
+
+    if (WKStringIsEqualToUTF8CString(messageName, "QueueReload")) {
+        TestController::shared().workQueueManager().queueReload();
+        return;
+    }
+
     ASSERT_NOT_REACHED();
 }
 
@@ -440,6 +476,12 @@ WKRetainPtr<WKTypeRef> TestInvocation::didReceiveSynchronousMessageFromInjectedB
         WKBooleanRef isKeyValue = static_cast<WKBooleanRef>(messageBody);
         TestController::shared().mainWebView()->setWindowIsKey(WKBooleanGetValue(isKeyValue));
         return 0;
+    }
+
+    if (WKStringIsEqualToUTF8CString(messageName, "IsWorkQueueEmpty")) {
+        bool isEmpty = TestController::shared().workQueueManager().isWorkQueueEmpty();
+        WKRetainPtr<WKTypeRef> result(AdoptWK, WKBooleanCreate(isEmpty));
+        return result;
     }
 
     ASSERT_NOT_REACHED();

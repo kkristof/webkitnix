@@ -123,14 +123,6 @@ double LocaleMac::parseDateTime(const String& input, DateComponents::Type type)
     return [date timeIntervalSince1970] * msPerSecond;
 }
 
-String LocaleMac::formatDateTime(const DateComponents& dateComponents, FormatType formatType)
-{
-    if (dateComponents.type() != DateComponents::Date)
-        return Localizer::formatDateTime(dateComponents, formatType);
-    NSTimeInterval interval = dateComponents.millisecondsSinceEpoch() / msPerSecond;
-    return [shortDateFormatter().get() stringFromDate:[NSDate dateWithTimeIntervalSince1970:interval]];
-}
-
 #if ENABLE(CALENDAR_PICKER)
 static bool isYearSymbol(UChar letter) { return letter == 'y' || letter == 'Y' || letter == 'u'; }
 static bool isMonthSymbol(UChar letter) { return letter == 'M' || letter == 'L'; }
@@ -252,6 +244,16 @@ String LocaleMac::dateFormat()
         return m_dateFormat;
     m_dateFormat = [shortDateFormatter().get() dateFormat];
     return m_dateFormat;
+}
+
+String LocaleMac::monthFormat()
+{
+    if (!m_monthFormat.isNull())
+        return m_monthFormat;
+    // Gets a format for "MMM", not "MM" because Windows API always provides
+    // formats for "MMM".
+    m_monthFormat = [NSDateFormatter dateFormatFromTemplate:@"yyyyMMM" options:0 locale:m_locale.get()];
+    return m_monthFormat;
 }
 
 String LocaleMac::timeFormat()

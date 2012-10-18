@@ -44,7 +44,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_perspectiveOriginX(RenderStyle::initialPerspectiveOriginX())
     , m_perspectiveOriginY(RenderStyle::initialPerspectiveOriginY())
     , lineClamp(RenderStyle::initialLineClamp())
-#if ENABLE(WIDGET_REGION)
+#if ENABLE(DRAGGABLE_REGION)
     , m_draggableRegionMode(DraggableRegionNone)
 #endif
     , m_mask(FillLayer(MaskFillLayer))
@@ -101,7 +101,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_perspectiveOriginX(o.m_perspectiveOriginX)
     , m_perspectiveOriginY(o.m_perspectiveOriginY)
     , lineClamp(o.lineClamp)
-#if ENABLE(WIDGET_REGION)
+#if ENABLE(DRAGGABLE_REGION)
     , m_draggableRegionMode(o.m_draggableRegionMode)
 #endif
     , m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox)
@@ -186,7 +186,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
 #if ENABLE(DASHBOARD_SUPPORT)
         && m_dashboardRegions == o.m_dashboardRegions
 #endif
-#if ENABLE(WIDGET_REGION)
+#if ENABLE(DRAGGABLE_REGION)
         && m_draggableRegionMode == o.m_draggableRegionMode
 #endif
         && m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox
@@ -256,13 +256,15 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const
 {
-    if (m_content.get() == o.m_content.get())
-        return true;
-        
-    if (m_content && o.m_content && *m_content == *o.m_content)
-        return true;
+    ContentData* a = m_content.get();
+    ContentData* b = o.m_content.get();
 
-    return false;
+    while (a && b && *a == *b) {
+        a = a->next();
+        b = b->next();
+    }
+
+    return !a && !b;
 }
 
 bool StyleRareNonInheritedData::counterDataEquivalent(const StyleRareNonInheritedData& o) const
