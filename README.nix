@@ -65,3 +65,11 @@ which can get particularly confusing since it's running in the background,
 and if you're also running the main process in gdb, won't work at all
 (the two instances will fight over the terminal). It's necessary to pass the
 full path to the xterm binary otherwise it will fail.
+
+If you want to debug a specific test (TEST_OF_YOUR_CHOICE in the example
+below) you can run WebKitTestRunner with WEB_PROCESS_CMD_PREFIX exactly as
+you did with MiniBrowser:
+
+WEB_PROCESS_CMD_PREFIX="/usr/bin/xterm -title WebProcess -e gdb --args" \
+WebKitBuild/Debug/bin/WebKitTestRunner --no-timeout-at-all --debug --nix \
+                                         LayoutTests/TEST_OF_YOUR_CHOICE
