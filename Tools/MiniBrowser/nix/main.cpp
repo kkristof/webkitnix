@@ -404,7 +404,8 @@ void MiniBrowser::scheduleUpdateDisplay()
 void MiniBrowser::adjustScrollPositionToBoundaries(int* x, int* y)
 {
     int rightBoundary = m_contentsWidth - m_webView->visibleContentWidth();
-    int bottomBoundary = m_contentsHeight - m_webView->visibleContentHeight();
+    // Contents height may be shorter than the scaled viewport height.
+    int bottomBoundary = m_contentsHeight < m_webView->visibleContentHeight() ? 0 : m_contentsHeight - m_webView->visibleContentHeight();
 
     if (*x < 0)
         *x = 0;
@@ -456,9 +457,10 @@ void MiniBrowser::didChangeContentsSize(int width, int height)
     m_contentsWidth = width;
     m_contentsHeight = height;
 
-    if (m_mode == MobileMode)
+    if (m_mode == MobileMode) {
         adjustScaleToFitContents();
-    adjustScrollPosition();
+        adjustScrollPosition();
+    }
 }
 
 void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool wasEventHandled)
