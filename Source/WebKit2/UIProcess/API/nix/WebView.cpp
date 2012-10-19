@@ -447,18 +447,12 @@ void WebViewImpl::paintToCurrentGLContext()
     cairo_matrix_transform_point(&viewTransform, &x, &y);
     cairo_matrix_transform_distance(&viewTransform, &width, &height);
 
-    // FIXME: We can create or own matrix ready and avoid some matrix multiplications
-    cairo_matrix_t scaleTransform;
-    cairo_matrix_init_scale(&scaleTransform, m_scale, m_scale);
-
     cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &viewTransform, &scaleTransform);
+    cairo_matrix_init_scale(&transform, m_scale, m_scale);
 
-    if (m_webPageProxy->useFixedLayout()) {
-        cairo_matrix_t scrollTransform;
-        cairo_matrix_init_translate(&scrollTransform, -m_scrollPosition.x() * m_scale, -m_scrollPosition.y() * m_scale);
-        cairo_matrix_multiply(&transform, &transform, &scrollTransform);
-    }
+    if (m_webPageProxy->useFixedLayout())
+        cairo_matrix_translate(&transform, -m_scrollPosition.x(), -m_scrollPosition.y());
+    cairo_matrix_multiply(&transform, &viewTransform, &transform);
 
     FloatRect rect(x, y, width, height);
     renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
