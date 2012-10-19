@@ -71,5 +71,5 @@ below) you can run WebKitTestRunner with WEB_PROCESS_CMD_PREFIX exactly as
 you did with MiniBrowser:
 
 WEB_PROCESS_CMD_PREFIX="/usr/bin/xterm -title WebProcess -e gdb --args" \
-WebKitBuild/Debug/bin/WebKitTestRunner --no-timeout-at-all --debug --nix \
+WebKitBuild/Debug/bin/WebKitTestRunner --no-timeout-at-all \
                                          LayoutTests/TEST_OF_YOUR_CHOICE
