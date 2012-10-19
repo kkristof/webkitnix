@@ -145,6 +145,7 @@ public:
     virtual void didRelaunchProcess() { m_client->webProcessRelaunched(); }
 
     virtual void pageDidRequestScroll(const IntPoint& point);
+    virtual void didChangeContentsSize(const IntSize& size);
 
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
@@ -155,8 +156,6 @@ public:
     virtual void toolTipChanged(const String&, const String&) { notImplemented(); }
 
     virtual void handleDownloadRequest(DownloadProxy*) { notImplemented(); }
-
-    virtual void didChangeContentsSize(const IntSize& size);
 
     virtual void setCursor(const Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
