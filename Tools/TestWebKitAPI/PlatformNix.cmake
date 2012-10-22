@@ -96,6 +96,7 @@ SET(test_webkit2_api_fail_BINARIES
 SET(TestWebKitNixAPIBase_SOURCES
     ${test_main_SOURCES}
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
+    ${TESTWEBKITAPI_DIR}/nix/PageLoader.cpp
     ${TESTWEBKITAPI_DIR}/JavaScriptTest.cpp
     ${TESTWEBKITAPI_DIR}/PlatformUtilities.cpp
     ${TESTWEBKITAPI_DIR}/TestsController.cpp

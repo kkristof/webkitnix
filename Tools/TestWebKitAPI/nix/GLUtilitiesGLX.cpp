@@ -71,14 +71,12 @@ GLOffscreenBuffer::~GLOffscreenBuffer()
     XCloseDisplay(m_display);
 }
 
-bool GLOffscreenBuffer::wasCorrectlyInitialized()
-{
-    return m_context;
-}
-
 bool GLOffscreenBuffer::makeCurrent()
 {
-    glXMakeCurrent(m_display, m_pbuffer, m_context);
+    if (!m_context)
+        return false;
+
+    return glXMakeCurrent(m_display, m_pbuffer, m_context);
 }
 
 } // namespace Util

@@ -18,7 +18,6 @@ public:
     GLOffscreenBuffer(unsigned width, unsigned height);
     ~GLOffscreenBuffer();
 
-    bool wasCorrectlyInitialized();
     bool makeCurrent();
 
 private:

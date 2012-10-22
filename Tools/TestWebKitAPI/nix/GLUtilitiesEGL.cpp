@@ -76,14 +76,12 @@ GLOffscreenBuffer::~GLOffscreenBuffer()
     eglTerminate(m_display);
 }
 
-bool GLOffscreenBuffer::wasCorrectlyInitialized()
-{
-    return m_surface;
-}
-
 bool GLOffscreenBuffer::makeCurrent()
 {
-    eglMakeCurrent(m_display, m_surface, m_surface, m_context);
+    if (!m_surface)
+        return false;
+
+    return eglMakeCurrent(m_display, m_surface, m_surface, m_context);
 }
 
 } // namespace Util
