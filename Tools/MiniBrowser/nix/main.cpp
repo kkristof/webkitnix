@@ -490,6 +490,7 @@ int main(int argc, char* argv[])
     int width = DEFAULT_WIDTH;
     int height = DEFAULT_HEIGHT;
     std::string url;
+    std::string userAgent;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
 
@@ -507,6 +508,14 @@ int main(int argc, char* argv[])
                 fprintf(stderr, "--window-size format is WIDTHxHEIGHT.\n");
                 return 1;
             }
+        } else if (!strcmp(argv[i], "--n9")) {
+            userAgent = "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13";
+        } else if (!strcmp(argv[i], "--ipad")) {
+            userAgent = "Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3";
+        } else if (!strcmp(argv[i], "--iphone")) {
+            userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3";
+        } else if (!strcmp(argv[i], "--android")) {
+            userAgent = "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
         } else
             url = argv[i];
     }
@@ -525,6 +534,9 @@ int main(int argc, char* argv[])
         printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
         browser.setTouchEmulationMode(true);
     }
+
+    if (userAgent.size())
+        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent.c_str()));
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
 
