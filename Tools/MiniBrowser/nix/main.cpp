@@ -10,6 +10,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <glib.h>
@@ -67,6 +68,8 @@ private:
     void adjustScrollPositionToBoundaries(int* x, int* y);
     void adjustScrollPosition();
     void adjustScaleToFitContents();
+
+    void scaleAtPoint(int x, int y, double delta);
 
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
@@ -244,6 +247,12 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
 
 void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 {
+    if (m_mode == MobileMode && event.state & ShiftMask) {
+        // FIXME: When X11 window coordinates differ WebView coordinates, we need to adjust them here.
+        scaleAtPoint(event.x, event.y, event.button == 4 ? 0.1 : -0.1);
+        return;
+    }
+
     // Same constant we use inside WebView to calculate the ticks. See also WebCore::Scrollbar::pixelsPerLineStep().
     const float pixelsPerStep = 40.0f;
 
@@ -487,6 +496,25 @@ void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool was
     }
 }
 
+void MiniBrowser::scaleAtPoint(int x, int y, double delta)
+{
+    double minimumScale = double(m_webView->width()) / m_contentsWidth;
+    double newScale = m_webView->scale() + delta;
+    if (newScale < minimumScale)
+        newScale = minimumScale;
+
+    double oldScale = m_webView->scale();
+
+    // Calculate new scroll points that will keep the content
+    // approximately at the same visual point.
+    int newScrollX = m_webView->scrollX() + round((x / oldScale) - (x / newScale));
+    int newScrollY = m_webView->scrollY() + round((y / oldScale) - (y / newScale));
+
+    m_webView->setScale(newScale);
+    adjustScrollPositionToBoundaries(&newScrollX, &newScrollY);
+    m_webView->setScrollPosition(newScrollX, newScrollY);
+}
+
 int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
@@ -552,6 +580,9 @@ int main(int argc, char* argv[])
 
     if (userAgent)
         WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent));
+
+    if (browser.mode() == MiniBrowser::MobileMode)
+        printf("Use Shift + mouse wheel to zoom in and out.\n");
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
 
