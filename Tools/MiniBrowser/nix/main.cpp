@@ -31,7 +31,7 @@ public:
         DesktopMode
     };
 
-    MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height);
+    MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, int viewportHorizontalDisplacement, int viewportVerticalDisplacement);
     virtual ~MiniBrowser();
 
     WKPageRef pageRef() const { return m_webView->pageRef(); }
@@ -47,6 +47,7 @@ public:
     virtual void handleClosed();
 
     // Nix::WebViewClient.
+    virtual cairo_matrix_t viewToScreenTransform() { return m_webViewTransform; }
     virtual void viewNeedsDisplay(int, int, int, int) { scheduleUpdateDisplay(); }
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
@@ -83,11 +84,12 @@ private:
     Nix::TouchPoint m_previousTouchPoint;
     int m_contentsWidth;
     int m_contentsHeight;
+    cairo_matrix_t m_webViewTransform;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
 
-MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height)
+MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, int viewportHorizontalDisplacement, int viewportVerticalDisplacement)
     : m_context(AdoptWK, WKContextCreate())
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("MiniBrowser"))))
     , m_window(new LinuxWindow(this, width, height))
@@ -117,6 +119,9 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height)
 
     std::pair<int, int> size = m_window->size();
     m_webView->setSize(size.first, size.second);
+
+    if (viewportHorizontalDisplacement || viewportVerticalDisplacement)
+        cairo_matrix_init_translate(&m_webViewTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
 
     m_webView->setFocused(true);
     m_webView->setVisible(true);
@@ -489,6 +494,8 @@ int main(int argc, char* argv[])
 
     int width = DEFAULT_WIDTH;
     int height = DEFAULT_HEIGHT;
+    int viewportHorizontalDisplacement = 0;
+    int viewportVerticalDisplacement = 0;
     std::string url;
     const char* userAgent = 0;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
@@ -506,6 +513,15 @@ int main(int argc, char* argv[])
             }
             if (sscanf(argv[++i], "%dx%d", &width, &height) != 2) {
                 fprintf(stderr, "--window-size format is WIDTHxHEIGHT.\n");
+                return 1;
+            }
+        } else if (!strcmp(argv[i], "--viewport-displacement")) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "--viewport-displacement requires an argument.\n");
+                return 1;
+            }
+            if (sscanf(argv[++i], "%dx%d", &viewportHorizontalDisplacement, &viewportVerticalDisplacement) != 2) {
+                fprintf(stderr, "--viewport-displacement format is HORIZDISPLACEMENTxVERTDISPLACEMENT.\n");
                 return 1;
             }
         } else if (!strcmp(argv[i], "--n9")) {
@@ -528,7 +544,7 @@ int main(int argc, char* argv[])
     }
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
-    MiniBrowser browser(mainLoop, browserMode, width, height);
+    MiniBrowser browser(mainLoop, browserMode, width, height, viewportHorizontalDisplacement, viewportVerticalDisplacement);
 
     if (browser.mode() == MiniBrowser::MobileMode || touchEmulationEnabled) {
         printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
