@@ -25,6 +25,7 @@ SET(WEBCORE_DIR "${CMAKE_SOURCE_DIR}/Source/WebCore")
 SET(WEBKIT_DIR "${CMAKE_SOURCE_DIR}/Source/WebKit")
 SET(WEBKIT2_DIR "${CMAKE_SOURCE_DIR}/Source/WebKit2")
 SET(THIRDPARTY_DIR "${CMAKE_SOURCE_DIR}/Source/ThirdParty")
+SET(PLATFORM_DIR "${CMAKE_SOURCE_DIR}/Source/Platform")
 
 SET(TOOLS_DIR "${CMAKE_SOURCE_DIR}/Tools")
 
@@ -108,6 +109,7 @@ SET(WebCore_LIBRARY_NAME WebCore)
 SET(WebKit_LIBRARY_NAME WebKit)
 SET(WebKit2_LIBRARY_NAME WebKit2)
 SET(WebCoreTestSupport_LIBRARY_NAME WebCoreTestSupport)
+SET(Platform_LIBRARY_NAME Platform)
 
 # -----------------------------------------------------------------------------
 # Default library types

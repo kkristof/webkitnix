@@ -3,6 +3,7 @@ LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/platform/linux"
   "${WEBCORE_DIR}/platform/mediastream/gstreamer"
   "${WEBCORE_DIR}/platform/network/soup"
+  "${PLATFORM_DIR}/nix/"
 )
 
 LIST(APPEND WebCore_SOURCES
@@ -299,5 +300,11 @@ IF (ENABLE_WEB_AUDIO)
   FILE(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")
   INSTALL(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
   ADD_DEFINITIONS(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
+ENDIF ()
+
+IF (ENABLE_GAMEPAD)
+  LIST(APPEND WebCore_SOURCES
+    platform/nix/GamepadsNix.cpp
+  )
 ENDIF ()
 

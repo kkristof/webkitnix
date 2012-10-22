@@ -529,6 +529,10 @@ fast/parser/double-write-from-closed-iframe.html [ Crash Pass ]
 # The printed data is correct, though.
 inspector-protocol/runtime-getProperties.html [ Failure ]
 
+# Missing GamepadController for InjectedBundle in WebKitTestRunner.
+gamepad/gamepad-out-of-range-crasher.html [ Failure ]
+gamepad/gamepad-polling-access.html [ Failure ]
+
 #############################################################
 # DISABLED APIS
 #############################################################
@@ -546,7 +550,6 @@ fast/mediastream [ Skip ]
 fast/notifications [ Skip ]
 fast/speech [ Skip ]
 fullscreen [ Skip ]
-gamepad [ Skip ]
 java [ Skip ]
 media [ Skip ]
 plugins [ Skip ]
