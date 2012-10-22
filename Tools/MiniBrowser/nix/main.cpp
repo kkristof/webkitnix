@@ -490,7 +490,7 @@ int main(int argc, char* argv[])
     int width = DEFAULT_WIDTH;
     int height = DEFAULT_HEIGHT;
     std::string url;
-    std::string userAgent;
+    const char* userAgent = 0;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
 
@@ -535,8 +535,8 @@ int main(int argc, char* argv[])
         browser.setTouchEmulationMode(true);
     }
 
-    if (userAgent.size())
-        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent.c_str()));
+    if (userAgent)
+        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent));
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
 
