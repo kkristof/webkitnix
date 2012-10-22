@@ -26,13 +26,9 @@
 class WTRWebViewClient : public Nix::WebViewClient {
 public:
     WTRWebViewClient() : Nix::WebViewClient(), m_view(0) {}
-    void viewNeedsDisplay(int x, int y, int width, int height) {}
-    void webProcessCrashed(WKStringRef) {}
-    void webProcessRelaunched() {}
     void pageDidRequestScroll(int x, int y) { if (m_view) m_view->setScrollPosition(x, y); }
 
     void setView(Nix::WebView* view) { m_view = view; }
-
 private:
     Nix::WebView* m_view;
 };
