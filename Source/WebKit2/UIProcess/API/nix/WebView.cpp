@@ -480,7 +480,7 @@ void WebViewImpl::paintToCurrentGLContext()
 
     if (m_webPageProxy->useFixedLayout())
         cairo_matrix_translate(&transform, -m_scrollPosition.x(), -m_scrollPosition.y());
-    cairo_matrix_multiply(&transform, &viewTransform, &transform);
+    cairo_matrix_multiply(&transform, &transform, &viewTransform);
 
     FloatRect rect(x, y, width, height);
     renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
