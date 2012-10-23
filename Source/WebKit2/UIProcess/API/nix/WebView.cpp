@@ -157,6 +157,8 @@ public:
     virtual void pageDidRequestScroll(const IntPoint& point);
     virtual void didChangeContentsSize(const IntSize& size);
 
+    virtual void pageTransitionViewportReady();
+
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
     virtual void scrollView(const IntRect&, const IntSize&) { notImplemented(); }
@@ -217,7 +219,6 @@ public:
 
     virtual void updateTextInputState() { notImplemented(); }
     virtual void didRenderFrame(const WebCore::IntSize&, const WebCore::IntRect&) { notImplemented(); }
-    virtual void pageTransitionViewportReady() { notImplemented(); }
 private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
@@ -503,6 +504,11 @@ void WebViewImpl::didChangeContentsSize(const IntSize& size)
     m_contentsSize = size;
     m_client->didChangeContentsSize(size.width(), size.height());
     commitViewportChanges();
+}
+
+void WebViewImpl::pageTransitionViewportReady()
+{
+    m_webPageProxy->commitPageTransitionViewport();
 }
 
 cairo_matrix_t WebViewImpl::screenToViewMatrix()
