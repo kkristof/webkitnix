@@ -62,12 +62,20 @@ public:
     virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&);
     virtual void handlePanning(double timestamp, double dx, double dy);
     virtual void handlePanningFinished(double timestamp);
+    virtual void handlePinch(double timestamp, double dx, double dy, double distanceRatio, double contentCenterX, double contentCenterY);
+    virtual void handlePinchFinished(double timestamp);
+
     virtual double scale();
 
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
 
 private:
+
+    enum ScaleBehavior {
+        AdjustToBoundaries,
+        IgnoreBoundaries
+    };
     void handleWheelEvent(const XButtonPressedEvent&);
     void updateClickCount(const XButtonPressedEvent&);
 
@@ -77,7 +85,7 @@ private:
     void adjustScrollPosition();
     double scaleToFitContents();
 
-    void scaleAtPoint(int x, int y, double scaleRatio);
+    void scaleAtPoint(double x, double y, double scaleRatio, ScaleBehavior shouldAdjustScrollPosition = AdjustToBoundaries);
 
     Nix::WebView* webViewAtX11Position(int x, int y);
 
@@ -582,7 +590,25 @@ void MiniBrowser::handlePanningFinished(double timestamp)
     adjustScrollPosition();
 }
 
-void MiniBrowser::scaleAtPoint(int x, int y, double scaleRatio)
+void MiniBrowser::handlePinch(double timestamp, double dx, double dy, double distanceRatio, double contentCenterX, double contentCenterY)
+{
+    // Scaling: The page should be scaled proportionally to the distance of the pinch.
+    // Scrolling: If the center of the pinch initially was position (120,120) in content
+    //            coordinates, them during the page must be scrolled to keep the pinch center
+    //            at the same coordinates.
+    double x = m_webView->scrollX() - dx;
+    double y = m_webView->scrollY() - dy;
+
+    m_webView->setScrollPosition(x, y);
+    scaleAtPoint(contentCenterX, contentCenterY, distanceRatio / m_webView->scale(), IgnoreBoundaries);
+}
+
+void MiniBrowser::handlePinchFinished(double timestamp)
+{
+    adjustScrollPosition();
+}
+
+void MiniBrowser::scaleAtPoint(double x, double y, double scaleRatio, ScaleBehavior shouldAdjustScrollPosition)
 {
     double newScale = m_webView->scale() * scaleRatio;
     double minimumScale = double(m_webView->width()) / m_contentsWidth;
@@ -597,7 +623,8 @@ void MiniBrowser::scaleAtPoint(int x, int y, double scaleRatio)
     double newScrollY = y - (y - m_webView->scrollY()) / scaleRatio;
 
     m_webView->setScale(newScale);
-    adjustScrollPositionToBoundaries(&newScrollX, &newScrollY);
+    if (shouldAdjustScrollPosition == AdjustToBoundaries)
+        adjustScrollPositionToBoundaries(&newScrollX, &newScrollY);
     m_webView->setScrollPosition(newScrollX, newScrollY);
 }
 

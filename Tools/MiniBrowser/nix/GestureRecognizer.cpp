@@ -2,12 +2,33 @@
 #include <cmath>
 #include <cstdio>
 
+static WKPoint computeCenter(WKPoint a, WKPoint b)
+{
+    return WKPointMake((a.x + b.x) / 2, (a.y + b.y) / 2);
+}
+
+static double computeDistance(WKPoint a, WKPoint b)
+{
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+}
+
+static bool hasTouchPointPressed(const Nix::TouchEvent& event)
+{
+    std::vector<Nix::TouchPoint>::const_iterator it = event.touchPoints.begin();
+
+    for (; it < event.touchPoints.end(); ++it)
+        if ((*it).state == Nix::TouchPoint::TouchPressed)
+            return true;
+
+    return false;
+}
 
 GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
     : m_client(client)
     , m_state(&GestureRecognizer::noGesture)
     , m_timestamp(0)
     , m_doubleTapTimerId(0)
+    , m_initialPinchDistance(0)
 {
 }
 
@@ -54,12 +75,21 @@ void GestureRecognizer::noGesture(const Nix::TouchEvent& event)
     }
 }
 
+void GestureRecognizer::setupPinchData(const std::vector<Nix::TouchPoint>& points)
+{
+    Nix::TouchPoint first = points[0];
+    Nix::TouchPoint second = points[1];
+
+    m_initialPinchDistance = computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+    m_initialPinchContentCenter = computeCenter(WKPointMake(first.x, first.y), WKPointMake(second.x, second.y));
+    m_previousPinchGlobalCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+}
+
 void GestureRecognizer::singleTapPressed(const Nix::TouchEvent& event)
 {
     Nix::TouchPoint touch = event.touchPoints[0];
     switch (event.type) {
     case Nix::InputEvent::TouchMove:
-        // FIXME Both calls to exceedsPanThreshold were using m_previousTouchPoint.
         if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
             updatePanningData(event.timestamp, touch);
         }
@@ -70,7 +100,9 @@ void GestureRecognizer::singleTapPressed(const Nix::TouchEvent& event)
         m_doubleTapTimerId = g_timeout_add(MaxDoubleTapInterval, doubleTapTimer, this);
         break;
     case Nix::InputEvent::TouchStart:
-        fail("received TouchStart when in SingleTapPressed state.");
+        m_state = &GestureRecognizer::pinchInProgress;
+        setupPinchData(event.touchPoints);
+        m_client->handlePinchStarted(event.timestamp);
         break;
     }
 }
@@ -101,7 +133,9 @@ void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
         m_client->handleDoubleTap(event.timestamp, touch);
         break;
     case Nix::InputEvent::TouchStart:
-        fail("received TouchStart when in DoubleTapPressed state.");
+        m_state = &GestureRecognizer::pinchInProgress;
+        setupPinchData(event.touchPoints);
+        m_client->handlePinchStarted(event.timestamp);
         break;
     }
 }
@@ -127,7 +161,47 @@ void GestureRecognizer::panningInProgress(const Nix::TouchEvent& event)
         m_client->handlePanningFinished(event.timestamp);
         break;
     case Nix::InputEvent::TouchStart:
-        fail("received TouchStart when in PanningInProgress state.");
+        m_state = &GestureRecognizer::pinchInProgress;
+        setupPinchData(event.touchPoints);
+        m_client->handlePinchStarted(event.timestamp);
+        break;
+    }
+}
+
+void GestureRecognizer::pinchInProgress(const Nix::TouchEvent& event)
+{
+    if (event.touchPoints.size() < 2) {
+        fail("Received only one touch point while in PinchInProgressState.");
+        return;
+    }
+
+    Nix::TouchPoint first = event.touchPoints[0];
+    Nix::TouchPoint second = event.touchPoints[1];
+
+    WKPoint currentCenter;
+
+    switch (event.type) {
+    case Nix::InputEvent::TouchMove:
+        currentCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+        m_client->handlePinch(event.timestamp,
+            (currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale(),
+            (currentCenter.y - m_previousPinchGlobalCenter.y) / m_client->scale(),
+            computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY)) / m_initialPinchDistance,
+            m_initialPinchContentCenter.x,
+            m_initialPinchContentCenter.y);
+        m_previousPinchGlobalCenter = currentCenter;
+        break;
+    case Nix::InputEvent::TouchEnd:
+        if (hasTouchPointPressed(event))
+            m_state = &GestureRecognizer::panningInProgress;
+        else {
+            m_state == &GestureRecognizer::noGesture;
+            reset();
+        }
+        m_client->handlePinchFinished(event.timestamp);
+        break;
+    case Nix::InputEvent::TouchStart:
+        // Ignore extra touch points.
         break;
     }
 }
