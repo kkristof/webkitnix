@@ -51,6 +51,10 @@ canvas/philip/tests/2d.text.draw.space.collapse.start.html [ Skip ]
 canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
 fast/xsl/sort-locale.xml [ Skip ]
+
+# Show the error message twice
+fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Failure ]
+
 scrollbars/scroll-rtl-or-bt-layer.html [ Skip ]
 scrollbars/scrollbar-click-does-not-blur-content.html [ Skip ]
 scrollbars/scrollbar-iframe-click-does-not-blur-content.html [ Skip ]
@@ -388,6 +392,10 @@ fast/events/dropzone-004.html [ Skip ]
 fast/events/file-input-hidden-in-ondrop.html [ Skip ]
 fast/events/selectstart-by-drag.html [ Skip ]
 fast/css/draggable-region-parser.html [ Skip ]
+
+# The CSS property -webkit-text-decoration-line isn't found.
+fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html [ Failure ]
+fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-style.html [ Failure ]
 
 # Tests failing due to input boxes being stacked instead of
 # displayed on the same line (see related https://bugs.webkit.org/show_bug.cgi?id=92551)
