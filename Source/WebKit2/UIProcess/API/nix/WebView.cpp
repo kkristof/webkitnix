@@ -73,6 +73,16 @@ void WebViewClient::doneWithGestureEvent(const GestureEvent&, bool)
 
 }
 
+void WebViewClient::pageDidRequestScroll(int, int)
+{
+
+}
+
+void WebViewClient::didChangeContentsSize(int, int)
+{
+
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -149,7 +159,7 @@ public:
 
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
-    virtual void scrollView(const IntRect& scrollRect, const IntSize& scrollOffset) { notImplemented(); }
+    virtual void scrollView(const IntRect&, const IntSize&) { notImplemented(); }
 
     virtual void pageClosed() { notImplemented(); }
 
@@ -171,7 +181,7 @@ public:
     virtual IntPoint screenToWindow(const IntPoint& point) { notImplemented(); return point; }
     virtual IntRect windowToScreen(const IntRect& rect) { notImplemented(); return rect; }
 
-    virtual void doneWithKeyEvent(const NativeWebKeyboardEvent&, bool wasEventHandled) { notImplemented(); }
+    virtual void doneWithKeyEvent(const NativeWebKeyboardEvent&, bool) { notImplemented(); }
 #if ENABLE(GESTURE_EVENTS)
     virtual void doneWithGestureEvent(const NativeWebGestureEvent&, bool wasEventHandled);
 #endif
@@ -186,7 +196,7 @@ public:
     virtual PassRefPtr<WebColorChooserProxy> createColorChooserProxy(WebPageProxy*, const Color& initialColor) { notImplemented(); return PassRefPtr<WebColorChooserProxy>(); }
 #endif
 
-    virtual void setFindIndicator(PassRefPtr<FindIndicator>, bool fadeOut, bool animate)  { notImplemented(); }
+    virtual void setFindIndicator(PassRefPtr<FindIndicator>, bool, bool)  { notImplemented(); }
 
 #if USE(ACCELERATED_COMPOSITING)
     virtual void enterAcceleratedCompositingMode(const LayerTreeContext&) { notImplemented(); }
@@ -196,14 +206,14 @@ public:
 
     virtual void didChangeScrollbarsForMainFrame() const { notImplemented(); }
 
-    virtual void didCommitLoadForMainFrame(bool useCustomRepresentation) { notImplemented(); }
-    virtual void didFinishLoadingDataForCustomRepresentation(const String& suggestedFilename, const CoreIPC::DataReference&) { notImplemented(); }
+    virtual void didCommitLoadForMainFrame(bool) { notImplemented(); }
+    virtual void didFinishLoadingDataForCustomRepresentation(const String&, const CoreIPC::DataReference&) { notImplemented(); }
     virtual double customRepresentationZoomFactor() { notImplemented(); return 1.0; }
     virtual void setCustomRepresentationZoomFactor(double) { notImplemented(); }
 
-    virtual void flashBackingStoreUpdates(const Vector<IntRect>& updateRects) { notImplemented(); }
-    virtual void findStringInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
-    virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned maxMatchCount) { notImplemented(); }
+    virtual void flashBackingStoreUpdates(const Vector<IntRect>&) { notImplemented(); }
+    virtual void findStringInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
+    virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
 
 private:
     LayerTreeRenderer* layerTreeRenderer();

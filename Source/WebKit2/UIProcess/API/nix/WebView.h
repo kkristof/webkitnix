@@ -20,8 +20,8 @@ public:
     virtual void webProcessRelaunched() = 0;
     virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
     virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
-    virtual void pageDidRequestScroll(int x, int y) {}
-    virtual void didChangeContentsSize(int width, int height) {}
+    virtual void pageDidRequestScroll(int x, int y);
+    virtual void didChangeContentsSize(int width, int height);
 };
 
 class WK_EXPORT WebView {
