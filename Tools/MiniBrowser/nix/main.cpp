@@ -120,8 +120,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     std::pair<int, int> size = m_window->size();
     m_webView->setSize(size.first, size.second);
 
-    if (viewportHorizontalDisplacement || viewportVerticalDisplacement)
-        cairo_matrix_init_translate(&m_webViewTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
+    cairo_matrix_init_translate(&m_webViewTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
 
     m_webView->setFocused(true);
     m_webView->setVisible(true);
