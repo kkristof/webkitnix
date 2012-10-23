@@ -13,11 +13,11 @@ class WebViewClient {
 public:
     virtual ~WebViewClient() { }
 
-    virtual void viewNeedsDisplay(int x, int y, int width, int height) {}
+    virtual void viewNeedsDisplay(int x, int y, int width, int height);
     virtual cairo_matrix_t viewToScreenTransform();
 
-    virtual void webProcessCrashed(WKStringRef url) {}
-    virtual void webProcessRelaunched() {}
+    virtual void webProcessCrashed(WKStringRef url);
+    virtual void webProcessRelaunched();
     virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
     virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
     virtual void pageDidRequestScroll(int x, int y);

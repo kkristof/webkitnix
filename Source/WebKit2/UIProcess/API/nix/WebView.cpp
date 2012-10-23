@@ -57,10 +57,25 @@ using namespace WebKit;
 
 namespace Nix {
 
+void WebViewClient::viewNeedsDisplay(int, int, int, int)
+{
+
+}
+
 cairo_matrix_t WebViewClient::viewToScreenTransform()
 {
     static cairo_matrix_t identityTransform = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     return identityTransform;
+}
+
+void WebViewClient::webProcessCrashed(WKStringRef)
+{
+
+}
+
+void WebViewClient::webProcessRelaunched()
+{
+
 }
 
 void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool)
