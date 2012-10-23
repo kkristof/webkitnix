@@ -28,6 +28,7 @@ public:
     PageLoader(Nix::WebView*);
 
     void waitForLoadURLAndRepaint(const char* resource);
+    void forceRepaint();
 
 private:
     Nix::WebView* m_webView;

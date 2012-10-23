@@ -37,6 +37,13 @@ void PageLoader::waitForLoadURLAndRepaint(const char* resource)
     m_didFinishLoadAndRepaint = false;
 }
 
+void PageLoader::forceRepaint()
+{
+    WKPageForceRepaint(m_webView->pageRef(), this, &PageLoader::didForceRepaint);
+    Util::run(&m_didFinishLoadAndRepaint);
+    m_didFinishLoadAndRepaint = false;
+}
+
 ForceRepaintClient::ForceRepaintClient()
     : m_clearR(0)
     , m_clearG(0)

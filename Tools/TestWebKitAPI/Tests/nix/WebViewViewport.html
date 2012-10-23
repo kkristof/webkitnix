@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Test if the viewport is correctly set when scrolling a page with zoom</title>
+<style type="text/css">
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+.placeholder {
+    height: 20000px;
+}
+
+.target {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background-color: black;
+}
+
+</style>
+</head>
+<body>
+<div class="placeholder"></div>
+<div class="target" style="top: 10000px; left: 400px;"></div>
+<div class="target" style="top: 10398px; left: 800px;"></div>
+</body>
+</html>

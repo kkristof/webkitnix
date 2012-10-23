@@ -137,6 +137,7 @@ SET(test_webkitnix_api_LIBRARIES
 SET(test_webkitnix_api_BINARIES
     WebViewPaintToCurrentGLContext
     WebViewTranslated
+    WebViewViewport
 )
 
 SET(test_webkitnix_api_fail_BINARIES
