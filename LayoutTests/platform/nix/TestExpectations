@@ -993,6 +993,8 @@ fast/dom/beforeload/clear-video-poster-in-beforeload-listener.html [ Skip ]
 fast/dom/beforeload/remove-video-in-beforeload-listener.html [ Skip ]
 fast/dom/beforeload/remove-video-poster-in-beforeload-listener.html [ Skip ]
 fast/dom/beforeload/video-before-load.html [ Skip ]
+fast/dom/MicroData/itemvalue-reflects-the-src-attr.html [ Skip ]
+fast/dom/MicroData/propertynodelist-getvalues-array-values-obtained-from-itemvalue-of-each-element.html [ Skip ]
 
 
 ################################################################################
@@ -1023,7 +1025,6 @@ fast/dom/HTMLLinkElement [ Skip ]
 fast/dom/HTMLMeterElement [ Skip ]
 fast/dom/HTMLProgressElement [ Skip ]
 fast/dom/HTMLTableColElement [ Skip ]
-fast/dom/MicroData [ Skip ]
 fast/dom/Orientation [ Skip ]
 fast/dom/Proximity [ Skip ]
 fast/dom/Range [ Skip ]
