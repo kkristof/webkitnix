@@ -407,22 +407,6 @@ fast/parser/document-write-onload-nesting.html [ Crash Pass ]
 fast/parser/document-write-onload-ordering.html [ Crash Pass ]
 fast/parser/double-write-from-closed-iframe.html [ Crash Pass ]
 
-# Tries to set data with a different encoding. Whenever another attribute is set to
-# the value '#', the returned data is null.
-fast/loader/data-url-encoding-html.html [ Failure ]
-fast/loader/data-url-encoding-svg.html [ Failure ]
-
-# Failing with message:
-# CONSOLE MESSAGE: line 10: INDEX_SIZE_ERR: DOM Exception 1: Index or size was negative, or greater than the allowed value.
-fast/css/import-style-update.html [ Failure ]
-
-# Failing with message:
-# CONSOLE MESSAGE: line 20: TypeError: 'undefined' is not an object (evaluating 'top.document.getElementsByTagName('a')[0].dispatchEvent')
-fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html [ Failure ]
-fast/events/attribute-listener-cloned-from-frameless-doc-context.html [ Failure ]
-fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html [ Failure ]
-fast/events/attribute-listener-extracted-from-frameless-doc-context.html [ Failure ]
-
 # Failing due to strange error when doing '__proto__'.localeCompare('1') inside NamedThingComparator.
 # When run inside WTR *on* the buildbot, the command above returns 1, while the JSC on the same buildbot
 # and desktop machines and WTR on desktop returns -1, the expected value.
