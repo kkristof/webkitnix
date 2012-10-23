@@ -97,12 +97,13 @@ SET(TestWebKitNixAPIBase_SOURCES
     ${test_main_SOURCES}
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
     ${TESTWEBKITAPI_DIR}/nix/PageLoader.cpp
+    ${TESTWEBKITAPI_DIR}/nix/GLUtilities.cpp
     ${TESTWEBKITAPI_DIR}/JavaScriptTest.cpp
     ${TESTWEBKITAPI_DIR}/PlatformUtilities.cpp
     ${TESTWEBKITAPI_DIR}/TestsController.cpp
 )
 
-SET(TestWebKitNixAPIBase_LIBRARIES)
+SET(TestWebKitNixAPIBase_LIBRARIES ${PNG_LIBRARY})
 
 IF (WTF_USE_EGL)
   LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesEGL.cpp)

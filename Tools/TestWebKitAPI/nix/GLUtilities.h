@@ -19,8 +19,11 @@ public:
     ~GLOffscreenBuffer();
 
     bool makeCurrent();
+    void dumpToPng(const char* fileName);
 
 private:
+    int m_width;
+    int m_height;
 #if USE(EGL)
     EGLDisplay m_display;
     EGLContext m_context;

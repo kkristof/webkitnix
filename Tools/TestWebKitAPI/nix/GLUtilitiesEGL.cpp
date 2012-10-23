@@ -9,7 +9,9 @@ namespace TestWebKitAPI {
 namespace Util {
 
 GLOffscreenBuffer::GLOffscreenBuffer(unsigned width, unsigned height)
-    : m_display(0)
+    : m_width(width)
+    , m_height(height)
+    , m_display(0)
     , m_context(0)
     , m_surface(0)
 {
