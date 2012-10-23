@@ -26,7 +26,7 @@ battery-status             ENABLE_BATTERY_STATUS                Toggle Battery S
 blob                       ENABLE_BLOB                          Toggle Blob support
 channel-messaging          ENABLE_CHANNEL_MESSAGING             Toggle Channel Messaging support
 csp-next                   ENABLE_CSP_NEXT                      Toggle Content Security Policy 1.1 support
-css3-text-decoration       ENABLE_CSS3_TEXT_DECORATION          Toggle CSS3 Text Decoration support
+css3-text                  ENABLE_CSS3_TEXT                     Toggle CSS3 Text support
 css-box-decoration-break   ENABLE_CSS_BOX_DECORATION_BREAK      Toggle CSS box-decoration-break support
 css-compositing            ENABLE_CSS_COMPOSITING               Toggle CSS Compositing support
 css-exclusions             ENABLE_CSS_EXCLUSIONS                Toggle CSS Exclusions support

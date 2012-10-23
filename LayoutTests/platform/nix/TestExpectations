@@ -393,10 +393,6 @@ fast/events/file-input-hidden-in-ondrop.html [ Skip ]
 fast/events/selectstart-by-drag.html [ Skip ]
 fast/css/draggable-region-parser.html [ Skip ]
 
-# The CSS property -webkit-text-decoration-line isn't found.
-fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html [ Failure ]
-fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-style.html [ Failure ]
-
 # Tests failing due to input boxes being stacked instead of
 # displayed on the same line (see related https://bugs.webkit.org/show_bug.cgi?id=92551)
 fast/events/js-keyboard-event-creation.html [ Skip ]
