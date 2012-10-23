@@ -2331,10 +2331,14 @@ inspector/debugger/dynamic-script-tag.html
 
 #https://bugs.webkit.org/show_bug.cgi?id=98306
 css3/flexbox/flexbox-baseline.html
+#https://bugs.webkit.org/show_bug.cgi?id=99878
+css3/flexbox/flexbox-baseline-margins.html
+
+# css3-conditionals support is not yet enabled. http://webkit.org/b/86146
+css3/supports.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=98169
-http/tests/inspector/csp-injected-content-warning-contains-stacktrace.html
-http/tests/inspector/csp-inline-warning-contains-stacktrace.html
+http/tests/inspector/stacktraces
 
 # HIDDEN_PAGE_DOM_TIMER_THROTTLING is disabled
 fast/dom/timer-throttling-hidden-page.html
@@ -2344,4 +2348,7 @@ css3/compositing/
 transitions/blendmode-transitions.html
 
 # User Timing is not enabled
-webkit.org/b/84893 http/tests/w3c/webperf/submission/user-timing
+webkit.org/b/84893 http/tests/w3c/webperf/submission/Intel/user-timing
+
+# Resource Timing is not enable yet, skip it.
+webkit.org/b/61138 http/tests/w3c/webperf/submission/Intel/resource-timing

@@ -90,8 +90,11 @@ bool DateTimeEditBuilder::needMillisecondField() const
         || !stepRange().step().remainder(static_cast<int>(msPerSecond)).isZero();
 }
 
-void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int)
+void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int count)
 {
+    const int countForAbbreviatedMonth = 3;
+    const int countForFullMonth = 4;
+    const int countForNarrowMonth = 5;
     Document* const document = m_editElement.document();
 
     switch (fieldType) {
@@ -124,8 +127,33 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int)
     }
 
     case DateTimeFormat::FieldTypeMonth:
-        // We always use "MM", two digits month, even if "M", "MMM", "MMMM", or "MMMMM".
-        m_editElement.addField(DateTimeMonthFieldElement::create(document, m_editElement, m_parameters.placeholderForMonth));
+        switch (count) {
+        case countForNarrowMonth: // Fallthrough.
+        case countForAbbreviatedMonth:
+            m_editElement.addField(DateTimeSymbolicMonthFieldElement::create(document, m_editElement, m_parameters.localizer.shortMonthLabels()));
+            break;
+        case countForFullMonth:
+            m_editElement.addField(DateTimeSymbolicMonthFieldElement::create(document, m_editElement, m_parameters.localizer.monthLabels()));
+            break;
+        default:
+            m_editElement.addField(DateTimeMonthFieldElement::create(document, m_editElement, m_parameters.placeholderForMonth));
+            break;
+        }
+        return;
+
+    case DateTimeFormat::FieldTypeMonthStandAlone:
+        switch (count) {
+        case countForNarrowMonth: // Fallthrough.
+        case countForAbbreviatedMonth:
+            m_editElement.addField(DateTimeSymbolicMonthFieldElement::create(document, m_editElement, m_parameters.localizer.shortStandAloneMonthLabels()));
+            break;
+        case countForFullMonth:
+            m_editElement.addField(DateTimeSymbolicMonthFieldElement::create(document, m_editElement, m_parameters.localizer.standAloneMonthLabels()));
+            break;
+        default:
+            m_editElement.addField(DateTimeMonthFieldElement::create(document, m_editElement, m_parameters.placeholderForMonth));
+            break;
+        }
         return;
 
     case DateTimeFormat::FieldTypePeriod:

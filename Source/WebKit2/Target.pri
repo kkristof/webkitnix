@@ -31,6 +31,7 @@ HEADERS += \
     Platform/CoreIPC/MessageReceiver.h \
     Platform/CoreIPC/MessageReceiverMap.h \
     Platform/CoreIPC/MessageSender.h \
+    Platform/CoreIPC/StringReference.h \
     Platform/Logging.h \
     Platform/Module.h \
     Platform/PlatformProcessIdentifier.h \
@@ -73,6 +74,7 @@ HEADERS += \
     Shared/ShareableSurface.h \
     Shared/CacheModel.h \
     Shared/ChildProcess.h \
+    Shared/ConnectionStack.h \
     Shared/DictionaryPopupInfo.h \
     Shared/EditorState.h \
     Shared/FontInfo.h \
@@ -391,6 +393,7 @@ SOURCES += \
     Platform/CoreIPC/MessageDecoder.cpp \
     Platform/CoreIPC/MessageEncoder.cpp \
     Platform/CoreIPC/MessageReceiverMap.cpp \
+    Platform/CoreIPC/StringReference.cpp \
     Platform/Logging.cpp \
     Platform/Module.cpp \
     Platform/WorkQueue.cpp \
@@ -441,6 +444,7 @@ SOURCES += \
     Shared/Plugins/PluginModuleInfo.cpp \
     Shared/Plugins/PluginProcessCreationParameters.cpp \
     Shared/ChildProcess.cpp \
+    Shared/ConnectionStack.cpp \
     Shared/DictionaryPopupInfo.cpp \
     Shared/EditorState.cpp \
     Shared/FontInfo.cpp \

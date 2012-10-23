@@ -128,6 +128,7 @@ SET(WebKit2_SOURCES
     Platform/CoreIPC/MessageDecoder.cpp
     Platform/CoreIPC/MessageEncoder.cpp
     Platform/CoreIPC/MessageReceiverMap.cpp
+    Platform/CoreIPC/StringReference.cpp
 
     PluginProcess/PluginControllerProxy.cpp
     PluginProcess/PluginCreationParameters.cpp
@@ -137,6 +138,7 @@ SET(WebKit2_SOURCES
     Shared/APIClientTraits.cpp
     Shared/APIObject.cpp
     Shared/ChildProcess.cpp
+    Shared/ConnectionStack.cpp
     Shared/DictionaryPopupInfo.cpp
     Shared/EditorState.cpp
     Shared/FontInfo.cpp
@@ -236,6 +238,7 @@ SET(WebKit2_SOURCES
     UIProcess/GeolocationPermissionRequestManagerProxy.cpp
     UIProcess/GeolocationPermissionRequestProxy.cpp
 
+    UIProcess/PageViewportController.cpp
     UIProcess/ResponsivenessTimer.cpp
     UIProcess/VisitedLinkProvider.cpp
     UIProcess/WebApplicationCacheManagerProxy.cpp

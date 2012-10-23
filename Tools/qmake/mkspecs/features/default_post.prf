@@ -28,11 +28,6 @@ root_project_file: finalizeConfigure()
     }
 }
 
-# Help keep the build tree clean
-MOC_DIR = moc
-RCC_DIR = rcc
-isEmpty(OBJECTS_DIR): OBJECTS_DIR = obj/$$activeBuildConfig()
-
 # General default build tweaks
 DEFINES += \
     BUILDING_QT__=1
@@ -111,8 +106,6 @@ contains(TEMPLATE, derived) {
         !isEmpty(commands):!isEmpty(GNUTOOLS) {
             eval($${generator}.commands = $${GNUTOOLS} && $$val_escape($${generator}.commands))
         }
-
-        silent: eval($${generator}.commands = @echo generating sources from ${QMAKE_FILE_IN} && $$val_escape($${generator}.commands))
 
         !isEmpty($${generator}.input) {
             # Compiler-style generator

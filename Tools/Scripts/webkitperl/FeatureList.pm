@@ -49,7 +49,8 @@ my (
     $blobSupport,
     $channelMessagingSupport,
     $cspNextSupport,
-    $css3TextDecorationSupport,
+    $css3ConditionalRulesSupport,
+    $css3TextSupport,
     $cssBoxDecorationBreakSupport,
     $cssExclusionsSupport,
     $cssFiltersSupport,
@@ -110,6 +111,7 @@ my (
     $pageVisibilityAPISupport,
     $progressTagSupport,
     $quotaSupport,
+    $resolutionMediaQuerySupport,
     $registerProtocolHandlerSupport,
     $requestAnimationFrameSupport,
     $scriptedSpeechSupport,
@@ -169,8 +171,11 @@ my @features = (
     { option => "css-filters", desc => "Toggle CSS Filters support",
       define => "ENABLE_CSS_FILTERS", default => isAppleWebKit() || isBlackBerry(), value => \$cssFiltersSupport },
 
-    { option => "css3-text-decoration", desc => "Toggle CSS3 Text Decoration support",
-      define => "ENABLE_CSS3_TEXT_DECORATION", default => isEfl(), value => \$css3TextDecorationSupport },
+    { option => "css3-conditional-rules", desc => "Toggle CSS3 Conditional Rules support (i.e. \@supports)",
+      define => "ENABLE_CSS3_CONDITIONAL_RULES", default => 0, value => \$css3ConditionalRulesSupport },
+
+    { option => "css3-text", desc => "Toggle CSS3 Text support",
+      define => "ENABLE_CSS3_TEXT", default => isEfl(), value => \$css3TextSupport },
 
     { option => "css-hierarchies", desc => "Toggle CSS Hierarchy support",
       define => "ENABLE_CSS_HIERARCHIES", default => 0, value => \$cssHierarchiesSupport },
@@ -345,6 +350,9 @@ my @features = (
 
     { option => "quota", desc => "Toggle Quota support",
       define => "ENABLE_QUOTA", default => 0, value => \$quotaSupport },
+
+    { option => "resolution-media-query", desc => "Toggle resolution media query support",
+      define => "ENABLE_RESOLUTION_MEDIA_QUERY", default => (isEfl() || isQt()), value => \$resolutionMediaQuerySupport },
 
     { option => "request-animation-frame", desc => "Toggle Request Animation Frame support",
       define => "ENABLE_REQUEST_ANIMATION_FRAME", default => (isAppleMacWebKit() || isGtk() || isEfl() || isBlackBerry() || isNix()), value => \$requestAnimationFrameSupport },

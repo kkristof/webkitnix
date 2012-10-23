@@ -26,6 +26,7 @@
 #include "config.h"
 #include "MessageReceiverMap.h"
 
+#include "MessageDecoder.h"
 #include "MessageReceiver.h"
 
 namespace CoreIPC {
@@ -38,10 +39,10 @@ MessageReceiverMap::~MessageReceiverMap()
 {
 }
 
-void MessageReceiverMap::addMessageReceiver(MessageClass messageClass, MessageReceiver* messageReceiver)
+void MessageReceiverMap::addMessageReceiver(StringReference messageReceiverName, MessageReceiver* messageReceiver)
 {
-    ASSERT(!m_globalMessageReceivers.contains(messageClass));
-    m_globalMessageReceivers.set(messageClass, messageReceiver);
+    ASSERT(!m_globalMessageReceivers.contains(messageReceiverName));
+    m_globalMessageReceivers.set(messageReceiverName, messageReceiver);
 }
 
 void MessageReceiverMap::invalidate()
@@ -49,25 +50,20 @@ void MessageReceiverMap::invalidate()
     m_globalMessageReceivers.clear();
 }
 
-bool MessageReceiverMap::knowsHowToHandleMessage(MessageID messageID) const
+bool MessageReceiverMap::dispatchMessage(Connection* connection, MessageID messageID, MessageDecoder& decoder)
 {
-    return m_globalMessageReceivers.contains(messageID.messageClass());
-}
-
-bool MessageReceiverMap::dispatchMessage(Connection* connection, MessageID messageID, ArgumentDecoder* argumentDecoder)
-{
-    if (MessageReceiver* messageReceiver = m_globalMessageReceivers.get(messageID.messageClass())) {
-        messageReceiver->didReceiveMessage(connection, messageID, argumentDecoder);
+    if (MessageReceiver* messageReceiver = m_globalMessageReceivers.get(decoder.messageReceiverName())) {
+        messageReceiver->didReceiveMessage(connection, messageID, decoder);
         return true;
     }
 
     return false;
 }
 
-bool MessageReceiverMap::dispatchSyncMessage(Connection* connection, MessageID messageID, ArgumentDecoder* argumentDecoder, OwnPtr<ArgumentEncoder>& reply)
+bool MessageReceiverMap::dispatchSyncMessage(Connection* connection, MessageID messageID, MessageDecoder& decoder, OwnPtr<MessageEncoder>& replyEncoder)
 {
-    if (MessageReceiver* messageReceiver = m_globalMessageReceivers.get(messageID.messageClass())) {
-        messageReceiver->didReceiveSyncMessage(connection, messageID, argumentDecoder, reply);
+    if (MessageReceiver* messageReceiver = m_globalMessageReceivers.get(decoder.messageReceiverName())) {
+        messageReceiver->didReceiveSyncMessage(connection, messageID, decoder, replyEncoder);
         return true;
     }
 

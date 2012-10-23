@@ -215,6 +215,9 @@ public:
     virtual void findStringInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
 
+    virtual void updateTextInputState() { notImplemented(); }
+    virtual void didRenderFrame(const WebCore::IntSize&, const WebCore::IntRect&) { notImplemented(); }
+    virtual void pageTransitionViewportReady() { notImplemented(); }
 private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();

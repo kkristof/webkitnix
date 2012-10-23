@@ -58,6 +58,10 @@ WebInspector.displayNameForURL = function(url)
     if (resource)
         return resource.displayName;
 
+    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
+    if (uiSourceCode)
+        return uiSourceCode.parsedURL.displayName;
+
     if (!WebInspector.inspectedPageURL)
         return url.trimURL("");
 
@@ -81,7 +85,7 @@ WebInspector.displayNameForURL = function(url)
 WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linkifier)
 {
     var container = document.createDocumentFragment();
-    var linkStringRegEx = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/|www\.)[\w$\-_+*'=\|\/\\(){}[\]%@&#~,:;.!?]{2,}[\w$\-_+*=\|\/\\({%@&#~]/;
+    var linkStringRegEx = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/|data:|www\.)[\w$\-_+*'=\|\/\\(){}[\]%@&#~,:;.!?]{2,}[\w$\-_+*=\|\/\\({%@&#~]/;
     var lineColumnRegEx = /:(\d+)(:(\d+))?$/;
 
     while (string) {

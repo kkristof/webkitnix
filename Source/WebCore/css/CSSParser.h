@@ -435,6 +435,10 @@ private:
     inline void detectDashToken(int);
     template <typename CharacterType>
     inline void detectAtToken(int, bool);
+#if ENABLE(CSS3_CONDITIONAL_RULES)
+    template <typename CharacterType>
+    inline void detectSupportsToken(int);
+#endif
 
     template <typename CharacterType>
     inline void setRuleHeaderEnd(const CharacterType*);
@@ -483,6 +487,9 @@ private:
     enum ParsingMode {
         NormalMode,
         MediaQueryMode,
+#if ENABLE(CSS3_CONDITIONAL_RULES)
+        SupportsMode,
+#endif
         NthChildMode
     };
 
@@ -538,7 +545,7 @@ private:
         FFrequency = 0x0040,
         FPositiveInteger = 0x0080,
         FRelative = 0x0100,
-#if ENABLE(CSS_IMAGE_RESOLUTION)
+#if ENABLE(CSS_IMAGE_RESOLUTION) || ENABLE(RESOLUTION_MEDIA_QUERY)
         FResolution = 0x0200,
 #endif
         FNonNeg = 0x0400

@@ -125,7 +125,10 @@ RenderLayerBacking::RenderLayerBacking(RenderLayer* layer)
             if (TiledBacking* tiledBacking = m_graphicsLayer->tiledBacking()) {
                 Frame* frame = renderer()->frame();
                 tiledBacking->setIsInWindow(page->isOnscreen());
-                tiledBacking->setTileCoverage(frame->view()->canHaveScrollbars() ? TiledBacking::CoverageForScrolling : TiledBacking::CoverageForVisibleArea);
+                if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
+                    bool shouldLimitTileCoverage = !frame->view()->canHaveScrollbars() || scrollingCoordinator->shouldUpdateScrollLayerPositionOnMainThread();
+                    tiledBacking->setTileCoverage(shouldLimitTileCoverage ? TiledBacking::CoverageForVisibleArea : TiledBacking::CoverageForScrolling);
+                }
                 tiledBacking->setScrollingPerformanceLoggingEnabled(frame->settings() && frame->settings()->scrollingPerformanceLoggingEnabled());
             }
         }
@@ -965,7 +968,7 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
     return layerChanged;
 }
 
-void RenderLayerBacking::attachToScrollingCoordinator()
+void RenderLayerBacking::attachToScrollingCoordinator(RenderLayerBacking* parent)
 {
     // If m_scrollLayerID non-zero, then this backing is already attached to the ScrollingCoordinator.
     if (m_scrollLayerID)
@@ -978,8 +981,9 @@ void RenderLayerBacking::attachToScrollingCoordinator()
     ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator();
     if (!scrollingCoordinator)
         return;
-    
-    m_scrollLayerID = scrollingCoordinator->attachToStateTree(scrollingCoordinator->uniqueScrollLayerID());
+
+    ScrollingNodeID parentID = parent ? parent->scrollLayerID() : 0;
+    m_scrollLayerID = scrollingCoordinator->attachToStateTree(scrollingCoordinator->uniqueScrollLayerID(), parentID);
 }
 
 void RenderLayerBacking::detachFromScrollingCoordinator()
@@ -1490,7 +1494,7 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
 #endif
 
     if (graphicsLayer == m_graphicsLayer.get() || graphicsLayer == m_foregroundLayer.get() || graphicsLayer == m_maskLayer.get() || graphicsLayer == m_scrollingContentsLayer.get()) {
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willPaint(m_owningLayer->renderer()->frame(), &context, clip);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willPaint(m_owningLayer->renderer()->frame());
 
         // The dirtyRect is in the coords of the painting root.
         IntRect dirtyRect = clip;
@@ -1503,7 +1507,7 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         if (m_usingTiledCacheLayer)
             m_owningLayer->renderer()->frame()->view()->setLastPaintTime(currentTime());
 
-        InspectorInstrumentation::didPaint(cookie);
+        InspectorInstrumentation::didPaint(cookie, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {

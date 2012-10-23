@@ -619,6 +619,8 @@ TransformationMatrix RenderLayer::currentTransform(RenderStyle::ApplyTransformOr
         makeMatrixRenderable(currTransform, canRender3DTransforms());
         return currTransform;
     }
+#else
+    UNUSED_PARAM(applyOrigin);
 #endif
 
     return *m_transform;
@@ -1717,6 +1719,9 @@ void RenderLayer::scrollTo(int x, int y)
         return;
     m_scrollOffset = newScrollOffset;
 
+    Frame* frame = renderer()->frame();
+    InspectorInstrumentation::willScrollLayer(frame);
+
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
     updateLayerPositionsAfterScroll();
@@ -1743,7 +1748,6 @@ void RenderLayer::scrollTo(int x, int y)
     }
 
     RenderLayerModelObject* repaintContainer = renderer()->containerForRepaint();
-    Frame* frame = renderer()->frame();
     if (frame) {
         // The caret rect needs to be invalidated after scrolling
         frame->selection()->setCaretRectNeedsUpdate();
@@ -1761,6 +1765,8 @@ void RenderLayer::scrollTo(int x, int y)
     // Schedule the scroll DOM event.
     if (renderer()->node())
         renderer()->node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
+
+    InspectorInstrumentation::didScrollLayer(frame);
 }
 
 static inline bool frameElementAndViewPermitScroll(HTMLFrameElement* frameElement, FrameView* frameView) 

@@ -32,7 +32,6 @@
 #include "MessageDecoder.h"
 #include "MessageEncoder.h"
 #include "MessageReceiver.h"
-#include "MessageReceiverMap.h"
 #include "WorkQueue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/OwnPtr.h>
@@ -101,7 +100,7 @@ public:
 
     class QueueClient {
     public:
-        virtual void didReceiveMessageOnConnectionWorkQueue(Connection*, MessageID, ArgumentDecoder*, bool& didHandleMessage) = 0;
+        virtual void didReceiveMessageOnConnectionWorkQueue(Connection*, MessageID, MessageDecoder&, bool& didHandleMessage) = 0;
 
     protected:
         virtual ~QueueClient() { }
@@ -174,11 +173,6 @@ public:
     void addQueueClient(QueueClient*);
     void removeQueueClient(QueueClient*);
 
-    void addMessageReceiver(MessageClass messageClass, MessageReceiver* messageReceiver)
-    {
-        m_messageReceiverMap.addMessageReceiver(messageClass, messageReceiver);
-    }
-
     bool open();
     void invalidate();
     void markCurrentlyDispatchedMessageAsInvalid();
@@ -191,8 +185,9 @@ public:
     template<typename T> bool sendSync(const T& message, const typename T::Reply& reply, uint64_t destinationID, double timeout = NoTimeout, unsigned syncSendFlags = 0);
     template<typename T> bool waitForAndDispatchImmediately(uint64_t destinationID, double timeout);
 
-    PassOwnPtr<MessageEncoder> createSyncMessageEncoder(const CString& messageReceiverName, const CString& messageName, uint64_t destinationID, uint64_t& syncRequestID);
+    PassOwnPtr<MessageEncoder> createSyncMessageEncoder(StringReference messageReceiverName, StringReference messageName, uint64_t destinationID, uint64_t& syncRequestID);
     bool sendMessage(MessageID, PassOwnPtr<MessageEncoder>, unsigned messageSendFlags = 0);
+    PassOwnPtr<MessageDecoder> sendSyncMessage(MessageID, uint64_t syncRequestID, PassOwnPtr<MessageEncoder>, double timeout, unsigned syncSendFlags = 0);
     bool sendSyncReply(PassOwnPtr<MessageEncoder>);
 
     // FIXME: These variants of send, sendSync and waitFor are all deprecated.
@@ -254,7 +249,6 @@ private:
     
     PassOwnPtr<MessageDecoder> waitForMessage(MessageID, uint64_t destinationID, double timeout);
     
-    PassOwnPtr<MessageDecoder> sendSyncMessage(MessageID, uint64_t syncRequestID, PassOwnPtr<MessageEncoder>, double timeout, unsigned syncSendFlags = 0);
     PassOwnPtr<MessageDecoder> waitForSyncReply(uint64_t syncRequestID, double timeout, unsigned syncSendFlags);
 
     // Called on the connection work queue.
@@ -276,8 +270,8 @@ private:
     void dispatchConnectionDidClose();
     void dispatchOneMessage();
     void dispatchMessage(IncomingMessage&);
-    void dispatchMessage(MessageID, MessageDecoder*);
-    void dispatchSyncMessage(MessageID, MessageDecoder*);
+    void dispatchMessage(MessageID, MessageDecoder&);
+    void dispatchSyncMessage(MessageID, MessageDecoder&);
     void didFailToSendSyncMessage();
 
     // Can be called on any thread.
@@ -304,8 +298,6 @@ private:
     // Incoming messages.
     Mutex m_incomingMessagesLock;
     Deque<IncomingMessage> m_incomingMessages;
-
-    MessageReceiverMap m_messageReceiverMap;
 
     // Outgoing messages.
     Mutex m_outgoingMessagesLock;
@@ -410,7 +402,7 @@ private:
 
 template<typename T> bool Connection::send(const T& message, uint64_t destinationID, unsigned messageSendFlags)
 {
-    OwnPtr<MessageEncoder> encoder = MessageEncoder::create("", "", destinationID);
+    OwnPtr<MessageEncoder> encoder = MessageEncoder::create(T::receiverName(), T::name(), destinationID);
     encoder->encode(message);
     
     return sendMessage(MessageID(T::messageID), encoder.release(), messageSendFlags);
@@ -419,7 +411,7 @@ template<typename T> bool Connection::send(const T& message, uint64_t destinatio
 template<typename T> bool Connection::sendSync(const T& message, const typename T::Reply& reply, uint64_t destinationID, double timeout, unsigned syncSendFlags)
 {
     uint64_t syncRequestID = 0;
-    OwnPtr<MessageEncoder> encoder = createSyncMessageEncoder("", "", destinationID, syncRequestID);
+    OwnPtr<MessageEncoder> encoder = createSyncMessageEncoder(T::receiverName(), T::name(), destinationID, syncRequestID);
     
     // Encode the rest of the input arguments.
     encoder->encode(message);
@@ -440,7 +432,7 @@ template<typename T> bool Connection::waitForAndDispatchImmediately(uint64_t des
         return false;
 
     ASSERT(decoder->destinationID() == destinationID);
-    m_client->didReceiveMessage(this, MessageID(T::messageID), decoder.get());
+    m_client->didReceiveMessage(this, MessageID(T::messageID), *decoder);
     return true;
 }
 
@@ -450,7 +442,7 @@ template<typename E, typename T, typename U>
 inline bool Connection::deprecatedSendSync(E messageID, uint64_t destinationID, const T& arguments, const U& reply, double timeout)
 {
     uint64_t syncRequestID = 0;
-    OwnPtr<MessageEncoder> encoder = createSyncMessageEncoder("", "", destinationID, syncRequestID);
+    OwnPtr<MessageEncoder> encoder = createSyncMessageEncoder(CoreIPC::MessageKindTraits<E>::messageReceiverName(), "", destinationID, syncRequestID);
 
     // Encode the input arguments.
     encoder->encode(arguments);
@@ -467,7 +459,7 @@ inline bool Connection::deprecatedSendSync(E messageID, uint64_t destinationID, 
 template<typename E, typename T>
 bool Connection::deprecatedSend(E messageID, uint64_t destinationID, const T& arguments)
 {
-    OwnPtr<MessageEncoder> encoder = MessageEncoder::create("", "", destinationID);
+    OwnPtr<MessageEncoder> encoder = MessageEncoder::create(CoreIPC::MessageKindTraits<E>::messageReceiverName(), "", destinationID);
     encoder->encode(arguments);
 
     return sendMessage(MessageID(messageID), encoder.release());

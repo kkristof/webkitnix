@@ -49,8 +49,18 @@
 
 namespace WebCore {
 
+#if ENABLE(RESOURCE_TIMING)
+static const size_t defaultResourceTimingBufferSize = 150;
+#endif
+
 Performance::Performance(Frame* frame)
     : DOMWindowProperty(frame)
+#if ENABLE(RESOURCE_TIMING)
+    , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
+#endif // ENABLE(RESOURCE_TIMING)
+#if ENABLE(USER_TIMING)
+    , m_userTiming(0)
+#endif // ENABLE(USER_TIMING)
 {
 }
 
@@ -101,7 +111,14 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntries() const
     entries->appendAll(m_resourceTimingBuffer);
 #endif // ENABLE(RESOURCE_TIMING)
 
-    // FIXME: User Timing entries should be handled here. see https://bugs.webkit.org/show_bug.cgi?id=91072
+#if ENABLE(USER_TIMING)
+    if (m_userTiming) {
+        entries->appendAll(m_userTiming->getMarks());
+        entries->appendAll(m_userTiming->getMeasures());
+    }
+#endif // ENABLE(USER_TIMING)
+
+    entries->sort();
     return entries;
 }
 
@@ -115,7 +132,16 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByType(const Strin
             entries->append(*resource);
 #endif // ENABLE(RESOURCE_TIMING)
 
-    // FIXME: User Timing entries should be handled here. see https://bugs.webkit.org/show_bug.cgi?id=91072
+#if ENABLE(USER_TIMING)
+    if (m_userTiming) {
+        if (equalIgnoringCase(entryType, "mark"))
+            entries->appendAll(m_userTiming->getMarks());
+        else if (equalIgnoringCase(entryType, "measure"))
+            entries->appendAll(m_userTiming->getMeasures());
+    }
+#endif // ENABLE(USER_TIMING)
+
+    entries->sort();
     return entries;
 }
 
@@ -130,7 +156,16 @@ PassRefPtr<PerformanceEntryList> Performance::webkitGetEntriesByName(const Strin
                 entries->append(*resource);
 #endif // ENABLE(RESOURCE_TIMING)
 
-    // FIXME: User Timing entries should be handled here. see https://bugs.webkit.org/show_bug.cgi?id=91072
+#if ENABLE(USER_TIMING)
+    if (m_userTiming) {
+        if (entryType.isNull() || equalIgnoringCase(entryType, "mark"))
+            entries->appendAll(m_userTiming->getMarks(name));
+        if (entryType.isNull() || equalIgnoringCase(entryType, "measure"))
+            entries->appendAll(m_userTiming->getMeasures(name));
+    }
+#endif // ENABLE(USER_TIMING)
+
+    entries->sort();
     return entries;
 }
 
@@ -143,19 +178,29 @@ void Performance::webkitClearResourceTimings()
     m_resourceTimingBuffer.clear();
 }
 
-void Performance::webkitSetResourceTimingBufferSize(unsigned int)
+void Performance::webkitSetResourceTimingBufferSize(unsigned size)
 {
-    // FIXME: Implement this.
+    m_resourceTimingBufferSize = size;
+    if (isResourceTimingBufferFull())
+        dispatchEvent(Event::create(eventNames().webkitresourcetimingbufferfullEvent, false, false));
 }
 
 void Performance::addResourceTiming(const ResourceRequest& request, const ResourceResponse& response, double finishTime, Document* requestingDocument)
 {
-    if (!response.resourceLoadTiming())
+    if (!response.resourceLoadTiming() || isResourceTimingBufferFull())
         return;
 
     RefPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(request, response, finishTime, requestingDocument);
-    // FIXME: Need to enforce buffer limits.
+
     m_resourceTimingBuffer.append(entry);
+
+    if (isResourceTimingBufferFull())
+        dispatchEvent(Event::create(eventNames().webkitresourcetimingbufferfullEvent, false, false));
+}
+
+bool Performance::isResourceTimingBufferFull()
+{
+    return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
 }
 
 #endif // ENABLE(RESOURCE_TIMING)

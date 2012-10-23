@@ -61,7 +61,7 @@ WebInspector.UISourceCode = function(url, contentProvider, isEditable)
      * @type {Array.<WebInspector.Revision>}
      */
     this.history = [];
-    if (this.isEditable())
+    if (this.isEditable() && this._url)
         this._restoreRevisionHistory();
     this._formatterMapping = new WebInspector.IdentityFormatterSourceMapping();
 }
@@ -192,8 +192,10 @@ WebInspector.UISourceCode.prototype = {
         delete this._workingCopy;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyCommitted, {oldWorkingCopy: oldWorkingCopy, workingCopy: this.workingCopy()});
         WebInspector.workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeContentCommitted, { uiSourceCode: this, content: this._content });
-        if (this._url && WebInspector.fileManager.isURLSaved(this._url))
+        if (this._url && WebInspector.fileManager.isURLSaved(this._url)) {
             WebInspector.fileManager.save(this._url, this._content, false);
+            WebInspector.fileManager.close(this._url);
+        }
     },
 
     /**
@@ -848,7 +850,7 @@ WebInspector.Revision.prototype = {
             return;
 
         var url = this.contentURL();
-        if (url.startsWith("inspector://"))
+        if (!url || url.startsWith("inspector://"))
             return;
 
         var loaderId = WebInspector.resourceTreeModel.mainFrame.loaderId;

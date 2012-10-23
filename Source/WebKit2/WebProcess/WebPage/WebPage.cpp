@@ -451,6 +451,7 @@ void WebPage::initializeInjectedBundleDiagnosticLoggingClient(WKBundlePageDiagno
     m_logDiagnosticMessageClient.initialize(client);
 }
 
+#if ENABLE(NETSCAPE_PLUGIN_API)
 PassRefPtr<Plugin> WebPage::createPlugin(WebFrame* frame, HTMLPlugInElement* pluginElement, const Plugin::Parameters& parameters)
 {
     String pluginPath;
@@ -488,13 +489,12 @@ PassRefPtr<Plugin> WebPage::createPlugin(WebFrame* frame, HTMLPlugInElement* plu
 
 #if ENABLE(PLUGIN_PROCESS)
     return PluginProxy::create(pluginPath);
-#elif ENABLE(NETSCAPE_PLUGIN_API)
+#else
     NetscapePlugin::setSetExceptionFunction(NPRuntimeObjectMap::setGlobalException);
     return NetscapePlugin::create(NetscapePluginModule::getOrCreate(pluginPath));
-#else
-    return 0;
 #endif
 }
+#endif // ENABLE(NETSCAPE_PLUGIN_API)
 
 EditorState WebPage::editorState() const
 {
@@ -1215,14 +1215,15 @@ void WebPage::setGapBetweenPages(double gap)
     m_page->setPagination(pagination);
 }
 
-void WebPage::postInjectedBundleMessage(const String& messageName, CoreIPC::ArgumentDecoder* argumentDecoder)
+void WebPage::postInjectedBundleMessage(const String& messageName, CoreIPC::MessageDecoder& decoder)
 {
     InjectedBundle* injectedBundle = WebProcess::shared().injectedBundle();
     if (!injectedBundle)
         return;
 
     RefPtr<APIObject> messageBody;
-    if (!argumentDecoder->decode(InjectedBundleUserMessageDecoder(messageBody)))
+    InjectedBundleUserMessageDecoder messageBodyDecoder(messageBody);
+    if (!decoder.decode(messageBodyDecoder))
         return;
 
     injectedBundle->didReceiveMessageToPage(this, messageName, messageBody.get());
@@ -1853,7 +1854,7 @@ void WebPage::didStartPageTransition()
 
 void WebPage::didCompletePageTransition()
 {
-#if PLATFORM(QT)
+#if USE(TILED_BACKING_STORE)
     if (m_mainFrame->coreFrame()->view()->delegatesScrolling())
         // Wait until the UI process sent us the visible rect it wants rendered.
         send(Messages::WebPageProxy::PageTransitionViewportReady());
@@ -2763,18 +2764,18 @@ bool WebPage::windowAndWebPageAreFocused() const
     return m_page->focusController()->isFocused() && m_page->focusController()->isActive();
 }
 
-void WebPage::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments)
+void WebPage::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder)
 {
     if (messageID.is<CoreIPC::MessageClassDrawingArea>()) {
         if (m_drawingArea)
-            m_drawingArea->didReceiveDrawingAreaMessage(connection, messageID, arguments);
+            m_drawingArea->didReceiveDrawingAreaMessage(connection, messageID, decoder);
         return;
     }
 
 #if USE(TILED_BACKING_STORE) && USE(ACCELERATED_COMPOSITING)
     if (messageID.is<CoreIPC::MessageClassLayerTreeCoordinator>()) {
         if (m_drawingArea)
-            m_drawingArea->didReceiveLayerTreeCoordinatorMessage(connection, messageID, arguments);
+            m_drawingArea->didReceiveLayerTreeCoordinatorMessage(connection, messageID, decoder);
         return;
     }
 #endif
@@ -2782,24 +2783,24 @@ void WebPage::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::Messag
 #if ENABLE(INSPECTOR)
     if (messageID.is<CoreIPC::MessageClassWebInspector>()) {
         if (WebInspector* inspector = this->inspector())
-            inspector->didReceiveWebInspectorMessage(connection, messageID, arguments);
+            inspector->didReceiveWebInspectorMessage(connection, messageID, decoder);
         return;
     }
 #endif
 
 #if ENABLE(FULLSCREEN_API)
     if (messageID.is<CoreIPC::MessageClassWebFullScreenManager>()) {
-        fullScreenManager()->didReceiveMessage(connection, messageID, arguments);
+        fullScreenManager()->didReceiveMessage(connection, messageID, decoder);
         return;
     }
 #endif
 
-    didReceiveWebPageMessage(connection, messageID, arguments);
+    didReceiveWebPageMessage(connection, messageID, decoder);
 }
 
-void WebPage::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::ArgumentDecoder* arguments, OwnPtr<CoreIPC::ArgumentEncoder>& reply)
+void WebPage::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
 {   
-    didReceiveSyncWebPageMessage(connection, messageID, arguments, reply);
+    didReceiveSyncWebPageMessage(connection, messageID, decoder, replyEncoder);
 }
     
 InjectedBundleBackForwardList* WebPage::backForwardList()
@@ -3446,6 +3447,7 @@ void WebPage::setScrollingPerformanceLoggingEnabled(bool enabled)
 
 static bool canPluginHandleResponse(const ResourceResponse& response)
 {
+#if ENABLE(NETSCAPE_PLUGIN_API)
     String pluginPath;
     bool blocked;
     
@@ -3453,6 +3455,9 @@ static bool canPluginHandleResponse(const ResourceResponse& response)
         return false;
     
     return !blocked && !pluginPath.isEmpty();
+#else
+    return false;
+#endif
 }
 
 bool WebPage::shouldUseCustomRepresentationForResponse(const ResourceResponse& response) const

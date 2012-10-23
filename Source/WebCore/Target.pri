@@ -318,6 +318,7 @@ SOURCES += \
     css/SelectorChecker.cpp \
     css/ShadowValue.cpp \
     css/StyleBuilder.cpp \
+    css/StyleInvalidationAnalysis.cpp \
     css/StyleMedia.cpp \
     css/StylePropertySet.cpp \
     css/StylePropertyShorthand.cpp \
@@ -816,6 +817,7 @@ SOURCES += \
     loader/CrossOriginAccessControl.cpp \
     loader/CrossOriginPreflightResultCache.cpp \
     loader/cache/CachedResourceLoader.cpp \
+    loader/cache/CachedResourceRequest.cpp \
     loader/DocumentLoadTiming.cpp \
     loader/DocumentLoader.cpp \
     loader/DocumentThreadableLoader.cpp \
@@ -1490,6 +1492,7 @@ HEADERS += \
     css/SiblingTraversalStrategies.h \
     css/StyleMedia.h \
     css/StyleBuilder.h \
+    css/StyleInvalidationAnalysis.h \
     css/StylePropertySet.h \
     css/StylePropertyShorthand.h \
     css/StyleResolver.h \
@@ -2214,6 +2217,7 @@ HEADERS += \
     platform/network/Credential.h \
     platform/network/CredentialStorage.h \
     platform/network/ContentTypeParser.h \
+    platform/network/DNSResolveQueue.h \
     platform/network/FormDataBuilder.h \
     platform/network/FormData.h \
     platform/network/HTTPHeaderMap.h \
@@ -2235,7 +2239,6 @@ HEADERS += \
     platform/network/ResourceLoadTiming.h \
     platform/network/ResourceRequestBase.h \
     platform/network/ResourceResponseBase.h \
-    platform/network/qt/DnsPrefetchHelper.h \
     platform/network/qt/NetworkStateNotifierPrivate.h \
     platform/PlatformExportMacros.h \
     platform/PlatformMemoryInstrumentation.h \
@@ -2790,11 +2793,12 @@ SOURCES += \
     platform/graphics/texmap/TextureMapperBackingStore.cpp \
     platform/graphics/texmap/TextureMapperImageBuffer.cpp \
     platform/graphics/texmap/TextureMapperLayer.cpp \
+    platform/network/DNSResolveQueue.cpp \
     platform/network/MIMESniffing.cpp \
     platform/network/qt/CredentialStorageQt.cpp \
     platform/network/qt/ResourceHandleQt.cpp \
     platform/network/qt/ResourceRequestQt.cpp \
-    platform/network/qt/DnsPrefetchHelper.cpp \
+    platform/network/qt/DNSQt.cpp \
     platform/network/qt/NetworkStateNotifierQt.cpp \
     platform/network/qt/ProxyServerQt.cpp \
     platform/network/qt/QtMIMETypeSniffer.cpp \
@@ -3894,6 +3898,7 @@ enable?(WEBGL) {
         html/canvas/OESStandardDerivatives.h \
         html/canvas/OESTextureFloat.h \
         html/canvas/OESVertexArrayObject.h \
+        html/canvas/OESElementIndexUint.h \
         html/canvas/WebGLTexture.h \
         html/canvas/WebGLUniformLocation.h \
         html/canvas/WebGLVertexArrayObjectOES.h \
@@ -3927,6 +3932,7 @@ enable?(WEBGL) {
         html/canvas/OESStandardDerivatives.cpp \
         html/canvas/OESTextureFloat.cpp \
         html/canvas/OESVertexArrayObject.cpp \
+        html/canvas/OESElementIndexUint.cpp \
         html/canvas/WebGLTexture.cpp \
         html/canvas/WebGLUniformLocation.cpp \
         html/canvas/WebGLVertexArrayObjectOES.cpp
