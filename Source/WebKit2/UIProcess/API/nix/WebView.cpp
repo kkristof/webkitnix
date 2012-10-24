@@ -123,6 +123,7 @@ public:
     virtual void setScrollPosition(int x, int y);
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
+    virtual void userViewportToContents(int* x, int* y);
 
     virtual bool isFocused() const;
     virtual void setFocused(bool);
@@ -238,7 +239,6 @@ private:
     void updateVisibleContents();
 
     cairo_matrix_t userViewportToContentTransformation();
-    void transformPointToViewCoordinates(double& x, double& y);
 
     void sendMouseEvent(const Nix::MouseEvent&);
     void sendWheelEvent(const Nix::WheelEvent&);
@@ -337,6 +337,16 @@ void WebViewImpl::setScrollPosition(int x, int y)
         return;
 
     drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
+}
+
+void WebViewImpl::userViewportToContents(int* x, int* y)
+{
+    double outX = double(*x);
+    double outY = double(*y);
+    cairo_matrix_t transformMatrix = userViewportToContentTransformation();
+    cairo_matrix_transform_point(&transformMatrix, &outX, &outY);
+    *x = int(outX);
+    *y = int(outY);
 }
 
 bool WebViewImpl::isFocused() const
@@ -541,12 +551,6 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation()
     cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
 
     return transform;
-}
-
-void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
-{
-    cairo_matrix_t transformMatrix = userViewportToContentTransformation();
-    cairo_matrix_transform_point(&transformMatrix, &x, &y);
 }
 
 void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)

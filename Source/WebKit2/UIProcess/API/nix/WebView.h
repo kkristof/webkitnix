@@ -38,6 +38,7 @@ public:
     virtual void setScrollPosition(int x, int y) = 0;
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) = 0;
+    virtual void userViewportToContents(int* x, int* y) = 0;
 
     virtual bool isFocused() const = 0;
     virtual void setFocused(bool) = 0;
