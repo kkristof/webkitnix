@@ -546,6 +546,8 @@ WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event,
 
     double x = event.x;
     double y = event.y;
+    cairo_matrix_transform_point(&fromItemTransform, &x, &y);
+
     float deltaX = x - lastCursorPosition->x();
     float deltaY = y - lastCursorPosition->y();
     int clickCount = event.clickCount;
@@ -554,8 +556,6 @@ WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event,
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     lastCursorPosition->setX(x);
     lastCursorPosition->setY(y);
-
-    cairo_matrix_transform_point(&fromItemTransform, &x, &y);
 
     return WebMouseEvent(type, button, WebCore::IntPoint(x, y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
 }
