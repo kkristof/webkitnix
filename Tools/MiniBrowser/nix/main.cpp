@@ -216,6 +216,21 @@ static Nix::KeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const
     return ev;
 }
 
+static Nix::MouseEvent convertXButtonEventToNixButtonEvent(const XButtonEvent& event, Nix::InputEvent::Type type, unsigned clickCount)
+{
+    Nix::MouseEvent ev;
+    ev.type = type;
+    ev.button = convertXEventButtonToNativeMouseButton(event.button);
+    ev.x = event.x;
+    ev.y = event.y;
+    ev.globalX = event.x_root;
+    ev.globalY = event.y_root;
+    ev.clickCount = clickCount;
+    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    return ev;
+}
+
 void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
 {
     if (!m_webView)
@@ -308,16 +323,7 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 
     updateClickCount(event);
 
-    Nix::MouseEvent ev;
-    ev.type = Nix::InputEvent::MouseDown;
-    ev.button = convertXEventButtonToNativeMouseButton(event.button);
-    ev.x = event.x;
-    ev.y = event.y;
-    ev.globalX = event.x_root;
-    ev.globalY = event.y_root;
-    ev.clickCount = m_clickCount;
-    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    ev.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    Nix::MouseEvent ev = convertXButtonEventToNixButtonEvent(event, Nix::InputEvent::MouseDown, m_clickCount);
     if (m_touchMocker && m_touchMocker->handleMousePress(ev)) {
         scheduleUpdateDisplay();
         return;
@@ -330,16 +336,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     if (!m_webView || event.button == 4 || event.button == 5)
         return;
 
-    Nix::MouseEvent ev;
-    ev.type = Nix::InputEvent::MouseUp;
-    ev.button = convertXEventButtonToNativeMouseButton(event.button);
-    ev.x = event.x;
-    ev.y = event.y;
-    ev.globalX = event.x_root;
-    ev.globalY = event.y_root;
-    ev.clickCount = 0;
-    ev.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    ev.timestamp = convertXEventModifiersToNativeModifiers(event.state);
+    Nix::MouseEvent ev = convertXButtonEventToNixButtonEvent(event, Nix::InputEvent::MouseUp, 0);
     if (m_touchMocker && m_touchMocker->handleMouseRelease(ev)) {
         scheduleUpdateDisplay();
         return;
