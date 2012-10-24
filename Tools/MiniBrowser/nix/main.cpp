@@ -49,7 +49,6 @@ public:
     virtual void handleClosed();
 
     // Nix::WebViewClient.
-    virtual cairo_matrix_t viewToScreenTransform() { return m_webViewTransform; }
     virtual void viewNeedsDisplay(int, int, int, int) { scheduleUpdateDisplay(); }
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
@@ -92,7 +91,6 @@ private:
     bool m_displayUpdateScheduled;
     int m_contentsWidth;
     int m_contentsHeight;
-    cairo_matrix_t m_webViewTransform;
     GestureRecognizer m_gestureRecognizer;
 
     friend gboolean callUpdateDisplay(gpointer);
@@ -130,7 +128,11 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     std::pair<int, int> size = m_window->size();
     m_webView->setSize(size.first, size.second);
 
-    cairo_matrix_init_translate(&m_webViewTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
+    if (viewportHorizontalDisplacement || viewportVerticalDisplacement) {
+        cairo_matrix_t userTransform;
+        cairo_matrix_init_translate(&userTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
+        m_webView->setUserViewportTransformation(userTransform);
+    }
 
     m_webView->setFocused(true);
     m_webView->setVisible(true);

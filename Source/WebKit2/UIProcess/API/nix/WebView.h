@@ -14,8 +14,6 @@ public:
     virtual ~WebViewClient() { }
 
     virtual void viewNeedsDisplay(int x, int y, int width, int height);
-    virtual cairo_matrix_t viewToScreenTransform();
-
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
     virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
@@ -38,6 +36,8 @@ public:
     virtual int scrollX() const = 0;
     virtual int scrollY() const = 0;
     virtual void setScrollPosition(int x, int y) = 0;
+
+    virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) = 0;
 
     virtual bool isFocused() const = 0;
     virtual void setFocused(bool) = 0;

@@ -62,12 +62,6 @@ void WebViewClient::viewNeedsDisplay(int, int, int, int)
 
 }
 
-cairo_matrix_t WebViewClient::viewToScreenTransform()
-{
-    static cairo_matrix_t identityTransform = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
-    return identityTransform;
-}
-
 void WebViewClient::webProcessCrashed(WKStringRef)
 {
 
@@ -110,6 +104,9 @@ public:
         , m_opacity(1.0)
     {
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
+        cairo_matrix_t identityTransform;
+        cairo_matrix_init_identity(&identityTransform);
+        setUserViewportTransformation(identityTransform);
     }
 
     virtual ~WebViewImpl() { }
@@ -124,6 +121,8 @@ public:
     virtual int scrollX() const { return m_scrollPosition.x(); }
     virtual int scrollY() const { return m_scrollPosition.y(); }
     virtual void setScrollPosition(int x, int y);
+
+    virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
 
     virtual bool isFocused() const;
     virtual void setFocused(bool);
@@ -238,7 +237,7 @@ private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
-    cairo_matrix_t screenToViewMatrix();
+    cairo_matrix_t userViewportToContentTransformation();
     void transformPointToViewCoordinates(double& x, double& y);
 
     void sendMouseEvent(const Nix::MouseEvent&);
@@ -260,6 +259,7 @@ private:
     IntPoint m_scrollPosition;
     double m_scale;
     double m_opacity;
+    cairo_matrix_t m_userViewportTransformation;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -420,12 +420,12 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
 
 void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 {
-    m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, screenToViewMatrix(), &m_lastCursorPosition));
+    m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, userViewportToContentTransformation(), &m_lastCursorPosition));
 }
 
 void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
 {
-    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, screenToViewMatrix()));
+    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, userViewportToContentTransformation()));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
@@ -467,20 +467,19 @@ void WebViewImpl::paintToCurrentGLContext()
 
     renderer->syncRemoteContent();
 
-    cairo_matrix_t viewTransform = m_client->viewToScreenTransform();
     double x = 0;
     double y = 0;
     double width = m_size.width();
     double height = m_size.height();
-    cairo_matrix_transform_point(&viewTransform, &x, &y);
-    cairo_matrix_transform_distance(&viewTransform, &width, &height);
+    cairo_matrix_transform_point(&m_userViewportTransformation, &x, &y);
+    cairo_matrix_transform_distance(&m_userViewportTransformation, &width, &height);
 
     cairo_matrix_t transform;
     cairo_matrix_init_scale(&transform, m_scale, m_scale);
 
     if (m_webPageProxy->useFixedLayout())
         cairo_matrix_translate(&transform, -m_scrollPosition.x(), -m_scrollPosition.y());
-    cairo_matrix_multiply(&transform, &transform, &viewTransform);
+    cairo_matrix_multiply(&transform, &transform, &m_userViewportTransformation);
 
     FloatRect rect(x, y, width, height);
     renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
@@ -526,9 +525,9 @@ void WebViewImpl::pageTransitionViewportReady()
     m_webPageProxy->commitPageTransitionViewport();
 }
 
-cairo_matrix_t WebViewImpl::screenToViewMatrix()
+cairo_matrix_t WebViewImpl::userViewportToContentTransformation()
 {
-    cairo_matrix_t invertedViewTransform = m_client->viewToScreenTransform();
+    cairo_matrix_t invertedViewTransform = m_userViewportTransformation;
     cairo_matrix_invert(&invertedViewTransform);
 
     cairo_matrix_t invertedScrollTransform;
@@ -546,13 +545,13 @@ cairo_matrix_t WebViewImpl::screenToViewMatrix()
 
 void WebViewImpl::transformPointToViewCoordinates(double& x, double& y)
 {
-    cairo_matrix_t transformMatrix = screenToViewMatrix();
+    cairo_matrix_t transformMatrix = userViewportToContentTransformation();
     cairo_matrix_transform_point(&transformMatrix, &x, &y);
 }
 
 void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
 {
-    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event, screenToViewMatrix()));
+    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event, userViewportToContentTransformation()));
 }
 
 void WebViewImpl::sendKeyEvent(const KeyEvent& event)
@@ -562,7 +561,7 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
 
 void WebViewImpl::sendGestureEvent(const GestureEvent& event)
 {
-    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event, screenToViewMatrix()));
+    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event, userViewportToContentTransformation()));
 }
 
 #if ENABLE(TOUCH_EVENTS)

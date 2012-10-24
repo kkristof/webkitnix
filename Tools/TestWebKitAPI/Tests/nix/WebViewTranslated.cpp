@@ -10,32 +10,18 @@
 
 namespace TestWebKitAPI {
 
-namespace {
-
-class TestWebViewClient : public Util::ForceRepaintClient {
-public:
-    TestWebViewClient(int delta)
-    {
-        cairo_matrix_init_translate(&m_matrix, delta, delta);
-    }
-
-    cairo_matrix_t viewToScreenTransform()
-    {
-        return m_matrix;
-    }
-private:
-    cairo_matrix_t m_matrix;
-};
-
-} // namespace
-
 TEST(WebKitNix, WebViewTranslated)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     const int translationDelta = 20;
-    TestWebViewClient client(translationDelta);
+    Util::ForceRepaintClient client;
     std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
+
+    cairo_matrix_t transform;
+    cairo_matrix_init_translate(&transform, translationDelta, translationDelta);
+    webView->setUserViewportTransformation(transform);
+
     client.setView(webView.get());
     client.setClearColor(0, 0, 1, 1);
     webView->initialize();
