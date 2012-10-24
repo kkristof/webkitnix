@@ -966,6 +966,9 @@ transforms/2d/compound-transforms-vs-containers.html [ Skip ]
 transforms/2d/hindi-rotated.html [ Skip ]
 transforms/2d/transform-fixed-container.html [ Skip ]
 transforms/2d/zoom-menulist.html [ Skip ]
+
+transforms/3d/point-mapping/3d-point-mapping-origins.html [ Skip ]
+
 transitions/default-timing-function.html [ Skip ]
 transitions/move-after-transition.html [ Skip ]
 transitions/svg-text-shadow-transition.html [ Skip ]
