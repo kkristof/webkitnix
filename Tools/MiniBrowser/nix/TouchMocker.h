@@ -23,7 +23,7 @@ public:
     bool handleMouseMove(const Nix::MouseEvent&);
     bool handleKeyRelease(const Nix::KeyEvent&);
 
-    void paintTouchPoints();
+    void paintTouchPoints(int width, int height);
 
 private:
     void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, int x, int y, int globalX, int globalY);

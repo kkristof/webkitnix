@@ -36,7 +36,7 @@ TouchMocker::~TouchMocker()
     glDeleteTextures(1, &m_touchTextureId);
 }
 
-void TouchMocker::paintTouchPoints()
+void TouchMocker::paintTouchPoints(int width, int height)
 {
     static float vertexData[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     static const float texCoords[] = { 0, 0, 1, 0, 0, 1, 1, 1};
@@ -47,7 +47,7 @@ void TouchMocker::paintTouchPoints()
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, m_webView->width(), m_webView->height(), 0, -1, 1);
+    glOrtho(0, width, height, 0, -1, 1);
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);

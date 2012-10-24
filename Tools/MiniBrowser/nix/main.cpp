@@ -399,7 +399,7 @@ void MiniBrowser::updateDisplay()
 
     m_webView->paintToCurrentGLContext();
     if (m_touchMocker)
-        m_touchMocker->paintTouchPoints();
+        m_touchMocker->paintTouchPoints(size.first, size.second);
 
     m_window->swapBuffers();
 }
