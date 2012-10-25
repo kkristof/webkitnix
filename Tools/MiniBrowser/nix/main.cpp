@@ -412,7 +412,7 @@ void MiniBrowser::updateDisplay()
 
     std::pair<int, int> size = m_window->size();
     glViewport(0, 0, size.first, size.second);
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClearColor(0.7, 0.35, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_webView->paintToCurrentGLContext();
