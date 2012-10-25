@@ -80,6 +80,7 @@ private:
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
     LinuxWindow* m_window;
     Nix::WebView* m_webView;
+    WKRect m_webViewRect;
     GMainLoop* m_mainLoop;
     double m_lastClickTime;
     int m_lastClickX;
@@ -126,7 +127,8 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
         WKPageSetUseFixedLayout(pageRef(), true);
 
     std::pair<int, int> size = m_window->size();
-    m_webView->setSize(size.first, size.second);
+    m_webViewRect = WKRectMake(viewportHorizontalDisplacement, viewportVerticalDisplacement, size.first - viewportHorizontalDisplacement, size.second - viewportVerticalDisplacement);
+    m_webView->setSize(m_webViewRect.size.width, m_webViewRect.size.height);
 
     if (viewportHorizontalDisplacement || viewportVerticalDisplacement) {
         cairo_matrix_t userTransform;
@@ -371,7 +373,9 @@ void MiniBrowser::handleSizeChanged(int width, int height)
     if (!m_webView)
         return;
 
-    m_webView->setSize(width, height);
+    m_webViewRect.size.width = width - m_webViewRect.origin.x;
+    m_webViewRect.size.height = height - m_webViewRect.origin.y;
+    m_webView->setSize(m_webViewRect.size.width, m_webViewRect.size.height);
 
     if (m_mode == MobileMode)
         adjustScaleToFitContents();
