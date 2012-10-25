@@ -430,12 +430,12 @@ void WebViewImpl::sendEvent(const Nix::InputEvent& event)
 
 void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
 {
-    m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, userViewportToContentTransformation(), &m_lastCursorPosition));
+    m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, &m_lastCursorPosition));
 }
 
 void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
 {
-    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event, userViewportToContentTransformation()));
+    m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
@@ -555,7 +555,7 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation()
 
 void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
 {
-    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event, userViewportToContentTransformation()));
+    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event));
 }
 
 void WebViewImpl::sendKeyEvent(const KeyEvent& event)
@@ -565,7 +565,7 @@ void WebViewImpl::sendKeyEvent(const KeyEvent& event)
 
 void WebViewImpl::sendGestureEvent(const GestureEvent& event)
 {
-    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event, userViewportToContentTransformation()));
+    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
 }
 
 #if ENABLE(TOUCH_EVENTS)

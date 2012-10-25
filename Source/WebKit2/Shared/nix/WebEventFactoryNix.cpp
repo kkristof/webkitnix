@@ -539,36 +539,28 @@ static String keyTextForNixKeyEvent(const Nix::KeyEvent& event)
     return "";
 }
 
-WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event, const cairo_matrix_t& fromItemTransform, WebCore::IntPoint* lastCursorPosition)
+WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event, WebCore::IntPoint* lastCursorPosition)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     WebMouseEvent::Button button = convertToWebMouseEventButton(event.button);
 
-    double x = event.x;
-    double y = event.y;
-    cairo_matrix_transform_point(&fromItemTransform, &x, &y);
-
-    float deltaX = x - lastCursorPosition->x();
-    float deltaY = y - lastCursorPosition->y();
+    float deltaX = event.x - lastCursorPosition->x();
+    float deltaY = event.y - lastCursorPosition->y();
     int clickCount = event.clickCount;
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
-    lastCursorPosition->setX(x);
-    lastCursorPosition->setY(y);
+    lastCursorPosition->setX(event.x);
+    lastCursorPosition->setY(event.x);
 
-    return WebMouseEvent(type, button, WebCore::IntPoint(x, y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
+    return WebMouseEvent(type, button, WebCore::IntPoint(event.x, event.y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
 }
 
-WebWheelEvent WebEventFactory::createWebWheelEvent(const Nix::WheelEvent& event, const cairo_matrix_t& fromItemTransform)
+WebWheelEvent WebEventFactory::createWebWheelEvent(const Nix::WheelEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
 
-    double x = event.x;
-    double y = event.y;
-    cairo_matrix_transform_point(&fromItemTransform, &x, &y);
-
-    IntPoint position = IntPoint(x, y);
+    IntPoint position = IntPoint(event.x, event.y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     FloatSize delta = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
@@ -598,13 +590,10 @@ WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const Nix::KeyEvent& ev
     return WebKeyboardEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
 }
 
-WebGestureEvent WebEventFactory::createWebGestureEvent(const Nix::GestureEvent& event, const cairo_matrix_t& fromItemTransform)
+WebGestureEvent WebEventFactory::createWebGestureEvent(const Nix::GestureEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
-    double x = event.x;
-    double y = event.y;
-    cairo_matrix_transform_point(&fromItemTransform, &x, &y);
-    IntPoint position = IntPoint(x, y);
+    IntPoint position = IntPoint(event.x, event.y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
@@ -615,7 +604,7 @@ WebGestureEvent WebEventFactory::createWebGestureEvent(const Nix::GestureEvent& 
 }
 
 #if ENABLE(TOUCH_EVENTS)
-WebTouchEvent WebEventFactory::createWebTouchEvent(const Nix::TouchEvent& event, const cairo_matrix_t& fromItemTransform)
+WebTouchEvent WebEventFactory::createWebTouchEvent(const Nix::TouchEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     Vector<WebPlatformTouchPoint> touchPoints;
@@ -626,18 +615,13 @@ WebTouchEvent WebEventFactory::createWebTouchEvent(const Nix::TouchEvent& event,
         const Nix::TouchPoint& touch = event.touchPoints[i];
         uint32_t id = static_cast<uint32_t>(touch.id);
         WebPlatformTouchPoint::TouchPointState state = convertToWebTouchState(touch.state);
-        IntPoint screenPosition = IntPoint(touch.globalX, touch.globalY);
-
-        double x = touch.x;
-        double y = touch.y;
-        cairo_matrix_transform_point(&fromItemTransform, &x, &y);
-        IntPoint position(x, y);
-
+        IntPoint position = IntPoint(touch.x, touch.y);
+        IntPoint globalPosition = IntPoint(touch.globalX, touch.globalY);
         IntSize radius = IntSize(touch.horizontalRadius, touch.verticalRadius);
         float rotationAngle = touch.rotationAngle;
         float force = touch.pressure;
 
-        WebPlatformTouchPoint webTouchPoint = WebPlatformTouchPoint(id, state, screenPosition, position, radius, rotationAngle, force);
+        WebPlatformTouchPoint webTouchPoint = WebPlatformTouchPoint(id, state, globalPosition, position, radius, rotationAngle, force);
         touchPoints.append(webTouchPoint);
     }
 

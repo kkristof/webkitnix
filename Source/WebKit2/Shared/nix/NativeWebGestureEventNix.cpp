@@ -30,8 +30,8 @@
 
 namespace WebKit {
 
-NativeWebGestureEvent::NativeWebGestureEvent(const Nix::GestureEvent& event, const cairo_matrix_t& fromItemTransform)
-    : WebGestureEvent(WebEventFactory::createWebGestureEvent(event, fromItemTransform))
+NativeWebGestureEvent::NativeWebGestureEvent(const Nix::GestureEvent& event)
+    : WebGestureEvent(WebEventFactory::createWebGestureEvent(event))
     , m_nativeEvent(event)
 {
 }

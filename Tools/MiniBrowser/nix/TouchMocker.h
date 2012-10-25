@@ -10,6 +10,9 @@ struct MockedTouchPoint : public Nix::TouchPoint {
     // will update this touch point.
     bool selected;
 
+    int windowX;
+    int windowY;
+
     MockedTouchPoint();
 };
 
@@ -18,15 +21,15 @@ public:
     TouchMocker(Nix::WebView*);
     ~TouchMocker();
 
-    bool handleMousePress(const Nix::MouseEvent&);
+    bool handleMousePress(const Nix::MouseEvent&, int windowX, int windowY);
     bool handleMouseRelease(const Nix::MouseEvent&);
-    bool handleMouseMove(const Nix::MouseEvent&);
+    bool handleMouseMove(const Nix::MouseEvent&, int windowX, int windowY);
     bool handleKeyRelease(const Nix::KeyEvent&);
 
     void paintTouchPoints(int width, int height);
 
 private:
-    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, int x, int y, int globalX, int globalY);
+    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, const Nix::MouseEvent& event, int windowX, int windowY);
     void updateTouchPointsState(Nix::TouchPoint::TouchState);
     void releaseTouchPoints(double timestamp);
 

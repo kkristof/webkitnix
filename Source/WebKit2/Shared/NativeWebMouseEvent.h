@@ -40,7 +40,6 @@ typedef union _GdkEvent GdkEvent;
 #include <Evas.h>
 #elif PLATFORM(NIX)
 #include <NixEvents.h>
-#include <cairo.h>
 #endif
 
 namespace WebKit {
@@ -61,7 +60,7 @@ public:
     NativeWebMouseEvent(const Evas_Event_Mouse_Up*, const Evas_Point*);
     NativeWebMouseEvent(const Evas_Event_Mouse_Move*, const Evas_Point*);
 #elif PLATFORM(NIX)
-    NativeWebMouseEvent(const Nix::MouseEvent& event, const cairo_matrix_t& fromItemTransform, WebCore::IntPoint* lastCursorPosition);
+    NativeWebMouseEvent(const Nix::MouseEvent& event, WebCore::IntPoint* lastCursorPosition);
 #endif
 
 #if USE(APPKIT)

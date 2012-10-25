@@ -61,7 +61,7 @@ void GestureRecognizer::singleTapPressed(const Nix::TouchEvent& event)
         // FIXME Both calls to exceedsPanThreshold were using m_previousTouchPoint.
         if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
             m_state = &GestureRecognizer::panningInProgress;
-            m_client->handlePanning(event.timestamp, m_previousTouchPoint, touch);
+            m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
         }
         break;
     case Nix::InputEvent::TouchEnd:
@@ -94,7 +94,7 @@ void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
     case Nix::InputEvent::TouchMove:
         if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
             m_state = &GestureRecognizer::panningInProgress;
-            m_client->handlePanning(event.timestamp, m_previousTouchPoint, touch);
+            m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
         }
         break;
     case Nix::InputEvent::TouchEnd:
@@ -111,7 +111,7 @@ void GestureRecognizer::panningInProgress(const Nix::TouchEvent& event)
     Nix::TouchPoint touch = event.touchPoints[0];
     switch (event.type) {
     case Nix::InputEvent::TouchMove:
-        m_client->handlePanning(event.timestamp, m_previousTouchPoint, touch);
+        m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
         break;
     case Nix::InputEvent::TouchEnd:
         m_state = &GestureRecognizer::noGesture;

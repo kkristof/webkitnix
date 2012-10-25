@@ -30,7 +30,6 @@
 
 #if PLATFORM(NIX)
 #include <NixEvents.h>
-#include <cairo.h>
 #endif
 
 #if PLATFORM(QT)
@@ -43,7 +42,7 @@ namespace WebKit {
 class NativeWebGestureEvent : public WebGestureEvent {
 public:
 #if PLATFORM(NIX)
-    NativeWebGestureEvent(const Nix::GestureEvent& event, const cairo_matrix_t& fromItemTransform);
+    NativeWebGestureEvent(const Nix::GestureEvent& event);
 #elif PLATFORM(QT)
     NativeWebGestureEvent(const QTouchEvent::TouchPoint&, const WebEvent::Type&, const QTransform& fromItemTransform);
 #endif

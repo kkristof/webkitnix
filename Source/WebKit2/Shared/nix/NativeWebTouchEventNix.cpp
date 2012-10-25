@@ -31,8 +31,8 @@
 
 namespace WebKit {
 
-NativeWebTouchEvent::NativeWebTouchEvent(const Nix::TouchEvent& event, const cairo_matrix_t& fromItemTransform)
-    : WebTouchEvent(WebEventFactory::createWebTouchEvent(event, fromItemTransform))
+NativeWebTouchEvent::NativeWebTouchEvent(const Nix::TouchEvent& event)
+    : WebTouchEvent(WebEventFactory::createWebTouchEvent(event))
     , m_nativeEvent(event)
 {
 }

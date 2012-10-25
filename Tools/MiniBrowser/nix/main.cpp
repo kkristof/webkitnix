@@ -220,13 +220,14 @@ static Nix::KeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const
     return nixEvent;
 }
 
-static Nix::MouseEvent convertXButtonEventToNixButtonEvent(const XButtonEvent& event, Nix::InputEvent::Type type, unsigned clickCount)
+static Nix::MouseEvent convertXButtonEventToNixButtonEvent(Nix::WebView* webView, const XButtonEvent& event, Nix::InputEvent::Type type, unsigned clickCount)
 {
     Nix::MouseEvent nixEvent;
     nixEvent.type = type;
     nixEvent.button = convertXEventButtonToNativeMouseButton(event.button);
     nixEvent.x = event.x;
     nixEvent.y = event.y;
+    webView->userViewportToContents(&nixEvent.x, &nixEvent.y);
     nixEvent.globalX = event.x_root;
     nixEvent.globalY = event.y_root;
     nixEvent.clickCount = clickCount;
@@ -275,9 +276,12 @@ void MiniBrowser::handleKeyReleaseEvent(const XKeyReleasedEvent& event)
 
 void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 {
+    int contentX = event.x;
+    int contentY = event.y;
+    m_webView->userViewportToContents(&contentX, &contentY);
+
     if (m_mode == MobileMode && event.state & ShiftMask) {
-        // FIXME: When X11 window coordinates differ WebView coordinates, we need to adjust them here.
-        scaleAtPoint(event.x, event.y, event.button == 4 ? 0.1 : -0.1);
+        scaleAtPoint(contentX, contentY, event.button == 4 ? 0.1 : -0.1);
         return;
     }
 
@@ -288,8 +292,8 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     nixEvent.type = Nix::InputEvent::Wheel;
     nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    nixEvent.x = event.x;
-    nixEvent.y = event.y;
+    nixEvent.x = contentX;
+    nixEvent.y = contentY;
     nixEvent.globalX = event.x_root;
     nixEvent.globalY = event.y_root;
     nixEvent.delta = pixelsPerStep * (event.button == 4 ? 1 : -1);
@@ -328,8 +332,8 @@ void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 
     updateClickCount(event);
 
-    Nix::MouseEvent nixEvent = convertXButtonEventToNixButtonEvent(event, Nix::InputEvent::MouseDown, m_clickCount);
-    if (m_touchMocker && m_touchMocker->handleMousePress(nixEvent)) {
+    Nix::MouseEvent nixEvent = convertXButtonEventToNixButtonEvent(webView, event, Nix::InputEvent::MouseDown, m_clickCount);
+    if (m_touchMocker && m_touchMocker->handleMousePress(nixEvent, event.x, event.y)) {
         scheduleUpdateDisplay();
         return;
     }
@@ -341,7 +345,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
     if (event.button == 4 || event.button == 5)
         return;
 
-    Nix::MouseEvent nixEvent = convertXButtonEventToNixButtonEvent(event, Nix::InputEvent::MouseUp, 0);
+    Nix::MouseEvent nixEvent = convertXButtonEventToNixButtonEvent(m_webView, event, Nix::InputEvent::MouseUp, 0);
     if (m_touchMocker && m_touchMocker->handleMouseRelease(nixEvent)) {
         scheduleUpdateDisplay();
         return;
@@ -362,12 +366,13 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
     nixEvent.button = Nix::MouseEvent::NoButton;
     nixEvent.x = event.x;
     nixEvent.y = event.y;
+    m_webView->userViewportToContents(&nixEvent.x, &nixEvent.y);
     nixEvent.globalX = event.x_root;
     nixEvent.globalY = event.y_root;
     nixEvent.clickCount = 0;
     nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    if (m_touchMocker && m_touchMocker->handleMouseMove(nixEvent)) {
+    if (m_touchMocker && m_touchMocker->handleMouseMove(nixEvent, event.x, event.y)) {
         scheduleUpdateDisplay();
         return;
     }
@@ -523,13 +528,13 @@ void MiniBrowser::handleSingleTap(double timestamp, const Nix::TouchPoint& touch
     m_webView->sendEvent(gestureEvent);
 }
 
-void MiniBrowser::handlePanning(double timestamp, const Nix::TouchPoint& previousTouchPoint, const Nix::TouchPoint& currentTouchPoint)
+void MiniBrowser::handlePanning(double timestamp, const Nix::TouchPoint& firstTouchPoint, const Nix::TouchPoint& currentTouchPoint)
 {
     // When the user is panning around the contents we don't force the page scroll position
     // to respect any boundaries other than the physical constraints of the device from where
     // the user input came. This will be adjusted after the user interaction ends.
-    int x = m_webView->scrollX() + ((previousTouchPoint.x - currentTouchPoint.x) / m_webView->scale());
-    int y = m_webView->scrollY() + ((previousTouchPoint.y - currentTouchPoint.y) / m_webView->scale());
+    int x = m_webView->scrollX() - (currentTouchPoint.x - firstTouchPoint.x);
+    int y = m_webView->scrollY() - (currentTouchPoint.y - firstTouchPoint.y);
     m_webView->setScrollPosition(x, y);
 }
 

@@ -35,7 +35,6 @@
 #include <Evas.h>
 #elif PLATFORM(NIX)
 #include <NixEvents.h>
-#include <cairo.h>
 #endif
 
 namespace WebKit {
@@ -47,7 +46,7 @@ public:
 #elif PLATFORM(EFL)
     NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const Evas_Point*, double timestamp);
 #elif PLATFORM(NIX)
-    NativeWebTouchEvent(const Nix::TouchEvent& event, const cairo_matrix_t& fromItemTransform);
+    NativeWebTouchEvent(const Nix::TouchEvent& event);
 #endif
 
 #if PLATFORM(QT)

@@ -30,8 +30,8 @@
 
 namespace WebKit {
 
-NativeWebWheelEvent::NativeWebWheelEvent(const Nix::WheelEvent& event, const cairo_matrix_t& fromItemTransform)
-    : WebWheelEvent(WebEventFactory::createWebWheelEvent(event, fromItemTransform))
+NativeWebWheelEvent::NativeWebWheelEvent(const Nix::WheelEvent& event)
+    : WebWheelEvent(WebEventFactory::createWebWheelEvent(event))
     , m_nativeEvent(event)
 {
 }

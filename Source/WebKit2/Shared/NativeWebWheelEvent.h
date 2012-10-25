@@ -40,7 +40,6 @@ typedef union _GdkEvent GdkEvent;
 #include <Evas.h>
 #elif PLATFORM(NIX)
 #include <NixEvents.h>
-#include <cairo.h>
 #endif
 
 namespace WebKit {
@@ -59,7 +58,7 @@ public:
 #elif PLATFORM(EFL)
     NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const Evas_Point*);
 #elif PLATFORM(NIX)
-    NativeWebWheelEvent(const Nix::WheelEvent& event, const cairo_matrix_t& fromItemTransform);
+    NativeWebWheelEvent(const Nix::WheelEvent& event);
 #endif
 
 #if USE(APPKIT)
