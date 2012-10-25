@@ -38,6 +38,14 @@ using namespace EWK2UnitTest;
 extern EWK2UnitTestEnvironment* environment;
 bool fullScreenCallbackCalled;
 
+TEST_F(EWK2UnitTestBase, ewk_view_type_check)
+{
+    ASSERT_FALSE(ewk_view_context_get(0));
+
+    Evas_Object* rectangle = evas_object_rectangle_add(canvas());
+    ASSERT_FALSE(ewk_view_url_set(rectangle, 0));
+}
+
 static void onLoadFinishedForRedirection(void* userData, Evas_Object*, void*)
 {
     int* countLoadFinished = static_cast<int*>(userData);
@@ -958,4 +966,33 @@ TEST_F(EWK2UnitTestBase, ewk_view_scale)
     ASSERT_TRUE(ewk_view_scale_set(webView(), 1, 0, 0));
     ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
     ASSERT_FLOAT_EQ(1, ewk_view_scale_get(webView()));
+}
+
+TEST_F(EWK2UnitTestBase, ewk_view_pagination)
+{
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+
+    // Default pagination value is EWK_PAGINATION_MODE_UNPAGINATED
+    ASSERT_EQ(EWK_PAGINATION_MODE_UNPAGINATED, ewk_view_pagination_mode_get(webView()));
+
+    ASSERT_TRUE(ewk_view_pagination_mode_set(webView(), EWK_PAGINATION_MODE_LEFT_TO_RIGHT));
+    // Reload page to check the pagination mode.
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+    ASSERT_EQ(EWK_PAGINATION_MODE_LEFT_TO_RIGHT, ewk_view_pagination_mode_get(webView()));
+
+    ASSERT_TRUE(ewk_view_pagination_mode_set(webView(), EWK_PAGINATION_MODE_RIGHT_TO_LEFT));
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+    ASSERT_EQ(EWK_PAGINATION_MODE_RIGHT_TO_LEFT, ewk_view_pagination_mode_get(webView()));
+
+    ASSERT_TRUE(ewk_view_pagination_mode_set(webView(), EWK_PAGINATION_MODE_TOP_TO_BOTTOM));
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+    ASSERT_EQ(EWK_PAGINATION_MODE_TOP_TO_BOTTOM, ewk_view_pagination_mode_get(webView()));
+
+    ASSERT_TRUE(ewk_view_pagination_mode_set(webView(),  EWK_PAGINATION_MODE_BOTTOM_TO_TOP));
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+    ASSERT_EQ(EWK_PAGINATION_MODE_BOTTOM_TO_TOP, ewk_view_pagination_mode_get(webView()));
+
+    ASSERT_TRUE(ewk_view_pagination_mode_set(webView(), EWK_PAGINATION_MODE_UNPAGINATED));
+    ASSERT_TRUE(loadUrlSync(environment->defaultTestPageUrl()));
+    ASSERT_EQ(EWK_PAGINATION_MODE_UNPAGINATED, ewk_view_pagination_mode_get(webView()));
 }

@@ -1231,6 +1231,9 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.editable)
             return;
 
+        if (!window.getSelection().isCollapsed)
+            return;
+
         if (this._checkWillCancelEditing())
             return;
 
@@ -2045,6 +2048,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
     _mouseClick: function(event)
     {
+        if (!window.getSelection().isCollapsed)
+            return;
+
         event.consume(true);
 
         if (event.target === this.listItemElement) {

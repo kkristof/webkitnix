@@ -27607,6 +27607,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\loader\LoaderStrategy.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\loader\LoaderStrategy.h"
+				>
+			</File>
+			<File
 				RelativePath="..\loader\MainResourceLoader.cpp"
 				>
 			</File>
@@ -55711,6 +55719,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\workers\SharedWorkerStrategy.h"
+				>
+			</File>
+			<File
 				RelativePath="..\workers\SharedWorkerThread.cpp"
 				>
 			</File>
@@ -76546,11 +76558,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\inspector\front-end\NetworkRequest.js"
+					>
+				</File>
+				<File
 					RelativePath="..\inspector\front-end\NetworkUISourceCodeProvider.js"
 					>
 				</File>
 				<File
-					RelativePath="..\inspector\front-end\NetworkRequest.js"
+					RelativePath="..\inspector\front-end\NetworkWorkspaceProvider.js"
 					>
 				</File>
 				<File

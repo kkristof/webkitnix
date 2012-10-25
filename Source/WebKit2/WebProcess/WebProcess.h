@@ -72,6 +72,10 @@ QT_END_NAMESPACE
 #include "WebNotificationManager.h"
 #endif
 
+#if ENABLE(NETWORK_PROCESS)
+#include "WebResourceLoadScheduler.h"
+#endif
+
 #if ENABLE(PLUGIN_PROCESS)
 #include "PluginProcessConnectionManager.h"
 #endif
@@ -115,6 +119,9 @@ public:
     WebCore::RunLoop* runLoop() const { return m_runLoop; }
 
     void addMessageReceiver(CoreIPC::StringReference messageReceiverName, CoreIPC::MessageReceiver*);
+    void addMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID, CoreIPC::MessageReceiver*);
+
+    void removeMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID);
 
     WebConnectionToUIProcess* webConnectionToUIProcess() const { return m_connection.get(); }
 
@@ -197,6 +204,7 @@ public:
 
 #if ENABLE(NETWORK_PROCESS)
     void networkProcessConnectionClosed(NetworkProcessConnection*);
+    WebResourceLoadScheduler& webResourceLoadScheduler() { return m_webResourceLoadScheduler; }
 #endif
 
 private:
@@ -354,6 +362,7 @@ private:
     void ensureNetworkProcessConnection();
     RefPtr<NetworkProcessConnection> m_networkProcessConnection;
     bool m_usesNetworkProcess;
+    WebResourceLoadScheduler m_webResourceLoadScheduler;
 #endif
 
 #if ENABLE(PLUGIN_PROCESS)

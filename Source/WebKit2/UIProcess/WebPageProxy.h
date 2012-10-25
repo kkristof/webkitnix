@@ -662,7 +662,7 @@ public:
     void didReceiveMessageFromNavigatorQtObject(const String&);
 #endif
 
-#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)
     void handleDownloadRequest(DownloadProxy*);
 #endif
 

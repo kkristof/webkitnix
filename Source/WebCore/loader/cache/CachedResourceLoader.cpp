@@ -44,14 +44,17 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "HTMLElement.h"
+#include "LoaderStrategy.h"
 #include "Logging.h"
 #include "MemoryCache.h"
 #include "PingLoader.h"
+#include "PlatformStrategies.h"
 #include "ResourceLoadScheduler.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationListHashSet.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
@@ -718,7 +721,12 @@ void CachedResourceLoader::garbageCollectDocumentResources()
 void CachedResourceLoader::performPostLoadActions()
 {
     checkForPendingPreloads();
+
+#if USE(PLATFORM_STRATEGIES)
+    platformStrategies()->loaderStrategy()->resourceLoadScheduler()->servePendingRequests();
+#else
     resourceLoadScheduler()->servePendingRequests();
+#endif
 }
 
 void CachedResourceLoader::notifyLoadedFromMemoryCache(CachedResource* resource)
@@ -906,8 +914,7 @@ void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
     info.addMember(m_documentResources);
     info.addMember(m_validatedURLs);
-    if (m_preloads)
-        info.addListHashSet(*m_preloads);
+    info.addMember(m_preloads);
     info.addMember(m_pendingPreloads);
 }
 

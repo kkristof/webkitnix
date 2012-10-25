@@ -79,12 +79,6 @@ canvas/philip/tests/2d.text.draw.baseline.middle.html
 canvas/philip/tests/2d.text.draw.baseline.top.html
 canvas/philip/tests/type.prototype.html
 
-# Other failing Sputnik tests
-sputnik/Unicode/Unicode_510/S7.6_A3.1.html
-sputnik/Unicode/Unicode_510/S7.6_A3.2.html
-sputnik/Unicode/Unicode_510/S7.6_A5.3_T1.html
-sputnik/Unicode/Unicode_510/S7.6_A5.3_T2.html
-
 # Rendering of multipart images is broken: this test times out
 # https://bugs.webkit.org/show_bug.cgi?id=54251
 http/tests/multipart/invalid-image-data-standalone.html
@@ -1363,9 +1357,6 @@ webkit.org/b/98653 svg/text/lengthAdjust-text-metrics.html [ Failure ]
 
 webkit.org/b/98718 svg/animations/animate-css-xml-attributeType.html [ Failure Pass ]
 
-# EFL's TestRunner does not implement setMediaType
-Bug(EFL) fast/media/print-restores-previous-mediatype.html [ Failure ]
-
 # EFL's TestRunner does not implement enableAutoResizeMode
 Bug(EFL) fast/autoresize
 
@@ -1498,6 +1489,7 @@ webkit.org/b/79766 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-iframe-fixed.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-iframe-relative.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-relative.html [ Failure ]
+webkit.org/b/79766 compositing/tiling/backface-preserve-3d-tiled.html [ Failure ]
 webkit.org/b/79766 compositing/tiling/crash-reparent-tiled-layer.html [ Failure ]
 webkit.org/b/79766 compositing/tiling/huge-layer-add-remove-child.html [ Failure ]
 webkit.org/b/79766 compositing/tiling/huge-layer-img.html [ Failure ]
@@ -1976,6 +1968,7 @@ webkit.org/b/97990 mathml/presentation/mo-stretch.html [ Failure ]
 webkit.org/b/97990 mathml/presentation/roots.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/row-alignment.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/subsup.xhtml [ Failure ]
+webkit.org/b/99921 mathml/presentation/fenced.xhtml [ Failure ]
 
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html

@@ -23,11 +23,15 @@
 #include "DownloadManagerEfl.h"
 #include "WKAPICast.h"
 #include "WKRetainPtr.h"
-#include "ewk_context_history_client_private.h"
+#include "ewk_context.h"
 
 class Ewk_Url_Scheme_Request;
 class Ewk_Cookie_Manager;
 class Ewk_Favicon_Database;
+
+namespace WebKit {
+class ContextHistoryClientEfl;
+class RequestManagerClientEfl;
 #if ENABLE(BATTERY_STATUS)
 class BatteryProvider;
 #endif
@@ -37,9 +41,6 @@ class NetworkInfoProvider;
 #if ENABLE(VIBRATION)
 class VibrationProvider;
 #endif
-
-namespace WebKit {
-class RequestManagerClientEfl;
 }
 
 class Ewk_Context : public RefCounted<Ewk_Context> {
@@ -59,7 +60,7 @@ public:
     WebKit::RequestManagerClientEfl* requestManager();
 
 #if ENABLE(VIBRATION)
-    PassRefPtr<VibrationProvider> vibrationProvider();
+    PassRefPtr<WebKit::VibrationProvider> vibrationProvider();
 #endif
 
     void addVisitedLink(const String& visitedURL);
@@ -74,8 +75,7 @@ public:
 
     WebKit::DownloadManagerEfl* downloadManager() const;
 
-    const Ewk_Context_History_Client& historyClient() const  { return m_historyClient; }
-    Ewk_Context_History_Client& historyClient() { return m_historyClient; }
+    WebKit::ContextHistoryClientEfl* historyClient();
 
 private:
     explicit Ewk_Context(WKContextRef);
@@ -85,18 +85,18 @@ private:
     OwnPtr<Ewk_Cookie_Manager> m_cookieManager;
     OwnPtr<Ewk_Favicon_Database> m_faviconDatabase;
 #if ENABLE(BATTERY_STATUS)
-    RefPtr<BatteryProvider> m_batteryProvider;
+    RefPtr<WebKit::BatteryProvider> m_batteryProvider;
 #endif
 #if ENABLE(NETWORK_INFO)
-    RefPtr<NetworkInfoProvider> m_networkInfoProvider;
+    RefPtr<WebKit::NetworkInfoProvider> m_networkInfoProvider;
 #endif
 #if ENABLE(VIBRATION)
-    RefPtr<VibrationProvider> m_vibrationProvider;
+    RefPtr<WebKit::VibrationProvider> m_vibrationProvider;
 #endif
     OwnPtr<WebKit::DownloadManagerEfl> m_downloadManager;
     OwnPtr<WebKit::RequestManagerClientEfl> m_requestManagerClient;
 
-    Ewk_Context_History_Client m_historyClient;
+    OwnPtr<WebKit::ContextHistoryClientEfl> m_historyClient;
 };
 
 #endif // ewk_context_private_h

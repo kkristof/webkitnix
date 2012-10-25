@@ -125,6 +125,7 @@ static const double defaultIncrementalRenderingSuppressionTimeoutInSeconds = 5;
 
 Settings::Settings(Page* page)
     : m_page(0)
+    , m_mediaTypeOverride("screen")
     , m_editableLinkBehavior(EditableLinkDefaultBehavior)
     , m_textDirectionSubmenuInclusionBehavior(TextDirectionSubmenuAutomaticallyIncluded)
     , m_passwordEchoDurationInSeconds(1)
@@ -168,6 +169,7 @@ Settings::Settings(Page* page)
     , m_allowUniversalAccessFromFileURLs(true)
     , m_allowFileAccessFromFileURLs(true)
     , m_javaScriptCanOpenWindowsAutomatically(false)
+    , m_supportsMultipleWindows(true)
     , m_javaScriptCanAccessClipboard(false)
     , m_shouldPrintBackgrounds(false)
     , m_textAreasAreResizable(false)
@@ -468,6 +470,22 @@ void Settings::setResolutionOverride(const IntSize& densityPerInchOverride)
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
+void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
+{
+    if (m_mediaTypeOverride == mediaTypeOverride)
+        return;
+
+    m_mediaTypeOverride = mediaTypeOverride;
+
+    Frame* mainFrame = m_page->mainFrame();
+    ASSERT(mainFrame);
+    FrameView* view = mainFrame->view();
+    ASSERT(view);
+
+    view->setMediaType(mediaTypeOverride);
+    m_page->setNeedsRecalcStyleInAllFrames();
+}
+
 void Settings::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
 {
     m_loadsImagesAutomatically = loadsImagesAutomatically;
@@ -584,6 +602,11 @@ void Settings::setPrivateBrowsingEnabled(bool privateBrowsingEnabled)
 void Settings::setJavaScriptCanOpenWindowsAutomatically(bool javaScriptCanOpenWindowsAutomatically)
 {
     m_javaScriptCanOpenWindowsAutomatically = javaScriptCanOpenWindowsAutomatically;
+}
+
+void Settings::setSupportsMultipleWindows(bool supportsMultipleWindows)
+{
+    m_supportsMultipleWindows = supportsMultipleWindows;
 }
 
 void Settings::setJavaScriptCanAccessClipboard(bool javaScriptCanAccessClipboard)

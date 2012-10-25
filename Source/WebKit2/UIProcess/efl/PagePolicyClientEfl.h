@@ -26,26 +26,30 @@
 #ifndef PagePolicyClientEfl_h
 #define PagePolicyClientEfl_h
 
-#include "ewk_view_private.h"
+#include "WKEvent.h"
+#include "WKPageLoadTypes.h"
+#include <WebKit2/WKBase.h>
 #include <wtf/PassOwnPtr.h>
+
+class EwkViewImpl;
 
 namespace WebKit {
 
 class PagePolicyClientEfl {
 public:
-    static PassOwnPtr<PagePolicyClientEfl> create(Evas_Object* view)
+    static PassOwnPtr<PagePolicyClientEfl> create(EwkViewImpl* viewImpl)
     {
-        return adoptPtr(new PagePolicyClientEfl(view));
+        return adoptPtr(new PagePolicyClientEfl(viewImpl));
     }
 
 private:
-    explicit PagePolicyClientEfl(Evas_Object* view);
+    explicit PagePolicyClientEfl(EwkViewImpl*);
 
     static void decidePolicyForNavigationAction(WKPageRef, WKFrameRef, WKFrameNavigationType, WKEventModifiers, WKEventMouseButton, WKURLRequestRef, WKFramePolicyListenerRef, WKTypeRef, const void*);
     static void decidePolicyForNewWindowAction(WKPageRef, WKFrameRef, WKFrameNavigationType, WKEventModifiers, WKEventMouseButton, WKURLRequestRef, WKStringRef, WKFramePolicyListenerRef, WKTypeRef, const void*);
     static void decidePolicyForResponseCallback(WKPageRef, WKFrameRef, WKURLResponseRef, WKURLRequestRef, WKFramePolicyListenerRef, WKTypeRef, const void*);
 
-    Evas_Object* m_view;
+    EwkViewImpl* m_viewImpl;
 };
 
 } // namespace WebKit
