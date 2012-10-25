@@ -37,7 +37,7 @@ using namespace WebKit;
 
 namespace WTR {
 
-PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
+PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup, WKDictionaryRef options)
 {
     m_webViewClient = new WTRWebViewClient;
     m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);

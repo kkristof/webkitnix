@@ -1423,7 +1423,7 @@ PassRefPtr<WebData> WebPageProxy::sessionStateData(WebPageProxySessionStateFilte
         filtered.append(entries[i]);
     }
     SessionState state(filtered, index);
-    state.encode(encoder.get());
+    state.encode(*encoder);
     return WebData::create(encoder->buffer(), encoder->bufferSize());
 }
 
