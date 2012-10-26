@@ -45,8 +45,6 @@ void sampleGamepads(GamepadList* into)
             gamepad->timestamp(gamepadDevice->lastTimestamp);
             gamepad->axes(gamepadDevice->axes.size(), gamepadDevice->axes.data());
             gamepad->buttons(gamepadDevice->buttons.size(), gamepadDevice->buttons.data());
-
-            into->set(i, gamepad);
         } else
             into->set(i, 0);
     }
