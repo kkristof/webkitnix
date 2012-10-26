@@ -138,6 +138,7 @@ SET(test_webkitnix_api_BINARIES
     WebViewPaintToCurrentGLContext
     WebViewTranslated
     WebViewViewport
+    WebViewFindZoomableArea
 )
 
 SET(test_webkitnix_api_fail_BINARIES
