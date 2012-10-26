@@ -72,7 +72,7 @@ private:
     void scheduleUpdateDisplay();
     void adjustScrollPositionToBoundaries(int* x, int* y);
     void adjustScrollPosition();
-    void adjustScaleToFitContents();
+    double scaleToFitContents();
 
     void scaleAtPoint(int x, int y, double scaleRatio);
 
@@ -395,7 +395,7 @@ void MiniBrowser::handleSizeChanged(int width, int height)
     m_webView->setSize(m_webViewRect.size.width, m_webViewRect.size.height);
 
     if (m_mode == MobileMode)
-        adjustScaleToFitContents();
+        m_webView->setScale(scaleToFitContents());
 }
 
 void MiniBrowser::handleClosed()
@@ -457,9 +457,9 @@ void MiniBrowser::adjustScrollPositionToBoundaries(int* x, int* y)
         *y = bottomBoundary;
 }
 
-void MiniBrowser::adjustScaleToFitContents()
+double MiniBrowser::scaleToFitContents()
 {
-    m_webView->setScale(double(m_webView->width()) / m_contentsWidth);
+    return double(m_webView->width()) / m_contentsWidth;
 }
 
 void MiniBrowser::adjustScrollPosition()
@@ -498,7 +498,7 @@ void MiniBrowser::didChangeContentsSize(int width, int height)
     m_contentsHeight = height;
 
     if (m_mode == MobileMode) {
-        adjustScaleToFitContents();
+        m_webView->setScale(scaleToFitContents());
         adjustScrollPosition();
     }
 }
