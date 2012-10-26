@@ -657,8 +657,10 @@ public:
 
     WebPageCreationParameters creationParameters() const;
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     void findZoomableAreaForPoint(const WebCore::IntPoint&, const WebCore::IntSize&);
+#endif
+#if PLATFORM(QT)
     void didReceiveMessageFromNavigatorQtObject(const String&);
 #endif
 
@@ -863,7 +865,7 @@ private:
     void pageDidRequestScroll(const WebCore::IntPoint&);
     void pageTransitionViewportReady();
 #endif
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     void didFindZoomableArea(const WebCore::IntPoint&, const WebCore::IntRect&);
 #endif
 

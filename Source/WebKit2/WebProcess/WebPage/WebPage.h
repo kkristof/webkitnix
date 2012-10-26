@@ -737,7 +737,7 @@ private:
     void hideFindUI();
     void countStringMatches(const String&, uint32_t findOptions, uint32_t maxMatchCount);
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     void findZoomableAreaForPoint(const WebCore::IntPoint&, const WebCore::IntSize& area);
 #endif
 

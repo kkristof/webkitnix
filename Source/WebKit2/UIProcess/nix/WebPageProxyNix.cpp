@@ -27,8 +27,10 @@
 #include "config.h"
 #include "WebPageProxy.h"
 
+#include "PageClient.h"
 #include "NotImplemented.h"
 #include "WebPageMessages.h"
+#include "WebProcessProxy.h"
 #include "WebKitVersion.h"
 
 #include <sys/utsname.h>
@@ -75,6 +77,19 @@ void WebPageProxy::saveRecentSearches(const String&, const Vector<String>&)
 void WebPageProxy::loadRecentSearches(const String&, Vector<String>&)
 {
     notImplemented();
+}
+
+void WebPageProxy::didFindZoomableArea(const WebCore::IntPoint& target, const WebCore::IntRect& area)
+{
+    m_pageClient->didFindZoomableArea(target, area);
+}
+
+void WebPageProxy::findZoomableAreaForPoint(const WebCore::IntPoint& point, const WebCore::IntSize& area)
+{
+    if (!isValid())
+        return;
+
+    m_process->send(Messages::WebPage::FindZoomableAreaForPoint(point, area), m_pageID);
 }
 
 } // namespace WebKit

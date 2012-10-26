@@ -20,6 +20,7 @@ public:
     virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
     virtual void pageDidRequestScroll(int x, int y);
     virtual void didChangeContentsSize(int width, int height);
+    virtual void didFindZoomableArea(WKPoint target, WKRect area);
 };
 
 class WK_EXPORT WebView {
@@ -65,6 +66,8 @@ public:
     virtual double opacity() const = 0;
 
     virtual void paintToCurrentGLContext() = 0;
+
+    virtual void findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius) = 0;
 
     virtual WKPageRef pageRef() = 0;
 

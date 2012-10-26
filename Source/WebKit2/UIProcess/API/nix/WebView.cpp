@@ -92,6 +92,11 @@ void WebViewClient::didChangeContentsSize(int, int)
 
 }
 
+void WebViewClient::didFindZoomableArea(WKPoint, WKRect)
+{
+
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -153,6 +158,8 @@ public:
 
     virtual void commitViewportChanges();
 
+    virtual void findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius);
+
     virtual WKPageRef pageRef();
 
     virtual void sendEvent(const Nix::InputEvent&);
@@ -171,6 +178,7 @@ public:
 
     virtual void pageDidRequestScroll(const IntPoint& point);
     virtual void didChangeContentsSize(const IntSize& size);
+    virtual void didFindZoomableArea(const IntPoint& target, const IntRect& area);
 
     virtual void pageTransitionViewportReady();
 
@@ -510,6 +518,11 @@ void WebViewImpl::commitViewportChanges()
     drawingArea->setVisibleContentsRect(visibleRect(), m_scale, FloatPoint());
 }
 
+void WebViewImpl::findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius)
+{
+    m_webPageProxy->findZoomableAreaForPoint(IntPoint(x, y), IntSize(horizontalRadius * 2, verticalRadius * 2));
+}
+
 void WebViewImpl::processDidCrash()
 {
     m_client->webProcessCrashed(toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
@@ -528,6 +541,11 @@ void WebViewImpl::didChangeContentsSize(const IntSize& size)
     m_contentsSize = size;
     m_client->didChangeContentsSize(size.width(), size.height());
     commitViewportChanges();
+}
+
+void WebViewImpl::didFindZoomableArea(const IntPoint& target, const IntRect& area)
+{
+    m_client->didFindZoomableArea(WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
 }
 
 void WebViewImpl::pageTransitionViewportReady()

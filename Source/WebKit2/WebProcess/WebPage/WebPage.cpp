@@ -2846,7 +2846,7 @@ InjectedBundleBackForwardList* WebPage::backForwardList()
     return m_backForwardList.get();
 }
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
 #if ENABLE(TOUCH_ADJUSTMENT)
 void WebPage::findZoomableAreaForPoint(const WebCore::IntPoint& point, const WebCore::IntSize& area)
 {

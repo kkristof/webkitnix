@@ -1753,6 +1753,7 @@ SET(WebCore_SOURCES
     page/Settings.cpp
     page/SpatialNavigation.cpp
     page/SuspendableTimer.cpp
+    page/TouchAdjustment.cpp
     page/UserContentURLPattern.cpp
     page/WebKitAnimation.cpp
     page/WebKitAnimationList.cpp

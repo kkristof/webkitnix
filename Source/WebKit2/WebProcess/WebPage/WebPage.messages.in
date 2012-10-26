@@ -297,7 +297,7 @@ messages -> WebPage {
     SetComposition(WTF::String compositionString, WTF::Vector<WebCore::CompositionUnderline> underlines, uint64_t cursorPosition)
     CancelComposition()
 #endif
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     FindZoomableAreaForPoint(WebCore::IntPoint point, WebCore::IntSize area)
 #endif
 

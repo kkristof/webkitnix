@@ -111,6 +111,7 @@ system-malloc              USE_SYSTEM_MALLOC                    Toggle system al
 text-autosizing            ENABLE_TEXT_AUTOSIZING               Toggle Text Autosizing support
 tiled-backing-store        WTF_USE_TILED_BACKING_STORE          Toggle Tiled Backing Store support
 touch-events               ENABLE_TOUCH_EVENTS                  Toggle Touch Events support
+touch-adjustment           ENABLE_TOUCH_ADJUSTMENT              Toggle Touch Adjustment support
 touch-icon-loading         ENABLE_TOUCH_ICON_LOADING            Toggle Touch Icon Loading Support
 undo-manager               ENABLE_UNDO_MANAGER                  Toggle Undo Manager support
 vibration                  ENABLE_VIBRATION                     Toggle Vibration support

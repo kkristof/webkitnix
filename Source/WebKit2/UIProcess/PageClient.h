@@ -119,8 +119,10 @@ public:
     virtual void didRenderFrame(const WebCore::IntSize& contentsSize, const WebCore::IntRect& coveredRect) = 0;
     virtual void pageTransitionViewportReady() = 0;
 #endif
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     virtual void didFindZoomableArea(const WebCore::IntPoint&, const WebCore::IntRect&) = 0;
+#endif
+#if PLATFORM(QT)
     virtual void didReceiveMessageFromNavigatorQtObject(const String&) = 0;
     virtual void handleAuthenticationRequiredRequest(const String& hostname, const String& realm, const String& prefilledUsername, String& username, String& password) = 0;
     virtual void handleCertificateVerificationRequest(const String& hostname, bool& ignoreErrors) = 0;
