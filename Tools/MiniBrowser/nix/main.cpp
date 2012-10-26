@@ -54,10 +54,12 @@ public:
     virtual void webProcessRelaunched();
     virtual void pageDidRequestScroll(int x, int y);
     virtual void didChangeContentsSize(int width, int height);
+    virtual void didFindZoomableArea(WKPoint target, WKRect area);
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
+    virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&);
     virtual void handlePanning(double timestamp, const Nix::TouchPoint&, const Nix::TouchPoint&);
     virtual void handlePanningFinished(double timestamp);
 
@@ -503,6 +505,30 @@ void MiniBrowser::didChangeContentsSize(int width, int height)
     }
 }
 
+void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area)
+{
+    // Zoomable area width is the same as web page width, and this is fully visible.
+    if (m_contentsWidth == int(area.size.width) && m_contentsWidth == m_webView->visibleContentWidth())
+        return;
+
+    // The zoomed area will look nicer with a horizontal margin.
+    double margin = 8.0;
+    double scale = double(m_webView->width()) / (area.size.width + margin * 2.0);
+    int x = int(target.x);
+
+    // Trying to zoom to an area with the same scale factor causes a zoom out.
+    if (scale == m_webView->scale())
+        scale = scaleToFitContents();
+    else {
+        // We want the zoomed content area to fit horizontally in the WebView,
+        // so let's give the scaleAtPoint method a suitable value.
+        x = int(area.origin.x - margin);
+        m_webView->setScrollPosition(x, m_webView->scrollY());
+    }
+
+    scaleAtPoint(x, target.y, scale / m_webView->scale());
+}
+
 void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool wasEventHandled)
 {
     if (wasEventHandled)
@@ -526,6 +552,11 @@ void MiniBrowser::handleSingleTap(double timestamp, const Nix::TouchPoint& touch
     gestureEvent.deltaY = 0.0;
 
     m_webView->sendEvent(gestureEvent);
+}
+
+void MiniBrowser::handleDoubleTap(double timestamp, const Nix::TouchPoint& touchPoint)
+{
+    m_webView->findZoomableAreaForPoint(touchPoint.x, touchPoint.y, touchPoint.verticalRadius, touchPoint.horizontalRadius);
 }
 
 void MiniBrowser::handlePanning(double timestamp, const Nix::TouchPoint& firstTouchPoint, const Nix::TouchPoint& currentTouchPoint)
