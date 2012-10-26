@@ -74,7 +74,7 @@ private:
     void adjustScrollPosition();
     void adjustScaleToFitContents();
 
-    void scaleAtPoint(int x, int y, double delta);
+    void scaleAtPoint(int x, int y, double scaleRatio);
 
     Nix::WebView* webViewAtX11Position(int x, int y);
 
@@ -281,7 +281,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     m_webView->userViewportToContents(&contentX, &contentY);
 
     if (m_mode == MobileMode && event.state & ShiftMask) {
-        scaleAtPoint(contentX, contentY, event.button == 4 ? 0.1 : -0.1);
+        scaleAtPoint(contentX, contentY, event.button == 4 ? 1.1 : 0.9);
         return;
     }
 
@@ -543,19 +543,19 @@ void MiniBrowser::handlePanningFinished(double timestamp)
     adjustScrollPosition();
 }
 
-void MiniBrowser::scaleAtPoint(int x, int y, double delta)
+void MiniBrowser::scaleAtPoint(int x, int y, double scaleRatio)
 {
+    double newScale = m_webView->scale() * scaleRatio;
     double minimumScale = double(m_webView->width()) / m_contentsWidth;
-    double newScale = m_webView->scale() + delta;
-    if (newScale < minimumScale)
+    if (newScale < minimumScale) {
         newScale = minimumScale;
-
-    double oldScale = m_webView->scale();
+        scaleRatio = newScale / m_webView->scale();
+    }
 
     // Calculate new scroll points that will keep the content
     // approximately at the same visual point.
-    int newScrollX = m_webView->scrollX() + round((x / oldScale) - (x / newScale));
-    int newScrollY = m_webView->scrollY() + round((y / oldScale) - (y / newScale));
+    int newScrollX = x - (x - m_webView->scrollX()) / scaleRatio;
+    int newScrollY = y - (y - m_webView->scrollY()) / scaleRatio;
 
     m_webView->setScale(newScale);
     adjustScrollPositionToBoundaries(&newScrollX, &newScrollY);
