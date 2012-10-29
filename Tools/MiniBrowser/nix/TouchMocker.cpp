@@ -132,12 +132,10 @@ void TouchMocker::releaseTouchPoints(double timestamp)
 
     // FIXME: When we have proper gesture recognition, this code should move away.
     TouchPoint touch;
-    bool shouldDoSingleTap = false;
-    if (m_touchPoints.size() == 1) {
+
+    if (m_touchPoints.size() == 1)
         // Keep track of the single touch we have so far to emit it as SingleTap afterwards.
         touch = m_touchPoints.begin()->second;
-        shouldDoSingleTap = true;
-    }
 
     updateTouchPointsState(TouchPoint::TouchReleased);
     sendCurrentTouchEvent(TouchPoint::TouchReleased, timestamp);
