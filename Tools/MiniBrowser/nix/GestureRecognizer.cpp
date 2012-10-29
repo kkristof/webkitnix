@@ -21,7 +21,7 @@ static const int MaxDoubleTapInterval = 500;
 
 bool exceedsPanThreshold(const Nix::TouchPoint& first, const Nix::TouchPoint& last)
 {
-    return std::abs(first.x - last.x) > PanDistanceThreshold || std::abs(first.y - last.y);
+    return std::abs(first.globalX - last.globalX) > PanDistanceThreshold || std::abs(first.globalY - last.globalY);
 }
 
 void GestureRecognizer::doubleTapTimerTriggered()
@@ -45,6 +45,7 @@ void GestureRecognizer::noGesture(const Nix::TouchEvent& event)
     case Nix::InputEvent::TouchStart:
         m_state = &GestureRecognizer::singleTapPressed;
         m_firstTouchPoint = touch;
+        m_previousTouchPoint = touch;
         break;
     case Nix::InputEvent::TouchMove:
     case Nix::InputEvent::TouchEnd:
@@ -60,8 +61,7 @@ void GestureRecognizer::singleTapPressed(const Nix::TouchEvent& event)
     case Nix::InputEvent::TouchMove:
         // FIXME Both calls to exceedsPanThreshold were using m_previousTouchPoint.
         if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
-            m_state = &GestureRecognizer::panningInProgress;
-            m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
+            updatePanningData(event.timestamp, touch);
         }
         break;
     case Nix::InputEvent::TouchEnd:
@@ -93,8 +93,7 @@ void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
     switch (event.type) {
     case Nix::InputEvent::TouchMove:
         if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
-            m_state = &GestureRecognizer::panningInProgress;
-            m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
+            updatePanningData(event.timestamp, touch);
         }
         break;
     case Nix::InputEvent::TouchEnd:
@@ -106,12 +105,22 @@ void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
         break;
     }
 }
+
+void GestureRecognizer::updatePanningData(double timestamp, const Nix::TouchPoint& current)
+{
+    double dx = (current.globalX - m_previousTouchPoint.globalX) / m_client->scale();
+    double dy = (current.globalY - m_previousTouchPoint.globalY) / m_client->scale();
+
+    m_state = &GestureRecognizer::panningInProgress;
+    m_client->handlePanning(timestamp, dx, dy);
+}
+
 void GestureRecognizer::panningInProgress(const Nix::TouchEvent& event)
 {
     Nix::TouchPoint touch = event.touchPoints[0];
     switch (event.type) {
     case Nix::InputEvent::TouchMove:
-        m_client->handlePanning(event.timestamp, m_firstTouchPoint, touch);
+        updatePanningData(event.timestamp, touch);
         break;
     case Nix::InputEvent::TouchEnd:
         m_state = &GestureRecognizer::noGesture;

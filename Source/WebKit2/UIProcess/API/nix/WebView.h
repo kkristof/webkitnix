@@ -34,9 +34,9 @@ public:
     virtual int height() const = 0;
     virtual void setSize(int width, int height) = 0;
 
-    virtual int scrollX() const = 0;
-    virtual int scrollY() const = 0;
-    virtual void setScrollPosition(int x, int y) = 0;
+    virtual double scrollX() const = 0;
+    virtual double scrollY() const = 0;
+    virtual void setScrollPosition(double x, double y) = 0;
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) = 0;
     virtual void userViewportToContents(int* x, int* y) = 0;

@@ -60,8 +60,9 @@ public:
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
     virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&);
-    virtual void handlePanning(double timestamp, const Nix::TouchPoint&, const Nix::TouchPoint&);
+    virtual void handlePanning(double timestamp, double dx, double dy);
     virtual void handlePanningFinished(double timestamp);
+    virtual double scale();
 
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
@@ -72,7 +73,7 @@ private:
 
     void updateDisplay();
     void scheduleUpdateDisplay();
-    void adjustScrollPositionToBoundaries(int* x, int* y);
+    void adjustScrollPositionToBoundaries(double* x, double* y);
     void adjustScrollPosition();
     double scaleToFitContents();
 
@@ -443,7 +444,7 @@ void MiniBrowser::scheduleUpdateDisplay()
     g_timeout_add(0, callUpdateDisplay, this);
 }
 
-void MiniBrowser::adjustScrollPositionToBoundaries(int* x, int* y)
+void MiniBrowser::adjustScrollPositionToBoundaries(double* x, double* y)
 {
     int rightBoundary = m_contentsWidth - m_webView->visibleContentWidth();
     // Contents height may be shorter than the scaled viewport height.
@@ -466,8 +467,8 @@ double MiniBrowser::scaleToFitContents()
 
 void MiniBrowser::adjustScrollPosition()
 {
-    int x = m_webView->scrollX();
-    int y = m_webView->scrollY();
+    double x = m_webView->scrollX();
+    double y = m_webView->scrollY();
     adjustScrollPositionToBoundaries(&x, &y);
     if (x == m_webView->scrollX() && y == m_webView->scrollY())
         return;
@@ -490,7 +491,9 @@ void MiniBrowser::webProcessRelaunched()
 
 void MiniBrowser::pageDidRequestScroll(int x, int y)
 {
-    adjustScrollPositionToBoundaries(&x, &y);
+    double x1 = x;
+    double y1 = y;
+    adjustScrollPositionToBoundaries(&x1, &y1);
     m_webView->setScrollPosition(x, y);
 }
 
@@ -536,6 +539,11 @@ void MiniBrowser::doneWithTouchEvent(const Nix::TouchEvent& touchEvent, bool was
     m_gestureRecognizer.handleTouchEvent(touchEvent);
 }
 
+double MiniBrowser::scale()
+{
+    return m_webView->scale();
+}
+
 void MiniBrowser::handleSingleTap(double timestamp, const Nix::TouchPoint& touchPoint)
 {
     Nix::GestureEvent gestureEvent;
@@ -559,13 +567,13 @@ void MiniBrowser::handleDoubleTap(double timestamp, const Nix::TouchPoint& touch
     m_webView->findZoomableAreaForPoint(touchPoint.x, touchPoint.y, touchPoint.verticalRadius, touchPoint.horizontalRadius);
 }
 
-void MiniBrowser::handlePanning(double timestamp, const Nix::TouchPoint& firstTouchPoint, const Nix::TouchPoint& currentTouchPoint)
+void MiniBrowser::handlePanning(double timestamp, double dx, double dy)
 {
     // When the user is panning around the contents we don't force the page scroll position
     // to respect any boundaries other than the physical constraints of the device from where
     // the user input came. This will be adjusted after the user interaction ends.
-    int x = m_webView->scrollX() - (currentTouchPoint.x - firstTouchPoint.x);
-    int y = m_webView->scrollY() - (currentTouchPoint.y - firstTouchPoint.y);
+    double x = (m_webView->scrollX() - dx);
+    double y = (m_webView->scrollY() - dy);
     m_webView->setScrollPosition(x, y);
 }
 
@@ -585,8 +593,8 @@ void MiniBrowser::scaleAtPoint(int x, int y, double scaleRatio)
 
     // Calculate new scroll points that will keep the content
     // approximately at the same visual point.
-    int newScrollX = x - (x - m_webView->scrollX()) / scaleRatio;
-    int newScrollY = y - (y - m_webView->scrollY()) / scaleRatio;
+    double newScrollX = x - (x - m_webView->scrollX()) / scaleRatio;
+    double newScrollY = y - (y - m_webView->scrollY()) / scaleRatio;
 
     m_webView->setScale(newScale);
     adjustScrollPositionToBoundaries(&newScrollX, &newScrollY);

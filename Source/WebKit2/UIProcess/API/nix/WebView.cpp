@@ -123,9 +123,9 @@ public:
     virtual int height() const;
     virtual void setSize(int width, int height);
 
-    virtual int scrollX() const { return m_scrollPosition.x(); }
-    virtual int scrollY() const { return m_scrollPosition.y(); }
-    virtual void setScrollPosition(int x, int y);
+    virtual double scrollX() const { return m_scrollPosition.x(); }
+    virtual double scrollY() const { return m_scrollPosition.y(); }
+    virtual void setScrollPosition(double x, double y);
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
     virtual void userViewportToContents(int* x, int* y);
@@ -264,7 +264,7 @@ private:
     IntSize m_size;
     IntSize m_contentsSize;
     IntPoint m_lastCursorPosition;
-    IntPoint m_scrollPosition;
+    FloatPoint m_scrollPosition;
     double m_scale;
     double m_opacity;
     cairo_matrix_t m_userViewportTransformation;
@@ -332,13 +332,13 @@ void WebViewImpl::setSize(int width, int height)
     commitViewportChanges();
 }
 
-void WebViewImpl::setScrollPosition(int x, int y)
+void WebViewImpl::setScrollPosition(double x, double y)
 {
     if (m_scrollPosition.x() == x && m_scrollPosition.y() == y)
         return;
 
     FloatPoint trajectoryVector(x - m_scrollPosition.x(), y - m_scrollPosition.y());
-    m_scrollPosition = IntPoint(x, y);
+    m_scrollPosition = FloatPoint(x, y);
 
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)

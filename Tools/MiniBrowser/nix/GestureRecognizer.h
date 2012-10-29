@@ -14,8 +14,10 @@ public:
     virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&) { }
     virtual void handleTapAndHold(double timestamp, const Nix::TouchPoint&) { }
 
-    virtual void handlePanning(double timestamp, const Nix::TouchPoint&, const Nix::TouchPoint&) { }
+    virtual void handlePanning(double timestamp, double dx, double dy) { }
     virtual void handlePanningFinished(double timestamp) { }
+
+    virtual double scale() { return 1; }
 };
 
 class GestureRecognizer {
@@ -33,6 +35,8 @@ private:
     void waitForDoubleTap(const Nix::TouchEvent&);
     void doubleTapPressed(const Nix::TouchEvent&);
     void panningInProgress(const Nix::TouchEvent&);
+
+    void updatePanningData(double, const Nix::TouchPoint&);
 
     typedef void (GestureRecognizer::*StateFunction)(const Nix::TouchEvent&);
     StateFunction m_state;
