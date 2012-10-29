@@ -59,10 +59,6 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     EXPECT_EQ(0xFF, greenSample[1]);
     EXPECT_EQ(0x00, greenSample[2]);
     EXPECT_EQ(0xFF, greenSample[3]);
-
-    // FIXME: Leaking memory to avoid bug on WebView destructor or on test
-    //        infrastructure destruction that should be fixed ASAP.
-    webView.release();
 }
 
 } // TestWebKitAPI

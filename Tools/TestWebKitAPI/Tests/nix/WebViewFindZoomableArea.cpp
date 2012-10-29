@@ -64,9 +64,6 @@ TEST(WebKitNix, WebViewFindZoomableArea)
     webView->findZoomableAreaForPoint(touchPoint.x, touchPoint.y, 20, 20);
 
     Util::run(&s_didFindZoomableArea);
-    // FIXME: Leaking memory to avoid bug on WebView destructor or on test
-    //        infrastructure destruction that should be fixed ASAP.
-    webView.release();
 }
 
 } // TestWebKitAPI

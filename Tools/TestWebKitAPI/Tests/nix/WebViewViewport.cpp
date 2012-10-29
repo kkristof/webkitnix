@@ -63,8 +63,6 @@ TEST(WebKitNix, WebViewViewport)
     EXPECT_EQ(0x00, int(sample[1]));
     EXPECT_EQ(0x00, int(sample[2]));
     EXPECT_EQ(0xFF, int(sample[3]));
-
-    webView.release();
 }
 
 }

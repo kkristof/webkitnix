@@ -65,10 +65,6 @@ TEST(WebKitNix, WebViewTranslated)
         EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
     }
-
-    // FIXME: Leaking memory to avoid bug on WebView destructor or on test
-    //        infrastructure destruction that should be fixed ASAP.
-    webView.release();
 }
 
 } // TestWebKitAPI
