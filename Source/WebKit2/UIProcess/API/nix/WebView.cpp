@@ -57,7 +57,7 @@ using namespace WebKit;
 
 namespace Nix {
 
-void WebViewClient::viewNeedsDisplay(int, int, int, int)
+void WebViewClient::viewNeedsDisplay(WKRect)
 {
 
 }
@@ -82,12 +82,12 @@ void WebViewClient::doneWithGestureEvent(const GestureEvent&, bool)
 
 }
 
-void WebViewClient::pageDidRequestScroll(int, int)
+void WebViewClient::pageDidRequestScroll(WKPoint)
 {
 
 }
 
-void WebViewClient::didChangeContentsSize(int, int)
+void WebViewClient::didChangeContentsSize(WKSize)
 {
 
 }
@@ -119,16 +119,14 @@ public:
     // WebView.
     virtual void initialize();
 
-    virtual int width() const;
-    virtual int height() const;
-    virtual void setSize(int width, int height);
+    virtual WKSize size() const { return WKSizeMake(m_size.width(), m_size.height()); }
+    virtual void setSize(const WKSize& size);
 
-    virtual double scrollX() const { return m_scrollPosition.x(); }
-    virtual double scrollY() const { return m_scrollPosition.y(); }
-    virtual void setScrollPosition(double x, double y);
+    virtual WKPoint scrollPosition() const { return WKPointMake(m_scrollPosition.x(), m_scrollPosition.y()); }
+    virtual void setScrollPosition(const WKPoint& position);
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
-    virtual void userViewportToContents(int* x, int* y);
+    virtual WKPoint userViewportToContents(WKPoint point);
 
     virtual bool isFocused() const;
     virtual void setFocused(bool);
@@ -158,7 +156,7 @@ public:
 
     virtual void commitViewportChanges();
 
-    virtual void findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius);
+    virtual void findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius);
 
     virtual WKPageRef pageRef();
 
@@ -311,19 +309,9 @@ void WebViewImpl::setScale(double scale)
     commitViewportChanges();
 }
 
-int WebViewImpl::width() const
+void WebViewImpl::setSize(const WKSize& size)
 {
-    return m_size.width();
-}
-
-int WebViewImpl::height() const
-{
-    return m_size.height();
-}
-
-void WebViewImpl::setSize(int width, int height)
-{
-    IntSize newSize(width, height);
+    IntSize newSize(size.width, size.height);
 
     if (m_size == newSize)
         return;
@@ -332,13 +320,13 @@ void WebViewImpl::setSize(int width, int height)
     commitViewportChanges();
 }
 
-void WebViewImpl::setScrollPosition(double x, double y)
+void WebViewImpl::setScrollPosition(const WKPoint& position)
 {
-    if (m_scrollPosition.x() == x && m_scrollPosition.y() == y)
+    if (m_scrollPosition.x() == position.x && m_scrollPosition.y() == position.y)
         return;
 
-    FloatPoint trajectoryVector(x - m_scrollPosition.x(), y - m_scrollPosition.y());
-    m_scrollPosition = FloatPoint(x, y);
+    FloatPoint trajectoryVector(position.x - m_scrollPosition.x(), position.y - m_scrollPosition.y());
+    m_scrollPosition = FloatPoint(position.x, position.y);
 
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
@@ -347,14 +335,11 @@ void WebViewImpl::setScrollPosition(double x, double y)
     drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
 }
 
-void WebViewImpl::userViewportToContents(int* x, int* y)
+WKPoint WebViewImpl::userViewportToContents(WKPoint point)
 {
-    double outX = double(*x);
-    double outY = double(*y);
     cairo_matrix_t transformMatrix = userViewportToContentTransformation();
-    cairo_matrix_transform_point(&transformMatrix, &outX, &outY);
-    *x = int(outX);
-    *y = int(outY);
+    cairo_matrix_transform_point(&transformMatrix, &point.x, &point.y);
+    return point;
 }
 
 bool WebViewImpl::isFocused() const
@@ -397,7 +382,7 @@ PassOwnPtr<DrawingAreaProxy> WebViewImpl::createDrawingAreaProxy()
 
 void WebViewImpl::setViewNeedsDisplay(const IntRect& rect)
 {
-    m_client->viewNeedsDisplay(rect.x(), rect.y(), rect.width(), rect.height());
+    m_client->viewNeedsDisplay(WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
 }
 
 WKPageRef WebViewImpl::pageRef()
@@ -518,9 +503,11 @@ void WebViewImpl::commitViewportChanges()
     drawingArea->setVisibleContentsRect(visibleRect(), m_scale, FloatPoint());
 }
 
-void WebViewImpl::findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius)
+void WebViewImpl::findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius)
 {
-    m_webPageProxy->findZoomableAreaForPoint(IntPoint(x, y), IntSize(horizontalRadius * 2, verticalRadius * 2));
+    IntPoint contentsPoint(point.x, point.y);
+    IntSize touchSize(horizontalRadius * 2, verticalRadius * 2);
+    m_webPageProxy->findZoomableAreaForPoint(contentsPoint, touchSize);
 }
 
 void WebViewImpl::processDidCrash()
@@ -530,7 +517,7 @@ void WebViewImpl::processDidCrash()
 
 void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 {
-    m_client->pageDidRequestScroll(point.x(), point.y());
+    m_client->pageDidRequestScroll(WKPointMake(point.x(), point.y()));
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
@@ -539,7 +526,7 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 void WebViewImpl::didChangeContentsSize(const IntSize& size)
 {
     m_contentsSize = size;
-    m_client->didChangeContentsSize(size.width(), size.height());
+    m_client->didChangeContentsSize(WKSizeMake(size.width(), size.height()));
     commitViewportChanges();
 }
 

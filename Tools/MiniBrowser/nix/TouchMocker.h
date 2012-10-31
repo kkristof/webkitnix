@@ -21,15 +21,15 @@ public:
     TouchMocker(Nix::WebView*);
     ~TouchMocker();
 
-    bool handleMousePress(const Nix::MouseEvent&, int windowX, int windowY);
+    bool handleMousePress(const Nix::MouseEvent&, const WKPoint& windowPos);
     bool handleMouseRelease(const Nix::MouseEvent&);
-    bool handleMouseMove(const Nix::MouseEvent&, int windowX, int windowY);
+    bool handleMouseMove(const Nix::MouseEvent&, const WKPoint& windowPos);
     bool handleKeyRelease(const Nix::KeyEvent&);
 
-    void paintTouchPoints(int width, int height);
+    void paintTouchPoints(const WKSize& size);
 
 private:
-    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, const Nix::MouseEvent& event, int windowX, int windowY);
+    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, const Nix::MouseEvent& event, const WKPoint& windowPos);
     void updateTouchPointsState(Nix::TouchPoint::TouchState);
     void releaseTouchPoints(double timestamp);
 

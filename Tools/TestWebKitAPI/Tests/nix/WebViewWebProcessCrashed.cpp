@@ -20,7 +20,7 @@ static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const v
 namespace {
 class TestWebViewClient : public Nix::WebViewClient {
 public:
-    void viewNeedsDisplay(int, int, int, int) {}
+    void viewNeedsDisplay(WKRect) {}
 
     void webProcessCrashed(WKStringRef)
     {
@@ -49,9 +49,8 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
     WKPageSetPageLoaderClient(webView->pageRef(), &loaderClient);
 
-    const unsigned width = 100;
-    const unsigned height = 100;
-    webView->setSize(width, height);
+    const WKSize size = WKSizeMake(100, 100);
+    webView->setSize(size);
 
     WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
     WKPageLoadURL(webView->pageRef(), redUrl.get());

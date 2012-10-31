@@ -28,37 +28,36 @@ TEST(WebKitNix, WebViewViewport)
     Util::PageLoader loader(webView.get());
 
     const unsigned contentsWidth = 980;
-    const unsigned width = contentsWidth / 2;
-    const unsigned height = 200;
-    webView->setSize(width, height);
+    const WKSize size = WKSizeMake(contentsWidth / 2, 200);
+    webView->setSize(size);
 
-    Util::GLOffscreenBuffer offscreenBuffer(width, height);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, size.width, size.height);
 
     loader.waitForLoadURLAndRepaint("../nix/WebViewViewport");
     unsigned char sample[4];
 
     // All white.
-    glReadPixels(0, height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
+    glReadPixels(0, size.height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
     EXPECT_EQ(0xFF, sample[0]);
     EXPECT_EQ(0xFF, sample[1]);
     EXPECT_EQ(0xFF, sample[2]);
     EXPECT_EQ(0xFF, sample[3]);
 
     webView->setScale(0.5);
-    webView->setScrollPosition(400, 10000);
+    webView->setScrollPosition(WKPointMake(400, 10000));
     loader.forceRepaint();
 
     // The black dot should be on 0,0
-    glReadPixels(0, height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
+    glReadPixels(0, size.height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
     EXPECT_EQ(0x00, int(sample[0]));
     EXPECT_EQ(0x00, int(sample[1]));
     EXPECT_EQ(0x00, int(sample[2]));
     EXPECT_EQ(0xFF, int(sample[3]));
 
     // And another black dot on 200, 200
-    glReadPixels(height, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
+    glReadPixels(size.height, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
     EXPECT_EQ(0x00, int(sample[0]));
     EXPECT_EQ(0x00, int(sample[1]));
     EXPECT_EQ(0x00, int(sample[2]));

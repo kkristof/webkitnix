@@ -15,13 +15,13 @@ public:
     virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&) { }
     virtual void handleTapAndHold(double timestamp, const Nix::TouchPoint&) { }
 
-    virtual void handlePanning(double timestamp, double dx, double dy) { }
+    virtual void handlePanning(double timestamp, WKPoint delta) { }
     virtual void handlePanningFinished(double timestamp) { }
 
     virtual double scale() { return 1; }
 
     virtual void handlePinchStarted(double timestamp) { }
-    virtual void handlePinch(double timestamp, double dx, double dy, double distanceRatio, double contentCenterX, double contentCenterY) { }
+    virtual void handlePinch(double timestamp, WKPoint delta, double distanceRatio, WKPoint contentCenter) { }
     virtual void handlePinchFinished(double timestamp) { }
 };
 

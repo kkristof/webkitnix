@@ -2,6 +2,7 @@
 #define LinuxWindow_h
 
 #include "XlibEventSource.h"
+#include <WebKit2/WKGeometry.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <utility>
@@ -30,7 +31,7 @@ public:
     LinuxWindow(LinuxWindowClient*, int width = DEFAULT_WIDTH, int height = DEFAULT_HEIGHT);
     ~LinuxWindow();
 
-    std::pair<int, int> size() const;
+    WKSize size() const;
 
     void makeCurrent();
     void swapBuffers();

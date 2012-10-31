@@ -60,7 +60,7 @@ void ForceRepaintClient::setClearColor(int r, int g, int b, int a)
     m_clearA = a;
 }
 
-void ForceRepaintClient::viewNeedsDisplay(int, int, int, int)
+void ForceRepaintClient::viewNeedsDisplay(WKRect)
 {
     assert(m_webView);
     glClearColor(m_clearR, m_clearG, m_clearB, m_clearA);

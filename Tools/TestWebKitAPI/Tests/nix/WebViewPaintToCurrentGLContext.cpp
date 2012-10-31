@@ -22,14 +22,13 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 
     Util::PageLoader loader(webView.get());
 
-    const unsigned width = 100;
-    const unsigned height = 100;
-    webView->setSize(width, height);
+    const WKSize size = WKSizeMake(100, 100);
+    webView->setSize(size);
 
-    Util::GLOffscreenBuffer offscreenBuffer(width, height);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 

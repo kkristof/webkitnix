@@ -13,13 +13,13 @@ class WebViewClient {
 public:
     virtual ~WebViewClient() { }
 
-    virtual void viewNeedsDisplay(int x, int y, int width, int height);
+    virtual void viewNeedsDisplay(WKRect area);
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched();
     virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
     virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
-    virtual void pageDidRequestScroll(int x, int y);
-    virtual void didChangeContentsSize(int width, int height);
+    virtual void pageDidRequestScroll(WKPoint position);
+    virtual void didChangeContentsSize(WKSize size);
     virtual void didFindZoomableArea(WKPoint target, WKRect area);
 };
 
@@ -30,16 +30,14 @@ public:
 
     virtual void initialize() = 0;
 
-    virtual int width() const = 0;
-    virtual int height() const = 0;
-    virtual void setSize(int width, int height) = 0;
+    virtual WKSize size() const = 0;
+    virtual void setSize(const WKSize& size) = 0;
 
-    virtual double scrollX() const = 0;
-    virtual double scrollY() const = 0;
-    virtual void setScrollPosition(double x, double y) = 0;
+    virtual WKPoint scrollPosition() const = 0;
+    virtual void setScrollPosition(const WKPoint& position) = 0;
 
     virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) = 0;
-    virtual void userViewportToContents(int* x, int* y) = 0;
+    virtual WKPoint userViewportToContents(WKPoint point) = 0;
 
     virtual bool isFocused() const = 0;
     virtual void setFocused(bool) = 0;
@@ -67,7 +65,7 @@ public:
 
     virtual void paintToCurrentGLContext() = 0;
 
-    virtual void findZoomableAreaForPoint(int x, int y, int horizontalRadius, int verticalRadius) = 0;
+    virtual void findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius) = 0;
 
     virtual WKPageRef pageRef() = 0;
 

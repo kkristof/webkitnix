@@ -10,7 +10,7 @@ namespace Util {
 class ForceRepaintClient : public Nix::WebViewClient {
 public:
     ForceRepaintClient();
-    void viewNeedsDisplay(int, int, int, int);
+    void viewNeedsDisplay(WKRect);
     void setView(Nix::WebView* webView) { m_webView = webView; }
     void setClearColor(int r, int g, int b, int a);
 private:

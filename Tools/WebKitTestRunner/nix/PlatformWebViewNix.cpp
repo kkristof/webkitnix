@@ -26,7 +26,7 @@
 class WTRWebViewClient : public Nix::WebViewClient {
 public:
     WTRWebViewClient() : Nix::WebViewClient(), m_view(0) {}
-    void pageDidRequestScroll(int x, int y) { if (m_view) m_view->setScrollPosition(x, y); }
+    void pageDidRequestScroll(WKPoint position) { if (m_view) m_view->setScrollPosition(position); }
 
     void setView(Nix::WebView* view) { m_view = view; }
 private:
@@ -43,7 +43,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
     m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
     static_cast<WTRWebViewClient*>(m_webViewClient)->setView(m_view);
     m_view->initialize();
-    m_view->setSize(800, 600);
+    m_view->setSize(WKSizeMake(800, 600));
     m_window = 0;
 }
 
@@ -54,7 +54,7 @@ PlatformWebView::~PlatformWebView()
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(width, height);
+    m_view->setSize(WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page()

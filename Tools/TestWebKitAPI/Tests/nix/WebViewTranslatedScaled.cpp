@@ -32,14 +32,13 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
 
-    const unsigned width = 100;
-    const unsigned height = 100;
-    webView->setSize(width, height);
+    const WKSize size = WKSizeMake(100, 100);
+    webView->setSize(size);
 
-    Util::GLOffscreenBuffer offscreenBuffer(width, height);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -48,16 +47,16 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     loader.waitForLoadURLAndRepaint("../nix/red-square");
 
     // Note that glReadPixels [0, 0] is at the bottom-left of the buffer.
-    unsigned char sample[4 * width * height];
+    unsigned char sample[4 * int(size.width * size.height)];
     for (double scale = 1.0; scale < 3.0; scale++) {
         webView->setScale(scale);
         loader.forceRepaint();
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
+        glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
 
         // (Left x Top) must be RED
         int x = translationDelta;
-        int y = height - translationDelta - 1;
-        int index = 4 * (y * height + x);
+        int y = size.height - translationDelta - 1;
+        int index = 4 * (y * size.height + x);
         EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
@@ -66,7 +65,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
         // (Right x Bottom) must be RED
         x += (20 * scale - 1);
         y -= (20 * scale - 1);
-        index = 4 * (y * height + x);
+        index = 4 * (y * size.height + x);
         EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
@@ -75,7 +74,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
         // (Right x Bottom) + (1,1) must be WHITE
         x += 1;
         y -= 1;
-        index = 4 * (y * height + x);
+        index = 4 * (y * size.height + x);
         EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";

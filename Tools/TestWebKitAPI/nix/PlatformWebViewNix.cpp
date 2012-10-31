@@ -33,7 +33,7 @@ namespace TestWebKitAPI {
 
 class TestWebViewClient : public Nix::WebViewClient {
 public:
-    void viewNeedsDisplay(int x, int y, int width, int height) {}
+    void viewNeedsDisplay(WKRect) {}
     void webProcessCrashed(WKStringRef) {}
     void webProcessRelaunched() {}
 };
@@ -54,7 +54,7 @@ PlatformWebView::~PlatformWebView()
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(width, height);
+    m_view->setSize(WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page() const

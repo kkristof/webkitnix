@@ -36,7 +36,7 @@ TouchMocker::~TouchMocker()
     glDeleteTextures(1, &m_touchTextureId);
 }
 
-void TouchMocker::paintTouchPoints(int width, int height)
+void TouchMocker::paintTouchPoints(const WKSize& size)
 {
     static float vertexData[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     static const float texCoords[] = { 0, 0, 1, 0, 0, 1, 1, 1};
@@ -47,7 +47,7 @@ void TouchMocker::paintTouchPoints(int width, int height)
     glPushMatrix();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, width, height, 0, -1, 1);
+    glOrtho(0, size.width, size.height, 0, -1, 1);
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -81,11 +81,11 @@ void TouchMocker::paintTouchPoints(int width, int height)
     glPopMatrix();
 }
 
-bool TouchMocker::handleMousePress(const MouseEvent& event, int windowX, int windowY)
+bool TouchMocker::handleMousePress(const MouseEvent& event, const WKPoint& windowPos)
 {
     TouchPoint::TouchState state = m_touchPoints.count(event.button) ? TouchPoint::TouchMoved : TouchPoint::TouchPressed;
 
-    trackTouchPoint(event.button, state, event, windowX, windowY);
+    trackTouchPoint(event.button, state, event, windowPos);
     sendCurrentTouchEvent(state, event.timestamp);
     m_touchPoints[event.button].selected = true;
     return true;
@@ -100,7 +100,7 @@ bool TouchMocker::handleMouseRelease(const MouseEvent& event)
     return true;
 }
 
-bool TouchMocker::handleMouseMove(const MouseEvent& event, int windowX, int windowY)
+bool TouchMocker::handleMouseMove(const MouseEvent& event, const WKPoint& windowPos)
 {
     if (m_touchPoints.empty())
         return false;
@@ -108,7 +108,7 @@ bool TouchMocker::handleMouseMove(const MouseEvent& event, int windowX, int wind
     TouchMap::const_iterator it = m_touchPoints.begin();
     for (; it != m_touchPoints.end(); ++it) {
         if (it->second.selected) {
-            trackTouchPoint(it->first, TouchPoint::TouchMoved, event, windowX, windowY);
+            trackTouchPoint(it->first, TouchPoint::TouchMoved, event, windowPos);
             sendCurrentTouchEvent(TouchPoint::TouchMoved, event.timestamp);
         }
     }
@@ -151,7 +151,7 @@ void TouchMocker::updateTouchPointsState(TouchPoint::TouchState state)
         it->second.state = state;
 }
 
-void TouchMocker::trackTouchPoint(MouseEvent::Button id, TouchPoint::TouchState state, const Nix::MouseEvent& event, int windowX, int windowY)
+void TouchMocker::trackTouchPoint(MouseEvent::Button id, TouchPoint::TouchState state, const Nix::MouseEvent& event, const WKPoint& windowPos)
 {
     // While we update some touch's state the others should be on stationary state.
     updateTouchPointsState(TouchPoint::TouchStationary);
@@ -161,8 +161,8 @@ void TouchMocker::trackTouchPoint(MouseEvent::Button id, TouchPoint::TouchState 
     touch.state = state;
     touch.x = event.x;
     touch.y = event.y;
-    touch.windowX = windowX;
-    touch.windowY = windowY;
+    touch.windowX = windowPos.x;
+    touch.windowY = windowPos.y;
     touch.globalX = event.globalX;
     touch.globalY = event.globalY;
 }

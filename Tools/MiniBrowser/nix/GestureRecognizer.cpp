@@ -145,11 +145,11 @@ void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
 
 void GestureRecognizer::updatePanningData(double timestamp, const Nix::TouchPoint& current)
 {
-    double dx = (current.globalX - m_previousTouchPoint.globalX) / m_client->scale();
-    double dy = (current.globalY - m_previousTouchPoint.globalY) / m_client->scale();
+    WKPoint delta = WKPointMake((current.globalX - m_previousTouchPoint.globalX) / m_client->scale(),
+                                (current.globalY - m_previousTouchPoint.globalY) / m_client->scale());
 
     m_state = &GestureRecognizer::panningInProgress;
-    m_client->handlePanning(timestamp, dx, dy);
+    m_client->handlePanning(timestamp, delta);
 }
 
 void GestureRecognizer::panningInProgress(const Nix::TouchEvent& event)
@@ -219,13 +219,12 @@ void GestureRecognizer::updatePinchData(double timestamp, const std::vector<Nix:
     Nix::TouchPoint second = points[1];
 
     WKPoint currentCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
-    double dx = (currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale();
-    double dy = (currentCenter.y - m_previousPinchGlobalCenter.y) / m_client->scale();
+    WKPoint delta = WKPointMake((currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale(),
+                                (currentCenter.y - m_previousPinchGlobalCenter.y) / m_client->scale());
     double currentDistance = computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
     double newScale = m_initialPinchScale * (currentDistance / m_initialPinchDistance);
 
-    m_client->handlePinch(timestamp, dx, dy, newScale, m_initialPinchContentCenter.x, m_initialPinchContentCenter.y);
+    m_client->handlePinch(timestamp, delta, newScale, m_initialPinchContentCenter);
 
     m_previousPinchGlobalCenter = currentCenter;
 }
-

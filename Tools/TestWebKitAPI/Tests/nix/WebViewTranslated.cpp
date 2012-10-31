@@ -27,14 +27,13 @@ TEST(WebKitNix, WebViewTranslated)
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
 
-    const unsigned width = 100;
-    const unsigned height = 100;
-    webView->setSize(width, height);
+    const WKSize size = WKSizeMake(100, 100);
+    webView->setSize(size);
 
-    Util::GLOffscreenBuffer offscreenBuffer(width, height);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -47,10 +46,10 @@ TEST(WebKitNix, WebViewTranslated)
     // values going down. We are testing this diagonal here.
 
     // Original background.
-    unsigned char sample[4 * width * height];
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
-    for (int x = 0, y = height - 1; x < translationDelta; x++, y--) {
-        int index = 4 * (y * height + x);
+    unsigned char sample[4 * int(size.width * size.height)];
+    glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
+    for (int x = 0, y = size.height - 1; x < translationDelta; x++, y--) {
+        int index = 4 * (y * size.height + x);
         EXPECT_EQ(0x00, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
@@ -58,8 +57,8 @@ TEST(WebKitNix, WebViewTranslated)
     }
 
     // Red background page.
-    for (int x = translationDelta, y = height - translationDelta - 1; x < width; x++, y--) {
-        int index = 4 * (y * height + x);
+    for (int x = translationDelta, y = size.height - translationDelta - 1; x < size.width; x++, y--) {
+        int index = 4 * (y * size.height + x);
         EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
