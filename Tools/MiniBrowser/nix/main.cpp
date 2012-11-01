@@ -175,11 +175,14 @@ void MiniBrowser::setTouchEmulationMode(bool enabled)
 enum NavigationCommand {
     NoNavigation,
     BackNavigation,
-    ForwardNavigation
+    ForwardNavigation,
+    ReloadNavigation
 };
 
 static NavigationCommand checkNavigationCommand(const KeySym keySym, const unsigned state)
 {
+    if (keySym == XK_F5)
+        return ReloadNavigation;
     if (!(state & Mod1Mask))
         return NoNavigation;
     if (keySym == XK_Left)
@@ -260,6 +263,9 @@ void MiniBrowser::handleKeyPressEvent(const XKeyPressedEvent& event)
         return;
     case ForwardNavigation:
         WKPageGoForward(pageRef());
+        return;
+    case ReloadNavigation:
+        WKPageReload(pageRef());
         return;
     default:
         Nix::KeyEvent nixEvent = convertXKeyEventToNixKeyEvent(event, symbol, shouldUseUpperCase);
@@ -634,7 +640,7 @@ Nix::WebView* MiniBrowser::webViewAtX11Position(const WKPoint& position)
 
 int main(int argc, char* argv[])
 {
-    printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward.\n");
+    printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
 
     int width = DEFAULT_WIDTH;
     int height = DEFAULT_HEIGHT;
