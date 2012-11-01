@@ -21,6 +21,7 @@ public:
     virtual void pageDidRequestScroll(WKPoint position);
     virtual void didChangeContentsSize(WKSize size);
     virtual void didFindZoomableArea(WKPoint target, WKRect area);
+    virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
 };
 
 class WK_EXPORT WebView {

@@ -58,7 +58,7 @@ struct EditorState {
     bool isContentRichlyEditable;
     bool isInPasswordField;
     bool hasComposition;
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     // The anchor, cursor represent either the selection or composition, depending
     // whether a composition exists or not.
     unsigned cursorPosition;

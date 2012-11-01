@@ -41,7 +41,7 @@ void EditorState::encode(CoreIPC::ArgumentEncoder& encoder) const
     encoder << isInPasswordField;
     encoder << hasComposition;
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     encoder << cursorPosition;
     encoder << anchorPosition;
     encoder << editorRect;
@@ -76,7 +76,7 @@ bool EditorState::decode(CoreIPC::ArgumentDecoder* decoder, EditorState& result)
     if (!decoder->decode(result.hasComposition))
         return false;
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     if (!decoder->decode(result.cursorPosition))
         return false;
 

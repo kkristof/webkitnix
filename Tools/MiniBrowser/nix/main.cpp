@@ -56,6 +56,8 @@ public:
     virtual void didChangeContentsSize(WKSize size);
     virtual void didFindZoomableArea(WKPoint target, WKRect area);
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
+    virtual void doneWithGestureEvent(const Nix::GestureEvent&, bool wasEventHandled);
+    virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
@@ -105,6 +107,10 @@ private:
     bool m_displayUpdateScheduled;
     WKSize m_contentsSize;
     GestureRecognizer m_gestureRecognizer;
+    bool m_postponeTextInputUpdates;
+    bool m_shouldFocusEditableArea;
+    WKRect m_cursorRect;
+    WKRect m_editorRect;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -124,6 +130,8 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     , m_mode(mode)
     , m_displayUpdateScheduled(false)
     , m_gestureRecognizer(GestureRecognizer(this))
+    , m_postponeTextInputUpdates(true)
+    , m_shouldFocusEditableArea(false)
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -566,6 +574,7 @@ void MiniBrowser::handleSingleTap(double timestamp, const Nix::TouchPoint& touch
     gestureEvent.deltaX = 0.0;
     gestureEvent.deltaY = 0.0;
 
+    m_postponeTextInputUpdates = false;
     m_webView->sendEvent(gestureEvent);
 }
 
@@ -636,6 +645,33 @@ Nix::WebView* MiniBrowser::webViewAtX11Position(const WKPoint& position)
     if (areaContainsPoint(m_webViewRect, position))
         return m_webView;
     return 0;
+}
+
+void MiniBrowser::doneWithGestureEvent(const Nix::GestureEvent& event, bool wasEventHandled)
+{
+    if (!wasEventHandled)
+        return;
+
+    if (event.type == Nix::InputEvent::GestureSingleTap && m_shouldFocusEditableArea) {
+        m_shouldFocusEditableArea = false;
+        int x = m_editorRect.origin.x + m_editorRect.size.width / 2;
+        int y = m_editorRect.origin.y + m_editorRect.size.height / 2;
+        WKPoint point = WKPointMake(x, y);
+        // FIXME: We should make a different zoom like Qt does with PageViewportControllerClientQt::focusEditableArea.
+        m_webView->findZoomableAreaForPoint(point, 20, 20);
+    }
+
+    m_postponeTextInputUpdates = true;
+}
+
+void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
+{
+    if (m_postponeTextInputUpdates || !isContentEditable)
+        return;
+
+    m_shouldFocusEditableArea = true;
+    m_cursorRect = cursorRect;
+    m_editorRect = editorRect;
 }
 
 int main(int argc, char* argv[])

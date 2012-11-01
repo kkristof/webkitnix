@@ -140,6 +140,7 @@ SET(test_webkitnix_api_BINARIES
     WebViewViewport
     WebViewFindZoomableArea
     WebViewTranslatedScaled
+    WebViewUpdateTextInputState
 )
 
 SET(test_webkitnix_api_fail_BINARIES

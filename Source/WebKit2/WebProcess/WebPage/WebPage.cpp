@@ -546,7 +546,7 @@ EditorState WebPage::editorState() const
     result.hasComposition = frame->editor()->hasComposition();
     result.shouldIgnoreCompositionSelectionChange = frame->editor()->ignoreCompositionSelectionChange();
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(NIX)
     size_t location = 0;
     size_t length = 0;
 
@@ -555,7 +555,7 @@ EditorState WebPage::editorState() const
 
     if (!scope)
         return result;
-
+#if PLATFORM(QT)
     if (scope->hasTagName(HTMLNames::inputTag)) {
         HTMLInputElement* input = static_cast<HTMLInputElement*>(scope);
         if (input->isTelephoneField())
@@ -578,6 +578,7 @@ EditorState WebPage::editorState() const
             result.inputMethodHints |= Qt::ImhSensitiveData;
         }
     }
+#endif
 
     if (selectionRoot)
         result.editorRect = frame->view()->contentsToWindow(selectionRoot->pixelSnappedBoundingBox());

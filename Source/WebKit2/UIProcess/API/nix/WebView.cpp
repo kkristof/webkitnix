@@ -99,6 +99,11 @@ void WebViewClient::didFindZoomableArea(WKPoint, WKRect)
 
 }
 
+void WebViewClient::updateTextInputState(bool, WKRect, WKRect)
+{
+
+}
+
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
@@ -240,7 +245,7 @@ public:
     virtual void findStringInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
     virtual void countStringMatchesInCustomRepresentation(const String&, WebKit::FindOptions, unsigned) { notImplemented(); }
 
-    virtual void updateTextInputState() { notImplemented(); }
+    virtual void updateTextInputState();
     virtual void didRenderFrame(const WebCore::IntSize&, const WebCore::IntRect&) { notImplemented(); }
 private:
     LayerTreeRenderer* layerTreeRenderer();
@@ -588,5 +593,14 @@ void WebViewImpl::doneWithGestureEvent(const NativeWebGestureEvent& event, bool 
     m_client->doneWithGestureEvent(event.nativeEvent(), wasEventHandled);
 }
 #endif
+
+void WebViewImpl::updateTextInputState()
+{
+    const EditorState& editor = m_webPageProxy->editorState();
+    bool isContentEditable = editor.isContentEditable;
+    const IntRect& cursorRect = editor.cursorRect;
+    const IntRect& editorRect = editor.editorRect;
+    m_client->updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
+}
 
 } // namespace Nix
