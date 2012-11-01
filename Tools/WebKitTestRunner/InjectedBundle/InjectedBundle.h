@@ -28,6 +28,7 @@
 
 #include "AccessibilityController.h"
 #include "EventSendingController.h"
+#include "GamepadController.h"
 #include "GCController.h"
 #include "TestRunner.h"
 #include "TextInputController.h"
@@ -62,6 +63,7 @@ public:
     EventSendingController* eventSendingController() { return m_eventSendingController.get(); }
     TextInputController* textInputController() { return m_textInputController.get(); }
     AccessibilityController* accessibilityController() { return m_accessibilityController.get(); }
+    GamepadController* gamepadController() { return m_gamepadController.get(); }
 
     InjectedBundlePage* page() const;
     size_t pageCount() const { return m_pages.size(); }
@@ -141,6 +143,7 @@ private:
     RefPtr<GCController> m_gcController;
     RefPtr<EventSendingController> m_eventSendingController;
     RefPtr<TextInputController> m_textInputController;
+    RefPtr<GamepadController> m_gamepadController;
 
     WKBundleFrameRef m_topLoadingFrame;
 

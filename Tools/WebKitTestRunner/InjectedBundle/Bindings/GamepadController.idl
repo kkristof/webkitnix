@@ -1,0 +1,10 @@
+interface GamepadController {
+    void connect(in int index);
+    void disconnect(in int index);
+    void setId(in int index, in DOMString id);
+    void setButtonCount(in int index, in int button);
+    void setButtonData(in int index, in int button, in float buttonData);
+    void setAxisCount(in int index, in int axis);
+    void setAxisData(in int index, in int button, in float axisData);
+};
+

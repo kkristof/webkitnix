@@ -27,6 +27,8 @@ LIST(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
 
     ${CAIRO_INCLUDE_DIRS}
     ${GLIB_INCLUDE_DIRS}
+
+    "${PLATFORM_DIR}/nix/"
 )
 
 SET(WebKitTestRunner_LIBRARIES
@@ -45,6 +47,7 @@ LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/ActivateFontsNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/efl/InjectedBundleEfl.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/TestRunnerNix.cpp
+    ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/GamepadControllerNix.cpp
 )
 
 # FIXME: DOWNLOADED_FONTS_DIR should not hardcode the directory

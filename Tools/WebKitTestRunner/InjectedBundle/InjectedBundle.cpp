@@ -236,6 +236,7 @@ void InjectedBundle::beginTesting(WKDictionaryRef settings)
     m_eventSendingController = EventSendingController::create();
     m_textInputController = TextInputController::create();
     m_accessibilityController = AccessibilityController::create();
+    m_gamepadController = GamepadController::create();
 
     WKBundleSetShouldTrackVisitedLinks(m_bundle, false);
     WKBundleRemoveAllVisitedLinks(m_bundle);
