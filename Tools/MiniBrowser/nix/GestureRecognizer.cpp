@@ -1,4 +1,5 @@
 #include "GestureRecognizer.h"
+#include <cassert>
 #include <cmath>
 #include <cstdio>
 
@@ -212,7 +213,7 @@ gboolean doubleTapTimer(gpointer data)
 
 void GestureRecognizer::updatePinchData(double timestamp, const std::vector<Nix::TouchPoint>& points)
 {
-    ASSERT(m_initialPinchScale > 0);
+    assert(m_initialPinchScale > 0);
 
     Nix::TouchPoint first = points[0];
     Nix::TouchPoint second = points[1];
