@@ -51,6 +51,8 @@
 
 #include <WebKit2/NixEvents.h>
 #include <WebKit2/WebView.h>
+#include <JavaScriptCore/WebKitAvailability.h>
+#include <WebKit2/WKBundle.h>
 
 using namespace WebCore;
 using namespace WebKit;
