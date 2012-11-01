@@ -38,6 +38,7 @@ OBJC_CLASS NSView;
 typedef union _GdkEvent GdkEvent;
 #elif PLATFORM(EFL)
 #include <Evas.h>
+#include <WebCore/AffineTransform.h>
 #elif PLATFORM(NIX)
 #include <NixEvents.h>
 #endif
@@ -56,7 +57,7 @@ public:
     NativeWebWheelEvent(const NativeWebWheelEvent&);
     NativeWebWheelEvent(GdkEvent*);
 #elif PLATFORM(EFL)
-    NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const Evas_Point*);
+    NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const WebCore::AffineTransform& toWebContent, const WebCore::AffineTransform& toDeviceScreen);
 #elif PLATFORM(NIX)
     NativeWebWheelEvent(const Nix::WheelEvent& event);
 #endif

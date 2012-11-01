@@ -77,6 +77,7 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "htmlediting.h"
+#include <wtf/BitVector.h>
 #include <wtf/text/CString.h>
 
 #if ENABLE(SVG)
@@ -695,58 +696,52 @@ inline void Element::setAttributeInternal(size_t index, const QualifiedName& nam
         didModifyAttribute(name, newValue);
 }
 
+static inline AtomicString makeIdForStyleResolution(const AtomicString& value, bool inQuirksMode)
+{
+    if (inQuirksMode)
+        return value.lower();
+    return value;
+}
+
+static bool checkNeedsStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, StyleResolver* styleResolver)
+{
+    ASSERT(newId != oldId);
+    if (!oldId.isEmpty() && styleResolver->hasSelectorForId(oldId))
+        return true;
+    if (!newId.isEmpty() && styleResolver->hasSelectorForId(newId))
+        return true;
+    return false;
+}
+
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue)
 {
     parseAttribute(Attribute(name, newValue));
 
     document()->incDOMTreeVersion();
 
+    StyleResolver* styleResolver = document()->styleResolverIfExists();
+    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
+    bool shouldInvalidateStyle = false;
+
     if (isIdAttributeName(name)) {
-        if (newValue != attributeData()->idForStyleResolution()) {
-            if (newValue.isNull())
-                attributeData()->setIdForStyleResolution(nullAtom);
-            else if (document()->inQuirksMode())
-                attributeData()->setIdForStyleResolution(newValue.lower());
-            else
-                attributeData()->setIdForStyleResolution(newValue);
-            setNeedsStyleRecalc();
+        AtomicString oldId = attributeData()->idForStyleResolution();
+        AtomicString newId = makeIdForStyleResolution(newValue, document()->inQuirksMode());
+        if (newId != oldId) {
+            attributeData()->setIdForStyleResolution(newId);
+            shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver);
         }
     } else if (name == HTMLNames::nameAttr)
         setHasName(!newValue.isNull());
 
-    if (!needsStyleRecalc() && document()->attached()) {
-        StyleResolver* styleResolver = document()->styleResolverIfExists();
-        if (!styleResolver || styleResolver->hasSelectorForAttribute(name.localName()))
-            setNeedsStyleRecalc();
-    }
+    shouldInvalidateStyle |= testShouldInvalidateStyle && styleResolver->hasSelectorForAttribute(name.localName());
 
     invalidateNodeListCachesInAncestors(&name, this);
 
-    if (!AXObjectCache::accessibilityEnabled())
-        return;
+    if (shouldInvalidateStyle)
+        setNeedsStyleRecalc();
 
-    if (name == aria_activedescendantAttr) {
-        // any change to aria-activedescendant attribute triggers accessibility focus change, but document focus remains intact
-        document()->axObjectCache()->handleActiveDescendantChanged(this);
-    } else if (name == roleAttr) {
-        // the role attribute can change at any time, and the AccessibilityObject must pick up these changes
-        document()->axObjectCache()->handleAriaRoleChanged(this);
-    } else if (name == aria_valuenowAttr) {
-        // If the valuenow attribute changes, AX clients need to be notified.
-        document()->axObjectCache()->postNotification(this, AXObjectCache::AXValueChanged, true);
-    } else if (name == aria_labelAttr || name == aria_labeledbyAttr || name == altAttr || name == titleAttr) {
-        // If the content of an element changes due to an attribute change, notify accessibility.
-        document()->axObjectCache()->contentChanged(this);
-    } else if (name == aria_checkedAttr)
-        document()->axObjectCache()->checkedStateChanged(this);
-    else if (name == aria_selectedAttr)
-        document()->axObjectCache()->selectedChildrenChanged(this);
-    else if (name == aria_expandedAttr)
-        document()->axObjectCache()->handleAriaExpandedChange(this);
-    else if (name == aria_hiddenAttr)
-        document()->axObjectCache()->childrenChanged(this);
-    else if (name == aria_invalidAttr)
-        document()->axObjectCache()->postNotification(this, AXObjectCache::AXInvalidStatusChanged, true);
+    if (AXObjectCache::accessibilityEnabled())
+        document()->axObjectCache()->handleAttributeChanged(name, this);
 }
 
 void Element::parseAttribute(const Attribute& attribute)
@@ -782,18 +777,72 @@ static inline bool classStringHasClassName(const AtomicString& newClassString)
     return classStringHasClassName(newClassString.characters16(), length);
 }
 
+static bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, StyleResolver* styleResolver)
+{
+    unsigned changedSize = changedClasses.size();
+    for (unsigned i = 0; i < changedSize; ++i) {
+        if (styleResolver->hasSelectorForClass(changedClasses[i]))
+            return true;
+    }
+    return false;
+}
+
+static bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, StyleResolver* styleResolver)
+{
+    unsigned oldSize = oldClasses.size();
+    if (!oldSize)
+        return checkNeedsStyleInvalidationForClassChange(newClasses, styleResolver);
+    BitVector remainingClassBits;
+    remainingClassBits.ensureSize(oldSize);
+    // Class vectors tend to be very short. This is faster than using a hash table.
+    unsigned newSize = newClasses.size();
+    for (unsigned i = 0; i < newSize; ++i) {
+        for (unsigned j = 0; j < oldSize; ++j) {
+            if (newClasses[i] == oldClasses[j]) {
+                remainingClassBits.quickSet(j);
+                continue;
+            }
+        }
+        if (styleResolver->hasSelectorForClass(newClasses[i]))
+            return true;
+    }
+    for (unsigned i = 0; i < oldSize; ++i) {
+        // If the bit is not set the the corresponding class has been removed.
+        if (remainingClassBits.quickGet(i))
+            continue;
+        if (styleResolver->hasSelectorForClass(oldClasses[i]))
+            return true;
+    }
+    return false;
+}
+
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
+    StyleResolver* styleResolver = document()->styleResolverIfExists();
+    bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
+    bool shouldInvalidateStyle = false;
+
     if (classStringHasClassName(newClassString)) {
+        const ElementAttributeData* attributeData = ensureAttributeData();
         const bool shouldFoldCase = document()->inQuirksMode();
-        ensureAttributeData()->setClass(newClassString, shouldFoldCase);
-    } else if (attributeData())
-        mutableAttributeData()->clearClass();
+        const SpaceSplitString oldClasses = attributeData->classNames();
+
+        attributeData->setClass(newClassString, shouldFoldCase);
+
+        const SpaceSplitString& newClasses = attributeData->classNames();
+        shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, newClasses, styleResolver);
+    } else if (const ElementAttributeData* attributeData = this->attributeData()) {
+        const SpaceSplitString& oldClasses = attributeData->classNames();
+        shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, styleResolver);
+
+        attributeData->clearClass();
+    }
 
     if (DOMTokenList* classList = optionalClassList())
         static_cast<ClassList*>(classList)->reset(newClassString);
 
-    setNeedsStyleRecalc();
+    if (shouldInvalidateStyle)
+        setNeedsStyleRecalc();
 }
 
 // Returns true is the given attribute is an event handler.
@@ -1062,8 +1111,9 @@ void Element::detach()
 bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
 {
     ASSERT(currentStyle == renderStyle());
+    ASSERT(renderer());
 
-    if (!renderer() || !currentStyle)
+    if (!currentStyle)
         return false;
 
     const PseudoStyleCache* pseudoStyleCache = currentStyle->cachedPseudoStyles();
@@ -1113,7 +1163,7 @@ void Element::recalcStyle(StyleChange change)
             return;
     }
 
-    // Ref currentStyle in case it would otherwise be deleted when setRenderStyle() is called.
+    // Ref currentStyle in case it would otherwise be deleted when setting the new style in the renderer.
     RefPtr<RenderStyle> currentStyle(renderStyle());
     bool hasParentStyle = parentNodeForRenderingAndStyle() ? static_cast<bool>(parentNodeForRenderingAndStyle()->renderStyle()) : false;
     bool hasDirectAdjacentRules = currentStyle && currentStyle->childrenAffectedByDirectAdjacentRules();
@@ -1162,17 +1212,15 @@ void Element::recalcStyle(StyleChange change)
                 newStyle->setChildrenAffectedByDirectAdjacentRules();
         }
 
-        if (ch != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer() && renderer()->requiresForcedStyleRecalcPropagation())) {
-            setRenderStyle(newStyle);
-        } else if (needsStyleRecalc() && styleChangeType() != SyntheticStyleChange) {
-            // Although no change occurred, we use the new style so that the cousin style sharing code won't get
-            // fooled into believing this style is the same.
-            if (renderer())
-                renderer()->setStyleInternal(newStyle.get());
-            else
-                setRenderStyle(newStyle);
-        } else if (styleChangeType() == SyntheticStyleChange)
-             setRenderStyle(newStyle);
+        if (RenderObject* renderer = this->renderer()) {
+            if (ch != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || styleChangeType() == SyntheticStyleChange)
+                renderer->setAnimatableStyle(newStyle.get());
+            else if (needsStyleRecalc()) {
+                // Although no change occurred, we use the new style so that the cousin style sharing code won't get
+                // fooled into believing this style is the same.
+                renderer->setStyleInternal(newStyle.get());
+            }
+        }
 
         // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
         // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
@@ -1807,9 +1855,9 @@ AtomicString Element::computeInheritedLanguage() const
     return value;
 }
 
-Localizer& Element::localizer() const
+Locale& Element::locale() const
 {
-    return document()->getCachedLocalizer(computeInheritedLanguage());
+    return document()->getCachedLocale(computeInheritedLanguage());
 }
 
 void Element::cancelFocusAppearanceUpdate()

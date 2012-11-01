@@ -81,7 +81,6 @@
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
 #include "InspectorOverlay.h"
-#include "JavaScriptDebuggerBlackBerry.h"
 #include "JavaScriptVariant_p.h"
 #include "LayerWebKitThread.h"
 #if ENABLE(NETWORK_INFO)
@@ -453,7 +452,6 @@ WebPage::WebPage(WebPageClient* client, const BlackBerry::Platform::String& page
 
 WebPagePrivate::~WebPagePrivate()
 {
-    AuthenticationChallengeManager::instance()->pageDeleted(this);
     // Hand the backingstore back to another owner if necessary.
     m_webPage->setVisible(false);
     if (BackingStorePrivate::currentBackingStoreOwner() == m_webPage)
@@ -494,6 +492,8 @@ WebPagePrivate::~WebPagePrivate()
     delete m_dumpRenderTree;
     m_dumpRenderTree = 0;
 #endif
+
+    AuthenticationChallengeManager::instance()->pageDeleted(this);
 }
 
 WebPage::~WebPage()
@@ -835,6 +835,7 @@ bool WebPagePrivate::executeJavaScriptInIsolatedWorld(const ScriptSourceCode& so
     JSC::ExecState* exec = m_mainFrame->script()->globalObject(m_isolatedWorld.get())->globalExec();
     JSGlobalContextRef context = toGlobalRef(exec);
 
+    JSC::JSLockHolder lock(exec);
     JSType type = JSValueGetType(context, toRef(exec, value));
 
     switch (type) {
@@ -909,6 +910,7 @@ void WebPage::executeJavaScriptFunction(const std::vector<BlackBerry::Platform::
     JSC::ExecState* exec = root->globalObject()->globalExec();
     JSGlobalContextRef ctx = toGlobalRef(exec);
 
+    JSC::JSLockHolder lock(exec);
     WTF::Vector<JSValueRef> argListRef(args.size());
     for (unsigned i = 0; i < args.size(); ++i)
         argListRef[i] = BlackBerryJavaScriptVariantToJSValueRef(ctx, args[i]);
@@ -2359,12 +2361,6 @@ Platform::WebContext WebPagePrivate::webContext(TargetDetectionStrategy strategy
     if (node->isElementNode()) {
         Element* element = static_cast<Element*>(node->shadowAncestorNode());
 
-        String webWorksContext(DOMSupport::webWorksContext(element));
-        if (!webWorksContext.stripWhiteSpace().isEmpty()) {
-            context.setFlag(Platform::WebContext::IsWebWorksContext);
-            context.setWebWorksContext(webWorksContext);
-        }
-
         if (DOMSupport::isTextBasedContentEditableElement(element)) {
             if (!canStartSelection) {
                 // Input fields host node is by spec non-editable unless the field itself has content editable enabled.
@@ -2390,6 +2386,20 @@ Platform::WebContext WebPagePrivate::webContext(TargetDetectionStrategy strategy
 
     if (node->isFocusable())
         context.setFlag(Platform::WebContext::IsFocusable);
+
+    // Walk up the node tree looking for our custom webworks context attribute.
+    while (node) {
+        if (node->isElementNode()) {
+            Element* element = static_cast<Element*>(node->shadowAncestorNode());
+            String webWorksContext(DOMSupport::webWorksContext(element));
+            if (!webWorksContext.stripWhiteSpace().isEmpty()) {
+                context.setFlag(Platform::WebContext::IsWebWorksContext);
+                context.setWebWorksContext(webWorksContext);
+                break;
+            }
+        }
+        node = node->parentNode();
+    }
 
     return context;
 }
@@ -4885,108 +4895,6 @@ void WebPage::runLayoutTests()
 #endif
 }
 
-bool WebPage::enableScriptDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        return true;
-
-    d->m_scriptDebugger = adoptPtr(new JavaScriptDebuggerBlackBerry(this->d));
-
-    return !!d->m_scriptDebugger;
-#endif
-}
-
-bool WebPage::disableScriptDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (!d->m_scriptDebugger)
-        return true;
-
-    d->m_scriptDebugger.clear();
-    return true;
-#endif
-}
-
-void WebPage::addBreakpoint(const unsigned short* url, unsigned urlLength, int lineNumber, const unsigned short* condition, unsigned conditionLength)
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->addBreakpoint(url, urlLength, lineNumber, condition, conditionLength);
-#endif
-}
-
-void WebPage::updateBreakpoint(const unsigned short* url, unsigned urlLength, int lineNumber, const unsigned short* condition, unsigned conditionLength)
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->updateBreakpoint(url, urlLength, lineNumber, condition, conditionLength);
-#endif
-}
-
-void WebPage::removeBreakpoint(const unsigned short* url, unsigned urlLength, int lineNumber)
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->removeBreakpoint(url, urlLength, lineNumber);
-#endif
-}
-
-bool WebPage::pauseOnExceptions()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    return d->m_scriptDebugger ? d->m_scriptDebugger->pauseOnExceptions() : false;
-#endif
-}
-
-void WebPage::setPauseOnExceptions(bool pause)
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->setPauseOnExceptions(pause);
-#endif
-}
-
-void WebPage::pauseInDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->pauseInDebugger();
-#endif
-}
-
-void WebPage::resumeDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->resumeDebugger();
-#endif
-}
-
-void WebPage::stepOverStatementInDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->stepOverStatementInDebugger();
-#endif
-}
-
-void WebPage::stepIntoStatementInDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->stepIntoStatementInDebugger();
-#endif
-}
-
-void WebPage::stepOutOfFunctionInDebugger()
-{
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    if (d->m_scriptDebugger)
-        d->m_scriptDebugger->stepOutOfFunctionInDebugger();
-#endif
-}
-
 unsigned WebPage::timeoutForJavaScriptExecution() const
 {
     return Settings::timeoutForJavaScriptExecution(d->m_page->groupName());
@@ -5968,6 +5876,8 @@ void WebPagePrivate::exitFullScreenForElement(Element* element)
         // The Browser chrome has its own fullscreen video widget.
         exitFullscreenForNode(element);
     } else {
+        m_backingStore->d->suspendScreenAndBackingStoreUpdates();
+
         // When leaving fullscreen mode, we need to restore the 'x' scroll position
         // before fullscreen.
         // FIXME: We may need to respect 'y' position as well, because the web page always scrolls to
@@ -5985,6 +5895,9 @@ void WebPagePrivate::exitFullScreenForElement(Element* element)
             m_transformationMatrix->setM22(m_scaleBeforeFullScreen);
             m_scaleBeforeFullScreen = -1.0;
         }
+
+        notifyTransformChanged();
+        m_backingStore->d->resumeScreenAndBackingStoreUpdates(BackingStore::RenderAndBlit);
 
         // This is where we would restore the browser's chrome
         // if hidden above.
@@ -6327,7 +6240,7 @@ IntSize WebPagePrivate::screenSize() const
     return Platform::Graphics::Screen::primaryScreen()->size();
 }
 
-bool WebPagePrivate::postponeDocumentStyleRecalc()
+void WebPagePrivate::postponeDocumentStyleRecalc()
 {
     if (Document* document = m_mainFrame->document()) {
         m_documentChildNeedsStyleRecalc = document->childNeedsStyleRecalc();
@@ -6356,7 +6269,7 @@ const HitTestResult& WebPagePrivate::hitTestResult(const IntPoint& contentPos)
 {
     if (m_cachedHitTestContentPos != contentPos) {
         m_cachedHitTestContentPos = contentPos;
-        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowShadowContent);
+        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, true /*allowShadowContent*/);
     }
 
     return m_cachedHitTestResult;

@@ -16,12 +16,12 @@ function openPicker(input, callback) {
     popupWindow = document.getElementById('mock-page-popup').contentWindow;
     if (typeof callback === "function") {
         popupOpenCallback = callback;
-        popupWindow.addEventListener("resize", popupOpenCallbackWrapper, false);
+        popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
     }
 }
 
 function popupOpenCallbackWrapper() {
-    popupWindow.removeEventListener("resize", popupOpenCallbackWrapper);
+    popupWindow.removeEventListener("didOpenPicker", popupOpenCallbackWrapper);
     popupOpenCallback();
 }
 

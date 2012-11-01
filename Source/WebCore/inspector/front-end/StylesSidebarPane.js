@@ -131,14 +131,22 @@ WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
     return match[1];
 }
 
+WebInspector.StylesSidebarPane.createExclamationMark = function(propertyName)
+{
+    var exclamationElement = document.createElement("img");
+    exclamationElement.className = "exclamation-mark";
+    exclamationElement.title = WebInspector.CSSCompletions.cssPropertiesMetainfo.keySet()[propertyName.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
+    return exclamationElement;
+}
+
 WebInspector.StylesSidebarPane.prototype = {
     _contextMenuEventFired: function(event)
     {
         // We start editing upon click -> default navigation to resources panel is not available
         // Hence we add a soft context menu for hrefs.
-        var contextMenu = new WebInspector.ContextMenu();
+        var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendApplicableItems(event.target);
-        contextMenu.show(event);
+        contextMenu.show();
     },
 
     get _forcedPseudoClasses()
@@ -1456,8 +1464,10 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                     treeElement.appendChild(childElement);
                     if (property.inactive || section.isPropertyOverloaded(property.name))
                         childElement.listItemElement.addStyleClass("overloaded");
-                    if (!property.parsedOk)
+                    if (!property.parsedOk) {
                         childElement.listItemElement.addStyleClass("not-parsed-ok");
+                        childElement.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(property.name), childElement.listItemElement.firstChild);
+                    }
                 }
             }
         }
@@ -1940,10 +1950,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.listItemElement.addStyleClass("not-parsed-ok");
 
             // Add a separate exclamation mark IMG element with a tooltip.
-            var exclamationElement = document.createElement("img");
-            exclamationElement.className = "exclamation-mark";
-            exclamationElement.title = WebInspector.CSSCompletions.cssPropertiesMetainfo.keySet()[this.property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
-            this.listItemElement.insertBefore(exclamationElement, this.listItemElement.firstChild);
+            this.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(this.property.name), this.listItemElement.firstChild);
         }
         if (this.property.inactive)
             this.listItemElement.addStyleClass("inactive");

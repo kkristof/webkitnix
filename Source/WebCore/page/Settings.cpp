@@ -81,12 +81,15 @@ static inline const AtomicString& getGenericFontFamilyForScript(const ScriptFont
     return emptyAtom;
 }
 
+double Settings::gDefaultMinDOMTimerInterval = 0.010; // 10 milliseconds
+double Settings::gDefaultDOMTimerAlignmentInterval = 0;
+
 #if USE(SAFARI_THEME)
 bool Settings::gShouldPaintNativeControls = true;
 #endif
 
 #if USE(AVFOUNDATION)
-bool Settings::gAVFoundationEnabled(false);
+bool Settings::gAVFoundationEnabled = false;
 #endif
 
 bool Settings::gMockScrollbarsEnabled = false;
@@ -697,12 +700,12 @@ void Settings::setDOMPasteAllowed(bool DOMPasteAllowed)
 
 void Settings::setDefaultMinDOMTimerInterval(double interval)
 {
-    DOMTimer::setDefaultMinTimerInterval(interval);
+    gDefaultMinDOMTimerInterval = interval;
 }
 
 double Settings::defaultMinDOMTimerInterval()
 {
-    return DOMTimer::defaultMinTimerInterval();
+    return gDefaultMinDOMTimerInterval;
 }
 
 void Settings::setMinDOMTimerInterval(double interval)
@@ -717,12 +720,12 @@ double Settings::minDOMTimerInterval()
 
 void Settings::setDefaultDOMTimerAlignmentInterval(double interval)
 {
-    DOMTimer::setDefaultTimerAlignmentInterval(interval);
+    gDefaultDOMTimerAlignmentInterval = interval;
 }
 
 double Settings::defaultDOMTimerAlignmentInterval()
 {
-    return DOMTimer::defaultTimerAlignmentInterval();
+    return gDefaultDOMTimerAlignmentInterval;
 }
 
 void Settings::setDOMTimerAlignmentInterval(double interval)

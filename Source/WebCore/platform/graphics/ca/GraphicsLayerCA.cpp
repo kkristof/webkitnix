@@ -943,11 +943,14 @@ FloatRect GraphicsLayerCA::computeVisibleRect(TransformState& state) const
         }
     }
 
-    state.applyTransform(layerTransform, accumulation);
+    bool applyWasClamped;
+    state.applyTransform(layerTransform, accumulation, &applyWasClamped);
     
-    FloatRect clipRectForChildren = state.mappedQuad().boundingBox();
+    bool mapWasClamped;
+    FloatRect clipRectForChildren = state.mappedQuad(&mapWasClamped).boundingBox();
     FloatRect clipRectForSelf(0, 0, m_size.width(), m_size.height());
-    clipRectForSelf.intersect(clipRectForChildren);
+    if (!applyWasClamped && !mapWasClamped)
+        clipRectForSelf.intersect(clipRectForChildren);
     
     if (masksToBounds()) {
         ASSERT(accumulation == TransformState::FlattenTransform);
@@ -1349,7 +1352,7 @@ void GraphicsLayerCA::updateContentsVisibility()
         if (m_drawsContent)
             m_layer->setNeedsDisplay();
     } else {
-        m_layer.get()->setContents(0);
+        m_layer->setContents(0);
 
         if (LayerMap* layerCloneMap = m_layerClones.get()) {
             LayerMap::const_iterator end = layerCloneMap->end();
@@ -1361,7 +1364,7 @@ void GraphicsLayerCA::updateContentsVisibility()
 
 void GraphicsLayerCA::updateContentsOpaque()
 {
-    m_layer.get()->setOpaque(m_contentsOpaque);
+    m_layer->setOpaque(m_contentsOpaque);
 
     if (LayerMap* layerCloneMap = m_layerClones.get()) {
         LayerMap::const_iterator end = layerCloneMap->end();
@@ -1394,9 +1397,9 @@ void GraphicsLayerCA::updateBackfaceVisibility()
 #if ENABLE(CSS_FILTERS)
 void GraphicsLayerCA::updateFilters()
 {
-    primaryLayer()->setFilters(m_filters);
+    m_layer->setFilters(m_filters);
 
-    if (LayerMap* layerCloneMap = primaryLayerClones()) {
+    if (LayerMap* layerCloneMap = m_layerClones.get()) {
         LayerMap::const_iterator end = layerCloneMap->end();
         for (LayerMap::const_iterator it = layerCloneMap->begin(); it != end; ++it) {
             if (m_replicaLayer && isReplicatedRootClone(it->key))
@@ -1593,10 +1596,13 @@ FloatRect GraphicsLayerCA::adjustTiledLayerVisibleRect(TiledBacking* tiledBackin
 
 void GraphicsLayerCA::updateVisibleRect(const FloatRect& oldVisibleRect)
 {
-    if (m_layer->layerType() != PlatformCALayer::LayerTypeTileCacheLayer)
+    if (!m_layer->usesTileCacheLayer())
         return;
 
-    FloatRect tileArea = adjustTiledLayerVisibleRect(tiledBacking(), oldVisibleRect, m_sizeAtLastVisibleRectUpdate);
+    FloatRect tileArea = m_visibleRect;
+    if (m_layer->layerType() == PlatformCALayer::LayerTypeTileCacheLayer)
+        tileArea = adjustTiledLayerVisibleRect(tiledBacking(), oldVisibleRect, m_sizeAtLastVisibleRectUpdate);
+
     tiledBacking()->setVisibleRect(enclosingIntRect(tileArea));
 
     m_sizeAtLastVisibleRectUpdate = m_size;
@@ -2517,9 +2523,13 @@ void GraphicsLayerCA::dumpAdditionalProperties(TextStream& textStream, int inden
     }
 
     if (tiledBacking() && (behavior & LayerTreeAsTextIncludeTileCaches)) {
-        writeIndent(textStream, indent + 1);
         IntRect tileCoverageRect = tiledBacking()->tileCoverageRect();
+        writeIndent(textStream, indent + 1);
         textStream << "(tile cache coverage " << tileCoverageRect.x() << ", " << tileCoverageRect.y() << " " << tileCoverageRect.width() << " x " << tileCoverageRect.height() << ")\n";
+
+        IntSize tileSize = tiledBacking()->tileSize();
+        writeIndent(textStream, indent + 1);
+        textStream << "(tile size " << tileSize.width() << " x " << tileSize.height() << ")\n";
     }
 }
 
@@ -2827,6 +2837,7 @@ PassRefPtr<PlatformCALayer> GraphicsLayerCA::cloneLayer(PlatformCALayer *layer, 
     newLayer->setOpaque(layer->isOpaque());
     newLayer->setBackgroundColor(layer->backgroundColor());
     newLayer->setContentsScale(layer->contentsScale());
+    newLayer->copyFiltersFrom(layer);
 
     if (cloneLevel == IntermediateCloneLevel) {
         newLayer->setOpacity(layer->opacity());

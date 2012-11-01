@@ -1001,6 +1001,7 @@ SET(WebCore_SOURCES
     accessibility/AccessibilityScrollView.cpp
     accessibility/AccessibilitySpinButton.cpp
     accessibility/AccessibilitySlider.cpp
+    accessibility/AccessibilitySVGRoot.cpp
     accessibility/AccessibilityTable.cpp
     accessibility/AccessibilityTableCell.cpp
     accessibility/AccessibilityTableColumn.cpp
@@ -1102,6 +1103,7 @@ SET(WebCore_SOURCES
     css/WebKitCSSSVGDocumentValue.cpp
     css/WebKitCSSShaderValue.cpp
     css/WebKitCSSTransformValue.cpp
+    css/WebKitCSSViewportRule.cpp
 
     dom/ActiveDOMObject.cpp
     dom/Attr.cpp
@@ -1912,8 +1914,11 @@ SET(WebCore_SOURCES
     platform/graphics/filters/CustomFilterGlobalContext.cpp
     platform/graphics/filters/CustomFilterMesh.cpp
     platform/graphics/filters/CustomFilterOperation.cpp
+    platform/graphics/filters/CustomFilterParameterList.cpp
+    platform/graphics/filters/ValidatedCustomFilterOperation.cpp
     platform/graphics/filters/CustomFilterProgram.cpp
     platform/graphics/filters/CustomFilterProgramInfo.cpp
+    platform/graphics/filters/CustomFilterRenderer.cpp
     platform/graphics/filters/DistantLightSource.cpp
     platform/graphics/filters/FEBlend.cpp
     platform/graphics/filters/FEColorMatrix.cpp
@@ -2021,7 +2026,7 @@ SET(WebCore_SOURCES
     platform/text/LineEnding.cpp
     platform/text/LocaleNone.cpp
     platform/text/LocaleToScriptMappingDefault.cpp
-    platform/text/Localizer.cpp
+    platform/text/PlatformLocale.cpp
     platform/text/QuotedPrintable.cpp
     platform/text/RegularExpression.cpp
     platform/text/SegmentedString.cpp
@@ -2152,6 +2157,7 @@ SET(WebCore_SOURCES
     rendering/RenderWordBreak.cpp
     rendering/RootInlineBox.cpp
     rendering/ScrollBehavior.cpp
+    rendering/TextAutosizer.cpp
     rendering/break_lines.cpp
 
     rendering/mathml/RenderMathMLBlock.cpp

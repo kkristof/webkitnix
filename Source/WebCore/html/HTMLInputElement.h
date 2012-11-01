@@ -148,6 +148,7 @@ public:
     void setType(const String&);
 
     String value() const;
+    void setValue(const String&, ExceptionCode&, TextFieldEventBehavior = DispatchNoEvent);
     void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
     void setValueForUser(const String&);
     // Checks if the specified string would be a valid value.
@@ -368,7 +369,6 @@ private:
     bool tooLong(const String&, NeedsToCheckDirtyFlag) const;
 
     virtual bool supportsPlaceholder() const;
-    virtual bool isPlaceholderEmpty() const OVERRIDE;
     virtual void updatePlaceholderText();
     virtual bool isEmptyValue() const OVERRIDE { return innerTextValue().isEmpty(); }
     virtual bool isEmptySuggestedValue() const { return suggestedValue().isEmpty(); }

@@ -54,6 +54,7 @@
 #include "NumberInputType.h"
 #include "RenderTextControlSingleLine.h"
 #include "RenderTheme.h"
+#include "ScopedEventQueue.h"
 #include "SearchInputType.h"
 #include "ShadowRoot.h"
 #include "ScriptEventListener.h"
@@ -1006,12 +1007,22 @@ void HTMLInputElement::setEditingValue(const String& value)
     dispatchInputEvent();
 }
 
+void HTMLInputElement::setValue(const String& value, ExceptionCode& ec, TextFieldEventBehavior eventBehavior)
+{
+    if (isFileUpload() && !value.isEmpty()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    setValue(value, eventBehavior);
+}
+
 void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior eventBehavior)
 {
     if (!m_inputType->canSetValue(value))
         return;
 
     RefPtr<HTMLInputElement> protector(this);
+    EventQueueScope scope;
     String sanitizedValue = sanitizeValue(value);
     bool valueChanged = sanitizedValue != this->value();
 
@@ -1731,13 +1742,6 @@ bool HTMLInputElement::shouldAppearChecked() const
 bool HTMLInputElement::supportsPlaceholder() const
 {
     return m_inputType->supportsPlaceholder();
-}
-
-bool HTMLInputElement::isPlaceholderEmpty() const
-{
-    if (m_inputType->usesFixedPlaceholder())
-        return m_inputType->fixedPlaceholder().isEmpty();
-    return HTMLTextFormControlElement::isPlaceholderEmpty();
 }
 
 void HTMLInputElement::updatePlaceholderText()

@@ -24,6 +24,9 @@
 #include "EflScreenUtilities.h"
 #include "FindClientEfl.h"
 #include "FormClientEfl.h"
+#include "InputMethodContextEfl.h"
+#include "LayerTreeCoordinatorProxy.h"
+#include "LayerTreeRenderer.h"
 #include "PageClientImpl.h"
 #include "PageLoadClientEfl.h"
 #include "PagePolicyClientEfl.h"
@@ -31,133 +34,137 @@
 #include "PageViewportController.h"
 #include "PageViewportControllerClientEfl.h"
 #include "ResourceLoadClientEfl.h"
-#include "WKColorPickerResultListener.h"
 #include "WKString.h"
+#include "WebContext.h"
+#include "WebPageGroup.h"
 #include "WebPageProxy.h"
 #include "WebPopupMenuProxyEfl.h"
+#include "WebPreferences.h"
 #include "ewk_back_forward_list_private.h"
+#include "ewk_color_picker_private.h"
 #include "ewk_context_private.h"
 #include "ewk_favicon_database_private.h"
 #include "ewk_popup_menu_item_private.h"
+#include "ewk_popup_menu_private.h"
 #include "ewk_private.h"
 #include "ewk_settings_private.h"
 #include "ewk_view.h"
 #include "ewk_view_private.h"
 #include <Ecore_Evas.h>
-#include <Ecore_IMF.h>
-#include <Ecore_IMF_Evas.h>
 #include <Edje.h>
 #include <WebCore/Cursor.h>
+
+
+#if ENABLE(FULLSCREEN_API)
+#include "WebFullScreenManagerProxy.h"
+#endif
+
+#if USE(ACCELERATED_COMPOSITING)
+#include <Evas_GL.h>
+#endif
 
 using namespace WebCore;
 using namespace WebKit;
 
 static const int defaultCursorSize = 16;
 
-EwkViewImpl::PageViewMap EwkViewImpl::pageViewMap;
+typedef HashMap<WKPageRef, Evas_Object*> PageViewMap;
 
-void EwkViewImpl::addToPageViewMap(const Evas_Object* ewkView)
+static inline PageViewMap& pageViewMap()
 {
-    EwkViewImpl* viewImpl = EwkViewImpl::fromEvasObject(ewkView);
+    DEFINE_STATIC_LOCAL(PageViewMap, map, ());
+    return map;
+}
 
-    PageViewMap::AddResult result = pageViewMap.add(viewImpl->wkPage(), ewkView);
+void EwkViewImpl::addToPageViewMap(EwkViewImpl* viewImpl)
+{
+    PageViewMap::AddResult result = pageViewMap().add(viewImpl->wkPage(), viewImpl->view());
     ASSERT_UNUSED(result, result.isNewEntry);
 }
 
-void EwkViewImpl::removeFromPageViewMap(const Evas_Object* ewkView)
+void EwkViewImpl::removeFromPageViewMap(EwkViewImpl* viewImpl)
 {
-    EwkViewImpl* viewImpl = EwkViewImpl::fromEvasObject(ewkView);
-
-    ASSERT(pageViewMap.contains(viewImpl->wkPage()));
-    pageViewMap.remove(viewImpl->wkPage());
+    ASSERT(pageViewMap().contains(viewImpl->wkPage()));
+    pageViewMap().remove(viewImpl->wkPage());
 }
 
 const Evas_Object* EwkViewImpl::viewFromPageViewMap(const WKPageRef page)
 {
     ASSERT(page);
 
-    return pageViewMap.get(page);
+    return pageViewMap().get(page);
 }
 
-void EwkViewImpl::onIMFInputSequenceComplete(void* data, Ecore_IMF_Context*, void* eventInfo)
-{
-    Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, viewImpl);
-    if (!eventInfo || !viewImpl->m_inputMethodContextFocused)
-        return;
-
-    viewImpl->pageProxy->confirmComposition(String::fromUTF8(static_cast<char*>(eventInfo)));
-}
-
-void EwkViewImpl::onIMFPreeditSequenceChanged(void* data, Ecore_IMF_Context* context, void*)
-{
-    Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, viewImpl);
-
-    if (!viewImpl->pageProxy->focusedFrame() || !viewImpl->m_inputMethodContextFocused)
-        return;
-
-    char* buffer = 0;
-    ecore_imf_context_preedit_string_get(context, &buffer, 0);
-    if (!buffer)
-        return;
-
-    String preeditString = String::fromUTF8(buffer);
-    free(buffer);
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, preeditString.length(), Color(0, 0, 0), false));
-    viewImpl->pageProxy->setComposition(preeditString, underlines, 0);
-}
-
-PassOwnPtr<Ecore_IMF_Context> EwkViewImpl::createIMFContext(Ewk_View_Smart_Data* sd)
-{
-    const char* defaultContextID = ecore_imf_context_default_id_get();
-    if (!defaultContextID)
-        return nullptr;
-
-    OwnPtr<Ecore_IMF_Context> imfContext = adoptPtr(ecore_imf_context_add(defaultContextID));
-    if (!imfContext)
-        return nullptr;
-
-    ecore_imf_context_event_callback_add(imfContext.get(), ECORE_IMF_CALLBACK_PREEDIT_CHANGED, onIMFPreeditSequenceChanged, sd);
-    ecore_imf_context_event_callback_add(imfContext.get(), ECORE_IMF_CALLBACK_COMMIT, onIMFInputSequenceComplete, sd);
-
-    Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(sd->base.evas);
-    ecore_imf_context_client_window_set(imfContext.get(), reinterpret_cast<void*>(ecore_evas_window_get(ecoreEvas)));
-    ecore_imf_context_client_canvas_set(imfContext.get(), sd->base.evas);
-
-    return imfContext.release();
-}
-
-EwkViewImpl::EwkViewImpl(Evas_Object* view)
-    : popupMenuProxy(0)
-    , popupMenuItems(0)
-#if USE(ACCELERATED_COMPOSITING)
-    , evasGl(0)
-    , evasGlContext(0)
-    , evasGlSurface(0)
+EwkViewImpl::EwkViewImpl(Evas_Object* view, PassRefPtr<Ewk_Context> context, PassRefPtr<WebPageGroup> pageGroup)
+    : m_view(view)
+    , m_context(context)
+    , m_pageClient(PageClientImpl::create(this))
+    , m_pageProxy(toImpl(m_context->wkContext())->createWebPage(m_pageClient.get(), pageGroup.get()))
+    , m_pageLoadClient(PageLoadClientEfl::create(this))
+    , m_pagePolicyClient(PagePolicyClientEfl::create(this))
+    , m_pageUIClient(PageUIClientEfl::create(this))
+    , m_resourceLoadClient(ResourceLoadClientEfl::create(this))
+    , m_findClient(FindClientEfl::create(this))
+    , m_formClient(FormClientEfl::create(this))
+    , m_backForwardList(Ewk_Back_Forward_List::create(toAPI(m_pageProxy->backForwardList())))
+#if USE(TILED_BACKING_STORE)
+    , m_pageViewportControllerClient(PageViewportControllerClientEfl::create(this))
+    , m_pageViewportController(adoptPtr(new PageViewportController(m_pageProxy.get(), m_pageViewportControllerClient.get())))
 #endif
-    , m_view(view)
     , m_settings(Ewk_Settings::create(this))
-    , m_inputMethodContext(createIMFContext(smartData()))
-    , m_inputMethodContextFocused(false)
+    , m_cursorGroup(0)
     , m_mouseEventsEnabled(false)
 #if ENABLE(TOUCH_EVENTS)
     , m_touchEventsEnabled(false)
 #endif
     , m_displayTimer(this, &EwkViewImpl::displayTimerFired)
+    , m_inputMethodContext(InputMethodContextEfl::create(this, smartData()->base.evas))
 {
-    ASSERT(view);
+    ASSERT(m_view);
+    ASSERT(m_context);
+    ASSERT(m_pageProxy);
+
+#if USE(COORDINATED_GRAPHICS)
+    m_pageProxy->pageGroup()->preferences()->setAcceleratedCompositingEnabled(true);
+    m_pageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
+#if ENABLE(WEBGL)
+    m_pageProxy->pageGroup()->preferences()->setWebGLEnabled(true);
+#endif
+    m_pageProxy->setUseFixedLayout(true);
+#endif
+
+    m_pageProxy->initializeWebPage();
+
+#if USE(TILED_BACKING_STORE)
+    m_pageClient->setPageViewportController(m_pageViewportController.get());
+#endif
+
+#if ENABLE(FULLSCREEN_API)
+    m_pageProxy->fullScreenManager()->setWebView(m_view);
+    m_pageProxy->pageGroup()->preferences()->setFullScreenEnabled(true);
+#endif
 
     // Enable mouse events by default
     setMouseEventsEnabled(true);
+
+    // Listen for favicon changes.
+    Ewk_Favicon_Database* iconDatabase = m_context->faviconDatabase();
+    ASSERT(iconDatabase);
+
+    iconDatabase->watchChanges(IconChangeCallbackData(EwkViewImpl::onFaviconChanged, this));
+
+    EwkViewImpl::addToPageViewMap(this);
 }
 
 EwkViewImpl::~EwkViewImpl()
 {
-    void* item;
-    EINA_LIST_FREE(popupMenuItems, item)
-        delete static_cast<Ewk_Popup_Menu_Item*>(item);
+    // Unregister icon change callback.
+    Ewk_Favicon_Database* iconDatabase = m_context->faviconDatabase();
+    ASSERT(iconDatabase);
+
+    iconDatabase->unwatchChanges(EwkViewImpl::onFaviconChanged);
+
+    EwkViewImpl::removeFromPageViewMap(this);
 }
 
 Ewk_View_Smart_Data* EwkViewImpl::smartData()
@@ -180,24 +187,21 @@ EwkViewImpl* EwkViewImpl::fromEvasObject(const Evas_Object* view)
  */
 WKPageRef EwkViewImpl::wkPage()
 {
-    return toAPI(pageProxy.get());
+    return toAPI(m_pageProxy.get());
 }
 
 void EwkViewImpl::setCursor(const Cursor& cursor)
 {
-    Ewk_View_Smart_Data* sd = smartData();
-
     const char* group = cursor.platformCursor();
     if (!group || group == m_cursorGroup)
         return;
 
     m_cursorGroup = group;
-    m_cursorObject = adoptRef(edje_object_add(sd->base.evas));
+    Ewk_View_Smart_Data* sd = smartData();
+    RefPtr<Evas_Object> cursorObject = adoptRef(edje_object_add(sd->base.evas));
 
     Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(sd->base.evas);
-    if (!m_theme || !edje_object_file_set(m_cursorObject.get(), m_theme, group)) {
-        m_cursorObject.clear();
-
+    if (!m_theme || !edje_object_file_set(cursorObject.get(), m_theme, group)) {
         ecore_evas_object_cursor_set(ecoreEvas, 0, 0, 0, 0);
 #ifdef HAVE_ECORE_X
         if (WebCore::isUsingEcoreX(sd->base.evas))
@@ -206,122 +210,76 @@ void EwkViewImpl::setCursor(const Cursor& cursor)
         return;
     }
 
+    // Set cursor size.
     Evas_Coord width, height;
-    edje_object_size_min_get(m_cursorObject.get(), &width, &height);
+    edje_object_size_min_get(cursorObject.get(), &width, &height);
     if (width <= 0 || height <= 0)
-        edje_object_size_min_calc(m_cursorObject.get(), &width, &height);
+        edje_object_size_min_calc(cursorObject.get(), &width, &height);
     if (width <= 0 || height <= 0) {
         width = defaultCursorSize;
         height = defaultCursorSize;
     }
-    evas_object_resize(m_cursorObject.get(), width, height);
+    evas_object_resize(cursorObject.get(), width, height);
 
+    // Get cursor hot spot.
     const char* data;
     int hotspotX = 0;
-    data = edje_object_data_get(m_cursorObject.get(), "hot.x");
+    data = edje_object_data_get(cursorObject.get(), "hot.x");
     if (data)
         hotspotX = atoi(data);
 
     int hotspotY = 0;
-    data = edje_object_data_get(m_cursorObject.get(), "hot.y");
+    data = edje_object_data_get(cursorObject.get(), "hot.y");
     if (data)
         hotspotY = atoi(data);
 
-    ecore_evas_object_cursor_set(ecoreEvas, m_cursorObject.get(), EVAS_LAYER_MAX, hotspotX, hotspotY);
+    // ecore_evas takes care of freeing the cursor object.
+    ecore_evas_object_cursor_set(ecoreEvas, cursorObject.release().leakRef(), EVAS_LAYER_MAX, hotspotX, hotspotY);
 }
 
-void EwkViewImpl::displayTimerFired(WebCore::Timer<EwkViewImpl>*)
+void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
 {
+#if USE(COORDINATED_GRAPHICS)
     Ewk_View_Smart_Data* sd = smartData();
 
+    evas_gl_make_current(evasGL(), evasGLSurface(), evasGLContext());
+
+    // We are supposed to clip to the actual viewport, nothing less.
+    IntRect viewport(sd->view.x, sd->view.y, sd->view.w, sd->view.h);
+
+    IntPoint scrollPosition = m_pageViewportControllerClient->scrollPosition();
+    float scaleFactor = m_pageViewportControllerClient->scaleFactor();
+
+    WebCore::TransformationMatrix matrix;
+    matrix.translate(viewport.x(), viewport.y());
+    matrix.scale(scaleFactor);
+    matrix.translate(-scrollPosition.x(), -scrollPosition.y());
+
+    LayerTreeRenderer* renderer = page()->drawingArea()->layerTreeCoordinatorProxy()->layerTreeRenderer();
+    renderer->setActive(true);
+    renderer->syncRemoteContent();
+
+    renderer->paintToCurrentGLContext(matrix, /* opacity */ 1, viewport);
+
+    evas_object_image_data_update_add(sd->image, viewport.x(), viewport.y(), viewport.width(), viewport.height());
+#endif
+}
+
+void EwkViewImpl::update(const IntRect& rect)
+{
+#if USE(COORDINATED_GRAPHICS)
+    // Coordinated graphices needs to schedule an full update, not
+    // repainting of a region. Update in the event loop.
+    UNUSED_PARAM(rect);
+    if (!m_displayTimer.isActive())
+        m_displayTimer.startOneShot(0);
+#else
+    Ewk_View_Smart_Data* sd = smartData();
     if (!sd->image)
         return;
 
-#if USE(COORDINATED_GRAPHICS)
-    EWK_VIEW_IMPL_GET_OR_RETURN(sd, viewImpl);
+    evas_object_image_data_update_add(sd->image, rect.x(), rect.y(), rect.width(), rect.height());
 #endif
-
-    Region dirtyRegion;
-    for (Vector<IntRect>::iterator it = m_dirtyRects.begin(); it != m_dirtyRects.end(); ++it)
-        dirtyRegion.unite(*it);
-
-    m_dirtyRects.clear();
-
-    Vector<IntRect> rects = dirtyRegion.rects();
-    Vector<IntRect>::iterator end = rects.end();
-
-    for (Vector<IntRect>::iterator it = rects.begin(); it != end; ++it) {
-        IntRect rect = *it;
-#if USE(COORDINATED_GRAPHICS)
-        evas_gl_make_current(viewImpl->evasGl, viewImpl->evasGlSurface, viewImpl->evasGlContext);
-        viewImpl->pageViewportControllerClient->display(rect, IntPoint(sd->view.x, sd->view.y));
-#endif
-
-        evas_object_image_data_update_add(sd->image, rect.x(), rect.y(), rect.width(), rect.height());
-    }
-}
-
-void EwkViewImpl::redrawRegion(const IntRect& rect)
-{
-    if (!m_displayTimer.isActive())
-        m_displayTimer.startOneShot(0);
-    m_dirtyRects.append(rect);
-}
-
-/**
- * @internal
- * A download for that view was cancelled.
- *
- * Emits signal: "download,cancelled" with pointer to a Ewk_Download_Job.
- */
-void EwkViewImpl::informDownloadJobCancelled(Ewk_Download_Job* download)
-{
-    evas_object_smart_callback_call(m_view, "download,cancelled", download);
-}
-
-/**
- * @internal
- * A download for that view has failed.
- *
- * Emits signal: "download,failed" with pointer to a Ewk_Download_Job_Error.
- */
-void EwkViewImpl::informDownloadJobFailed(Ewk_Download_Job* download, Ewk_Error* error)
-{
-    Ewk_Download_Job_Error downloadError = { download, error };
-    evas_object_smart_callback_call(m_view, "download,failed", &downloadError);
-}
-
-/**
- * @internal
- * A download for that view finished successfully.
- *
- * Emits signal: "download,finished" with pointer to a Ewk_Download_Job.
- */
-void EwkViewImpl::informDownloadJobFinished(Ewk_Download_Job* download)
-{
-    evas_object_smart_callback_call(m_view, "download,finished", download);
-}
-
-/**
- * @internal
- * A new download has been requested for that view.
- *
- * Emits signal: "download,request" with pointer to a Ewk_Download_Job.
- */
-void EwkViewImpl::informDownloadJobRequested(Ewk_Download_Job* download)
-{
-    evas_object_smart_callback_call(m_view, "download,request", download);
-}
-
-/**
- * @internal
- * informs that a form request is about to be submitted.
- *
- * Emits signal: "form,submission,request" with pointer to Ewk_Form_Submission_Request.
- */
-void EwkViewImpl::informNewFormSubmissionRequest(Ewk_Form_Submission_Request* request)
-{
-    evas_object_smart_callback_call(m_view, "form,submission,request", request);
 }
 
 #if ENABLE(FULLSCREEN_API)
@@ -365,211 +323,12 @@ void EwkViewImpl::setImageData(void* imageData, const IntSize& size)
     evas_object_image_data_copy_set(sd->image, imageData);
 }
 
-#if ENABLE(INPUT_TYPE_COLOR)
-bool EwkViewImpl::setColorPickerColor(const WebCore::Color& color)
-{
-    if (!m_colorPickerResultListener)
-        return false;
-
-    WKRetainPtr<WKStringRef> colorString(AdoptWK, WKStringCreateWithUTF8CString(color.serialized().utf8().data()));
-    WKColorPickerResultListenerSetColor(m_colorPickerResultListener.get(), colorString.get());
-    m_colorPickerResultListener.clear();
-
-    return true;
-}
-#endif
-
-/**
- * @internal
- * informs load failed with error information.
- *
- * Emits signal: "load,error" with pointer to Ewk_Error.
- */
-void EwkViewImpl::informLoadError(Ewk_Error* error)
-{
-    evas_object_smart_callback_call(m_view, "load,error", error);
-}
-
-/**
- * @internal
- * informs load finished.
- *
- * Emits signal: "load,finished".
- */
-void EwkViewImpl::informLoadFinished()
-{
-    informURLChange();
-    evas_object_smart_callback_call(m_view, "load,finished", 0);
-}
-
-/**
- * @internal
- * informs load progress changed.
- *
- * Emits signal: "load,progress" with pointer to a double from 0.0 to 1.0.
- */
-void EwkViewImpl::informLoadProgress(double progress)
-{
-    evas_object_smart_callback_call(m_view, "load,progress", &progress);
-}
-
-/**
- * @internal
- * informs view provisional load failed with error information.
- *
- * Emits signal: "load,provisional,failed" with pointer to Ewk_Error.
- */
-void EwkViewImpl::informProvisionalLoadFailed(Ewk_Error* error)
-{
-    evas_object_smart_callback_call(m_view, "load,provisional,failed", error);
-}
-
 #if USE(TILED_BACKING_STORE)
 void EwkViewImpl::informLoadCommitted()
 {
-    pageViewportController->didCommitLoad();
+    m_pageViewportController->didCommitLoad();
 }
 #endif
-
-/**
- * @internal
- * informs view received redirect for provisional load.
- *
- * Emits signal: "load,provisional,redirect".
- */
-void EwkViewImpl::informProvisionalLoadRedirect()
-{
-    informURLChange();
-    evas_object_smart_callback_call(m_view, "load,provisional,redirect", 0);
-}
-
-/**
- * @internal
- * informs view provisional load started.
- *
- * Emits signal: "load,provisional,started".
- */
-void EwkViewImpl::informProvisionalLoadStarted()
-{
-    informURLChange();
-    evas_object_smart_callback_call(m_view, "load,provisional,started", 0);
-}
-
-/**
- * @internal
- * informs that a navigation policy decision should be taken.
- *
- * Emits signal: "policy,decision,navigation".
- */
-void EwkViewImpl::informNavigationPolicyDecision(Ewk_Navigation_Policy_Decision* decision)
-{
-    evas_object_smart_callback_call(m_view, "policy,decision,navigation", decision);
-}
-
-/**
- * @internal
- * informs that a new window policy decision should be taken.
- *
- * Emits signal: "policy,decision,new,window".
- */
-void EwkViewImpl::informNewWindowPolicyDecision(Ewk_Navigation_Policy_Decision* decision)
-{
-    evas_object_smart_callback_call(m_view, "policy,decision,new,window", decision);
-}
-
-/**
- * @internal
- * Load was initiated for a resource in the view.
- *
- * Emits signal: "resource,request,new" with pointer to resource request.
- */
-void EwkViewImpl::informResourceLoadStarted(Ewk_Resource* resource, Ewk_Url_Request* request)
-{
-    Ewk_Resource_Request resourceRequest = {resource, request, 0};
-
-    evas_object_smart_callback_call(m_view, "resource,request,new", &resourceRequest);
-}
-
-/**
- * @internal
- * Received a response to a resource load request in the view.
- *
- * Emits signal: "resource,request,response" with pointer to resource response.
- */
-void EwkViewImpl::informResourceLoadResponse(Ewk_Resource* resource, Ewk_Url_Response* response)
-{
-    Ewk_Resource_Load_Response resourceLoadResponse = {resource, response};
-    evas_object_smart_callback_call(m_view, "resource,request,response", &resourceLoadResponse);
-}
-
-/**
- * @internal
- * Failed loading a resource in the view.
- *
- * Emits signal: "resource,request,finished" with pointer to the resource load error.
- */
-void EwkViewImpl::informResourceLoadFailed(Ewk_Resource* resource, Ewk_Error* error)
-{
-    Ewk_Resource_Load_Error resourceLoadError = {resource, error};
-    evas_object_smart_callback_call(m_view, "resource,request,failed", &resourceLoadError);
-}
-
-/**
- * @internal
- * Finished loading a resource in the view.
- *
- * Emits signal: "resource,request,finished" with pointer to the resource.
- */
-void EwkViewImpl::informResourceLoadFinished(Ewk_Resource* resource)
-{
-    evas_object_smart_callback_call(m_view, "resource,request,finished", resource);
-}
-
-/**
- * @internal
- * Request was sent for a resource in the view.
- *
- * Emits signal: "resource,request,sent" with pointer to resource request and possible redirect response.
- */
-void EwkViewImpl::informResourceRequestSent(Ewk_Resource* resource, Ewk_Url_Request* request, Ewk_Url_Response* redirectResponse)
-{
-    Ewk_Resource_Request resourceRequest = {resource, request, redirectResponse};
-    evas_object_smart_callback_call(m_view, "resource,request,sent", &resourceRequest);
-}
-
-/**
- * @internal
- * The view title was changed by the frame loader.
- *
- * Emits signal: "title,changed" with pointer to new title string.
- */
-void EwkViewImpl::informTitleChange(const String& title)
-{
-    evas_object_smart_callback_call(m_view, "title,changed", const_cast<char*>(title.utf8().data()));
-}
-
-/**
- * @internal
- */
-void EwkViewImpl::informTooltipTextChange(const String& text)
-{
-    if (text.isEmpty())
-        evas_object_smart_callback_call(m_view, "tooltip,text,unset", 0);
-    else
-        evas_object_smart_callback_call(m_view, "tooltip,text,set", const_cast<char*>(text.utf8().data()));
-
-}
-
-/**
- * @internal
- * informs that the requested text was found.
- *
- * Emits signal: "text,found" with the number of matches.
- */
-void EwkViewImpl::informTextFound(unsigned matchCount)
-{
-    evas_object_smart_callback_call(m_view, "text,found", &matchCount);
-}
 
 IntSize EwkViewImpl::size() const
 {
@@ -590,12 +349,16 @@ bool EwkViewImpl::isVisible() const
 
 const char* EwkViewImpl::title() const
 {
-    m_title = pageProxy->pageTitle().utf8().data();
+    m_title = m_pageProxy->pageTitle().utf8().data();
 
     return m_title;
 }
 
-Ecore_IMF_Context* EwkViewImpl::inputMethodContext()
+/**
+ * @internal
+ * This function may return @c NULL.
+ */
+InputMethodContextEfl* EwkViewImpl::inputMethodContext()
 {
     return m_inputMethodContext.get();
 }
@@ -609,13 +372,13 @@ void EwkViewImpl::setThemePath(const char* theme)
 {
     if (m_theme != theme) {
         m_theme = theme;
-        pageProxy->setThemePath(theme);
+        m_pageProxy->setThemePath(theme);
     }
 }
 
 const char* EwkViewImpl::customTextEncodingName() const
 {
-    String customEncoding = pageProxy->customTextEncodingName();
+    String customEncoding = m_pageProxy->customTextEncodingName();
     if (customEncoding.isEmpty())
         return 0;
 
@@ -624,10 +387,9 @@ const char* EwkViewImpl::customTextEncodingName() const
     return m_customEncoding;
 }
 
-void EwkViewImpl::setCustomTextEncodingName(const char* encoding)
+void EwkViewImpl::setCustomTextEncodingName(const String& encoding)
 {
-    m_customEncoding = encoding;
-    pageProxy->setCustomTextEncodingName(encoding ? encoding : String());
+    m_pageProxy->setCustomTextEncodingName(encoding);
 }
 
 void EwkViewImpl::setMouseEventsEnabled(bool enabled)
@@ -690,45 +452,19 @@ void EwkViewImpl::setTouchEventsEnabled(bool enabled)
  */
 void EwkViewImpl::informIconChange()
 {
-    Ewk_Favicon_Database* iconDatabase = context->faviconDatabase();
+    Ewk_Favicon_Database* iconDatabase = m_context->faviconDatabase();
     ASSERT(iconDatabase);
 
     m_faviconURL = ewk_favicon_database_icon_url_get(iconDatabase, m_url);
     evas_object_smart_callback_call(m_view, "icon,changed", 0);
 }
 
-#if ENABLE(WEB_INTENTS)
-/**
- * @internal
- * The view received a new intent request.
- *
- * Emits signal: "intent,request,new" with pointer to a Ewk_Intent.
- */
-void EwkViewImpl::informIntentRequest(Ewk_Intent* ewkIntent)
-{
-    evas_object_smart_callback_call(m_view, "intent,request,new", ewkIntent);
-}
-#endif
-
-#if ENABLE(WEB_INTENTS_TAG)
-/**
- * @internal
- * The view received a new intent service registration.
- *
- * Emits signal: "intent,service,register" with pointer to a Ewk_Intent_Service.
- */
-void EwkViewImpl::informIntentServiceRegistration(Ewk_Intent_Service* ewkIntentService)
-{
-    evas_object_smart_callback_call(m_view, "intent,service,register", ewkIntentService);
-}
-#endif // ENABLE(WEB_INTENTS_TAG)
-
 #if USE(ACCELERATED_COMPOSITING)
 bool EwkViewImpl::createGLSurface(const IntSize& viewSize)
 {
     Ewk_View_Smart_Data* sd = smartData();
 
-    Evas_GL_Config evasGlConfig = {
+    Evas_GL_Config evasGLConfig = {
         EVAS_GL_RGBA_8888,
         EVAS_GL_DEPTH_BIT_8,
         EVAS_GL_STENCIL_NONE,
@@ -736,66 +472,60 @@ bool EwkViewImpl::createGLSurface(const IntSize& viewSize)
         EVAS_GL_MULTISAMPLE_NONE
     };
 
-    ASSERT(!evasGlSurface);
-    evasGlSurface = evas_gl_surface_create(evasGl, &evasGlConfig, viewSize.width(), viewSize.height());
-    if (!evasGlSurface)
+    ASSERT(!m_evasGLSurface);
+    m_evasGLSurface = EvasGLSurface::create(evasGL(), &evasGLConfig, viewSize);
+    if (!m_evasGLSurface)
         return false;
 
     Evas_Native_Surface nativeSurface;
-    evas_gl_native_surface_get(evasGl, evasGlSurface, &nativeSurface);
+    evas_gl_native_surface_get(evasGL(), evasGLSurface(), &nativeSurface);
     evas_object_image_native_surface_set(sd->image, &nativeSurface);
+
+    evas_gl_make_current(evasGL(), evasGLSurface(), evasGLContext());
+
+    Evas_GL_API* gl = evas_gl_api_get(evasGL());
+    gl->glViewport(0, 0, viewSize.width() + sd->view.x, viewSize.height() + sd->view.y);
 
     return true;
 }
 
 bool EwkViewImpl::enterAcceleratedCompositingMode()
 {
-    if (evasGl) {
+    if (m_evasGL) {
         EINA_LOG_DOM_WARN(_ewk_log_dom, "Accelerated compositing mode already entered.");
         return false;
     }
 
     Evas* evas = evas_object_evas_get(m_view);
-    evasGl = evas_gl_new(evas);
-    if (!evasGl)
+    m_evasGL = adoptPtr(evas_gl_new(evas));
+    if (!m_evasGL)
         return false;
 
-    evasGlContext = evas_gl_context_create(evasGl, 0);
-    if (!evasGlContext) {
-        evas_gl_free(evasGl);
-        evasGl = 0;
+    m_evasGLContext = EvasGLContext::create(evasGL());
+    if (!m_evasGLContext) {
+        EINA_LOG_DOM_WARN(_ewk_log_dom, "Failed to create GLContext.");
+        m_evasGL.clear();
         return false;
     }
 
     if (!createGLSurface(size())) {
-        evas_gl_context_destroy(evasGl, evasGlContext);
-        evasGlContext = 0;
-
-        evas_gl_free(evasGl);
-        evasGl = 0;
+        EINA_LOG_DOM_WARN(_ewk_log_dom, "Failed to create GLSurface.");
+        m_evasGLContext.clear();
+        m_evasGL.clear();
         return false;
     }
 
-    pageViewportControllerClient->setRendererActive(true);
+    m_pageViewportControllerClient->setRendererActive(true);
     return true;
 }
 
 bool EwkViewImpl::exitAcceleratedCompositingMode()
 {
-    EINA_SAFETY_ON_NULL_RETURN_VAL(evasGl, false);
+    EINA_SAFETY_ON_NULL_RETURN_VAL(m_evasGL, false);
 
-    if (evasGlSurface) {
-        evas_gl_surface_destroy(evasGl, evasGlSurface);
-        evasGlSurface = 0;
-    }
-
-    if (evasGlContext) {
-        evas_gl_context_destroy(evasGl, evasGlContext);
-        evasGlContext = 0;
-    }
-
-    evas_gl_free(evasGl);
-    evasGl = 0;
+    m_evasGLSurface.clear();
+    m_evasGLContext.clear();
+    m_evasGL.clear();
 
     return true;
 }
@@ -806,14 +536,20 @@ bool EwkViewImpl::exitAcceleratedCompositingMode()
  * @internal
  * Requests to show external color picker.
  */
-void EwkViewImpl::requestColorPicker(int r, int g, int b, int a, WKColorPickerResultListenerRef listener)
+void EwkViewImpl::requestColorPicker(WKColorPickerResultListenerRef listener, const WebCore::Color& color)
 {
     Ewk_View_Smart_Data* sd = smartData();
     EINA_SAFETY_ON_NULL_RETURN(sd->api->input_picker_color_request);
 
-    m_colorPickerResultListener = listener;
+    if (!sd->api->input_picker_color_request)
+        return;
 
-    sd->api->input_picker_color_request(sd, r, g, b, a);
+    if (m_colorPicker)
+        dismissColorPicker();
+
+    m_colorPicker = Ewk_Color_Picker::create(listener, color);
+
+    sd->api->input_picker_color_request(sd, m_colorPicker.get());
 }
 
 /**
@@ -822,50 +558,23 @@ void EwkViewImpl::requestColorPicker(int r, int g, int b, int a, WKColorPickerRe
  */
 void EwkViewImpl::dismissColorPicker()
 {
+    if (!m_colorPicker)
+        return;
+
     Ewk_View_Smart_Data* sd = smartData();
     EINA_SAFETY_ON_NULL_RETURN(sd->api->input_picker_color_dismiss);
 
-    m_colorPickerResultListener.clear();
+    if (sd->api->input_picker_color_dismiss)
+        sd->api->input_picker_color_dismiss(sd);
 
-    sd->api->input_picker_color_dismiss(sd);
+    m_colorPicker.clear();
 }
 #endif
-
-/**
- * @internal
- * informs that the view's back / forward list has changed.
- *
- * Emits signal: "back,forward,list,changed".
- */
-void EwkViewImpl::informBackForwardListChange()
-{
-    evas_object_smart_callback_call(m_view, "back,forward,list,changed", 0);
-}
-
-/**
- * @internal
- * Web process has crashed.
- *
- * Emits signal: "webprocess,crashed" with pointer to crash handling boolean.
- */
-void EwkViewImpl::informWebProcessCrashed()
-{
-    bool handled = false;
-    evas_object_smart_callback_call(m_view, "webprocess,crashed", &handled);
-
-    if (!handled) {
-        CString url = pageProxy->urlAtProcessExit().utf8();
-        WARN("WARNING: The web process experienced a crash on '%s'.\n", url.data());
-
-        // Display an error page
-        ewk_view_html_string_load(m_view, "The web process has crashed.", 0, url.data());
-    }
-}
 
 void EwkViewImpl::informContentsSizeChange(const IntSize& size)
 {
 #if USE(COORDINATED_GRAPHICS)
-    pageViewportControllerClient->didChangeContentsSize(size);
+    m_pageViewportControllerClient->didChangeContentsSize(size);
 #else
     UNUSED_PARAM(size);
 #endif
@@ -874,27 +583,36 @@ void EwkViewImpl::informContentsSizeChange(const IntSize& size)
 COMPILE_ASSERT_MATCHING_ENUM(EWK_TEXT_DIRECTION_RIGHT_TO_LEFT, RTL);
 COMPILE_ASSERT_MATCHING_ENUM(EWK_TEXT_DIRECTION_LEFT_TO_RIGHT, LTR);
 
-void EwkViewImpl::requestPopupMenu(WebPopupMenuProxyEfl* popupMenu, const IntRect& rect, TextDirection textDirection, double pageScaleFactor, const Vector<WebPopupItem>& items, int32_t selectedIndex)
+void EwkViewImpl::requestPopupMenu(WebPopupMenuProxyEfl* popupMenuProxy, const IntRect& rect, TextDirection textDirection, double pageScaleFactor, const Vector<WebPopupItem>& items, int32_t selectedIndex)
 {
     Ewk_View_Smart_Data* sd = smartData();
     ASSERT(sd->api);
 
-    ASSERT(popupMenu);
+    ASSERT(popupMenuProxy);
 
     if (!sd->api->popup_menu_show)
         return;
 
-    if (popupMenuProxy)
-        ewk_view_popup_menu_close(m_view);
-    popupMenuProxy = popupMenu;
+    if (m_popupMenu)
+        closePopupMenu();
 
-    Eina_List* popupItems = 0;
-    const size_t size = items.size();
-    for (size_t i = 0; i < size; ++i)
-        popupItems = eina_list_append(popupItems, Ewk_Popup_Menu_Item::create(items[i]).leakPtr());
-    popupMenuItems = popupItems;
+    m_popupMenu = Ewk_Popup_Menu::create(this, popupMenuProxy, items, selectedIndex);
 
-    sd->api->popup_menu_show(sd, rect, static_cast<Ewk_Text_Direction>(textDirection), pageScaleFactor, popupItems, selectedIndex);
+    sd->api->popup_menu_show(sd, rect, static_cast<Ewk_Text_Direction>(textDirection), pageScaleFactor, m_popupMenu.get());
+}
+
+void EwkViewImpl::closePopupMenu()
+{
+    if (!m_popupMenu)
+        return;
+
+    Ewk_View_Smart_Data* sd = smartData();
+    ASSERT(sd->api);
+
+    if (sd->api->popup_menu_hide)
+        sd->api->popup_menu_hide(sd);
+
+    m_popupMenu.clear();
 }
 
 /**
@@ -962,44 +680,13 @@ unsigned long long EwkViewImpl::informDatabaseQuotaReached(const String& databas
 
 /**
  * @internal
- * The view was requested to update text input state
- */
-void EwkViewImpl::updateTextInputState()
-{
-    if (!m_inputMethodContext)
-        return;
-
-    const EditorState& editor = pageProxy->editorState();
-
-    if (editor.isContentEditable) {
-        if (m_inputMethodContextFocused)
-            return;
-
-        ecore_imf_context_reset(m_inputMethodContext.get());
-        ecore_imf_context_focus_in(m_inputMethodContext.get());
-        m_inputMethodContextFocused = true;
-    } else {
-        if (!m_inputMethodContextFocused)
-            return;
-
-        if (editor.hasComposition)
-            pageProxy->cancelComposition();
-
-        m_inputMethodContextFocused = false;
-        ecore_imf_context_reset(m_inputMethodContext.get());
-        ecore_imf_context_focus_out(m_inputMethodContext.get());
-    }
-}
-
-/**
- * @internal
  * The url of view was changed by the frame loader.
  *
  * Emits signal: "url,changed" with pointer to new url string.
  */
 void EwkViewImpl::informURLChange()
 {
-    String activeURL = pageProxy->activeURL();
+    String activeURL = m_pageProxy->activeURL();
     if (activeURL.isEmpty())
         return;
 
@@ -1104,3 +791,13 @@ void EwkViewImpl::onTouchMove(void* /* data */, Evas* /* canvas */, Evas_Object*
     viewImpl->feedTouchEvents(EWK_TOUCH_MOVE);
 }
 #endif
+
+void EwkViewImpl::onFaviconChanged(const char* pageURL, void* eventInfo)
+{
+    EwkViewImpl* viewImpl = static_cast<EwkViewImpl*>(eventInfo);
+
+    if (!viewImpl->url() || strcasecmp(viewImpl->url(), pageURL))
+        return;
+
+    viewImpl->informIconChange();
+}

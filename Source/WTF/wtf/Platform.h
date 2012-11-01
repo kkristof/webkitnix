@@ -891,7 +891,8 @@
 /* If possible, try to enable a disassembler. This is optional. We proceed in two
    steps: first we try to find some disassembler that we can use, and then we
    decide if the high-level disassembler API can be enabled. */
-#if !defined(WTF_USE_UDIS86) && ENABLE(JIT) && PLATFORM(MAC) && (CPU(X86) || CPU(X86_64))
+#if !defined(WTF_USE_UDIS86) && ENABLE(JIT) && (PLATFORM(MAC) || (PLATFORM(QT) && OS(LINUX))) \
+    && (CPU(X86) || CPU(X86_64))
 #define WTF_USE_UDIS86 1
 #endif
 
@@ -1179,6 +1180,14 @@
 #if ENABLE(NOTIFICATIONS) && PLATFORM(MAC)
 #define ENABLE_TEXT_NOTIFICATIONS_ONLY 1
 #endif
+
+#if !defined(ENABLE_EXTERNAL_SVG_REFERENCES)
+#if PLATFORM(CHROMIUM)
+#define ENABLE_EXTERNAL_SVG_REFERENCES 0
+#else
+#define ENABLE_EXTERNAL_SVG_REFERENCES 1
+#endif // PLATFORM(CHROMIUM)
+#endif // !defined(ENABLE_EXTERNAL_SVG_REFERENCES)
 
 #if !defined(WTF_USE_ZLIB) && !PLATFORM(QT)
 #define WTF_USE_ZLIB 1

@@ -181,7 +181,7 @@ sub AddIncludesForType
     }
 }
 
-sub NeedsToVisitDOMWrapper
+sub NeedsCustomOpaqueRootForGC
 {
     my $dataNode = shift;
     return GetGenerateIsReachable($dataNode) || GetCustomIsReachable($dataNode);
@@ -199,7 +199,7 @@ sub GetCustomIsReachable
     return $dataNode->extendedAttributes->{"CustomIsReachable"} || $dataNode->extendedAttributes->{"V8CustomIsReachable"};
 }
 
-sub GenerateVisitDOMWrapper
+sub GenerateOpaqueRootForGC
 {
     my ($dataNode, $implClassName) = @_;
 
@@ -208,8 +208,9 @@ sub GenerateVisitDOMWrapper
     }
 
     push(@implContent, <<END);
-void V8${implClassName}::visitDOMWrapper(DOMDataStore* store, void* object, v8::Persistent<v8::Object> wrapper)
+void* V8${implClassName}::opaqueRootForGC(void* object, v8::Persistent<v8::Object> wrapper)
 {
+    ASSERT(!wrapper.IsIndependent());
     ${implClassName}* impl = static_cast<${implClassName}*>(object);
 END
     if (GetGenerateIsReachable($dataNode) eq  "ImplDocument" ||
@@ -217,6 +218,8 @@ END
         GetGenerateIsReachable($dataNode) eq  "ImplOwnerRoot" ||
         GetGenerateIsReachable($dataNode) eq  "ImplOwnerNodeRoot" ||
         GetGenerateIsReachable($dataNode) eq  "ImplBaseRoot") {
+
+        $implIncludes{"V8GCController.h"} = 1;
 
         my $methodName;
         $methodName = "document" if (GetGenerateIsReachable($dataNode) eq "ImplDocument");
@@ -226,17 +229,13 @@ END
         $methodName = "base" if (GetGenerateIsReachable($dataNode) eq "ImplBaseRoot");
 
         push(@implContent, <<END);
-    if (Node* owner = impl->${methodName}()) {
-        v8::Persistent<v8::Object> ownerWrapper = store->domNodeMap().get(owner);
-        if (!ownerWrapper.IsEmpty()) {
-            v8::Persistent<v8::Value> value = wrapper;
-            v8::V8::AddImplicitReferences(ownerWrapper, &value, 1);
-        }
-    }
+    if (Node* owner = impl->${methodName}())
+        return V8GCController::opaqueRootForGC(owner);
 END
     }
 
     push(@implContent, <<END);
+    return object;
 }
 
 END
@@ -387,8 +386,8 @@ END
     static WrapperTypeInfo info;
 END
 
-    if (NeedsToVisitDOMWrapper($dataNode)) {
-        push(@headerContent, "    static void visitDOMWrapper(DOMDataStore*, void*, v8::Persistent<v8::Object>);\n");
+    if (NeedsCustomOpaqueRootForGC($dataNode)) {
+        push(@headerContent, "    static void* opaqueRootForGC(void*, v8::Persistent<v8::Object>);\n");
     }
 
     if ($dataNode->extendedAttributes->{"ActiveDOMObject"}) {
@@ -758,6 +757,13 @@ sub IsConstructable
     return $dataNode->extendedAttributes->{"CustomConstructor"} || $dataNode->extendedAttributes->{"V8CustomConstructor"} || $dataNode->extendedAttributes->{"Constructor"} || $dataNode->extendedAttributes->{"ConstructorTemplate"};
 }
 
+sub IsReadonly
+{
+    my $attribute = shift;
+    my $attrExt = $attribute->signature->extendedAttributes;
+    return ($attribute->type =~ /readonly/ || $attrExt->{"V8ReadOnly"}) && !$attrExt->{"Replaceable"};
+}
+
 sub GenerateDomainSafeFunctionGetter
 {
     my $function = shift;
@@ -1011,10 +1017,10 @@ END
     # Special case for readonly or Replaceable attributes (with a few exceptions). This attempts to ensure that JS wrappers don't get
     # garbage-collected prematurely when their lifetime is strongly tied to their owner. We accomplish this by inserting a reference to
     # the newly created wrapper into an internal field of the holder object.
-    if (!IsNodeSubType($dataNode) && $attrName ne "self" && (IsWrapperType($returnType) && ($attribute->type =~ /^readonly/ || $attribute->signature->extendedAttributes->{"Replaceable"} || $attrName eq "location")
+    if (!IsNodeSubType($dataNode) && $attrName ne "self" && IsWrapperType($returnType) && (IsReadonly($attribute) || $attribute->signature->extendedAttributes->{"Replaceable"} || $attrName eq "location")
         && $returnType ne "EventTarget" && $returnType ne "SerializedScriptValue" && $returnType ne "DOMWindow" 
         && $returnType ne "MessagePortArray"
-        && $returnType !~ /SVG/ && $returnType !~ /HTML/ && !IsDOMNodeType($returnType))) {
+        && $returnType !~ /SVG/ && $returnType !~ /HTML/ && !IsDOMNodeType($returnType)) {
 
         my $arrayType = $codeGenerator->GetArrayType($returnType);
         if ($arrayType) {
@@ -1708,13 +1714,13 @@ sub GenerateParametersCheck
 
     foreach my $parameter (@{$function->parameters}) {
         TranslateParameter($parameter);
-
-        my $parameterName = $parameter->name;
+        my $nativeType = GetNativeTypeFromSignature($parameter, $paramIndex);
 
         # Optional arguments with [Optional] should generate an early call with fewer arguments.
         # Optional arguments with [Optional=...] should not generate the early call.
+        # Optional Dictionary arguments always considered to have default of empty dictionary.
         my $optional = $parameter->extendedAttributes->{"Optional"};
-        if ($optional && $optional ne "DefaultIsUndefined" && $optional ne "DefaultIsNullString" && !$parameter->extendedAttributes->{"Callback"}) {
+        if ($optional && $optional ne "DefaultIsUndefined" && $optional ne "DefaultIsNullString" && $nativeType ne "Dictionary" && !$parameter->extendedAttributes->{"Callback"}) {
             $parameterCheckString .= "    if (args.Length() <= $paramIndex) {\n";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $implClassName, %replacements);
             $parameterCheckString .= $functionCall;
@@ -1726,6 +1732,7 @@ sub GenerateParametersCheck
             $parameterDefaultPolicy = "DefaultIsNullString";
         }
 
+        my $parameterName = $parameter->name;
         if (GetIndexOf($parameterName, @paramTransferListNames) != -1) {
             $replacements{$parameterName} = "messagePortArray" . ucfirst($parameterName);
             $paramIndex++;
@@ -1733,7 +1740,6 @@ sub GenerateParametersCheck
         }
 
         AddToImplIncludes("ExceptionCode.h");
-        my $nativeType = GetNativeTypeFromSignature($parameter, $paramIndex);
         if ($parameter->extendedAttributes->{"Callback"}) {
             my $className = GetCallbackClassName($parameter->type);
             AddToImplIncludes("$className.h");
@@ -2196,7 +2202,7 @@ sub GenerateSingleBatchedAttribute
         $accessControl = "v8::ALL_CAN_WRITE";
     } elsif ($attrExt->{"DoNotCheckSecurity"}) {
         $accessControl = "v8::ALL_CAN_READ";
-        if (!($attribute->type =~ /^readonly/) && !($attrExt->{"V8ReadOnly"})) {
+        if (!IsReadonly($attribute)) {
             $accessControl .= " | v8::ALL_CAN_WRITE";
         }
     }
@@ -2273,7 +2279,7 @@ sub GenerateSingleBatchedAttribute
     }
 
     # Read only attributes
-    if ($attribute->type =~ /^readonly/ || $attrExt->{"V8ReadOnly"}) {
+    if (IsReadonly($attribute)) {
         $setter = "0";
     }
 
@@ -2587,7 +2593,7 @@ sub GenerateImplementation
     AddIncludesForType($interfaceName);
 
     my $toActive = $dataNode->extendedAttributes->{"ActiveDOMObject"} ? "${className}::toActiveDOMObject" : "0";
-    my $domVisitor = NeedsToVisitDOMWrapper($dataNode) ? "${className}::visitDOMWrapper" : "0";
+    my $rootForGC = NeedsCustomOpaqueRootForGC($dataNode) ? "${className}::opaqueRootForGC" : "0";
 
     # Find the super descriptor.
     my $parentClass = "";
@@ -2604,7 +2610,7 @@ sub GenerateImplementation
 
     my $WrapperTypePrototype = $dataNode->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
 
-    push(@implContentDecls, "WrapperTypeInfo ${className}::info = { ${className}::GetTemplate, ${className}::derefObject, $toActive, $domVisitor, ${className}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n\n");
+    push(@implContentDecls, "WrapperTypeInfo ${className}::info = { ${className}::GetTemplate, ${className}::derefObject, $toActive, $rootForGC, ${className}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n\n");
     push(@implContentDecls, "namespace ${interfaceName}V8Internal {\n\n");
 
     push(@implContentDecls, "template <typename T> void V8_USE(T) { }\n\n");
@@ -2652,8 +2658,7 @@ sub GenerateImplementation
             $hasReplaceable = 1;
         } elsif (!$attribute->signature->extendedAttributes->{"CustomSetter"} &&
             !$attribute->signature->extendedAttributes->{"V8CustomSetter"} &&
-            $attribute->type !~ /^readonly/ &&
-            !$attribute->signature->extendedAttributes->{"V8ReadOnly"}) {
+            !IsReadonly($attribute)) {
             GenerateNormalAttrSetter($attribute, $dataNode, $implClassName, $interfaceName);
         }
     }
@@ -2666,8 +2671,8 @@ sub GenerateImplementation
         GenerateReplaceableAttrSetter($dataNode, $implClassName);
     }
 
-    if (NeedsToVisitDOMWrapper($dataNode)) {
-        GenerateVisitDOMWrapper($dataNode, $implClassName);
+    if (NeedsCustomOpaqueRootForGC($dataNode)) {
+        GenerateOpaqueRootForGC($dataNode, $implClassName);
     }
 
     if ($dataNode->extendedAttributes->{"TypedArray"}) {
@@ -3480,9 +3485,7 @@ sub GetDomMapName
     my $dataNode = shift;
     my $type = shift;
 
-    return "ActiveDOMNode" if (IsNodeSubType($dataNode) && $dataNode->extendedAttributes->{"ActiveDOMObject"});
     return "DOMNode" if IsNodeSubType($dataNode);
-    return "ActiveDOMObject" if $dataNode->extendedAttributes->{"ActiveDOMObject"};
     return "DOMObject";
 }
 

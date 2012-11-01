@@ -46,6 +46,7 @@ class Frame;
 class InspectorFrontendChannelDummy;
 class InternalSettings;
 class Node;
+class Page;
 class PagePopupController;
 class Range;
 class ScriptExecutionContext;
@@ -60,6 +61,8 @@ class Internals : public RefCounted<Internals>
 public:
     static PassRefPtr<Internals> create(Document*);
     virtual ~Internals();
+
+    static void resetToConsistentState(Page*);
 
     String elementRenderTreeAsText(Element*, ExceptionCode&);
 
@@ -156,9 +159,6 @@ public:
     Vector<String> userPreferredLanguages() const;
     void setUserPreferredLanguages(const Vector<String>&);
 
-    void setShouldDisplayTrackKind(Document*, const String& kind, bool, ExceptionCode&);
-    bool shouldDisplayTrackKind(Document*, const String& kind, ExceptionCode&);
-
     unsigned wheelEventHandlerCount(Document*, ExceptionCode&);
     unsigned touchEventHandlerCount(Document*, ExceptionCode&);
 
@@ -195,6 +195,8 @@ public:
     };
     String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
     String layerTreeAsText(Document*, ExceptionCode&) const;
+    String repaintRectsAsText(Document*, ExceptionCode&) const;
+    String scrollingStateTreeAsText(Document*, ExceptionCode&) const;
 
     void garbageCollectDocumentResources(Document*, ExceptionCode&) const;
 
@@ -206,6 +208,8 @@ public:
     Vector<String> consoleMessageArgumentCounts(Document*) const;
     PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
+    void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionCode&);
+    void setJavaScriptProfilingEnabled(bool enabled, ExceptionCode&);
 #endif
 
     String counterValue(Element*);
@@ -230,6 +234,9 @@ public:
     PassRefPtr<MallocStatistics> mallocStatistics() const;
 
     PassRefPtr<DOMStringList> getReferencedFilePaths() const;
+
+    void startTrackingRepaints(Document*, ExceptionCode&);
+    void stopTrackingRepaints(Document*, ExceptionCode&);
 
 private:
     explicit Internals(Document*);

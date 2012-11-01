@@ -39,7 +39,6 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._scriptsPanel = scriptsPanel;
     this._breakpointManager = WebInspector.breakpointManager;
     this._uiSourceCode = uiSourceCode;
-    this._scriptFile = this._uiSourceCode.scriptFile();
 
     var locations = this._breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode);
     for (var i = 0; i < locations.length; ++i)
@@ -59,17 +58,12 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
 
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._onFormattedChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._onWorkingCopyChanged, this);
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._onWorkingCopyCommitted, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessageAdded, this._consoleMessageAdded, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessageRemoved, this._consoleMessageRemoved, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.ConsoleMessagesCleared, this._consoleMessagesCleared, this);
-
-    if (this._scriptFile) {
-        this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.WillMergeToVM, this._willMergeToVM, this);
-        this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
-        this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.WillDivergeFromVM, this._willDivergeFromVM, this);
-        this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
-    }
+    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._onSourceMappingChanged, this);
+    
+    this._updateScriptFile();
 }
 
 WebInspector.JavaScriptSourceFrame.prototype = {
@@ -123,27 +117,12 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._innerSetContent(this._uiSourceCode.workingCopy());
     },
 
-    /**
-     * @param {WebInspector.Event} event
-     */
-    _onWorkingCopyCommitted: function(event)
-    {
-        this._innerSetContent(this._uiSourceCode.workingCopy());
-    },
-
     _innerSetContent: function(content)
     {
         if (this._isSettingWorkingCopy || this._isCommittingEditing)
             return;
 
-        if (this._uiSourceCode.togglingFormatter())
-            this.setContent(content, false, this._uiSourceCode.mimeType());
-        else {
-            var breakpointLocations = this._breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode);
-            for (var i = 0; i < breakpointLocations.length; ++i)
-                breakpointLocations[i].breakpoint.remove();
-            this.setContent(content, false, this._uiSourceCode.mimeType());
-        }
+        this.setContent(content, false, this._uiSourceCode.mimeType());
     },
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)
@@ -336,7 +315,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return;
         }
         var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
-        selectedCallFrame.evaluate(this._highlightElement.textContent, objectGroupName, false, true, false, showObjectPopover.bind(this));
+        selectedCallFrame.evaluate(this._highlightElement.textContent, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
     },
 
     _onHidePopover: function()
@@ -549,6 +528,31 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _consoleMessagesCleared: function(event)
     {
         this.clearMessages();
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onSourceMappingChanged: function(event)
+    {
+        this._updateScriptFile();
+    },
+
+    _updateScriptFile: function()
+    {
+        if (this._scriptFile) {
+            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.WillMergeToVM, this._willMergeToVM, this);
+            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.WillDivergeFromVM, this._willDivergeFromVM, this);
+            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+        }
+        this._scriptFile = this._uiSourceCode.scriptFile();
+        if (this._scriptFile) {
+            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.WillMergeToVM, this._willMergeToVM, this);
+            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.WillDivergeFromVM, this._willDivergeFromVM, this);
+            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+        }
     },
 
     onTextEditorContentLoaded: function()

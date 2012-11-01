@@ -725,6 +725,14 @@ AC_ARG_ENABLE(media_stream,
               [],[enable_media_stream=$enable_unstable_features])
 AC_MSG_RESULT([$enable_media_stream])
 
+# check whether to enable XHR timeout support
+AC_MSG_CHECKING([whether to enable XHR timeout support])
+AC_ARG_ENABLE(xhr_timeout,
+              AC_HELP_STRING([--enable-xhr-timeout],
+                             [enable support for XHR timeout [default=yes]]),
+              [],[enable_xhr_timeout="yes"])
+AC_MSG_RESULT([$enable_xhr_timeout])
+
 # check whether to enable XSLT support
 AC_MSG_CHECKING([whether to enable XSLT support])
 AC_ARG_ENABLE(xslt,
@@ -819,9 +827,15 @@ AC_MSG_RESULT([$enable_fast_malloc])
 # check whether to enable debug symbols
 AC_MSG_CHECKING([whether to enable debug symbols])
 AC_ARG_ENABLE(debug_symbols,
-              AC_HELP_STRING([--enable-debug-symbols],
+              AC_HELP_STRING([--enable-debug-symbols=yes|no|min|full],
                              [enable debug symbols default=no, default=yes for debug builds]),
               [],[if test "$enable_debug" = "yes"; then enable_debug_symbols="yes"; else enable_debug_symbols="no"; fi])
+
+case "$enable_debug_symbols" in
+  yes) enable_debug_symbols="full" ;;
+  no|min|full) ;;
+  *) AC_MSG_ERROR([Invalid debug symbols option: must be yes, no, min or full.]) ;;
+esac
 AC_MSG_RESULT([$enable_debug_symbols])
 
 # check whether to enable debug features
@@ -875,6 +889,14 @@ if test "$enable_unstable_features" = "yes" && test "$enable_accelerated_composi
 fi
 AC_MSG_RESULT([$enable_css_filters])
 
+# CSS Device Adaptation
+AC_MSG_CHECKING([whether to enable CSS Device Adaptation])
+AC_ARG_ENABLE(css_device_adaptation,
+              AC_HELP_STRING([--enable-css-device-adaptation],
+                             [enable support for CSS Device Adaptation [default=no]]),
+              [],[enable_css_device_adaptation="no"])
+AC_MSG_RESULT([$enable_css_device_adaptation])
+
 G_IR_SCANNER=
 G_IR_COMPILER=
 G_IR_GENERATE=
@@ -914,7 +936,10 @@ if test "$host_cpu" = "sh4"; then
 fi
 
 # Add '-g' flag to gcc to build with debug symbols
-if test "$enable_debug_symbols" = "yes"; then
+if test "$enable_debug_symbols" = "min"; then
+   CXXFLAGS="$CXXFLAGS -g1"
+   CFLAGS="$CFLAGS -g1"
+elif test "$enable_debug_symbols" != "no"; then
    CXXFLAGS="$CXXFLAGS -g"
    CFLAGS="$CFLAGS -g"
 fi
@@ -1166,6 +1191,7 @@ AM_CONDITIONAL([ENABLE_DEBUG],[test "$enable_debug_features" = "yes"])
 AM_CONDITIONAL([ENABLE_UNSTABLE_FEATURES],[test "$enable_unstable_features" = "yes"])
 AM_CONDITIONAL([ENABLE_WEBGL],[test "$enable_webgl" = "yes"])
 AM_CONDITIONAL([ENABLE_GAMEPAD],[test "$enable_gamepad" = "yes"])
+AM_CONDITIONAL([ENABLE_XHR_TIMEOUT],[test "$enable_xhr_timeout" = "yes"])
 AM_CONDITIONAL([ENABLE_XSLT],[test "$enable_xslt" = "yes"])
 AM_CONDITIONAL([ENABLE_FILTERS],[test "$enable_filters" = "yes"])
 AM_CONDITIONAL([ENABLE_GEOLOCATION], [test "$enable_geolocation" = "yes"])
@@ -1181,6 +1207,7 @@ AM_CONDITIONAL([ENABLE_OPCODE_STATS],[test "$enable_opcode_stats" = "yes"])
 AM_CONDITIONAL([ENABLE_WEBKIT2],[test "$enable_webkit2" = "yes"])
 AM_CONDITIONAL([ENABLE_PLUGIN_PROCESS],[test "$enable_plugin_process" = "yes"])
 AM_CONDITIONAL([ENABLE_SPELLCHECK],[test "$enable_spellcheck" = "yes"])
+AM_CONDITIONAL([ENABLE_CSS_DEVICE_ADAPTATION],[test "$enable_css_device_adaptation" = "yes"])
 AM_CONDITIONAL([ENABLE_CSS_FILTERS],[test "$enable_css_filters" = "yes"])
 AM_CONDITIONAL([ENABLE_CSS_SHADERS],[test "$enable_css_shaders" = "yes"])
 
@@ -1251,6 +1278,7 @@ Features:
  Spellcheck support                                       : $enable_spellcheck
  Web Audio support                                        : $enable_web_audio
  WebGL                                                    : $enable_webgl
+ XHR timeout support                                      : $enable_xhr_timeout
  XSLT support                                             : $enable_xslt
 
 WebKit2 support:

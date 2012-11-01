@@ -24,21 +24,19 @@
  */
 
 #include "config.h"
-#include "Localizer.h"
+#include "PlatformLocale.h"
 #include <wtf/DateMath.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
-class LocaleNone : public Localizer {
+class LocaleNone : public Locale {
 public:
     virtual ~LocaleNone();
 
 private:
-    virtual void initializeLocalizerData() OVERRIDE FINAL;
-    virtual double parseDateTime(const String&, DateComponents::Type) OVERRIDE;
+    virtual void initializeLocaleData() OVERRIDE FINAL;
 #if ENABLE(CALENDAR_PICKER)
-    virtual String dateFormatText() OVERRIDE;
     virtual bool isRTL() OVERRIDE;
 #endif
 #if ENABLE(CALENDAR_PICKER) || ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -47,10 +45,14 @@ private:
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
+    virtual String timeFormat() OVERRIDE;
+    virtual String shortTimeFormat() OVERRIDE;
     virtual const Vector<String>& shortMonthLabels() OVERRIDE;
     virtual const Vector<String>& standAloneMonthLabels() OVERRIDE;
     virtual const Vector<String>& shortStandAloneMonthLabels() OVERRIDE;
+    virtual const Vector<String>& timeAMPMLabels() OVERRIDE;
 
+    Vector<String> m_timeAMPMLabels;
     Vector<String> m_shortMonthLabels;
 #endif
 #if ENABLE(CALENDAR_PICKER) || ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -58,7 +60,7 @@ private:
 #endif
 };
 
-PassOwnPtr<Localizer> Localizer::create(const AtomicString&)
+PassOwnPtr<Locale> Locale::create(const AtomicString&)
 {
     return adoptPtr(new LocaleNone());
 }
@@ -67,21 +69,11 @@ LocaleNone::~LocaleNone()
 {
 }
 
-void LocaleNone::initializeLocalizerData()
+void LocaleNone::initializeLocaleData()
 {
-}
-
-double LocaleNone::parseDateTime(const String&, DateComponents::Type)
-{
-    return std::numeric_limits<double>::quiet_NaN();
 }
 
 #if ENABLE(CALENDAR_PICKER)
-String LocaleNone::dateFormatText()
-{
-    return ASCIILiteral("Year-Month-Day");
-}
-
 bool LocaleNone::isRTL()
 {
     return false;
@@ -111,6 +103,16 @@ String LocaleNone::monthFormat()
     return ASCIILiteral("yyyy-MM");
 }
 
+String LocaleNone::timeFormat()
+{
+    return ASCIILiteral("HH:mm:ss");
+}
+
+String LocaleNone::shortTimeFormat()
+{
+    return ASCIILiteral("HH:mm");
+}
+
 const Vector<String>& LocaleNone::shortMonthLabels()
 {
     if (!m_shortMonthLabels.isEmpty())
@@ -130,6 +132,17 @@ const Vector<String>& LocaleNone::standAloneMonthLabels()
 {
     return monthLabels();
 }
+
+const Vector<String>& LocaleNone::timeAMPMLabels()
+{
+    if (!m_timeAMPMLabels.isEmpty())
+        return m_timeAMPMLabels;
+    m_timeAMPMLabels.reserveCapacity(2);
+    m_timeAMPMLabels.append("AM");
+    m_timeAMPMLabels.append("PM");
+    return m_timeAMPMLabels;
+}
+
 #endif
 
 } // namespace WebCore

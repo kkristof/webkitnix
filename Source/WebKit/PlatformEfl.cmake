@@ -80,6 +80,7 @@ ENDIF ()
 
 IF (WTF_USE_TEXTURE_MAPPER_GL)
   LIST(APPEND WebKit_INCLUDE_DIRECTORIES
+    "${WEBCORE_DIR}/platform/graphics/surfaces"
     "${WEBCORE_DIR}/platform/graphics/texmap"
     "${THIRDPARTY_DIR}/ANGLE/include/GLSLANG"
   )
@@ -250,6 +251,7 @@ TARGET_LINK_LIBRARIES(ewkTestUtils ${EWKUnitTests_LIBRARIES})
 SET(WEBKIT_EFL_TEST_DIR "${WEBKIT_DIR}/efl/tests/")
 
 SET(EWKUnitTests_BINARIES
+    test_ewk_contextmenu
     test_ewk_frame
     test_ewk_view
 )

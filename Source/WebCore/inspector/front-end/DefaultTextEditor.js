@@ -395,6 +395,8 @@ WebInspector.DefaultTextEditor.prototype = {
         var handleRedo = this._mainPanel.handleUndoRedo.bind(this._mainPanel, true);
         this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.CtrlOrMeta)] = handleUndo;
         this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.Shift | modifiers.CtrlOrMeta)] = handleRedo;
+        if (!WebInspector.isMac())
+            this._shortcuts[WebInspector.KeyboardShortcut.makeKey("y", modifiers.CtrlOrMeta)] = handleRedo;
 
         var handleTabKey = this._mainPanel.handleTabKeyPress.bind(this._mainPanel, false);
         var handleShiftTabKey = this._mainPanel.handleTabKeyPress.bind(this._mainPanel, true);
@@ -418,7 +420,7 @@ WebInspector.DefaultTextEditor.prototype = {
         var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
         if (anchor)
             return;
-        var contextMenu = new WebInspector.ContextMenu();
+        var contextMenu = new WebInspector.ContextMenu(event);
         var target = event.target.enclosingNodeOrSelfWithClass("webkit-line-number");
         if (target)
             this._delegate.populateLineGutterContextMenu(contextMenu, target.lineNumber);
@@ -426,7 +428,7 @@ WebInspector.DefaultTextEditor.prototype = {
             target = this._mainPanel._enclosingLineRowOrSelf(event.target);
             this._delegate.populateTextAreaContextMenu(contextMenu, target && target.lineNumber);
         }
-        contextMenu.show(event);
+        contextMenu.show();
     },
 
     _handleScrollChanged: function(event)

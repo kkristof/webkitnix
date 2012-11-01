@@ -33,6 +33,7 @@
 #elif PLATFORM(EFL)
 #include "ewk_touch.h"
 #include <Evas.h>
+#include <WebCore/AffineTransform.h>
 #elif PLATFORM(NIX)
 #include <NixEvents.h>
 #endif
@@ -44,7 +45,7 @@ public:
 #if PLATFORM(QT)
     explicit NativeWebTouchEvent(const QTouchEvent*, const QTransform& fromItemTransform);
 #elif PLATFORM(EFL)
-    NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const Evas_Point*, double timestamp);
+    NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const WebCore::AffineTransform& toWebContent, const WebCore::AffineTransform& toDeviceScreen, double timestamp);
 #elif PLATFORM(NIX)
     NativeWebTouchEvent(const Nix::TouchEvent& event);
 #endif

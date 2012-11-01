@@ -29,6 +29,7 @@
 #include "SkBitmap.h"
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebFloatPoint.h"
 #include "WebNonCopyable.h"
 #include "WebPrivateOwnPtr.h"
 #include "WebSize.h"
@@ -95,6 +96,10 @@ public:
     // mode).
     virtual WebSize deviceViewportSize() const = 0;
 
+    // Gives the corrected location for an event, accounting for the pinch-zoom transformation
+    // in the compositor.
+    virtual WebFloatPoint adjustEventPointForPinchZoom(const WebFloatPoint&) const = 0;
+
     virtual void setDeviceScaleFactor(float) = 0;
     virtual float deviceScaleFactor() const = 0;
 
@@ -153,6 +158,9 @@ public:
     // Blocks until the most recently composited frame has finished rendering on the GPU.
     // This can have a significant performance impact and should be used with care.
     virtual void finishAllRendering() = 0;
+
+    // Prevents updates to layer tree from becoming visible.
+    virtual void setDeferCommits(bool deferCommits) { }
 
     // Debugging / dangerous ---------------------------------------------
 

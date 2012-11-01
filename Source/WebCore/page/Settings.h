@@ -849,6 +849,9 @@ namespace WebCore {
 
         double m_incrementalRenderingSuppressionTimeoutInSeconds;
 
+        static double gDefaultMinDOMTimerInterval;
+        static double gDefaultDOMTimerAlignmentInterval;
+
 #if USE(AVFOUNDATION)
         static bool gAVFoundationEnabled;
 #endif

@@ -29,13 +29,14 @@
 #include "CachedImageClient.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Element.h"
-#include "FractionalLayoutUnit.h"
 #include "FloatQuad.h"
+#include "FractionalLayoutUnit.h"
 #include "LayoutTypes.h"
 #include "PaintPhase.h"
 #include "RenderObjectChildList.h"
 #include "RenderStyle.h"
 #include "ScrollBehavior.h"
+#include "StyleInheritedData.h"
 #include "TextAffinity.h"
 #include "TransformationMatrix.h"
 #include <wtf/HashSet.h>
@@ -177,6 +178,11 @@ public:
     RenderObject* previousSibling() const { return m_previous; }
     RenderObject* nextSibling() const { return m_next; }
 
+    // FIXME: These should be renamed slowFirstChild, slowLastChild, etc.
+    // to discourage their use. The virtualChildren() call inside these
+    // can be slow for hot code paths.
+    // Currently, some subclasses like RenderBlock, override these NON-virtual
+    // functions to make these fast when we already have a more specific pointer type.
     RenderObject* firstChild() const
     {
         if (const RenderObjectChildList* children = virtualChildren())
@@ -712,7 +718,7 @@ public:
 
     // Updates only the local style ptr of the object.  Does not update the state of the object,
     // and so only should be called when the style is known not to have changed (or from setStyle).
-    void setStyleInternal(PassRefPtr<RenderStyle>);
+    void setStyleInternal(PassRefPtr<RenderStyle> style) { m_style = style; }
 
     // returns the containing block level element for this element.
     RenderBlock* containingBlock() const;

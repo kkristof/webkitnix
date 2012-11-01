@@ -247,7 +247,7 @@ WebInspector.ScriptsPanel.prototype = {
     _addUISourceCode: function(uiSourceCode)
     {
         if (this._toggleFormatSourceButton.toggled)
-            uiSourceCode.setFormatted(true, this._uiSourceCodeFormatted.bind(this, uiSourceCode));
+            uiSourceCode.setFormatted(true);
 
         this._navigator.addUISourceCode(uiSourceCode);
         this._editorContainer.addUISourceCode(uiSourceCode);
@@ -517,7 +517,7 @@ WebInspector.ScriptsPanel.prototype = {
                 return;
             this._editorContainer.addUISourceCode(uiSourceCode);
             if (uiSourceCode.formatted() !== this._toggleFormatSourceButton.toggled)
-                uiSourceCode.setFormatted(this._toggleFormatSourceButton.toggled, this._uiSourceCodeFormatted.bind(this, uiSourceCode));
+                uiSourceCode.setFormatted(this._toggleFormatSourceButton.toggled);
         }
         var sourceFrame = this._showFile(uiSourceCode);
         sourceFrame.revealLine(uiLocation.lineNumber);
@@ -941,17 +941,12 @@ WebInspector.ScriptsPanel.prototype = {
         view.replaceAllWith(query, text);
     },
 
-    _uiSourceCodeFormatted: function(uiSourceCode)
-    {
-        WebInspector.breakpointManager.restoreBreakpoints(uiSourceCode);
-    },
-
     _toggleFormatSource: function()
     {
         this._toggleFormatSourceButton.toggled = !this._toggleFormatSourceButton.toggled;
         var uiSourceCodes = this._workspace.uiSourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i)
-            uiSourceCodes[i].setFormatted(this._toggleFormatSourceButton.toggled, this._uiSourceCodeFormatted.bind(this, uiSourceCodes[i]));
+            uiSourceCodes[i].setFormatted(this._toggleFormatSourceButton.toggled);
     },
 
     addToWatch: function(expression)
@@ -1105,7 +1100,7 @@ WebInspector.ScriptsPanel.prototype = {
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Object} target
      */
-    appendApplicableItems: function(contextMenu, target)
+    appendApplicableItems: function(event, contextMenu, target)
     {
         this._appendUISourceCodeItems(contextMenu, target);
         this._appendFunctionItems(contextMenu, target);

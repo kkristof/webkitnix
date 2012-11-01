@@ -69,6 +69,7 @@ LIST(APPEND WebCore_SOURCES
   platform/linux/GamepadDeviceLinux.cpp
   platform/mediastream/gstreamer/MediaStreamCenterGStreamer.cpp
   platform/network/efl/NetworkStateNotifierEfl.cpp
+  platform/network/soup/AuthenticationChallengeSoup.cpp
   platform/network/soup/CookieJarSoup.cpp
   platform/network/soup/CookieStorageSoup.cpp
   platform/network/soup/CredentialStorageSoup.cpp
@@ -283,6 +284,7 @@ IF (WTF_USE_3D_GRAPHICS)
   LIST(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/graphics/opengl"
+    "${WEBCORE_DIR}/platform/graphics/surfaces"
     "${WEBCORE_DIR}/platform/graphics/texmap"
   )
   LIST(APPEND WebCore_SOURCES
@@ -294,6 +296,8 @@ IF (WTF_USE_3D_GRAPHICS)
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
+    platform/graphics/surfaces/GraphicsSurface.cpp
+    platform/graphics/surfaces/qt/GraphicsSurfaceGLX.cpp
     platform/graphics/texmap/TextureMapperGL.cpp
     platform/graphics/texmap/TextureMapperShaderManager.cpp
   )

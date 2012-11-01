@@ -288,6 +288,9 @@ WebInspector.GenericSettingsTab = function()
     p = this._appendSection(WebInspector.UIString("Profiler"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show objects' hidden properties"), WebInspector.settings.showHeapSnapshotObjectsHiddenProperties));
 
+    p = this._appendSection(WebInspector.UIString("Timeline"));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
+
     p = this._appendSection(WebInspector.UIString("Console"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
@@ -390,9 +393,9 @@ WebInspector.UserAgentSettingsTab = function()
     p.appendChild(this._createUserAgentControl());
     if (Capabilities.canOverrideDeviceMetrics)
         p.appendChild(this._createDeviceMetricsControl());
-    if (Capabilities.canOverrideGeolocation && WebInspector.experimentsSettings.geolocationOverride.isEnabled())
+    if (Capabilities.canOverrideGeolocation)
         p.appendChild(this._createGeolocationOverrideControl());
-    if (Capabilities.canOverrideDeviceOrientation && WebInspector.experimentsSettings.deviceOrientationOverride.isEnabled())
+    if (Capabilities.canOverrideDeviceOrientation)
         p.appendChild(this._createDeviceOrientationOverrideControl());
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents));
 }
@@ -406,7 +409,7 @@ WebInspector.UserAgentSettingsTab.prototype = {
         var labelElement = p.createChild("label");
         var checkboxElement = labelElement.createChild("input");
         checkboxElement.type = "checkbox";
-        checkboxElement.checked = !!userAgent;
+        checkboxElement.checked = false;
         labelElement.appendChild(document.createTextNode(WebInspector.UIString("User Agent")));
         p.appendChild(this._createUserAgentSelectRowElement(checkboxElement));
         return p;
@@ -496,8 +499,8 @@ WebInspector.UserAgentSettingsTab.prototype = {
             } else {
                 this._selectElement.disabled = true;
                 this._otherUserAgentElement.disabled = true;
-                WebInspector.settings.userAgent.set("");
             }
+            WebInspector.userAgentSupport.toggleUserAgentOverride(checkboxElement.checked);
         }
         checkboxElement.addEventListener("click", checkboxClicked.bind(this), false);
 

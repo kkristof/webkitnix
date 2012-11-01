@@ -87,7 +87,8 @@ static CachedResource* createResource(CachedResource::Type type, ResourceRequest
     case CachedResource::FontResource:
         return new CachedFont(request);
     case CachedResource::RawResource:
-        return new CachedRawResource(request);
+    case CachedResource::MainResource:
+        return new CachedRawResource(request, type);
 #if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
         return new CachedXSLStyleSheet(request);
@@ -246,6 +247,11 @@ CachedResourceHandle<CachedRawResource> CachedResourceLoader::requestRawResource
     return static_cast<CachedRawResource*>(requestResource(CachedResource::RawResource, request).get());
 }
 
+CachedResourceHandle<CachedRawResource> CachedResourceLoader::requestMainResource(CachedResourceRequest& request)
+{
+    return static_cast<CachedRawResource*>(requestResource(CachedResource::MainResource, request).get());
+}
+
 bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const KURL& url) const
 {
     switch (type) {
@@ -280,6 +286,7 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
         }
         break;
     }
+    case CachedResource::MainResource:
 #if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
     case CachedResource::LinkSubresource:
@@ -292,21 +299,25 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
 
 bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url, bool forPreload)
 {
-    // FIXME: When we can load main resources through CachedResourceLoader, we'll need to allow for null document() here.
-    if (!document())
-        return false;
-
-    if (!document()->securityOrigin()->canDisplay(url)) {
+    if (document() && !document()->securityOrigin()->canDisplay(url)) {
         if (!forPreload)
-            FrameLoader::reportLocalLoadFailed(document()->frame(), url.string());
+            FrameLoader::reportLocalLoadFailed(frame(), url.string());
         LOG(ResourceLoading, "CachedResourceLoader::requestResource URL was not allowed by SecurityOrigin::canDisplay");
         return 0;
     }
+
+#if ENABLE(SVG) && !ENABLE(EXTERNAL_SVG_REFERENCES)
+    if (type == CachedResource::SVGDocumentResource)
+        return false;
+#endif
+
+    bool shouldBypassMainWorldContentSecurityPolicy = (frame() && frame()->script()->shouldBypassMainWorldContentSecurityPolicy());
 
     // Some types of resources can be loaded only from the same origin.  Other
     // types of resources, like Images, Scripts, and CSS, can be loaded from
     // any URL.
     switch (type) {
+    case CachedResource::MainResource:
     case CachedResource::ImageResource:
     case CachedResource::CSSStyleSheet:
     case CachedResource::Script:
@@ -343,7 +354,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
     case CachedResource::XSLStyleSheet:
 #endif
     case CachedResource::Script:
-        if (!m_document->contentSecurityPolicy()->allowScriptFromSource(url))
+        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowScriptFromSource(url))
             return false;
 
         if (frame()) {
@@ -359,21 +370,22 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
         // Since shaders are referenced from CSS Styles use the same rules here.
 #endif
     case CachedResource::CSSStyleSheet:
-        if (!m_document->contentSecurityPolicy()->allowStyleFromSource(url))
+        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowStyleFromSource(url))
             return false;
         break;
 #if ENABLE(SVG)
     case CachedResource::SVGDocumentResource:
 #endif
     case CachedResource::ImageResource:
-        if (!m_document->contentSecurityPolicy()->allowImageFromSource(url))
+        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowImageFromSource(url))
             return false;
         break;
     case CachedResource::FontResource: {
-        if (!m_document->contentSecurityPolicy()->allowFontFromSource(url))
+        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowFontFromSource(url))
             return false;
         break;
     }
+    case CachedResource::MainResource:
     case CachedResource::RawResource:
 #if ENABLE(LINK_PREFETCH)
     case CachedResource::LinkPrefetch:
@@ -384,7 +396,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
     case CachedResource::TextTrackResource:
         // Cues aren't called out in the CPS spec yet, but they only work with a media element
         // so use the media policy.
-        if (!m_document->contentSecurityPolicy()->allowMediaFromSource(url))
+        if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url))
             return false;
         break;
 #endif
@@ -518,8 +530,11 @@ CachedResourceLoader::RevalidationPolicy CachedResourceLoader::determineRevalida
         return Reload;
     }
 
+    if (existingResource->type() == CachedResource::MainResource)
+        return Reload;
+
     if (existingResource->type() == CachedResource::RawResource && !static_cast<CachedRawResource*>(existingResource)->canReuse(request))
-         return Reload;
+        return Reload;
 
     // Certain requests (e.g., XHRs) might have manually set headers that require revalidation.
     // FIXME: In theory, this should be a Revalidate case. In practice, the MemoryCache revalidation path assumes a whole bunch
@@ -614,7 +629,7 @@ void CachedResourceLoader::printAccessDeniedMessage(const KURL& url) const
         message = "Unsafe attempt to load URL " + url.string() + " from frame with URL " + m_document->url().string() + ". Domains, protocols and ports must match.\n";
 
     // FIXME: provide line number and source URL.
-    frame()->document()->domWindow()->console()->addMessage(OtherMessageSource, LogMessageType, ErrorMessageLevel, message);
+    frame()->document()->addConsoleMessage(OtherMessageSource, LogMessageType, ErrorMessageLevel, message);
 }
 
 void CachedResourceLoader::setAutoLoadImages(bool enable)

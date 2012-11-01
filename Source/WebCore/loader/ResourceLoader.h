@@ -143,22 +143,29 @@ public:
 
     bool reachedTerminalState() const { return m_reachedTerminalState; }
 
+    const ResourceRequest& request() const { return m_request; }
+
     void setShouldBufferData(DataBufferingPolicy);
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
+#if PLATFORM(MAC)
+    // FIXME (NetworkProcess): This is temporary to allow WebKit to directly set the identifier on a ResourceLoader.
+    // More permanently we want the identifier to be piped through ResourceLoader::init/start so
+    // it always has it, especially in willSendRequest.
+    void setIdentifier(unsigned long);
+#endif
+
 protected:
     ResourceLoader(Frame*, ResourceLoaderOptions);
 
-    friend class ApplicationCacheHost;  // for access to request()
     friend class ResourceLoadScheduler; // for access to start()
-    // start() actually sends the load to the network (unless the load is being 
+    // start() actually sends the load to the network (unless the load is being
     // deferred) and should only be called by ResourceLoadScheduler or setDefersLoading().
     void start();
-    
+
     void didFinishLoadingOnePart(double finishTime);
 
-    const ResourceRequest& request() const { return m_request; }
     bool cancelled() const { return m_cancelled; }
     bool defersLoading() const { return m_defersLoading; }
 

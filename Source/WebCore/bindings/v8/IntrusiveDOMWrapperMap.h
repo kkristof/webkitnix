@@ -45,14 +45,9 @@ public:
     virtual void set(Node* node, v8::Persistent<v8::Object> wrapper) OVERRIDE
     {
         ASSERT(node && node->wrapper().IsEmpty());
-        ASSERT(wrapper.WrapperClassId() == v8DOMSubtreeClassId);
+        ASSERT(wrapper.WrapperClassId() == v8DOMNodeClassId);
         node->setWrapper(wrapper);
         wrapper.MakeWeak(node, weakCallback);
-    }
-
-    virtual void visit(DOMDataStore* store, DOMWrapperVisitor<Node>* visitor) OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
     }
 
     virtual void clear() OVERRIDE
@@ -75,36 +70,6 @@ private:
         node->clearWrapper();
         value.Dispose();
         node->deref();
-    }
-};
-
-class ActiveDOMNodeWrapperMap : public DOMWrapperHashMap<Node> {
-public:
-    virtual v8::Persistent<v8::Object> get(Node* node) OVERRIDE
-    {
-        v8::Persistent<v8::Object> wrapper = node->wrapper();
-        ASSERT(DOMWrapperHashMap<Node>::get(node) == wrapper);
-        return wrapper;
-    }
-
-    virtual void set(Node* node, v8::Persistent<v8::Object> wrapper) OVERRIDE
-    {
-        ASSERT(node && node->wrapper().IsEmpty());
-        ASSERT(wrapper.WrapperClassId() == v8DOMSubtreeClassId);
-        node->setWrapper(wrapper);
-        DOMWrapperHashMap<Node>::set(node, wrapper);
-    }
-
-    virtual void clear() OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    virtual void remove(Node* node, v8::Persistent<v8::Object> wrapper) OVERRIDE
-    {
-        ASSERT(node->wrapper() == wrapper);
-        node->clearWrapper();
-        DOMWrapperHashMap<Node>::remove(node, wrapper);
     }
 };
 

@@ -47,7 +47,6 @@ namespace WebCore {
 
 class CSSBorderImageSliceValue;
 class CSSPrimitiveValue;
-class CSSProperty;
 class CSSSelectorList;
 class CSSValue;
 class CSSValueList;
@@ -282,6 +281,9 @@ public:
     StyleRuleBase* createPageRule(PassOwnPtr<CSSParserSelector> pageSelector);
     StyleRuleBase* createRegionRule(CSSSelectorVector* regionSelector, RuleList* rules);
     StyleRuleBase* createMarginAtRule(CSSSelector::MarginBoxType);
+#if ENABLE(SHADOW_DOM)
+    StyleRuleBase* createHostRule(RuleList* rules);
+#endif
     void startDeclarationsForMarginBox();
     void endDeclarationsForMarginBox();
 
@@ -363,6 +365,12 @@ public:
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
     int token() { return m_token; }
+
+#if ENABLE(CSS_DEVICE_ADAPTATION)
+    void markViewportRuleBodyStart() { m_inViewport = true; }
+    void markViewportRuleBodyEnd() { m_inViewport = false; }
+    StyleRuleBase* createViewportRule();
+#endif
 
     PassRefPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
@@ -510,6 +518,11 @@ private:
 
     bool m_allowImportRules;
     bool m_allowNamespaceDeclarations;
+
+#if ENABLE(CSS_DEVICE_ADAPTATION)
+    bool inViewport() const { return m_inViewport; }
+    bool m_inViewport;
+#endif
 
     int (CSSParser::*m_lexFunc)(void*);
 

@@ -95,7 +95,7 @@ public:
         // contribute to overlap as soon as their composited ancestor has been
         // recursively processed and popped off the stack.
         ASSERT(m_overlapStack.size() >= 2);
-        m_overlapStack[m_overlapStack.size() - 2].unite(bounds);
+        m_overlapStack[m_overlapStack.size() - 2].append(bounds);
         m_layers.add(layer);
     }
 
@@ -106,7 +106,12 @@ public:
 
     bool overlapsLayers(const IntRect& bounds) const
     {
-        return m_overlapStack.last().intersects(bounds);
+        const RectList& layerRects = m_overlapStack.last();
+        for (unsigned i = 0; i < layerRects.size(); i++) {
+            if (layerRects[i].intersects(bounds))
+                return true;
+        }
+        return false;
     }
 
     bool isEmpty()
@@ -116,19 +121,20 @@ public:
 
     void pushCompositingContainer()
     {
-        m_overlapStack.append(Region());
+        m_overlapStack.append(RectList());
     }
 
     void popCompositingContainer()
     {
-        m_overlapStack[m_overlapStack.size() - 2].unite(m_overlapStack.last());
+        m_overlapStack[m_overlapStack.size() - 2].append(m_overlapStack.last());
         m_overlapStack.removeLast();
     }
-    
+
     RenderGeometryMap& geometryMap() { return m_geometryMap; }
 
 private:
-    Vector<Region> m_overlapStack;
+    typedef Vector<IntRect> RectList;
+    Vector<RectList> m_overlapStack;
     HashSet<const RenderLayer*> m_layers;
     RenderGeometryMap m_geometryMap;
 };
@@ -1100,12 +1106,6 @@ void RenderLayerCompositor::frameViewDidScroll()
     FrameView* frameView = m_renderView->frameView();
     IntPoint scrollPosition = frameView->scrollPosition();
 
-    if (TiledBacking* tiledBacking = frameView->tiledBacking()) {
-        IntRect visibleContentRect = frameView->visibleContentRect(false /* exclude scrollbars */);
-        visibleContentRect.move(toSize(frameView->scrollOrigin()));
-        tiledBacking->setVisibleRect(visibleContentRect);
-    }
-
     if (!m_scrollLayer)
         return;
 
@@ -1117,6 +1117,13 @@ void RenderLayerCompositor::frameViewDidScroll()
     }
 
     m_scrollLayer->setPosition(FloatPoint(-scrollPosition.x(), -scrollPosition.y()));
+}
+
+void RenderLayerCompositor::frameViewDidLayout()
+{
+    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
+    if (renderViewBacking)
+        renderViewBacking->adjustTileCacheCoverage();
 }
 
 void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
@@ -1350,8 +1357,17 @@ GraphicsLayer* RenderLayerCompositor::scrollLayer() const
     return m_scrollLayer.get();
 }
 
+TiledBacking* RenderLayerCompositor::pageTiledBacking() const
+{
+    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
+    return renderViewBacking ? renderViewBacking->tiledBacking() : 0;
+}
+
 void RenderLayerCompositor::didMoveOnscreen()
 {
+    if (TiledBacking* tiledBacking = pageTiledBacking())
+        tiledBacking->setIsInWindow(true);
+
     if (!inCompositingMode() || m_rootLayerAttachment != RootLayerUnattached)
         return;
 
@@ -1361,6 +1377,9 @@ void RenderLayerCompositor::didMoveOnscreen()
 
 void RenderLayerCompositor::willMoveOffscreen()
 {
+    if (TiledBacking* tiledBacking = pageTiledBacking())
+        tiledBacking->setIsInWindow(false);
+
     if (!inCompositingMode() || m_rootLayerAttachment == RootLayerUnattached)
         return;
 

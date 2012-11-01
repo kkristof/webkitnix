@@ -361,6 +361,8 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         if (!window.getSelection().isCollapsed)
             return false;
+        if (event.target.nodeName === "A")
+            return false;
 
         var treeElement = this._treeElementFromEvent(event);
         if (!treeElement)
@@ -487,9 +489,9 @@ WebInspector.ElementsTreeOutline.prototype = {
         {
             WebInspector.domAgent.inspectElement(treeElement.representedObject.id);
         }
-        var contextMenu = new WebInspector.ContextMenu();
+        var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Reveal in Elements Panel"), focusElement.bind(this));
-        contextMenu.show(event);
+        contextMenu.show();
     },
 
     populateContextMenu: function(contextMenu, event)

@@ -24,6 +24,7 @@
 #include "EwkViewImpl.h"
 #include "FindClientEfl.h"
 #include "FormClientEfl.h"
+#include "InputMethodContextEfl.h"
 #include "NativeWebKeyboardEvent.h"
 #include "NativeWebMouseEvent.h"
 #include "NativeWebWheelEvent.h"
@@ -39,25 +40,19 @@
 #include "WKString.h"
 #include "WebContext.h"
 #include "WebPageGroup.h"
-#include "WebPopupItem.h"
-#include "WebPopupMenuProxyEfl.h"
 #include "WebPreferences.h"
 #include "ewk_back_forward_list_private.h"
 #include "ewk_context.h"
 #include "ewk_context_private.h"
 #include "ewk_favicon_database_private.h"
 #include "ewk_intent_private.h"
-#include "ewk_popup_menu_item_private.h"
 #include "ewk_private.h"
 #include "ewk_settings_private.h"
 #include "ewk_view_private.h"
 #include <Ecore_Evas.h>
+#include <Ecore_X.h>
 #include <WebKit2/WKPageGroup.h>
 #include <wtf/text/CString.h>
-
-#if ENABLE(FULLSCREEN_API)
-#include "WebFullScreenManagerProxy.h"
-#endif
 
 #if ENABLE(INSPECTOR)
 #include "WebInspectorProxy.h"
@@ -123,6 +118,32 @@ static const char EWK_VIEW_TYPE_STR[] = "EWK2_View";
         }                                                                      \
     } while (0)
 
+#define EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, ...)                \
+    if (!smartData) {                                                          \
+        EINA_LOG_CRIT("smart data is null");                                   \
+        return __VA_ARGS__;                                                    \
+    }                                                                          \
+    EwkViewImpl* impl = smartData->priv;                                       \
+    do {                                                                       \
+        if (!impl) {                                                           \
+            EINA_LOG_CRIT("no private data for object %p (%s)",                \
+                smartData->self, evas_object_type_get(smartData->self));       \
+            return __VA_ARGS__;                                                \
+        }                                                                      \
+    } while (0)
+
+#define EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, ...)                        \
+    EwkViewImpl* impl = 0;                                                     \
+    do {                                                                       \
+        EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, __VA_ARGS__);            \
+        impl = smartData->priv;                                                \
+        if (!impl) {                                                           \
+            EINA_LOG_CRIT("no private data for object %p (%s)",                \
+                smartData->self, evas_object_type_get(smartData->self));       \
+            return __VA_ARGS__;                                                \
+        }                                                                      \
+    } while (0)
+
 static void _ewk_view_smart_changed(Ewk_View_Smart_Data* smartData)
 {
     if (smartData->changed.any)
@@ -131,135 +152,121 @@ static void _ewk_view_smart_changed(Ewk_View_Smart_Data* smartData)
     evas_object_smart_changed(smartData->self);
 }
 
-static void _ewk_view_on_favicon_changed(const char* pageURL, void* eventInfo)
-{
-    Evas_Object* ewkView = static_cast<Evas_Object*>(eventInfo);
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
-
-    const char* viewURL = ewk_view_url_get(ewkView);
-    if (!viewURL || strcasecmp(viewURL, pageURL))
-        return;
-
-    impl->informIconChange();
-}
-
 // Default Event Handling.
 static Eina_Bool _ewk_view_smart_focus_in(Ewk_View_Smart_Data* smartData)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    impl->pageProxy->viewStateDidChange(WebPageProxy::ViewIsFocused | WebPageProxy::ViewWindowIsActive);
+    impl->page()->viewStateDidChange(WebPageProxy::ViewIsFocused | WebPageProxy::ViewWindowIsActive);
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_focus_out(Ewk_View_Smart_Data* smartData)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    impl->pageProxy->viewStateDidChange(WebPageProxy::ViewIsFocused | WebPageProxy::ViewWindowIsActive);
+    impl->page()->viewStateDidChange(WebPageProxy::ViewIsFocused | WebPageProxy::ViewWindowIsActive);
     return true;
 }
 
-#if USE(TILED_BACKING_STORE)
-static Evas_Coord_Point mapToWebContent(Ewk_View_Smart_Data* smartData, Evas_Coord_Point point)
+static AffineTransform toDeviceScreenTransform(Ewk_View_Smart_Data* smartData)
 {
-    Evas_Coord_Point result;
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, result);
+    AffineTransform transform;
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, transform);
 
-    result.x = (point.x  - smartData->view.x) / impl->pageViewportControllerClient->scaleFactor() + smartData->view.x + impl->pageViewportControllerClient->scrollPosition().x();
-    result.y = (point.y - smartData->view.y) / impl->pageViewportControllerClient->scaleFactor() + smartData->view.y + impl->pageViewportControllerClient->scrollPosition().y();
-    return result;
-}
+    int windowGlobalX = 0;
+    int windowGlobalY = 0;
+
+#ifdef HAVE_ECORE_X
+    Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(smartData->base.evas);
+    Ecore_X_Window window = ecore_evas_software_x11_window_get(ecoreEvas); // Returns 0 if none.
+
+    int x, y; // x, y are relative to parent (in a reparenting window manager).
+    while (window) {
+        ecore_x_window_geometry_get(window, &x, &y, 0, 0);
+        windowGlobalX += x;
+        windowGlobalY += y;
+        window = ecore_x_window_parent_get(window);
+    }
 #endif
+
+    transform.translate(-smartData->view.x, -smartData->view.y);
+    transform.translate(windowGlobalX, windowGlobalY);
+
+    return transform;
+}
+
+static AffineTransform toWebContentTransform(Ewk_View_Smart_Data* smartData)
+{
+    AffineTransform transform;
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, transform);
+
+    transform.translate(-smartData->view.x, -smartData->view.y);
+
+#if USE(TILED_BACKING_STORE)
+    IntPoint scrollPos = impl->pageViewportControllerClient()->scrollPosition();
+    transform.translate(scrollPos.x(), scrollPos.y());
+    transform.scale(1 / impl->pageViewportControllerClient()->scaleFactor());
+#endif
+
+    return transform;
+}
 
 static Eina_Bool _ewk_view_smart_mouse_wheel(Ewk_View_Smart_Data* smartData, const Evas_Event_Mouse_Wheel* wheelEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    Evas_Point position = {smartData->view.x, smartData->view.y};
-#if USE(TILED_BACKING_STORE)
-    Evas_Event_Mouse_Wheel event(*wheelEvent);
-    event.canvas = mapToWebContent(smartData, event.canvas);
-    impl->pageProxy->handleWheelEvent(NativeWebWheelEvent(&event, &position));
-#else
-    impl->pageProxy->handleWheelEvent(NativeWebWheelEvent(wheelEvent, &position));
-#endif
+    impl->page()->handleWheelEvent(NativeWebWheelEvent(wheelEvent, toWebContentTransform(smartData), toDeviceScreenTransform(smartData)));
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_mouse_down(Ewk_View_Smart_Data* smartData, const Evas_Event_Mouse_Down* downEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    Evas_Point position = {smartData->view.x, smartData->view.y};
-#if USE(TILED_BACKING_STORE)
-    Evas_Event_Mouse_Down event(*downEvent);
-    event.canvas = mapToWebContent(smartData, event.canvas);
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(&event, &position));
-#else
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(downEvent, &position));
-#endif
+    impl->page()->handleMouseEvent(NativeWebMouseEvent(downEvent, toWebContentTransform(smartData), toDeviceScreenTransform(smartData)));
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_mouse_up(Ewk_View_Smart_Data* smartData, const Evas_Event_Mouse_Up* upEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    Evas_Point position = {smartData->view.x, smartData->view.y};
-#if USE(TILED_BACKING_STORE)
-    Evas_Event_Mouse_Up event(*upEvent);
-    event.canvas = mapToWebContent(smartData, event.canvas);
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(&event, &position));
-#else
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(upEvent, &position));
-#endif
+    impl->page()->handleMouseEvent(NativeWebMouseEvent(upEvent, toWebContentTransform(smartData), toDeviceScreenTransform(smartData)));
 
-    Ecore_IMF_Context* inputMethodContext = impl->inputMethodContext();
+    InputMethodContextEfl* inputMethodContext = impl->inputMethodContext();
     if (inputMethodContext)
-        ecore_imf_context_reset(inputMethodContext);
+        inputMethodContext->handleMouseUpEvent(upEvent);
 
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_mouse_move(Ewk_View_Smart_Data* smartData, const Evas_Event_Mouse_Move* moveEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    Evas_Point position = {smartData->view.x, smartData->view.y};
-#if USE(TILED_BACKING_STORE)
-    Evas_Event_Mouse_Move event(*moveEvent);
-    event.cur.canvas = mapToWebContent(smartData, event.cur.canvas);
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(&event, &position));
-#else
-    impl->pageProxy->handleMouseEvent(NativeWebMouseEvent(moveEvent, &position));
-#endif
+    impl->page()->handleMouseEvent(NativeWebMouseEvent(moveEvent, toWebContentTransform(smartData), toDeviceScreenTransform(smartData)));
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_key_down(Ewk_View_Smart_Data* smartData, const Evas_Event_Key_Down* downEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
     bool isFiltered = false;
-    Ecore_IMF_Context* inputMethodContext = impl->inputMethodContext();
-    if (inputMethodContext) {
-        Ecore_IMF_Event inputMethodEvent;
-        ecore_imf_evas_event_key_down_wrap(const_cast<Evas_Event_Key_Down*>(downEvent), &inputMethodEvent.key_down);
+    InputMethodContextEfl* inputMethodContext = impl->inputMethodContext();
+    if (inputMethodContext)
+        inputMethodContext->handleKeyDownEvent(downEvent, &isFiltered);
 
-        isFiltered = ecore_imf_context_filter_event(inputMethodContext, ECORE_IMF_EVENT_KEY_DOWN, &inputMethodEvent);
-    }
-
-    impl->pageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(downEvent, isFiltered));
+    impl->page()->handleKeyboardEvent(NativeWebKeyboardEvent(downEvent, isFiltered));
     return true;
 }
 
 static Eina_Bool _ewk_view_smart_key_up(Ewk_View_Smart_Data* smartData, const Evas_Event_Key_Up* upEvent)
 {
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    impl->pageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(upEvent));
+    impl->page()->handleKeyboardEvent(NativeWebKeyboardEvent(upEvent));
     return true;
 }
 
@@ -310,31 +317,22 @@ static void _ewk_view_on_key_up(void* data, Evas*, Evas_Object*, void* eventInfo
 static void _ewk_view_on_show(void* data, Evas*, Evas_Object*, void* /*eventInfo*/)
 {
     Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
-    impl->pageProxy->viewStateDidChange(WebPageProxy::ViewIsVisible);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl);
+    impl->page()->viewStateDidChange(WebPageProxy::ViewIsVisible);
 }
 
 static void _ewk_view_on_hide(void* data, Evas*, Evas_Object*, void* /*eventInfo*/)
 {
     Ewk_View_Smart_Data* smartData = static_cast<Ewk_View_Smart_Data*>(data);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl);
 
     // This call may look wrong, but we really need to pass ViewIsVisible here.
     // viewStateDidChange() itself is responsible for actually setting the visibility to Visible or Hidden
     // depending on what WebPageProxy::isViewVisible() returns, this simply triggers the process.
-    impl->pageProxy->viewStateDidChange(WebPageProxy::ViewIsVisible);
+    impl->page()->viewStateDidChange(WebPageProxy::ViewIsVisible);
 }
 
 static Evas_Smart_Class g_parentSmartClass = EVAS_SMART_CLASS_INIT_NULL;
-
-static void _ewk_view_impl_del(EwkViewImpl* impl)
-{
-    /* Unregister icon change callback */
-    Ewk_Favicon_Database* iconDatabase = impl->context->faviconDatabase();
-    iconDatabase->unwatchChanges(_ewk_view_on_favicon_changed);
-
-    delete impl;
-}
 
 static void _ewk_view_smart_add(Evas_Object* ewkView)
 {
@@ -357,13 +355,7 @@ static void _ewk_view_smart_add(Evas_Object* ewkView)
 
     g_parentSmartClass.add(ewkView);
 
-    smartData->priv = new EwkViewImpl(ewkView);
-    if (!smartData->priv) {
-        EINA_LOG_CRIT("could not allocate EwkViewImpl");
-        evas_object_smart_data_set(ewkView, 0);
-        free(smartData);
-        return;
-    }
+    smartData->priv = 0;
 
     // Create evas_object_image to draw web contents.
     smartData->image = evas_object_image_add(smartData->base.evas);
@@ -385,10 +377,9 @@ static void _ewk_view_smart_add(Evas_Object* ewkView)
 
 static void _ewk_view_smart_del(Evas_Object* ewkView)
 {
-    EwkViewImpl::removeFromPageViewMap(ewkView);
     EWK_VIEW_SD_GET(ewkView, smartData);
-    if (smartData && smartData->priv)
-        _ewk_view_impl_del(smartData->priv);
+    if (smartData)
+        delete smartData->priv;
 
     g_parentSmartClass.del(ewkView);
 }
@@ -416,48 +407,39 @@ static void _ewk_view_smart_move(Evas_Object* ewkView, Evas_Coord /*x*/, Evas_Co
 static void _ewk_view_smart_calculate(Evas_Object* ewkView)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
-
-#if USE(ACCELERATED_COMPOSITING)
-    bool needsNewSurface = false;
-#endif
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl);
 
     smartData->changed.any = false;
 
     Evas_Coord x, y, width, height;
     evas_object_geometry_get(ewkView, &x, &y, &width, &height);
 
-    if (smartData->changed.size) {
-#if USE(COORDINATED_GRAPHICS)
-        impl->pageViewportControllerClient->updateViewportSize(IntSize(width, height));
-#endif
-#if USE(ACCELERATED_COMPOSITING)
-        needsNewSurface = impl->evasGlSurface;
-#endif
-
-        if (impl->pageProxy->drawingArea())
-            impl->pageProxy->drawingArea()->setSize(IntSize(width, height), IntSize());
-
-        smartData->view.w = width;
-        smartData->view.h = height;
-        smartData->changed.size = false;
-    }
-
     if (smartData->changed.position) {
-        evas_object_move(smartData->image, x, y);
+        smartData->changed.position = false;
         smartData->view.x = x;
         smartData->view.y = y;
-        smartData->changed.position = false;
+        evas_object_move(smartData->image, x, y);
     }
 
+    if (smartData->changed.size) {
+        smartData->changed.size = false;
+        smartData->view.w = width;
+        smartData->view.h = height;
+
+        if (impl->page()->drawingArea())
+            impl->page()->drawingArea()->setSize(IntSize(width, height), IntSize());
+
 #if USE(ACCELERATED_COMPOSITING)
-    if (needsNewSurface) {
-        evas_gl_surface_destroy(impl->evasGl, impl->evasGlSurface);
-        impl->evasGlSurface = 0;
-        impl->createGLSurface(IntSize(width, height));
-        impl->redrawRegion(IntRect(IntPoint(), IntSize(width, height)));
-    }
+        // Recreate surface if needed.
+        if (impl->evasGLSurface()) {
+            impl->clearEvasGLSurface();
+            impl->createGLSurface(IntSize(width, height));
+        }
 #endif
+#if USE(COORDINATED_GRAPHICS)
+        impl->pageViewportControllerClient()->updateViewportSize(IntSize(width, height));
+#endif
+    }
 }
 
 static void _ewk_view_smart_show(Evas_Object* ewkView)
@@ -480,7 +462,7 @@ static void _ewk_view_smart_hide(Evas_Object* ewkView)
 static void _ewk_view_smart_color_set(Evas_Object* ewkView, int red, int green, int blue, int alpha)
 {
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl);
 
     if (alpha < 0)
         alpha = 0;
@@ -498,8 +480,8 @@ static void _ewk_view_smart_color_set(Evas_Object* ewkView, int red, int green, 
 #undef CHECK_COLOR
 
     evas_object_image_alpha_set(smartData->image, alpha < 255);
-    impl->pageProxy->setDrawsBackground(red || green || blue);
-    impl->pageProxy->setDrawsTransparentBackground(alpha < 255);
+    impl->page()->setDrawsBackground(red || green || blue);
+    impl->page()->setDrawsTransparentBackground(alpha < 255);
 
     g_parentSmartClass.color_set(ewkView, red, green, blue, alpha);
 }
@@ -543,7 +525,7 @@ Eina_Bool ewk_view_smart_class_set(Ewk_View_Smart_Class* api)
     return true;
 }
 
-static inline Evas_Smart* _ewk_view_smart_class_new(void)
+static inline Evas_Smart* createEwkViewSmartClass(void)
 {
     static Ewk_View_Smart_Class api = EWK_VIEW_SMART_CLASS_INIT_NAME_VERSION("Ewk_View");
     static Evas_Smart* smart = 0;
@@ -556,67 +538,14 @@ static inline Evas_Smart* _ewk_view_smart_class_new(void)
     return smart;
 }
 
-static void _ewk_view_initialize(Evas_Object* ewkView, PassRefPtr<Ewk_Context> context, WKPageGroupRef pageGroupRef)
-{
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
-    EINA_SAFETY_ON_NULL_RETURN(context);
-
-    if (impl->pageClient)
-        return;
-
-    impl->pageClient = PageClientImpl::create(impl);
-
-    if (pageGroupRef)
-        impl->pageProxy = toImpl(context->wkContext())->createWebPage(impl->pageClient.get(), toImpl(pageGroupRef));
-    else
-        impl->pageProxy = toImpl(context->wkContext())->createWebPage(impl->pageClient.get(), WebPageGroup::create().get());
-
-    EwkViewImpl::addToPageViewMap(ewkView);
-
-#if USE(COORDINATED_GRAPHICS)
-    impl->pageProxy->pageGroup()->preferences()->setAcceleratedCompositingEnabled(true);
-    impl->pageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
-    impl->pageProxy->setUseFixedLayout(true);
-#endif
-    impl->pageProxy->initializeWebPage();
-
-    impl->backForwardList = Ewk_Back_Forward_List::create(toAPI(impl->pageProxy->backForwardList()));
-
-    impl->context = context;
-
-#if USE(TILED_BACKING_STORE)
-    impl->pageViewportControllerClient = PageViewportControllerClientEfl::create(impl);
-    impl->pageViewportController = adoptPtr(new PageViewportController(impl->pageProxy.get(), impl->pageViewportControllerClient.get()));
-    impl->pageClient->setPageViewportController(impl->pageViewportController.get());
-#endif
-
-#if ENABLE(FULLSCREEN_API)
-    impl->pageProxy->fullScreenManager()->setWebView(ewkView);
-    impl->pageProxy->pageGroup()->preferences()->setFullScreenEnabled(true);
-#endif
-
-    // Initialize page clients.
-    impl->pageLoadClient = PageLoadClientEfl::create(impl);
-    impl->pagePolicyClient = PagePolicyClientEfl::create(impl);
-    impl->pageUIClient = PageUIClientEfl::create(impl);
-    impl->resourceLoadClient = ResourceLoadClientEfl::create(impl);
-    impl->findClient = FindClientEfl::create(impl);
-    impl->formClient = FormClientEfl::create(impl);
-
-    /* Listen for favicon changes */
-    Ewk_Favicon_Database* iconDatabase = impl->context->faviconDatabase();
-    iconDatabase->watchChanges(IconChangeCallbackData(_ewk_view_on_favicon_changed, ewkView));
-}
-
-static Evas_Object* _ewk_view_add_with_smart(Evas* canvas, Evas_Smart* smart)
+static inline Evas_Object* createEwkView(Evas* canvas, Evas_Smart* smart, PassRefPtr<Ewk_Context> context, WKPageGroupRef pageGroupRef = 0)
 {
     EINA_SAFETY_ON_NULL_RETURN_VAL(canvas, 0);
     EINA_SAFETY_ON_NULL_RETURN_VAL(smart, 0);
+    EINA_SAFETY_ON_NULL_RETURN_VAL(context, 0);
 
     Evas_Object* ewkView = evas_object_smart_add(canvas, smart);
-    if (!ewkView)
-        return 0;
+    EINA_SAFETY_ON_NULL_RETURN_VAL(ewkView, 0);
 
     EWK_VIEW_SD_GET(ewkView, smartData);
     if (!smartData) {
@@ -624,11 +553,9 @@ static Evas_Object* _ewk_view_add_with_smart(Evas* canvas, Evas_Smart* smart)
         return 0;
     }
 
-    EWK_VIEW_IMPL_GET(smartData, impl);
-    if (!impl) {
-        evas_object_del(ewkView);
-        return 0;
-    }
+    ASSERT(!smartData->priv);
+    RefPtr<WebPageGroup> pageGroup = pageGroupRef ? toImpl(pageGroupRef) : WebPageGroup::create();
+    smartData->priv = new EwkViewImpl(ewkView, context, pageGroup);
 
     return ewkView;
 }
@@ -639,36 +566,17 @@ static Evas_Object* _ewk_view_add_with_smart(Evas* canvas, Evas_Smart* smart)
  */
 Evas_Object* ewk_view_base_add(Evas* canvas, WKContextRef contextRef, WKPageGroupRef pageGroupRef)
 {
-    EINA_SAFETY_ON_NULL_RETURN_VAL(canvas, 0);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(contextRef, 0);
-    Evas_Object* ewkView = _ewk_view_add_with_smart(canvas, _ewk_view_smart_class_new());
-    if (!ewkView)
-        return 0;
-
-    _ewk_view_initialize(ewkView, Ewk_Context::create(contextRef), pageGroupRef);
-
-    return ewkView;
+    return createEwkView(canvas, createEwkViewSmartClass(), Ewk_Context::create(contextRef), pageGroupRef);
 }
 
 Evas_Object* ewk_view_smart_add(Evas* canvas, Evas_Smart* smart, Ewk_Context* context)
 {
-    EINA_SAFETY_ON_NULL_RETURN_VAL(canvas, 0);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(smart, 0);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(context, 0);
-
-    Evas_Object* ewkView = _ewk_view_add_with_smart(canvas, smart);
-    if (!ewkView)
-        return 0;
-
-    _ewk_view_initialize(ewkView, context, 0);
-
-    return ewkView;
+    return createEwkView(canvas, smart, context);
 }
 
 Evas_Object* ewk_view_add_with_context(Evas* canvas, Ewk_Context* context)
 {
-    EINA_SAFETY_ON_NULL_RETURN_VAL(context, 0);
-    return ewk_view_smart_add(canvas, _ewk_view_smart_class_new(), context);
+    return ewk_view_smart_add(canvas, createEwkViewSmartClass(), context);
 }
 
 Evas_Object* ewk_view_add(Evas* canvas)
@@ -678,19 +586,17 @@ Evas_Object* ewk_view_add(Evas* canvas)
 
 Ewk_Context* ewk_view_context_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->ewkContext();
 }
 
 Eina_Bool ewk_view_url_set(Evas_Object* ewkView, const char* url)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(url, false);
 
-    impl->pageProxy->loadURL(url);
+    impl->page()->loadURL(url);
     impl->informURLChange();
 
     return true;
@@ -698,26 +604,23 @@ Eina_Bool ewk_view_url_set(Evas_Object* ewkView, const char* url)
 
 const char* ewk_view_url_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->url();
 }
 
 const char *ewk_view_icon_url_get(const Evas_Object *ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->faviconURL();
 }
 
 Eina_Bool ewk_view_reload(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->reload(/*reloadFromOrigin*/ false);
+    impl->page()->reload(/*reloadFromOrigin*/ false);
     impl->informURLChange();
 
     return true;
@@ -725,10 +628,9 @@ Eina_Bool ewk_view_reload(Evas_Object* ewkView)
 
 Eina_Bool ewk_view_reload_bypass_cache(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->reload(/*reloadFromOrigin*/ true);
+    impl->page()->reload(/*reloadFromOrigin*/ true);
     impl->informURLChange();
 
     return true;
@@ -736,26 +638,23 @@ Eina_Bool ewk_view_reload_bypass_cache(Evas_Object* ewkView)
 
 Eina_Bool ewk_view_stop(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->stopLoading();
+    impl->page()->stopLoading();
 
     return true;
 }
 
 Ewk_Settings* ewk_view_settings_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->settings();
 }
 
 const char* ewk_view_title_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->title();
 }
@@ -773,69 +672,61 @@ void ewk_view_text_found(Evas_Object* ewkView, unsigned int matchCount)
 
 double ewk_view_load_progress_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, -1.0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, -1.0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, -1.0);
 
-    return impl->pageProxy->estimatedProgress();
+    return impl->page()->estimatedProgress();
 }
 
 Eina_Bool ewk_view_scale_set(Evas_Object* ewkView, double scaleFactor, int x, int y)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->scalePage(scaleFactor, IntPoint(x, y));
+    impl->page()->scalePage(scaleFactor, IntPoint(x, y));
     return true;
 }
 
 double ewk_view_scale_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, -1);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, -1);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, -1);
 
-    return impl->pageProxy->pageScaleFactor();
+    return impl->page()->pageScaleFactor();
 }
 
 Eina_Bool ewk_view_device_pixel_ratio_set(Evas_Object* ewkView, float ratio)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->setCustomDeviceScaleFactor(ratio);
+    impl->page()->setCustomDeviceScaleFactor(ratio);
 
     return true;
 }
 
 float ewk_view_device_pixel_ratio_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, -1.0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, -1.0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, -1.0);
 
-    return impl->pageProxy->deviceScaleFactor();
+    return impl->page()->deviceScaleFactor();
 }
 
 void ewk_view_theme_set(Evas_Object* ewkView, const char* path)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl);
 
     impl->setThemePath(path);
 }
 
 const char* ewk_view_theme_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->themePath();
 }
 
 Eina_Bool ewk_view_back(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    WebPageProxy* page = impl->pageProxy.get();
+    WebPageProxy* page = impl->page();
     if (page->canGoBack()) {
         page->goBack();
         return true;
@@ -846,10 +737,9 @@ Eina_Bool ewk_view_back(Evas_Object* ewkView)
 
 Eina_Bool ewk_view_forward(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    WebPageProxy* page = impl->pageProxy.get();
+    WebPageProxy* page = impl->page();
     if (page->canGoForward()) {
         page->goForward();
         return true;
@@ -861,11 +751,10 @@ Eina_Bool ewk_view_forward(Evas_Object* ewkView)
 Eina_Bool ewk_view_intent_deliver(Evas_Object* ewkView, Ewk_Intent* intent)
 {
 #if ENABLE(WEB_INTENTS)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(intent, false);
 
-    WebPageProxy* page = impl->pageProxy.get();
+    WebPageProxy* page = impl->page();
     page->deliverIntentToFrame(page->mainFrame(), intent->webIntentData());
 
     return true;
@@ -876,38 +765,34 @@ Eina_Bool ewk_view_intent_deliver(Evas_Object* ewkView, Ewk_Intent* intent)
 
 Eina_Bool ewk_view_back_possible(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    return impl->pageProxy->canGoBack();
+    return impl->page()->canGoBack();
 }
 
 Eina_Bool ewk_view_forward_possible(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    return impl->pageProxy->canGoForward();
+    return impl->page()->canGoForward();
 }
 
 Ewk_Back_Forward_List* ewk_view_back_forward_list_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
-    return impl->backForwardList.get();
+    return impl->backForwardList();
 }
 
 Eina_Bool ewk_view_html_string_load(Evas_Object* ewkView, const char* html, const char* baseUrl, const char* unreachableUrl)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(html, false);
 
     if (unreachableUrl && *unreachableUrl)
-        impl->pageProxy->loadAlternateHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "", String::fromUTF8(unreachableUrl));
+        impl->page()->loadAlternateHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "", String::fromUTF8(unreachableUrl));
     else
-        impl->pageProxy->loadHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "");
+        impl->page()->loadHTMLString(String::fromUTF8(html), baseUrl ? String::fromUTF8(baseUrl) : "");
 
     impl->informURLChange();
 
@@ -916,18 +801,16 @@ Eina_Bool ewk_view_html_string_load(Evas_Object* ewkView, const char* html, cons
 
 const char* ewk_view_setting_encoding_custom_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, 0);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, 0);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, 0);
 
     return impl->customTextEncodingName();
 }
 
 Eina_Bool ewk_view_setting_encoding_custom_set(Evas_Object* ewkView, const char* encoding)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->setCustomTextEncodingName(encoding);
+    impl->setCustomTextEncodingName(encoding ? encoding : String());
 
     return true;
 }
@@ -944,75 +827,36 @@ COMPILE_ASSERT_MATCHING_ENUM(EWK_FIND_OPTIONS_SHOW_HIGHLIGHT, kWKFindOptionsShow
 
 Eina_Bool ewk_view_text_find(Evas_Object* ewkView, const char* text, Ewk_Find_Options options, unsigned maxMatchCount)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(text, false);
 
-    impl->pageProxy->findString(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
+    impl->page()->findString(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
 
     return true;
 }
 
 Eina_Bool ewk_view_text_find_highlight_clear(Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->pageProxy->hideFindUI();
+    impl->page()->hideFindUI();
 
     return true;
 }
 
 Eina_Bool ewk_view_text_matches_count(Evas_Object* ewkView, const char* text, Ewk_Find_Options options, unsigned maxMatchCount)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     EINA_SAFETY_ON_NULL_RETURN_VAL(text, false);
 
-    impl->pageProxy->countStringMatches(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
-
-    return true;
-}
-
-Eina_Bool ewk_view_popup_menu_close(Evas_Object* ewkView)
-{
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(smartData->api, false);
-
-    if (!impl->popupMenuProxy)
-        return false;
-
-    impl->popupMenuProxy = 0;
-
-    if (smartData->api->popup_menu_hide)
-        smartData->api->popup_menu_hide(smartData);
-
-    void* item;
-    EINA_LIST_FREE(impl->popupMenuItems, item)
-        delete static_cast<Ewk_Popup_Menu_Item*>(item);
-
-    return true;
-}
-
-Eina_Bool ewk_view_popup_menu_select(Evas_Object* ewkView, unsigned int selectedIndex)
-{
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
-    EINA_SAFETY_ON_NULL_RETURN_VAL(impl->popupMenuProxy, false);
-
-    if (selectedIndex >= eina_list_count(impl->popupMenuItems))
-        return false;
-
-    impl->popupMenuProxy->valueChanged(selectedIndex);
+    impl->page()->countStringMatches(String::fromUTF8(text), static_cast<WebKit::FindOptions>(options), maxMatchCount);
 
     return true;
 }
 
 Eina_Bool ewk_view_mouse_events_enabled_set(Evas_Object* ewkView, Eina_Bool enabled)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
     impl->setMouseEventsEnabled(!!enabled);
 
@@ -1021,22 +865,9 @@ Eina_Bool ewk_view_mouse_events_enabled_set(Evas_Object* ewkView, Eina_Bool enab
 
 Eina_Bool ewk_view_mouse_events_enabled_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
     return impl->mouseEventsEnabled();
-}
-
-Eina_Bool ewk_view_color_picker_color_set(Evas_Object* ewkView, int r, int g, int b, int a)
-{
-#if ENABLE(INPUT_TYPE_COLOR)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
-
-    return impl->setColorPickerColor(WebCore::Color(r, g, b, a));
-#else
-    return false;
-#endif
 }
 
 Eina_Bool ewk_view_feed_touch_event(Evas_Object* ewkView, Ewk_Touch_Event_Type type, const Eina_List* points, const Evas_Modifier* modifiers)
@@ -1044,12 +875,9 @@ Eina_Bool ewk_view_feed_touch_event(Evas_Object* ewkView, Ewk_Touch_Event_Type t
 #if ENABLE(TOUCH_EVENTS)
     EINA_SAFETY_ON_NULL_RETURN_VAL(points, false);
     EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_BY_SD_OR_RETURN(smartData, impl, false);
 
-    Evas_Point position = { smartData->view.x, smartData->view.y };
-    // FIXME: Touch points do not take scroll position and scale into account when 
-    // TILED_BACKING_STORE is enabled.
-    impl->pageProxy->handleTouchEvent(NativeWebTouchEvent(type, points, modifiers, &position, ecore_time_get()));
+    impl->page()->handleTouchEvent(NativeWebTouchEvent(type, points, modifiers, toWebContentTransform(smartData), toDeviceScreenTransform(smartData), ecore_time_get()));
 
     return true;
 #else
@@ -1060,8 +888,7 @@ Eina_Bool ewk_view_feed_touch_event(Evas_Object* ewkView, Ewk_Touch_Event_Type t
 Eina_Bool ewk_view_touch_events_enabled_set(Evas_Object* ewkView, Eina_Bool enabled)
 {
 #if ENABLE(TOUCH_EVENTS)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
     impl->setTouchEventsEnabled(!!enabled);
 
@@ -1074,8 +901,7 @@ Eina_Bool ewk_view_touch_events_enabled_set(Evas_Object* ewkView, Eina_Bool enab
 Eina_Bool ewk_view_touch_events_enabled_get(const Evas_Object* ewkView)
 {
 #if ENABLE(TOUCH_EVENTS)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
     return impl->touchEventsEnabled();
 #else
@@ -1086,10 +912,9 @@ Eina_Bool ewk_view_touch_events_enabled_get(const Evas_Object* ewkView)
 Eina_Bool ewk_view_inspector_show(Evas_Object* ewkView)
 {
 #if ENABLE(INSPECTOR)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    WebInspectorProxy* inspector = impl->pageProxy->inspector();
+    WebInspectorProxy* inspector = impl->page()->inspector();
     if (inspector)
         inspector->show();
 
@@ -1102,10 +927,9 @@ Eina_Bool ewk_view_inspector_show(Evas_Object* ewkView)
 Eina_Bool ewk_view_inspector_close(Evas_Object* ewkView)
 {
 #if ENABLE(INSPECTOR)
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    WebInspectorProxy* inspector = impl->pageProxy->inspector();
+    WebInspectorProxy* inspector = impl->page()->inspector();
     if (inspector)
         inspector->close();
 
@@ -1124,18 +948,16 @@ COMPILE_ASSERT_MATCHING_ENUM(EWK_PAGINATION_MODE_BOTTOM_TO_TOP, WebCore::Paginat
 
 Eina_Bool ewk_view_pagination_mode_set(Evas_Object* ewkView, Ewk_Pagination_Mode mode)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, false);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, false);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
     
-    impl->pageProxy->setPaginationMode(static_cast<WebCore::Pagination::Mode>(mode));
+    impl->page()->setPaginationMode(static_cast<WebCore::Pagination::Mode>(mode));
 
     return true;
 }
 
 Ewk_Pagination_Mode ewk_view_pagination_mode_get(const Evas_Object* ewkView)
 {
-    EWK_VIEW_SD_GET_OR_RETURN(ewkView, smartData, EWK_PAGINATION_MODE_INVALID);
-    EWK_VIEW_IMPL_GET_OR_RETURN(smartData, impl, EWK_PAGINATION_MODE_INVALID);
+    EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, EWK_PAGINATION_MODE_INVALID);
 
-    return static_cast<Ewk_Pagination_Mode>(impl->pageProxy->paginationMode());
+    return static_cast<Ewk_Pagination_Mode>(impl->page()->paginationMode());
 }
