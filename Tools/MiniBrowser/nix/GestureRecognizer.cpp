@@ -29,6 +29,7 @@ GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
     , m_timestamp(0)
     , m_doubleTapTimerId(0)
     , m_initialPinchDistance(0)
+    , m_initialPinchScale(0)
 {
 }
 
@@ -81,6 +82,7 @@ void GestureRecognizer::setupPinchData(const std::vector<Nix::TouchPoint>& point
     Nix::TouchPoint second = points[1];
 
     m_initialPinchDistance = computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+    m_initialPinchScale = m_client->scale();
     m_initialPinchContentCenter = computeCenter(WKPointMake(first.x, first.y), WKPointMake(second.x, second.y));
     m_previousPinchGlobalCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
 }
@@ -175,21 +177,9 @@ void GestureRecognizer::pinchInProgress(const Nix::TouchEvent& event)
         return;
     }
 
-    Nix::TouchPoint first = event.touchPoints[0];
-    Nix::TouchPoint second = event.touchPoints[1];
-
-    WKPoint currentCenter;
-
     switch (event.type) {
     case Nix::InputEvent::TouchMove:
-        currentCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
-        m_client->handlePinch(event.timestamp,
-            (currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale(),
-            (currentCenter.y - m_previousPinchGlobalCenter.y) / m_client->scale(),
-            computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY)) / m_initialPinchDistance,
-            m_initialPinchContentCenter.x,
-            m_initialPinchContentCenter.y);
-        m_previousPinchGlobalCenter = currentCenter;
+        updatePinchData(event.timestamp, event.touchPoints);
         break;
     case Nix::InputEvent::TouchEnd:
         if (hasTouchPointPressed(event))
@@ -218,5 +208,23 @@ gboolean doubleTapTimer(gpointer data)
 {
     reinterpret_cast<GestureRecognizer*>(data)->doubleTapTimerTriggered();
     return FALSE;
+}
+
+void GestureRecognizer::updatePinchData(double timestamp, const std::vector<Nix::TouchPoint>& points)
+{
+    assert(m_initialPinchScale > 0);
+
+    Nix::TouchPoint first = points[0];
+    Nix::TouchPoint second = points[1];
+
+    WKPoint currentCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+    double dx = (currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale();
+    double dy = (currentCenter.y - m_previousPinchGlobalCenter.y) / m_client->scale();
+    double currentDistance = computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
+    double newScale = m_initialPinchScale * (currentDistance / m_initialPinchDistance);
+
+    m_client->handlePinch(timestamp, dx, dy, newScale, m_initialPinchContentCenter.x, m_initialPinchContentCenter.y);
+
+    m_previousPinchGlobalCenter = currentCenter;
 }
 

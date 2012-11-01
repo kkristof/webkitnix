@@ -44,6 +44,7 @@ private:
 
     void updatePanningData(double, const Nix::TouchPoint&);
     void setupPinchData(const std::vector<Nix::TouchPoint>& points);
+    void updatePinchData(double, const std::vector<Nix::TouchPoint>& points);
 
     typedef void (GestureRecognizer::*StateFunction)(const Nix::TouchEvent&);
     StateFunction m_state;
@@ -55,6 +56,7 @@ private:
     GestureRecognizerClient* m_client;
 
     double m_initialPinchDistance;
+    double m_initialPinchScale;
     WKPoint m_previousPinchGlobalCenter;
     WKPoint m_initialPinchContentCenter;
 
