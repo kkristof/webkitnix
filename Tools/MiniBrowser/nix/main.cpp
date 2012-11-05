@@ -75,8 +75,8 @@ public:
 private:
 
     enum ScaleBehavior {
-        AdjustToBoundaries,
-        IgnoreBoundaries
+        AdjustToBoundaries = 1 << 0,
+        LowerMinimumScale = 1 << 1
     };
     void handleWheelEvent(const XButtonPressedEvent&);
     void updateClickCount(const XButtonPressedEvent&);
@@ -87,7 +87,7 @@ private:
     void adjustScrollPosition();
     double scaleToFitContents();
 
-    void scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior shouldAdjustScrollPosition = AdjustToBoundaries);
+    void scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior = AdjustToBoundaries);
 
     Nix::WebView* webViewAtX11Position(const WKPoint& poisition);
 
@@ -609,7 +609,7 @@ void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKP
     WKPoint position = WKPointMake(m_webView->scrollPosition().x - delta.x, m_webView->scrollPosition().y - delta.y);
 
     m_webView->setScrollPosition(position);
-    scaleAtPoint(contentCenter, scale, IgnoreBoundaries);
+    scaleAtPoint(contentCenter, scale, LowerMinimumScale);
 }
 
 void MiniBrowser::handlePinchFinished(double timestamp)
@@ -617,9 +617,11 @@ void MiniBrowser::handlePinchFinished(double timestamp)
     adjustScrollPosition();
 }
 
-void MiniBrowser::scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior shouldAdjustScrollPosition)
+void MiniBrowser::scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior)
 {
     double minimumScale = double(m_webView->size().width) / m_contentsSize.width;
+    if(scaleBehavior & LowerMinimumScale)
+        minimumScale *= 0.5;
     if (scale < minimumScale)
         scale = minimumScale;
 
@@ -630,7 +632,7 @@ void MiniBrowser::scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior
                                    point.y - (point.y - m_webView->scrollPosition().y) * scaleRatio);
 
     m_webView->setScale(scale);
-    if (shouldAdjustScrollPosition == AdjustToBoundaries)
+    if (scaleBehavior & AdjustToBoundaries)
         position = adjustScrollPositionToBoundaries(position);
     m_webView->setScrollPosition(position);
 }
