@@ -85,6 +85,7 @@ private:
     void scheduleUpdateDisplay();
     WKPoint adjustScrollPositionToBoundaries(WKPoint position);
     void adjustScrollPosition();
+    void adjustViewportToTextInputArea();
     double scaleToFitContents();
 
     void scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior = AdjustToBoundaries);
@@ -329,6 +330,8 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 }
 
 static const double doubleClickInterval = 300;
+static const double horizontalMarginForViewportAdjustment = 8.0;
+static const double scaleFactorForTextInputFocus = 2.0;
 
 void MiniBrowser::updateClickCount(const XButtonPressedEvent& event)
 {
@@ -536,8 +539,7 @@ void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area)
         return;
 
     // The zoomed area will look nicer with a horizontal margin.
-    double margin = 8.0;
-    double scale = m_webView->size().width / (area.size.width + margin * 2.0);
+    double scale = m_webView->size().width / (area.size.width + horizontalMarginForViewportAdjustment * 2.0);
 
     // Trying to zoom to an area with the same scale factor causes a zoom out.
     if (scale == m_webView->scale())
@@ -545,7 +547,7 @@ void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area)
     else {
         // We want the zoomed content area to fit horizontally in the WebView,
         // so let's give the scaleAtPoint method a suitable value.
-        target.x = area.origin.x - margin;
+        target.x = area.origin.x - horizontalMarginForViewportAdjustment;
         m_webView->setScrollPosition(WKPointMake(target.x, m_webView->scrollPosition().y));
     }
 
@@ -654,6 +656,23 @@ Nix::WebView* MiniBrowser::webViewAtX11Position(const WKPoint& position)
     return 0;
 }
 
+void MiniBrowser::adjustViewportToTextInputArea()
+{
+    m_shouldRestoreViewportWhenLosingFocus = true;
+    m_scaleBeforeFocus = m_webView->scale();
+    m_scrollPositionBeforeFocus = m_webView->scrollPosition();
+
+    m_webView->setScale(scaleFactorForTextInputFocus);
+
+    // After scaling to fit editor rect width, we align vertically based on cursor rect.
+    WKPoint scrollPosition;
+    scrollPosition.x = m_editorRect.origin.x - horizontalMarginForViewportAdjustment;
+    double verticalOffset = (m_webView->visibleContentsSize().height - m_cursorRect.size.height) / 2.0;
+    scrollPosition.y = m_cursorRect.origin.y - verticalOffset;
+    scrollPosition = adjustScrollPositionToBoundaries(scrollPosition);
+    m_webView->setScrollPosition(scrollPosition);
+}
+
 void MiniBrowser::doneWithGestureEvent(const Nix::GestureEvent& event, bool wasEventHandled)
 {
     if (!wasEventHandled)
@@ -661,17 +680,15 @@ void MiniBrowser::doneWithGestureEvent(const Nix::GestureEvent& event, bool wasE
 
     if (event.type == Nix::InputEvent::GestureSingleTap && m_shouldFocusEditableArea) {
         m_shouldFocusEditableArea = false;
-        int x = m_editorRect.origin.x + m_editorRect.size.width / 2;
-        int y = m_editorRect.origin.y + m_editorRect.size.height / 2;
-        WKPoint point = WKPointMake(x, y);
-        // FIXME: We should make a different zoom like Qt does with PageViewportControllerClientQt::focusEditableArea.
-        m_shouldRestoreViewportWhenLosingFocus = true;
-        m_scaleBeforeFocus = m_webView->scale();
-        m_scrollPositionBeforeFocus = m_webView->scrollPosition();
-        m_webView->findZoomableAreaForPoint(point, 20, 20);
+        adjustViewportToTextInputArea();
     }
 
     m_postponeTextInputUpdates = true;
+}
+
+static inline bool WKRectIsEqual(const WKRect& a, const WKRect& b)
+{
+    return a.origin == b.origin && a.size.width == b.size.width && a.size.height == b.size.height;
 }
 
 void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
@@ -680,6 +697,10 @@ void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect
         return;
 
     if (isContentEditable) {
+        // If we're only moving cursor inside the current editor, then we should not focus it again.
+        if (WKRectIsEqual(editorRect, m_editorRect))
+            return;
+
         m_shouldFocusEditableArea = true;
         m_cursorRect = cursorRect;
         m_editorRect = editorRect;
@@ -689,6 +710,8 @@ void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect
             m_webView->setScale(m_scaleBeforeFocus);
             m_webView->setScrollPosition(m_scrollPositionBeforeFocus);
         }
+        m_cursorRect = WKRectMake(0, 0, 0, 0);
+        m_editorRect = WKRectMake(0, 0, 0, 0);
     }
 }
 
