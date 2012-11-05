@@ -59,51 +59,6 @@ using namespace WebKit;
 
 namespace Nix {
 
-void WebViewClient::viewNeedsDisplay(WKRect)
-{
-
-}
-
-void WebViewClient::webProcessCrashed(WKStringRef)
-{
-
-}
-
-void WebViewClient::webProcessRelaunched()
-{
-
-}
-
-void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool)
-{
-
-}
-
-void WebViewClient::doneWithGestureEvent(const GestureEvent&, bool)
-{
-
-}
-
-void WebViewClient::pageDidRequestScroll(WKPoint)
-{
-
-}
-
-void WebViewClient::didChangeContentsSize(WKSize)
-{
-
-}
-
-void WebViewClient::didFindZoomableArea(WKPoint, WKRect)
-{
-
-}
-
-void WebViewClient::updateTextInputState(bool, WKRect, WKRect)
-{
-
-}
-
 class WebViewImpl : public WebView, public PageClient {
 public:
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
