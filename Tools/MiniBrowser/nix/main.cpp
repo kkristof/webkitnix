@@ -111,6 +111,9 @@ private:
     bool m_shouldFocusEditableArea;
     WKRect m_cursorRect;
     WKRect m_editorRect;
+    bool m_shouldRestoreViewportWhenLosingFocus;
+    double m_scaleBeforeFocus;
+    WKPoint m_scrollPositionBeforeFocus;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -132,6 +135,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     , m_gestureRecognizer(GestureRecognizer(this))
     , m_postponeTextInputUpdates(true)
     , m_shouldFocusEditableArea(false)
+    , m_shouldRestoreViewportWhenLosingFocus(false)
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -660,6 +664,9 @@ void MiniBrowser::doneWithGestureEvent(const Nix::GestureEvent& event, bool wasE
         int y = m_editorRect.origin.y + m_editorRect.size.height / 2;
         WKPoint point = WKPointMake(x, y);
         // FIXME: We should make a different zoom like Qt does with PageViewportControllerClientQt::focusEditableArea.
+        m_shouldRestoreViewportWhenLosingFocus = true;
+        m_scaleBeforeFocus = m_webView->scale();
+        m_scrollPositionBeforeFocus = m_webView->scrollPosition();
         m_webView->findZoomableAreaForPoint(point, 20, 20);
     }
 
@@ -668,12 +675,20 @@ void MiniBrowser::doneWithGestureEvent(const Nix::GestureEvent& event, bool wasE
 
 void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
 {
-    if (m_postponeTextInputUpdates || !isContentEditable)
+    if (m_postponeTextInputUpdates)
         return;
 
-    m_shouldFocusEditableArea = true;
-    m_cursorRect = cursorRect;
-    m_editorRect = editorRect;
+    if (isContentEditable) {
+        m_shouldFocusEditableArea = true;
+        m_cursorRect = cursorRect;
+        m_editorRect = editorRect;
+    } else {
+        if (m_shouldRestoreViewportWhenLosingFocus) {
+            m_shouldRestoreViewportWhenLosingFocus = false;
+            m_webView->setScale(m_scaleBeforeFocus);
+            m_webView->setScrollPosition(m_scrollPositionBeforeFocus);
+        }
+    }
 }
 
 int main(int argc, char* argv[])
