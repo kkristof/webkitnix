@@ -54,7 +54,6 @@ SET(WebKitTestRunnerInjectedBundle_SOURCES
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/AccessibilityTextMarkerRange.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/AccessibilityUIElement.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/EventSendingController.cpp
-    ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/GamepadController.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/GCController.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/InjectedBundle.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/InjectedBundleMain.cpp
@@ -64,6 +63,10 @@ SET(WebKitTestRunnerInjectedBundle_SOURCES
 
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/Bindings/JSWrapper.cpp
 )
+
+IF (ENABLE_GAMEPAD)
+    LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/GamepadController.cpp)
+ENDIF ()
 
 FILE(GLOB WebKitTestRunnerInjectedBundle_IDL_FILES "${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/Bindings/*.idl")
 

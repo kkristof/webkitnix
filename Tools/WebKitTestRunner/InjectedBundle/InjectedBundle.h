@@ -28,7 +28,9 @@
 
 #include "AccessibilityController.h"
 #include "EventSendingController.h"
+#if ENABLE(GAMEPAD)
 #include "GamepadController.h"
+#endif
 #include "GCController.h"
 #include "TestRunner.h"
 #include "TextInputController.h"
@@ -63,8 +65,9 @@ public:
     EventSendingController* eventSendingController() { return m_eventSendingController.get(); }
     TextInputController* textInputController() { return m_textInputController.get(); }
     AccessibilityController* accessibilityController() { return m_accessibilityController.get(); }
+#if ENABLE(GAMEPAD)
     GamepadController* gamepadController() { return m_gamepadController.get(); }
-
+#endif
     InjectedBundlePage* page() const;
     size_t pageCount() const { return m_pages.size(); }
     void closeOtherPages();
@@ -143,7 +146,9 @@ private:
     RefPtr<GCController> m_gcController;
     RefPtr<EventSendingController> m_eventSendingController;
     RefPtr<TextInputController> m_textInputController;
+#if ENABLE(GAMEPAD)
     RefPtr<GamepadController> m_gamepadController;
+#endif
 
     WKBundleFrameRef m_topLoadingFrame;
 
