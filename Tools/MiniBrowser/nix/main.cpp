@@ -666,7 +666,7 @@ void MiniBrowser::adjustViewportToTextInputArea()
 
     // After scaling to fit editor rect width, we align vertically based on cursor rect.
     WKPoint scrollPosition;
-    scrollPosition.x = m_editorRect.origin.x - horizontalMarginForViewportAdjustment;
+    scrollPosition.x = m_editorRect.origin.x - scaleFactorForTextInputFocus * horizontalMarginForViewportAdjustment;
     double verticalOffset = (m_webView->visibleContentsSize().height - m_cursorRect.size.height) / 2.0;
     scrollPosition.y = m_cursorRect.origin.y - verticalOffset;
     scrollPosition = adjustScrollPositionToBoundaries(scrollPosition);
