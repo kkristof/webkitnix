@@ -58,8 +58,7 @@ public:
     virtual void setScale(double) = 0;
     virtual double scale() const  = 0;
 
-    virtual int visibleContentWidth() const = 0;
-    virtual int visibleContentHeight() const = 0;
+    virtual WKSize visibleContentsSize() const = 0;
 
     virtual void setOpacity(double) = 0;
     virtual double opacity() const = 0;

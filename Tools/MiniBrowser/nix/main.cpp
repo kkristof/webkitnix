@@ -470,9 +470,10 @@ void MiniBrowser::scheduleUpdateDisplay()
 
 WKPoint MiniBrowser::adjustScrollPositionToBoundaries(WKPoint position)
 {
-    int rightBoundary = m_contentsSize.width - m_webView->visibleContentWidth();
+    WKSize visibleContentsSize = m_webView->visibleContentsSize();
+    double rightBoundary = m_contentsSize.width - visibleContentsSize.width;
     // Contents height may be shorter than the scaled viewport height.
-    int bottomBoundary = m_contentsSize.height < m_webView->visibleContentHeight() ? 0 : m_contentsSize.height - m_webView->visibleContentHeight();
+    double bottomBoundary = m_contentsSize.height < visibleContentsSize.height ? 0 : m_contentsSize.height - visibleContentsSize.height;
 
     if (position.x < 0)
         position.x = 0;
@@ -531,7 +532,7 @@ void MiniBrowser::didChangeContentsSize(WKSize size)
 void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area)
 {
     // Zoomable area width is the same as web page width, and this is fully visible.
-    if (m_contentsSize.width == area.size.width && m_contentsSize.width == m_webView->visibleContentWidth())
+    if (m_contentsSize.width == area.size.width && m_contentsSize.width == m_webView->visibleContentsSize().width)
         return;
 
     // The zoomed area will look nicer with a horizontal margin.

@@ -108,8 +108,7 @@ public:
     virtual void setScale(double);
     virtual double scale() const { return m_scale; }
 
-    virtual int visibleContentWidth() const { return m_size.width() / m_scale; }
-    virtual int visibleContentHeight() const { return m_size.height() / m_scale; }
+    virtual WKSize visibleContentsSize() const { return WKSizeMake(m_size.width() / m_scale, m_size.height() / m_scale); }
 
     virtual void setOpacity(double opacity) { m_opacity = opacity < 0.0 ? 0.0 : opacity > 1.0 ? 1.0 : opacity; }
     virtual double opacity() const { return m_opacity; }
@@ -418,8 +417,9 @@ LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
 
 FloatRect WebViewImpl::visibleRect() const
 {
-    FloatRect viewport(m_scrollPosition, FloatSize(visibleContentWidth(), visibleContentHeight()));
-    FloatRect visibleRect(0, 0, m_contentsSize.width(), m_contentsSize.height()) ;
+    WKSize vcSize = visibleContentsSize();
+    FloatRect viewport(m_scrollPosition, FloatSize(vcSize.width, vcSize.height));
+    FloatRect visibleRect(0, 0, m_contentsSize.width(), m_contentsSize.height());
     visibleRect.intersect(viewport);
     return visibleRect;
 }
