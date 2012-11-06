@@ -402,6 +402,10 @@ webkit.org/b/85262 fast/css/image-resolution
 # CSS image-orientation is not yet enabled.
 webkit.org/b/89052 fast/css/image-orientation
 
+# CSS3-text work is still in progress.
+webkit.org/b/94110 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ ImageOnlyFailure Missing ]
+webkit.org/b/94110 fast/css3-text/css3-text-decoration/text-decoration-style.html [ ImageOnlyFailure Missing ]
+
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] perf [ WontFix ]
 
@@ -1106,6 +1110,7 @@ webkit.org/b/79766 compositing/overflow/scrolling-content-clip-to-viewport.html 
 webkit.org/b/79766 compositing/overflow/textarea-scroll-touch.html [ Failure ]
 webkit.org/b/79766 compositing/plugins/no-backing-store.html [ Failure ]
 webkit.org/b/79766 compositing/plugins/small-to-large-composited-plugin.html [ Failure ]
+webkit.org/b/79766 compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-absolute-overflow.html [ Failure ]
 webkit.org/b/79766 compositing/rtl/rtl-absolute.html [ Failure ]
@@ -1212,11 +1217,6 @@ webkit.org/b/95297 fast/events/constructors/media-key-event-constructor.html [ S
 webkit.org/b/88080 pointer-lock [ Skip ]
 webkit.org/b/88080 http/tests/pointer-lock [ Skip ]
 
-# EXIF orientation support has not yet been implemented for EFL port
-webkit.org/b/95299 fast/images/exif-orientation-css.html [ Skip ]
-webkit.org/b/95299 fast/images/exif-orientation-image-document.html [ Skip ]
-webkit.org/b/95299 fast/images/exif-orientation.html [ Skip ]
-
 # Requires WEB_AUDIO support.
 webkit.org/b/91738 webaudio [ Skip ]
 
@@ -1248,7 +1248,7 @@ webkit.org/b/75747 fast/css/color-correction.html [ Missing Failure ]
 
 webkit.org/b/65536 fast/css/text-rendering.html [ Missing Failure ]
 
-webkit.org/b/49142 fast/css/style-scoped [ Failure ]
+webkit.org/b/49142 fast/css/style-scoped [ Skip ]
 
 # ENABLE(INPUT_TYPE_*) are not enabled.
 webkit.org/b/29359 fast/css/pseudo-in-range.html [ Failure ]
@@ -1337,7 +1337,7 @@ webkit.org/b/68591 http/tests/security/filesystem-iframe-from-remote.html
 webkit.org/b/68591 http/tests/security/mixedContent/filesystem-url-in-iframe.html
 webkit.org/b/68591 http/tests/inspector/filesystem
 
-# The EFL port has no support for the Geolocation
+# EFL's TestRunner should support for the Geolocation API
 webkit.org/b/82140 fast/dom/Geolocation [ Skip ]
 webkit.org/b/82140 fast/dom/Window/window-properties-geolocation.html [ Failure ]
 webkit.org/b/82140 inspector/geolocation-error.html [ Failure ]
@@ -1360,7 +1360,7 @@ webkit.org/b/90860 fast/dom/shadow/shadowdom-for-object-complex-shadow.html [ Im
 webkit.org/b/90860 fast/dom/shadow/shadowdom-for-object-without-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/91487 fast/dom/shadow/shadowdom-for-select-complex-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/91487 fast/dom/shadow/shadowdom-for-select-without-shadow.html [ ImageOnlyFailure ]
-webkit.org/b/91488 fast/dom/shadow/shadowdom-for-output-only-shadow.html [ ImageOnlyFailure ]
+webkit.org/b/91488 fast/dom/shadow/shadowdom-for-output-only-shadow.html [ ImageOnlyFailure Pass ]
 webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-complex-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-only-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/95439 fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
@@ -1487,7 +1487,6 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.ht
 fast/forms/date-multiple-fields
 webkit.org/b/97299 fast/forms/month-multiple-fields
 webkit.org/b/94186 fast/forms/time-multiple-fields
-webkit.org/b/97877 fast/forms/week-multiple-fields
 
 webkit.org/b/93976 fast/css-generated-content/quotes-lang.html [ ImageOnlyFailure ]
 
@@ -1570,15 +1569,17 @@ webkit.org/b/98587 fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Ima
 webkit.org/b/99878 css3/flexbox/flexbox-baseline-margins.html [ Missing ImageOnlyFailure ]
 
 webkit.org/b/100463 mathml/msubsup-fuzz.html [ Crash Pass ]
-# Needs rebaseline eventually
+# Needs rebaseline
 webkit.org/b/97990 mathml/presentation/attributes.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/fractions.xhtml [ Failure ]
 webkit.org/b/97990 mathml/presentation/fractions-vertical-alignment.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/mo-stretch.html [ Failure ]
 webkit.org/b/97990 mathml/presentation/roots.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/row-alignment.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/subsup.xhtml [ Failure ]
 webkit.org/b/99921 mathml/presentation/fenced.xhtml [ Failure ]
+# Needs rebaseline after bug 97390
+webkit.org/b/97390 mathml/presentation/mo-stretch.html [ Failure Pass ]
+webkit.org/b/97390 mathml/presentation/row-alignment.xhtml [ Failure Pass ]
+webkit.org/b/97390 mathml/presentation/tables.xhtml [ Failure Pass ]
+webkit.org/b/97390 mathml/presentation/subsup.xhtml [ Failure Pass ]
 
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
@@ -1668,6 +1669,8 @@ webkit.org/b/99691 gamepad/gamepad-out-of-range-crasher.html [ Failure ]
 # Resource Timing is not enable yet, skip it.
 webkit.org/b/61138 http/tests/w3c/webperf/submission/Intel/resource-timing [ Skip ]
 
+webkit.org/b/100424 editing/selection/user-select-all-selection.html [ Failure ]
+
 # Entering into full screen playback mode fails when triggered by context menu
 Bug(EFL) media/context-menu-actions.html [ Failure ]
 
@@ -1680,3 +1683,4 @@ webkit.org/b/100857 ietestcenter/css3/text/textshadow-005.htm [ ImageOnlyFailure
 webkit.org/b/100855 ietestcenter/css3/text/textshadow-008.htm [ ImageOnlyFailure Missing ]
 
 webkit.org/b/100846 inspector-protocol/debugger-pause-dedicated-worker.html [ Skip ]
+webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Skip ]

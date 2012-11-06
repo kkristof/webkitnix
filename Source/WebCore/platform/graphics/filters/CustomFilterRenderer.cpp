@@ -69,13 +69,13 @@ static void orthogonalProjectionMatrix(TransformationMatrix& matrix, float left,
 }
 
 PassRefPtr<CustomFilterRenderer> CustomFilterRenderer::create(PassRefPtr<GraphicsContext3D> context, PassRefPtr<CustomFilterValidatedProgram> validatedProgram, const CustomFilterParameterList& parameters,
-    unsigned meshRows, unsigned meshColumns, CustomFilterOperation::MeshBoxType meshBoxType, CustomFilterMeshType meshType)
+    unsigned meshRows, unsigned meshColumns, CustomFilterMeshBoxType meshBoxType, CustomFilterMeshType meshType)
 {
     return adoptRef(new CustomFilterRenderer(context, validatedProgram, parameters, meshRows, meshColumns, meshBoxType, meshType));
 }
 
 CustomFilterRenderer::CustomFilterRenderer(PassRefPtr<GraphicsContext3D> context, PassRefPtr<CustomFilterValidatedProgram> validatedProgram, const CustomFilterParameterList& parameters,
-    unsigned meshRows, unsigned meshColumns, CustomFilterOperation::MeshBoxType, CustomFilterMeshType meshType)
+    unsigned meshRows, unsigned meshColumns, CustomFilterMeshBoxType, CustomFilterMeshType meshType)
     : m_context(context)
     , m_validatedProgram(validatedProgram)
     , m_compiledProgram(0) // Don't compile the program unless we need to paint.
@@ -284,9 +284,6 @@ void CustomFilterRenderer::bindProgramAndBuffers(Platform3DObject inputTexture)
 
     bindVertexAttribute(m_compiledProgram->positionAttribLocation(), PositionAttribSize, PositionAttribOffset);
     bindVertexAttribute(m_compiledProgram->texAttribLocation(), TexAttribSize, TexAttribOffset);
-    // FIXME: Get rid of the internal tex coord attribute "css_a_texCoord".
-    // https://bugs.webkit.org/show_bug.cgi?id=94358
-    bindVertexAttribute(m_compiledProgram->internalTexCoordAttribLocation(), TexAttribSize, TexAttribOffset);
     bindVertexAttribute(m_compiledProgram->meshAttribLocation(), MeshAttribSize, MeshAttribOffset);
     if (m_meshType == MeshTypeDetached)
         bindVertexAttribute(m_compiledProgram->triangleAttribLocation(), TriangleAttribSize, TriangleAttribOffset);
@@ -298,7 +295,6 @@ void CustomFilterRenderer::unbindVertexAttributes()
 {
     unbindVertexAttribute(m_compiledProgram->positionAttribLocation());
     unbindVertexAttribute(m_compiledProgram->texAttribLocation());
-    unbindVertexAttribute(m_compiledProgram->internalTexCoordAttribLocation());
     unbindVertexAttribute(m_compiledProgram->meshAttribLocation());
     if (m_meshType == MeshTypeDetached)
         unbindVertexAttribute(m_compiledProgram->triangleAttribLocation());

@@ -2191,7 +2191,6 @@ inspector/timeline/timeline-decode-resize.html
 # https://bugs.webkit.org/show_bug.cgi?id=95802
 http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html
 http/tests/inspector/console-resource-errors.html
-http/tests/inspector/network/network-initiator-from-console.html
 http/tests/inspector/resource-tree/resource-request-content-while-loading.html
 http/tests/inspector/search/resources-search-match-index.html
 inspector/profiler/heap-snapshot.html
@@ -2378,6 +2377,8 @@ webkit.org/b/84893 http/tests/w3c/webperf/submission/Intel/user-timing
 # Resource Timing is not enable yet, skip it.
 webkit.org/b/61138 http/tests/w3c/webperf/submission/Intel/resource-timing
 
+webkit.org/b/100424 editing/selection/user-select-all-selection.html [ Failure ]
+
 # https://bugs.webkit.org/show_bug.cgi?id=99567
 # Not supported on Mac or Windows ports
 inspector/elements/update-shadowdom.html
@@ -2414,3 +2415,7 @@ compositing/tiling/tile-cache-zoomed.html
 fast/images/exif-orientation-image-document.html
 
 webkit.org/b/100846 inspector-protocol/debugger-pause-dedicated-worker.html [ Skip ]
+webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Skip ]
+
+#https://bugs.webkit.org/show_bug.cgi?id=100117
+fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html

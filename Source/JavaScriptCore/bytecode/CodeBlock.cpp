@@ -43,7 +43,6 @@
 #include "JSNameScope.h"
 #include "JSValue.h"
 #include "LowLevelInterpreter.h"
-#include "MethodCallLinkStatus.h"
 #include "RepatchBuffer.h"
 #include "SlotVisitorInlineMethods.h"
 #include <stdio.h>
@@ -283,9 +282,6 @@ void CodeBlock::printGetByIdCacheStatus(ExecState* exec, int location)
 {
     Instruction* instruction = instructions().begin() + location;
 
-    if (exec->interpreter()->getOpcodeID(instruction[0].u.opcode) == op_method_check)
-        instruction++;
-    
     Identifier& ident = identifier(instruction[3].u.operand);
     
     UNUSED_PARAM(ident); // tell the compiler to shut up in certain platform configurations.
@@ -1017,42 +1013,6 @@ void CodeBlock::dump(ExecState* exec, const Vector<Instruction>::const_iterator&
             dumpBytecodeCommentAndNewLine(location);
             break;
         }
-        case op_method_check: {
-            dataLog("[%4d] method_check", location);
-#if ENABLE(JIT)
-            if (numberOfMethodCallLinkInfos()) {
-                MethodCallLinkInfo& methodCall = getMethodCallLinkInfo(location);
-                dataLog(" jit(");
-                if (!methodCall.seen)
-                    dataLog("not seen");
-                else {
-                    // Use the fact that MethodCallLinkStatus already does smart things
-                    // for decoding seen method calls.
-                    MethodCallLinkStatus status = MethodCallLinkStatus::computeFor(this, location);
-                    if (!status)
-                        dataLog("not set");
-                    else {
-                        dataLog("function = %p (executable = ", status.function());
-                        JSCell* functionAsCell = getJSFunction(status.function());
-                        if (functionAsCell)
-                            dataLog("%p", jsCast<JSFunction*>(functionAsCell)->executable());
-                        else
-                            dataLog("N/A");
-                        dataLog("), struct = %p", status.structure());
-                        if (status.needsPrototypeCheck())
-                            dataLog(", prototype = %p, struct = %p", status.prototype(), status.prototypeStructure());
-                    }
-                }
-                dataLog(")");
-            }
-#endif
-            dumpBytecodeCommentAndNewLine(location);
-            ++it;
-            printGetByIdOp(exec, location, it);
-            printGetByIdCacheStatus(exec, location);
-            dataLog("\n");
-            break;
-        }
         case op_del_by_id: {
             int r0 = (++it)->u.operand;
             int r1 = (++it)->u.operand;
@@ -1607,7 +1567,6 @@ CodeBlock::CodeBlock(CopyParsedBlockTag, CodeBlock& other)
     , m_thisRegister(other.m_thisRegister)
     , m_argumentsRegister(other.m_argumentsRegister)
     , m_activationRegister(other.m_activationRegister)
-    , m_globalObjectConstant(other.m_globalObjectConstant)
     , m_needsFullScopeChain(other.m_needsFullScopeChain)
     , m_usesEval(other.m_usesEval)
     , m_isNumericCompareFunction(other.m_isNumericCompareFunction)
@@ -2061,36 +2020,6 @@ void CodeBlock::finalizeUnconditionally()
             
             resetStubInternal(repatchBuffer, stubInfo);
         }
-
-        for (size_t size = m_methodCallLinkInfos.size(), i = 0; i < size; ++i) {
-            if (!m_methodCallLinkInfos[i].cachedStructure)
-                continue;
-            
-            ASSERT(m_methodCallLinkInfos[i].seenOnce());
-            ASSERT(!!m_methodCallLinkInfos[i].cachedPrototypeStructure);
-
-            if (!Heap::isMarked(m_methodCallLinkInfos[i].cachedStructure.get())
-                || !Heap::isMarked(m_methodCallLinkInfos[i].cachedPrototypeStructure.get())
-                || !Heap::isMarked(m_methodCallLinkInfos[i].cachedFunction.get())
-                || !Heap::isMarked(m_methodCallLinkInfos[i].cachedPrototype.get())) {
-                if (verboseUnlinking)
-                    dataLog("Clearing method call in %p.\n", this);
-                m_methodCallLinkInfos[i].reset(repatchBuffer, getJITType());
-
-                StructureStubInfo& stubInfo = getStubInfo(m_methodCallLinkInfos[i].bytecodeIndex);
-
-                AccessType accessType = static_cast<AccessType>(stubInfo.accessType);
-
-                if (accessType != access_unset) {
-                    ASSERT(isGetByIdAccess(accessType));
-                    if (getJITCode().jitType() == JITCode::DFGJIT)
-                        DFG::dfgResetGetByID(repatchBuffer, stubInfo);
-                    else
-                        JIT::resetPatchGetById(repatchBuffer, &stubInfo);
-                    stubInfo.reset();
-                }
-            }
-        }
     }
 #endif
 }
@@ -2331,7 +2260,6 @@ void CodeBlock::shrinkToFit(ShrinkMode shrinkMode)
 #if ENABLE(JIT)
     m_structureStubInfos.shrinkToFit();
     m_callLinkInfos.shrinkToFit();
-    m_methodCallLinkInfos.shrinkToFit();
 #endif
 #if ENABLE(VALUE_PROFILER)
     if (shrinkMode == EarlyShrink)
@@ -2410,7 +2338,7 @@ void CodeBlock::unlinkCalls()
             m_llintCallLinkInfos[i].unlink();
     }
 #endif
-    if (!(m_callLinkInfos.size() || m_methodCallLinkInfos.size()))
+    if (!m_callLinkInfos.size())
         return;
     if (!m_globalData->canUseJIT())
         return;

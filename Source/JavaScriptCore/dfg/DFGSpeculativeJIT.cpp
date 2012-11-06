@@ -337,7 +337,7 @@ const TypedArrayDescriptor* SpeculativeJIT::typedArrayDescriptor(ArrayMode array
     case Array::Float32Array:
         return &m_jit.globalData()->float32ArrayDescriptor();
     case Array::Float64Array:
-        return &m_jit.globalData()->float32ArrayDescriptor();
+        return &m_jit.globalData()->float64ArrayDescriptor();
     default:
         return 0;
     }
@@ -2416,7 +2416,7 @@ void SpeculativeJIT::compileGetByValOnFloatTypedArray(const TypedArrayDescriptor
     case 8: {
         m_jit.loadDouble(MacroAssembler::BaseIndex(storageReg, propertyReg, MacroAssembler::TimesEight), resultReg);
         MacroAssembler::Jump notNaN = m_jit.branchDouble(MacroAssembler::DoubleEqual, resultReg, resultReg);
-        static const double NaN = std::numeric_limits<double>::quiet_NaN();
+        static const double NaN = QNaN;
         m_jit.loadDouble(&NaN, resultReg);
         notNaN.link(&m_jit);
         break;

@@ -28,8 +28,6 @@
 
 #include "CookieStorageCFNet.h"
 
-#if USE(CFNETWORK) || USE(CFURLSTORAGESESSIONS)
-
 #include "ResourceHandle.h"
 #include <wtf/MainThread.h>
 
@@ -46,8 +44,6 @@
 #include "PlatformStrategies.h"
 #endif
 
-#endif
-
 namespace WebCore {
 
 #if PLATFORM(WIN)
@@ -60,8 +56,6 @@ static RetainPtr<CFHTTPCookieStorageRef>& cookieStorageOverride()
 
 #endif
 
-#if USE(CFNETWORK) || USE(CFURLSTORAGESESSIONS)
-
 RetainPtr<CFHTTPCookieStorageRef> currentCFHTTPCookieStorage()
 {
 #if PLATFORM(WIN)
@@ -69,10 +63,8 @@ RetainPtr<CFHTTPCookieStorageRef> currentCFHTTPCookieStorage()
         return override;
 #endif
 
-#if USE(CFNETWORK) || USE(CFURLSTORAGESESSIONS)
     if (CFURLStorageSessionRef session = ResourceHandle::currentStorageSession())
         return RetainPtr<CFHTTPCookieStorageRef>(AdoptCF, wkCopyHTTPCookieStorage(session));
-#endif
 
 #if USE(CFNETWORK)
     return wkGetDefaultHTTPCookieStorage();
@@ -82,25 +74,13 @@ RetainPtr<CFHTTPCookieStorageRef> currentCFHTTPCookieStorage()
 #endif
 }
 
-#endif // USE(CFNETWORK) || USE(CFURLSTORAGESESSIONS)
-
-#if USE(CFNETWORK) && PLATFORM(WIN)
+#if PLATFORM(WIN)
 
 void overrideCookieStorage(CFHTTPCookieStorageRef cookieStorage)
 {
     ASSERT(isMainThread());
     // FIXME: Why don't we retain it? The only caller is an API method that takes cookie storage as a raw argument.
     cookieStorageOverride().adoptCF(cookieStorage);
-}
-
-void setCookieStoragePrivateBrowsingEnabled(bool)
-{
-    ASSERT(isMainThread());
-
-    // Nothing to do here - we'll just use a private session from ResourceHandle.
-
-    // FIXME: When Private Browsing is enabled, the Private Browsing Cookie Storage should be
-    // observed for changes, not the default Cookie Storage.
 }
 
 static void notifyCookiesChangedOnMainThread(void*)
@@ -156,6 +136,6 @@ void stopObservingCookieChanges()
     CFHTTPCookieStorageUnscheduleFromRunLoop(cookieStorage.get(), runLoop, kCFRunLoopCommonModes);
 }
 
-#endif // USE(CFNETWORK) && PLATFORM(WIN)
+#endif // PLATFORM(WIN)
 
 } // namespace WebCore

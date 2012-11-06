@@ -61,6 +61,14 @@ TEST_F(EWK2UnitTestBase, ewk_context_favicon_database_get)
     ASSERT_EQ(faviconDatabase, ewk_context_favicon_database_get(context));
 }
 
+TEST_F(EWK2UnitTestBase, ewk_context_storage_manager_get)
+{
+    Ewk_Context* context = ewk_view_context_get(webView());
+    Ewk_Storage_Manager* storageManager = ewk_context_storage_manager_get(context);
+    ASSERT_TRUE(storageManager);
+    ASSERT_EQ(storageManager, ewk_context_storage_manager_get(context));
+}
+
 static void schemeRequestCallback(Ewk_Url_Scheme_Request* request, void* userData)
 {
     const char* scheme = ewk_url_scheme_request_scheme_get(request);
@@ -179,21 +187,12 @@ TEST_F(EWK2UnitTestBase, ewk_context_new)
 {
     Ewk_Context* context = ewk_context_new();
     ASSERT_TRUE(context);
-    ewk_context_unref(context);
+    ewk_object_unref(context);
 }
 
 TEST_F(EWK2UnitTestBase, ewk_context_new_with_injected_bundle_path)
 {
     Ewk_Context* context = ewk_context_new_with_injected_bundle_path(environment->injectedBundleSample());
     ASSERT_TRUE(context);
-    ewk_context_unref(context);
+    ewk_object_unref(context);
 }
-
-TEST_F(EWK2UnitTestBase, ewk_context_ref)
-{
-    Ewk_Context* context = ewk_context_new();
-    ASSERT_EQ(context, ewk_context_ref(context));
-    ewk_context_unref(context);
-    ewk_context_unref(context);
-}
-

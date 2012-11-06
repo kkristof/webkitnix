@@ -7,6 +7,7 @@ LIST(APPEND WebKit_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/efl"
     "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/graphics/efl"
+    "${WEBCORE_DIR}/platform/mock"
     "${WEBCORE_DIR}/platform/network/soup"
     ${CAIRO_INCLUDE_DIRS}
     ${ECORE_INCLUDE_DIRS}
@@ -86,6 +87,12 @@ IF (WTF_USE_TEXTURE_MAPPER_GL)
   )
 ENDIF ()
 
+IF (ENABLE_GEOLOCATION)
+  LIST(APPEND WebKit_INCLUDE_DIRECTORIES
+    "${WEBCORE_DIR}/Modules/geolocation"
+  )
+ENDIF ()
+
 LIST(APPEND WebKit_SOURCES
     efl/WebCoreSupport/AcceleratedCompositingContextEfl.cpp
     efl/WebCoreSupport/AssertMatchingEnums.cpp
@@ -153,8 +160,8 @@ LIST(APPEND WebKit_LIBRARIES
     ${LIBXML2_LIBRARIES}
     ${SQLITE_LIBRARIES}
     ${FONTCONFIG_LIBRARIES}
-    ${PNG_LIBRARY}
-    ${JPEG_LIBRARY}
+    ${PNG_LIBRARIES}
+    ${JPEG_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${GLIB_LIBRARIES}
     ${GLIB_GOBJECT_LIBRARIES}

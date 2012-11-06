@@ -57,17 +57,13 @@ webkit.org/b/100342 networkinformation/updates.html [ Crash ]
 webkit.org/b/100342 networkinformation/add-listener-from-callback.html [ Crash ]
 webkit.org/b/100342 networkinformation/basic-operation.html [ Crash ]
 
-webkit.org/b/100334 fast/dom/navigator-vibration.html [ Crash ]
-
 #////////////////////////////////////////////////////////////////////////////////////////
 # FLAKY TESTS
 #////////////////////////////////////////////////////////////////////////////////////////
 
 webkit.org/b/97560 http/tests/inspector/extensions-useragent.html [ Failure Pass ]
 webkit.org/b/97560 inspector/extensions/extensions-api.html [ Failure Pass ]
-webkit.org/b/97560 inspector/extensions/extensions-audits-content-script.html [ Failure Pass ]
 webkit.org/b/97560 inspector/extensions/extensions-audits.html [ Failure Pass ]
-webkit.org/b/97560 inspector/extensions/extensions-eval-content-script.html [ Failure Pass ]
 
 Bug(EFL) editing/selection/fake-doubleclick.html [ Failure Pass ]
 Bug(EFL) http/tests/security/contentSecurityPolicy/connect-src-websocket-blocked.html [ Crash Pass ]
@@ -259,6 +255,9 @@ webkit.org/b/100669 fast/dom/shadow/focus-navigation.html [ Failure ]
 webkit.org/b/98740 plugins/npruntime/delete-plugin-within-hasProperty-return-false.html [ Failure ]
 webkit.org/b/98740 plugins/npruntime/delete-plugin-within-hasProperty-return-true.html [ Failure ]
 webkit.org/b/98740 plugins/npruntime/delete-plugin-within-setProperty.html [ Failure ]
+
+# Test fails because WebKit is in shouldRespectImageOrientation=0 mode.
+webkit.org/b/101343 fast/images/exif-orientation-image-document.html [ Failure ]
 
 # Http plugin test failures.
 webkit.org/b/99561 http/tests/plugins/plugin-document-has-focus.html [ Failure ]

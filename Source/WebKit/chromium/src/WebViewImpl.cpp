@@ -1829,6 +1829,14 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions opt
     }
 }
 
+bool WebViewImpl::isTrackingRepaints() const
+{
+    if (!page())
+        return false;
+    FrameView* view = page()->mainFrame()->view();
+    return view->isTrackingRepaints();
+}
+
 void WebViewImpl::themeChanged()
 {
     if (!page())
@@ -3143,6 +3151,11 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
     }
 }
 
+WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
+{
+    return hitTestResultForWindowPos(point);
+}
+
 void WebViewImpl::copyImageAt(const WebPoint& point)
 {
     if (!m_page)
@@ -3990,7 +4003,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
                 WebRect asciiToRectTable[128];
                 int fontHeight;
                 SkBitmap bitmap = WebCore::CompositorHUDFontAtlas::generateFontAtlas(asciiToRectTable, fontHeight);
-                m_layerTreeView->setFontAtlas(bitmap, asciiToRectTable, fontHeight);
+                m_layerTreeView->setFontAtlas(asciiToRectTable, bitmap, fontHeight);
             }
         } else {
             m_nonCompositedContentHost.clear();
