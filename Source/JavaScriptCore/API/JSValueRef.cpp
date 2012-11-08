@@ -121,6 +121,15 @@ bool JSValueIsObject(JSContextRef ctx, JSValueRef value)
     return jsValue.isObject();
 }
 
+bool JSValueIsArray(JSContextRef ctx, JSValueRef value)
+{
+    ExecState* exec = toJS(ctx);
+    APIEntryShim entryShim(exec);
+
+    JSValue jsValue = toJS(exec, value);
+    return isJSArray(jsValue);
+}
+
 bool JSValueIsObjectOfClass(JSContextRef ctx, JSValueRef value, JSClassRef jsClass)
 {
     ExecState* exec = toJS(ctx);

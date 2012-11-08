@@ -121,6 +121,15 @@ JS_EXPORT bool JSValueIsObject(JSContextRef ctx, JSValueRef value);
 
 /*!
 @function
+@abstract       Tests whether a JavaScript value's type is the array type.
+@param ctx  The execution context to use.
+@param value    The JSValue to test.
+@result         true if value's type is the array type, otherwise false.
+*/
+JS_EXPORT bool JSValueIsArray(JSContextRef ctx, JSValueRef value);
+
+/*!
+@function
 @abstract Tests whether a JavaScript value is an object with a given class in its class chain.
 @param ctx The execution context to use.
 @param value The JSValue to test.

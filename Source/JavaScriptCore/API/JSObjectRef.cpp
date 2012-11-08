@@ -547,3 +547,23 @@ void JSPropertyNameAccumulatorAddName(JSPropertyNameAccumulatorRef array, JSStri
     APIEntryShim entryShim(propertyNames->globalData());
     propertyNames->add(propertyName->identifier(propertyNames->globalData()));
 }
+
+size_t JSArrayGetCount(JSContextRef ctx, JSObjectRef array)
+{
+    ExecState* exec = toJS(ctx);
+    APIEntryShim entryShim(exec);
+
+    JSValue jsValue = toJS(exec, array);
+	JSArray* jsArray = asArray(jsValue);
+	return jsArray->length();
+}
+
+JSValueRef JSArrayGetValueAtIndex(JSContextRef ctx, JSObjectRef array, size_t index)
+{
+    ExecState* exec = toJS(ctx);
+    APIEntryShim entryShim(exec);
+
+    JSValue jsValue = toJS(exec, array);
+	JSArray* jsArray = asArray(jsValue);
+	return toRef(exec, jsArray->getIndex(exec, index));
+}

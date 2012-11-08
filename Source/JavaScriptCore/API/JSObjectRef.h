@@ -687,6 +687,23 @@ JS_EXPORT JSStringRef JSPropertyNameArrayGetNameAtIndex(JSPropertyNameArrayRef a
 */
 JS_EXPORT void JSPropertyNameAccumulatorAddName(JSPropertyNameAccumulatorRef accumulator, JSStringRef propertyName);
 
+/*!
+@function
+@abstract Gets a count of the number of items in a JavaScript object array.
+@param array The array from which to retrieve the count.
+@result An integer count of the number of objects in the array.
+*/
+JS_EXPORT size_t JSArrayGetCount(JSContextRef ctx, JSObjectRef array);
+
+/*!
+@function
+@abstract Gets a object item at a given index in a JavaScript object array.
+@param array The array from which to retrieve the object item.
+@param index The index of the object item to retrieve.
+@result A JSValueRef containing the object item.
+*/
+JS_EXPORT JSValueRef JSArrayGetValueAtIndex(JSContextRef ctx, JSObjectRef array, size_t index);
+
 #ifdef __cplusplus
 }
 #endif
