@@ -40,6 +40,7 @@
 #include "WebPageClient.h"
 
 #include <BlackBerryPlatformDeviceInfo.h>
+#include <BlackBerryPlatformPrimitives.h>
 #include <BlackBerryPlatformSettings.h>
 #include <FrameLoaderClientBlackBerry.h>
 #include <set>
@@ -114,6 +115,7 @@ MediaPlayerPrivate::MediaPlayerPrivate(MediaPlayer* player)
 #endif
     , m_userDrivenSeekTimer(this, &MediaPlayerPrivate::userDrivenSeekTimerFired)
     , m_lastSeekTime(0)
+    , m_lastLoadingTime(0)
     , m_lastSeekTimePending(false)
     , m_isAuthenticationChallenging(false)
     , m_waitMetadataTimer(this, &MediaPlayerPrivate::waitMetadataTimerFired)
@@ -340,8 +342,15 @@ PassRefPtr<TimeRanges> MediaPlayerPrivate::buffered() const
 
 bool MediaPlayerPrivate::didLoadingProgress() const
 {
-    notImplemented();
-    return false;
+    if (!m_platformPlayer)
+        return false;
+
+    float bufferLoaded = m_platformPlayer->bufferLoaded();
+    if (bufferLoaded == m_lastLoadingTime)
+        return false;
+
+    m_lastLoadingTime = bufferLoaded;
+    return true;
 }
 
 void MediaPlayerPrivate::setSize(const IntSize&)
@@ -393,7 +402,7 @@ bool MediaPlayerPrivate::hasAvailableVideoFrame() const
 
 bool MediaPlayerPrivate::hasSingleSecurityOrigin() const
 {
-    return false;
+    return true;
 }
 
 MediaPlayer::MovieLoadType MediaPlayerPrivate::movieLoadType() const
@@ -457,9 +466,11 @@ BlackBerry::Platform::Graphics::Window* MediaPlayerPrivate::getPeerWindow(const 
     return m_platformPlayer->getPeerWindow(uniqueID);
 }
 
-int MediaPlayerPrivate::getWindowPosition(unsigned& x, unsigned& y, unsigned& width, unsigned& height) const
+BlackBerry::Platform::IntRect MediaPlayerPrivate::getWindowScreenRect() const
 {
-    return m_platformPlayer->getWindowPosition(x, y, width, height);
+    unsigned x, y, width, height;
+    m_platformPlayer->getWindowPosition(x, y, width, height);
+    return BlackBerry::Platform::IntRect(x, y, width, height);
 }
 
 const char* MediaPlayerPrivate::mmrContextName()

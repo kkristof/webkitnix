@@ -47,6 +47,7 @@
 #include "ewk_popup_menu_item_private.h"
 #include "ewk_popup_menu_private.h"
 #include "ewk_private.h"
+#include "ewk_security_origin_private.h"
 #include "ewk_settings_private.h"
 #include "ewk_view.h"
 #include "ewk_view_private.h"
@@ -55,6 +56,9 @@
 #include <Edje.h>
 #include <WebCore/Cursor.h>
 
+#if ENABLE(VIBRATION)
+#include "VibrationClientEfl.h"
+#endif
 
 #if ENABLE(FULLSCREEN_API)
 #include "WebFullScreenManagerProxy.h"
@@ -64,6 +68,7 @@
 #include <Evas_GL.h>
 #endif
 
+using namespace EwkViewCallbacks;
 using namespace WebCore;
 using namespace WebKit;
 
@@ -100,19 +105,22 @@ EwkViewImpl::EwkViewImpl(Evas_Object* view, PassRefPtr<EwkContext> context, Pass
     : m_view(view)
     , m_context(context)
     , m_pageClient(behavior == DefaultBehavior ? PageClientDefaultImpl::create(this) : PageClientLegacyImpl::create(this))
-    , m_pageProxy(toImpl(m_context->wkContext())->createWebPage(m_pageClient.get(), pageGroup.get()))
+    , m_pageProxy(m_context->webContext()->createWebPage(m_pageClient.get(), pageGroup.get()))
     , m_pageLoadClient(PageLoadClientEfl::create(this))
     , m_pagePolicyClient(PagePolicyClientEfl::create(this))
     , m_pageUIClient(PageUIClientEfl::create(this))
     , m_resourceLoadClient(ResourceLoadClientEfl::create(this))
     , m_findClient(FindClientEfl::create(this))
     , m_formClient(FormClientEfl::create(this))
+#if ENABLE(VIBRATION)
+    , m_vibrationClient(VibrationClientEfl::create(this))
+#endif
     , m_backForwardList(Ewk_Back_Forward_List::create(toAPI(m_pageProxy->backForwardList())))
 #if USE(TILED_BACKING_STORE)
     , m_scaleFactor(1)
 #endif
     , m_settings(Ewk_Settings::create(this))
-    , m_cursorGroup(0)
+    , m_cursorIdentifier(0)
     , m_mouseEventsEnabled(false)
 #if ENABLE(TOUCH_EVENTS)
     , m_touchEventsEnabled(false)
@@ -191,11 +199,38 @@ WKPageRef EwkViewImpl::wkPage()
 
 void EwkViewImpl::setCursor(const Cursor& cursor)
 {
+    if (cursor.image()) {
+        // Custom cursor.
+        if (cursor.image() == m_cursorIdentifier)
+            return;
+
+        m_cursorIdentifier = cursor.image();
+
+        Ewk_View_Smart_Data* sd = smartData();
+        RefPtr<Evas_Object> cursorObject = adoptRef(cursor.image()->getEvasObject(sd->base.evas));
+        if (!cursorObject)
+            return;
+
+        // Resize cursor.
+        evas_object_resize(cursorObject.get(), cursor.image()->size().width(), cursor.image()->size().height());
+
+        // Get cursor hot spot.
+        IntPoint hotSpot;
+        cursor.image()->getHotSpot(hotSpot);
+
+        Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(sd->base.evas);
+        // ecore_evas takes care of freeing the cursor object.
+        ecore_evas_object_cursor_set(ecoreEvas, cursorObject.release().leakRef(), EVAS_LAYER_MAX, hotSpot.x(), hotSpot.y());
+
+        return;
+    }
+
+    // Standard cursor.
     const char* group = cursor.platformCursor();
-    if (!group || group == m_cursorGroup)
+    if (!group || group == m_cursorIdentifier)
         return;
 
-    m_cursorGroup = group;
+    m_cursorIdentifier = group;
     Ewk_View_Smart_Data* sd = smartData();
     RefPtr<Evas_Object> cursorObject = adoptRef(edje_object_add(sd->base.evas));
 
@@ -306,14 +341,19 @@ void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
 
 void EwkViewImpl::update(const IntRect& rect)
 {
+    Ewk_View_Smart_Data* sd = smartData();
 #if USE(COORDINATED_GRAPHICS)
     // Coordinated graphices needs to schedule an full update, not
     // repainting of a region. Update in the event loop.
     UNUSED_PARAM(rect);
+
+    // Guard for zero sized viewport.
+    if (!(sd->view.w && sd->view.h))
+        return;
+
     if (!m_displayTimer.isActive())
         m_displayTimer.startOneShot(0);
 #else
-    Ewk_View_Smart_Data* sd = smartData();
     if (!sd->image)
         return;
 
@@ -330,7 +370,9 @@ void EwkViewImpl::enterFullScreen()
 {
     Ewk_View_Smart_Data* sd = smartData();
 
-    if (!sd->api->fullscreen_enter || !sd->api->fullscreen_enter(sd)) {
+    RefPtr<EwkSecurityOrigin> origin = EwkSecurityOrigin::create(KURL(ParsedURLString, String::fromUTF8(m_url)));
+
+    if (!sd->api->fullscreen_enter || !sd->api->fullscreen_enter(sd, origin.get())) {
         Ecore_Evas* ecoreEvas = ecore_evas_ecore_evas_get(sd->base.evas);
         ecore_evas_fullscreen_set(ecoreEvas, true);
     }
@@ -350,6 +392,29 @@ void EwkViewImpl::exitFullScreen()
     }
 }
 #endif
+
+WKRect EwkViewImpl::windowGeometry() const
+{
+    Evas_Coord x, y, width, height;
+    Ewk_View_Smart_Data* sd = smartData();
+
+    if (!sd->api->window_geometry_get || !sd->api->window_geometry_get(sd, &x, &y, &width, &height)) {
+        Ecore_Evas* ee = ecore_evas_ecore_evas_get(sd->base.evas);
+        ecore_evas_request_geometry_get(ee, &x, &y, &width, &height);
+    }
+
+    return WKRectMake(x, y, width, height);
+}
+
+void EwkViewImpl::setWindowGeometry(const WKRect& rect)
+{
+    Ewk_View_Smart_Data* sd = smartData();
+
+    if (!sd->api->window_geometry_set || !sd->api->window_geometry_set(sd, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height)) {
+        Ecore_Evas* ee = ecore_evas_ecore_evas_get(sd->base.evas);
+        ecore_evas_move_resize(ee, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+    }
+}
 
 void EwkViewImpl::setImageData(void* imageData, const IntSize& size)
 {
@@ -495,7 +560,7 @@ void EwkViewImpl::informIconChange()
     ASSERT(iconDatabase);
 
     m_faviconURL = ewk_favicon_database_icon_url_get(iconDatabase, m_url);
-    evas_object_smart_callback_call(m_view, "icon,changed", 0);
+    smartCallback<IconChanged>().call();
 }
 
 #if USE(ACCELERATED_COMPOSITING)
@@ -726,8 +791,7 @@ void EwkViewImpl::informURLChange()
         return;
 
     m_url = rawActiveURL.data();
-    const char* callbackArgument = static_cast<const char*>(m_url);
-    evas_object_smart_callback_call(m_view, "url,changed", const_cast<char*>(callbackArgument));
+    smartCallback<URLChanged>().call(m_url);
 
     // Update the view's favicon.
     informIconChange();
@@ -736,7 +800,7 @@ void EwkViewImpl::informURLChange()
 WKPageRef EwkViewImpl::createNewPage()
 {
     Evas_Object* newEwkView = 0;
-    evas_object_smart_callback_call(m_view, "create,window", &newEwkView);
+    smartCallback<CreateWindow>().call(&newEwkView);
 
     if (!newEwkView)
         return 0;
@@ -749,7 +813,7 @@ WKPageRef EwkViewImpl::createNewPage()
 
 void EwkViewImpl::closePage()
 {
-    evas_object_smart_callback_call(m_view, "close,window", 0);
+    smartCallback<CloseWindow>().call();
 }
 
 void EwkViewImpl::onMouseDown(void* data, Evas*, Evas_Object*, void* eventInfo)

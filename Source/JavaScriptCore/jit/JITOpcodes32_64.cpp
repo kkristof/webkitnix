@@ -30,7 +30,7 @@
 #if USE(JSVALUE32_64)
 #include "JIT.h"
 
-#include "JITInlineMethods.h"
+#include "JITInlines.h"
 #include "JITStubCall.h"
 #include "JSArray.h"
 #include "JSCell.h"
@@ -1401,12 +1401,13 @@ void JIT::emit_op_switch_string(Instruction* currentInstruction)
     jump(regT0);
 }
 
-void JIT::emit_op_throw_reference_error(Instruction* currentInstruction)
+void JIT::emit_op_throw_static_error(Instruction* currentInstruction)
 {
     unsigned message = currentInstruction[1].u.operand;
 
-    JITStubCall stubCall(this, cti_op_throw_reference_error);
+    JITStubCall stubCall(this, cti_op_throw_static_error);
     stubCall.addArgument(m_codeBlock->getConstant(message));
+    stubCall.addArgument(TrustedImm32(currentInstruction[2].u.operand));
     stubCall.call();
 }
 
