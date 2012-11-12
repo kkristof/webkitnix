@@ -368,6 +368,9 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         else
             openNewWindow(m_hitTestResult.absoluteLinkURL(), frame);
         break;
+    case ContextMenuItemTagOpenLinkInThisWindow:
+        frame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(m_hitTestResult.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, false, 0, 0, MaybeSendReferrer);
+        break;
     case ContextMenuItemTagBold:
         frame->editor()->command("ToggleBold").execute();
         break;
@@ -1096,9 +1099,9 @@ void ContextMenuController::addInspectElementItem()
 
     ContextMenuItem InspectElementItem(ActionType, ContextMenuItemTagInspectElement, contextMenuItemTagInspectElement());
 #if USE(CROSS_PLATFORM_CONTEXT_MENUS)
-    if (!m_contextMenu->items().isEmpty())
+    if (m_contextMenu && !m_contextMenu->items().isEmpty())
 #else
-    if (m_contextMenu->itemCount())
+    if (m_contextMenu && m_contextMenu->itemCount())
 #endif
         appendItem(*separatorItem(), m_contextMenu.get());
     appendItem(InspectElementItem, m_contextMenu.get());
@@ -1297,6 +1300,7 @@ void ContextMenuController::checkOrEnableIfNeeded(ContextMenuItem& item) const
 #endif
         case ContextMenuItemTagNoAction:
         case ContextMenuItemTagOpenLinkInNewWindow:
+        case ContextMenuItemTagOpenLinkInThisWindow:
         case ContextMenuItemTagDownloadLinkToDisk:
         case ContextMenuItemTagCopyLinkToClipboard:
         case ContextMenuItemTagOpenImageInNewWindow:

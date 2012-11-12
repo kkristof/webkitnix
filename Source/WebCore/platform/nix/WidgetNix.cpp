@@ -69,7 +69,7 @@ void Widget::setFrameRect(const IntRect& rect)
     Widget::frameRectsChanged();
 }
 
-void Widget::setFocus(bool focused)
+void Widget::setFocus(bool)
 {
 }
 
@@ -91,7 +91,7 @@ void Widget::hide()
     notImplemented();
 }
 
-void Widget::paint(GraphicsContext* context, const IntRect&)
+void Widget::paint(GraphicsContext*, const IntRect&)
 {
     notImplemented();
 }

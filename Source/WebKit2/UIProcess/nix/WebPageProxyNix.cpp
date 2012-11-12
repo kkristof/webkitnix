@@ -42,7 +42,7 @@ PlatformWidget WebPageProxy::viewWidget()
     return 0;
 }
 
-String WebPageProxy::standardUserAgent(const String& applicationNameForUserAgent)
+String WebPageProxy::standardUserAgent(const String&)
 {
     WTF::String platform;
     WTF::String version;
@@ -64,7 +64,7 @@ String WebPageProxy::standardUserAgent(const String& applicationNameForUserAgent
     return "Mozilla/5.0 (" + platform + "; " + osVersion + ") AppleWebKit/" + version + " (KHTML, like Gecko) Version/5.0 Safari/" + version;
 }
 
-void WebPageProxy::getEditorCommandsForKeyEvent(Vector<WTF::String>& commandsList)
+void WebPageProxy::getEditorCommandsForKeyEvent(Vector<WTF::String>&)
 {
     notImplemented();
 }

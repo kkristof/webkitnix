@@ -420,7 +420,7 @@ String unknownFileSizeText()
     return String::fromUTF8("Unknown");
 }
 
-String imageTitle(const String& filename, const IntSize& size)
+String imageTitle(const String&, const IntSize&)
 {
     notImplemented();
     return String();

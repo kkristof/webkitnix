@@ -26,6 +26,10 @@
 #include <BlackBerryPlatformPlayer.h>
 
 namespace BlackBerry {
+namespace Platform {
+class IntRect;
+}
+
 namespace WebKit {
 class WebPageClient;
 }
@@ -109,7 +113,7 @@ public:
     void setFullscreenWebPageClient(BlackBerry::WebKit::WebPageClient*);
     BlackBerry::Platform::Graphics::Window* getWindow();
     BlackBerry::Platform::Graphics::Window* getPeerWindow(const char*) const;
-    int getWindowPosition(unsigned& x, unsigned& y, unsigned& width, unsigned& height) const;
+    BlackBerry::Platform::IntRect getWindowScreenRect() const;
     const char* mmrContextName();
     float percentLoaded();
     unsigned sourceWidth();
@@ -174,6 +178,7 @@ private:
     void userDrivenSeekTimerFired(Timer<MediaPlayerPrivate>*);
     Timer<MediaPlayerPrivate> m_userDrivenSeekTimer;
     float m_lastSeekTime;
+    mutable float m_lastLoadingTime;
     bool m_lastSeekTimePending;
     bool m_isAuthenticationChallenging;
     void waitMetadataTimerFired(Timer<MediaPlayerPrivate>*);

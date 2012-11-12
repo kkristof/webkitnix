@@ -39,6 +39,8 @@ namespace WebKit {
 
 static gboolean connectionCallback(GSocketService* service, GSocketConnection* connection, GObject* sourceObject, WebSocketServer* server)
 {
+    UNUSED_PARAM(service);
+    UNUSED_PARAM(sourceObject);
     OwnPtr<WebSocketServerConnection> webSocketConnection = adoptPtr(new WebSocketServerConnection(server->client(), server));
     webSocketConnection->setSocketHandle(SocketStreamHandle::create(connection, webSocketConnection.get()));
     server->didAcceptConnection(webSocketConnection.release());

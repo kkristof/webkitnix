@@ -60,7 +60,7 @@ static inline void scroll(Page* page, ScrollDirection direction, ScrollGranulari
     page->focusController()->focusedOrMainFrame()->eventHandler()->scrollRecursively(direction, granularity);
 }
 
-bool WebPage::performDefaultBehaviorForKeyEvent(const WebKeyboardEvent& keyboardEvent)
+bool WebPage::performDefaultBehaviorForKeyEvent(const WebKeyboardEvent&)
 {
     notImplemented();
     return false;

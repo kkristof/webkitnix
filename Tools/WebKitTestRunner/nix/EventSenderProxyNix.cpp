@@ -94,6 +94,10 @@ EventSenderProxy::EventSenderProxy(TestController* testController)
     touchHorizontalRadius = 0;
 }
 
+EventSenderProxy::~EventSenderProxy()
+{
+}
+
 static const double doubleClickInterval = 300;
 
 static inline double convertToNixTimestamp(double ms)

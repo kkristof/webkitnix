@@ -47,6 +47,7 @@
 #include "WebRuntimeFeatures.h"
 #include "WebScriptController.h"
 #include "WebSettings.h"
+#include "WebTestProxy.h"
 #include "WebView.h"
 #include "WebViewHost.h"
 #include "platform/WebArrayBufferView.h"
@@ -146,6 +147,7 @@ TestShell::TestShell()
     WebRuntimeFeatures::enableShadowDOM(true);
     WebRuntimeFeatures::enableStyleScoped(true);
     WebRuntimeFeatures::enableScriptedSpeech(true);
+    WebRuntimeFeatures::enableRequestAutocomplete(true);
 
     // 30 second is the same as the value in Mac DRT.
     // If we use a value smaller than the timeout value of
@@ -254,8 +256,9 @@ void TestShell::runFileTest(const TestParams& params, bool shouldDumpPixels)
         m_testRunner->setShouldDumpFrameLoadCallbacks(true);
 
     if (testUrl.find("compositing/") != string::npos || testUrl.find("compositing\\") != string::npos) {
+        if (!m_softwareCompositingEnabled)
+            m_prefs.accelerated2dCanvasEnabled = true;
         m_prefs.acceleratedCompositingForVideoEnabled = true;
-        m_prefs.accelerated2dCanvasEnabled = true;
         m_prefs.deferred2dCanvasEnabled = true;
         m_prefs.mockScrollbarsEnabled = true;
         m_prefs.applyTo(m_webView);
@@ -749,7 +752,12 @@ WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url)
 
 WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url, DRTDevToolsAgent* devToolsAgent)
 {
-    WebViewHost* host = new WebViewHost(this);
+    WebTestRunner::WebTestProxy<WebViewHost, TestShell*>* host = new WebTestRunner::WebTestProxy<WebViewHost, TestShell*>(this);
+    host->setInterfaces(m_testInterfaces.get());
+    if (m_webViewHost)
+        host->setDelegate(m_webViewHost.get());
+    else
+        host->setDelegate(host);
     WebView* view = WebView::create(host);
     view->setPermissionClient(webPermissions());
     view->setDevToolsAgentClient(devToolsAgent);
