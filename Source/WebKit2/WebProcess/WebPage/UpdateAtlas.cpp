@@ -86,11 +86,7 @@ PassOwnPtr<GraphicsContext> UpdateAtlas::beginPaintingOnAvailableBuffer(int& atl
     offset = rect.location();
     OwnPtr<GraphicsContext> graphicsContext = m_surface->createGraphicsContext(rect);
 
-    if (flags() & ShareableBitmap::SupportsAlpha) {
-        graphicsContext->setCompositeOperation(CompositeCopy);
-        graphicsContext->fillRect(IntRect(IntPoint::zero(), size), Color::transparent, ColorSpaceDeviceRGB);
-        graphicsContext->setCompositeOperation(CompositeSourceOver);
-    }
+    graphicsContext->clearRect(FloatRect(FloatPoint::zero(), size));
 
     return graphicsContext.release();
 }
