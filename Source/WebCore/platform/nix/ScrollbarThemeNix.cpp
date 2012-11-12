@@ -45,16 +45,16 @@ ScrollbarThemeNix::~ScrollbarThemeNix()
 {
 }
 
-int ScrollbarThemeNix::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeNix::scrollbarThickness(ScrollbarControlSize)
 {
     return 0; // we paint on top
 }
 
-void ScrollbarThemeNix::registerScrollbar(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeNix::registerScrollbar(ScrollbarThemeClient*)
 {
 }
 
-void ScrollbarThemeNix::unregisterScrollbar(ScrollbarThemeClient* scrollbar)
+void ScrollbarThemeNix::unregisterScrollbar(ScrollbarThemeClient*)
 {
 }
 

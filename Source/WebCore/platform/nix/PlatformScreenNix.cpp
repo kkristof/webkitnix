@@ -37,25 +37,25 @@
 
 namespace WebCore {
 
-int screenHorizontalDPI(Widget* widget)
+int screenHorizontalDPI(Widget*)
 {
     notImplemented();
     return 0;
 }
 
-int screenVerticalDPI(Widget* widget)
+int screenVerticalDPI(Widget*)
 {
     notImplemented();
     return 0;
 }
 
-int screenDepth(Widget* widget)
+int screenDepth(Widget*)
 {
     notImplemented();
     return 0;
 }
 
-int screenDepthPerComponent(Widget* widget)
+int screenDepthPerComponent(Widget*)
 {
     notImplemented();
     return 0;
@@ -67,7 +67,7 @@ bool screenIsMonochrome(Widget*)
     return false;
 }
 
-FloatRect screenRect(Widget* widget)
+FloatRect screenRect(Widget*)
 {
     notImplemented();
     return FloatRect(0, 0, 1024, 768);
