@@ -98,6 +98,11 @@ void WebInspectorProxy::platformSetAttachedWindowHeight(unsigned)
     notImplemented();
 }
 
+void WebInspectorProxy::platformAttachAvailabilityChanged(bool)
+{
+    notImplemented();
+}
+
 } // namespace WebKit
 
 #endif // ENABLE(INSPECTOR)
