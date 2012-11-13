@@ -58,19 +58,257 @@
 using namespace WebCore;
 using namespace WebKit;
 
+NIXView* NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient)
+{
+    Nix::WebViewClient* client = new Nix::WebViewClient(viewClient);
+    return Nix::WebView::create(context, pageGroup, client);
+}
+
+void NIXViewRelease(NIXView* view)
+{
+    delete view;
+}
+
+void NIXViewInitialize(NIXView* view)
+{
+    view->initialize();
+}
+
+WKSize NIXViewSize(NIXView* view)
+{
+    return view->size();
+}
+
+void NIXViewSetSize(NIXView* view, WKSize size)
+{
+    view->setSize(size);
+}
+
+WKPoint NIXViewScrollPosition(NIXView* view)
+{
+    return view->scrollPosition();
+}
+
+void NIXViewSetScrollPosition(NIXView* view, WKPoint position)
+{
+    view->setScrollPosition(position);
+}
+
+void NIXViewSetUserViewportTransformation(NIXView* view, cairo_matrix_t* userViewportTransformation)
+{
+    view->setUserViewportTransformation(*userViewportTransformation);
+}
+
+WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point)
+{
+    return view->userViewportToContents(point);
+}
+
+bool NIXViewIsFocused(NIXView* view)
+{
+    return view->isFocused();
+}
+
+void NIXViewSetFocused(NIXView* view, bool focused)
+{
+    view->setFocused(focused);
+}
+
+bool NIXViewIsVisible(NIXView* view)
+{
+    return view->isVisible();
+}
+
+void NIXViewSetVisible(NIXView* view, bool visible)
+{
+    view->setVisible(visible);
+}
+
+bool NIXViewIsActive(NIXView* view)
+{
+    return view->isActive();
+}
+
+void NIXViewSetActive(NIXView* view, bool active)
+{
+    view->setActive(active);
+}
+
+bool NIXViewTransparentBackground(NIXView* view)
+{
+    return view->transparentBackground();
+}
+
+void NIXViewSetTransparentBackground(NIXView* view, bool transparent)
+{
+    view->setTransparentBackground(transparent);
+}
+
+bool NIXViewDrawBackground(NIXView* view)
+{
+    return view->drawBackground();
+}
+
+void NIXViewSetDrawBackground(NIXView* view, bool drawBackground)
+{
+    view->setDrawBackground(drawBackground);
+}
+
+float NIXViewScale(NIXView* view)
+{
+    return view->scale();
+}
+
+void NIXViewSetScale(NIXView* view, float scale)
+{
+    view->setScale(scale);
+}
+
+void NIXViewSetOpacity(NIXView* view, float opacity)
+{
+    view->setOpacity(opacity);
+}
+
+float NIXViewOpacity(NIXView* view)
+{
+    return view->opacity();
+}
+
+WKSize NIXViewVisibleContentsSize(NIXView* view)
+{
+    return view->visibleContentsSize();
+}
+
+void NIXViewPaintToCurrentGLContext(NIXView* view)
+{
+    view->paintToCurrentGLContext();
+}
+
+void NIXViewFindZoomableAreaForPoint(NIXView* view, WKPoint point, int horizontalRadius, int verticalRadius)
+{
+    view->findZoomableAreaForPoint(point, horizontalRadius, verticalRadius);
+}
+
+uint32_t NIXViewAddCustomLayer(NIXView* view, WKStringRef elementID)
+{
+    return view->addCustomLayer(elementID);
+}
+
+void NIXViewRemoveCustomLayer(NIXView* view, uint32_t id)
+{
+    view->removeCustomLayer(id);
+}
+
+WKPageRef NIXViewPageRef(NIXView* view)
+{
+    return view->pageRef();
+}
+
+void NIXViewSendMouseEvent(NIXView* view, Nix::MouseEvent* event)
+{
+    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+}
+
+void NIXViewSendWheelEvent(NIXView* view, Nix::WheelEvent* event)
+{
+    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+}
+
+void NIXViewSendKeyEvent(NIXView* view, Nix::KeyEvent* event)
+{
+    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+}
+
+void NIXViewSendTouchEvent(NIXView* view, Nix::TouchEvent* event)
+{
+    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+}
+
+void NIXViewSendGestureEvent(NIXView* view, Nix::GestureEvent* event)
+{
+    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+}
+
+void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view)
+{
+    view->suspendActiveDOMObjectsAndAnimations();
+}
+
+void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView* view)
+{
+    view->resumeActiveDOMObjectsAndAnimations();
+}
+
+bool NIXViewIsSuspended(NIXView* view)
+{
+    return view->isSuspended();
+}
+
+
 namespace Nix {
 
-// These are put here to avoid compilation warnings about unused parameters.
-WebViewClient::~WebViewClient() {}
-void WebViewClient::viewNeedsDisplay(WKRect) {}
-void WebViewClient::webProcessCrashed(WKStringRef) {}
-void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool) {}
-void WebViewClient::doneWithGestureEvent(const GestureEvent&, bool) {}
-void WebViewClient::pageDidRequestScroll(WKPoint) {}
-void WebViewClient::didChangeContentsSize(WKSize) {}
-void WebViewClient::didFindZoomableArea(WKPoint, WKRect) {}
-void WebViewClient::updateTextInputState(bool, WKRect, WKRect) {}
-void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* /* matrix */, float /*opacity*/) { }
+WebViewClient::WebViewClient(NIXViewClient* viewClient)
+    : m_viewClient(viewClient)
+{
+}
+
+WebViewClient::~WebViewClient()
+{
+}
+
+void WebViewClient::viewNeedsDisplay(WKRect rect)
+{
+    if (m_viewClient && m_viewClient->viewNeedsDisplay)
+        m_viewClient->viewNeedsDisplay(rect, m_viewClient->clientInfo);
+}
+
+void WebViewClient::webProcessCrashed(WKStringRef url)
+{
+    if (m_viewClient && m_viewClient->webProcessCrashed)
+        m_viewClient->webProcessCrashed(url, m_viewClient->clientInfo);
+}
+
+void WebViewClient::doneWithTouchEvent(const TouchEvent& event, bool wasEventHandled)
+{
+    if (m_viewClient && m_viewClient->doneWithTouchEvent)
+        m_viewClient->doneWithTouchEvent(&event, wasEventHandled, m_viewClient->clientInfo);
+}
+
+void WebViewClient::doneWithGestureEvent(const GestureEvent& event, bool wasEventHandled)
+{
+    if (m_viewClient && m_viewClient->doneWithGestureEvent)
+        m_viewClient->doneWithGestureEvent(&event, wasEventHandled, m_viewClient->clientInfo);
+}
+
+void WebViewClient::pageDidRequestScroll(WKPoint point)
+{
+    if (m_viewClient && m_viewClient->pageDidRequestScroll)
+        m_viewClient->pageDidRequestScroll(point, m_viewClient->clientInfo);
+}
+void WebViewClient::didChangeContentsSize(WKSize size)
+{
+    if (m_viewClient && m_viewClient->didChangeContentsSize)
+        m_viewClient->didChangeContentsSize(size, m_viewClient->clientInfo);
+}
+
+void WebViewClient::didFindZoomableArea(WKPoint target, WKRect area)
+{
+    if (m_viewClient && m_viewClient->didFindZoomableArea)
+        m_viewClient->didFindZoomableArea(target, area, m_viewClient->clientInfo);
+}
+
+void WebViewClient::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
+{
+    if (m_viewClient && m_viewClient->updateTextInputState)
+        m_viewClient->updateTextInputState(isContentEditable, cursorRect, editorRect, m_viewClient->clientInfo);
+}
+
+void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity)
+{
+    if (m_viewClient && m_viewClient->compositeCustomLayerToCurrentGLContext)
+        m_viewClient->compositeCustomLayerToCurrentGLContext(id, rect, matrix, opacity, m_viewClient->clientInfo);
+}
+
 
 WebView::~WebView() {}
 

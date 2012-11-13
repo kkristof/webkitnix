@@ -23,31 +23,31 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
+    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    client.setView(view.get());
+    client.setClearColor(0, 0, 1, 1);
 
     cairo_matrix_t transform;
     const int translationDelta = 10;
     cairo_matrix_init_translate(&transform, translationDelta, translationDelta);
-    webView->setUserViewportTransformation(transform);
+    NIXViewSetUserViewportTransformation(view.get(), &transform);
 
-    client.setView(webView.get());
-    client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewPageRef(view.get()), true);
+    NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    Util::PageLoader loader(webView.get());
+    Util::PageLoader loader(view.get());
 
     loader.waitForLoadURLAndRepaint("../nix/red-square");
 
     // Note that glReadPixels [0, 0] is at the bottom-left of the buffer.
     unsigned char sample[4 * int(size.width * size.height)];
     for (double scale = 1.0; scale < 3.0; scale++) {
-        webView->setScale(scale);
+        NIXViewSetScale(view.get(), scale);
         loader.forceRepaint();
         glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
 
@@ -81,7 +81,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
 
     // FIXME: Leaking memory to avoid bug on WebView destructor or on test
     //        infrastructure destruction that should be fixed ASAP.
-    webView.release();
+    view.release();
 }
 
 } // TestWebKitAPI

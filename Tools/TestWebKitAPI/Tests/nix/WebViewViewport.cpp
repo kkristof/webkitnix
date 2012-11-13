@@ -23,14 +23,15 @@ TEST(WebKitNix, WebViewViewport)
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
-    client.setView(webView.get());
+    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
 
-    Util::PageLoader loader(webView.get());
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewPageRef(view.get()), true);
+    NIXViewSetSize(view.get(), size);
+
+    Util::PageLoader loader(view.get());
     loader.waitForLoadURLAndRepaint("../nix/WebViewViewport");
     unsigned char sample[4];
 
@@ -41,8 +42,8 @@ TEST(WebKitNix, WebViewViewport)
     EXPECT_EQ(0xFF, sample[2]);
     EXPECT_EQ(0xFF, sample[3]);
 
-    webView->setScale(0.5);
-    webView->setScrollPosition(WKPointMake(400, 10000));
+    NIXViewSetScale(view.get(), 0.5);
+    NIXViewSetScrollPosition(view.get(), WKPointMake(400, 10000));
     loader.forceRepaint();
 
     // The black dot should be on 0,0

@@ -7,14 +7,16 @@
 namespace TestWebKitAPI {
 namespace Util {
 
-class ForceRepaintClient : public Nix::WebViewClient {
+class ForceRepaintClient {
 public:
     ForceRepaintClient();
-    void viewNeedsDisplay(WKRect);
-    void setView(Nix::WebView* webView) { m_webView = webView; }
+    static void viewNeedsDisplay(WKRect, const void*);
     void setClearColor(int r, int g, int b, int a);
+    void setView(NIXView* view) { m_view = view; }
+    NIXViewClient* viewClient() { return &m_viewClient; }
 private:
-    Nix::WebView* m_webView;
+    NIXView* m_view;
+    NIXViewClient m_viewClient;
     int m_clearR;
     int m_clearG;
     int m_clearB;
@@ -25,13 +27,13 @@ private:
 class PageLoader
 {
 public:
-    PageLoader(Nix::WebView*);
+    PageLoader(NIXView*);
 
     void waitForLoadURLAndRepaint(const char* resource);
     void forceRepaint();
 
 private:
-    Nix::WebView* m_webView;
+    NIXView* m_view;
     bool m_didFinishLoadAndRepaint;
     WKPageLoaderClient m_loaderClient;
 

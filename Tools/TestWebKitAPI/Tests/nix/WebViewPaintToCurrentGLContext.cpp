@@ -17,13 +17,13 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
-    client.setView(webView.get());
+    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
-    Util::PageLoader loader(webView.get());
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewPageRef(view.get()), true);
+    NIXViewSetSize(view.get(), size);
+    Util::PageLoader loader(view.get());
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);

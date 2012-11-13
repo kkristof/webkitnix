@@ -13,15 +13,15 @@
 
 using namespace TestWebKitAPI::Util;
 
-PageLoader::PageLoader(Nix::WebView* webView)
-    : m_webView(webView)
+PageLoader::PageLoader(NIXView* view)
+    : m_view(view)
     , m_didFinishLoadAndRepaint(false)
 {
     std::memset(&m_loaderClient, 0, sizeof(m_loaderClient));
 
     m_loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
     m_loaderClient.clientInfo = this;
-    WKPageSetPageLoaderClient(m_webView->pageRef(), &m_loaderClient);
+    WKPageSetPageLoaderClient(NIXViewPageRef(m_view), &m_loaderClient);
 }
 
 void PageLoader::didForceRepaint(WKErrorRef, void* context)
@@ -37,14 +37,14 @@ void PageLoader::didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, co
 void PageLoader::waitForLoadURLAndRepaint(const char* resource)
 {
     WKRetainPtr<WKURLRef> urlRef = adoptWK(createURLForResource(resource, "html"));
-    WKPageLoadURL(m_webView->pageRef(), urlRef.get());
+    WKPageLoadURL(NIXViewPageRef(m_view), urlRef.get());
     Util::run(&m_didFinishLoadAndRepaint);
     m_didFinishLoadAndRepaint = false;
 }
 
 void PageLoader::forceRepaint()
 {
-    WKPageForceRepaint(m_webView->pageRef(), this, &PageLoader::didForceRepaint);
+    WKPageForceRepaint(NIXViewPageRef(m_view), this, &PageLoader::didForceRepaint);
     Util::run(&m_didFinishLoadAndRepaint);
     m_didFinishLoadAndRepaint = false;
 }
@@ -55,6 +55,10 @@ ForceRepaintClient::ForceRepaintClient()
     , m_clearB(0)
     , m_clearA(0)
 {
+    memset(&m_viewClient, 0, sizeof(NIXViewClient));
+    m_viewClient.version = kNIXViewCurrentVersion;
+    m_viewClient.clientInfo = this;
+    m_viewClient.viewNeedsDisplay = viewNeedsDisplay;
 }
 
 void ForceRepaintClient::setClearColor(int r, int g, int b, int a)
@@ -65,11 +69,13 @@ void ForceRepaintClient::setClearColor(int r, int g, int b, int a)
     m_clearA = a;
 }
 
-void ForceRepaintClient::viewNeedsDisplay(WKRect)
+void ForceRepaintClient::viewNeedsDisplay(WKRect, const void* clientInfo)
 {
-    assert(m_webView);
-    glClearColor(m_clearR, m_clearG, m_clearB, m_clearA);
+    ForceRepaintClient* client = static_cast<ForceRepaintClient*>(const_cast<void*>(clientInfo));
+    assert(client);
+    assert(client->m_view);
+    glClearColor(client->m_clearR, client->m_clearG, client->m_clearB, client->m_clearA);
 
     glClear(GL_COLOR_BUFFER_BIT);
-    m_webView->paintToCurrentGLContext();
+    NIXViewPaintToCurrentGLContext(client->m_view);
 }

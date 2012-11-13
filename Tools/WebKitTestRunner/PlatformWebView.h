@@ -56,8 +56,8 @@ typedef GtkWidget* PlatformWindow;
 #elif PLATFORM(NIX)
 namespace Nix {
     class WebView;
-    class WebViewClient;
 }
+struct NIXViewClient;
 typedef Nix::WebView* PlatformWKView;
 typedef int PlatformWindow;
 #elif PLATFORM(EFL)
@@ -114,7 +114,7 @@ private:
 #if PLATFORM(QT)
     QEventLoop* m_modalEventLoop;
 #elif PLATFORM(NIX)
-    Nix::WebViewClient* m_webViewClient;
+    NIXViewClient* m_viewClient;
 #endif
 };
 

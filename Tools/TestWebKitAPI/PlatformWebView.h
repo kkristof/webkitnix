@@ -54,8 +54,8 @@ typedef Ecore_Evas* PlatformWindow;
 #elif PLATFORM(NIX)
 namespace Nix {
     class WebView;
-    class WebViewClient;
 }
+struct NIXViewClient;
 typedef Nix::WebView* PlatformWKView;
 typedef int PlatformWindow;
 #endif
@@ -98,7 +98,7 @@ private:
 #if PLATFORM(WIN)
     WindowMessageObserver* m_parentWindowMessageObserver;
 #elif PLATFORM(NIX)
-    Nix::WebViewClient* m_webViewClient;
+    NIXViewClient* m_viewClient;
 #endif
 };
 

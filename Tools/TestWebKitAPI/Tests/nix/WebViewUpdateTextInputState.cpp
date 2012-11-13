@@ -5,6 +5,7 @@
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKRetainPtr.h>
 #include <WebView.h>
+#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -18,48 +19,41 @@ static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const v
     didFinishLoad = true;
 }
 
-namespace {
-class TestWebViewClient : public Nix::WebViewClient {
-public:
-    //void viewNeedsDisplay(WKRect) {}
+static void updateTextInputState(bool isContentEditable, WKRect, WKRect, const void*)
+{
+    didUpdateTextInputState = true;
+    didChangeToContentEditable = isContentEditable;
+}
 
-    void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
-    {
-        didUpdateTextInputState = true;
-        if (isContentEditable)
-            didChangeToContentEditable = true;
-    }
-
-    void doneWithGestureEvent(const Nix::GestureEvent& event, bool wasEventHandled)
-    {
-        if (event.type != Nix::InputEvent::GestureSingleTap)
-            return;
-
-        isDoneWithSingleTapEvent = true;
-    }
-};
-} // namespace
+static void doneWithGestureEvent(const Nix::GestureEvent* event, bool, const void*)
+{
+    isDoneWithSingleTapEvent = event->type == Nix::InputEvent::GestureSingleTap;
+}
 
 TEST(WebKitNix, WebViewWebProcessCrashed)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
-    TestWebViewClient client;
-    Nix::WebView* webView = Nix::WebView::create(context.get(), 0, &client);
-    webView->initialize();
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewCurrentVersion;
+    viewClient.updateTextInputState = updateTextInputState;
+    viewClient.doneWithGestureEvent = doneWithGestureEvent;
+    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, &viewClient));
+    NIXViewInitialize(view.get());
 
     WKPageLoaderClient loaderClient;
     memset(&loaderClient, 0, sizeof(loaderClient));
 
     loaderClient.version = 0;
     loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
-    WKPageSetPageLoaderClient(webView->pageRef(), &loaderClient);
+    WKPageSetPageLoaderClient(NIXViewPageRef(view.get()), &loaderClient);
 
     const WKSize size = WKSizeMake(100, 100);
-    webView->setSize(size);
+    NIXViewSetSize(view.get(), size);
 
     WKRetainPtr<WKURLRef> editableContentUrl = adoptWK(Util::createURLForResource("../nix/single-tap-on-editable-content", "html"));
-    WKPageLoadURL(webView->pageRef(), editableContentUrl.get());
+    WKPageLoadURL(NIXViewPageRef(view.get()), editableContentUrl.get());
     Util::run(&didFinishLoad);
 
     Nix::GestureEvent tapEvent;
@@ -74,7 +68,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     tapEvent.height = 20;
     tapEvent.deltaX = 0.0;
     tapEvent.deltaY = 0.0;
-    webView->sendEvent(tapEvent);
+    NIXViewSendGestureEvent(view.get(), &tapEvent);
     Util::run(&isDoneWithSingleTapEvent);
 
     ASSERT_TRUE(didFinishLoad);

@@ -28,37 +28,40 @@
 
 #include "WebView.h"
 
-namespace TestWebKitAPI {
+static void viewNeedsDisplay(WKRect, const void*) {}
+static void webProcessCrashed(WKStringRef, const void*) {}
+static void webProcessRelaunched(const void*) {}
 
-class TestWebViewClient : public Nix::WebViewClient {
-public:
-    void viewNeedsDisplay(WKRect) {}
-    void webProcessCrashed(WKStringRef) {}
-    void webProcessRelaunched() {}
-};
+namespace TestWebKitAPI {
 
 PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
-    m_webViewClient = new TestWebViewClient;
-    m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
-    m_view->initialize();
-    WKPageSetUseFixedLayout(m_view->pageRef(), true);
+    m_viewClient = new NIXViewClient;
+    memset(m_viewClient, 0, sizeof(NIXViewClient));
+    m_viewClient->version = kNIXViewCurrentVersion;
+    m_viewClient->viewNeedsDisplay = viewNeedsDisplay;
+    m_viewClient->webProcessCrashed = webProcessCrashed;
+    m_viewClient->webProcessRelaunched = webProcessRelaunched;
+    m_view = NIXViewCreate(context, pageGroup, m_viewClient);
+    NIXViewInitialize(m_view);
+
+    WKPageSetUseFixedLayout(NIXViewPageRef(m_view), true);
     m_window = 0;
 }
 
 PlatformWebView::~PlatformWebView()
 {
-    delete m_webViewClient;
+    delete m_viewClient;
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(WKSizeMake(width, height));
+    NIXViewSetSize(m_view, WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page() const
 {
-    return m_view->pageRef();
+    return NIXViewPageRef(m_view);
 }
 
 } // namespace TestWebKitAPI
