@@ -76,6 +76,7 @@ SET(WebKitTestRunnerInjectedBundle_IDL_FILES
 )
 
 IF (ENABLE_GAMEPAD)
+    LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/GamepadController.cpp)
     LIST(APPEND WebKitTestRunnerInjectedBundle_IDL_FILES "${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/Bindings/GamepadController.idl")
 ENDIF ()
 
