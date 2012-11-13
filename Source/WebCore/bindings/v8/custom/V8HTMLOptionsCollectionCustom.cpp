@@ -55,7 +55,7 @@ v8::Handle<v8::Value> V8HTMLOptionsCollection::addCallback(const v8::Arguments& 
 {
     INC_STATS("DOM.HTMLOptionsCollection.add()");
     if (!V8HTMLOptionElement::HasInstance(args[0]))
-        return setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
+        return setDOMException(NATIVE_TYPE_ERR, args.GetIsolate());
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
     HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(args[0])));
 
@@ -71,7 +71,7 @@ v8::Handle<v8::Value> V8HTMLOptionsCollection::addCallback(const v8::Arguments& 
             return v8::Undefined();
 
         if (!ok)
-            ec = TYPE_MISMATCH_ERR;
+            ec = NATIVE_TYPE_ERR;
         else
             imp->add(option, index, ec);
     }
@@ -80,14 +80,6 @@ v8::Handle<v8::Value> V8HTMLOptionsCollection::addCallback(const v8::Arguments& 
         return setDOMException(ec, args.GetIsolate());
 
     return v8::Undefined();
-}
-
-v8::Handle<v8::Value> V8HTMLOptionsCollection::lengthAccessorGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    INC_STATS("DOM.HTMLOptionsCollection.length._get");
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
-    int v = imp->length();
-    return v8Integer(v, info.GetIsolate());
 }
 
 void V8HTMLOptionsCollection::lengthAccessorSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)

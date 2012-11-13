@@ -49,12 +49,12 @@ class LayerTreeRenderer : public ThreadSafeRefCounted<LayerTreeRenderer>, public
 public:
     struct TileUpdate {
         WebCore::IntRect sourceRect;
-        WebCore::IntRect targetRect;
+        WebCore::IntRect tileRect;
         RefPtr<ShareableSurface> surface;
         WebCore::IntPoint offset;
-        TileUpdate(const WebCore::IntRect& source, const WebCore::IntRect& target, PassRefPtr<ShareableSurface> newSurface, const WebCore::IntPoint& newOffset)
+        TileUpdate(const WebCore::IntRect& source, const WebCore::IntRect& tile, PassRefPtr<ShareableSurface> newSurface, const WebCore::IntPoint& newOffset)
             : sourceRect(source)
-            , targetRect(target)
+            , tileRect(tile)
             , surface(newSurface)
             , offset(newOffset)
         {
@@ -99,6 +99,12 @@ public:
     void animationFrameReady();
 #endif
 
+    void setAccelerationMode(WebCore::TextureMapper::AccelerationMode mode)
+    {
+        // The acceleration mode is set only before TextureMapper was created.
+        ASSERT(!m_textureMapper);
+        m_accelerationMode = mode;
+    }
 private:
     PassOwnPtr<WebCore::GraphicsLayer> createLayer(WebLayerID);
 
@@ -120,8 +126,9 @@ private:
     void renderNextFrame();
     void purgeBackingStores();
 
-    PassRefPtr<CoordinatedBackingStore> getBackingStore(WebLayerID);
-    void removeBackingStoreIfNeeded(WebLayerID, int tileID);
+    PassRefPtr<CoordinatedBackingStore> getBackingStore(WebCore::GraphicsLayer*);
+    void removeBackingStoreIfNeeded(WebCore::GraphicsLayer*);
+    void resetBackingStoreSizeToLayerSize(WebCore::GraphicsLayer*);
 
     typedef HashMap<WebLayerID, WebCore::GraphicsLayer*> LayerMap;
     WebCore::FloatSize m_contentsSize;
@@ -153,6 +160,7 @@ private:
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     bool m_animationFrameRequested;
 #endif
+    WebCore::TextureMapper::AccelerationMode m_accelerationMode;
 };
 
 };

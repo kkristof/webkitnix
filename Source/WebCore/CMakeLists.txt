@@ -48,6 +48,7 @@ SET(WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/animation"
     "${WEBCORE_DIR}/platform/audio"
     "${WEBCORE_DIR}/platform/graphics"
+    "${WEBCORE_DIR}/platform/graphics/cpu/arm"
     "${WEBCORE_DIR}/platform/graphics/filters"
     "${WEBCORE_DIR}/platform/graphics/filters/arm"
     "${WEBCORE_DIR}/platform/graphics/harfbuzz"
@@ -210,8 +211,6 @@ SET(WebCore_IDL_FILES
     Modules/mediasource/SourceBufferList.idl
 
     Modules/mediastream/DOMWindowMediaStream.idl
-    Modules/mediastream/IceCallback.idl
-    Modules/mediastream/IceCandidate.idl
     Modules/mediastream/LocalMediaStream.idl
     Modules/mediastream/MediaStream.idl
     Modules/mediastream/MediaStreamEvent.idl
@@ -223,7 +222,6 @@ SET(WebCore_IDL_FILES
     Modules/mediastream/NavigatorUserMediaError.idl
     Modules/mediastream/NavigatorUserMediaErrorCallback.idl
     Modules/mediastream/NavigatorUserMediaSuccessCallback.idl
-    Modules/mediastream/PeerConnection00.idl
     Modules/mediastream/RTCDataChannel.idl
     Modules/mediastream/RTCDataChannelEvent.idl
     Modules/mediastream/RTCErrorCallback.idl
@@ -236,7 +234,6 @@ SET(WebCore_IDL_FILES
     Modules/mediastream/RTCStatsElement.idl
     Modules/mediastream/RTCStatsReport.idl
     Modules/mediastream/RTCStatsResponse.idl
-    Modules/mediastream/SessionDescription.idl
 
     Modules/navigatorcontentutils/NavigatorContentUtils.idl
 
@@ -850,7 +847,6 @@ SET(WebCore_SOURCES
     Modules/mediasource/SourceBuffer.cpp
     Modules/mediasource/SourceBufferList.cpp
 
-    Modules/mediastream/IceCandidate.cpp
     Modules/mediastream/LocalMediaStream.cpp
     Modules/mediastream/MediaConstraintsImpl.cpp
     Modules/mediastream/MediaStream.cpp
@@ -861,7 +857,6 @@ SET(WebCore_SOURCES
     Modules/mediastream/MediaStreamTrackEvent.cpp
     Modules/mediastream/MediaStreamTrackList.cpp
     Modules/mediastream/NavigatorMediaStream.cpp
-    Modules/mediastream/PeerConnection00.cpp
     Modules/mediastream/RTCDataChannel.cpp
     Modules/mediastream/RTCDataChannelEvent.cpp
     Modules/mediastream/RTCIceCandidate.cpp
@@ -874,7 +869,6 @@ SET(WebCore_SOURCES
     Modules/mediastream/RTCStatsRequestImpl.cpp
     Modules/mediastream/RTCStatsResponse.cpp
     Modules/mediastream/RTCVoidRequestImpl.cpp
-    Modules/mediastream/SessionDescription.cpp
     Modules/mediastream/UserMediaController.cpp
     Modules/mediastream/UserMediaRequest.cpp
 
@@ -1547,6 +1541,7 @@ SET(WebCore_SOURCES
     html/shadow/MediaControlRootElement.cpp
     html/shadow/MeterShadowElement.cpp
     html/shadow/ProgressShadowElement.cpp
+    html/shadow/SelectRuleFeatureSet.cpp
     html/shadow/SliderThumbElement.cpp
     html/shadow/SpinButtonElement.cpp
     html/shadow/TextControlInnerElements.cpp
@@ -1622,6 +1617,7 @@ SET(WebCore_SOURCES
     inspector/WorkerRuntimeAgent.cpp
 
     loader/CachedMetadata.cpp
+    loader/CookieJar.cpp
     loader/CrossOriginAccessControl.cpp
     loader/CrossOriginPreflightResultCache.cpp
     loader/DocumentLoadTiming.cpp
@@ -1969,17 +1965,12 @@ SET(WebCore_SOURCES
     platform/leveldb/LevelDBTransaction.cpp
     platform/leveldb/LevelDBWriteBatch.cpp
 
-    platform/mediastream/IceCandidateDescriptor.cpp
-    platform/mediastream/IceOptions.cpp
-    platform/mediastream/MediaHints.cpp
     platform/mediastream/MediaStreamCenter.cpp
     platform/mediastream/MediaStreamSource.cpp
-    platform/mediastream/PeerConnection00Handler.cpp
     platform/mediastream/RTCDataChannelDescriptor.cpp
     platform/mediastream/RTCIceCandidateDescriptor.cpp
     platform/mediastream/RTCPeerConnectionHandler.cpp
     platform/mediastream/RTCSessionDescriptionDescriptor.cpp
-    platform/mediastream/SessionDescriptionDescriptor.cpp
 
     platform/mock/DeviceMotionClientMock.cpp
     platform/mock/DeviceOrientationClientMock.cpp

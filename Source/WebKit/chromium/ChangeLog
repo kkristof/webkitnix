@@ -1,3 +1,221 @@
+2012-11-13  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed: temporary disable failing test.
+
+        * tests/MemoryInstrumentationTest.cpp:
+
+2012-11-13  Eberhard Graether  <egraether@google.com>
+
+        checkbox to toggle FPS counter in the inspector's settings
+        https://bugs.webkit.org/show_bug.cgi?id=99660
+
+        Reviewed by Pavel Feldman.
+
+        Added a checkbox to the inspector's settings to toggle a FPS counter. The checkbox appears when InspectorClient::canShowFPSCounter() returns true.
+
+        * public/WebView.h:
+        (WebView):
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::canShowFPSCounter):
+        (WebKit):
+        (WebKit::InspectorClientImpl::setShowFPSCounter):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::setShowFPSCounter):
+        (WebKit):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        (WebKit::WebViewImpl::loadFontAtlasIfNecessary):
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2012-11-12  Kent Tamura  <tkent@chromium.org>
+
+        Unable to set valid time value to input[type=time] with user interaction in some cases
+        https://bugs.webkit.org/show_bug.cgi?id=102048
+
+        Reviewed by Kentaro Hara.
+
+        * tests/DecimalTest.cpp:
+        (TEST_F): Update and add tests.
+        2.1 % 3 should be 2.1
+        10 % -3 should be 1
+        -10 % -3 should be -1
+        3.6 % 1.3 should be 1
+        500 % 1000 should be 500
+        -500 % 1000 should be -500
+
+2012-11-12  Min Qin  <qinmin@chromium.org>
+
+        Fix windowRect calculation for webplugin due to page scale factors
+        https://bugs.webkit.org/show_bug.cgi?id=100182
+
+        Reviewed by Adam Barth.
+
+        The current calculaton of windowRect in WebPluginContainerImpl is wrong. Even after some of our latest changes.
+        The problem is caused by page scale factor.
+        For example, windowToContents(IntPoint) will return an unscaled offset for an iframe, but will return a scaled offset for the main frame. So in order to obtain the correct window coordinate, we need to use contentsToWindow().
+        Since webview_plugin.cc is expecting window coordinates, we need to use contentsToWindow(IntRect) to calculate the windowRect so that the rect size can get correctly scaled.
+        It is difficult to write a test for this because it's pixel-based, and plugin placeholder is managed on the Chromium side (webview_plugin.cc).
+
+        * src/WebPluginContainerImpl.cpp:
+        (WebKit::WebPluginContainerImpl::paint):
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        Unreviewed. Roll Chromium DEPS.
+
+2012-11-12  Stephen Chenney  <schenney@chromium.org>
+
+        [chromium] Supressing a Skia change to prevent layout test breakage.
+
+        Unreviewed expectations management.
+
+        * skia_webkit.gyp: Added supression 'SK_IGNORE_FAST_BLURRECT=1'
+
+2012-11-12  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Delete WebCompositor.h
+        https://bugs.webkit.org/show_bug.cgi?id=101137
+
+        Reviewed by James Robinson.
+
+        The implementation of this class is getting deleted and all
+        WebKit-side users are already going via WebCompositorSupport instead.
+
+        * tests/WebCompositorInputHandlerImplTest.cpp:
+
+2012-11-12  Dirk Pranke  <dpranke@chromium.org>
+
+        Fix Chromium DEPS version after accidentally checking in HEAD a couple days ago.
+
+        Unreviewed, build fix.
+
+        * DEPS:
+
+2012-11-12  Keishi Hattori  <keishi@webkit.org>
+
+        Add support for week/month to Locale::formatDateTime()
+        https://bugs.webkit.org/show_bug.cgi?id=101878
+
+        Reviewed by Kent Tamura.
+
+        * tests/LocaleMacTest.cpp:
+        (LocaleMacTest::formatWeek): Takes ISO string and returns localized string.
+        (LocaleMacTest):
+        (LocaleMacTest::formatMonth): Ditto.
+        (TEST_F):
+
+2012-11-11  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [chromium] Expose CustomEvent through WebDOMCustomEvent.
+        https://bugs.webkit.org/show_bug.cgi?id=101293
+
+        Reviewed by Adam Barth.
+
+        * WebKit.gyp:
+        * public/WebDOMCustomEvent.h: Added.
+        (WebKit):
+        (WebDOMCustomEvent):
+        (WebKit::WebDOMCustomEvent::WebDOMCustomEvent):
+        * src/WebDOMCustomEvent.cpp: Added.
+        (WebKit):
+        (WebKit::WebDOMCustomEvent::initCustomEvent):
+
+2012-11-09  Rick Byers  <rbyers@chromium.org>
+
+        Move chromium to USE(LAZY_NATIVE_CURSOR)
+        https://bugs.webkit.org/show_bug.cgi?id=101501
+
+        Reviewed by Adam Barth.
+
+        Update conversion from Cursor to WebCursorInfo to remove the
+        intermediate (and useless) step of PlatformCursor.
+
+        * src/AssertMatchingEnums.cpp:
+        * src/WebCursorInfo.cpp:
+        (WebKit::WebCursorInfo::WebCursorInfo):
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Combine IDBBackingStore and IDBLevelDBBackingStore
+        https://bugs.webkit.org/show_bug.cgi?id=101415
+
+        Reviewed by Tony Chang.
+
+        Remove method that is no longer in the base class.
+
+        * tests/IDBFakeBackingStore.h:
+
+2012-11-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134101.
+        http://trac.webkit.org/changeset/134101
+        https://bugs.webkit.org/show_bug.cgi?id=101790
+
+        IDBDatabaseBackendTest.BackingStoreRetention failing
+        (Requested by jsbell|gardener on #webkit).
+
+        * tests/IDBFakeBackingStore.h:
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Combine IDBBackingStore and IDBLevelDBBackingStore
+        https://bugs.webkit.org/show_bug.cgi?id=101415
+
+        Reviewed by Tony Chang.
+
+        Remove method that is no longer in the base class.
+
+        * tests/IDBFakeBackingStore.h:
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: switch frontend to use int64_t-based references
+        https://bugs.webkit.org/show_bug.cgi?id=100426
+
+        Reviewed by Tony Chang.
+
+        Remove implementation stubs from chromium API for
+        methods obsoleted by https://bugs.webkit.org/show_bug.cgi?id=100425
+
+        * src/IDBObjectStoreBackendProxy.cpp:
+        * src/IDBObjectStoreBackendProxy.h:
+        (IDBObjectStoreBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+        * src/WebIDBObjectStoreImpl.cpp:
+        * src/WebIDBObjectStoreImpl.h:
+        (WebIDBObjectStoreImpl):
+
+2012-11-09  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Deleting all files relating to the deprecated PeerConnection00
+        https://bugs.webkit.org/show_bug.cgi?id=101730
+
+        Reviewed by Adam Barth.
+
+        Since RTCPeerConenction has superseeded PeerConnection00 this patch removes all
+        files relating to the old API.
+
+        * WebKit.gyp:
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * public/platform/WebICECandidateDescriptor.h: Removed.
+        * public/platform/WebICEOptions.h: Removed.
+        * public/platform/WebMediaHints.h: Removed.
+        * public/platform/WebPeerConnection00Handler.h: Removed.
+        * public/platform/WebPeerConnection00HandlerClient.h: Removed.
+        * public/platform/WebPeerConnectionHandler.h: Removed.
+        * public/platform/WebPeerConnectionHandlerClient.h: Removed.
+        * public/platform/WebSessionDescriptionDescriptor.h: Removed.
+        * src/AssertMatchingEnums.cpp:
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::isPeerConnectionEnabled):
+        * src/WebSessionDescriptionDescriptor.cpp: Removed.
+
 2012-11-08  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r134010.

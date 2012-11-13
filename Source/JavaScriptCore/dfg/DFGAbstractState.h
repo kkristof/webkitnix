@@ -235,6 +235,13 @@ private:
         childValue2.filter(SpecNumber);
     }
     
+    enum BooleanResult {
+        UnknownBooleanResult,
+        DefinitelyFalse,
+        DefinitelyTrue
+    };
+    BooleanResult booleanResult(Node&, AbstractValue&);
+    
     bool trySetConstant(NodeIndex nodeIndex, JSValue value)
     {
         // Make sure we don't constant fold something that will produce values that contravene

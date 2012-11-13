@@ -1,3 +1,4219 @@
+2012-11-13  Andreas Kling  <kling@webkit.org>
+
+        Exploit ElementAttributeData sharing in Node.cloneNode.
+        <http://webkit.org/b/101374>
+
+        Reviewed by Anders Carlsson.
+
+        Instead of blindly creating a new ElementAttributeData for Node.cloneNode, let's be clever!
+        If the source data is immutable, simply ref it from the new node at virtually no cost.
+
+        If the source data is mutable, convert it to immutable data so it can be shared between both nodes.
+        Since the typical use-case for Node.cloneNode is to create-once/clone-many, this saves both time
+        and memory in the long run.
+
+        ~8% speed-up on PerformanceTests/DOM/CloneNodes on my MBP.
+
+        * dom/Element.cpp:
+        (WebCore::Element::cloneAttributesFromElement):
+
+            Move attribute data cloning logic from ElementAttributeData to Element.
+
+        * dom/ElementAttributeData.cpp:
+        (WebCore::ImmutableElementAttributeData::~ImmutableElementAttributeData):
+        (WebCore::ImmutableElementAttributeData::ImmutableElementAttributeData):
+        (WebCore::ElementAttributeData::ElementAttributeData):
+        (WebCore::MutableElementAttributeData::MutableElementAttributeData):
+        (WebCore::ElementAttributeData::makeMutableCopy):
+        (WebCore::ElementAttributeData::makeImmutableCopy):
+        * dom/ElementAttributeData.h:
+        (ElementAttributeData):
+        (ImmutableElementAttributeData):
+        (MutableElementAttributeData):
+
+            Add facilities for converting a mutable ElementAttributeData to an immutable one.
+            Share some code in the common base class constructor.
+
+2012-11-13  Kentaro Hara  <haraken@chromium.org>
+
+        Unreviewed. Build fix of V8 bindings.
+
+        * bindings/v8/V8DOMWrapper.cpp:
+        (WebCore::V8DOMWrapper::maybeDOMWrapper):
+
+2012-11-13  Andrey Adaikin  <aandrey@chromium.org>
+
+        Web Inspector: [Canvas] UI: make the Grid save scrolling position, show wait spinner icon
+        https://bugs.webkit.org/show_bug.cgi?id=102071
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/front-end/CanvasProfileView.js:
+        (WebInspector.CanvasProfileView):
+        (WebInspector.CanvasProfileView.prototype.dispose):
+        (WebInspector.CanvasProfileView.prototype.elementsToRestoreScrollPositionsFor):
+        (WebInspector.CanvasProfileView.prototype._enableWaitIcon):
+        (WebInspector.CanvasProfileView.prototype._replayTraceLog.didReplayTraceLog):
+        (WebInspector.CanvasProfileView.prototype._replayTraceLog):
+        (WebInspector.CanvasProfileView.prototype._didReceiveTraceLog):
+        (WebInspector.CanvasProfileView.prototype._createCallNode):
+        * inspector/front-end/canvasProfiler.css:
+        (#canvas-replay-image.wait):
+
+2012-11-13  Eugene Klyuchnikov  <eustas.bug@gmail.com>
+
+        Web Inspector: Settings screen: some panel shortcuts are missing
+        https://bugs.webkit.org/show_bug.cgi?id=101026
+
+        Reviewed by Pavel Feldman.
+
+        Panels, that have not been loaded by the time shortcuts view was
+        initialized, had no chance to register shortcuts.
+
+        Solution: move shortcut registration (for shortcuts screen) to panel
+        descriptors.
+
+        More changes: add JsDoc annotations to ShortcutScreen and change "key"
+        parameter type for raw string to key descriptor object.
+
+        * WebCore.gypi: Added TimelinePanelDescriptor.js file.
+        * WebCore.vcproj/WebCore.vcproj: Ditto.
+        * inspector/compile-front-end.py: Ditto.
+        * inspector/front-end/WebKit.qrc: Ditto.
+        * inspector/front-end/inspector.html: Ditto.
+        * inspector/front-end/AdvancedSearchController.js: Add JsDoc annotation.
+        * inspector/front-end/GoToLineDialog.js: Ditto.
+        * inspector/front-end/CallStackSidebarPane.js: Removed shortcut-screen
+        shortcuts registration.
+        * inspector/front-end/ElementsPanel.js: Ditto.
+        * inspector/front-end/ScriptsPanel.js: Ditto.
+        * inspector/front-end/StylesSidebarPane.js: Ditto.
+        * inspector/front-end/TimelinePanel.js: Ditto.
+        * inspector/front-end/ConsoleView.js: Changes order of lines to increase
+        readability.
+        * inspector/front-end/ElementsPanelDescriptor.js: Add shortcut-screen
+        shortcuts registration and key descriptor constants.
+        * inspector/front-end/ScriptsPanelDescriptor.js: Ditto.
+        * inspector/front-end/TimelinePanelDescriptor.js: Ditto.
+        * inspector/front-end/Panel.js: Removed unused "uregisterShortcut"; made
+        "registerShortcuts" method accept array of key descriptors.
+        (WebInspector.PanelDescriptor.prototype.registerShortcuts): Added.
+        * inspector/front-end/ShortcutsScreen.js: Added JsDoc; changed parameter
+        type from string to key descriptor.
+        * inspector/front-end/inspector.js: Register shortcuts using
+        panel descriptors.
+        (WebInspector._panelDescriptors): Removed duplicate line.
+
+2012-11-13  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        Optimize RGB565 and RGBA5551 packing/unpacking functions with NEON intrinsics
+        https://bugs.webkit.org/show_bug.cgi?id=102060
+
+        Reviewed by Zoltan Herczeg.
+
+        Adding more NEONized packing functions to GraphicsContext3DNEON.h.
+        These functions are three times faster with this intrinsics optimizations.
+
+        * platform/graphics/GraphicsContext3D.cpp:
+        (WebCore):
+        * platform/graphics/cpu/arm/GraphicsContext3DNEON.h:
+        (WebCore::ARM::unpackOneRowOfRGBA5551ToRGBA8NEON):
+        (ARM):
+        (WebCore::ARM::packOneRowOfRGBA8ToUnsignedShort5551NEON):
+        (WebCore::ARM::unpackOneRowOfRGB565ToRGBA8NEON):
+        (WebCore::ARM::packOneRowOfRGBA8ToUnsignedShort565NEON):
+
+2012-11-13  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Enable Mutation observer
+        https://bugs.webkit.org/show_bug.cgi?id=102066
+
+        Reviewed by Pavel Feldman.
+
+        * DerivedSources.pri: Add missing IDL files.
+
+2012-11-13  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Make isValidDOMObject() static
+        https://bugs.webkit.org/show_bug.cgi?id=101914
+
+        Reviewed by Adam Barth.
+
+        isValidDOMObject() is used by DOMWrapper.cpp only.
+
+        No tests. No change in behavior.
+
+        * bindings/v8/V8DOMWrapper.cpp:
+        (WebCore::isValidDOMObject):
+        (WebCore):
+        (WebCore::V8DOMWrapper::maybeDOMWrapper):
+        * bindings/v8/V8DOMWrapper.h:
+        (V8DOMWrapper):
+
+2012-11-13  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSSRegions] Incorrect computed height for content with region-break-before
+        https://bugs.webkit.org/show_bug.cgi?id=101862
+
+        Reviewed by Julien Chaffraix.
+
+        When processing the region breaks for auto-height regions, we skipped the case
+        when the region-break-before occurred in the first region in the chain which was
+        an auto-height region. Because of that, the region computed height was not 0
+        as it was supposed to be, but rather LayoutUnit::max() / 2.
+
+        Test: fast/regions/autoheight-breakbefore-wrongheight.html
+
+        * rendering/RenderFlowThread.cpp:
+        (WebCore::RenderFlowThread::addForcedRegionBreak):
+        Make sure we process also the case when the region-break occurs at offset 0 in the flow thread
+        and the first region in chain is an auto-height region.
+        * rendering/RenderRegion.cpp:
+        (WebCore::RenderRegion::updateLogicalHeight):
+        Add an assert to make sure that the computed height for auto-height regions is always less than LayoutUnit::max() / 2.
+
+2012-11-13  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: remove reportMemoryUsage method from ImageObserver
+        https://bugs.webkit.org/show_bug.cgi?id=102058
+
+        Reviewed by Pavel Feldman.
+
+        * bindings/v8/V8PerIsolateData.cpp:
+        (WebCore::V8PerIsolateData::reportMemoryUsage): drive-by fix, no need to report
+        each element of the vector as generic vector instrumentation will take care of it.
+        * platform/graphics/Image.cpp: the client is reported as weak pointer to make sure
+        we don't count its by the pointer to the base class which may differ from the actual
+        object address.
+        (WebCore::Image::reportMemoryUsage):
+        * platform/graphics/ImageObserver.h: removed reportMemoryUsage method from the interface.
+        (ImageObserver):
+
+2012-11-13  Eberhard Graether  <egraether@google.com>
+
+        checkbox to toggle FPS counter in the inspector's settings
+        https://bugs.webkit.org/show_bug.cgi?id=99660
+
+        Reviewed by Pavel Feldman.
+
+        Added a checkbox to the inspector's settings to toggle a FPS counter. The checkbox appears when InspectorClient::canShowFPSCounter() returns true.
+
+        No new tests.
+
+        * English.lproj/localizedStrings.js:
+        * inspector/Inspector.json:
+        * inspector/InspectorClient.h:
+        (WebCore::InspectorClient::canShowFPSCounter):
+        (WebCore::InspectorClient::setShowFPSCounter):
+        (InspectorClient):
+        * inspector/InspectorPageAgent.cpp:
+        (PageAgentState):
+        (WebCore::InspectorPageAgent::enable):
+        (WebCore::InspectorPageAgent::disable):
+        (WebCore::InspectorPageAgent::canShowFPSCounter):
+        (WebCore):
+        (WebCore::InspectorPageAgent::setShowFPSCounter):
+        * inspector/InspectorPageAgent.h:
+        * inspector/front-end/Settings.js:
+        * inspector/front-end/SettingsScreen.js:
+        (WebInspector.GenericSettingsTab):
+        (WebInspector.GenericSettingsTab.prototype.get _showFPSCounterChanged):
+        * inspector/front-end/inspector.js:
+        (WebInspector.doLoadedDone):
+
+2012-11-12  Kent Tamura  <tkent@chromium.org>
+
+        Unable to set valid time value to input[type=time] with user interaction in some cases
+        https://bugs.webkit.org/show_bug.cgi?id=102048
+
+        Reviewed by Kentaro Hara.
+
+        The implementations of shouldMillisecondFieldReadOnly,
+        shouldMinuteFieldReadOnly, and shouldSecondFieldReadOnly were
+        incorrect. We need to check if a part of the minimum value matches to
+        the corresponding part of the current value.
+
+        Also, we had better check hour field editability.
+
+        Test: fast/forms/time-multiple-fields/time-multiple-fields-readonly-subfield.html
+
+        * html/BaseMultipleFieldsDateAndTimeInputType.cpp:
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::shouldHaveSecondField):
+        Fix a problem that hh:mm:00.sss didn't create a seconds field.
+        * html/shadow/DateTimeEditElement.cpp:
+        (DateTimeEditBuilder): Add shouldHourFieldReadOnly declaration.
+        (WebCore::DateTimeEditBuilder::visitField):
+        Add shouldHourFieldReadOnly check to Hour11/Hour12/Hour23/Hour24/Period fields.
+        (WebCore::DateTimeEditBuilder::shouldHourFieldReadOnly):
+        Added. An hour field should be read-only if the step value is a multiple
+        of a day and the hour part of the minimum value matches to the hour part
+        of the value.
+        (WebCore::DateTimeEditBuilder::shouldMillisecondFieldReadOnly):
+        A millisecond field should be read-only if the step value is a multiple
+        of one second and the millisecond part of the minimum value matches to
+        the millisecond part of the value.
+        (WebCore::DateTimeEditBuilder::shouldMinuteFieldReadOnly):
+        A minute field should be read-only if the step value is a multiple of
+        one hour and the minute part of the minimum value matches to the minute
+        part of the value.
+        (WebCore::DateTimeEditBuilder::shouldSecondFieldReadOnly):
+        A second field should be read-only if the step value is a multiple of
+        one minute and the second part of the minimum value matches to the second
+        part of the value.
+        * platform/Decimal.cpp:
+        (WebCore::Decimal::remainder):
+        Fix a bug in case that the fractional part of quotient is >= 0.5. Also
+        make this matches to C99, C++11, ECMAScript behavior.
+
+2012-11-13  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: MemoryBlock name should not include full path to the block
+        https://bugs.webkit.org/show_bug.cgi?id=102055
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/InspectorMemoryAgent.cpp: pass only last path component as MemoryBlock name
+        intead of fully qualified name.
+
+2012-11-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: get rid of enter/exitTextChangeMode in the editor
+        https://bugs.webkit.org/show_bug.cgi?id=101845
+
+        Reviewed by Vsevolod Vlasov.
+
+        They seem to do nothing.
+
+        * inspector/front-end/DefaultTextEditor.js:
+        (WebInspector.DefaultTextEditor.prototype._textChanged):
+        (WebInspector.DefaultTextEditor.prototype.editRange):
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype.handleUndoRedo):
+        (WebInspector.TextEditorMainPanel.prototype.handleEnterKey.get var):
+        (WebInspector.TextEditorMainPanel.prototype.handleEnterKey):
+        (WebInspector.TextEditorMainPanel.prototype._applyDomUpdates):
+        * inspector/front-end/TextEditorModel.js:
+        (WebInspector.TextEditorModel.endsWithBracketRegex.):
+
+2012-11-13  Tommy Widenflycht  <tommyw@google.com>
+
+        Remove the custom WebSocket::send for both V8 and JSC
+        https://bugs.webkit.org/show_bug.cgi?id=101936
+
+        Reviewed by Kentaro Hara.
+
+        This patch removes the custom WebSocket::send since it isn't needed anymore.
+
+        Patch covered by existing tests.
+
+        * Modules/websockets/WebSocket.idl:
+        * UseV8.cmake:
+        * WebCore.gypi:
+        * bindings/js/JSWebSocketCustom.cpp:
+        * bindings/v8/custom/V8WebSocketCustom.cpp: Removed.
+
+2012-11-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: move indentation logic into TextEditorModel
+        https://bugs.webkit.org/show_bug.cgi?id=101842
+
+        Reviewed by Vsevolod Vlasov.
+
+        I'd like to move as much headless logic into the TextEditorModel as possible.
+        Drive by: removed some dead code, converted getter into function and moved undo
+        mark state into the model as well.
+
+        * inspector/front-end/DefaultTextEditor.js:
+        (WebInspector.DefaultTextEditor.prototype.editRange):
+        (WebInspector.DefaultTextEditor.prototype._syncDecorationsForLine):
+        (WebInspector.TextEditorChunkedPanel.prototype._splitChunkOnALine):
+        (WebInspector.TextEditorMainPanel.prototype.handleEnterKey.get var):
+        (WebInspector.TextEditorMainPanel.prototype.handleEnterKey):
+        (WebInspector.TextEditorMainPanel.prototype._applyDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._updateChunksForRanges):
+        (WebInspector.TextEditorMainChunk):
+        (WebInspector.TextEditorMainChunk.prototype.isDecorated):
+        (WebInspector.TextEditorMainChunk.prototype.set expanded):
+        * inspector/front-end/TextEditorModel.js:
+        (WebInspector.TextEditorModel.endsWithBracketRegex.):
+
+2012-11-13  Hayato Ito  <hayato@chromium.org>
+
+        Unreviewed attempt to fix the chromium mac-build after r134348.
+
+        * platform/graphics/mac/FontMac.mm:
+        (WebCore::Font::drawGlyphs):
+        * platform/mac/WebCoreSystemInterface.h:
+        * platform/mac/WebCoreSystemInterface.mm:
+
+2012-11-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: migrate text editor to mutation observers
+        https://bugs.webkit.org/show_bug.cgi?id=101841
+
+        Reviewed by Vsevolod Vlasov.
+
+        Otherwise, we miss notifications on the removed lines.
+
+        * inspector/front-end/DefaultTextEditor.js:
+        (WebInspector.DefaultTextEditor.prototype.wasShown):
+        (WebInspector.DefaultTextEditor.prototype.willHide):
+        (WebInspector.TextEditorChunkedPanel.prototype._repaintAll):
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype._wasShown):
+        (WebInspector.TextEditorMainPanel.prototype._willHide):
+        (WebInspector.TextEditorMainPanel.prototype.markAndRevealRange):
+        (WebInspector.TextEditorMainPanel.prototype.beginDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype.endDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._paintScheduledLines):
+        (WebInspector.TextEditorMainPanel.prototype._paintLineChunks):
+        (WebInspector.TextEditorMainPanel.prototype._paintLine):
+        (WebInspector.TextEditorMainPanel.prototype._insertSpanBefore):
+        (WebInspector.TextEditorMainPanel.prototype._handleMutations.else.get if):
+        (WebInspector.TextEditorMainPanel.prototype._handleMutations):
+        (WebInspector.TextEditorMainPanel.prototype._collectDirtyLines):
+        (WebInspector.TextEditorMainPanel.prototype._applyDomUpdates):
+        * inspector/front-end/externs.js:
+        (WebKitMutation):
+        (WebKitMutationObserver.prototype.observe):
+        (WebKitMutationObserver.prototype.disconnect):
+        * inspector/front-end/textEditor.css:
+        (.debug-fadeout):
+        (@-webkit-keyframes debug-fadeout):
+        (to):
+
+2012-11-13  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        Optimize RGBA4444ToRGBA8 packing/unpacking functions with NEON intrinsics in GraphicsContext3D
+        https://bugs.webkit.org/show_bug.cgi?id=101473
+
+        Reviewed by Zoltan Herczeg.
+
+        With NEON intrinsics the packing/unpacking functions can be optimized well.
+        This particular function is about 3 times faster with ARM NEON. On top level tests
+        the speed up was 1.18x.
+
+        * CMakeLists.txt:
+        * GNUmakefile.am:
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * WebCore.gyp/WebCore.gyp:
+        * WebCore.gypi:
+        * WebCore.pri:
+        * WebCore.xcodeproj/project.pbxproj:
+        * platform/graphics/GraphicsContext3D.cpp:
+        (WebCore):
+        * platform/graphics/cpu/arm/GraphicsContext3DNEON.h: Added.
+        (WebCore):
+        (ARM):
+        (WebCore::ARM::unpackOneRowOfRGBA4444ToRGBA8NEON):
+        (WebCore::ARM::packOneRowOfRGBA8ToUnsignedShort4444NEON):
+
+2012-11-13  Takashi Sakamoto  <tasak@google.com>
+
+        Crash when replacing parts of text inputs with content: url(...)
+        https://bugs.webkit.org/show_bug.cgi?id=101133
+
+        Reviewed by Kent Tamura.
+
+        Disable directly setting content of elements in an input element's
+        shadow dom tree, because the setting breaks input element's behavior.
+
+        Tests: fast/forms/number/number-content-url-crash.html
+               fast/forms/search/search-content-url-crash.html
+
+        * css/html.css:
+        (input::-webkit-textfield-decoration-container):
+        Use important to disable overriding an input element's content
+        property.
+        * html/TextFieldInputType.cpp:
+        (WebCore::TextFieldInputType::attach):
+        Added ASSERTION. No content should be applied to
+        input::-webkit-textfield-decoration-container.
+
+2012-11-12  Huang Dongsung  <luxtella@company100.net>
+
+        [Qt] REGRESSION(134142): overscaled tiles in pixel test results and MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=101918
+
+        Reviewed by Noam Rosenthal.
+
+        Remove TiledBackingStore::rect(), because it is not used anymore.
+
+        * platform/graphics/TiledBackingStore.h:
+        (TiledBackingStore):
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        [V8] We should be able to recover the V8DOMWindowShell more quickly
+        https://bugs.webkit.org/show_bug.cgi?id=102020
+
+        Reviewed by Kentaro Hara.
+
+        For isolated worlds, we used to store the V8DOMWindowShell as an
+        internal field of the inner DOM window. This patch moves the pointer to
+        an internal field of the v8::Context, which saves us the work of
+        looking up the inner DOM window.
+
+        Unfortunately, we cannot store the V8DOMWindowShell in V8PerContextData
+        because the V8DOMWindowShell outlives the V8PerContextData. (We destroy
+        the V8PerContextData when we detach the V8DOMWindowShell from the
+        frame.)
+
+        * bindings/scripts/CodeGeneratorV8.pm:
+        (GetInternalFields):
+        * bindings/v8/V8DOMWindowShell.cpp:
+        (WebCore::V8DOMWindowShell::initializeIfNeeded):
+        * bindings/v8/V8DOMWindowShell.h:
+        (WebCore::V8DOMWindowShell::getEntered):
+        * bindings/v8/V8PerContextData.h:
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Add ASSERT() to guarantee that we don't store NULL pointers to V8 internal fields
+        https://bugs.webkit.org/show_bug.cgi?id=101054
+
+        Reviewed by Adam Barth.
+
+        I'm investigating a Chromium crash bug:
+        http://code.google.com/p/chromium/issues/detail?id=155942
+
+        I've not yet identified the root cause (because I can't reproduce
+        the crash), but it looks like we are storing NULL pointers to
+        V8 internal fields. Just in case, we can add an ASSERT() to
+        guarantee that NULL pointers are never stored. (Also I'm hoping
+        that this ASSERT() will give me more debug information.)
+
+        No tests. No change in behavior.
+
+        * bindings/v8/V8DOMWrapper.h:
+        (WebCore::V8DOMWrapper::setDOMWrapper):
+
+2012-11-12  Shinya Kawanaka  <shinyak@chromium.org>
+
+        Changing id, className, or attribute should invalidate distribution
+        https://bugs.webkit.org/show_bug.cgi?id=100738
+
+        Reviewed by Dimitri Glazkov.
+
+        When id, className, or attribute is changed, we might have to invalidate distribution.
+        However, we don't want to do useless invalidation. So we consult with the RuleFeatureSet of ElementShadow,
+        and invalidate distribution only if necessary.
+
+        When className is changed, we can share a lot of code between invalidating distribution and invalidating style.
+        So we made checkNeedsStyleInvalidationForClassChange a template method, and share it.
+
+        Also we've measured how this patch makes changing attribute slow. By converting checkNeedsStyleInvalidationForClassChange
+        to template, actually this improves the performance of changing attribute code. I've measured each code 3 times.
+
+        DOM/ModifyAttribute.html
+        Before this patch:
+                median  stdev  min      max    [ms]
+          1st   115.62   0.67  114.75   117.00
+          2nd   115.08   1.13  113.25   117.58
+          3rd   114.75   1.16  113.42   117.83
+
+        After this patch:
+                median  stdev  min      max    [ms]
+          1st   102.55   0.95  101.25   104.50
+          2nd   103.10   0.86  102.20   100.95
+          3rd   103.30   1.05  102.10   106.65
+
+        Tests: fast/dom/shadow/distribution-attribute-modified.html
+               fast/dom/shadow/distribution-className-modified.html
+               fast/dom/shadow/distribution-id-modified.html
+               fast/dom/shadow/reprojection-attribute-modified.html
+               fast/dom/shadow/reprojection-className-modified.html
+               fast/dom/shadow/reprojection-id-modified.html
+
+        * dom/Element.cpp:
+        (WebCore::Element::attributeChanged):
+        (WebCore::HasSelectorForClassStyleFunctor::HasSelectorForClassStyleFunctor):
+        (HasSelectorForClassStyleFunctor):
+        (WebCore::HasSelectorForClassStyleFunctor::operator()): Returns true if StyleResolver::hasSelectorForClass returns true.
+        (WebCore):
+        (WebCore::HasSelectorForClassDistributionFunctor::HasSelectorForClassDistributionFunctor):
+        (HasSelectorForClassDistributionFunctor):
+        (WebCore::HasSelectorForClassDistributionFunctor::operator()): Returns true if ElementShadow::hasSelectorForClass returns true.
+        (WebCore::checkFunctorForClassChange):
+        (WebCore::checkNeedsStyleInvalidationForClassChange): Extacted the implementation to checkFunctorForClassChange.
+        (WebCore::checkNeedsDistributionInvalidationForClassChange):
+        (WebCore::Element::classAttributeChanged):
+
+2012-11-12  Joe Mason  <jmason@rim.com>
+
+        [BlackBerry] NetworkJob should not check if data is received with HEAD
+        https://bugs.webkit.org/show_bug.cgi?id=102034
+
+        Reviewed by George Staikos.
+
+        Internal PR: 241391
+
+        Make HEAD requests call didFinish instead of didFail on a 404 response, even though they
+        have no data.
+
+        Tests: ManualTests/blackberry/head-xhr-nonexistant-file.html
+
+        * platform/network/blackberry/NetworkJob.cpp:
+        (WebCore::NetworkJob::NetworkJob):
+        (WebCore::NetworkJob::initialize):
+        (WebCore::NetworkJob::shouldNotifyClientFailed):
+        * platform/network/blackberry/NetworkJob.h:
+        (NetworkJob):
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        [V8] V8DOMWrapper::instantiateV8Object shouldn't use deprecatedDocument
+        https://bugs.webkit.org/show_bug.cgi?id=102015
+
+        Reviewed by Kentaro Hara.
+
+        Previously, Nodes had a special path through
+        V8DOMWrapper::instantiateV8Object using deprecatedDocument so that we
+        could find the V8PerContextData quickly. Now that we can get the
+        V8PerContextData from the v8::Context quickly, we can move Nodes to the
+        general case. The net consequence is that creation of all DOM objects
+        should be as fast as Nodes are.
+
+        * bindings/scripts/CodeGeneratorV8.pm:
+        (GenerateToV8Converters):
+        * bindings/scripts/test/V8/V8Float64Array.cpp:
+        (WebCore::V8Float64Array::wrapSlow):
+        * bindings/scripts/test/V8/V8TestActiveDOMObject.cpp:
+        (WebCore::V8TestActiveDOMObject::wrapSlow):
+        * bindings/scripts/test/V8/V8TestCustomNamedGetter.cpp:
+        (WebCore::V8TestCustomNamedGetter::wrapSlow):
+        * bindings/scripts/test/V8/V8TestEventConstructor.cpp:
+        (WebCore::V8TestEventConstructor::wrapSlow):
+        * bindings/scripts/test/V8/V8TestEventTarget.cpp:
+        (WebCore::V8TestEventTarget::wrapSlow):
+        * bindings/scripts/test/V8/V8TestException.cpp:
+        (WebCore::V8TestException::wrapSlow):
+        * bindings/scripts/test/V8/V8TestInterface.cpp:
+        (WebCore::V8TestInterface::wrapSlow):
+        * bindings/scripts/test/V8/V8TestMediaQueryListListener.cpp:
+        (WebCore::V8TestMediaQueryListListener::wrapSlow):
+        * bindings/scripts/test/V8/V8TestNamedConstructor.cpp:
+        (WebCore::V8TestNamedConstructor::wrapSlow):
+        * bindings/scripts/test/V8/V8TestNode.cpp:
+        (WebCore::V8TestNode::wrapSlow):
+        * bindings/scripts/test/V8/V8TestObj.cpp:
+        (WebCore::V8TestObj::wrapSlow):
+        * bindings/scripts/test/V8/V8TestOverloadedConstructors.cpp:
+        (WebCore::V8TestOverloadedConstructors::wrapSlow):
+        * bindings/scripts/test/V8/V8TestSerializedScriptValueInterface.cpp:
+        (WebCore::V8TestSerializedScriptValueInterface::wrapSlow):
+        * bindings/v8/V8Binding.cpp:
+        * bindings/v8/V8Binding.h:
+        (WebCore):
+        * bindings/v8/V8DOMWrapper.cpp:
+        (WebCore::V8DOMWrapper::instantiateV8Object):
+        * bindings/v8/V8DOMWrapper.h:
+        (V8DOMWrapper):
+
+2012-11-12  KyungTae Kim  <ktf.kim@samsung.com>
+
+        Some CSS properties are not handled on StyleResolver::applyProperty
+        https://bugs.webkit.org/show_bug.cgi?id=102027
+
+        Reviewed by Gyuyoung Kim.
+
+        The CSSPropertyMaxZoom, CSSPropertyMinZoom, CSSPropertyOrientation and CSSPropertyUserZoom
+        need to be handled on StyleResolver::applyProperty.
+
+        * css/StyleResolver.cpp:
+        (WebCore::StyleResolver::applyProperty):
+
+2012-11-12  Simon Fraser  <simon.fraser@apple.com>
+
+        Avoid calling calculateLayerBounds() and convertToLayerCoords() more than once per layer paint
+        https://bugs.webkit.org/show_bug.cgi?id=102031
+
+        Reviewed by Beth Dakin.
+
+        RenderLayer::paintLayerContents() and callees could end up calling convertToLayerCoords()
+        and calculateLayerBounds() multiple times for painting a single layer.
+        
+        Keep track of whether we've computed the root-relative bounds and do it on demand.
+        Compute the offset relative to rootLayer once, and pass it around as an optional parameter
+        to functions that need it.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::paintLayerContents):
+        (WebCore::RenderLayer::hitTestLayer):
+        (WebCore::RenderLayer::calculateRects):
+        (WebCore::RenderLayer::intersectsDamageRect):
+        (WebCore::RenderLayer::boundingBox):
+        (WebCore::RenderLayer::calculateLayerBounds):
+        * rendering/RenderLayer.h:
+        * rendering/RenderLayerCompositor.cpp:
+        (WebCore::RenderLayerCompositor::calculateCompositedBounds):
+
+2012-11-12  Simon Fraser  <simon.fraser@apple.com>
+
+        Change calculateLayerBounds() from a static function to a member function
+        https://bugs.webkit.org/show_bug.cgi?id=102022
+
+        Reviewed by Beth Dakin.
+
+        calculateLayerBounds() has grown into a substantial function after
+        starting live as a little utility function, so make it a member function
+        of RenderLayer, and adjust callers accordingly.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::setFilterBackendNeedsRepaintingInRect):
+        (WebCore::RenderLayer::paintLayerContents):
+        (WebCore::RenderLayer::calculateLayerBounds):
+        * rendering/RenderLayer.h:
+        * rendering/RenderLayerCompositor.cpp:
+        (WebCore::RenderLayerCompositor::calculateCompositedBounds):
+
+2012-11-12  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: Add an option to switch display of "Other" memory on/off in NMI
+        https://bugs.webkit.org/show_bug.cgi?id=101601
+
+        Reviewed by Yury Semikhatsky.
+
+        * English.lproj/localizedStrings.js:
+        * inspector/front-end/NativeMemorySnapshotView.js:
+        * inspector/front-end/Settings.js:
+        * inspector/front-end/SettingsScreen.js:
+        (WebInspector.GenericSettingsTab):
+
+2012-11-10  Dirk Schulze  <krit@webkit.org>
+
+        BasicShapes 'circle', 'rectangle', 'ellipse' should be animatable with themselves
+        https://bugs.webkit.org/show_bug.cgi?id=101854
+
+        Reviewed by Andreas Kling.
+
+        The basic shapes BasicShapeCircle, BasicShapeEllipse and BasicShapeRectangle should
+        blend with themselves. This patch introduces simple interpolation of BasicShapes for
+        the -webkit-clip-path property.
+
+        Test: css3/masking/clip-path-animation.html
+
+        * page/animation/CSSPropertyAnimation.cpp:
+        (WebCore::blendFunc): Added a new function that blends between two BasicShape objects.
+            It skips blending on <clipPath> references, polygons and if the shapes are not of
+            the same type.
+        (WebCore):
+        (PropertyWrapperClipPath): Added new wrapper for ClipPathShapes.
+        (WebCore::PropertyWrapperClipPath::PropertyWrapperClipPath): Ditto.
+        (WebCore::CSSPropertyAnimation::ensurePropertyMap): Add -webkit-clip-path to animatable
+            properties.
+        * rendering/style/BasicShapes.cpp:
+            The blending is done by each shape itself. This is similar to FilterOperations or
+            TransformOperations.
+        (WebCore::BasicShapeRectangle::blend):
+        (WebCore):
+        (WebCore::BasicShapeCircle::blend):
+        (WebCore::BasicShapeEllipse::blend):
+        (WebCore::BasicShapePolygon::blend):
+        * rendering/style/BasicShapes.h:
+            Added new blending functions to header.
+        (BasicShape):
+        (BasicShapeRectangle):
+        (BasicShapeCircle):
+        (BasicShapeEllipse):
+        (BasicShapePolygon):
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        [V8] We should be able to get V8PerContextData from a v8::Context more quickly
+        https://bugs.webkit.org/show_bug.cgi?id=102008
+
+        Reviewed by Ojan Vafai.
+
+        This patch uses the new v8::Context::GetAlignedPointerFromEmbedderData
+        API to get the V8PerContextData associated with a v8::Context much more
+        quickly. We no longer need to use a hidden property on the inner global
+        object. This patch will enable future optimizations.
+
+        * bindings/v8/V8HiddenPropertyName.h:
+        (WebCore):
+        * bindings/v8/V8PerContextData.cpp:
+        (WebCore::V8PerContextData::dispose):
+        (WebCore::V8PerContextData::init):
+        * bindings/v8/V8PerContextData.h:
+        (WebCore::V8PerContextData::from):
+
+2012-11-12  Elliott Sprehn  <esprehn@chromium.org>
+
+        Make Frames and HTMLFrameOwnerElement less friendly
+        https://bugs.webkit.org/show_bug.cgi?id=102003
+
+        Reviewed by Ojan Vafai.
+
+        Frame used to assign HTMLFrameOwnerElement's m_contentFrame directly
+        this patch makes it go through a method to allow future hooks when frames
+        are associated with owners.
+
+        No new tests, this is just a refactor.
+
+        * html/HTMLFrameOwnerElement.cpp:
+        (WebCore::HTMLFrameOwnerElement::setContentFrame):
+        * html/HTMLFrameOwnerElement.h:
+        (HTMLFrameOwnerElement):
+        (WebCore::HTMLFrameOwnerElement::clearContentFrame):
+        * page/Frame.cpp:
+        (WebCore::Frame::Frame): Use new methods.
+
+2012-11-12  Beth Dakin  <bdakin@apple.com>
+
+        Zoomed-in scrolling is very slow when deviceScaleFactor > 1
+        https://bugs.webkit.org/show_bug.cgi?id=101787
+
+        Reviewed by Simon Fraser.
+
+        This patch adds a new member to the GraphicsContextState that tracks 
+        whether or not fonts should be subpixel-quantized. We want to default 
+        to sibpixel-quantizing, but we'll turn it off if we're scrolling 
+        content that cannot be scrolled on the scrolling thread.
+
+        State has a new bool shouldSubpixelQuantizeFonts. It defaults to true 
+        since normally we do want to quantize.
+        * platform/graphics/GraphicsContext.cpp:
+        (WebCore::GraphicsContext::setShouldSubpixelQuantizeFonts):
+        (WebCore::GraphicsContext::shouldSubpixelQuantizeFonts):
+        * platform/graphics/GraphicsContext.h:
+        (WebCore::GraphicsContextState::GraphicsContextState):
+        (GraphicsContextState):
+        (GraphicsContext):
+
+        wkSetCGFontRenderingMode now takes a BOOL parameter which indicates 
+        whether or not it should try to subpixel-quantize the fonts.
+        * platform/graphics/mac/FontMac.mm:
+        (WebCore::Font::drawGlyphs):
+        * platform/mac/WebCoreSystemInterface.h:
+        * platform/mac/WebCoreSystemInterface.mm:
+
+        Disable subpixel-quantization for overflow areas, subframes, and 
+        content that is scrolling on the main thread.
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::paintLayerContents):
+
+2012-11-12  Timothy Hatcher  <timothy@apple.com>
+
+        Expose InspectorFrontendClientLocal::setAttachedWindow as public.
+
+        This allows external actions to update the docked state in the frontend.
+
+        https://bugs.webkit.org/show_bug.cgi?id=102023
+
+        Reviewed by Anders Carlsson.
+
+        * inspector/InspectorFrontendClientLocal.h:
+        Moved InspectorFrontendClientLocal::setAttachedWindow to public section.
+
+2012-11-12  Erik Arvidsson  <arv@chromium.org>
+
+        Replace DOMException TYPE_MISMATCH_ERR with TypeError
+        https://bugs.webkit.org/show_bug.cgi?id=101604
+
+        Reviewed by Adam Barth.
+
+        DOMException.TYPE_MISMATCH_ERR is deprecated in favor of using TypeError.
+
+        We have historically used TYPE_MISMATCH_ERR as a blanket DOMException code when
+        the spec mandates TypeError being thrown.
+
+        Updated existing tests.
+
+        * Modules/mediastream/MediaConstraintsImpl.cpp:
+        * Modules/mediastream/MediaStreamTrackList.cpp:
+        * Modules/mediastream/PeerConnection00.cpp:
+        * Modules/mediastream/RTCDataChannel.cpp:
+        * Modules/mediastream/RTCIceCandidate.cpp:
+        * Modules/mediastream/RTCPeerConnection.cpp:
+        * Modules/mediastream/RTCSessionDescription.cpp:
+        * Modules/mediastream/SessionDescription.cpp:
+        * bindings/js/CallbackFunction.cpp:
+        * bindings/js/JSCustomXPathNSResolver.cpp:
+        * bindings/js/JSHTMLOptionsCollectionCustom.cpp:
+        * bindings/js/JSHTMLSelectElementCustom.cpp:
+        * bindings/js/JSMutationObserverCustom.cpp:
+        * bindings/js/JSSQLResultSetRowListCustom.cpp:
+        * bindings/js/JSSQLTransactionCustom.cpp:
+        * bindings/js/JSSQLTransactionSyncCustom.cpp:
+        * bindings/scripts/CodeGeneratorJS.pm:
+        * bindings/scripts/CodeGeneratorObjC.pm:
+        * bindings/scripts/CodeGeneratorV8.pm:
+        * bindings/v8/V8Callback.h:
+        * bindings/v8/V8Collection.cpp:
+        * bindings/v8/custom/V8DocumentCustom.cpp:
+        * bindings/v8/custom/V8HTMLOptionsCollectionCustom.cpp:
+        * bindings/v8/custom/V8MutationObserverCustom.cpp:
+        * bindings/v8/custom/V8SQLTransactionCustom.cpp:
+        * bindings/v8/custom/V8SQLTransactionSyncCustom.cpp:
+        * dom/DOMCoreException.idl:
+        * html/HTMLElement.cpp:
+        * html/HTMLMediaElement.cpp:
+        * html/HTMLOptionsCollection.cpp:
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        * page/Crypto.cpp:
+        * page/DOMSelection.cpp:
+        * svg/properties/SVGTransformListPropertyTearOff.h:
+
+2012-11-12  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Use sequence<> instead of DOMString[] in IDL
+        https://bugs.webkit.org/show_bug.cgi?id=100539
+
+        Reviewed by Adam Barth.
+
+        In the binding layer, DOMString[] is implemented as an alias for DOMStringList.
+        WebIDL usage is tending towards sequence<DOMString> anyway for inputs, so switch
+        to that. Note webkit.org/b/100537 which requires sequence<String> instead.
+
+        Covered by storage/indexeddb/transaction-basics.html and objectstore-basics.html
+
+        * Modules/indexeddb/IDBDatabase.cpp:
+        (WebCore::IDBDatabase::transaction): DOMStringList -> Vector<String>
+        * Modules/indexeddb/IDBDatabase.h:
+        (WebCore::IDBDatabase::transaction):
+        (IDBDatabase):
+        * Modules/indexeddb/IDBDatabase.idl: DOMString[] -> sequence<String>
+        * Modules/indexeddb/IDBObjectStore.cpp: Move trivial impls to header.
+        * Modules/indexeddb/IDBObjectStore.h:
+        (WebCore::IDBObjectStore::createIndex):
+        * Modules/indexeddb/IDBObjectStore.idl: DOMString[] -> sequence<String>
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Remove Leopard only gradient code
+        https://bugs.webkit.org/show_bug.cgi?id=102033
+
+        Reviewed by Dan Bernstein.
+
+        USE_CG_SHADING was only ever true on Leopard, so we can remove it now.
+
+        * platform/graphics/Gradient.h:
+        * platform/graphics/cg/GradientCG.cpp:
+        (WebCore::Gradient::platformDestroy):
+        (WebCore::Gradient::platformGradient):
+        (WebCore::Gradient::paint):
+
+2012-11-12  Tiancheng Jiang  <tijiang@rim.com>
+
+        [BlackBerry] Update BB10 form theme.
+        https://bugs.webkit.org/show_bug.cgi?id=100760
+
+        Reviewed by Rob Buis.
+
+        RIM PR 237003
+        Internally Reviewed by Eli Fidler.
+        Since we nolonger use small font for form controls, adjust paddingDivisor
+        ratio to decrease the padding value.
+
+        * platform/blackberry/RenderThemeBlackBerry.cpp:
+        (WebCore):
+
+2012-11-12  Simon Fraser  <simon.fraser@apple.com>
+
+        Fix filter dirty rect regression from r134311
+        https://bugs.webkit.org/show_bug.cgi?id=102002
+
+        Reviewed by Beth Dakin.
+
+        When rendering with filters, the code can inflate the root-relative
+        paintDirtyRect in RenderLayer::paintLayerContents(), and my cleanup
+        broke this behavior.
+    
+        Fix by making a local copy of LayerPaintingInfo, updating its paintDirtyRect,
+        and using it for the rest of the function.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::paintLayerContents):
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] V8Event::valueAccessorGetter() in custom binding is not used
+        https://bugs.webkit.org/show_bug.cgi?id=101893
+
+        Reviewed by Adam Barth.
+
+        No tests. No change in behavior.
+
+        * bindings/v8/custom/V8EventCustom.cpp:
+
+2012-11-12  Roger Fong  <roger_fong@apple.com>
+
+        Web Inspector: Fix docking behaviour on Windows.
+        https://bugs.webkit.org/show_bug.cgi?id=101978
+
+        Reviewed by Brian Weinstein.
+
+        There are a number of problems with docking behaviour on Windows.
+        For starters, it does not ever constrain the inspector's size properly while docked.
+        It also does not properly set the whether or not the inspector can be docked/undocked.
+        This patch fixes both issues.
+
+        * inspector/InspectorFrontendClientLocal.cpp:
+        (WebCore::InspectorFrontendClientLocal::frontendLoaded):
+        Switch order of calling bringToFront and setDockingUnavailable.
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        [V8] Update callers to use the aligned pointer API rather than the deprecated unaligned pointer API
+        https://bugs.webkit.org/show_bug.cgi?id=101519
+
+        Reviewed by Ojan Vafai.
+
+        There should be no change in behavior.  The new API is slightly faster
+        than the old API (and apparently works correctly internally in V8).
+
+        * bindings/scripts/CodeGeneratorV8.pm:
+        (GenerateHeader):
+        * bindings/scripts/test/V8/V8Float64Array.h:
+        (WebCore::V8Float64Array::toNative):
+        * bindings/scripts/test/V8/V8TestActiveDOMObject.h:
+        (WebCore::V8TestActiveDOMObject::toNative):
+        * bindings/scripts/test/V8/V8TestCustomNamedGetter.h:
+        (WebCore::V8TestCustomNamedGetter::toNative):
+        * bindings/scripts/test/V8/V8TestEventConstructor.h:
+        (WebCore::V8TestEventConstructor::toNative):
+        * bindings/scripts/test/V8/V8TestEventTarget.h:
+        (WebCore::V8TestEventTarget::toNative):
+        * bindings/scripts/test/V8/V8TestException.h:
+        (WebCore::V8TestException::toNative):
+        * bindings/scripts/test/V8/V8TestInterface.h:
+        (WebCore::V8TestInterface::toNative):
+        * bindings/scripts/test/V8/V8TestMediaQueryListListener.h:
+        (WebCore::V8TestMediaQueryListListener::toNative):
+        * bindings/scripts/test/V8/V8TestNamedConstructor.h:
+        (WebCore::V8TestNamedConstructor::toNative):
+        * bindings/scripts/test/V8/V8TestNode.h:
+        (WebCore::V8TestNode::toNative):
+        * bindings/scripts/test/V8/V8TestObj.h:
+        (WebCore::V8TestObj::toNative):
+        * bindings/scripts/test/V8/V8TestSerializedScriptValueInterface.h:
+        (WebCore::V8TestSerializedScriptValueInterface::toNative):
+        * bindings/v8/NPV8Object.cpp:
+        (WebCore::v8ObjectToNPObject):
+        (WebCore::npCreateV8ScriptObject):
+        * bindings/v8/V8Collection.h:
+        (WebCore::toNativeCollection):
+        * bindings/v8/V8DOMWindowShell.cpp:
+        (WebCore::setIsolatedWorldField):
+        (WebCore::V8DOMWindowShell::enteredIsolatedWorldContext):
+        * bindings/v8/V8DOMWrapper.cpp:
+        (WebCore::V8DOMWrapper::isWrapperOfType):
+        * bindings/v8/V8DOMWrapper.h:
+        (WebCore::V8DOMWrapper::setDOMWrapper):
+        (WebCore::V8DOMWrapper::clearDOMWrapper):
+        * bindings/v8/WrapperTypeInfo.h:
+        (WebCore::toNative):
+        (WebCore::toWrapperTypeInfo):
+
+2012-11-12  Andreas Kling  <kling@webkit.org>
+
+        Rename AttributeStyle => PresentationAttributeStyle across WebCore.
+        <http://webkit.org/b/101975>
+
+        Rubber-stamped by Antti Koivisto.
+
+        The completely separate concepts of "attribute style" and "style attribute" were a bit too
+        easy to confuse in variable and method names. Reconfigure our terminology to call it
+        "presentation attribute style" instead of "attribute style".
+
+        * css/StyleResolver.cpp:
+        (WebCore::StyleResolver::sweepMatchedPropertiesCache):
+        (WebCore::StyleResolver::matchAllRules):
+        (WebCore::StyleResolver::canShareStyleWithElement):
+        * dom/Attr.cpp:
+        (WebCore::Attr::style):
+        * dom/ElementAttributeData.cpp:
+        (WebCore::MutableElementAttributeData::MutableElementAttributeData):
+        (WebCore::ElementAttributeData::reportMemoryUsage):
+        * dom/ElementAttributeData.h:
+        (WebCore::ElementAttributeData::presentationAttributeStyle):
+        (WebCore::ElementAttributeData::setPresentationAttributeStyle):
+        (ElementAttributeData):
+        * dom/Node.h:
+        (WebCore::Node::attributeStyleDirty):
+        (WebCore::Node::setPresentationAttributeStyleDirty):
+        (WebCore::Node::clearPresentationAttributeStyleDirty):
+        * dom/StyledElement.cpp:
+        (WebCore::StyledElement::attributeChanged):
+        (WebCore::StyledElement::rebuildPresentationAttributeStyle):
+        (WebCore::StyledElement::addPropertyToPresentationAttributeStyle):
+        * dom/StyledElement.h:
+        (WebCore::StyledElement::additionalPresentationAttributeStyle):
+        (StyledElement):
+        (WebCore::StyledElement::collectStyleForPresentationAttribute):
+        (WebCore::StyledElement::presentationAttributeStyle):
+        * html/HTMLBRElement.cpp:
+        (WebCore::HTMLBRElement::collectStyleForPresentationAttribute):
+        * html/HTMLBRElement.h:
+        (HTMLBRElement):
+        * html/HTMLBodyElement.cpp:
+        (WebCore::HTMLBodyElement::collectStyleForPresentationAttribute):
+        * html/HTMLBodyElement.h:
+        (HTMLBodyElement):
+        * html/HTMLDivElement.cpp:
+        (WebCore::HTMLDivElement::collectStyleForPresentationAttribute):
+        * html/HTMLDivElement.h:
+        (HTMLDivElement):
+        * html/HTMLElement.cpp:
+        (WebCore::HTMLElement::applyBorderAttributeToStyle):
+        (WebCore::HTMLElement::mapLanguageAttributeToLocale):
+        (WebCore::HTMLElement::collectStyleForPresentationAttribute):
+        (WebCore::HTMLElement::applyAlignmentAttributeToStyle):
+        (WebCore::HTMLElement::addHTMLLengthToStyle):
+        * html/HTMLElement.h:
+        (HTMLElement):
+        * html/HTMLEmbedElement.cpp:
+        (WebCore::HTMLEmbedElement::collectStyleForPresentationAttribute):
+        * html/HTMLEmbedElement.h:
+        (HTMLEmbedElement):
+        * html/HTMLFontElement.cpp:
+        (WebCore::HTMLFontElement::collectStyleForPresentationAttribute):
+        * html/HTMLFontElement.h:
+        (HTMLFontElement):
+        * html/HTMLFrameSetElement.cpp:
+        (WebCore::HTMLFrameSetElement::collectStyleForPresentationAttribute):
+        * html/HTMLFrameSetElement.h:
+        (HTMLFrameSetElement):
+        * html/HTMLHRElement.cpp:
+        (WebCore::HTMLHRElement::collectStyleForPresentationAttribute):
+        * html/HTMLHRElement.h:
+        (HTMLHRElement):
+        * html/HTMLIFrameElement.cpp:
+        (WebCore::HTMLIFrameElement::collectStyleForPresentationAttribute):
+        * html/HTMLIFrameElement.h:
+        (HTMLIFrameElement):
+        * html/HTMLImageElement.cpp:
+        (WebCore::HTMLImageElement::collectStyleForPresentationAttribute):
+        * html/HTMLImageElement.h:
+        (HTMLImageElement):
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::collectStyleForPresentationAttribute):
+        * html/HTMLInputElement.h:
+        (HTMLInputElement):
+        * html/HTMLLIElement.cpp:
+        (WebCore::HTMLLIElement::collectStyleForPresentationAttribute):
+        * html/HTMLLIElement.h:
+        (HTMLLIElement):
+        * html/HTMLMarqueeElement.cpp:
+        (WebCore::HTMLMarqueeElement::collectStyleForPresentationAttribute):
+        * html/HTMLMarqueeElement.h:
+        (HTMLMarqueeElement):
+        * html/HTMLOListElement.cpp:
+        (WebCore::HTMLOListElement::collectStyleForPresentationAttribute):
+        * html/HTMLOListElement.h:
+        (HTMLOListElement):
+        * html/HTMLObjectElement.cpp:
+        (WebCore::HTMLObjectElement::collectStyleForPresentationAttribute):
+        * html/HTMLObjectElement.h:
+        (HTMLObjectElement):
+        * html/HTMLParagraphElement.cpp:
+        (WebCore::HTMLParagraphElement::collectStyleForPresentationAttribute):
+        * html/HTMLParagraphElement.h:
+        (HTMLParagraphElement):
+        * html/HTMLPlugInElement.cpp:
+        (WebCore::HTMLPlugInElement::collectStyleForPresentationAttribute):
+        * html/HTMLPlugInElement.h:
+        (HTMLPlugInElement):
+        * html/HTMLPreElement.cpp:
+        (WebCore::HTMLPreElement::collectStyleForPresentationAttribute):
+        * html/HTMLPreElement.h:
+        (HTMLPreElement):
+        * html/HTMLTableCaptionElement.cpp:
+        (WebCore::HTMLTableCaptionElement::collectStyleForPresentationAttribute):
+        * html/HTMLTableCaptionElement.h:
+        (HTMLTableCaptionElement):
+        * html/HTMLTableCellElement.cpp:
+        (WebCore::HTMLTableCellElement::collectStyleForPresentationAttribute):
+        (WebCore::HTMLTableCellElement::additionalPresentationAttributeStyle):
+        * html/HTMLTableCellElement.h:
+        (HTMLTableCellElement):
+        * html/HTMLTableColElement.cpp:
+        (WebCore::HTMLTableColElement::collectStyleForPresentationAttribute):
+        (WebCore::HTMLTableColElement::additionalPresentationAttributeStyle):
+        * html/HTMLTableColElement.h:
+        (HTMLTableColElement):
+        * html/HTMLTableElement.cpp:
+        (WebCore::HTMLTableElement::collectStyleForPresentationAttribute):
+        (WebCore::HTMLTableElement::additionalPresentationAttributeStyle):
+        * html/HTMLTableElement.h:
+        (HTMLTableElement):
+        * html/HTMLTablePartElement.cpp:
+        (WebCore::HTMLTablePartElement::collectStyleForPresentationAttribute):
+        * html/HTMLTablePartElement.h:
+        (HTMLTablePartElement):
+        * html/HTMLTableSectionElement.cpp:
+        (WebCore::HTMLTableSectionElement::additionalPresentationAttributeStyle):
+        * html/HTMLTableSectionElement.h:
+        (HTMLTableSectionElement):
+        * html/HTMLTextAreaElement.cpp:
+        (WebCore::HTMLTextAreaElement::collectStyleForPresentationAttribute):
+        * html/HTMLTextAreaElement.h:
+        (HTMLTextAreaElement):
+        * html/HTMLUListElement.cpp:
+        (WebCore::HTMLUListElement::collectStyleForPresentationAttribute):
+        * html/HTMLUListElement.h:
+        (HTMLUListElement):
+        * html/HTMLVideoElement.cpp:
+        (WebCore::HTMLVideoElement::collectStyleForPresentationAttribute):
+        * html/HTMLVideoElement.h:
+        (HTMLVideoElement):
+        * inspector/InspectorCSSAgent.cpp:
+        (WebCore::InspectorCSSAgent::buildObjectForAttributesStyle):
+        * mathml/MathMLElement.cpp:
+        (WebCore::MathMLElement::collectStyleForPresentationAttribute):
+        * mathml/MathMLElement.h:
+        (MathMLElement):
+        * svg/SVGImageElement.cpp:
+        (WebCore::SVGImageElement::collectStyleForPresentationAttribute):
+        * svg/SVGImageElement.h:
+        (SVGImageElement):
+        * svg/SVGStyledElement.cpp:
+        (WebCore::SVGStyledElement::collectStyleForPresentationAttribute):
+        * svg/SVGStyledElement.h:
+        (SVGStyledElement):
+        * svg/SVGTextContentElement.cpp:
+        (WebCore::SVGTextContentElement::collectStyleForPresentationAttribute):
+        * svg/SVGTextContentElement.h:
+        (SVGTextContentElement):
+
+2012-11-12  Adam Barth  <abarth@webkit.org>
+
+        [V8] Many things crash when switching to V8's new aligned pointer API
+        https://bugs.webkit.org/show_bug.cgi?id=101994
+
+        Reviewed by Eric Seidel.
+
+        When using the aligned pointer API, we need to make sure to initialize
+        every internal field that we later read because the new API has better
+        error checks than the old API. This patch explicitly initializes the
+        enteredIsolatedWorldIndex internal field to zero for main worlds,
+        fixing the LayoutTest crashes from our previous attempt to move the
+        aligned pointer API.
+
+        * bindings/v8/V8DOMWindowShell.cpp:
+        (WebCore::V8DOMWindowShell::initializeIfNeeded):
+
+2012-11-12  Simon Fraser  <simon.fraser@apple.com>
+
+        Reduce the crazy number of parameters to RenderLayer painting member functions
+        https://bugs.webkit.org/show_bug.cgi?id=101895
+
+        Reviewed by Beth Dakin.
+
+        The various RenderLayer::paintLayer* functions took a lot of arguments, most
+        of which were passed down directly to descendants.
+        
+        Gather these arguments into a LayerPaintingInfo struct.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::paint): Create a LayerPaintingInfo struct to pass
+        to descendant paint calls.
+        (WebCore::RenderLayer::paintOverlayScrollbars): Ditto.
+        (WebCore::RenderLayer::paintLayer): When painting transformed layers, we
+        make a new LayerPaintingInfo because the root layer is shifted.
+        (WebCore::RenderLayer::paintLayerContentsAndReflection):
+        (WebCore::RenderLayer::paintLayerContents):
+        (WebCore::RenderLayer::paintList):
+        (WebCore::RenderLayer::paintPaginatedChildLayer):
+        (WebCore::RenderLayer::paintChildLayerIntoColumns): Create a new LayerPaintingInfo
+        struct for column painting.
+        * rendering/RenderLayer.h:
+        (WebCore::RenderLayer::LayerPaintingInfo::LayerPaintingInfo):
+        (LayerPaintingInfo):
+        * rendering/RenderLayerBacking.cpp:
+        (WebCore::RenderLayerBacking::paintIntoLayer): Build a LayerPaintingInfo
+        to enter layer painting.
+        * rendering/RenderReplica.cpp:
+        (WebCore::RenderReplica::paint): Ditto.
+
+2012-11-12  Brady Eidson  <beidson@apple.com>
+
+        NetworkProcess: Use an accurate shouldContentSniff value when creating ResourceHandles
+        https://bugs.webkit.org/show_bug.cgi?id=101872
+
+        Reviewed by Alexey Proskuryakov.
+
+        Expose shouldSniffContent to pass it along to the NetworkProcess.
+
+        * loader/ResourceLoader.h:
+        (WebCore::ResourceLoader::shouldSniffContent):
+
+2012-11-12  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Fix memory leak in createSurfaceForBackingStore()
+        https://bugs.webkit.org/show_bug.cgi?id=101941
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Fix memory leak in createSurfaceForBackingStore(),
+        the RefPtr<cairo_surface_t> should be released
+        when returned since we pass ownership to the
+        caller.
+
+        No new tests, no behavior change for layout tests.
+
+        * platform/graphics/efl/CairoUtilitiesEfl.cpp:
+        (WebCore::createSurfaceForBackingStore):
+
+2012-11-12  Joe Mason  <jmason@rim.com>
+
+        [BlackBerry] Update to new proxyInfo API
+        https://bugs.webkit.org/show_bug.cgi?id=101945
+
+        Reviewed by George Staikos.
+
+        Internal PR: 234680
+        Reviewed internally by: Leo Yang
+
+        The proxyAddress, proxyUsername and proxyPassword methods in BlackBerry::Platform::Settings
+        have been replaced with a single, more efficient proxyInfo method.
+
+        No new tests because this is an API update with no behaviour change.
+
+        * platform/network/blackberry/NetworkJob.cpp:
+        (WebCore::NetworkJob::sendRequestWithCredentials):
+        (WebCore::NetworkJob::storeCredentials):
+
+2012-11-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r126157.
+        http://trac.webkit.org/changeset/126157
+        https://bugs.webkit.org/show_bug.cgi?id=101954
+
+        This patch caused (untestable) regression of the volume
+        property on Mac, Win, and Blackberry ports. (Requested by
+        jernoble on #webkit).
+
+        * platform/graphics/MediaPlayer.cpp:
+        (WebCore::MediaPlayer::loadWithNextMediaEngine):
+        (WebCore::MediaPlayer::setVolume):
+        (WebCore::MediaPlayer::setMuted):
+        (WebCore::MediaPlayer::setPreservesPitch):
+        (WebCore::MediaPlayer::setSize):
+        (WebCore::MediaPlayer::setVisible):
+        (WebCore::MediaPlayer::setPreload):
+
+2012-11-12  Arpita Bahuguna  <arpitabahuguna@gmail.com>
+
+        Specified width CSS tables should not include border and padding as part of that width.
+        https://bugs.webkit.org/show_bug.cgi?id=77028
+
+        Reviewed by Julien Chaffraix.
+
+        CSS table width should not include border and padding even though HTML
+        tables size as though their width includes border/padding.
+
+        This is applicable for all CSS tables with specified widths.
+
+        The change would also make our rendering of CSS tables with specified
+        width similar to that of Opera, IE and FF.
+
+        Test: fast/table/css-table-width-with-border-padding.html
+
+        * rendering/RenderTable.cpp:
+        (WebCore::RenderTable::convertStyleLogicalWidthToComputedWidth):
+        Added check for all (positive) specified widths for CSS tables to
+        consider border and padding outside of the specified width.
+
+2012-11-12  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        Move resolving blob references to FormData.
+        https://bugs.webkit.org/show_bug.cgi?id=101754
+
+        Reviewed by Simon Hausmann.
+
+        Resolving Blob-references to a set of just File and Data is done similar by several platforms.
+        This patch adds a generic implementation in FormData and uses that from CFNetwork, Qt and
+        BlackBerry network implementation.
+
+        * platform/network/FormData.cpp:
+        (WebCore::appendBlobResolved):
+        (WebCore::FormData::resolveBlobReferences):
+        * platform/network/FormData.h:
+        * platform/network/blackberry/ResourceRequestBlackBerry.cpp:
+        (WebCore::ResourceRequest::initializePlatformRequest):
+        * platform/network/cf/FormDataStreamCFNet.cpp:
+        (WebCore::setHTTPBody):
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::FormDataIODevice::prepareFormElements):
+
+2012-11-12  Zeno Albisser  <zeno@webkit.org>
+
+        GraphicsSurfaceGLX does not handle transparency correctly.
+        https://bugs.webkit.org/show_bug.cgi?id=101943
+
+        GraphicsSurfacGLX must consistently use RGBA texture format.
+        glXCreateWindow must be called after creating the XWindow
+        that serves as a temporary offscreen texture storage, in order
+        to allow for transparency.
+        When creating the offscreen XWindow we must make sure,
+        that we use a framebuffer configuration that supports
+        an alpha mask.
+
+        Reviewed by Noam Rosenthal.
+
+        * platform/graphics/surfaces/qt/GraphicsSurfaceGLX.cpp:
+        (WebCore):
+        (WebCore::GraphicsSurfacePrivate::GraphicsSurfacePrivate):
+        (WebCore::GraphicsSurfacePrivate::~GraphicsSurfacePrivate):
+        (WebCore::GraphicsSurfacePrivate::createSurface):
+        (GraphicsSurfacePrivate):
+        (WebCore::GraphicsSurface::platformPaintToTextureMapper):
+
+2012-11-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134225.
+        http://trac.webkit.org/changeset/134225
+        https://bugs.webkit.org/show_bug.cgi?id=101948
+
+        Appears to have broken the EFL and GTK builds (Requested by
+        abarth on #webkit).
+
+        * bindings/js/JSHTMLElementCustom.cpp:
+        (WebCore):
+        (WebCore::JSHTMLElement::itemValue):
+        (WebCore::JSHTMLElement::setItemValue):
+        * bindings/v8/custom/V8HTMLElementCustom.cpp:
+        (WebCore):
+        (WebCore::V8HTMLElement::itemValueAccessorGetter):
+        (WebCore::V8HTMLElement::itemValueAccessorSetter):
+        * html/HTMLElement.idl:
+
+2012-11-12  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        hitTestResultAtPoint does two hit-tests if called on non main frame
+        https://bugs.webkit.org/show_bug.cgi?id=101915
+
+        Reviewed by Antonio Gomes.
+
+        Always redirect hitTestResultAtPoint to the main-frame. This used to being
+        done on every result that hit anything, which caused running the expensive 
+        hit-tests multiple times in almost all cases.
+
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::hitTestResultAtPoint):
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8][JSC] ScriptProfileNode::callUID needs not to be [Custom]
+        https://bugs.webkit.org/show_bug.cgi?id=101892
+
+        Reviewed by Adam Barth.
+
+        We can remove [Custom] from callUID in ScriptProfileNode.idl.
+
+        No tests. No change in behavior.
+
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * UseJSC.cmake:
+        * WebCore.gypi:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * bindings/js/JSBindingsAllInOne.cpp:
+        * bindings/js/JSScriptProfileNodeCustom.cpp: Removed.
+        * bindings/v8/custom/V8ScriptProfileNodeCustom.cpp:
+        * inspector/ScriptProfileNode.idl:
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Performance::memory getter needs not to be [Custom]
+        https://bugs.webkit.org/show_bug.cgi?id=101890
+
+        Reviewed by Adam Barth.
+
+        No tests. No change in behavior.
+
+        * UseV8.cmake:
+        * WebCore.gypi:
+        * bindings/v8/custom/V8PerformanceCustom.cpp: Removed.
+        * page/Performance.idl:
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8][JSC] HTMLOptionsCollection::length needs not to be [Custom]
+        https://bugs.webkit.org/show_bug.cgi?id=101888
+
+        Reviewed by Adam Barth.
+
+        We can remove [Custom] from getter. It is possible to remove [Custom]
+        from setter, but it changes the current behavior.
+        (I think the current implementation of the setter is wrong.
+        I'll fix it in another patch.)
+
+        No tests. No change in behavior.
+
+        * bindings/js/JSHTMLOptionsCollectionCustom.cpp:
+        * bindings/v8/custom/V8HTMLOptionsCollectionCustom.cpp:
+        * html/HTMLOptionsCollection.idl:
+
+2012-11-12  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL][WK2][AC] Black screen when applications use software backend.
+        https://bugs.webkit.org/show_bug.cgi?id=101659
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add a utility method to create a cairo_surface_t from a given Evas_Object_Image.
+
+        No new tests. Will be covered when running existing tests without enabling openGL.
+
+        * platform/graphics/efl/CairoUtilitiesEfl.cpp:
+        (WebCore::createSurfaceForImage):
+        (WebCore):
+        * platform/graphics/efl/CairoUtilitiesEfl.h:
+        (WebCore):
+
+2012-11-12  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Fix make distcheck.
+
+        * GNUmakefile.am: Remove editing from IDL_PATH since it doesn't
+        contain idl files anymore.
+        * GNUmakefile.list.am: Add missing header files.
+
+2012-11-12  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Make sure that MediaConstraints only has optional and mandatory at the top level
+        https://bugs.webkit.org/show_bug.cgi?id=101733
+
+        Reviewed by Jochen Eisinger.
+
+        This patch adds better verification to MediaConstraintsImpl.
+
+        Existing tests expanded to cover this change.
+
+        * Modules/mediastream/MediaConstraintsImpl.cpp:
+        (WebCore::MediaConstraintsImpl::initialize):
+
+2012-11-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134223.
+        http://trac.webkit.org/changeset/134223
+        https://bugs.webkit.org/show_bug.cgi?id=101939
+
+        Breaks inspector tests (Requested by pfeldman on #webkit).
+
+        * inspector/front-end/DefaultTextEditor.js:
+        (WebInspector.TextEditorChunkedPanel.prototype._repaintAll):
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype.markAndRevealRange):
+        (WebInspector.TextEditorMainPanel.prototype.beginDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype.endDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._paintScheduledLines):
+        (WebInspector.TextEditorMainPanel.prototype._paintLineChunks):
+        (WebInspector.TextEditorMainPanel.prototype._paintLine):
+        (WebInspector.TextEditorMainPanel.prototype._insertSpanBefore):
+        (WebInspector.TextEditorMainPanel.prototype._handleDOMUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._applyDomUpdates):
+        * inspector/front-end/externs.js:
+        * inspector/front-end/textEditor.css:
+
+2012-11-12  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Support ResourceRequest's setTimeoutInterval
+        https://bugs.webkit.org/show_bug.cgi?id=101731
+
+        Reviewed by Simon Hausmann.
+
+        Establish a timeout and return the correct error when it is triggered.
+
+        Tested by existing http/tests/xmlhttprequest/timeout tests.
+
+        * platform/network/ResourceRequestBase.cpp:
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::release):
+        (WebCore::QNetworkReplyHandler::finish):
+        (WebCore::QNetworkReplyHandler::timeout):
+        (WebCore::QNetworkReplyHandler::timerEvent):
+        (WebCore::QNetworkReplyHandler::start):
+        * platform/network/qt/QNetworkReplyHandler.h:
+        (QNetworkReplyHandler):
+
+2012-11-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134224.
+        http://trac.webkit.org/changeset/134224
+        https://bugs.webkit.org/show_bug.cgi?id=101937
+
+        asserting on bawts (Requested by kling on #webkit).
+
+        * rendering/style/RenderStyle.cpp:
+        (WebCore::RenderStyle::diff):
+        (WebCore::RenderStyle::setColor):
+        (WebCore::RenderStyle::setVisitedLinkColor):
+        * rendering/style/RenderStyle.h:
+        * rendering/style/StyleBackgroundData.cpp:
+        (WebCore::StyleBackgroundData::StyleBackgroundData):
+        * rendering/style/StyleBackgroundData.h:
+        (WebCore::StyleBackgroundData::color):
+        (StyleBackgroundData):
+        * rendering/style/StyleInheritedData.cpp:
+        (WebCore::StyleInheritedData::StyleInheritedData):
+        * rendering/style/StyleInheritedData.h:
+        (StyleInheritedData):
+        * rendering/style/StyleMultiColData.cpp:
+        (WebCore::StyleMultiColData::StyleMultiColData):
+        * rendering/style/StyleMultiColData.h:
+        (StyleMultiColData):
+        * rendering/style/StyleRareInheritedData.cpp:
+        (SameSizeAsStyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::StyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::operator==):
+        * rendering/style/StyleRareInheritedData.h:
+        (WebCore):
+        (StyleRareInheritedData):
+        * rendering/style/StyleRareNonInheritedData.cpp:
+        (WebCore::StyleRareNonInheritedData::StyleRareNonInheritedData):
+        (WebCore::StyleRareNonInheritedData::operator==):
+        * rendering/style/StyleRareNonInheritedData.h:
+        (StyleRareNonInheritedData):
+
+2012-11-12  Tiancheng Jiang  <tijiang@rim.com>
+
+        [BlackBerry] Update BB10 form theme.
+        https://bugs.webkit.org/show_bug.cgi?id=100760
+
+        Reviewed by Rob Buis.
+
+        RIM PR 236993
+        Internally Reviewed by Jeff Rogers.
+        Use slide and paint method on slider range and media controls.
+
+        * platform/blackberry/RenderThemeBlackBerry.cpp:
+        (WebCore):
+        (WebCore::drawThreeSliceHorizontal):
+        (WebCore::drawThreeSliceVertical):
+        (WebCore::RenderThemeBlackBerry::paintSliderTrackRect):
+        (WebCore::RenderThemeBlackBerry::paintMediaSliderTrack):
+        (WebCore::RenderThemeBlackBerry::paintMediaSliderThumb):
+        (WebCore::RenderThemeBlackBerry::paintMediaVolumeSliderTrack):
+        * platform/blackberry/RenderThemeBlackBerry.h:
+        (RenderThemeBlackBerry):
+
+2012-11-12  Kent Tamura  <tkent@chromium.org>
+
+        Refactoring: set read-only values on layout in DateTimeEditElement
+        https://bugs.webkit.org/show_bug.cgi?id=101916
+
+        Reviewed by Kentaro Hara.
+
+        We have always updated read-only values when we set an empty value or
+        DateTimeFieldsState. It has wasted CPU time because such read-only
+        values are never updated after layout() essentially. So, we set
+        read-only values in DateTimeEditBuilder used by layout(), and remove
+        dateForReadOnlyField arguments of setEmptyValue and
+        setValueAsDateTimeFieldsState.
+
+        No new tests. This should not make behavior changes.
+
+        * html/BaseMultipleFieldsDateAndTimeInputType.cpp:
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::restoreFormControlState):
+        We removed dateForReadOnlyField argument because read-only values are
+        already set in DateTimeFieldElement::layout().
+        * html/shadow/DateTimeEditElement.cpp:
+        (WebCore::DateTimeEditBuilder::visitField):
+        Set a value to a read-only minute/second/millisecond field while
+        building UI elements.
+        Also, changed variable types for millisecond and second fields to
+        RefPtr<DateTimeNumericFieldElement> because we'd like to call
+        setValueAsDate, which is private in DateTimeMillisecondFieldElement and
+        DateTimeSecondFieldElement
+        (WebCore::DateTimeEditElement::setValueAsDateTimeFieldsState):
+        We removed dateForReadOnlyField argument because read-only values are
+        already set in DateTimeFieldElement::layout().
+        (WebCore::DateTimeEditElement::setEmptyValue): Ditto.
+        * html/shadow/DateTimeEditElement.h:
+        (DateTimeEditElement):
+        Removed dateForReadOnlyField argument for setValueAsDateTimeFieldsState.
+
+        * html/shadow/DateTimeFieldElement.cpp:
+        (WebCore::DateTimeFieldElement::defaultKeyboardEventHandler):
+        We removed dateForReadOnlyField argument because read-only values are
+        already set in DateTimeFieldElement::layout().
+        * html/shadow/DateTimeFieldElement.h:
+        (DateTimeFieldElement): Ditto.
+
+        * html/shadow/DateTimeFieldElements.cpp: Ditto.
+        * html/shadow/DateTimeFieldElements.h: Ditto.
+        * html/shadow/DateTimeNumericFieldElement.cpp:
+        (WebCore::DateTimeNumericFieldElement::setEmptyValue):
+        It should do nothing if it is read-only because a read-only value was
+        already set just after construction.
+        * html/shadow/DateTimeNumericFieldElement.h:
+        (DateTimeNumericFieldElement):
+        Removed dateForReadOnlyField argument of setEmptyValue.
+        * html/shadow/DateTimeSymbolicFieldElement.cpp:
+        (WebCore::DateTimeSymbolicFieldElement::setEmptyValue): Ditto.
+        * html/shadow/DateTimeSymbolicFieldElement.h:
+        (DateTimeSymbolicFieldElement): Ditto.
+
+2012-11-12  Tiancheng Jiang  <tijiang@rim.com>
+
+        [BlackBerry] Update BB10 form theme.
+        https://bugs.webkit.org/show_bug.cgi?id=100760
+
+        Reviewed by Rob Buis.
+
+        RIM PR 236993
+        Internally Reviewed by Jeff Rogers.
+        Enable GL slider.
+
+        * platform/blackberry/RenderThemeBlackBerry.cpp:
+        (WebCore::drawThreeSlice):
+        (WebCore):
+        (WebCore::RenderThemeBlackBerry::paintSliderTrackRect):
+        (WebCore::RenderThemeBlackBerry::paintSliderThumb):
+
+2012-11-12  Kentaro Hara  <haraken@chromium.org>
+
+        [V8][JSC] HTMLElement::itemValue() needs not to be custom
+        https://bugs.webkit.org/show_bug.cgi?id=101882
+
+        Reviewed by Adam Barth.
+
+        We can remove a [Custom] IDL attribute.
+
+        No tests. No change in behavior.
+
+        * bindings/js/JSHTMLElementCustom.cpp:
+        * bindings/v8/custom/V8HTMLElementCustom.cpp:
+        * html/HTMLElement.idl:
+
+2012-11-12  Andreas Kling  <kling@webkit.org>
+
+        RenderStyle: Pack Color members tighter in substructures.
+        <http://webkit.org/b/101860>
+
+        Reviewed by Antti Koivisto.
+
+        For RenderStyle substructures (StyleInheritedData, et al.), unfold all WebCore::Color
+        members into RGBA32/bool variables OR just an RGBA32 if the color can never be invalid.
+
+        Memory saved per instance:
+
+            - StyleMultiColData:          4 bytes
+            - StyleBackgroundData:        8 bytes
+            - StyleInheritedData:         8 bytes
+            - StyleRareInheritedData:    24 bytes
+            - StyleRareNonInheritedData: 24 bytes
+
+        323kB progression on Membuster3.
+
+        * rendering/style/RenderStyle.cpp:
+        (WebCore::RenderStyle::diff):
+        (WebCore::RenderStyle::setColor):
+        (WebCore::RenderStyle::setVisitedLinkColor):
+        (WebCore::RenderStyle::setVisitedLinkColumnRuleColor):
+        (WebCore::RenderStyle::setBackgroundColor):
+        * rendering/style/RenderStyle.h:
+        * rendering/style/StyleBackgroundData.cpp:
+        (WebCore::StyleBackgroundData::StyleBackgroundData):
+        * rendering/style/StyleBackgroundData.h:
+        (WebCore::StyleBackgroundData::color):
+        (StyleBackgroundData):
+        * rendering/style/StyleInheritedData.cpp:
+        (WebCore::StyleInheritedData::StyleInheritedData):
+        * rendering/style/StyleInheritedData.h:
+        (StyleInheritedData):
+        * rendering/style/StyleMultiColData.cpp:
+        (WebCore::StyleMultiColData::StyleMultiColData):
+        (WebCore::StyleMultiColData::setVisitedLinkColumnRuleColor):
+        * rendering/style/StyleMultiColData.h:
+        (StyleMultiColData):
+        (WebCore::StyleMultiColData::visitedLinkColumnRuleColor):
+        * rendering/style/StyleRareInheritedData.cpp:
+        (SameSizeAsStyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::StyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::operator==):
+        (WebCore::StyleRareInheritedData::setTextStrokeColor):
+        (WebCore::StyleRareInheritedData::setTextFillColor):
+        (WebCore::StyleRareInheritedData::setTextEmphasisColor):
+        (WebCore::StyleRareInheritedData::setVisitedLinkTextStrokeColor):
+        (WebCore::StyleRareInheritedData::setVisitedLinkTextFillColor):
+        (WebCore::StyleRareInheritedData::setVisitedLinkTextEmphasisColor):
+        * rendering/style/StyleRareInheritedData.h:
+        (StyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::textStrokeColor):
+        (WebCore::StyleRareInheritedData::textFillColor):
+        (WebCore::StyleRareInheritedData::textEmphasisColor):
+        (WebCore::StyleRareInheritedData::visitedLinkTextStrokeColor):
+        (WebCore::StyleRareInheritedData::visitedLinkTextFillColor):
+        (WebCore::StyleRareInheritedData::visitedLinkTextEmphasisColor):
+        * rendering/style/StyleRareNonInheritedData.cpp:
+        (WebCore::StyleRareNonInheritedData::StyleRareNonInheritedData):
+        (WebCore::StyleRareNonInheritedData::operator==):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkBorderLeftColor):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkBorderRightColor):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkBorderTopColor):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkBorderBottomColor):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkOutlineColor):
+        (WebCore::StyleRareNonInheritedData::setVisitedLinkBackgroundColor):
+        * rendering/style/StyleRareNonInheritedData.h:
+        (WebCore::StyleRareNonInheritedData::visitedLinkBackgroundColor):
+        (WebCore::StyleRareNonInheritedData::visitedLinkOutlineColor):
+        (WebCore::StyleRareNonInheritedData::visitedLinkBorderLeftColor):
+        (WebCore::StyleRareNonInheritedData::visitedLinkBorderRightColor):
+        (WebCore::StyleRareNonInheritedData::visitedLinkBorderTopColor):
+        (WebCore::StyleRareNonInheritedData::visitedLinkBorderBottomColor):
+        (StyleRareNonInheritedData):
+
+2012-11-12  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: migrate text editor to mutation observers
+        https://bugs.webkit.org/show_bug.cgi?id=101841
+
+        Reviewed by Vsevolod Vlasov.
+
+        Otherwise, we miss notifications on the removed lines.
+
+        * inspector/front-end/DefaultTextEditor.js:
+        (WebInspector.TextEditorMainPanel):
+        (WebInspector.TextEditorMainPanel.prototype.beginDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype.endDomUpdates):
+        (WebInspector.TextEditorMainPanel.prototype._handleMutations):
+        (WebInspector.TextEditorMainPanel.prototype._handleMutation):
+        * inspector/front-end/externs.js:
+        (WebKitMutation):
+        (WebKitMutationObserver.prototype.observe):
+        (WebKitMutationObserver.prototype.disconnect):
+
+2012-11-12  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+        [Qt] Flash-plugin starts with wrong width
+        https://bugs.webkit.org/show_bug.cgi?id=101836
+
+        Reviewed by Simon Hausmann.
+
+        Defer the setWindow call, so that the one time it is called it will have its final size.
+
+        * plugins/PluginPackage.cpp:
+        (WebCore::PluginPackage::determineQuirks):
+
+2012-11-12  Tommy Widenflycht  <tommyw@google.com>
+
+        Remove the V8 custom code for WebSockets constructor
+        https://bugs.webkit.org/show_bug.cgi?id=100801
+
+        Reviewed by Kentaro Hara.
+
+        This patch does the following:
+
+        1) Modifies the V8 code generator to support overloaded constructors,
+           the JS generator is fixed to work as before. Proper support for JS will come later.
+
+        2) Modifies WebSocket.h/.cpp for the new constructors.
+
+        Tested by running WebSockets layout tests.
+
+        * Modules/websockets/WebSocket.cpp:
+        (WebCore::WebSocket::create):
+        (WebCore):
+        * Modules/websockets/WebSocket.h:
+        (WebSocket):
+        * Modules/websockets/WebSocket.idl:
+        * bindings/scripts/CodeGeneratorJS.pm:
+        (GenerateConstructorDefinition):
+        * bindings/scripts/CodeGeneratorV8.pm:
+        (GenerateHeader):
+        (GenerateOverloadedConstructorCallback):
+        (GenerateSingleConstructorCallback):
+        (GenerateConstructorCallback):
+        (GenerateImplementation):
+        * bindings/scripts/IDLParser.pm:
+        (copyAttributes):
+        (parseExtendedAttributeList):
+        (parseExtendedAttributes):
+        (applyExtendedAttributeList):
+        * bindings/scripts/IDLStructure.pm:
+        * bindings/scripts/test/CPP/WebDOMTestOverloadedConstructors.cpp: Added.
+        (WebDOMTestOverloadedConstructors::WebDOMTestOverloadedConstructorsPrivate::WebDOMTestOverloadedConstructorsPrivate):
+        (WebDOMTestOverloadedConstructors::WebDOMTestOverloadedConstructorsPrivate):
+        (WebDOMTestOverloadedConstructors::WebDOMTestOverloadedConstructors):
+        (WebDOMTestOverloadedConstructors::operator=):
+        (WebDOMTestOverloadedConstructors::impl):
+        (WebDOMTestOverloadedConstructors::~WebDOMTestOverloadedConstructors):
+        (toWebCore):
+        (toWebKit):
+        * bindings/scripts/test/CPP/WebDOMTestOverloadedConstructors.h: Added.
+        (WebCore):
+        (WebDOMTestOverloadedConstructors):
+        * bindings/scripts/test/GObject/WebKitDOMTestOverloadedConstructors.cpp: Added.
+        (WebKit):
+        (WebKit::kit):
+        (WebKit::core):
+        (WebKit::wrapTestOverloadedConstructors):
+        (webkit_dom_test_overloaded_constructors_finalize):
+        (webkit_dom_test_overloaded_constructors_set_property):
+        (webkit_dom_test_overloaded_constructors_get_property):
+        (webkit_dom_test_overloaded_constructors_constructed):
+        (webkit_dom_test_overloaded_constructors_class_init):
+        (webkit_dom_test_overloaded_constructors_init):
+        * bindings/scripts/test/GObject/WebKitDOMTestOverloadedConstructors.h: Added.
+        (_WebKitDOMTestOverloadedConstructors):
+        (_WebKitDOMTestOverloadedConstructorsClass):
+        * bindings/scripts/test/GObject/WebKitDOMTestOverloadedConstructorsPrivate.h: Added.
+        (WebKit):
+        * bindings/scripts/test/JS/JSTestOverloadedConstructors.cpp: Added.
+        (WebCore):
+        (WebCore::JSTestOverloadedConstructorsConstructor::JSTestOverloadedConstructorsConstructor):
+        (WebCore::JSTestOverloadedConstructorsConstructor::finishCreation):
+        (WebCore::JSTestOverloadedConstructorsConstructor::getOwnPropertySlot):
+        (WebCore::JSTestOverloadedConstructorsConstructor::getOwnPropertyDescriptor):
+        (WebCore::JSTestOverloadedConstructorsConstructor::constructJSTestOverloadedConstructors):
+        (WebCore::JSTestOverloadedConstructorsConstructor::getConstructData):
+        (WebCore::JSTestOverloadedConstructorsPrototype::self):
+        (WebCore::JSTestOverloadedConstructors::JSTestOverloadedConstructors):
+        (WebCore::JSTestOverloadedConstructors::finishCreation):
+        (WebCore::JSTestOverloadedConstructors::createPrototype):
+        (WebCore::JSTestOverloadedConstructors::destroy):
+        (WebCore::JSTestOverloadedConstructors::~JSTestOverloadedConstructors):
+        (WebCore::JSTestOverloadedConstructors::getOwnPropertySlot):
+        (WebCore::JSTestOverloadedConstructors::getOwnPropertyDescriptor):
+        (WebCore::jsTestOverloadedConstructorsConstructor):
+        (WebCore::JSTestOverloadedConstructors::getConstructor):
+        (WebCore::isObservable):
+        (WebCore::JSTestOverloadedConstructorsOwner::isReachableFromOpaqueRoots):
+        (WebCore::JSTestOverloadedConstructorsOwner::finalize):
+        (WebCore::toJS):
+        (WebCore::toTestOverloadedConstructors):
+        * bindings/scripts/test/JS/JSTestOverloadedConstructors.h: Added.
+        (WebCore):
+        (JSTestOverloadedConstructors):
+        (WebCore::JSTestOverloadedConstructors::create):
+        (WebCore::JSTestOverloadedConstructors::createStructure):
+        (WebCore::JSTestOverloadedConstructors::impl):
+        (WebCore::JSTestOverloadedConstructors::releaseImpl):
+        (WebCore::JSTestOverloadedConstructors::releaseImplIfNotNull):
+        (JSTestOverloadedConstructorsOwner):
+        (WebCore::wrapperOwner):
+        (WebCore::wrapperContext):
+        (JSTestOverloadedConstructorsPrototype):
+        (WebCore::JSTestOverloadedConstructorsPrototype::create):
+        (WebCore::JSTestOverloadedConstructorsPrototype::createStructure):
+        (WebCore::JSTestOverloadedConstructorsPrototype::JSTestOverloadedConstructorsPrototype):
+        (JSTestOverloadedConstructorsConstructor):
+        (WebCore::JSTestOverloadedConstructorsConstructor::create):
+        (WebCore::JSTestOverloadedConstructorsConstructor::createStructure):
+        * bindings/scripts/test/ObjC/DOMTestOverloadedConstructors.h: Added.
+        * bindings/scripts/test/ObjC/DOMTestOverloadedConstructors.mm: Added.
+        (-[DOMTestOverloadedConstructors dealloc]):
+        (-[DOMTestOverloadedConstructors finalize]):
+        (core):
+        (kit):
+        * bindings/scripts/test/ObjC/DOMTestOverloadedConstructorsInternal.h: Added.
+        (WebCore):
+        * bindings/scripts/test/TestOverloadedConstructors.idl: Copied from Source/WebCore/bindings/scripts/test/TestSerializedScriptValueInterface.idl.
+        * bindings/scripts/test/TestSerializedScriptValueInterface.idl:
+        * bindings/scripts/test/V8/V8TestOverloadedConstructors.cpp: Added.
+        (WebCore):
+        (TestOverloadedConstructorsV8Internal):
+        (WebCore::TestOverloadedConstructorsV8Internal::V8_USE):
+        (WebCore::V8TestOverloadedConstructors::constructor1Callback):
+        (WebCore::V8TestOverloadedConstructors::constructor2Callback):
+        (WebCore::V8TestOverloadedConstructors::constructor3Callback):
+        (WebCore::V8TestOverloadedConstructors::constructor4Callback):
+        (WebCore::V8TestOverloadedConstructors::constructorCallback):
+        (WebCore::ConfigureV8TestOverloadedConstructorsTemplate):
+        (WebCore::V8TestOverloadedConstructors::GetRawTemplate):
+        (WebCore::V8TestOverloadedConstructors::GetTemplate):
+        (WebCore::V8TestOverloadedConstructors::HasInstance):
+        (WebCore::V8TestOverloadedConstructors::wrapSlow):
+        (WebCore::V8TestOverloadedConstructors::derefObject):
+        * bindings/scripts/test/V8/V8TestOverloadedConstructors.h: Added.
+        (WebCore):
+        (V8TestOverloadedConstructors):
+        (WebCore::V8TestOverloadedConstructors::toNative):
+        (WebCore::V8TestOverloadedConstructors::installPerContextProperties):
+        (WebCore::V8TestOverloadedConstructors::installPerContextPrototypeProperties):
+        (WebCore::V8TestOverloadedConstructors::wrap):
+        (WebCore::toV8):
+        * bindings/v8/custom/V8WebSocketCustom.cpp:
+
+2012-11-12  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Refactoring] Create SelectRuleFeatureSet for collecting RuleFeatureSet for select attribute
+        https://bugs.webkit.org/show_bug.cgi?id=101891
+
+        Reviewed by Hajime Morita.
+
+        We would like to have another class for RuleFeatureSet to collect 'select' attribute features,
+        since it will have more features than the original RuleFeatureSet has.
+
+        Also, some methods of ElementShadow are removed and we provide a method to get SelectRuleFeatureSet itself.
+
+        No new tests, no change in behavior.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * WebCore.gypi:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * dom/ElementShadow.h:
+        (ElementShadow):
+        (WebCore::ElementShadow::selectRuleFeatureSet):
+        (WebCore):
+        * html/shadow/SelectRuleFeatureSet.cpp: Added.
+        (WebCore):
+        (WebCore::SelectRuleFeatureSet::SelectRuleFeatureSet):
+        (WebCore::SelectRuleFeatureSet::add):
+        (WebCore::SelectRuleFeatureSet::clear):
+        (WebCore::SelectRuleFeatureSet::collectFeaturesFromSelector):
+        * html/shadow/SelectRuleFeatureSet.h: Added.
+        (WebCore):
+        (SelectRuleFeatureSet):
+        (WebCore::SelectRuleFeatureSet::hasSelectorForId):
+        (WebCore::SelectRuleFeatureSet::hasSelectorForClass):
+        (WebCore::SelectRuleFeatureSet::hasSelectorForAttribute):
+        * testing/Internals.cpp:
+        (WebCore::Internals::hasSelectorForIdInShadow):
+        (WebCore::Internals::hasSelectorForClassInShadow):
+        (WebCore::Internals::hasSelectorForAttributeInShadow):
+
+2012-11-13  Keishi Hattori  <keishi@webkit.org>
+
+        Build fix for Chromium Android (caused by r134216)
+
+        Unreviewed.
+
+        No new tests.
+
+        * platform/text/PlatformLocale.cpp:
+        (WebCore::Locale::formatDateTime):
+
+2012-11-12  Keishi Hattori  <keishi@webkit.org>
+
+        Add support for week/month to Locale::formatDateTime()
+        https://bugs.webkit.org/show_bug.cgi?id=101878
+
+        Reviewed by Kent Tamura.
+
+        Adding support for week/month to Locale::formatDateTime() in preparation for datalist support for <input type=week/month>.
+
+        Added Chromium tests LocaleMacTest.formatWeek and LocaleMacTest.formatMonth.
+
+        * platform/text/PlatformLocale.cpp:
+        (WebCore::DateTimeStringBuilder::visitField):
+        (WebCore::Locale::formatDateTime): Support week and month types.
+
+2012-11-12  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Can not load MHTML documents
+        https://bugs.webkit.org/show_bug.cgi?id=101765
+
+        Reviewed by Simon Hausmann.
+
+        Recognize common MHTML extensions so that we can recognize MHTML tests on the file-system.
+
+        Tested by existing mhtml/ tests.
+
+        * platform/qt/MIMETypeRegistryQt.cpp:
+        (WebCore):
+
+2012-11-12  Andreas Kling  <akling@apple.com>
+
+        Tighten vector in ResourceRequestBase::setResponseContentDispositionEncodingFallbackArray().
+        <http://webkit.org/b/101850>
+
+        Reviewed by Antti Koivisto.
+
+        Reserve the exact amount of space needed for m_responseContentDispositionEncodingFallbackArray.
+        222kB progression on Membuster3.
+
+        * platform/network/ResourceRequestBase.cpp:
+        (WebCore::ResourceRequestBase::setResponseContentDispositionEncodingFallbackArray):
+
+2012-11-12  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Schedule the RTCDataChannel events to be triggered at idle state
+        https://bugs.webkit.org/show_bug.cgi?id=101751
+
+        Reviewed by Adam Barth.
+
+        This patch queues the events until the JS interpreter is in an idle state.
+
+        Existing tests cover this patch.
+
+        * Modules/mediastream/RTCDataChannel.cpp:
+        (WebCore::RTCDataChannel::RTCDataChannel):
+        (WebCore::RTCDataChannel::readyStateChanged):
+        (WebCore::RTCDataChannel::dataArrived):
+        (WebCore::RTCDataChannel::error):
+        (WebCore::RTCDataChannel::scheduleDispatchEvent):
+        (WebCore):
+        (WebCore::RTCDataChannel::scheduledEventTimerFired):
+        * Modules/mediastream/RTCDataChannel.h:
+        (RTCDataChannel):
+        * platform/chromium/support/WebRTCDataChannel.cpp:
+        (WebKit::WebRTCDataChannel::setBufferedAmount):
+        (WebKit::WebRTCDataChannel::readyStateChanged):
+        (WebKit::WebRTCDataChannel::dataArrived):
+        (WebKit::WebRTCDataChannel::error):
+
+2012-11-12  Kunihiko Sakamoto  <ksakamoto@chromium.org>
+
+        Remove HTMLInputElement dependency from PickerIndicatorElement
+        https://bugs.webkit.org/show_bug.cgi?id=101913
+
+        Reviewed by Kent Tamura.
+
+        Introduced PickerIndicatorOwner interface that replaces the role of hostInput() in
+        PickerIndicatorElement. It makes easier to add interactions between picker indicator
+        and its owner without having to add functions to HTMLInputElement.
+
+        No new tests. This is just a refactor.
+
+        * html/BaseMultipleFieldsDateAndTimeInputType.cpp:
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrReadOnly): Added.
+        (WebCore):
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue): Added.
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters): Added.
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType):
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree):
+        (WebCore::BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree):
+        * html/BaseMultipleFieldsDateAndTimeInputType.h:
+        (WebCore):
+        (BaseMultipleFieldsDateAndTimeInputType): Implements PickerIndicatorOwner.
+        * html/shadow/PickerIndicatorElement.cpp: Replaced all the use of hostInput() by using PickerIndicatorOwner.
+        (WebCore::PickerIndicatorElement::PickerIndicatorElement):
+        (WebCore::PickerIndicatorElement::create):
+        (WebCore::PickerIndicatorElement::defaultEventHandler):
+        (WebCore::PickerIndicatorElement::willRespondToMouseClickEvents):
+        (WebCore::PickerIndicatorElement::didChooseValue):
+        (WebCore::PickerIndicatorElement::openPopup):
+        * html/shadow/PickerIndicatorElement.h:
+        (PickerIndicatorElement): Added a PickerIndicatorOwner member.
+        (PickerIndicatorOwner): An interface class for communicating picker indicator and its owner.
+        (WebCore::PickerIndicatorElement::PickerIndicatorOwner::~PickerIndicatorOwner):
+        (WebCore::PickerIndicatorElement::removePickerIndicatorOwner):
+
+2012-11-12  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSSRegions]Add support for text-shadow in region styling
+        https://bugs.webkit.org/show_bug.cgi?id=94472
+
+        Reviewed by David Hyatt.
+
+        Original patch by Andrei Onea.
+        Add support for text-shadow in region styling (@-webkit-region rule).
+        In addition to the previously supported region styling properties (background-color and color),
+        text-shadow requires the computation of an element style in region at layout time.
+
+        This patch adds a new method on RenderRegion - ensureRegionStyleForObject - that
+        can be used to retrieve the object style in region (if already cached) or to compute it
+        on the spot. When computing the object style in region, we need to compute the style in region
+        also for the object ancestor, up to the content nodes.
+
+        This patch also refactors the way styles in region are computed and stored, because
+        we can compute the style in region not only at paint time, but also at layout time.
+
+        Test: fast/regions/region-style-text-shadow.html
+
+        * css/StyleResolver.cpp:
+        (WebCore::StyleResolver::isValidRegionStyleProperty):
+        Allow text-shadow to be used in region styling.
+        * rendering/InlineBox.cpp:
+        (WebCore::InlineBox::styleInRegion):
+        Retrieve the region style for an InlineBox's renderer, given its RenderRegion.
+        Compute the style in region if not computed yet.
+        (WebCore::InlineBox::regionDuringLayout):
+        Retrieve the region in which an InlineBox is being flowed.
+        * rendering/InlineBox.h:
+        * rendering/InlineFlowBox.cpp: Take region styling into account.
+        (WebCore::InlineFlowBox::addToLine):
+        (WebCore::InlineFlowBox::addTextBoxVisualOverflow):
+        * rendering/RenderRegion.cpp:
+        (WebCore::RenderRegion::setRegionObjectsRegionStyle):
+        (WebCore::canCacheObjectStyleInRegion):
+        Test if we can cache the computed style in region.
+        (WebCore::RenderRegion::restoreRegionObjectsOriginalStyle):
+        (WebCore::RenderRegion::computeStyleInRegion):
+        (WebCore::RenderRegion::setChildrenStyleInRegion):
+        (WebCore::setObjectHasBoxDecorationsFlag):
+        (WebCore::RenderRegion::setObjectStyleInRegion):
+        (WebCore::RenderRegion::clearObjectStyleInRegion):
+        (WebCore::RenderRegion::ensureRegionStyleForObject):
+        * rendering/RenderRegion.h:
+
+2012-11-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134154.
+        http://trac.webkit.org/changeset/134154
+        https://bugs.webkit.org/show_bug.cgi?id=101919
+
+        Causes plenty of crashes on GTK and Apple Win builders
+        (Requested by zdobersek on #webkit).
+
+        * css/mediaControls.css:
+        * css/mediaControlsQuickTime.css:
+        (audio::-webkit-media-controls-toggle-closed-captions-button, video::-webkit-media-controls-toggle-closed-captions-button):
+        (audio::-webkit-media-controls-volume-slider-mute-button, video::-webkit-media-controls-volume-slider-mute-button):
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create):
+        (WebCore::MediaControlRootElement::setMediaController):
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls):
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore):
+        * platform/Language.h:
+        (WebCore):
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::paintMediaControlsPart):
+        * rendering/RenderMediaControlsChromium.cpp:
+        (WebCore::RenderMediaControlsChromium::paintMediaControlsPart):
+
+2012-11-12  Mike West  <mkwst@chromium.org>
+
+        'for (x in y)' requires 'var' declaration in ConsoleMessage.js
+        https://bugs.webkit.org/show_bug.cgi?id=101908
+
+        Reviewed by Pavel Feldman.
+
+        r134166 should have included a 'var' declaration in its 'for (x in y)'
+        loop. This patch adds the missing 'var' in order to prevent leakage into
+        the global context.
+
+        * inspector/front-end/ConsoleMessage.js:
+        (WebInspector.ConsoleMessageImpl.prototype.append):
+        (WebInspector.ConsoleMessageImpl.prototype._formatWithSubstitutionString):
+
+2012-11-12  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] MiniBrowser should not strongly depend on QtTestSupport.
+        https://bugs.webkit.org/show_bug.cgi?id=101775
+
+        Introducing HAVE(QTTESTSUPPORT) to allow building
+        MiniBrowser without QtTestSupport.
+        This is necessary when using a production build.
+
+        Reviewed by Tor Arne Vestbø.
+
+        * Target.pri:
+        * platform/qt/QtTestSupport.h:
+
+2012-11-12  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: wasShown is called twice when show() is called from within wasShown
+        https://bugs.webkit.org/show_bug.cgi?id=101858
+
+        Reviewed by Vsevolod Vlasov.
+
+        When we attach views lazily from within wasShown, the views were getting wasShown notification twice.
+        We now mute one of them.
+
+        * inspector/front-end/View.js:
+        (WebInspector.View):
+        (WebInspector.View.prototype._inNotification):
+        (WebInspector.View.prototype._parentIsShowing):
+        (WebInspector.View.prototype._callOnVisibleChildren):
+        (WebInspector.View.prototype._processWasShown):
+        (WebInspector.View.prototype._processWillHide):
+        (WebInspector.View.prototype._processOnResize):
+        (WebInspector.View.prototype._notify):
+        (WebInspector.View.prototype.show):
+
+2012-11-12  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix after r134191. Turns out that FrameView::performPostLayoutTasks calls FrameSelection::updateAppearance
+        in the middle of a layout. So we can't have assertions in recomputeCaretRect and updateAppearance.
+
+        Furthermore, we can't update layout in updateAppearance. So do that in its call sites.
+
+        * editing/FrameSelection.cpp:
+        (WebCore::FrameSelection::setSelection):
+        (WebCore::FrameSelection::recomputeCaretRect):
+        (WebCore::FrameSelection::updateAppearance):
+        (WebCore::FrameSelection::setCaretVisibility):
+
+2012-11-12  Shinya Kawanaka  <shinyak@chromium.org>
+
+        Don't update style when attaching in HTMLMeterElement
+        https://bugs.webkit.org/show_bug.cgi?id=101714
+
+        Reviewed by Hajime Morita.
+
+        HTMLMeterElement was updating style when it's being attached. However, updating style when attaching
+        can cause style-update prevention. The similar thing has already happened in Bug 100507.
+
+        Since we have already set the default value in creating ShadowDOM subtree, we don't need to update style actually.
+
+        Test: fast/dom/HTMLMeterElement/meter-bar-set-value.html
+
+        * html/HTMLMeterElement.cpp:
+        * html/HTMLMeterElement.h:
+        (HTMLMeterElement): Removed attach(). We don't need it.
+
+2012-11-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Multiple Layout Tests (e.g. fast/repaint/japanese-rl-selection-clear.html) is failing after r133840.
+        https://bugs.webkit.org/show_bug.cgi?id=101547
+
+        Reviewed by Simon Fraser.
+
+        I overlooked the fact when the selection is null, we still have to invalidate the caret rect that
+        previously existed. Revert the optimization added in r133840 to skip caret invalidation when new
+        selection is null, and add a special method to be called by FrameLoader prior to destruction instead.
+        This will let us avoid doing an extra layout upon destruction and not regress repaint tests.
+
+        Covered by existing tests.
+
+        * editing/FrameSelection.cpp:
+        (WebCore::FrameSelection::setSelection): Added DoNotUpdateAppearance option.
+        (WebCore::FrameSelection::prepareForDestruction): Added.
+        (WebCore::FrameSelection::updateAppearance): Reverted the flawed optimization added in r133840.
+        Also, don't update style before updating selection unless text caret is disabled since we always
+        update the layout (including style) when text caret is enabled.
+        * editing/FrameSelection.h:
+        (FrameSelection):
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::clear): Call prepareForDestruction instead of clear to avoid a layout.
+
+2012-11-11  Dongwoo Joshua Im  <dw.im@samsung.com>
+
+        [CSS3] Parsing the property, text-align-last.
+        https://bugs.webkit.org/show_bug.cgi?id=99439
+
+        Reviewed by Julien Chaffraix.
+
+        This patch implements the parsing side of the "text-align-last" property specified
+        in CSS3 working draft, with "-webkit-" prefix, under ENABLE_CSS3_TEXT flag.
+        Specification link : http://www.w3.org/TR/css3-text/#text-align-last
+
+        Tests: fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last-inherited.html
+               fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last.html
+
+        * css/CSSComputedStyleDeclaration.cpp:
+        (WebCore):
+        (WebCore::CSSComputedStyleDeclaration::getPropertyCSSValue): Get the value of the text-align-last property.
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseValue): Parse the value, and check whether it is a proper value which text-align-last can have.
+        * css/CSSPrimitiveValueMappings.h:
+        (WebCore):
+        (WebCore::CSSPrimitiveValue::CSSPrimitiveValue):
+        (WebCore::CSSPrimitiveValue::operator ETextAlignLast):
+        * css/CSSProperty.cpp:
+        (WebCore::CSSProperty::isInheritedProperty):
+        * css/CSSPropertyNames.in: Add '-webkit-text-align-last' property.
+        * css/StyleBuilder.cpp:
+        (WebCore::StyleBuilder::StyleBuilder):
+        * css/StylePropertySet.cpp:
+        (WebCore):
+        * css/StyleResolver.cpp:
+        (WebCore::StyleResolver::applyProperty):
+        * rendering/style/RenderStyle.h:
+        * rendering/style/RenderStyleConstants.h:
+        * rendering/style/StyleRareInheritedData.cpp:
+        (WebCore::StyleRareInheritedData::StyleRareInheritedData):
+        (WebCore::StyleRareInheritedData::operator==):
+        * rendering/style/StyleRareInheritedData.h:
+        (StyleRareInheritedData): Add m_textAlignLast.
+
+2012-11-11  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Refactoring] Remove shadowPseudoId() and use setPseudo() in HTMLKeygenElement
+        https://bugs.webkit.org/show_bug.cgi?id=101881
+
+        Reviewed by Kent Tamura.
+
+        We're migrating shadowPseudoId() to pseudo(). We remove shadowPseudoId() from HTMLKeygenElement and use
+        setPseudo()/pseudo() instead.
+
+        No new tests, simple refacotring.
+
+        * html/HTMLKeygenElement.cpp:
+        (WebCore::KeygenSelectElement::KeygenSelectElement):
+        (KeygenSelectElement):
+
+2012-11-11  Adam Barth  <abarth@webkit.org>
+
+        Many DOMWindowProperties would benefit from being ScriptWrappable
+        https://bugs.webkit.org/show_bug.cgi?id=101887
+
+        Reviewed by Kentaro Hara.
+
+        These object are only ever created at the behest of script, which means
+        making them ScriptWrappable is a win.
+
+        * page/BarInfo.h:
+        * page/Console.h:
+        * page/Crypto.h:
+        * page/History.h:
+        * page/Location.h:
+        * page/Navigator.h:
+        * page/Performance.h:
+
+2012-11-11  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] HTMLDocument::all() needs not to be custom
+        https://bugs.webkit.org/show_bug.cgi?id=101875
+
+        Reviewed by Adam Barth.
+
+        We can easily remove the custom getter from V8 because the
+        custom setter sets .all by ForceSet(). On the other hand,
+        it is non-trivial to remove the custom getter from JSC
+        because the custom setter sets .all by putDirect()
+        and the custom getter wants to get it by getDirect().
+
+        No tests. No change in behavior.
+
+        * bindings/v8/custom/V8HTMLDocumentCustom.cpp:
+        * html/HTMLDocument.idl:
+
+2012-11-11  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] V8Console::memoryAttrGetter() needs not to be custom
+        https://bugs.webkit.org/show_bug.cgi?id=101873
+
+        Reviewed by Adam Barth.
+
+        No tests. No change in behavior.
+
+        * bindings/v8/custom/V8ConsoleCustom.cpp:
+        (WebCore):
+        * page/Console.idl:
+
+2012-11-11  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Shadow] ElementShadow should have RuleFeatureSet for select attribute selectors.
+        https://bugs.webkit.org/show_bug.cgi?id=101180
+
+        Reviewed by Dimitri Glazkov.
+
+        This is a preparation patch for Bug 100451.
+
+        We preserve RuleFeatureSet collected from select attributes in ShadowDOM.
+        When an element attribute is changed, we might have to invalidate content distribution,
+        however it's high cost operation. So we would like to check RuleFeatureSet used in
+        select attributes to determine we really need to invalidate distribution.
+
+        Like StyleResolver, ElementShadow has several rule features. When nested ShadowDOM is used,
+        first we collect features in nested ShadowDOM, and merge it to the parent ShadowDOM.
+        For the performance reason, we have a flag to check whether we need to collect features again.
+
+        Test: fast/dom/shadow/shadow-select-attribute-featureset.html
+
+        * WebCore.exp.in:
+        * dom/ElementShadow.cpp:
+        (WebCore::ElementShadow::ElementShadow):
+        (WebCore::ElementShadow::setShouldCollectSelectFeatureSet): Enable a flag to collect feature set of descendant
+        nodes (and their ShadowDOM).
+        (WebCore):
+        (WebCore::ElementShadow::ensureSelectFeatureSetCollected):
+        (WebCore::ElementShadow::collectSelectFeatureSetFrom): Collect RuleFeatureSet from all descendant Nodes and their
+        ShadowDOM. We need to collect id, class, and attribute names.
+        * dom/ElementShadow.h:
+        (WebCore::ElementShadow::shouldCollectSelectFeatureSet):
+        (ElementShadow):
+        (WebCore::ElementShadow::hasSelectorForId):
+        (WebCore):
+        (WebCore::ElementShadow::hasSelectorForClass):
+        (WebCore::ElementShadow::hasSelectorForAttribute):
+        * html/shadow/HTMLContentElement.cpp:
+        (WebCore::HTMLContentElement::parseAttribute): When select attribute is changed, enable a flag to recollect features.
+        (WebCore::HTMLContentElement::insertedInto): We have to recollect features when HTMLContentElement is moved.
+        (WebCore::HTMLContentElement::removedFrom): ditto.
+        * html/shadow/HTMLContentElement.h:
+        (WebCore::toHTMLContentElement):
+        (WebCore):
+        * testing/Internals.cpp:
+        (WebCore::Internals::hasSelectorForIdInShadow):
+        (WebCore):
+        (WebCore::Internals::hasSelectorForClassInShadow):
+        (WebCore::Internals::hasSelectorForAttributeInShadow):
+        * testing/Internals.h:
+        (Internals):
+        * testing/Internals.idl:
+
+2012-11-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134144.
+        http://trac.webkit.org/changeset/134144
+        https://bugs.webkit.org/show_bug.cgi?id=101876
+
+        seems to break win 7 chromium browser test (Requested by
+        hayato on #webkit).
+
+        * WebCore.exp.in:
+        * page/EventHandler.cpp:
+        (WebCore):
+        (WebCore::EventHandler::handleMouseMoveEvent):
+        * page/EventHandler.h:
+        (EventHandler):
+        * testing/Internals.cpp:
+        * testing/Internals.h:
+        * testing/Internals.idl:
+
+2012-11-11  Kent Tamura  <tkent@chromium.org>
+
+        Internals: MockPagePopup should not update DOM structure during detach()
+        https://bugs.webkit.org/show_bug.cgi?id=101710
+
+        Reviewed by Hajime Morita.
+
+        PickerIndicatorElement::detach calls
+        MockPagePopupDriver::closePagePopup, MockPagePopup::~MockPagePopup,
+        which remove the mock iframe from the tree. But updating the tree during
+        detach() is dangerous.
+
+        MockPagePopupDriver::closePagePopup calls MockpagePopup::closeLater, it
+        requests to call 'close' asynchronously, and 'close' removes the mock
+        iframe. We need to change MockPagePopup so that it is ref-couted and has
+        a timer.
+
+        No new tests. This is a change for the test harness.
+
+        * testing/MockPagePopupDriver.cpp:
+        (MockPagePopup): Make this ref-counted, add closeLater, add close, and
+        add m_closeTimer.
+        (WebCore::MockPagePopup::MockPagePopup): Initialize the timer.
+        (WebCore::MockPagePopup::create): PassOwnPtr -> PassRefPtr
+        (WebCore::MockPagePopup::closeLater):
+        - Add one reference to avoid destruction by m_mockPagePopup.clear() in
+          closePagePopup.
+        - Notify didClosePopup here because the client expects didClosePopup is
+          called synchronously.
+        - Invoke the timer to call 'close'
+        (WebCore::MockPagePopup::close):
+        Just remove one reference. This means calling the desructor.
+        (WebCore::MockPagePopup::~MockPagePopup):
+        Move didClosePopup call to caloseLater.
+        (WebCore::MockPagePopupDriver::closePagePopup):
+        Request to close PagePopup.
+        Clear PagePopupClient in m_pagePopupController because this object is
+        necessary until MockPagePopup is closed, but it should not have a
+        reference to the PagePopupClient.
+        * testing/MockPagePopupDriver.h:
+        (MockPagePopupDriver): Make MockPagePopup ref-counted.
+
+2012-11-11  Adam Barth  <abarth@webkit.org>
+
+        axObjectCache code is more complicated than necessary
+        https://bugs.webkit.org/show_bug.cgi?id=101820
+
+        Reviewed by Darin Adler.
+
+        This code should use OwnPtr rather than manually calling new/delete.
+        Also, instead of using a "double check" pattern, we can just access the
+        private fields on the top document directly.
+
+        * dom/Document.cpp:
+        (WebCore::Document::Document):
+        (WebCore::Document::clearAXObjectCache):
+        (WebCore::Document::axObjectCacheExists):
+        (WebCore):
+        (WebCore::Document::axObjectCache):
+        * dom/Document.h:
+        (Document):
+
+2012-11-10  Simon Fraser  <simon.fraser@apple.com>
+
+        Save one call to containerForRepaint() when updating layer positions
+        https://bugs.webkit.org/show_bug.cgi?id=101856
+
+        Reviewed by Dan Bernstein.
+
+         RenderLayer::updateLayerPositions() has already computed the repaint container,
+         but calls computeRepaintRects() which computes it again. Computing the repaint
+         container involves a walk back up the layer tree, so calling it during a tree
+         traversal is costly.
+         
+         Fix by passing the repaint container down into computeRepaintRects().
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::updateLayerPositions):
+        (WebCore::RenderLayer::computeRepaintRects):
+        (WebCore::RenderLayer::computeRepaintRectsIncludingDescendants):
+        (WebCore::RenderLayer::updateLayerPositionsAfterScroll):
+        (WebCore::RenderLayer::setHasVisibleContent):
+        * rendering/RenderLayer.h:
+        (RenderLayer):
+
+2012-11-11  Kenichi Ishibashi  <bashi@chromium.org>
+
+        WTFString::utf8() should have a mode of conversion to use replacement character
+        https://bugs.webkit.org/show_bug.cgi?id=101678
+
+        Reviewed by Alexey Proskuryakov.
+
+        Follow the change on String::utf8()
+
+        No new tests. No changes in behavior.
+
+        * Modules/websockets/WebSocket.cpp:
+        (WebCore::WebSocket::close): Pass String::StrictConversion instead of true to String::utf8().
+        * Modules/websockets/WebSocketChannel.cpp:
+        (WebCore::WebSocketChannel::send): Ditto.
+        * html/MediaFragmentURIParser.cpp:
+        (WebCore::MediaFragmentURIParser::parseFragments): Ditto.
+        * platform/graphics/blackberry/MediaPlayerPrivateBlackBerry.cpp:
+        (WebCore::MediaPlayerPrivate::notifyChallengeResult): Ditto.
+        * platform/network/blackberry/rss/RSSFilterStream.cpp:
+        (WebCore::RSSFilterStream::convertContentToHtml): Ditto.
+        * platform/network/blackberry/rss/RSSGenerator.cpp:
+        (WebCore::RSSGenerator::generateHtml): Ditto.
+
+2012-11-10  Simon Fraser  <simon.fraser@apple.com>
+
+        Coalesce main thread scroll position updates
+        https://bugs.webkit.org/show_bug.cgi?id=101855
+
+        Reviewed by Anders Carlsson.
+
+        When using threaded scrolling, the dispatched updateMainFrameScrollPosition() calls 
+        from ScrollingTree would pile up on the main thread, and we'd handle several per
+        runloop cycle when scrolling fast. This causes extra work especially on pages
+        with position:fixed elements which must update RenderLayers on scrolling.
+        
+        Fix by using a zero-delay timer in ScrollingCoordinator to coalesce these
+        scrolling updates to one per runloop.
+
+        * page/scrolling/ScrollingCoordinator.cpp:
+        (WebCore::ScrollingCoordinator::ScrollingCoordinator): Initialized data members
+        for the scheduled scroll position update.
+        (WebCore::ScrollingCoordinator::scheduleUpdateMainFrameScrollPosition): If 
+        the timer is active and the parameters match, just update the target scroll
+        position and return. If the params don't match, dispatch the scheduled update,
+        and then the new one. Otherwise, prime the timer.
+        (WebCore::ScrollingCoordinator::updateMainFrameScrollPositionTimerFired): Call
+        the existing updateMainFrameScrollPosition() with the saved values.
+        * page/scrolling/ScrollingCoordinator.h:
+        * page/scrolling/ScrollingTree.cpp:
+        (WebCore::ScrollingTree::updateMainFrameScrollPosition): Call scheduleUpdateMainFrameScrollPosition()
+        rather than updateMainFrameScrollPosition().
+        * page/scrolling/mac/ScrollingCoordinatorMac.mm:
+        (WebCore::ScrollingCoordinatorMac::syncChildPositions): Fixed a bug that caused fixed
+        position elements to jiggle with the patch; we should be calling syncPosition() (which just
+        sets the position data, without touching CA layers).
+
+2012-11-10  Simon Fraser  <simon.fraser@apple.com>
+
+        Remove ScrollingCoordinatorMac::updateMainFrameScrollPositionAndScrollLayerPosition()
+        https://bugs.webkit.org/show_bug.cgi?id=101514
+
+        Reviewed by Tim Horton.
+
+        ScrollingCoordinatorMac::updateMainFrameScrollPositionAndScrollLayerPosition() is very similar to
+        ScrollingCoordinator::updateMainFrameScrollPosition(). In order to eliminate updateMainFrameScrollPositionAndScrollLayerPosition(),
+        we just need to plumb through a flag that says that updateMainFrameScrollPosition() should
+        set the layer position (rather than just doing a 'sync').
+
+        * page/scrolling/ScrollingCoordinator.cpp:
+        (WebCore::ScrollingCoordinator::updateMainFrameScrollPosition):
+        * page/scrolling/ScrollingCoordinator.h:
+        * page/scrolling/ScrollingTree.cpp:
+        (WebCore::ScrollingTree::updateMainFrameScrollPosition):
+        * page/scrolling/ScrollingTree.h:
+        * page/scrolling/mac/ScrollingCoordinatorMac.h:
+        * page/scrolling/mac/ScrollingCoordinatorMac.mm:
+        * page/scrolling/mac/ScrollingTreeScrollingNodeMac.mm:
+        (WebCore::ScrollingTreeScrollingNodeMac::setScrollPositionWithoutContentEdgeConstraints):
+
+2012-11-10  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134069.
+        http://trac.webkit.org/changeset/134069
+        https://bugs.webkit.org/show_bug.cgi?id=101852
+
+        "It is a wrong way to fix the problem. See discussions in bug
+        96614" (Requested by 1JTAAPQFJ on #webkit).
+
+        * bindings/js/JSDictionary.cpp:
+        (WebCore::JSDictionary::getWithUndefinedOrNullCheck):
+
+2012-11-10  Mike West  <mkwst@chromium.org>
+
+        Web Inspector: Multiple '%c' formatting options should all have effect.
+        https://bugs.webkit.org/show_bug.cgi?id=101495
+
+        Reviewed by Pavel Feldman.
+
+        This patch supports multiple '%c' formatting blocks in console messages.
+        'console.log("%cblue! %cgreen!", "color: blue;", "color: green;")' will
+        do exactly what you expect: "blue!" will be blue, and "green!" will be
+        green.
+
+        The implementation moves the styles off the message's parent 'span', and
+        onto new 'span' elements that wrap the various textual bits of the
+        message.
+
+        * inspector/front-end/ConsoleMessage.js:
+        (WebInspector.ConsoleMessageImpl.prototype.):
+        (WebInspector.ConsoleMessageImpl.prototype.append):
+        (WebInspector.ConsoleMessageImpl.prototype._formatWithSubstitutionString):
+
+2012-11-10  Mike West  <mkwst@chromium.org>
+
+        Including <CoreText/CoreText.h> breaks the chromium/mac build.
+        https://bugs.webkit.org/show_bug.cgi?id=101851
+
+        Reviewed by Dan Bernstein.
+
+        r134146 introduced inclusion of 'CoreText/CoreText.h' in
+        SimpleFontDataCoreText.cpp, which broke the chromium/mac build. Grepping
+        around, it looks like this needs to be modified to include
+        'ApplicationServices/ApplicationServices.h'.
+
+        * platform/graphics/mac/SimpleFontDataCoreText.cpp:
+            Drop 'CoreText.h' in favor of 'ApplicationServices.h'.
+        * platform/graphics/mac/ComplexTextControllerCoreText.mm:
+            Drop the platform-specific '#if' logic; just include 'ApplicationServices.h'.
+
+2012-11-10  Andreas Kling  <kling@webkit.org>
+
+        Don't detach from shared ElementAttributeData when overwriting attribute with identical value.
+        <http://webkit.org/b/101849>
+
+        Reviewed by Anders Carlsson.
+
+        Defer the mutableAttributeData() call in Element::setAttributeInternal() until the last
+        possible moment, to avoid unnecessarily detaching and cloning from attribute data.
+
+        120 kB progression on Membuster3.
+
+        * dom/Element.cpp:
+        (WebCore::Element::setAttributeInternal):
+        (WebCore::Element::addAttributeInternal):
+
+2012-11-10  Simon Fraser  <simon.fraser@apple.com>
+
+        Some minor optimizations in RenderLayer
+        https://bugs.webkit.org/show_bug.cgi?id=101847
+
+        Reviewed by Anders Carlsson.
+
+        Some minor performance improvements in RenderLayer code.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::updateLayerPosition): isRenderInline() is a virtual call,
+        so prefix it with an isInline() check which tests a bit on RenderObject.
+        (WebCore::RenderLayer::localBoundingBox): Ditto.
+        (WebCore::RenderLayer::calculateLayerBounds): Pull layer->renderer()
+        into a local variable.
+
+2012-11-10  Anders Carlsson  <andersca@apple.com>
+
+        Document::m_fullScreenElementStack should be a Vector
+        https://bugs.webkit.org/show_bug.cgi?id=101844
+
+        Reviewed by Andreas Kling.
+
+        m_fullScreenElementStack is currently a Deque where elements are being prepended
+        and removed from the beginning in LIFO order, so it can be replaced with a Vector.
+
+        * dom/Document.cpp:
+        (WebCore::Document::requestFullScreenForElement):
+        (WebCore::Document::webkitCancelFullScreen):
+        (WebCore::Document::popFullscreenElementStack):
+        (WebCore::Document::pushFullscreenElementStack):
+        * dom/Document.h:
+        (WebCore::Document::webkitFullscreenElement):
+        (Document):
+
+2012-11-10  Adam Barth  <abarth@webkit.org>
+
+        [V8] Clean up header includes and ifdefs in V8GCController
+        https://bugs.webkit.org/show_bug.cgi?id=101691
+
+        Reviewed by Kentaro Hara.
+
+        This file doesn't need to include all these headers anymore.
+
+        * bindings/v8/V8GCController.cpp:
+        (WebCore::workingSetEstimateMBMutex):
+        (WebCore::V8GCController::majorGCEpilogue):
+        (WebCore::V8GCController::checkMemoryUsage):
+
+2012-11-10  Joseph Pecoraro  <pecoraro@apple.com>
+
+        [Mac] Guard WebCore PageVisibility Symbol Export
+        https://bugs.webkit.org/show_bug.cgi?id=101817
+
+        Reviewed by Andreas Kling.
+
+        Guard the export with the same ENABLE guards around its definition
+        and implementation.
+
+        * WebCore.exp.in:
+
+2012-11-10  Bruno de Oliveira Abinader  <bruno.abinader@basyskom.com>
+
+        [css] text-decoration:none no longer valid
+        https://bugs.webkit.org/show_bug.cgi?id=101529
+
+        Reviewed by Ojan Vafai.
+
+        This patch fixes an issue where the 'none' value was parsed as explicitly
+        'initial' value. However true in a sense that the initial value for the
+        'text-decoration' property is 'none', the value itself could not be parsed as
+        'initial'.
+
+        The getComputedStyle layout tests for 'text-decoration' and
+        '-webkit-text-decoration-line' CSS properties are updated with the correct
+        results.
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseTextDecoration): When parsed, 'none' value
+        gets its own identifier value instead of explicit initial.
+
+2012-11-09  Dean Jackson  <dino@apple.com>
+
+        Support list of tracks in caption media controls
+        https://bugs.webkit.org/show_bug.cgi?id=101669
+
+        Reviewed by Eric Carlson.
+
+        Attempt three of commit. The first two times caused build failures on Chromium.
+
+        Add some new elements to the media control shadow DOM that display the list of available
+        tracks on an audio/video element. The UI is hidden by default everywhere but on Mac,
+        where it is given a very basic design. At the moment only the list of available tracks
+        are displayed; The followup bug will make the UI active: https://bugs.webkit.org/show_bug.cgi?id=101670
+
+        No new tests - this doesn't expose any testable surface.
+
+        * css/mediaControls.css: Added default rules that hide the new elements.
+        * css/mediaControlsQuickTime.css: Specific rules that give a basic rendering of the new track list.
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlElement::isShowing): Tests for the visibility of a control.
+        (WebCore::MediaControlClosedCaptionsContainerElement::MediaControlClosedCaptionsContainerElement):
+        (WebCore::MediaControlClosedCaptionsContainerElement::create):
+        (WebCore::MediaControlClosedCaptionsContainerElement::shadowPseudoId):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create): Now takes a reference to the media controls as a parameter.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        (WebCore::MediaControlClosedCaptionsTrackListElement::MediaControlClosedCaptionsTrackListElement): New element for holding a list of tracks to display.
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        (MediaControlClosedCaptionsContainerElement):
+        (MediaControlClosedCaptionsTrackListElement): Examines the media element to build a shadow DOM that lists all the tracks available.
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create): New track container and list elements created.
+        (WebCore::MediaControlRootElement::setMediaController): Hook up the new elements to the controller..
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        (WebCore::MediaControlRootElement::toggleClosedCaptionTrackList): Shows or hides the popup with the list of tracks.
+        (WebCore):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls): Pass in the controls as a parameter.
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore::displayNameForLanguageLocale): New function to return a human-readable name for a locale, given the identifier input.
+        * platform/Language.h:
+        (WebCore):
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::paintMediaControlsPart): New enum values into switch.
+        * rendering/RenderMediaControlsChromium.cpp:
+        (WebCore::RenderMediaControlsChromium::paintMediaControlsPart): New enum values into switch.
+
+2012-11-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134152.
+        http://trac.webkit.org/changeset/134152
+        https://bugs.webkit.org/show_bug.cgi?id=101831
+
+        broke chromium again (Requested by dino_ on #webkit).
+
+        * css/mediaControls.css:
+        * css/mediaControlsQuickTime.css:
+        (audio::-webkit-media-controls-toggle-closed-captions-button, video::-webkit-media-controls-toggle-closed-captions-button):
+        (audio::-webkit-media-controls-volume-slider-mute-button, video::-webkit-media-controls-volume-slider-mute-button):
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create):
+        (WebCore::MediaControlRootElement::setMediaController):
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls):
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore):
+        * platform/Language.h:
+        (WebCore):
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::paintMediaControlsPart):
+        * rendering/RenderMediaControlsChromium.cpp:
+        (WebCore::RenderMediaControlsChromium::paintMediaControlsPart):
+
+2012-11-09  Dean Jackson  <dino@apple.com>
+
+        Support list of tracks in caption media controls
+        https://bugs.webkit.org/show_bug.cgi?id=101669
+
+        Reviewed by Eric Carlson.
+
+        Attempt two of commit. The first time caused a build failure on Chromium.
+
+        Add some new elements to the media control shadow DOM that display the list of available
+        tracks on an audio/video element. The UI is hidden by default everywhere but on Mac,
+        where it is given a very basic design. At the moment only the list of available tracks
+        are displayed; The followup bug will make the UI active: https://bugs.webkit.org/show_bug.cgi?id=101670
+
+        No new tests - this doesn't expose any testable surface.
+
+        * css/mediaControls.css: Added default rules that hide the new elements.
+        * css/mediaControlsQuickTime.css: Specific rules that give a basic rendering of the new track list.
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlElement::isShowing): Tests for the visibility of a control.
+        (WebCore::MediaControlClosedCaptionsContainerElement::MediaControlClosedCaptionsContainerElement):
+        (WebCore::MediaControlClosedCaptionsContainerElement::create):
+        (WebCore::MediaControlClosedCaptionsContainerElement::shadowPseudoId):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create): Now takes a reference to the media controls as a parameter.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        (WebCore::MediaControlClosedCaptionsTrackListElement::MediaControlClosedCaptionsTrackListElement): New element for holding a list of tracks to display.
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        (MediaControlClosedCaptionsContainerElement):
+        (MediaControlClosedCaptionsTrackListElement): Examines the media element to build a shadow DOM that lists all the tracks available.
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create): New track container and list elements created.
+        (WebCore::MediaControlRootElement::setMediaController): Hook up the new elements to the controller..
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        (WebCore::MediaControlRootElement::toggleClosedCaptionTrackList): Shows or hides the popup with the list of tracks.
+        (WebCore):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls): Pass in the controls as a parameter.
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore::displayNameForLanguageLocale): New function to return a human-readable name for a locale, given the identifier input.
+        * platform/Language.h:
+        (WebCore):
+        * rendering/RenderMediaControls.cpp:
+        (WebCore::RenderMediaControls::paintMediaControlsPart): New enum values into switch.
+        * rendering/RenderMediaControlsChromium.cpp:
+        (WebCore::RenderMediaControlsChromium::paintMediaControlsPart): New enum values into switch.
+
+2012-11-09  Ojan Vafai  <ojan@chromium.org>
+
+        Should only fire a single set of mouse events and update hover state once when scrolling is done
+        https://bugs.webkit.org/show_bug.cgi?id=99940
+
+        Reviewed by Levi Weintraub.
+
+        -Use a DeferrableOneShotTimer instead of a Timer. By resetting when the
+        timer is fired, we ensure the actual goal of not firing fake mouse events
+        until the scroll is completed. This is the core part of this change.
+        -Change our mouse event throttling to keep a running average of how long
+        mouse events take and adjust throttling appropriately.
+        Test: fast/scrolling/fake-mouse-event-throttling.html
+        -Maintain a minimum throttle of 100ms.
+
+        * page/EventHandler.cpp:
+        (WebCore):
+        (WebCore::RunningAverageDurationTracker::RunningAverageDurationTracker):
+        (WebCore::RunningAverageDurationTracker::~RunningAverageDurationTracker):
+        Keep track of a running average instead of max. This lets us adjust throttling
+        dynamically without punishing a page for having a single mouse event handler
+        that takes disproportionately long.
+        (RunningAverageDurationTracker):
+        (WebCore::EventHandler::EventHandler):
+        (WebCore::EventHandler::clear):
+        (WebCore::EventHandler::mouseMoved):
+        (WebCore::EventHandler::handleMouseMoveEvent):
+        (WebCore::EventHandler::dispatchFakeMouseMoveEventSoon):
+        (WebCore::EventHandler::fakeMouseMoveEventTimerFired):
+        * page/EventHandler.h:
+        (EventHandler):
+        * platform/Timer.h:
+        (WebCore::DeferrableOneShotTimer::setDelay):
+        (WebCore::DeferrableOneShotTimer::delay):
+        Add a way of adjusting the timer delay.
+
+2012-11-09  Rick Byers  <rbyers@chromium.org>
+
+        Move chromium to USE(LAZY_NATIVE_CURSOR)
+        https://bugs.webkit.org/show_bug.cgi?id=101501
+
+        Reviewed by Adam Barth.
+
+        This simplifies cursor handling in chromium and unifies it with other
+        ports for easier code sharing and testing by moving to the
+        USE_LAZY_CURSOR model and eliminating PlatformCursor entirely.
+
+        PlatformCursor adds no value in chromium since the sandboxing model
+        requires the cursor information be marshalled to the browser process
+        before being turned into a real OS cursor.
+
+        Test: fast/events/mouse-cursor.html
+
+        * WebCore.gypi:
+        * platform/Cursor.h:
+        (WebCore):
+        * platform/chromium/CursorChromium.cpp:
+        (WebCore::Cursor::Cursor):
+        (WebCore::Cursor::operator=):
+        (WebCore::Cursor::~Cursor):
+        (WebCore::Cursor::ensurePlatformCursor):
+        * platform/chromium/PlatformCursor.h: Removed.
+
+2012-11-09  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Allow ports to decide whether an image should be directly composited
+        https://bugs.webkit.org/show_bug.cgi?id=101827
+
+        Reviewed by Simon Fraser.
+
+        Tested by compositing/tiling/huge-layer-img.html.
+
+        * platform/graphics/GraphicsLayer.h:
+        (WebCore::GraphicsLayer::shouldDirectlyCompositeImage):
+            Allow the GraphicsLayer implementation to decide if the image can be composited.
+
+        * rendering/RenderLayerBacking.cpp:
+        (WebCore::RenderLayerBacking::isDirectlyCompositedImage):
+            Take onto account the new shouldDirectlyCompositeImage check.
+
+2012-11-09  Dan Bernstein  <mitz@apple.com>
+
+        SimpleFontData::getCFStringAttributes sets some attributes to their default values, but shouldn’t
+        https://bugs.webkit.org/show_bug.cgi?id=101799
+
+        Reviewed by Alexey Proskuryakov.
+
+        In some configurations, setting kCTLigatureAttributeName to its default value of 1 yields
+        different behavior from not setting it at all. We can get the correct behavior and greatly
+        simplify the code by not setting attributes to their default values.
+
+        * platform/graphics/mac/SimpleFontDataCoreText.cpp:
+        Removed redundant #import directives and changed the remaining ones to #include.
+        (WebCore::SimpleFontData::getCFStringAttributes): Changed to use a mutable dictionary and
+        only add attributes that have non-default values.
+
+2012-11-09  Rick Byers  <rbyers@chromium.org>
+
+        No tests for changing mouse cursors
+        https://bugs.webkit.org/show_bug.cgi?id=100550
+
+        Reviewed by Adam Barth.
+
+        Add infrastructure to keep track of the last set mouse cursor,
+        and then to query it from DumpRenderTree.
+
+        Test: fast/events/mouse-cursor.html
+
+        * WebCore.exp.in: Add Cursor copy ctor export
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::handleMouseMoveEvent): Keep track of last set mouse cursor
+        * page/EventHandler.h:
+        (WebCore::EventHandler::currentMouseCursor): New getter for last set mouse cursor
+        * testing/Internals.cpp:
+        (WebCore::cursorTypeToString): Helper to convert cursor type to enum
+        (WebCore):
+        (WebCore::Internals::getCurrentCursorInfo): New function to return a string describing the last set mouse cursor
+        * testing/Internals.h: Declare getCurrentCursorInfo
+        * testing/Internals.idl: Declare getCurrentCursorInfo
+
+2012-11-09  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Amend CoordinatedBackingStore::paintToTextureMapper to fit its own semantic.
+        https://bugs.webkit.org/show_bug.cgi?id=101701
+
+        Reviewed by Noam Rosenthal.
+
+        Add TiledBackingStore::rect() because CoordinatedTile needs to know
+        m_rect of TiledBackingStore.
+
+        * platform/graphics/TiledBackingStore.h:
+        (WebCore::TiledBackingStore::rect):
+
+2012-11-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134139.
+        http://trac.webkit.org/changeset/134139
+        https://bugs.webkit.org/show_bug.cgi?id=101823
+
+        breaks chromium (android) build (Requested by thorton on
+        #webkit).
+
+        * css/mediaControls.css:
+        * css/mediaControlsQuickTime.css:
+        (audio::-webkit-media-controls-toggle-closed-captions-button, video::-webkit-media-controls-toggle-closed-captions-button):
+        (audio::-webkit-media-controls-volume-slider-mute-button, video::-webkit-media-controls-volume-slider-mute-button):
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create):
+        (WebCore::MediaControlRootElement::setMediaController):
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls):
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore):
+        * platform/Language.h:
+        (WebCore):
+
+2012-11-09  Huang Dongsung  <luxtella@company100.net>
+
+        [TexMap] Initialize m_compositedNativeImagePtr in GraphicsLayerTextureMapper.
+        https://bugs.webkit.org/show_bug.cgi?id=101675
+
+        Reviewed by Noam Rosenthal.
+
+        Fix a potential bug in GraphicsLayerTextureMapper. If the member's uninitialized
+        value equals image->nativeImageForCurrentFrame() by change, we can encounter
+        undefined behavior.
+
+        * platform/graphics/texmap/GraphicsLayerTextureMapper.cpp:
+        (WebCore::GraphicsLayerTextureMapper::GraphicsLayerTextureMapper):
+        (WebCore::GraphicsLayerTextureMapper::setContentsToImage):
+
+2012-11-09  Dean Jackson  <dino@apple.com>
+
+        Support list of tracks in caption media controls
+        https://bugs.webkit.org/show_bug.cgi?id=101669
+
+        Reviewed by Eric Carlson.
+
+        Add some new elements to the media control shadow DOM that display the list of available
+        tracks on an audio/video element. The UI is hidden by default everywhere but on Mac,
+        where it is given a very basic design. At the moment only the list of available tracks
+        are displayed; The followup bug will make the UI active: https://bugs.webkit.org/show_bug.cgi?id=101670
+
+        No new tests - this doesn't expose any testable surface.
+
+        * css/mediaControls.css: Added default rules that hide the new elements.
+        * css/mediaControlsQuickTime.css: Specific rules that give a basic rendering of the new track list.
+        * html/shadow/MediaControlElements.cpp:
+        (WebCore::MediaControlElement::isShowing): Tests for the visibility of a control.
+        (WebCore::MediaControlClosedCaptionsContainerElement::MediaControlClosedCaptionsContainerElement):
+        (WebCore::MediaControlClosedCaptionsContainerElement::create):
+        (WebCore::MediaControlClosedCaptionsContainerElement::shadowPseudoId):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsButtonElement):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::create): Now takes a reference to the media controls as a parameter.
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::updateDisplayType):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler):
+        (WebCore::MediaControlToggleClosedCaptionsButtonElement::shadowPseudoId):
+        (WebCore::MediaControlClosedCaptionsTrackListElement::MediaControlClosedCaptionsTrackListElement): New element for holding a list of tracks to display.
+        * html/shadow/MediaControlElements.h:
+        (MediaControlElement):
+        (MediaControlToggleClosedCaptionsButtonElement):
+        (MediaControlClosedCaptionsContainerElement):
+        (MediaControlClosedCaptionsTrackListElement): Examines the media element to build a shadow DOM that lists all the tracks available.
+        * html/shadow/MediaControlRootElement.cpp:
+        (WebCore::MediaControlRootElement::MediaControlRootElement):
+        (WebCore::MediaControlRootElement::create): New track container and list elements created.
+        (WebCore::MediaControlRootElement::setMediaController): Hook up the new elements to the controller..
+        (WebCore::MediaControlRootElement::hide):
+        (WebCore::MediaControlRootElement::makeTransparent):
+        (WebCore::MediaControlRootElement::reset):
+        (WebCore::MediaControlRootElement::reportedError):
+        (WebCore::MediaControlRootElement::toggleClosedCaptionTrackList): Shows or hides the popup with the list of tracks.
+        (WebCore):
+        * html/shadow/MediaControlRootElement.h:
+        (WebCore):
+        (MediaControlRootElement):
+        * html/shadow/MediaControlRootElementChromium.cpp:
+        (WebCore::MediaControlRootElementChromium::initializeControls): Pass in the controls as a parameter.
+        * html/shadow/MediaControls.h:
+        (MediaControls):
+        * platform/Language.cpp:
+        (WebCore::displayNameForLanguageLocale): New function to return a human-readable name for a locale, given the identifier input.
+        * platform/Language.h:
+        (WebCore):
+
+2012-11-09  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Should pass fast/images/paletted-png-with-color-profile.html
+        https://bugs.webkit.org/show_bug.cgi?id=101551
+
+        Reviewed by Adam Barth.
+
+        Support decoding color PALETTE images that have an ICC color profile.
+
+        Covered by fast/images/png-suite/test.html and many other fast/image tests.
+
+        * platform/image-decoders/png/PNGImageDecoder.cpp:
+        (WebCore::PNGImageDecoder::headerAvailable): Move the color profile code after the
+        transparency (tRNS) reader. Allow color PNG images: RGB, RGBA, PALLETE to be color
+        corrected. Use the transparency count from the tRNS reader to detect the expansion
+        of RGB and PALLETE image pixels to RGBA.
+
+2012-11-09  Tien-Ren Chen  <trchen@chromium.org>
+
+        Correct hit-test point scaling for document.elementFromPoint
+        https://bugs.webkit.org/show_bug.cgi?id=101798
+
+        Reviewed by Adam Barth.
+
+        The hit-test point come from user JavaScript is in the document coordinate.
+        Convert to the frame coordinate with correct scale factor for hit test.
+
+        Test: fast/dom/elementFromPoint-scaled-scrolled.html
+
+        * dom/Document.cpp:
+        (WebCore::nodeFromPoint):
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Combine IDBBackingStore and IDBLevelDBBackingStore
+        https://bugs.webkit.org/show_bug.cgi?id=101415
+
+        Reviewed by Tony Chang.
+
+        Combine abstract interface IDBBackingStore with its only
+        implementation, IDBLevelDBBackingStore, to reduce code
+        complexity. The legacy structure existed to support a SQLLite
+        IDBBackingStore, but it is no longer worth the complexity to
+        support this abstraction.
+
+        Changes include:
+        1) Merging IDBLevelDBBackingStore into IDBBackingStore.
+
+        2) Merge together IDBBackingStore's inner classes: Cursor,
+        Transaction, and ObjectStoreRecordIdentfier with their respective
+        subclasses in IDBLevelDBBackingStore.
+
+        3) Simplifying the inner Transaction class to not be refcounted or
+        virtualized, to allow it to be a simple concrete member of its
+        owner, IDBTransactionBackendImpl.
+
+        No new tests as this is purely a refactor.
+
+        * Modules/indexeddb/IDBBackingStore.cpp:
+        (WebCore::recordInternalError):
+        (WebCore::setUpMetadata):
+        (WebCore::IDBBackingStore::IDBBackingStore):
+        (WebCore):
+        (WebCore::IDBBackingStore::~IDBBackingStore):
+        (WebCore::IDBBackingStore::open):
+        (WebCore::IDBBackingStore::getDatabaseNames):
+        (WebCore::IDBBackingStore::getIDBDatabaseMetaData):
+        (WebCore::IDBBackingStore::createIDBDatabaseMetaData):
+        (WebCore::IDBBackingStore::updateIDBDatabaseIntVersion):
+        (WebCore::IDBBackingStore::updateIDBDatabaseMetaData):
+        (WebCore::deleteRange):
+        (WebCore::IDBBackingStore::deleteDatabase):
+        (WebCore::IDBBackingStore::getObjectStores):
+        (WebCore::setMaxObjectStoreId):
+        (WebCore::IDBBackingStore::createObjectStore):
+        (WebCore::IDBBackingStore::deleteObjectStore):
+        (WebCore::IDBBackingStore::getRecord):
+        (WebCore::IDBBackingStore::putRecord):
+        (WebCore::IDBBackingStore::clearObjectStore):
+        (WebCore::IDBBackingStore::deleteRecord):
+        (WebCore::IDBBackingStore::getKeyGeneratorCurrentNumber):
+        (WebCore::IDBBackingStore::maybeUpdateKeyGeneratorCurrentNumber):
+        (WebCore::IDBBackingStore::keyExistsInObjectStore):
+        (WebCore::IDBBackingStore::getIndexes):
+        (WebCore::setMaxIndexId):
+        (WebCore::IDBBackingStore::createIndex):
+        (WebCore::IDBBackingStore::deleteIndex):
+        (WebCore::IDBBackingStore::putIndexDataForRecord):
+        (WebCore::IDBBackingStore::deleteIndexDataForRecord):
+        (WebCore::IDBBackingStore::findKeyInIndex):
+        (WebCore::IDBBackingStore::getPrimaryKeyViaIndex):
+        (WebCore::IDBBackingStore::keyExistsInIndex):
+        (WebCore::IDBBackingStore::Cursor::Cursor):
+        (WebCore::IDBBackingStore::Cursor::firstSeek):
+        (WebCore::IDBBackingStore::Cursor::advance):
+        (WebCore::IDBBackingStore::Cursor::continueFunction):
+        (WebCore::IDBBackingStore::Cursor::haveEnteredRange):
+        (WebCore::IDBBackingStore::Cursor::isPastBounds):
+        (WebCore::ObjectStoreKeyCursorImpl::create):
+        (ObjectStoreKeyCursorImpl):
+        (WebCore::ObjectStoreKeyCursorImpl::value):
+        (WebCore::ObjectStoreKeyCursorImpl::ObjectStoreKeyCursorImpl):
+        (WebCore::ObjectStoreKeyCursorImpl::loadCurrentRow):
+        (WebCore::ObjectStoreCursorImpl::create):
+        (ObjectStoreCursorImpl):
+        (WebCore::ObjectStoreCursorImpl::value):
+        (WebCore::ObjectStoreCursorImpl::ObjectStoreCursorImpl):
+        (WebCore::ObjectStoreCursorImpl::loadCurrentRow):
+        (WebCore::IndexKeyCursorImpl::create):
+        (IndexKeyCursorImpl):
+        (WebCore::IndexKeyCursorImpl::value):
+        (WebCore::IndexKeyCursorImpl::primaryKey):
+        (WebCore::IndexKeyCursorImpl::recordIdentifier):
+        (WebCore::IndexKeyCursorImpl::IndexKeyCursorImpl):
+        (WebCore::IndexKeyCursorImpl::loadCurrentRow):
+        (WebCore::IndexCursorImpl::create):
+        (IndexCursorImpl):
+        (WebCore::IndexCursorImpl::value):
+        (WebCore::IndexCursorImpl::primaryKey):
+        (WebCore::IndexCursorImpl::recordIdentifier):
+        (WebCore::IndexCursorImpl::IndexCursorImpl):
+        (WebCore::IndexCursorImpl::loadCurrentRow):
+        (WebCore::objectStoreCursorOptions):
+        (WebCore::indexCursorOptions):
+        (WebCore::IDBBackingStore::openObjectStoreCursor):
+        (WebCore::IDBBackingStore::openObjectStoreKeyCursor):
+        (WebCore::IDBBackingStore::openIndexKeyCursor):
+        (WebCore::IDBBackingStore::openIndexCursor):
+        (WebCore::IDBBackingStore::Transaction::Transaction):
+        (WebCore::IDBBackingStore::Transaction::begin):
+        (WebCore::IDBBackingStore::Transaction::commit):
+        (WebCore::IDBBackingStore::Transaction::rollback):
+        * Modules/indexeddb/IDBBackingStore.h:
+        (WebCore):
+        (IDBBackingStore):
+        (RecordIdentifier):
+        (WebCore::IDBBackingStore::RecordIdentifier::create):
+        (WebCore::IDBBackingStore::RecordIdentifier::~RecordIdentifier):
+        (WebCore::IDBBackingStore::RecordIdentifier::isValid):
+        (WebCore::IDBBackingStore::RecordIdentifier::primaryKey):
+        (WebCore::IDBBackingStore::RecordIdentifier::setPrimaryKey):
+        (WebCore::IDBBackingStore::RecordIdentifier::version):
+        (WebCore::IDBBackingStore::RecordIdentifier::setVersion):
+        (WebCore::IDBBackingStore::RecordIdentifier::RecordIdentifier):
+        (Transaction):
+        (WebCore::IDBBackingStore::Transaction::levelDBTransactionFrom):
+        (CursorOptions):
+        (Cursor):
+        (WebCore::IDBBackingStore::Cursor::Cursor):
+        (WebCore::IDBBackingStore::Cursor::key):
+        (WebCore::IDBBackingStore::Cursor::primaryKey):
+        (WebCore::IDBBackingStore::Cursor::~Cursor):
+        * Modules/indexeddb/IDBFactoryBackendImpl.cpp:
+        (WebCore::IDBFactoryBackendImpl::openBackingStore):
+        * Modules/indexeddb/IDBIndexBackendImpl.cpp:
+        (WebCore::IDBIndexBackendImpl::countInternal):
+        * Modules/indexeddb/IDBLevelDBBackingStore.h: Removed.
+        * Modules/indexeddb/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::setIndexKeys):
+        (WebCore::IDBObjectStoreBackendImpl::putInternal):
+        (WebCore::IDBObjectStoreBackendImpl::deleteInternal):
+        * Modules/indexeddb/IDBTransactionBackendImpl.cpp:
+        (WebCore::IDBTransactionBackendImpl::IDBTransactionBackendImpl):
+        (WebCore::IDBTransactionBackendImpl::abort):
+        (WebCore::IDBTransactionBackendImpl::commit):
+        (WebCore::IDBTransactionBackendImpl::taskTimerFired):
+        * Modules/indexeddb/IDBTransactionBackendImpl.h:
+        (WebCore::IDBTransactionBackendImpl::backingStoreTransaction):
+        * WebCore.xcodeproj/project.pbxproj:
+
+2012-11-09  Tien-Ren Chen  <trchen@chromium.org>
+
+        Correct scroll adjustment for touchEvent.clientX/clientY
+        https://bugs.webkit.org/show_bug.cgi?id=101800
+
+        Reviewed by Adam Barth.
+
+        FrameView::scrollX/scrollY returns scroll offset in (scaled) frame coordinate.
+        Convert to document coordinate before passing to JavaScript.
+
+        Test: fast/events/touch/touch-scaled-scrolled.html
+
+        * dom/Touch.cpp:
+        (WebCore::contentsX):
+        (WebCore::contentsY):
+
+2012-11-09  Alexandru Chiculita  <achicu@adobe.com>
+
+        [Texmap][CSS Shaders] Enable CSS Shaders in TextureMapperGL
+        https://bugs.webkit.org/show_bug.cgi?id=98990
+
+        Reviewed by Noam Rosenthal.
+
+        Added code that draws the Custom Filter in the TextureMapperGL. Also added 
+        required code to make a depth buffer for a BitmapTextureGL.
+
+        Note that the code is not optimized yet, so it will always recompile the shader.
+
+        Test: css3/filters/custom/composited/custom-filter-blend-modes.html
+
+        * platform/graphics/texmap/TextureMapperGL.cpp:
+        (WebCore::BitmapTextureGL::BitmapTextureGL):
+        (WebCore::getPassesRequiredForFilter):
+        (WebCore):
+        (WebCore::TextureMapperGL::drawUsingCustomFilter):
+        (WebCore::BitmapTextureGL::applyFilters):
+        (WebCore::BitmapTextureGL::initializeDepthBuffer):
+        (WebCore::BitmapTextureGL::~BitmapTextureGL):
+        * platform/graphics/texmap/TextureMapperGL.h:
+        (BitmapTextureGL):
+
+2012-11-09  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        CustomEvent: Allow taking in a serialized value during initialization.
+        https://bugs.webkit.org/show_bug.cgi?id=101348
+
+        Reviewed by Adam Barth.
+
+        If a CustomEvent is initialized using a serialized value, then for each access
+        to |detail|, the value is deserialized first. This way, each world gets a different
+        deserialization.
+
+        * UseV8.cmake:
+        * WebCore.gypi:
+        * bindings/v8/V8HiddenPropertyName.h:
+        (WebCore):
+        * bindings/v8/custom/V8CustomEventCustom.cpp: Copied from Source/WebCore/bindings/v8/V8HiddenPropertyName.h.
+        (WebCore):
+        (WebCore::V8CustomEvent::detailAccessorGetter):
+        * dom/CustomEvent.cpp:
+        (WebCore::CustomEvent::initCustomEvent):
+        (WebCore):
+        * dom/CustomEvent.h:
+        (CustomEvent):
+        (WebCore::CustomEvent::serializedScriptValue):
+        * dom/CustomEvent.idl:
+
+2012-11-09  Brady Eidson  <beidson@apple.com>
+
+        Implement WebResourceBuffer::isEmpty()
+        https://bugs.webkit.org/show_bug.cgi?id=101805
+
+        Reviewed by Alexey Proskuryakov.
+
+        This is required to make the existing subresource loading in NetworkProcess work correctly,
+        as there's an isEmpty() check in the WebProcess that decides whether or not to actually deliver 
+        the data to the ResourceLoader.
+
+        No new tests (No change in behavior in any configuration we test.)
+
+        * loader/ResourceBuffer.h: Make isEmpty() virtual.
+
+2012-11-09  Michael Saboff  <msaboff@apple.com>
+
+        HTML Attributes names and values should be created as 8 bit string where possible
+        https://bugs.webkit.org/show_bug.cgi?id=101781
+
+        Reviewed by Filip Pizlo.
+
+        Given that almost all attribute names and values are lower case ASCII, we should try to
+        create 8 bit strings to process them.  Creating an AtomicString already tries to make
+        an 8 bit string, so that didn't need to change.
+
+        No new tests, functionality covered by existing tests.
+
+        * html/HTMLViewSourceDocument.cpp:
+        (WebCore::HTMLViewSourceDocument::processTagToken):
+        * html/parser/HTMLMetaCharsetParser.cpp:
+        (WebCore::HTMLMetaCharsetParser::processMeta):
+        * html/parser/HTMLPreloadScanner.cpp:
+        (WebCore::PreloadTask::processAttributes):
+
+2012-11-09  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Define WEBKIT_IMPLEMENTATION everywhere inside WebCore
+        https://bugs.webkit.org/show_bug.cgi?id=101795
+
+        Reviewed by James Robinson.
+
+        * WebCore.gyp/WebCore.gyp:
+
+2012-11-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134101.
+        http://trac.webkit.org/changeset/134101
+        https://bugs.webkit.org/show_bug.cgi?id=101790
+
+        IDBDatabaseBackendTest.BackingStoreRetention failing
+        (Requested by jsbell|gardener on #webkit).
+
+        * GNUmakefile.list.am:
+        * Modules/indexeddb/IDBBackingStore.cpp:
+        (WebCore::IDBLevelDBBackingStore::IDBLevelDBBackingStore):
+        (WebCore::IDBLevelDBBackingStore::~IDBLevelDBBackingStore):
+        (WebCore::IDBLevelDBBackingStore::open):
+        (WebCore::IDBLevelDBBackingStore::getDatabaseNames):
+        (WebCore::IDBLevelDBBackingStore::getIDBDatabaseMetaData):
+        (WebCore::IDBLevelDBBackingStore::createIDBDatabaseMetaData):
+        (WebCore::IDBLevelDBBackingStore::updateIDBDatabaseIntVersion):
+        (WebCore::IDBLevelDBBackingStore::updateIDBDatabaseMetaData):
+        (WebCore::IDBLevelDBBackingStore::deleteDatabase):
+        (WebCore::IDBLevelDBBackingStore::getObjectStores):
+        (WebCore::IDBLevelDBBackingStore::createObjectStore):
+        (WebCore::IDBLevelDBBackingStore::deleteObjectStore):
+        (WebCore::IDBLevelDBBackingStore::getRecord):
+        (WebCore):
+        (WebCore::IDBLevelDBBackingStore::putRecord):
+        (WebCore::IDBLevelDBBackingStore::clearObjectStore):
+        (WebCore::IDBLevelDBBackingStore::createInvalidRecordIdentifier):
+        (WebCore::IDBLevelDBBackingStore::deleteRecord):
+        (WebCore::IDBLevelDBBackingStore::getKeyGeneratorCurrentNumber):
+        (WebCore::IDBLevelDBBackingStore::maybeUpdateKeyGeneratorCurrentNumber):
+        (WebCore::IDBLevelDBBackingStore::keyExistsInObjectStore):
+        (WebCore::IDBLevelDBBackingStore::getIndexes):
+        (WebCore::IDBLevelDBBackingStore::createIndex):
+        (WebCore::IDBLevelDBBackingStore::deleteIndex):
+        (WebCore::IDBLevelDBBackingStore::putIndexDataForRecord):
+        (WebCore::IDBLevelDBBackingStore::deleteIndexDataForRecord):
+        (WebCore::IDBLevelDBBackingStore::findKeyInIndex):
+        (WebCore::IDBLevelDBBackingStore::getPrimaryKeyViaIndex):
+        (WebCore::IDBLevelDBBackingStore::keyExistsInIndex):
+        (WebCore::IDBLevelDBBackingStore::openObjectStoreCursor):
+        (WebCore::IDBLevelDBBackingStore::openObjectStoreKeyCursor):
+        (WebCore::IDBLevelDBBackingStore::openIndexKeyCursor):
+        (WebCore::IDBLevelDBBackingStore::openIndexCursor):
+        (WebCore::IDBLevelDBBackingStore::createTransaction):
+        (WebCore::IDBLevelDBBackingStore::Transaction::create):
+        (WebCore::IDBLevelDBBackingStore::Transaction::Transaction):
+        (WebCore::IDBLevelDBBackingStore::Transaction::begin):
+        (WebCore::IDBLevelDBBackingStore::Transaction::commit):
+        (WebCore::IDBLevelDBBackingStore::Transaction::rollback):
+        (WebCore::IDBLevelDBBackingStore::backingStoreExists):
+        * Modules/indexeddb/IDBBackingStore.h:
+        (WebCore):
+        (WebCore::IDBBackingStore::~IDBBackingStore):
+        (IDBBackingStore):
+        (RecordIdentifier):
+        (WebCore::IDBBackingStore::Cursor::~Cursor):
+        (WebCore::IDBBackingStore::Transaction::~Transaction):
+        (Transaction):
+        * Modules/indexeddb/IDBFactoryBackendImpl.cpp:
+        (WebCore::IDBFactoryBackendImpl::openBackingStore):
+        * Modules/indexeddb/IDBLevelDBBackingStore.h: Copied from Source/WebCore/Modules/indexeddb/IDBBackingStore.h.
+        (WebCore):
+        (IDBLevelDBBackingStore):
+        (Transaction):
+        (WebCore::IDBLevelDBBackingStore::Transaction::levelDBTransactionFrom):
+        * Modules/indexeddb/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::setIndexKeys):
+        (WebCore::IDBObjectStoreBackendImpl::putInternal):
+        (WebCore::IDBObjectStoreBackendImpl::deleteInternal):
+        * Modules/indexeddb/IDBTransactionBackendImpl.cpp:
+        (WebCore::IDBTransactionBackendImpl::IDBTransactionBackendImpl):
+        (WebCore::IDBTransactionBackendImpl::abort):
+        (WebCore::IDBTransactionBackendImpl::commit):
+        (WebCore::IDBTransactionBackendImpl::taskTimerFired):
+        * Modules/indexeddb/IDBTransactionBackendImpl.h:
+        (WebCore::IDBTransactionBackendImpl::backingStoreTransaction):
+        * WebCore.xcodeproj/project.pbxproj:
+
+2012-11-09  Erik Arvidsson  <arv@chromium.org>
+
+        REGRESSION (r125239): classList contains() doesn't work after element was moved from strict mode document to quirks mode document
+        https://bugs.webkit.org/show_bug.cgi?id=101627
+
+        Reviewed by Alexey Proskuryakov.
+
+        We used to only create m_classNamesForQuirksMode in the constructor or when the class attribute
+        was changed. If an element is moved from a standards document to a quirks mode document the
+        m_classNamesForQuirksMode would not be up to date which lead to wrong results.
+
+        Now we alway check if m_classNamesForQuirksMode is up to date (in quirks mode only).
+
+        Test: fast/dom/Element/class-list-move-between-document-with-different-quirks-mode.html
+
+        * html/ClassList.cpp:
+        (WebCore::ClassList::classNames): Create the m_classNamesForQuirksMode lazily as needed so that
+                                          it is up to date.
+        * html/ClassList.h:
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Combine IDBBackingStore and IDBLevelDBBackingStore
+        https://bugs.webkit.org/show_bug.cgi?id=101415
+
+        Reviewed by Tony Chang.
+
+        Combine abstract interface IDBBackingStore with its only
+        implementation, IDBLevelDBBackingStore, to reduce code
+        complexity. The legacy structure existed to support a SQLLite
+        IDBBackingStore, but it is no longer worth the complexity to
+        support this abstraction.
+
+        Changes include:
+        1) Merging IDBLevelDBBackingStore into IDBBackingStore.
+
+        2) Merge together IDBBackingStore's inner classes: Cursor,
+        Transaction, and ObjectStoreRecordIdentfier with their respective
+        subclasses in IDBLevelDBBackingStore.
+
+        3) Simplifying the inner Transaction class to not be refcounted or
+        virtualized, to allow it to be a simple concrete member of its
+        owner, IDBTransactionBackendImpl.
+
+        No new tests as this is purely a refactor.
+
+        * Modules/indexeddb/IDBBackingStore.cpp:
+        (WebCore::recordInternalError):
+        (WebCore::setUpMetadata):
+        (WebCore::IDBBackingStore::IDBBackingStore):
+        (WebCore):
+        (WebCore::IDBBackingStore::~IDBBackingStore):
+        (WebCore::IDBBackingStore::open):
+        (WebCore::IDBBackingStore::getDatabaseNames):
+        (WebCore::IDBBackingStore::getIDBDatabaseMetaData):
+        (WebCore::IDBBackingStore::createIDBDatabaseMetaData):
+        (WebCore::IDBBackingStore::updateIDBDatabaseIntVersion):
+        (WebCore::IDBBackingStore::updateIDBDatabaseMetaData):
+        (WebCore::deleteRange):
+        (WebCore::IDBBackingStore::deleteDatabase):
+        (WebCore::IDBBackingStore::getObjectStores):
+        (WebCore::setMaxObjectStoreId):
+        (WebCore::IDBBackingStore::createObjectStore):
+        (WebCore::IDBBackingStore::deleteObjectStore):
+        (WebCore::IDBBackingStore::getRecord):
+        (WebCore::IDBBackingStore::putRecord):
+        (WebCore::IDBBackingStore::clearObjectStore):
+        (WebCore::IDBBackingStore::deleteRecord):
+        (WebCore::IDBBackingStore::getKeyGeneratorCurrentNumber):
+        (WebCore::IDBBackingStore::maybeUpdateKeyGeneratorCurrentNumber):
+        (WebCore::IDBBackingStore::keyExistsInObjectStore):
+        (WebCore::IDBBackingStore::getIndexes):
+        (WebCore::setMaxIndexId):
+        (WebCore::IDBBackingStore::createIndex):
+        (WebCore::IDBBackingStore::deleteIndex):
+        (WebCore::IDBBackingStore::putIndexDataForRecord):
+        (WebCore::IDBBackingStore::deleteIndexDataForRecord):
+        (WebCore::IDBBackingStore::findKeyInIndex):
+        (WebCore::IDBBackingStore::getPrimaryKeyViaIndex):
+        (WebCore::IDBBackingStore::keyExistsInIndex):
+        (WebCore::IDBBackingStore::Cursor::Cursor):
+        (WebCore::IDBBackingStore::Cursor::firstSeek):
+        (WebCore::IDBBackingStore::Cursor::advance):
+        (WebCore::IDBBackingStore::Cursor::continueFunction):
+        (WebCore::IDBBackingStore::Cursor::haveEnteredRange):
+        (WebCore::IDBBackingStore::Cursor::isPastBounds):
+        (WebCore::ObjectStoreKeyCursorImpl::create):
+        (ObjectStoreKeyCursorImpl):
+        (WebCore::ObjectStoreKeyCursorImpl::value):
+        (WebCore::ObjectStoreKeyCursorImpl::ObjectStoreKeyCursorImpl):
+        (WebCore::ObjectStoreKeyCursorImpl::loadCurrentRow):
+        (WebCore::ObjectStoreCursorImpl::create):
+        (ObjectStoreCursorImpl):
+        (WebCore::ObjectStoreCursorImpl::value):
+        (WebCore::ObjectStoreCursorImpl::ObjectStoreCursorImpl):
+        (WebCore::ObjectStoreCursorImpl::loadCurrentRow):
+        (WebCore::IndexKeyCursorImpl::create):
+        (IndexKeyCursorImpl):
+        (WebCore::IndexKeyCursorImpl::value):
+        (WebCore::IndexKeyCursorImpl::primaryKey):
+        (WebCore::IndexKeyCursorImpl::recordIdentifier):
+        (WebCore::IndexKeyCursorImpl::IndexKeyCursorImpl):
+        (WebCore::IndexKeyCursorImpl::loadCurrentRow):
+        (WebCore::IndexCursorImpl::create):
+        (IndexCursorImpl):
+        (WebCore::IndexCursorImpl::value):
+        (WebCore::IndexCursorImpl::primaryKey):
+        (WebCore::IndexCursorImpl::recordIdentifier):
+        (WebCore::IndexCursorImpl::IndexCursorImpl):
+        (WebCore::IndexCursorImpl::loadCurrentRow):
+        (WebCore::objectStoreCursorOptions):
+        (WebCore::indexCursorOptions):
+        (WebCore::IDBBackingStore::openObjectStoreCursor):
+        (WebCore::IDBBackingStore::openObjectStoreKeyCursor):
+        (WebCore::IDBBackingStore::openIndexKeyCursor):
+        (WebCore::IDBBackingStore::openIndexCursor):
+        (WebCore::IDBBackingStore::Transaction::Transaction):
+        (WebCore::IDBBackingStore::Transaction::begin):
+        (WebCore::IDBBackingStore::Transaction::commit):
+        (WebCore::IDBBackingStore::Transaction::rollback):
+        * Modules/indexeddb/IDBBackingStore.h:
+        (WebCore):
+        (IDBBackingStore):
+        (RecordIdentifier):
+        (WebCore::IDBBackingStore::RecordIdentifier::create):
+        (WebCore::IDBBackingStore::RecordIdentifier::~RecordIdentifier):
+        (WebCore::IDBBackingStore::RecordIdentifier::isValid):
+        (WebCore::IDBBackingStore::RecordIdentifier::primaryKey):
+        (WebCore::IDBBackingStore::RecordIdentifier::setPrimaryKey):
+        (WebCore::IDBBackingStore::RecordIdentifier::version):
+        (WebCore::IDBBackingStore::RecordIdentifier::setVersion):
+        (WebCore::IDBBackingStore::RecordIdentifier::RecordIdentifier):
+        (Transaction):
+        (WebCore::IDBBackingStore::Transaction::levelDBTransactionFrom):
+        (CursorOptions):
+        (Cursor):
+        (WebCore::IDBBackingStore::Cursor::Cursor):
+        (WebCore::IDBBackingStore::Cursor::key):
+        (WebCore::IDBBackingStore::Cursor::primaryKey):
+        (WebCore::IDBBackingStore::Cursor::~Cursor):
+        * Modules/indexeddb/IDBFactoryBackendImpl.cpp:
+        (WebCore::IDBFactoryBackendImpl::openBackingStore):
+        * Modules/indexeddb/IDBIndexBackendImpl.cpp:
+        (WebCore::IDBIndexBackendImpl::countInternal):
+        * Modules/indexeddb/IDBLevelDBBackingStore.h: Removed.
+        * Modules/indexeddb/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::setIndexKeys):
+        (WebCore::IDBObjectStoreBackendImpl::putInternal):
+        (WebCore::IDBObjectStoreBackendImpl::deleteInternal):
+        * Modules/indexeddb/IDBTransactionBackendImpl.cpp:
+        (WebCore::IDBTransactionBackendImpl::IDBTransactionBackendImpl):
+        (WebCore::IDBTransactionBackendImpl::abort):
+        (WebCore::IDBTransactionBackendImpl::commit):
+        (WebCore::IDBTransactionBackendImpl::taskTimerFired):
+        * Modules/indexeddb/IDBTransactionBackendImpl.h:
+        (WebCore::IDBTransactionBackendImpl::backingStoreTransaction):
+        * WebCore.xcodeproj/project.pbxproj:
+
+2012-10-28  Timothy Hatcher  <timothy@apple.com>
+
+        Make -webkit-canvas in CSS use the full backing store instead
+        of always 1x when rendering.
+
+        https://bugs.webkit.org/show_bug.cgi?id=100611
+
+        Reviewed by Dean Jackson.
+
+        Test: fast/canvas/canvas-as-image-hidpi.html
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::makePresentationCopy): Pass Unscaled to copyImage.
+        (WebCore::HTMLCanvasElement::copiedImage): Ditto.
+        * platform/graphics/ImageBuffer.h:
+        * platform/graphics/cg/ImageBufferCG.cpp:
+        (WebCore::ImageBuffer::copyImage): Added Scale parameter and use copyNativeImage for Unscaled.
+        * platform/graphics/cairo/ImageBufferCairo.cpp:
+        (WebCore::ImageBuffer::copyImage): Added unnamed ScaleBehavior parameter.
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBuffer::copyImage): Ditto.
+        * platform/graphics/skia/ImageBufferSkia.cpp:
+        (WebCore::ImageBuffer::copyImage): Ditto.
+        * platform/graphics/wince/ImageBufferWinCE.cpp:
+        (WebCore::ImageBuffer::copyImage): Ditto.
+        * platform/graphics/wx/ImageBufferWx.cpp:
+        (WebCore::ImageBuffer::copyImage): Ditto.
+
+2012-10-28  Timothy Hatcher  <timothy@apple.com>
+
+        Reset the canvas backing store pixel ratio when the buffer resizes.
+
+        The backing store was not being recreated using the current page pixel ratio
+        when a resize occurred.
+
+        https://bugs.webkit.org/show_bug.cgi?id=100608
+
+        Reviewed by Darin Adler.
+
+        Test: fast/canvas/canvas-resize-reset-pixelRatio.html
+
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::HTMLCanvasElement): Use targetDeviceScaleFactor.
+        (WebCore::HTMLCanvasElement::reset): Do a clear only if the pixel ratios also
+        match. Store the new pixel ratio in m_deviceScaleFactor.
+        (WebCore::HTMLCanvasElement::targetDeviceScaleFactor): Added.
+        * html/HTMLCanvasElement.h:
+        (WebCore::HTMLCanvasElement::setSize): Return early only if the sizes and
+        pixel ratios match.
+
+2012-11-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        RemoveFormat command doesn't remove background color
+        https://bugs.webkit.org/show_bug.cgi?id=101682
+
+        Reviewed by Tony Chang.
+
+        Fixed the bug by removing all non-transparent background-color properties.
+
+        Test: editing/execCommand/remove-format-background-color.html
+
+        * editing/RemoveFormatCommand.cpp:
+        (WebCore::RemoveFormatCommand::doApply):
+
+2012-11-09  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: switch frontend to use int64_t-based references
+        https://bugs.webkit.org/show_bug.cgi?id=100426
+
+        Reviewed by Tony Chang.
+
+        Remove String-based objectStore/index references, obsoleted by
+        https://bugs.webkit.org/show_bug.cgi?id=100425.
+
+        No new tests as this is the second half of a refactor.
+
+        * Modules/indexeddb/IDBCallbacks.h:
+        * Modules/indexeddb/IDBDatabase.cpp:
+        (WebCore::IDBDatabase::deleteObjectStore):
+        (WebCore::IDBDatabase::transaction):
+        * Modules/indexeddb/IDBDatabaseBackendImpl.cpp:
+        (WebCore::IDBDatabaseBackendImpl::setVersion):
+        (WebCore::IDBDatabaseBackendImpl::transaction):
+        (WebCore::IDBDatabaseBackendImpl::runIntVersionChangeTransaction):
+        * Modules/indexeddb/IDBDatabaseBackendImpl.h:
+        (IDBDatabaseBackendImpl):
+        * Modules/indexeddb/IDBDatabaseBackendInterface.h:
+        (IDBDatabaseBackendInterface):
+        * Modules/indexeddb/IDBMetadata.h:
+        (WebCore::IDBObjectStoreMetadata::findIndex):
+        (IDBObjectStoreMetadata):
+        (WebCore::IDBObjectStoreMetadata::containsIndex):
+        * Modules/indexeddb/IDBObjectStore.cpp:
+        (WebCore::IDBObjectStore::put):
+        (WebCore):
+        (WebCore::IDBObjectStore::index):
+        (WebCore::IDBObjectStore::deleteIndex):
+        * Modules/indexeddb/IDBObjectStoreBackendImpl.cpp:
+        (WebCore::IDBObjectStoreBackendImpl::put):
+        (WebCore):
+        * Modules/indexeddb/IDBObjectStoreBackendImpl.h:
+        (IDBObjectStoreBackendImpl):
+        * Modules/indexeddb/IDBObjectStoreBackendInterface.h:
+        * inspector/Inspector-1.0.json:
+        * inspector/Inspector.json:
+        * inspector/InspectorIndexedDBAgent.cpp:
+        (WebCore):
+        (WebCore::InspectorIndexedDBAgent::requestData):
+        * inspector/InspectorIndexedDBAgent.h:
+        (InspectorIndexedDBAgent):
+
+2012-11-09  Mario Sanchez Prada  <mario@webkit.org>
+
+        [GTK] Isolate the GTK/Gail/Pango specific code in accessibility/gtk
+        https://bugs.webkit.org/show_bug.cgi?id=101727
+
+        Reviewed by Chris Fleizach.
+
+        Added conditional compilation checks for GTK+ specific
+        accessibility code, to pave the way for sharing this
+        implementation with other ports (e.g WebKitEFL).
+
+        * accessibility/gtk/WebKitAccessibleInterfaceText.cpp:
+        (webkitAccessibleTextGetTextAfterOffset): Added conditional
+        compilation checks, only implementing it in GTK so far.
+        (webkitAccessibleTextGetTextAtOffset): Ditto.
+        (webkitAccessibleTextGetTextBeforeOffset): Ditto.
+        * accessibility/gtk/WebKitAccessibleWrapperAtk.cpp:
+        (atkParentOfRootObject): Added conditional compilation checks,
+        only implementing in GTK the part of getting the accessible object
+        for the root object.
+        (webkitAccessibleGetParent): Updated comments.
+        (webkitAccessibleGetNChildren): Ditto.
+        (webkitAccessibleRefChild): Ditto.
+        (webkitAccessibleGetIndexInParent): Ditto.
+        (webkitAccessibleGetAttributes): Only set the 'toolkit' attribute
+        for GTK. Other ports might be interested in this too.
+        (setAtkStateSetFromCoreObject): Updated comments.
+
+2012-11-09  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Don't trigger any object deletion during RTCPeerConnection::stop
+        https://bugs.webkit.org/show_bug.cgi?id=101586
+
+        Reviewed by Adam Barth.
+
+        Stop calling stop on the RTCPeerConnectionHandler, and don't delete it, when
+        ActiveDOMObject::stop is called on RTCPeerConnection. Due to the async nature of the new
+        API some WebCore objects might be cleaned away which is not allowed at this stage.
+
+        This behaviour is not possible to test unfortunately in webkit.
+
+        * Modules/mediastream/RTCPeerConnection.cpp:
+        (WebCore::RTCPeerConnection::stop):
+
+2012-11-09  Joshua Bell  <jsbell@chromium.org>
+
+        [Chromium] Unreviewed gardening. Fix chromium-win builds following r134082
+
+        * WebCore.gypi:
+
+2012-11-09  Dan Carney  <dcarney@google.com>
+
+        [V8] Remove ScriptController::windowShell()
+        https://bugs.webkit.org/show_bug.cgi?id=100235
+
+        Reviewed by Adam Barth.
+
+        Refactored windowShell(DOMWrapperWorld*) and
+        existingWindowShell(DOMWrapperWorld*) to be like JSC.
+
+        No new tests. No change in functionality.
+
+        * bindings/scripts/CodeGeneratorV8.pm:
+        (GenerateToV8Converters):
+        * bindings/v8/DOMWrapperWorld.cpp:
+        (WebCore::isolatedWorldMap):
+        (WebCore::DOMWrapperWorld::getAllWorlds):
+        (WebCore):
+        * bindings/v8/DOMWrapperWorld.h:
+        (DOMWrapperWorld):
+        * bindings/v8/PageScriptDebugServer.cpp:
+        (WebCore::PageScriptDebugServer::addListener):
+        * bindings/v8/ScriptController.cpp:
+        (WebCore::ScriptController::~ScriptController):
+        (WebCore::ScriptController::clearForOutOfMemory):
+        (WebCore):
+        (WebCore::ScriptController::clearForClose):
+        (WebCore::ScriptController::updateSecurityOrigin):
+        (WebCore::ScriptController::initializeMainWorld): Returns true if the main world was initialized.
+        (WebCore::existingWindowShellWorkaroundWorld):
+        (WebCore::ScriptController::existingWindowShell):
+        (WebCore::ScriptController::windowShell):
+        (WebCore::ScriptController::evaluateInIsolatedWorld):
+        (WebCore::ScriptController::currentWorldContext):
+        (WebCore::ScriptController::mainWorldContext):
+        (WebCore::ScriptController::haveInterpreter):
+        (WebCore::ScriptController::enableEval):
+        (WebCore::ScriptController::disableEval):
+        (WebCore::ScriptController::clearWindowShell):
+        (WebCore::ScriptController::setContextDebugId):
+        (WebCore::ScriptController::updateDocument):
+        (WebCore::ScriptController::namedItemAdded):
+        (WebCore::ScriptController::namedItemRemoved):
+        * bindings/v8/ScriptController.h:
+        (ScriptController):
+        (WebCore::ScriptController::getAllWorlds):
+        * bindings/v8/V8Binding.cpp:
+        (WebCore::perContextDataForCurrentWorld):
+        (WebCore::handleOutOfMemory):
+        * bindings/v8/V8DOMWindowShell.cpp:
+        (WebCore::V8DOMWindowShell::initializeIfNeeded):
+        (WebCore::V8DOMWindowShell::updateDocument):
+        (WebCore::V8DOMWindowShell::namedItemAdded):
+        (WebCore::V8DOMWindowShell::namedItemRemoved):
+        * bindings/v8/V8DOMWindowShell.h:
+        (WebCore::V8DOMWindowShell::isContextInitialized):
+        (WebCore::V8DOMWindowShell::isGlobalInitialized):
+        * bindings/v8/custom/V8DocumentCustom.cpp:
+        (WebCore::toV8):
+        * bindings/v8/custom/V8HTMLDocumentCustom.cpp:
+        (WebCore::toV8):
+        * bindings/v8/custom/V8SVGDocumentCustom.cpp:
+        (WebCore::toV8):
+
+2012-11-09  Adam Barth  <abarth@webkit.org>
+
+        [V8] Remove a level of indirection in DOMDataStore
+        https://bugs.webkit.org/show_bug.cgi?id=101690
+
+        Reviewed by Kentaro Hara.
+
+        There is no longer any reason for the DOMDataStore to hold the wrapper
+        map via a pointer. It can just hold the wrapper map directly, saving a
+        level of indirection. I doubt this has any measurable performance gain.
+
+        * bindings/v8/DOMDataStore.cpp:
+        (WebCore::DOMDataStore::DOMDataStore):
+        (WebCore::DOMDataStore::~DOMDataStore):
+        (WebCore::DOMDataStore::reportMemoryUsage):
+        * bindings/v8/DOMDataStore.h:
+        (WebCore::DOMDataStore::get):
+        (WebCore::DOMDataStore::set):
+        (DOMDataStore):
+
+2012-11-09  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSSRegions] Region styling properties are not filtered correctly
+        https://bugs.webkit.org/show_bug.cgi?id=101768
+
+        Reviewed by Andreas Kling.
+
+        Region styling allows only a handful of css properties. There is a mechanism in place,
+        in StyleResolver::isValidRegionStyleProperty that filters the supported region style properties.
+        In order to be effective, this mechanism relies on RuleData::m_isInRegionRule being set correctly.
+        This patch makes sure that the flag RuleData::m_isInRegionRule is set properly in RuleData constructor.
+
+        Test: fast/regions/region-style-not-supported-properties.html
+
+        * css/RuleSet.cpp:
+        (WebCore::RuleData::RuleData):
+
+2012-11-09  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Deleting all files relating to the deprecated PeerConnection00
+        https://bugs.webkit.org/show_bug.cgi?id=101730
+
+        Reviewed by Adam Barth.
+
+        Since RTCPeerConenction has superseeded PeerConnection00 this patch removes all
+        files relating to the old API.
+
+        No testing needed, the remaining tests makes sure that nothing else breaks.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Modules/mediastream/DOMWindowMediaStream.idl:
+        * Modules/mediastream/IceCallback.h: Removed.
+        * Modules/mediastream/IceCallback.idl: Removed.
+        * Modules/mediastream/IceCandidate.cpp: Removed.
+        * Modules/mediastream/IceCandidate.h: Removed.
+        * Modules/mediastream/IceCandidate.idl: Removed.
+        * Modules/mediastream/PeerConnection00.cpp: Removed.
+        * Modules/mediastream/PeerConnection00.h: Removed.
+        * Modules/mediastream/PeerConnection00.idl: Removed.
+        * Modules/mediastream/SessionDescription.cpp: Removed.
+        * Modules/mediastream/SessionDescription.h: Removed.
+        * Modules/mediastream/SessionDescription.idl: Removed.
+        * WebCore.gypi:
+        * bindings/generic/RuntimeEnabledFeatures.cpp:
+        (WebCore):
+        * bindings/generic/RuntimeEnabledFeatures.h:
+        (RuntimeEnabledFeatures):
+        * dom/EventTargetFactory.in:
+        * platform/chromium/support/WebICECandidateDescriptor.cpp: Removed.
+        * platform/chromium/support/WebICEOptions.cpp: Removed.
+        * platform/chromium/support/WebMediaHints.cpp: Removed.
+        * platform/mediastream/IceCandidateDescriptor.cpp: Removed.
+        * platform/mediastream/IceCandidateDescriptor.h: Removed.
+        * platform/mediastream/IceOptions.cpp: Removed.
+        * platform/mediastream/IceOptions.h: Removed.
+        * platform/mediastream/MediaHints.cpp: Removed.
+        * platform/mediastream/MediaHints.h: Removed.
+        * platform/mediastream/MediaStreamCenter.h:
+        (WebCore):
+        (MediaStreamCenter):
+        * platform/mediastream/PeerConnection00Handler.cpp: Removed.
+        * platform/mediastream/PeerConnection00Handler.h: Removed.
+        * platform/mediastream/PeerConnection00HandlerClient.h: Removed.
+        * platform/mediastream/SessionDescriptionDescriptor.cpp: Removed.
+        * platform/mediastream/SessionDescriptionDescriptor.h: Removed.
+        * platform/mediastream/blackberry/MediaStreamCenterBlackBerry.cpp:
+        * platform/mediastream/blackberry/MediaStreamCenterBlackBerry.h:
+        (WebCore):
+        (MediaStreamCenterBlackBerry):
+        * platform/mediastream/chromium/MediaStreamCenterChromium.cpp:
+        * platform/mediastream/chromium/MediaStreamCenterChromium.h:
+        (WebCore):
+        (MediaStreamCenterChromium):
+        * platform/mediastream/chromium/PeerConnection00Handler.cpp: Removed.
+        * platform/mediastream/chromium/PeerConnection00HandlerInternal.cpp: Removed.
+        * platform/mediastream/chromium/PeerConnection00HandlerInternal.h: Removed.
+        * platform/mediastream/gstreamer/MediaStreamCenterGStreamer.cpp:
+        * platform/mediastream/gstreamer/MediaStreamCenterGStreamer.h:
+        (WebCore):
+        (MediaStreamCenterGStreamer):
+
+2012-11-09  Jer Noble  <jer.noble@apple.com>
+
+        Plugin diagnostic logging should send plugin file basename instead of MIME type.
+        https://bugs.webkit.org/show_bug.cgi?id=101679
+
+        Reviewed by Eric Carlson.
+
+        Log the basename of the plugin file rather than the mime type so as to more
+        accurately log which plugin was used to handle the request.
+
+        * loader/SubframeLoader.cpp:
+        (WebCore::logPluginRequest): Log the plugin 'file' field, if present.
+        * plugins/PluginData.cpp:
+        (WebCore::PluginData::pluginInfoForMimeType): Factored out from pluginNameForMimeType.
+        (WebCore::PluginData::pluginNameForMimeType): Use pluginInfoForMimeType to retrieve name field.
+        (WebCore::PluginData::pluginFileForMimeType): Use pluginInfoForMimeType to retrieve file field.
+        * plugins/PluginData.h:
+
+2012-11-09  Alexey Proskuryakov  <ap@apple.com>
+
+        CookieJar uses Document class, which is a layering violation
+        https://bugs.webkit.org/show_bug.cgi?id=101621
+
+        Reviewed by Brady Eidson.
+
+        Split CookieJar in two parts, one that takes a Document, and another that is a pure
+        platform one, using NetworkingContext to access the correct platform storage.
+
+        * GNUmakefile.list.am:
+        * PlatformBlackBerry.cmake:
+        * Target.pri:
+        * WebCore.gypi:
+        * WebCore.gyp/WebCore.gyp:
+        * WebCore.vcproj/WebCore.vcproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        Updated.
+
+        * loader/CookieJar.cpp: Added.
+        (WebCore::networkingContext):
+        (WebCore::cookies):
+        (WebCore::setCookies):
+        (WebCore::cookiesEnabled):
+        (WebCore::cookieRequestHeaderFieldValue):
+        (WebCore::getRawCookies):
+        (WebCore::deleteCookie):
+        (WebCore::getHostnamesWithCookies):
+        (WebCore::deleteCookiesForHostname):
+        (WebCore::deleteAllCookies):
+        * loader/CookieJar.h: Copied from Source/WebCore/platform/CookieJar.h.
+        This is an adaptor for pure platform implementations. Clients continue to use the
+        old interface unchanged.
+
+        * platform/blackberry/CookieJarBlackBerry.cpp: Removed.
+        * loader/blackberry/CookieJarBlackBerry.cpp: Copied from Source/WebCore/platform/blackberry/CookieJarBlackBerry.cpp.
+        * platform/network/chromium/CookieJarChromium.cpp: Removed.
+        * loader/chromium/CookieJarChromium.cpp: Copied from Source/WebCore/platform/network/chromium/CookieJarChromium.cpp.
+        These platforms do not have a pure platform implementation yet, so they just keep
+        to use original implementations. Since the code is not in platform/ any more, the
+        violation is resolved for Chromium and Blackberry, too.
+
+        * platform/CookieJar.h: Removed.
+        * platform/network/PlatformCookieJar.h: Copied from Source/WebCore/platform/CookieJar.h.
+        The platform interface is now more uniform - all functions take a NetworkingContext
+        instead of hardcoding which cookie storage to use in some cases.
+        Renamed functions that are only useful for document.cookie implementation to look
+        less generic.
+
+        * platform/mac/CookieJar.mm: Removed.
+        * platform/network/mac/CookieJarMac.mm: Copied from Source/WebCore/platform/mac/CookieJar.mm.
+        (WebCore::cookiesForDOM): This now takes a context instead of Document, and also
+        takes a firstParty URL (unused on Mac, but used on some other platforms).
+        (WebCore::cookieRequestHeaderFieldValue): Get cookie storage from context (and
+        use shared one if context is null).
+        (WebCore::setCookiesFromDOM): Ditto.
+        (WebCore::cookiesEnabled): Ditto.
+        (WebCore::getRawCookies): Ditto.
+        (WebCore::deleteCookie): Ditto.
+        (WebCore::getHostnamesWithCookies): Ditto. This used to only support default storage,
+        but its cleaner to have a uniform interface.
+        (WebCore::deleteCookiesForHostname): Ditto.
+        (WebCore::deleteAllCookies): Ditto.
+
+        * platform/network/cf/CookieJarCFNet.cpp:
+        Same changes as on Mac.
+
+        * platform/network/curl/CookieJarCurl.cpp:
+        Updated for new interface. Implementation is largely a dummy one.
+
+        * platform/qt/CookieJarQt.h: Removed.
+        * platform/network/qt/CookieJarQt.h: Copied from Source/WebCore/platform/qt/CookieJarQt.h.
+        Moved to a common location, most cookie files were in network/ already.
+
+        * platform/qt/CookieJarQt.cpp: Removed.
+        * platform/network/qt/CookieJarQt.cpp: Copied from Source/WebCore/platform/qt/CookieJarQt.cpp.
+        (WebCore::setCookiesFromDOM): Use context's or shared cooke jar as appropriate.
+        (WebCore::cookiesForDOM): Ditto.
+        (WebCore::cookieRequestHeaderFieldValue): Ditto.
+        (WebCore::cookiesEnabled): Ditto.
+        (WebCore::getRawCookies): Ditto.
+        (WebCore::deleteCookie): Ditto.
+        (WebCore::getHostnamesWithCookies): Back-end implementation can only handle shared
+        jar here, assert that argument does not request another one.
+        (WebCore::deleteCookiesForHostname): Ditto.
+        (WebCore::deleteAllCookies): Ditto.
+
+        * platform/network/soup/CookieJarSoup.cpp:
+        (WebCore::cookieJarForContext):
+        (WebCore::setCookiesFromDOM):
+        (WebCore::cookiesForContext):
+        (WebCore::cookiesForDOM):
+        (WebCore::cookieRequestHeaderFieldValue):
+        (WebCore::cookiesEnabled):
+        (WebCore::getRawCookies):
+        (WebCore::deleteCookie):
+        (WebCore::getHostnamesWithCookies):
+        (WebCore::deleteCookiesForHostname):
+        (WebCore::deleteAllCookies):
+        Updated for new function signatures, and use the same cross-platform logic for
+        choosing a cookie jar.
+
+        * platform/network/soup/CookieJarSoup.h: Don't include unnecessary CooieJar.h.
+        
+        * platform/network/win/CookieJarWin.cpp:
+        (WebCore::setCookiesFromDOM):
+        (WebCore::cookiesForDOM):
+        (WebCore::cookieRequestHeaderFieldValue):
+        (WebCore::cookiesEnabled):
+        (WebCore::getRawCookies):
+        (WebCore::deleteCookie):
+        (WebCore::getHostnamesWithCookies):
+        (WebCore::deleteCookiesForHostname):
+        (WebCore::deleteAllCookies):
+        Updated for new function signatures.
+
+2012-11-09  Bruno de Oliveira Abinader  <bruno.abinader@basyskom.com>
+
+        [css] Text decoration's "blink" not valid when CSS3_TEXT is enabled
+        https://bugs.webkit.org/show_bug.cgi?id=101750
+
+        Reviewed by Ojan Vafai.
+
+        This patch fixes an issue regarding "blink" value, which is valid for CSS 2.1
+        "text-decoration" property, but recently have its parser function modified by
+        the addition of CSS3 "-webkit-text-decoration-line" property.
+
+        The 'fast/css/getComputedStyle/getComputedStyle-text-decoration.html'
+        layout test is updated with all possible value combinations.
+
+        * css/CSSParser.cpp:
+        (WebCore::CSSParser::parseTextDecoration): Added 'blink' value to list
+        if accepted.
+
+2012-11-09  Xan Lopez  <xlopez@igalia.com>
+
+        [GTK] Do not use 'ls' to list IDL files in EXTRA_DIST
+        https://bugs.webkit.org/show_bug.cgi?id=101581
+
+        Reviewed by Martin Robinson.
+
+        Use normal GNU Make wildcards instead of 'ls' to list files in
+        EXTRA_DIST, it's safer and more straightforward.
+
+        * GNUmakefile.am: ditto.
+
+2012-11-09  Charles Wei  <charles.wei@torchmobile.com.cn>
+
+        Need to clear exception in JSDictionary that might have been caused by previous operation.
+        https://bugs.webkit.org/show_bug.cgi?id=96614
+
+        Reviewed by George Staikos.
+
+        IndexedDB IDBDatabase::createObjectStore supports both String type of KeyPath and
+        String Array type of KeyPath. It will first try to get the keyPath as a String Array,
+        if fails, it will try to get KeyPath as a String, from the Dictionary. The first get
+        will leave the internal ExecState of Dictionary in exception state. We need to clear
+        the exception state before the 2nd query, otherwise the second query will also fail.
+
+        No new tests. The existing test case LayoutTests/storage/indexeddb/tutorial.html should
+        now work with this patch.
+        * bindings/js/JSDictionary.cpp:
+        (WebCore::JSDictionary::getWithUndefinedOrNullCheck):
+
 2012-11-09  Keishi Hattori  <keishi@webkit.org>
 
         Month/week picker should submit month/week string

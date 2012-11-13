@@ -37,6 +37,7 @@
 #include <WebCore/NetscapePlugInStreamLoader.h>
 #include <WebCore/ResourceBuffer.h>
 #include <WebCore/ResourceLoader.h>
+#include <WebCore/Settings.h>
 #include <WebCore/SubresourceLoader.h>
 #include <wtf/text/CString.h>
 
@@ -95,7 +96,7 @@ void WebResourceLoadScheduler::scheduleLoad(ResourceLoader* resourceLoader, Reso
         request.setURL(dataURL);
     }
 
-    if (!WebProcess::shared().networkConnection()->connection()->sendSync(Messages::NetworkConnectionToWebProcess::ScheduleNetworkRequest(request, priority), Messages::NetworkConnectionToWebProcess::ScheduleNetworkRequest::Reply(identifier), 0)) {
+    if (!WebProcess::shared().networkConnection()->connection()->sendSync(Messages::NetworkConnectionToWebProcess::ScheduleNetworkRequest(request, priority, resourceLoader->shouldSniffContent()), Messages::NetworkConnectionToWebProcess::ScheduleNetworkRequest::Reply(identifier), 0)) {
         // FIXME (NetworkProcess): What should we do if this fails?
         ASSERT_NOT_REACHED();
     }
@@ -147,17 +148,10 @@ void WebResourceLoadScheduler::remove(ResourceLoader* resourceLoader)
     m_activeResourceLoaders.remove(identifier);
 }
 
-void WebResourceLoadScheduler::crossOriginRedirectReceived(ResourceLoader* resourceLoader, const KURL& redirectURL)
+void WebResourceLoadScheduler::crossOriginRedirectReceived(ResourceLoader*, const KURL&)
 {
-    LOG(NetworkScheduling, "(WebProcess) WebResourceLoadScheduler::crossOriginRedirectReceived. From '%s' to '%s'", resourceLoader->url().string().utf8().data(), redirectURL.string().utf8().data());
-
-    ASSERT(resourceLoader);
-    ASSERT(resourceLoader->identifier());
-
-    if (!WebProcess::shared().networkConnection()->connection()->sendSync(Messages::NetworkConnectionToWebProcess::crossOriginRedirectReceived(resourceLoader->identifier(), redirectURL), Messages::NetworkConnectionToWebProcess::crossOriginRedirectReceived::Reply(), 0)) {
-        // FIXME (NetworkProcess): What should we do if this fails?
-        ASSERT_NOT_REACHED();
-    }
+    // We handle cross origin redirects entirely within the NetworkProcess.
+    // We override this call in the WebProcess to make it a no-op.
 }
 
 void WebResourceLoadScheduler::servePendingRequests(ResourceLoadPriority minimumPriority)
@@ -190,6 +184,15 @@ void WebResourceLoadScheduler::resumePendingRequests()
 void WebResourceLoadScheduler::setSerialLoadingEnabled(bool enabled)
 {
     WebProcess::shared().networkConnection()->connection()->sendSync(Messages::NetworkConnectionToWebProcess::SetSerialLoadingEnabled(enabled), Messages::NetworkConnectionToWebProcess::SetSerialLoadingEnabled::Reply(), 0);
+}
+
+void WebResourceLoadScheduler::willSendRequest(ResourceLoadIdentifier identifier, WebCore::ResourceRequest& request, const WebCore::ResourceResponse& redirectResponse)
+{
+    RefPtr<ResourceLoader> loader = m_pendingResourceLoaders.get(identifier);
+    ASSERT(loader);
+
+    LOG(Network, "(WebProcess) WebResourceLoadScheduler::willSendRequest to '%s'", request.url().string().utf8().data());
+    loader->willSendRequest(request, redirectResponse);
 }
 
 void WebResourceLoadScheduler::didReceiveResponse(ResourceLoadIdentifier identifier, const WebCore::ResourceResponse& response)

@@ -66,19 +66,21 @@ namespace WebCore {
         static bool maybeDOMWrapper(v8::Handle<v8::Value>);
 #endif
 
-        static void setDOMWrapper(v8::Handle<v8::Object> object, WrapperTypeInfo* type, void* cptr)
+        static void setDOMWrapper(v8::Handle<v8::Object> object, WrapperTypeInfo* type, void* impl)
         {
             ASSERT(object->InternalFieldCount() >= 2);
-            object->SetPointerInInternalField(v8DOMWrapperObjectIndex, cptr);
-            object->SetPointerInInternalField(v8DOMWrapperTypeIndex, type);
+            ASSERT(impl);
+            ASSERT(type);
+            object->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, impl);
+            object->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, type);
         }
 
         static void clearDOMWrapper(v8::Handle<v8::Object> object, WrapperTypeInfo* type)
         {
             ASSERT(object->InternalFieldCount() >= 2);
             ASSERT(type);
-            object->SetPointerInInternalField(v8DOMWrapperTypeIndex, type);
-            object->SetPointerInInternalField(v8DOMWrapperObjectIndex, 0);
+            object->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, type);
+            object->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, 0);
         }
 
         static v8::Handle<v8::Object> lookupDOMWrapper(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Handle<v8::Object> object)
@@ -103,14 +105,12 @@ namespace WebCore {
         template<typename T>
         static v8::Persistent<v8::Object> setJSWrapperForDOMObject(PassRefPtr<T>, v8::Handle<v8::Object>, v8::Isolate* = 0);
 
-        static bool isValidDOMObject(v8::Handle<v8::Value>);
-
         // Check whether a V8 value is a wrapper of type |classType|.
         static bool isWrapperOfType(v8::Handle<v8::Value>, WrapperTypeInfo*);
 
         static void setNamedHiddenReference(v8::Handle<v8::Object> parent, const char* name, v8::Handle<v8::Value> child);
 
-        static v8::Local<v8::Object> instantiateV8Object(Document*, WrapperTypeInfo*, void*);
+        static v8::Local<v8::Object> instantiateV8Object(WrapperTypeInfo*, void*);
 
         static v8::Handle<v8::Object> getCachedWrapper(Node* node)
         {

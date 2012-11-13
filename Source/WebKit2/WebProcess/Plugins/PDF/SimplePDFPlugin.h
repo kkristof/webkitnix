@@ -168,7 +168,11 @@ protected:
     virtual bool isEditingCommandEnabled(const String&) OVERRIDE;
     virtual bool handleEditingCommand(const String&, const String&) OVERRIDE;
     virtual bool handlesPageScaleFactor() OVERRIDE;
-    
+
+    virtual bool shouldAllowScripting() OVERRIDE { return false; }
+
+    WebCore::IntSize m_scrollOffset;
+
 private:
 
     JSObjectRef makeJSPDFDoc(JSContextRef);
@@ -189,8 +193,6 @@ private:
     RefPtr<WebCore::Scrollbar> m_verticalScrollbar;
 
     WebFrame* m_frame;
-
-    WebCore::IntSize m_scrollOffset;
 };
 
 } // namespace WebKit

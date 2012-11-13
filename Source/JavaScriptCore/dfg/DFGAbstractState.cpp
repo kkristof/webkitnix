@@ -215,6 +215,27 @@ void AbstractState::reset()
     m_branchDirection = InvalidBranchDirection;
 }
 
+AbstractState::BooleanResult AbstractState::booleanResult(Node& node, AbstractValue& value)
+{
+    JSValue childConst = value.value();
+    if (childConst) {
+        if (childConst.toBoolean(m_codeBlock->globalObjectFor(node.codeOrigin)->globalExec()))
+            return DefinitelyTrue;
+        return DefinitelyFalse;
+    }
+
+    // Next check if we can fold because we know that the source is an object or string and does not equal undefined.
+    if (isCellSpeculation(value.m_type)
+        && value.m_currentKnownStructure.hasSingleton()) {
+        Structure* structure = value.m_currentKnownStructure.singleton();
+        if (!structure->masqueradesAsUndefined(m_codeBlock->globalObjectFor(node.codeOrigin))
+            && structure->typeInfo().type() != StringType)
+            return DefinitelyTrue;
+    }
+    
+    return UnknownBooleanResult;
+}
+
 bool AbstractState::execute(unsigned indexInBlock)
 {
     ASSERT(m_block);
@@ -613,18 +634,18 @@ bool AbstractState::execute(unsigned indexInBlock)
     }
             
     case LogicalNot: {
-        // First check if we can fold because the source is a constant.
-        JSValue childConst = forNode(node.child1()).value();
-        if (childConst && trySetConstant(nodeIndex, jsBoolean(!childConst.toBoolean(m_codeBlock->globalObjectFor(node.codeOrigin)->globalExec())))) {
-            m_foundConstants = true;
-            node.setCanExit(false);
+        bool didSetConstant = false;
+        switch (booleanResult(node, forNode(node.child1()))) {
+        case DefinitelyTrue:
+            didSetConstant = trySetConstant(nodeIndex, jsBoolean(false));
+            break;
+        case DefinitelyFalse:
+            didSetConstant = trySetConstant(nodeIndex, jsBoolean(true));
+            break;
+        default:
             break;
         }
-        // Next check if we can fold because we know that the source is an object or string and does not equal undefined.
-        if (isCellSpeculation(forNode(node.child1()).m_type)
-            && forNode(node.child1()).m_currentKnownStructure.hasSingleton()
-            && !forNode(node.child1()).m_currentKnownStructure.singleton()->masqueradesAsUndefined(m_codeBlock->globalObjectFor(node.codeOrigin))
-            && trySetConstant(nodeIndex, jsBoolean(false))) {
+        if (didSetConstant) {
             m_foundConstants = true;
             node.setCanExit(false);
             break;
@@ -901,7 +922,9 @@ bool AbstractState::execute(unsigned indexInBlock)
             if (node.arrayMode().isOutOfBounds()) {
                 clobberWorld(node.codeOrigin, indexInBlock);
                 forNode(nodeIndex).makeTop();
-            } else
+            } else if (node.arrayMode().isSaneChain())
+                forNode(nodeIndex).set(SpecDouble);
+            else
                 forNode(nodeIndex).set(SpecDoubleReal);
             break;
         case Array::Contiguous:
@@ -1112,32 +1135,21 @@ bool AbstractState::execute(unsigned indexInBlock)
         break;
             
     case Branch: {
-        // First check if we can fold because the source is a constant.
-        JSValue value = forNode(node.child1()).value();
-        if (value) {
-            bool booleanValue = value.toBoolean(m_codeBlock->globalObjectFor(node.codeOrigin)->globalExec());
-            if (booleanValue)
-                m_branchDirection = TakeTrue;
-            else
-                m_branchDirection = TakeFalse;
+        BooleanResult result = booleanResult(node, forNode(node.child1()));
+        if (result == DefinitelyTrue) {
+            m_branchDirection = TakeTrue;
             node.setCanExit(false);
             break;
         }
-        // Next check if we can fold because we know that the source is an object or string and does not equal undefined.
-        if (isCellSpeculation(forNode(node.child1()).m_type)
-            && forNode(node.child1()).m_currentKnownStructure.hasSingleton()
-            && !forNode(node.child1()).m_currentKnownStructure.singleton()->masqueradesAsUndefined(m_codeBlock->globalObjectFor(node.codeOrigin))) {
-            m_branchDirection = TakeTrue;
+        if (result == DefinitelyFalse) {
+            m_branchDirection = TakeFalse;
             node.setCanExit(false);
             break;
         }
         // FIXME: The above handles the trivial cases of sparse conditional
         // constant propagation, but we can do better:
-        // 1) If the abstract value does not have a concrete value but describes
-        //    something that is known to evaluate true (or false) then we ought
-        //    to sparse conditional that.
-        // 2) We can specialize the source variable's value on each direction of
-        //    the branch.
+        // We can specialize the source variable's value on each direction of
+        // the branch.
         Node& child = m_graph[node.child1()];
         if (child.shouldSpeculateBoolean())
             speculateBooleanUnary(node);
@@ -1452,7 +1464,7 @@ bool AbstractState::execute(unsigned indexInBlock)
         forNode(nodeIndex).clear(); // The result is not a JS value.
         break;
     case CheckArray: {
-        if (node.arrayMode().alreadyChecked(forNode(node.child1()))) {
+        if (node.arrayMode().alreadyChecked(m_graph, node, forNode(node.child1()))) {
             m_foundConstants = true;
             node.setCanExit(false);
             break;
@@ -1508,7 +1520,7 @@ bool AbstractState::execute(unsigned indexInBlock)
         break;
     }
     case Arrayify: {
-        if (node.arrayMode().alreadyChecked(forNode(node.child1()))) {
+        if (node.arrayMode().alreadyChecked(m_graph, node, forNode(node.child1()))) {
             m_foundConstants = true;
             node.setCanExit(false);
             break;
@@ -1560,11 +1572,22 @@ bool AbstractState::execute(unsigned indexInBlock)
         forNode(node.child1()).filter(SpecCell);
         break;
             
-    case CheckFunction:
+    case CheckFunction: {
+        JSValue value = forNode(node.child1()).value();
+        if (value == node.function()) {
+            m_foundConstants = true;
+            ASSERT(value);
+            node.setCanExit(false);
+            break;
+        }
+        
         node.setCanExit(true); // Lies! We can do better.
-        forNode(node.child1()).filter(SpecFunction);
-        // FIXME: Should be able to propagate the fact that we know what the function is.
+        if (!forNode(node.child1()).filterByValue(node.function())) {
+            m_isValid = false;
+            break;
+        }
         break;
+    }
         
     case PutById:
     case PutByIdDirect:

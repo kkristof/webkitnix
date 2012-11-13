@@ -4,7 +4,7 @@
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
  *           (C) 2007 Eric Seidel (eric@webkit.org)
  *
  * This library is free software; you can redistribute it and/or
@@ -53,6 +53,7 @@
 #include "HTMLOptionsCollection.h"
 #include "HTMLParserIdioms.h"
 #include "HTMLTableRowsCollection.h"
+#include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "MutationObserverInterestGroup.h"
 #include "MutationRecord.h"
@@ -711,30 +712,29 @@ void Element::setSynchronizedLazyAttribute(const QualifiedName& name, const Atom
 
 inline void Element::setAttributeInternal(size_t index, const QualifiedName& name, const AtomicString& newValue, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
-    ElementAttributeData* attributeData = mutableAttributeData();
-
-    Attribute* existingAttribute = index != notFound ? attributeData->attributeItem(index) : 0;
     if (newValue.isNull()) {
-        if (existingAttribute)
+        if (index != notFound)
             removeAttributeInternal(index, inSynchronizationOfLazyAttribute);
         return;
     }
 
-    if (!existingAttribute) {
+    if (index == notFound) {
         addAttributeInternal(name, newValue, inSynchronizationOfLazyAttribute);
         return;
     }
 
     if (!inSynchronizationOfLazyAttribute)
-        willModifyAttribute(name, existingAttribute->value(), newValue);
+        willModifyAttribute(name, attributeItem(index)->value(), newValue);
 
-    // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
-    // will write into the ElementAttributeData.
-    // FIXME: Refactor this so it makes some sense.
-    if (RefPtr<Attr> attrNode = attrIfExists(name))
-        attrNode->setValue(newValue);
-    else
-        existingAttribute->setValue(newValue);
+    if (newValue != attributeItem(index)->value()) {
+        // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
+        // will write into the ElementAttributeData.
+        // FIXME: Refactor this so it makes some sense.
+        if (RefPtr<Attr> attrNode = attrIfExists(name))
+            attrNode->setValue(newValue);
+        else
+            mutableAttributeData()->attributeItem(index)->setValue(newValue);
+    }
 
     if (!inSynchronizationOfLazyAttribute)
         didModifyAttribute(name, newValue);
@@ -764,8 +764,13 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     document()->incDOMTreeVersion();
 
     StyleResolver* styleResolver = document()->styleResolverIfExists();
+    ElementShadow* elementShadow = shadowOfParentForDistribution(this);
+    if (elementShadow)
+        elementShadow->ensureSelectFeatureSetCollected();
+
     bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
     bool shouldInvalidateStyle = false;
+    bool shouldInvalidateDistribution = false;
 
     if (isIdAttributeName(name)) {
         AtomicString oldId = attributeData()->idForStyleResolution();
@@ -773,6 +778,8 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         if (newId != oldId) {
             attributeData()->setIdForStyleResolution(newId);
             shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver);
+            shouldInvalidateDistribution |= elementShadow && !oldId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(oldId);
+            shouldInvalidateDistribution |= elementShadow && !newId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(newId);  
         }
     } else if (name == HTMLNames::nameAttr)
         setHasName(!newValue.isNull());
@@ -780,12 +787,15 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         shouldInvalidateStyle |= testShouldInvalidateStyle && isInShadowTree();
 
     shouldInvalidateStyle |= testShouldInvalidateStyle && styleResolver->hasSelectorForAttribute(name.localName());
+    shouldInvalidateDistribution |= elementShadow && elementShadow->selectRuleFeatureSet().hasSelectorForAttribute(name.localName());
 
     invalidateNodeListCachesInAncestors(&name, this);
 
     if (shouldInvalidateStyle)
         setNeedsStyleRecalc();
-
+    if (shouldInvalidateDistribution)
+        elementShadow->invalidateDistribution();
+        
     if (AXObjectCache::accessibilityEnabled())
         document()->axObjectCache()->handleAttributeChanged(name, this);
 }
@@ -823,21 +833,49 @@ static inline bool classStringHasClassName(const AtomicString& newClassString)
     return classStringHasClassName(newClassString.characters16(), length);
 }
 
-static bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, StyleResolver* styleResolver)
+struct HasSelectorForClassStyleFunctor {
+    explicit HasSelectorForClassStyleFunctor(StyleResolver* resolver)
+        : styleResolver(resolver)
+    { }
+
+    bool operator()(const AtomicString& className) const
+    {
+        return styleResolver->hasSelectorForClass(className);
+    }
+
+    StyleResolver* styleResolver;
+};
+
+struct HasSelectorForClassDistributionFunctor {
+    explicit HasSelectorForClassDistributionFunctor(ElementShadow* elementShadow)
+        : elementShadow(elementShadow)
+    { }
+
+    bool operator()(const AtomicString& className) const
+    {
+        return elementShadow->selectRuleFeatureSet().hasSelectorForClass(className);
+    }
+
+    ElementShadow* elementShadow;
+};
+
+template<typename Functor>
+static bool checkFunctorForClassChange(const SpaceSplitString& changedClasses, Functor functor)
 {
     unsigned changedSize = changedClasses.size();
     for (unsigned i = 0; i < changedSize; ++i) {
-        if (styleResolver->hasSelectorForClass(changedClasses[i]))
+        if (functor(changedClasses[i]))
             return true;
     }
     return false;
 }
 
-static bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, StyleResolver* styleResolver)
+template<typename Functor>
+static bool checkFunctorForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Functor functor)
 {
     unsigned oldSize = oldClasses.size();
     if (!oldSize)
-        return checkNeedsStyleInvalidationForClassChange(newClasses, styleResolver);
+        return checkFunctorForClassChange(newClasses, functor);
     BitVector remainingClassBits;
     remainingClassBits.ensureSize(oldSize);
     // Class vectors tend to be very short. This is faster than using a hash table.
@@ -849,17 +887,37 @@ static bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& ol
                 continue;
             }
         }
-        if (styleResolver->hasSelectorForClass(newClasses[i]))
+        if (functor(newClasses[i]))
             return true;
     }
     for (unsigned i = 0; i < oldSize; ++i) {
         // If the bit is not set the the corresponding class has been removed.
         if (remainingClassBits.quickGet(i))
             continue;
-        if (styleResolver->hasSelectorForClass(oldClasses[i]))
+        if (functor(oldClasses[i]))
             return true;
     }
     return false;
+}
+
+static inline bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, StyleResolver* styleResolver)
+{
+    return checkFunctorForClassChange(changedClasses, HasSelectorForClassStyleFunctor(styleResolver));
+}
+
+static inline bool checkNeedsStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, StyleResolver* styleResolver)
+{
+    return checkFunctorForClassChange(oldClasses, newClasses, HasSelectorForClassStyleFunctor(styleResolver));
+}
+
+static inline bool checkNeedsDistributionInvalidationForClassChange(const SpaceSplitString& changedClasses, ElementShadow* elementShadow)
+{
+    return checkFunctorForClassChange(changedClasses, HasSelectorForClassDistributionFunctor(elementShadow));
+}
+
+static inline bool checkNeedsDistributionInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, ElementShadow* elementShadow)
+{
+    return checkFunctorForClassChange(oldClasses, newClasses, HasSelectorForClassDistributionFunctor(elementShadow));
 }
 
 void Element::classAttributeChanged(const AtomicString& newClassString)
@@ -867,6 +925,11 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
     StyleResolver* styleResolver = document()->styleResolverIfExists();
     bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
     bool shouldInvalidateStyle = false;
+
+    ElementShadow* elementShadow = shadowOfParentForDistribution(this);
+    if (elementShadow)
+        elementShadow->ensureSelectFeatureSetCollected();
+    bool shouldInvalidateDistribution = false;
 
     if (classStringHasClassName(newClassString)) {
         const ElementAttributeData* attributeData = ensureAttributeData();
@@ -877,10 +940,11 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 
         const SpaceSplitString& newClasses = attributeData->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, newClasses, styleResolver);
+        shouldInvalidateDistribution = elementShadow && checkNeedsDistributionInvalidationForClassChange(oldClasses, newClasses, elementShadow);
     } else if (const ElementAttributeData* attributeData = this->attributeData()) {
         const SpaceSplitString& oldClasses = attributeData->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, styleResolver);
-
+        shouldInvalidateDistribution = elementShadow && checkNeedsDistributionInvalidationForClassChange(oldClasses, elementShadow);
         attributeData->clearClass();
     }
 
@@ -889,6 +953,8 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 
     if (shouldInvalidateStyle)
         setNeedsStyleRecalc();
+    if (shouldInvalidateDistribution)
+        elementShadow->invalidateDistribution();
 }
 
 // Returns true is the given attribute is an event handler.
@@ -1636,11 +1702,9 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
 
 void Element::addAttributeInternal(const QualifiedName& name, const AtomicString& value, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
-    ASSERT(m_attributeData);
-    ASSERT(m_attributeData->isMutable());
     if (!inSynchronizationOfLazyAttribute)
         willModifyAttribute(name, nullAtom, value);
-    m_attributeData->addAttribute(Attribute(name, value));
+    mutableAttributeData()->addAttribute(Attribute(name, value));
     if (!inSynchronizationOfLazyAttribute)
         didAddAttribute(name, value);
 }
@@ -2445,11 +2509,44 @@ void Element::cloneAttributesFromElement(const Element& other)
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
 
-    if (const ElementAttributeData* attributeData = other.updatedAttributeData())
-        mutableAttributeData()->cloneDataFrom(*attributeData, other, *this);
-    else if (m_attributeData) {
-        m_attributeData->clearAttributes();
+    setIsStyleAttributeValid(other.isStyleAttributeValid());
+
+    other.updateInvalidAttributes();
+    if (!other.m_attributeData) {
         m_attributeData.clear();
+        return;
+    }
+
+    const AtomicString& oldID = getIdAttribute();
+    const AtomicString& newID = other.getIdAttribute();
+
+    if (!oldID.isNull() || !newID.isNull())
+        updateId(oldID, newID);
+
+    const AtomicString& oldName = getNameAttribute();
+    const AtomicString& newName = other.getNameAttribute();
+
+    if (!oldName.isNull() || !newName.isNull())
+        updateName(oldName, newName);
+
+    // If 'other' has a mutable ElementAttributeData, convert it to an immutable one so we can share it between both elements.
+    // We can only do this if there is no CSSOM wrapper for other's inline style (the isMutable() check.)
+    if (other.m_attributeData->isMutable() && (!other.m_attributeData->inlineStyle() || !other.m_attributeData->inlineStyle()->isMutable()))
+        const_cast<Element&>(other).m_attributeData = other.m_attributeData->makeImmutableCopy();
+
+    if (!other.m_attributeData->isMutable())
+        m_attributeData = other.m_attributeData;
+    else
+        m_attributeData = other.m_attributeData->makeMutableCopy();
+
+    for (unsigned i = 0; i < m_attributeData->length(); ++i) {
+        const Attribute* attribute = const_cast<const ElementAttributeData*>(m_attributeData.get())->attributeItem(i);
+        // This optimization isn't very nicely factored, but a huge win for cloning elements with inline style.
+        if (isStyledElement() && attribute->name() == HTMLNames::styleAttr) {
+            static_cast<StyledElement*>(this)->styleAttributeChanged(attribute->value(), StyledElement::DoNotReparseStyleAttribute);
+            continue;
+        }
+        attributeChanged(attribute->name(), attribute->value());
     }
 }
 

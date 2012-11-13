@@ -93,19 +93,9 @@ PassRefPtr<NodeFilter> V8DOMWrapper::wrapNativeNodeFilter(v8::Handle<v8::Value> 
     return NodeFilter::create(V8NodeFilterCondition::create(filter));
 }
 
-v8::Local<v8::Object> V8DOMWrapper::instantiateV8Object(Document* deprecatedDocument, WrapperTypeInfo* type, void* impl)
+v8::Local<v8::Object> V8DOMWrapper::instantiateV8Object(WrapperTypeInfo* type, void* impl)
 {
-    V8PerContextData* perContextData = 0;
-
-    // Please don't add any more uses of deprecatedDocument. We want to remove it.
-
-    // If we have a pointer to the frame, we cna get the V8PerContextData
-    // directly, which is faster than going through V8.
-    if (deprecatedDocument && deprecatedDocument->frame())
-        perContextData = perContextDataForCurrentWorld(deprecatedDocument->frame());
-    else
-        perContextData = V8PerContextData::from(v8::Context::GetCurrent());
-
+    V8PerContextData* perContextData = V8PerContextData::from(v8::Context::GetCurrent());
     v8::Local<v8::Object> instance = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate()->GetFunction());
 
     // Avoid setting the DOM wrapper for failed allocations.
@@ -119,16 +109,20 @@ v8::Local<v8::Object> V8DOMWrapper::instantiateV8Object(Document* deprecatedDocu
     return instance;
 }
 
-#ifndef NDEBUG
-bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
+static bool hasInternalField(v8::Handle<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsObject())
         return false;
+    return v8::Handle<v8::Object>::Cast(value)->InternalFieldCount();
+}
 
-    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-    if (!object->InternalFieldCount())
+#ifndef NDEBUG
+bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
+{
+    if (!hasInternalField(value))
         return false;
 
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
     ASSERT(object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount);
 
     v8::HandleScope scope;
@@ -139,16 +133,9 @@ bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
 }
 #endif
 
-bool V8DOMWrapper::isValidDOMObject(v8::Handle<v8::Value> value)
-{
-    if (value.IsEmpty() || !value->IsObject())
-        return false;
-    return v8::Handle<v8::Object>::Cast(value)->InternalFieldCount();
-}
-
 bool V8DOMWrapper::isWrapperOfType(v8::Handle<v8::Value> value, WrapperTypeInfo* type)
 {
-    if (!isValidDOMObject(value))
+    if (!hasInternalField(value))
         return false;
 
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
@@ -157,7 +144,7 @@ bool V8DOMWrapper::isWrapperOfType(v8::Handle<v8::Value> value, WrapperTypeInfo*
     v8::Handle<v8::Value> wrapper = object->GetInternalField(v8DOMWrapperObjectIndex);
     ASSERT_UNUSED(wrapper, wrapper->IsNumber() || wrapper->IsExternal());
 
-    WrapperTypeInfo* typeInfo = static_cast<WrapperTypeInfo*>(object->GetPointerFromInternalField(v8DOMWrapperTypeIndex));
+    WrapperTypeInfo* typeInfo = static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
     return typeInfo == type;
 }
 

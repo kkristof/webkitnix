@@ -1,3 +1,952 @@
+2012-11-13  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Directly composited animated GIFs only render the first image.
+        https://bugs.webkit.org/show_bug.cgi?id=102043
+
+        Reviewed by Noam Rosenthal.
+
+        CoordinatedGraphicsLayer::setContentsToImage() checks the pointer to the image,
+        not nativeImagePtr, so Coordinated Graphics currently draws only the first frame
+        of gif animations. This patch makes Coordinated Graphics draw gif animations.
+
+        In addition, this patch modifies the style of direct image compositing
+        code to match other parts of CoordinatedGraphicsLayer.
+
+        Test: ManualTests/animated-gif-on-compositing-layer.html
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::didChangeImageBacking):
+        (WebCore):
+        (WebCore::CoordinatedGraphicsLayer::CoordinatedGraphicsLayer):
+        (WebCore::CoordinatedGraphicsLayer::setContentsNeedsDisplay):
+        (WebCore::CoordinatedGraphicsLayer::setContentsToImage):
+        (WebCore::CoordinatedGraphicsLayer::syncImageBacking):
+        (WebCore::CoordinatedGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        (WebCore::CoordinatedGraphicsLayer::releaseImageBackingIfNeeded):
+        (WebCore::CoordinatedGraphicsLayer::purgeBackingStores):
+        (WebCore::CoordinatedGraphicsLayer::hasPendingVisibleChanges):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayer):
+
+2012-11-12  Huang Dongsung  <luxtella@company100.net>
+
+        [Qt] REGRESSION(134142): overscaled tiles in pixel test results and MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=101918
+
+        Reviewed by Noam Rosenthal.
+
+        Currently, CoordinatedBackingStore can keep out-dated contents size, because the
+        size of CoordinatedBackingStore is set by only LayerTreeRenderer::createTile().
+        Although the size of GraphicsLayer is changed, LayerTreeRenderer::createTile()
+        is not called. However, LayerTreeRenderer::createTile() is always called, when
+        the contents scale of GraphicsLayer is changed.
+
+        This patch makes sure that we reset the backing store's size to the
+        layer size when UpdateTile or RemoveTile are called.
+
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        (WebKit::CoordinatedBackingStore::setSize):
+        (WebKit::CoordinatedBackingStore::paintToTextureMapper):
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (CoordinatedBackingStore):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createTileForLayer):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::getBackingStore):
+        (WebKit::LayerTreeRenderer::removeBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::resetBackingStoreSizeToLayerSize):
+        (WebKit):
+        (WebKit::LayerTreeRenderer::createTile):
+        (WebKit::LayerTreeRenderer::removeTile):
+        (WebKit::LayerTreeRenderer::updateTile):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (LayerTreeRenderer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::createTile):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.cpp:
+        (WebKit::CoordinatedTile::updateBackBuffer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.h:
+        (CoordinatedTileClient):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::createTile):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+
+2012-11-12  Sam Weinig  <sam@webkit.org>
+
+        <rdar://problem/12445176>
+        WebProcess needs permission to open AppleUpstreamUserClient
+
+        Rubber-stamped by Dan Bernstein.
+
+        * WebProcess/com.apple.WebProcess.sb.in:
+
+2012-11-12  Simon Fraser  <simon.fraser@apple.com>
+
+        Build fix after r134346 and 134347.
+        
+        Use frameView.isFlipped, not frameView.flipped in the assertion.
+
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (WebKit::WebInspectorProxy::createInspectorWindow):
+
+2012-11-12  Timothy Hatcher  <timothy@apple.com>
+
+        Add a dock button to the top right corner of the Web Inspector window (similar to the full screen button).
+
+        https://bugs.webkit.org/show_bug.cgi?id=102023
+
+        Reviewed by Anders Carlsson.
+
+        * Resources/Dock.pdf: Added.
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::attach): Set the SetAttachedWindow message.
+        (WebKit::WebInspectorProxy::detach): Ditto.
+        (WebKit::WebInspectorProxy::attachAvailabilityChanged): Added. Call platformAttachAvailabilityChanged.
+        * UIProcess/WebInspectorProxy.h:
+        * UIProcess/WebInspectorProxy.messages.in: Added AttachAvailabilityChanged message.
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (-[WKWebInspectorProxyObjCAdapter attach:]): Added. Call WebInspectorProxy::attach.
+        (-[WKWebInspectorWindow _cursorForResizeDirection:]): Added.
+        (WebKit::WebInspectorProxy::createInspectorWindow): Create the dock button and add it.
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged): Added. Update hidden state of the dock button.
+        * WebKit2.xcodeproj/project.pbxproj: Added Dock.pdf.
+        * WebProcess/WebPage/WebInspector.cpp:
+        (WebKit::WebInspector::setAttachedWindow): Added. Call through to the frontend client.
+        (WebKit::WebInspector::updateDockingAvailability): Send AttachAvailabilityChanged message.
+        * WebProcess/WebPage/WebInspector.h:
+        * WebProcess/WebPage/WebInspector.messages.in: Added SetAttachedWindow message.
+
+        * UIProcess/efl/WebInspectorProxyEfl.cpp:
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged): Added stub.
+        * UIProcess/gtk/WebInspectorProxyGtk.cpp:
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged): Ditto.
+        * UIProcess/qt/WebInspectorProxyQt.cpp:
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged): Ditto.
+        * UIProcess/win/WebInspectorProxyWin.cpp:
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged): Ditto.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Include child layers in the remote layer tree transaction
+        https://bugs.webkit.org/show_bug.cgi?id=102026
+
+        Reviewed by Andreas Kling.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        (WebKit::RemoteLayerTreeTransaction::LayerProperties::encode):
+        (WebKit::RemoteLayerTreeTransaction::LayerProperties::decode):
+        Encode and decode child layer IDs.
+
+        (WebKit::RemoteLayerTreeTransaction::layerPropertiesChanged):
+        Grab all child layer IDs and stick them in a vector.
+
+        (WebKit::dumpChangedLayers):
+        Dump child layer IDs as well.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.h:
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::RemoteGraphicsLayer::setChildren):
+        (WebKit::RemoteGraphicsLayer::addChild):
+        (WebKit::RemoteGraphicsLayer::addChildAtIndex):
+        (WebKit::RemoteGraphicsLayer::addChildAbove):
+        (WebKit::RemoteGraphicsLayer::addChildBelow):
+        (WebKit::RemoteGraphicsLayer::replaceChild):
+        Call noteSublayersChanged.
+
+        (WebKit::RemoteGraphicsLayer::noteSublayersChanged):
+        Note that the Children property changed.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Send along the current remote layer tree transaction with the commit message
+        https://bugs.webkit.org/show_bug.cgi?id=102014
+
+        Reviewed by Tim Horton.
+
+        Add encode and decode member functions to RemoteLayerTreeTransaction and RemoteLayerTreeTransaction::LayerProperties.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        (WebKit::RemoteLayerTreeTransaction::LayerProperties::encode):
+        (WebKit::RemoteLayerTreeTransaction::LayerProperties::decode):
+        (WebKit::RemoteLayerTreeTransaction::encode):
+        (WebKit::RemoteLayerTreeTransaction::decode):
+        * UIProcess/mac/RemoteLayerTreeHost.h:
+        * UIProcess/mac/RemoteLayerTreeHost.messages.in:
+        * UIProcess/mac/RemoteLayerTreeHost.mm:
+        (WebKit::RemoteLayerTreeHost::commit):
+        * WebProcess/WebPage/mac/RemoteLayerTreeContext.mm:
+        (WebKit::RemoteLayerTreeContext::flushLayers):
+
+2012-11-12  Brady Eidson  <beidson@apple.com>
+
+        Get rid of the CrossOriginRedirectReceived message to the NetworkProcess.
+        https://bugs.webkit.org/show_bug.cgi?id=102010
+
+        Reviewed by Alexey Proskuryakov.
+
+        This message was a stop-gap measure for when the NetworkProcess did scheduling but not loading.
+        Now that the NetworkProcess does loading it doesn't need to be told when redirect is received.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in: Get rid of the message to the NetworkProcess.
+
+        * NetworkProcess/NetworkRequest.cpp:
+        (WebKit::NetworkRequest::willSendRequest): After willSendRequest is dispatched to the WebProcess, directly call
+          "receivedRedirect" on the NetworkResourceLoadScheduler.
+
+        * NetworkProcess/NetworkResourceLoadScheduler.cpp:
+        (WebKit::NetworkResourceLoadScheduler::receivedRedirect): Renamed from crossOriginRedirectReceived, as the
+          function already checks to see if the redirect was actually cross-origin.
+        * NetworkProcess/NetworkResourceLoadScheduler.h:
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::crossOriginRedirectReceived): A no-op so the WebProcess doesn't
+          do any host record accounting of its own.
+
+2012-11-12  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin should use PDFKit's context menu instead of the default WebKit one
+        https://bugs.webkit.org/show_bug.cgi?id=101896
+        <rdar://problem/12555173>
+
+        Reviewed by Anders Carlsson.
+
+        Show the context menu that PDFKit vends us instead of the default WebKit one
+        when PDFPlugin is told to show a context menu.
+
+        Also, react to the didChangeContentScaleFactor callback, so that when the context
+        menu (or HUD) is used to change the scale factor, we can inform PluginView.
+
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h:
+        Add pdfLayerController:didChangeContentScaleFactor: delegate callback.
+        Rename tileScaleFactor to contentScaleFactor.
+        Add rightMouseDown: and menuForEvent: on PDFLayerController.
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin):
+        Add notifyContentScaleFactorChanged, handleContextMenuEvent, and nsEventForWebMouseEvent.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate pdfLayerController:didChangeContentScaleFactor:]): Forward content scale factor changes to PDFPlugin.
+        (WebKit::PDFPlugin::pdfDocumentDidLoad): Rename tileScaleFactor to contentScaleFactor.
+        (WebKit::PDFPlugin::geometryDidChange): Rename tileScaleFactor to contentScaleFactor.
+        (WebKit::eventTypeFromWebEvent): It turns out we can infer whether the mouse is being dragged during a MouseMove event
+        by whether it has a mouse button associated with it or not, so we don't need to track this state manually.
+        (WebKit::PDFPlugin::nsEventForWebMouseEvent): Factor the part of handleMouseEvent that creates NSEvents* out into its own function.
+        (WebKit::PDFPlugin::handleMouseEvent):
+        Don't track mouseButtonIsDown manually, make use of the new nsEventForWebMouseEvent.
+        Hand rightMouseDown: to PDFLayerController instead of mouseDown: if necessary.
+        (WebKit::PDFPlugin::handleContextMenuEvent): Grab the relevant NSMenu from PDFKit and display it.
+        (WebKit::PDFPlugin::handleKeyboardEvent): Don't pass a bogus mouseButtonIsDown to eventTypeFromWebEvent.
+        (WebKit::PDFPlugin::notifyContentScaleFactorChanged): Update PluginView and co.'s notion of page scale when
+        PDFKit changes it (generally from the context menu/HUD). Also update page size and scrollbar size/position.
+        (WebKit::PDFPlugin::setScrollOffset): Don't call SimplePDFPlugin's implementation, as PDFKit handles invalidation itself.
+        * WebProcess/Plugins/PDF/PDFPluginChoiceAnnotation.mm:
+        (WebKit::PDFPluginChoiceAnnotation::updateGeometry): Rename tileScaleFactor to contentScaleFactor.
+        * WebProcess/Plugins/PDF/PDFPluginTextAnnotation.mm:
+        (WebKit::PDFPluginTextAnnotation::updateGeometry): Rename tileScaleFactor to contentScaleFactor.
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h: Make m_scrollOffset protected.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Add a RemoteLayerTreeHost object in the UI process
+        https://bugs.webkit.org/show_bug.cgi?id=101999
+
+        Reviewed by Tim Horton.
+
+        Add a (mostly empty) RemoteLayerTreeHost class that will live in the UI process and host the layer tree.
+
+        * DerivedSources.make:
+        Add RemoteLayerTreeHost.messages.in.
+
+        * Platform/CoreIPC/MessageID.h:
+        Add a RemoteLayerTreeHost message class.
+
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::addMessageReceiver):
+        (WebKit::WebProcessProxy::removeMessageReceiver):
+        (WebKit::WebProcessProxy::didReceiveMessage):
+        (WebKit::WebProcessProxy::didReceiveSyncMessage):
+        * UIProcess/WebProcessProxy.h:
+        Add a message receiver map to the web process proxy.
+
+        * UIProcess/mac/RemoteLayerTreeDrawingAreaProxy.h:
+        * UIProcess/mac/RemoteLayerTreeDrawingAreaProxy.mm:
+        Add a RemoteLayerTreeHost member variable.
+
+        * UIProcess/mac/RemoteLayerTreeHost.h:
+        Add new class.
+
+        * UIProcess/mac/RemoteLayerTreeHost.messages.in:
+        Add new messages file with a single Commit message.
+        
+        * UIProcess/mac/RemoteLayerTreeHost.mm:
+        (WebKit::RemoteLayerTreeHost::RemoteLayerTreeHost):
+        Add the layer tree host as a message receiver.
+
+        (WebKit::RemoteLayerTreeHost::~RemoteLayerTreeHost):
+        Remote the layer tree host as a message receiver.
+
+        (WebKit::RemoteLayerTreeHost::didReceiveMessage):
+        Call the generated member function.
+
+        (WebKit::RemoteLayerTreeHost::commit):
+        Add an empty stub for now.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        Add new files.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeContext.mm:
+        (WebKit::RemoteLayerTreeContext::flushLayers):
+        Send a commit message to the remote layer tree host.
+
+2012-11-12  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin should support non-1 device scale factor
+        https://bugs.webkit.org/show_bug.cgi?id=101923
+
+        Reviewed by Alexey Proskuryakov.
+
+        Do the appropriate plumbing to ensure that PDFPlugin handles device scale factor > 1
+        (it's called contentsScaleFactor in plugins), both for normal drawing and for snapshotting.
+
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h: Add deviceScaleFactor setter/getter to PDFLayerController.
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Override contentsScaleFactorChanged.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::pdfDocumentDidLoad): Plumb device scale factor through to PDFLayerController.
+        (WebKit::PDFPlugin::contentsScaleFactorChanged): Plumb device scale factor through to PDFLayerController
+        when we're notified that it has changed.
+        (WebKit::PDFPlugin::snapshot): Create snapshots with the device scale factor applied.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Rename RemoteLayerTreeController to RemoteLayerTreeContext
+        https://bugs.webkit.org/show_bug.cgi?id=101993
+
+        Reviewed by Andreas Kling.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.h:
+        (RemoteGraphicsLayer):
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::RemoteGraphicsLayer::create):
+        (WebKit::RemoteGraphicsLayer::RemoteGraphicsLayer):
+        (WebKit::RemoteGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        * WebProcess/WebPage/mac/RemoteLayerTreeContext.h: Renamed from Source/WebKit2/WebProcess/WebPage/mac/RemoteLayerTreeController.h.
+        * WebProcess/WebPage/mac/RemoteLayerTreeContext.mm: Renamed from Source/WebKit2/WebProcess/WebPage/mac/RemoteLayerTreeController.mm.
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.h:
+        (RemoteLayerTreeDrawingArea):
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.mm:
+        (WebKit::RemoteLayerTreeDrawingArea::RemoteLayerTreeDrawingArea):
+        (WebKit::RemoteLayerTreeDrawingArea::graphicsLayerFactory):
+        (WebKit::RemoteLayerTreeDrawingArea::setRootCompositingLayer):
+        (WebKit::RemoteLayerTreeDrawingArea::scheduleCompositingLayerFlush):
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Add debug only code to dump the contents of a transaction
+        https://bugs.webkit.org/show_bug.cgi?id=101991
+
+        Reviewed by Andreas Kling.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        (WebKit::writeIndent):
+        (WebKit::dumpChangedLayers):
+        (WebKit::RemoteLayerTreeTransaction::dump):
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Store name changes in the layer transaction
+        https://bugs.webkit.org/show_bug.cgi?id=101981
+
+        Reviewed by Andreas Kling.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        (LayerProperties):
+        Add new LayerProperties class.
+
+        (RemoteLayerTreeTransaction):
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        (WebKit::RemoteLayerTreeTransaction::layerPropertiesChanged):
+        Find the changed layer properties for the given layer and apply the changed properties.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.h:
+        (WebKit::RemoteGraphicsLayer::layerID):
+        Add new getter.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::generateLayerID):
+        (WebKit::RemoteGraphicsLayer::RemoteGraphicsLayer):
+        Give each remote graphics layer a unique ID.
+
+2012-11-12  Brady Eidson  <beidson@apple.com>
+
+        NetworkProcess: Use an accurate shouldContentSniff value when creating ResourceHandles
+        https://bugs.webkit.org/show_bug.cgi?id=101872
+
+        Reviewed by Alexey Proskuryakov.
+
+        The WebProcess now passes "shouldContentSniff" over to the NetworkProcess with the requests so it can be respected.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::scheduleNetworkRequest): Update to pass through "shouldContentSniff"
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in:
+
+        * NetworkProcess/NetworkRequest.cpp:
+        (WebKit::NetworkRequest::NetworkRequest):
+        (WebKit::NetworkRequest::start):
+        * NetworkProcess/NetworkRequest.h:
+        (WebKit::NetworkRequest::create):
+
+        * NetworkProcess/NetworkResourceLoadScheduler.cpp:
+        (WebKit::NetworkResourceLoadScheduler::scheduleNetworkRequest): Update to pass through "shouldContentSniff"
+        * NetworkProcess/NetworkResourceLoadScheduler.h:
+        * WebProcess/Network/NetworkProcessConnection.h:
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::scheduleLoad): Update to pass through "shouldContentSniff"
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        More work towards packaging layer changes up into a transaction object
+        https://bugs.webkit.org/show_bug.cgi?id=101969
+
+        Reviewed by Andreas Kling.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        (WebKit::RemoteLayerTreeTransaction::RemoteLayerTreeTransaction):
+        (WebKit::RemoteLayerTreeTransaction::~RemoteLayerTreeTransaction):
+        (WebKit::RemoteLayerTreeTransaction::layerPropertiesChanged):
+        Add empty stubs.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::RemoteGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        Call layerPropertiesChanged on the current transaction.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.h:
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.mm:
+        (WebKit::RemoteLayerTreeController::RemoteLayerTreeController):
+        Initialize m_currentTransaction till 0.
+
+        (WebKit::RemoteLayerTreeController::currentTransaction):
+        Add getter. This may only be called from beneath flushLayers.
+
+        (WebKit::RemoteLayerTreeController::flushLayers):
+        Create a transaction before flusing the compositing state.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        More work on remote layer flushing
+        https://bugs.webkit.org/show_bug.cgi?id=101960
+
+        Reviewed by Andreas Kling.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.h:
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::RemoteGraphicsLayer::flushCompositingState):
+        Call recursiveCommitChanges.
+
+        (WebKit::RemoteGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        Add stub function for now.
+
+        (WebKit::RemoteGraphicsLayer::recursiveCommitChanges):
+        Call flushCompositingStateForThisLayerOnly and then call recursiveCommitChanges recursively on all the child layers.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.h:
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.mm:
+        (WebKit::RemoteLayerTreeController::create):
+        (WebKit::RemoteLayerTreeController::RemoteLayerTreeController):
+        This now takes a web page.
+
+        (WebKit::RemoteLayerTreeController::setRootLayer):
+        Add empty function.
+
+        (WebKit::RemoteLayerTreeController::layerFlushTimerFired):
+        Call flushLayers explicitly.
+
+        (WebKit::RemoteLayerTreeController::flushLayers):
+        Force a layout and then sync all the compositing layers.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.mm:
+        (WebKit::RemoteLayerTreeDrawingArea::RemoteLayerTreeDrawingArea):
+        RemoteLayerTreeController::create now takes a web page.
+
+        (WebKit::RemoteLayerTreeDrawingArea::setRootCompositingLayer):
+        Call the remote layer tree controller.
+
+2012-11-12  Anders Carlsson  <andersca@apple.com>
+
+        Layer property changes should schedule a remote layer flush
+        https://bugs.webkit.org/show_bug.cgi?id=101951
+
+        Reviewed by Andreas Kling.
+
+        * Shared/mac/RemoteLayerTreeTransaction.h:
+        * Shared/mac/RemoteLayerTreeTransaction.mm:
+        New class. For now this just contains the changed layer properties flags but this will be extended
+        to cover changed layers as well.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        Add new files.
+
+        * WebProcess/WebPage/mac/RemoteGraphicsLayer.mm:
+        (WebKit::RemoteGraphicsLayer::RemoteGraphicsLayer):
+        Initialize m_uncommittedLayerChanges.
+
+        (WebKit::RemoteGraphicsLayer::setName):
+        Set the name and call noteLayerPropertiesChanged.
+
+        (WebKit::RemoteGraphicsLayer::noteLayerPropertiesChanged):
+        Notify that a flush is required (if required).
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.h:
+        Add a layer flush timer.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeController.mm:
+        (WebKit::RemoteLayerTreeController::RemoteLayerTreeController):
+        Initialize the layer flush timer.
+
+        (WebKit::RemoteLayerTreeController::scheduleLayerFlush):
+        Schedule the layer flush timer if needed.
+
+        (WebKit::RemoteLayerTreeController::layerFlushTimerFired):
+        Empty stub for now.
+
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.mm:
+        (WebKit::RemoteLayerTreeDrawingArea::scheduleCompositingLayerFlush):
+        Call the remote layer tree controller.
+
+2012-11-12  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [EFL] Add implementations of device - user conversion methods
+        https://bugs.webkit.org/show_bug.cgi?id=101938
+
+        Reviewed by Laszlo Gombos.
+
+        Consider the deviceScaleFactor when convertion to/from user
+        and device units.
+
+        This affects DOM API's such as window.moveTo, resizeTo etc.
+
+        * UIProcess/efl/PageClientBase.cpp:
+        * UIProcess/efl/PageClientBase.h:
+        (PageClientBase):
+        * UIProcess/efl/PageClientDefaultImpl.cpp:
+        (WebKit::PageClientDefaultImpl::convertToDeviceSpace):
+        (WebKit):
+        (WebKit::PageClientDefaultImpl::convertToUserSpace):
+        * UIProcess/efl/PageClientDefaultImpl.h:
+        (PageClientDefaultImpl):
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::convertToDeviceSpace):
+        (WebKit):
+        (WebKit::PageClientLegacyImpl::convertToUserSpace):
+        * UIProcess/efl/PageClientLegacyImpl.h:
+        (PageClientLegacyImpl):
+
+2012-11-12  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL][WK2][AC] Black screen when applications use software backend.
+        https://bugs.webkit.org/show_bug.cgi?id=101659
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        If creating openGL context fails, automatically fallback to software rendering.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::EwkViewImpl):
+        (EwkViewImpl::displayTimerFired):
+        (EwkViewImpl::createGLSurface):
+        (EwkViewImpl::enterAcceleratedCompositingMode):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl::hardwareAccelerationEnabled):
+        (EwkViewImpl):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::LayerTreeRenderer):
+        (WebKit::LayerTreeRenderer::ensureRootLayer):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (WebKit::LayerTreeRenderer::setAccelerationMode):
+        (LayerTreeRenderer):
+        * UIProcess/efl/PageClientBase.cpp:
+        (WebKit::PageClientBase::createDrawingAreaProxy):
+
+2012-11-12  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WK2] Indentation nit on WebPage
+        https://bugs.webkit.org/show_bug.cgi?id=101928
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setViewportSize):
+
+2012-11-12  Jiyeon Kim  <jiyeon0402.kim@samsung.com>
+
+        [EFL][WK2] Add ewk_settings_offline_web_application_cache_enabled set/get APIs
+        https://bugs.webkit.org/show_bug.cgi?id=101688
+
+        Reviewed by Gyuyoung Kim.
+
+        Add ewk_settings_offline_web_application_cache_get API to be used for enabling disabling the web application cache.
+        Add ewk_settings_offline_web_application_cache_set API to be used for getting the web application cache status.
+        In addition, offline web application cache is enabled by default.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::EwkViewImpl):
+        * UIProcess/API/efl/ewk_settings.cpp:
+        (ewk_settings_offline_web_application_cache_enabled_set):
+        (ewk_settings_offline_web_application_cache_enabled_get):
+        * UIProcess/API/efl/ewk_settings.h:
+        * UIProcess/API/efl/tests/test_ewk2_settings.cpp:
+        (TEST_F):
+
+2012-11-11  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Shadow] ElementShadow should have RuleFeatureSet for select attribute selectors.
+        https://bugs.webkit.org/show_bug.cgi?id=101180
+
+        Reviewed by Dimitri Glazkov.
+
+        * win/WebKit2.def:
+        * win/WebKit2CFLite.def:
+
+2012-11-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r134144.
+        http://trac.webkit.org/changeset/134144
+        https://bugs.webkit.org/show_bug.cgi?id=101876
+
+        seems to break win 7 chromium browser test (Requested by
+        hayato on #webkit).
+
+        * win/WebKit2.def:
+        * win/WebKit2CFLite.def:
+
+2012-11-11  Kenichi Ishibashi  <bashi@chromium.org>
+
+        WTFString::utf8() should have a mode of conversion to use replacement character
+        https://bugs.webkit.org/show_bug.cgi?id=101678
+
+        Reviewed by Alexey Proskuryakov.
+
+        Update the symbol for String::utf8().
+
+        * win/WebKit2.def:
+        * win/WebKit2CFLite.def:
+
+2012-11-10  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt][WK2] Use QLibraryInfo to search for executables.
+        https://bugs.webkit.org/show_bug.cgi?id=101774
+
+        Reviewed by Simon Hausmann.
+
+        This allows finding the WebProcess or the PluginProcess
+        in it's installed location. This is necessary when
+        deploying QtWebKit with an installer.
+
+        * Shared/qt/ProcessExecutablePathQt.cpp:
+        (WebKit::executablePath):
+
+2012-11-09  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Rename tileRect from targetRect.
+        https://bugs.webkit.org/show_bug.cgi?id=101705
+
+        Reviewed by Noam Rosenthal.
+
+        Messages::LayerTreeCoordinatorProxy::CreateTileForLayer contains the targetRect
+        variable. The targetRect stands for the rect of the tile created. This patch
+        renames tileRect to enhance the clearity.
+
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        (WebKit::CoordinatedBackingStoreTile::swapBuffers):
+        (WebKit::CoordinatedBackingStoreTile::setBackBuffer):
+        (WebKit::CoordinatedBackingStore::updateTile):
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (CoordinatedBackingStoreTile):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createTileForLayer):
+        (WebKit::LayerTreeCoordinatorProxy::updateTileForLayer):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::updateTile):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (TileUpdate):
+        (WebKit::LayerTreeRenderer::TileUpdate::TileUpdate):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::createTile):
+        (WebCore::CoordinatedGraphicsLayer::updateTile):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.h:
+        (CoordinatedTileClient):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::createTile):
+        (WebKit::LayerTreeCoordinator::updateTile):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+
+2012-11-09  Noam Rosenthal  <noam.rosenthal@nokia.com>
+
+        Allow ports to decide whether an image should be directly composited
+        https://bugs.webkit.org/show_bug.cgi?id=101827
+
+        Reviewed by Simon Fraser.
+
+        Implement shouldDirectlyCompositeImage for coordinated graphics, effectively disabling direct
+        compositing of images with width or height larger than 2000 pixels.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::shouldDirectlyCompositeImage):
+        (WebCore):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayer):
+
+2012-11-09  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Antialias the edge-tiles of CoordinatedBackingStore.
+        https://bugs.webkit.org/show_bug.cgi?id=101818
+
+        Reviewed by Noam Rosenthal.
+
+        Since we now have the entire surfaceRect, we can antialias the edge-tiles.
+
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        (WebKit::CoordinatedBackingStore::paintTilesToTextureMapper):
+        (WebKit::CoordinatedBackingStore::paintToTextureMapper):
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (CoordinatedBackingStore):
+
+2012-11-09  Rick Byers  <rbyers@chromium.org>
+
+        No tests for changing mouse cursors
+        https://bugs.webkit.org/show_bug.cgi?id=100550
+
+        Reviewed by Adam Barth.
+
+        Add necessary exports for Internals::getCurrentCursorInfo
+
+        * win/WebKit2.def:
+        * win/WebKit2CFLite.def:
+
+2012-11-09  Vivek Galatage  <vivekgalatage@gmail.com>
+
+        Add missing exports setMediaTypeOverride, setResolutionOverride and layerTreeAsText to WebKit2CFLite.def
+        https://bugs.webkit.org/show_bug.cgi?id=101816
+
+        Reviewed by Anders Carlsson.
+
+        Add missing exports setMediaTypeOverride, setResolutionOverride and layerTreeAsText to WebKit2CFLite.def to fix win-cairo build.
+
+        * win/WebKit2CFLite.def:
+
+2012-11-09  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Amend CoordinatedBackingStore::paintToTextureMapper to fit its own semantic.
+        https://bugs.webkit.org/show_bug.cgi?id=101701
+
+        Reviewed by Noam Rosenthal.
+
+        Currently, all subclasses of TextureMapperPlatformLayer implement
+        paintToTextureMapper to draw its own texture on the given targetRect. Subclasses
+        can scale the texture to fit the size of the targetRect. However, only
+        CoordinatedBackingStore::paintToTextureMapper draws its texture using its own
+        texture size. There is no bug yet, because TextureMapperLayer uses
+        CoordinatedBackingStore only as a backing store, not a content layer. So,
+        TextureMapperLayer always request CoordinatedBackingStore to draw using its own
+        texture size. However, we can use CoordinatedBackingStore as a content layer in
+        the future. So this patch fixes this potential bug.
+
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        (WebKit::CoordinatedBackingStore::setSize):
+        (WebKit):
+        (WebKit::mapToContents):
+        (WebKit::paintTilesToTextureMapper):
+        (WebKit::CoordinatedBackingStore::paintToTextureMapper):
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (CoordinatedBackingStore):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createTileForLayer):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::createTile):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (LayerTreeRenderer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::createTile):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.cpp:
+        (WebKit::CoordinatedTile::updateBackBuffer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.h:
+        (CoordinatedTileClient):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::createTile):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+
+2012-11-09  Brady Eidson  <beidson@apple.com>
+
+        Implement NetworkProcess willSendRequest
+        https://bugs.webkit.org/show_bug.cgi?id=101812
+
+        Reviewed by Alexey Proskuryakov.
+
+        Message to the WebProcess to get the new request, if any.
+
+        Because network callbacks are coming in on a background thread we have to jump through hoops to synchronously
+        ask the WebProcess, but these hoops follow an established pattern of using async messaging with BlockingResourceMap.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::willSendRequestHandled): Pass the new request back to NetworkRequest for handling.
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in:
+
+        * NetworkProcess/NetworkRequest.cpp:
+        (WebKit::NetworkRequest::didFail):
+        (WebKit::responseMap):
+        (WebKit::generateWillSendRequestID):
+        (WebKit::didReceiveWillSendRequestHandled):
+        (WebKit::NetworkRequest::willSendRequest): Asynchronously message the WebProcess but synchronous wait for a reply back.
+        * NetworkProcess/NetworkRequest.h:
+
+        * WebProcess/Network/NetworkProcessConnection.cpp:
+        (WebKit::NetworkProcessConnection::willSendRequest): Ask the WebResourceLoadScheduler for the new request then
+          message back to the NetworkProcess with the reply.
+        * WebProcess/Network/NetworkProcessConnection.h:
+
+        * WebProcess/Network/NetworkProcessConnection.messages.in:
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::willSendRequest):
+        * WebProcess/Network/WebResourceLoadScheduler.h:
+
+2012-11-09  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin should support clicking on external links
+        https://bugs.webkit.org/show_bug.cgi?id=101647
+        <rdar://problem/12555222>
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h: Add details about clickedLinkWithURL: callback.
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Add clickedLink() and storage for the last mouse event that was dispatched.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate pdfLayerController:clickedLinkWithURL:]): Forward the URL to PDFPlugin.
+        (WebKit::PDFPlugin::handleMouseEvent): Store the last mouse event that was dispatched.
+        We use this to get the correct mouse button and modifier keys, so that command-clicking, etc. links works.
+        (WebKit::PDFPlugin::clickedLink): Request a load given the new URL.
+
+        * PluginProcess/PluginControllerProxy.h:
+        (PluginControllerProxy):
+        * WebProcess/Plugins/Netscape/NetscapePlugin.cpp:
+        (WebKit::NetscapePlugin::shouldAllowScripting):
+        * WebProcess/Plugins/Netscape/NetscapePlugin.h:
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h:
+        * WebProcess/Plugins/Plugin.h:
+        * WebProcess/Plugins/PluginProxy.cpp:
+        (WebKit::PluginProxy::shouldAllowScripting):
+        * WebProcess/Plugins/PluginProxy.h:
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::shouldAllowScripting):
+        * WebProcess/Plugins/PluginView.h:
+        Add shouldAllowScripting() function to Plugin (and plumb through PluginProxy and PluginView, etc.)
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::allowScript): Override allowScript(); if the frame is hosting a PluginDocument,
+        ask its plugin whether it should allow execution of JavaScript and JavaScript URLs or not.
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.h:
+
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h: Disable scripting for SimplePDFPlugin (and, by inheritance, PDFPlugin).
+
+2012-11-09  Brady Eidson  <beidson@apple.com>
+
+        Implement WebResourceBuffer::isEmpty()
+        https://bugs.webkit.org/show_bug.cgi?id=101805
+
+        Reviewed by Alexey Proskuryakov.
+
+        This is required to make the existing subresource loading in NetworkProcess work correctly,
+        as there's an isEmpty() check in the WebProcess that decides whether or not to actually deliver 
+        the data to the ResourceLoader.
+
+        * Shared/WebResourceBuffer.cpp:
+        (WebKit::WebResourceBuffer::isEmpty):
+        * Shared/WebResourceBuffer.h:
+
+2012-11-09  Hurnjoo Lee  <hurnjoo.lee@samsung.com>
+
+        [EFL][WK2][AC] Fixed layers are shaking when scrolling
+        https://bugs.webkit.org/show_bug.cgi?id=101549
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        At the time of adjusting positions for fixed layers, the locations of
+        fixed layers are calculated incorrectly because the contentsSize is empty.
+
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::didChangeContentsSize): Call the
+        setContentsSize function in LayerTreeCoordinatorProxy in order to calculate
+        the locations of fixed layers correctly.
+
+2012-11-09  Brady Eidson  <beidson@apple.com>
+
+        NetworkRequest refactoring
+        https://bugs.webkit.org/show_bug.cgi?id=101777
+
+        Reviewed by Alexey Proskuryakov.
+
+        Move all of the ResourceHandleClient stubs from the .h to the .cpp in one patch
+        to make future patches cleaner.
+
+        Also completely remove the declaration for shouldCacheResponse() for now.
+
+        * NetworkProcess/NetworkRequest.cpp:
+        (WebKit::NetworkRequest::willSendRequest):
+        (WebKit::NetworkRequest::didSendData):
+        (WebKit::NetworkRequest::didReceiveCachedMetadata):
+        (WebKit::NetworkRequest::wasBlocked):
+        (WebKit::NetworkRequest::cannotShowURL):
+        (WebKit::NetworkRequest::willCacheResponse):
+        (WebKit::NetworkRequest::shouldUseCredentialStorage):
+        (WebKit::NetworkRequest::didReceiveAuthenticationChallenge):
+        (WebKit::NetworkRequest::didCancelAuthenticationChallenge):
+        (WebKit::NetworkRequest::receivedCancellation):
+        (WebKit::NetworkRequest::canAuthenticateAgainstProtectionSpace):
+        (WebKit::NetworkRequest::supportsDataArray):
+        (WebKit::NetworkRequest::didReceiveDataArray):
+        (WebKit::NetworkRequest::willStopBufferingData):
+        (WebKit::NetworkRequest::createAsyncFileStream):
+        * NetworkProcess/NetworkRequest.h:
+
+2012-11-09  Alexey Proskuryakov  <ap@apple.com>
+
+        CookieJar uses Document class, which is a layering violation
+        https://bugs.webkit.org/show_bug.cgi?id=101621
+
+        Reviewed by Brady Eidson.
+
+        * UIProcess/API/C/WKAPICast.h: Don't include CookieJar.h, its completely unnecessary.
+
 2012-11-09  peavo@outlook.com  <peavo@outlook.com>
 
         WinCairo build fails to link

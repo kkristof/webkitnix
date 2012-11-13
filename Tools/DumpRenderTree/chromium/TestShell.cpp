@@ -140,7 +140,6 @@ TestShell::TestShell()
     WebRuntimeFeatures::enableEncryptedMedia(true);
     WebRuntimeFeatures::enableMediaStream(true);
     WebRuntimeFeatures::enablePeerConnection(true);
-    WebRuntimeFeatures::enableDeprecatedPeerConnection(true);
     WebRuntimeFeatures::enableWebAudio(true);
     WebRuntimeFeatures::enableVideoTrack(true);
     WebRuntimeFeatures::enableGamepad(true);
@@ -758,6 +757,7 @@ WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url, DRTDevToolsAg
         host->setDelegate(m_webViewHost.get());
     else
         host->setDelegate(host);
+    host->setProxy(host);
     WebView* view = WebView::create(host);
     view->setPermissionClient(webPermissions());
     view->setDevToolsAgentClient(devToolsAgent);

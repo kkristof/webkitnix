@@ -218,7 +218,7 @@ private:
 
         if (operand == JSStack::Callee)
             return getCallee();
-
+        
         // Is this an argument?
         if (operandIsArgument(operand))
             return getArgument(operand);
@@ -1703,7 +1703,7 @@ bool ByteCodeParser::handleIntrinsic(bool usesResult, int resultOperand, Intrins
 
         int thisOperand = registerOffset + argumentToOperand(0);
         int indexOperand = registerOffset + argumentToOperand(1);
-        NodeIndex charCode = addToGraph(StringCharCodeAt, OpInfo(Array::String), get(thisOperand), getToInt32(indexOperand));
+        NodeIndex charCode = addToGraph(StringCharCodeAt, OpInfo(ArrayMode(Array::String).asWord()), get(thisOperand), getToInt32(indexOperand));
 
         if (usesResult)
             set(resultOperand, charCode);
@@ -1716,7 +1716,7 @@ bool ByteCodeParser::handleIntrinsic(bool usesResult, int resultOperand, Intrins
 
         int thisOperand = registerOffset + argumentToOperand(0);
         int indexOperand = registerOffset + argumentToOperand(1);
-        NodeIndex charCode = addToGraph(StringCharAt, OpInfo(Array::String), get(thisOperand), getToInt32(indexOperand));
+        NodeIndex charCode = addToGraph(StringCharAt, OpInfo(ArrayMode(Array::String).asWord()), get(thisOperand), getToInt32(indexOperand));
 
         if (usesResult)
             set(resultOperand, charCode);
@@ -2124,7 +2124,8 @@ bool ByteCodeParser::parseBlock(unsigned limit)
         }
 
         case op_create_this: {
-            set(currentInstruction[1].u.operand, addToGraph(CreateThis, get(JSStack::Callee)));
+            int calleeOperand = currentInstruction[2].u.operand;
+            set(currentInstruction[1].u.operand, addToGraph(CreateThis, get(calleeOperand)));
             NEXT_OPCODE(op_create_this);
         }
             
@@ -2177,6 +2178,11 @@ bool ByteCodeParser::parseBlock(unsigned limit)
             NEXT_OPCODE(op_new_regexp);
         }
             
+        case op_get_callee: {
+            set(currentInstruction[1].u.operand, get(JSStack::Callee));
+            NEXT_OPCODE(op_get_callee);
+        }
+
         // === Bitwise operations ===
 
         case op_bitand: {

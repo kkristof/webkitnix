@@ -1303,8 +1303,14 @@ bool RenderLayerBacking::isDirectlyCompositedImage() const
 
     RenderImage* imageRenderer = toRenderImage(renderObject);
     if (CachedImage* cachedImage = imageRenderer->cachedImage()) {
-        if (cachedImage->hasImage())
-            return cachedImage->imageForRenderer(imageRenderer)->isBitmapImage();
+        if (!cachedImage->hasImage())
+            return false;
+
+        Image* image = cachedImage->imageForRenderer(imageRenderer);
+        if (!image->isBitmapImage())
+            return false;
+
+        return m_graphicsLayer->shouldDirectlyCompositeImage(image);
     }
 
     return false;
@@ -1526,7 +1532,8 @@ void RenderLayerBacking::paintIntoLayer(RenderLayer* rootLayer, GraphicsContext*
         paintFlags |= RenderLayer::PaintLayerPaintingOverflowContents;
     
     // FIXME: GraphicsLayers need a way to split for RenderRegions.
-    m_owningLayer->paintLayerContents(rootLayer, context, paintDirtyRect, LayoutSize(), paintBehavior, paintingRoot, 0, 0, paintFlags);
+    RenderLayer::LayerPaintingInfo paintingInfo(rootLayer, paintDirtyRect, paintBehavior, LayoutSize(), paintingRoot);
+    m_owningLayer->paintLayerContents(context, paintingInfo, paintFlags);
 
     if (m_owningLayer->containsDirtyOverlayScrollbars())
         m_owningLayer->paintOverlayScrollbars(context, paintDirtyRect, paintBehavior, paintingRoot);

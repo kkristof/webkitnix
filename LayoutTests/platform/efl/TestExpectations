@@ -606,6 +606,9 @@ webkit.org/b/84635 fast/dom/HTMLDialogElement [ Skip ]
 # Subpixel layout is not enabled.
 webkit.org/b/85532 fast/sub-pixel [ Skip ]
 
+# HIGH_DPI_CANVAS is not enabled.
+webkit.org/b/101809 fast/canvas/canvas-resize-reset-pixelRatio.html [ Skip ]
+
 # DeviceOrientation support is not enabled by default.
 Bug(EFL) fast/dom/DeviceOrientation [ Skip ]
 Bug(EFL) fast/dom/Window/window-properties-device-orientation.html [ Skip ]
@@ -715,6 +718,8 @@ webkit.org/b/68878 media/video-playing-and-pause.html [ Failure Pass ]
 webkit.org/b/98621 media/video-controls-rendering.html [ Failure Pass ]
 
 webkit.org/b/100636 [ Debug ] jquery/traversing.html [ Failure Crash Pass ]
+
+webkit.org/b/96641 media/video-seek-past-end-playing.html [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # FAILING TESTS

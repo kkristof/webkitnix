@@ -172,7 +172,6 @@ SOURCES += \
      bindings/js/JSPopStateEventCustom.cpp \
      bindings/js/JSProcessingInstructionCustom.cpp \
      bindings/js/JSRequestAnimationFrameCallbackCustom.cpp \
-     bindings/js/JSScriptProfileNodeCustom.cpp \
      bindings/js/JSStorageCustom.cpp \
      bindings/js/JSStyleSheetCustom.cpp \
      bindings/js/JSStyleSheetListCustom.cpp \
@@ -735,6 +734,7 @@ SOURCES += \
     html/shadow/MediaControlRootElement.cpp \
     html/shadow/MeterShadowElement.cpp \
     html/shadow/ProgressShadowElement.cpp \
+    html/shadow/SelectRuleFeatureSet.cpp \
     html/shadow/SliderThumbElement.cpp \
     html/shadow/SpinButtonElement.cpp \
     html/shadow/TextControlInnerElements.cpp \
@@ -817,6 +817,7 @@ SOURCES += \
     loader/cache/CachedSVGDocument.cpp \
     loader/cache/CachedSVGDocument.h \
     loader/cache/CachedXSLStyleSheet.cpp \
+    loader/CookieJar.cpp \
     loader/CrossOriginAccessControl.cpp \
     loader/CrossOriginPreflightResultCache.cpp \
     loader/cache/CachedResourceLoader.cpp \
@@ -1949,6 +1950,7 @@ HEADERS += \
     loader/cache/CachedSVGDocument.h \
     loader/cache/CachedXSLStyleSheet.h \
     loader/cache/MemoryCache.h \
+    loader/CookieJar.h \
     loader/CrossOriginAccessControl.h \
     loader/CrossOriginPreflightResultCache.h \
     loader/cache/CachedResourceLoader.h \
@@ -2238,6 +2240,7 @@ HEADERS += \
     platform/network/MIMESniffing.h \
     platform/network/NetworkingContext.h \
     platform/network/NetworkStateNotifier.h \
+    platform/network/PlatformCookieJar.h \
     platform/network/ProtectionSpace.h \
     platform/network/ProxyServer.h \
     platform/network/qt/QtMIMETypeSniffer.h \
@@ -2250,6 +2253,7 @@ HEADERS += \
     platform/network/ResourceRequestBase.h \
     platform/network/ResourceResponseBase.h \
     platform/network/qt/NetworkStateNotifierPrivate.h \
+    platform/network/qt/CookieJarQt.h \
     platform/PlatformExportMacros.h \
     platform/PlatformMemoryInstrumentation.h \
     platform/PlatformTouchEvent.h \
@@ -2257,7 +2261,6 @@ HEADERS += \
     platform/PopupMenu.h \
     platform/ReferrerPolicy.h \
     platform/qt/ClipboardQt.h \
-    platform/qt/CookieJarQt.h \
     platform/qt/QWebPageClient.h \
     platform/qt/QStyleFacade.h \
     platform/qt/RenderThemeQStyle.h \
@@ -2804,6 +2807,7 @@ SOURCES += \
     platform/graphics/texmap/TextureMapperLayer.cpp \
     platform/network/DNSResolveQueue.cpp \
     platform/network/MIMESniffing.cpp \
+    platform/network/qt/CookieJarQt.cpp \
     platform/network/qt/CredentialStorageQt.cpp \
     platform/network/qt/ResourceHandleQt.cpp \
     platform/network/qt/ResourceRequestQt.cpp \
@@ -2817,7 +2821,6 @@ SOURCES += \
     platform/qt/ClipboardQt.cpp \
     platform/qt/ContextMenuItemQt.cpp \
     platform/qt/ContextMenuQt.cpp \
-    platform/qt/CookieJarQt.cpp \
     platform/qt/CursorQt.cpp \
     platform/qt/DragDataQt.cpp \
     platform/qt/DragImageQt.cpp \
@@ -3953,6 +3956,7 @@ enable?(WEBGL) {
 
 use?(3D_GRAPHICS) {
     HEADERS += \
+        platform/graphics/cpu/arm/GraphicsContext3DNEON.h \
         platform/graphics/ANGLEWebKitBridge.h \
         platform/graphics/Extensions3D.h \
         platform/graphics/GraphicsContext3D.h \
@@ -4076,7 +4080,7 @@ use?(GRAPHICS_SURFACE) {
     }
 }
 
-if(build?(drt)|build?(wtr)) {
+build?(qttestsupport) {
     HEADERS += platform/qt/QtTestSupport.h
     SOURCES += platform/qt/QtTestSupport.cpp
 }

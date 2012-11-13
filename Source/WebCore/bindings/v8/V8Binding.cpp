@@ -318,14 +318,6 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldC
     return v8::Local<v8::Context>();
 }
 
-V8PerContextData* perContextDataForCurrentWorld(Frame* frame)
-{
-    V8DOMWindowShell* isolatedShell;
-    if (UNLIKELY(!!(isolatedShell = V8DOMWindowShell::getEntered())))
-        return isolatedShell->perContextData();
-    return frame->script()->windowShell()->perContextData();
-}
-
 bool handleOutOfMemory()
 {
     v8::Local<v8::Context> context = v8::Context::GetCurrent();
@@ -338,8 +330,7 @@ bool handleOutOfMemory()
     if (!frame)
         return true;
 
-    frame->script()->clearForClose();
-    frame->script()->windowShell()->destroyGlobal();
+    frame->script()->clearForOutOfMemory();
 
 #if PLATFORM(CHROMIUM)
     frame->loader()->client()->didExhaustMemoryAvailableForScript();
