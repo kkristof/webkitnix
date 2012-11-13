@@ -39,6 +39,7 @@
 #include "WebCoreArgumentCoders.h"
 #include "WebPage.h"
 #include "WebPageProxyMessages.h"
+#include <WebCore/Document.h>
 #include <WebCore/Frame.h>
 #include <WebCore/FrameView.h>
 #include <WebCore/Page.h>
@@ -57,6 +58,7 @@ PassRefPtr<LayerTreeCoordinator> LayerTreeCoordinator::create(WebPage* webPage)
 {
     return adoptRef(new LayerTreeCoordinator(webPage));
 }
+
 
 LayerTreeCoordinator::~LayerTreeCoordinator()
 {
@@ -443,6 +445,7 @@ void LayerTreeCoordinator::syncDisplayState()
 
 void LayerTreeCoordinator::didPerformScheduledLayerFlush()
 {
+    processPendingLayerRequests();
     if (m_notifyAfterScheduledLayerFlush) {
         static_cast<DrawingAreaImpl*>(m_webPage->drawingArea())->layerHostDidFlushLayers();
         m_notifyAfterScheduledLayerFlush = false;
@@ -761,6 +764,58 @@ void LayerTreeCoordinator::releaseInactiveAtlasesTimerFired(Timer<LayerTreeCoord
 
     if (m_updateAtlases.size() <= 1)
         m_releaseInactiveAtlasesTimer.stop();
+}
+
+static GraphicsLayer* getGraphicsLayer(Element* element)
+{
+    RenderObject* renderer = element->renderer();
+    if (!renderer)
+        return 0;
+
+    if (!renderer->hasLayer())
+        return 0;
+
+    RenderLayer* layer = renderer->enclosingLayer();
+    if (!layer)
+        return 0;
+
+    if (!layer->isComposited())
+        return 0;
+
+    return layer->backing()->graphicsLayer();
+}
+
+static bool processLayerIDRequest(WebPage* webPage, uint32_t requestID, const String& id)
+{
+    Page* page = webPage->corePage();
+    Document* doc = page->mainFrame()->document();
+    Element* element = doc->getElementById(id);
+    if (!element)
+        return false;
+
+    GraphicsLayer* layer = getGraphicsLayer(element);
+    if (!layer)
+        return false;
+
+    webPage->send(Messages::LayerTreeCoordinatorProxy::DidFindLayerIDForElement(requestID, toCoordinatedGraphicsLayer(layer)->id()));
+    return true;
+}
+
+void LayerTreeCoordinator::processPendingLayerRequests()
+{
+    HashMap<uint32_t, String>::iterator end = m_pendingLayerRequests.end();
+    for (HashMap<uint32_t, String>::iterator it = m_pendingLayerRequests.begin(); it != end; ++it) {
+        if (processLayerIDRequest(m_webPage, it->key, it->value))
+            m_pendingLayerRequests.remove(it);
+    }
+}
+
+void LayerTreeCoordinator::getLayerIDForElementID(uint32_t requestID, const String& id)
+{
+    if (processLayerIDRequest(m_webPage, requestID, id))
+        return;
+
+    m_pendingLayerRequests.add(requestID, id);
 }
 
 } // namespace WebKit

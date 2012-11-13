@@ -23,6 +23,7 @@ messages -> LayerTreeCoordinator {
     SetVisibleContentsRect(WebCore::IntRect visibleContentsRect, float scale, WebCore::FloatPoint trajectoryVectory)
     RenderNextFrame()
     PurgeBackingStores()
+    GetLayerIDForElementID(uint32_t requestID, String selector)
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     AnimationFrameReady()
 #endif

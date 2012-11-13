@@ -37,6 +37,7 @@ messages -> LayerTreeCoordinatorProxy {
     DidChangeScrollPosition(WebCore::IntPoint position)
     SetLayerAnimations(uint32_t id, WebCore::GraphicsLayerAnimations animations)
     SetAnimationsLocked(bool locked)
+    DidFindLayerIDForElement(uint32_t requestID, uint32_t layerID);
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     RequestAnimationFrame()
