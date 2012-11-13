@@ -9,9 +9,9 @@
 
 namespace Nix {
 
-class WebViewClient {
+class WK_EXPORT WebViewClient {
 public:
-    virtual ~WebViewClient() { }
+    virtual ~WebViewClient();
 
     virtual void viewNeedsDisplay(WKRect area);
     virtual void webProcessCrashed(WKStringRef url);
@@ -28,7 +28,7 @@ public:
 class WK_EXPORT WebView {
 public:
     static WebView* create(WKContextRef, WKPageGroupRef, WebViewClient*);
-    virtual ~WebView() { }
+    virtual ~WebView();
 
     virtual void initialize() = 0;
 

@@ -61,6 +61,7 @@ using namespace WebKit;
 namespace Nix {
 
 // These are put here to avoid compilation warnings about unused parameters.
+WebViewClient::~WebViewClient() {}
 void WebViewClient::viewNeedsDisplay(WKRect) {}
 void WebViewClient::webProcessCrashed(WKStringRef) {}
 void WebViewClient::doneWithTouchEvent(const TouchEvent&, bool) {}
@@ -70,6 +71,8 @@ void WebViewClient::didChangeContentsSize(WKSize) {}
 void WebViewClient::didFindZoomableArea(WKPoint, WKRect) {}
 void WebViewClient::updateTextInputState(bool, WKRect, WKRect) {}
 void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* /* matrix */, float /*opacity*/) { }
+
+WebView::~WebView() {}
 
 class WebViewImpl : public WebView, public PageClient {
 public:

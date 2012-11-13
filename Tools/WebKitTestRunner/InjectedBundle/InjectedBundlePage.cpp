@@ -50,6 +50,8 @@
 
 #if PLATFORM(QT)
 #include "DumpRenderTreeSupportQt.h"
+#elif PLATFORM(NIX)
+#include <WebKit2/NixTestSupport.h>
 #endif
 
 #if ENABLE(WEB_INTENTS)
@@ -443,6 +445,8 @@ void InjectedBundlePage::resetAfterTest()
     JSGlobalContextRef context = WKBundleFrameGetJavaScriptContext(frame);
 #if PLATFORM(QT)
     DumpRenderTreeSupportQt::resetInternalsObject(context);
+#elif PLATFORM(NIX)
+    Nix::resetInternalsObject(context);
 #else
     WebCoreTestSupport::resetInternalsObject(context);
 #endif
@@ -1026,6 +1030,8 @@ void InjectedBundlePage::didClearWindowForFrame(WKBundleFrameRef frame, WKBundle
 #endif
 #if PLATFORM(QT)
     DumpRenderTreeSupportQt::injectInternalsObject(context);
+#elif PLATFORM(NIX)
+    Nix::injectInternalsObject(context);
 #else
     WebCoreTestSupport::injectInternalsObject(context);
 #endif

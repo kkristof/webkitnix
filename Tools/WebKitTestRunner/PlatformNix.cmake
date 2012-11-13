@@ -32,10 +32,8 @@ LIST(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
 )
 
 SET(WebKitTestRunner_LIBRARIES
-    ${JavaScriptCore_LIBRARY_NAME}
-    ${WebCoreTestSupport_LIBRARY_NAME}
+    ${WTF_LIBRARY_NAME}
     ${WebKit2_LIBRARY_NAME}
-    ${WebCore_LIBRARY_NAME}
 
     ${CAIRO_LIBRARIES}
     ${GLIB_LIBRARIES}
@@ -45,7 +43,7 @@ SET(WebKitTestRunner_LIBRARIES
 LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/FontManagement.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/ActivateFontsNix.cpp
-    ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/efl/InjectedBundleEfl.cpp
+    ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/InjectedBundleNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/TestRunnerNix.cpp
 )
 
@@ -57,7 +55,8 @@ ENDIF ()
 # structure. See <https://bugs.webkit.org/show_bug.cgi?id=81475>.
 ADD_DEFINITIONS(-DFONTS_CONF_DIR="${TOOLS_DIR}/DumpRenderTree/gtk/fonts"
                 -DDOWNLOADED_FONTS_DIR="${CMAKE_SOURCE_DIR}/WebKitBuild/Dependencies/Source/webkitgtk-test-fonts-0.0.3"
-                -DTHEME_DIR="${THEME_BINARY_DIR}")
+                -DTHEME_DIR="${THEME_BINARY_DIR}"
+                -DLOG_DISABLED=1)
 
 SET(ImageDiff_SOURCES
     ${WEBKIT_TESTRUNNER_DIR}/nix/ImageDiff.cpp

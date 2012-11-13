@@ -1,6 +1,7 @@
 #ifndef NixPlatform_h
 #define NixPlatform_h
 
+#include "NixPlatformExportMacros.h"
 #include <vector>
 #include <string>
 
@@ -8,7 +9,7 @@ namespace Nix {
 
 namespace Platform {
 
-    struct GamepadDevice {
+    struct NIX_PLATFORM_EXPORT GamepadDevice {
         bool connected;
         std::string id;
         unsigned long long lastTimestamp;
@@ -17,13 +18,13 @@ namespace Platform {
         std::vector<float> buttons;
     };
 
-    class GamepadClient {
+    class NIX_PLATFORM_EXPORT GamepadClient {
     public:
         virtual GamepadDevice* getGamepad(int index) = 0;
     };
 
-    void setGamepadClient(GamepadClient*);
-    GamepadDevice* getGamepad(int index);
+    NIX_PLATFORM_EXPORT void setGamepadClient(GamepadClient*);
+    NIX_PLATFORM_EXPORT GamepadDevice* getGamepad(int index);
 } //namespace Platform
 
 } //namespace Nix

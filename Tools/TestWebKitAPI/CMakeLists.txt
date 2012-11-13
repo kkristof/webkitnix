@@ -49,7 +49,7 @@ ADD_LIBRARY(TestWebKitAPIInjectedBundle SHARED
     ${TESTWEBKITAPI_DIR}/Tests/WebKit2/WillSendSubmitEvent_Bundle.cpp
 )
 
-TARGET_LINK_LIBRARIES(TestWebKitAPIInjectedBundle ${WTF_LIBRARY_NAME})
+TARGET_LINK_LIBRARIES(TestWebKitAPIInjectedBundle ${WebKit2_LIBRARY_NAME} ${WTF_LIBRARY_NAME})
 ADD_DEPENDENCIES(TestWebKitAPIInjectedBundle ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersForTestWebKitAPI_NAME} ${ForwardingNetworkHeadersForTestWebKitAPI_NAME})
 
 GET_PROPERTY(TestWebKitAPIInjectedBundle_PATH TARGET TestWebKitAPIInjectedBundle PROPERTY LOCATION)
@@ -107,11 +107,9 @@ ADD_EXECUTABLE(test_webcore
 
 TARGET_LINK_LIBRARIES(test_webcore ${test_webcore_LIBRARIES})
 ADD_DEPENDENCIES(test_webcore ${ForwardingHeadersForTestWebKitAPI_NAME} ${ForwardingNetworkHeadersForTestWebKitAPI_NAME})
-# Test passes but crashes when exiting.
-IF (NOT PORT STREQUAL "Nix")
+
 ADD_TEST(test_webcore ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_webcore)
 SET_TESTS_PROPERTIES(test_webcore PROPERTIES TIMEOUT 60)
-ENDIF ()
 
 ADD_LIBRARY(TestWebKitAPIBase
     ${test_main_SOURCES}
@@ -126,7 +124,7 @@ ADD_DEPENDENCIES(TestWebKitAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersFo
 SET(test_webkit2_api_LIBRARIES
     TestWebKitAPIBase
     ${WTF_LIBRARY_NAME}
-    ${JavaScriptCore_LIBRARY_NAME}
+#     ${GLIB_LIBRARIES}
     ${WebKit2_LIBRARY_NAME}
     gtest
 )

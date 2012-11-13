@@ -627,5 +627,14 @@ SET_TARGET_PROPERTIES(${WebProcess_EXECUTABLE_NAME} PROPERTIES FOLDER "WebKit")
 
 SET_TARGET_PROPERTIES(${WebKit2_LIBRARY_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
+# We need to link WebCore and JavaScriptCore using --whole-archive to be sure all functions exported in
+# static libraries will be shipped inside the shared object.
+IF ("${PORT}" STREQUAL "Nix")
+    ADD_TARGET_PROPERTIES(${WebKit2_LIBRARY_NAME} LINK_FLAGS
+    "-Wl,--whole-archive ${CMAKE_BINARY_DIR}/lib/lib${WebCore_LIBRARY_NAME}.a ${CMAKE_BINARY_DIR}/lib/lib${JavaScriptCore_LIBRARY_NAME}.a ${CMAKE_BINARY_DIR}/lib/lib${Platform_LIBRARY_NAME}.a -Wl,--no-whole-archive"
+)
+ENDIF ()
+
+
 INSTALL(TARGETS ${WebKit2_LIBRARY_NAME} DESTINATION "${LIB_INSTALL_DIR}")
 INSTALL(TARGETS ${WebProcess_EXECUTABLE_NAME} DESTINATION "${EXEC_INSTALL_DIR}")

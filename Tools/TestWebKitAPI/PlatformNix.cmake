@@ -8,8 +8,7 @@ ADD_CUSTOM_TARGET(forwarding-headersSoupForTestWebKitAPI
 )
 SET(ForwardingNetworkHeadersForTestWebKitAPI_NAME forwarding-headersSoupForTestWebKitAPI)
 
-INCLUDE_DIRECTORIES(${LIBSOUP_INCLUDE_DIRS}
-    ${WEBKIT2_DIR}/UIProcess/API/C/soup
+INCLUDE_DIRECTORIES(
     ${WEBKIT2_DIR}/UIProcess/API/nix
     ${GLIB_INCLUDE_DIRS}
     ${CAIRO_INCLUDE_DIRS}
@@ -98,18 +97,18 @@ SET(TestWebKitNixAPIBase_SOURCES
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
     ${TESTWEBKITAPI_DIR}/nix/PageLoader.cpp
     ${TESTWEBKITAPI_DIR}/nix/GLUtilities.cpp
-    ${TESTWEBKITAPI_DIR}/JavaScriptTest.cpp
+    ${TESTWEBKITAPI_DIR}/nix/TestsControllerNix.cpp
     ${TESTWEBKITAPI_DIR}/PlatformUtilities.cpp
-    ${TESTWEBKITAPI_DIR}/TestsController.cpp
 )
 
-SET(TestWebKitNixAPIBase_LIBRARIES ${PNG_LIBRARY})
+SET(TestWebKitNixAPIBase_LIBRARIES ${PNG_LIBRARY} ${GLIB_LIBRARIES})
 
 IF (WTF_USE_EGL)
   LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesEGL.cpp)
   LIST(APPEND TestWebKitNixAPIBase_LIBRARIES ${EGL_LIBRARY})
 ELSE ()
   LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesGLX.cpp)
+  LIST(APPEND TestWebKitNixAPIBase_LIBRARIES ${OPENGL_LIBRARIES})
 ENDIF ()
 
 ADD_LIBRARY(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_SOURCES})
@@ -126,10 +125,7 @@ INCLUDE_DIRECTORIES(
 
 SET(test_webkitnix_api_LIBRARIES
     TestWebKitNixAPIBase
-    ${OPENGL_LIBRARIES}
     ${CAIRO_LIBRARIES}
-    ${WTF_LIBRARY_NAME}
-    ${JavaScriptCore_LIBRARY_NAME}
     ${WebKit2_LIBRARY_NAME}
     gtest
 )

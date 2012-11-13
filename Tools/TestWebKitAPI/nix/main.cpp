@@ -29,11 +29,9 @@
 
 #include "MainLoop.h"
 #include <glib.h>
-#include <wtf/Assertions.h>
 
 int main(int argc, char** argv)
 {
     TestWebKitAPI::Util::initializeMainLoop();
-    WTFInstallReportBacktraceOnCrashHook();
     return TestWebKitAPI::TestsController::shared().run(argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

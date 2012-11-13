@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,42 +24,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "PlatformWebView.h"
-
-#include "WebView.h"
+#include "TestsController.h"
+#include <gtest/gtest.h>
 
 namespace TestWebKitAPI {
 
-class TestWebViewClient : public Nix::WebViewClient {
-public:
-    void viewNeedsDisplay(WKRect) {}
-    void webProcessCrashed(WKStringRef) {}
-    void webProcessRelaunched() {}
-};
-
-PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
+TestsController& TestsController::shared()
 {
-    m_webViewClient = new TestWebViewClient;
-    m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
-    m_view->initialize();
-    WKPageSetUseFixedLayout(m_view->pageRef(), true);
-    m_window = 0;
+    static TestsController& shared = *new TestsController;
+    return shared;
 }
 
-PlatformWebView::~PlatformWebView()
+TestsController::TestsController()
 {
-    delete m_webViewClient;
 }
 
-void PlatformWebView::resizeTo(unsigned width, unsigned height)
+bool TestsController::run(int argc, char** argv)
 {
-    m_view->setSize(WKSizeMake(width, height));
-}
-
-WKPageRef PlatformWebView::page() const
-{
-    return m_view->pageRef();
+    ::testing::InitGoogleTest(&argc, argv);
+    return !RUN_ALL_TESTS();
 }
 
 } // namespace TestWebKitAPI

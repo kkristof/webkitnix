@@ -62,6 +62,8 @@ LIST(APPEND WebKit2_SOURCES
 
     WebProcess/InjectedBundle/gtk/InjectedBundleGtk.cpp
 
+    WebProcess/InjectedBundle/API/nix/NixTestSupport.cpp
+
     WebProcess/WebCoreSupport/nix/WebErrorsNix.cpp
     WebProcess/WebCoreSupport/nix/WebPopupMenuNix.cpp
 
@@ -125,6 +127,7 @@ IF (WTF_USE_3D_GRAPHICS)
 ENDIF ()
 
 LIST(APPEND WebKit2_LIBRARIES
+    ${WebCoreTestSupport_LIBRARY_NAME}
     ${CAIRO_LIBRARIES}
     ${Freetype_LIBRARIES}
     ${LIBXML2_LIBRARIES}
