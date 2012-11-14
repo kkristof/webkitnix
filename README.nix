@@ -13,6 +13,7 @@ automatically pull other dependencies using the jhbuild tool.
 To compile WebKitNix all the three groups of packages below are necessary:
 
 # These are needed for jhbuild tool to work.
+# Debian / Ubuntu
 $ sudo apt-get install gobject-introspection \
                        icon-naming-utils \
                        libgcrypt11-dev \
@@ -21,14 +22,37 @@ $ sudo apt-get install gobject-introspection \
                        libtiff4-dev \
                        libcroco3-dev
 
+# Fedora
+$ sudo yum install perl-version \
+                   gobject-introspection-devel \
+                   icon-naming-utils \
+                   libgcrypt-devel \
+                   libgpg-error-devel \
+                   p11-kit-devel \
+                   libtiff-devel \
+                   libcroco-devel \
+                   libjpeg-turbo-devel \
+                   ruby
+
+
 # These are needed for the dependencies that are automatically compiled.
+# Debian / Ubuntu
 $ sudo apt-get install gettext \
                        libpng12-dev \
                        g++\
                        gtk-doc-tools \
                        libgnutls-dev
 
+# Fedora
+$ sudo yum install gettext \
+                   libpng-devel \
+                   gcc-c++ \
+                   gnutls-devel \
+                   gtk-doc
+
+
 # These are needed for WebKitNix itself.
+# Debian / Ubuntu
 $ sudo apt-get install cmake \
                        flex bison gperf \
                        libsqlite3-dev \
@@ -36,8 +60,21 @@ $ sudo apt-get install cmake \
                        libicu-dev \
                        libgl1-mesa-dev
 
-NOTE: the package libgl1-mesa-dev can be replaced by another that
-provides the OpenGL headers (GLES-based systems, for example).
+# Fedora
+$ sudo yum install cmake \
+                   flex \
+                   bison \
+                   gperf \
+                   sqlite-devel \
+                   libxslt-devel \
+                   libicu-devel \
+                   mesa-libGL-devel \
+                   intltool
+
+
+NOTE: the packages libgl1-mesa-dev or mesa-libGL-devel can be
+replaced by another that provides the OpenGL headers (GLES-based
+systems, for example).
 
 Other dependencies like glib, cairo et al. are pulled by jhbuild, by
 using the script:
