@@ -581,6 +581,14 @@ void LayerTreeRenderer::setActive(bool active)
         renderNextFrame();
 }
 
+void LayerTreeRenderer::addCustomPlatformLayer(uint32_t rendererID, WebLayerID layerID, TextureMapperPlatformLayer* customMedia)
+{
+    m_customPlatformLayers.add(rendererID, customMedia);
+    ensureLayer(layerID);
+    GraphicsLayer* layer = layerByID(layerID);
+    layer->setContentsToMedia(customMedia);
+}
+
 } // namespace WebKit
 
 #endif // USE(COORDINATED_GRAPHICS)

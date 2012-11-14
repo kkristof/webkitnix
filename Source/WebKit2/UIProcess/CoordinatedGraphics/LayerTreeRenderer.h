@@ -45,6 +45,7 @@ class LayerTreeCoordinatorProxy;
 class WebLayerInfo;
 class WebLayerUpdateInfo;
 
+
 class LayerTreeRenderer : public ThreadSafeRefCounted<LayerTreeRenderer>, public WebCore::GraphicsLayerClient {
 public:
     struct TileUpdate {
@@ -93,6 +94,8 @@ public:
     void destroyImage(int64_t);
     void setLayerAnimations(WebLayerID, const WebCore::GraphicsLayerAnimations&);
     void setAnimationsLocked(bool);
+
+    void addCustomPlatformLayer(uint32_t rendererID, WebLayerID, WebCore::TextureMapperPlatformLayer*);
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     void requestAnimationFrame();
@@ -155,6 +158,8 @@ private:
     WebLayerID m_rootLayerID;
     WebCore::IntPoint m_renderedContentsScrollPosition;
     WebCore::IntPoint m_pendingRenderedContentsScrollPosition;
+
+    HashMap<uint32_t, WebCore::TextureMapperPlatformLayer*> m_customPlatformLayers;
     bool m_isActive;
     bool m_animationsLocked;
 #if ENABLE(REQUEST_ANIMATION_FRAME)

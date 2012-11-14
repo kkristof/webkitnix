@@ -23,6 +23,7 @@
 
 extern "C" {
 static gboolean callUpdateDisplay(gpointer);
+extern void glUseProgram(GLuint);
 }
 
 class MiniBrowser : public Nix::WebViewClient, public LinuxWindowClient, public GestureRecognizerClient {
@@ -58,6 +59,7 @@ public:
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
     virtual void doneWithGestureEvent(const Nix::GestureEvent&, bool wasEventHandled);
     virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
+    virtual void compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* matrix, float opacity);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
@@ -71,7 +73,7 @@ public:
 
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
-
+    void setCustomLayerTestElement(const char* element);
 private:
 
     enum ScaleBehavior {
@@ -115,6 +117,7 @@ private:
     bool m_shouldRestoreViewportWhenLosingFocus;
     double m_scaleBeforeFocus;
     WKPoint m_scrollPositionBeforeFocus;
+    uint32_t m_customRendererID;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -175,6 +178,12 @@ MiniBrowser::~MiniBrowser()
     delete m_touchMocker;
 }
 
+void MiniBrowser::setCustomLayerTestElement(const char* element)
+{
+    WKRetainPtr<WKStringRef> str = adoptWK(WKStringCreateWithUTF8CString(element));
+    m_customRendererID = m_webView->addCustomLayer(str.get());
+}
+
 void MiniBrowser::setTouchEmulationMode(bool enabled)
 {
     if (enabled && !m_touchMocker) {
@@ -184,6 +193,7 @@ void MiniBrowser::setTouchEmulationMode(bool enabled)
         m_touchMocker = 0;
     }
 }
+
 
 enum NavigationCommand {
     NoNavigation,
@@ -715,6 +725,35 @@ void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect
     }
 }
 
+
+void MiniBrowser::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity)
+{
+    if (id != m_customRendererID)
+        return;
+
+    glUseProgram(0);
+
+    const float p[] = { rect.origin.x, rect.origin.y, rect.origin.x + rect.size.width, rect.origin.y + rect.size.width };
+    const GLfloat vertexData[] = { p[0], p[1], p[2], p[1], p[2], p[3], p[0], p[3] };
+
+    WKSize size = m_window->size();
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, size.width, size.height, 0, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glLoadMatrixf(matrix);
+    glEnable(GL_BLEND);
+    glEnable(GL_COLOR);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glColor4f(1, 0, 0, 1);
+    glVertexPointer(2, GL_FLOAT, 0, vertexData);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glPopMatrix();
+}
+
 int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
@@ -727,6 +766,7 @@ int main(int argc, char* argv[])
     const char* userAgent = 0;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
+    const char* customLayerTestElement = 0;
 
     for (int i = 1; i < argc; ++i) {
         if (!strcmp(argv[i], "--desktop"))
@@ -759,6 +799,8 @@ int main(int argc, char* argv[])
             userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3";
         } else if (!strcmp(argv[i], "--android")) {
             userAgent = "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+        } else if (!strcmp(argv[i], "--custom-layer-id")) {
+            customLayerTestElement = argv[++i];
         } else
             url = argv[i];
     }
@@ -785,6 +827,8 @@ int main(int argc, char* argv[])
         printf("Use Shift + mouse wheel to zoom in and out.\n");
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
+    if (customLayerTestElement)
+        browser.setCustomLayerTestElement(customLayerTestElement);
 
     g_main_loop_run(mainLoop);
     g_main_loop_unref(mainLoop);
