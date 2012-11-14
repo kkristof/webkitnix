@@ -442,7 +442,7 @@ void MiniBrowser::updateDisplay()
 
     WKSize size = m_window->size();
     glViewport(0, 0, size.width, size.height);
-    glClearColor(0.7, 0.35, 0.0, 1.0);
+    glClearColor(0.4, 0.4, 0.4, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_webView->paintToCurrentGLContext();
