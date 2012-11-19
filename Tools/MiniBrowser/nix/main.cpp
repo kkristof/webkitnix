@@ -317,7 +317,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 {
     WKPoint contentsPoint = m_webView->userViewportToContents(WKPointMake(event.x, event.y));
 
-    if (m_mode == MobileMode && event.state & ShiftMask) {
+    if (m_mode == MobileMode && event.state & ControlMask) {
         double newScale = m_webView->scale() * (event.button == 4 ? 1.1 : 0.9);
         scaleAtPoint(contentsPoint, newScale);
         return;
@@ -335,7 +335,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     nixEvent.globalX = event.x_root;
     nixEvent.globalY = event.y_root;
     nixEvent.delta = pixelsPerStep * (event.button == 4 ? 1 : -1);
-    nixEvent.orientation = event.state & Mod1Mask ? Nix::WheelEvent::Horizontal : Nix::WheelEvent::Vertical;
+    nixEvent.orientation = event.state & ShiftMask ? Nix::WheelEvent::Horizontal : Nix::WheelEvent::Vertical;
     m_webView->sendEvent(nixEvent);
 }
 
@@ -824,7 +824,7 @@ int main(int argc, char* argv[])
         WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent));
 
     if (browser.mode() == MiniBrowser::MobileMode)
-        printf("Use Shift + mouse wheel to zoom in and out.\n");
+        printf("Use Control + mouse wheel to zoom in and out.\n");
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
     if (customLayerTestElement)
