@@ -567,7 +567,7 @@ WebWheelEvent WebEventFactory::createWebWheelEvent(const Nix::WheelEvent& event)
     double timestamp = event.timestamp;
 
     const float ticks = event.delta / float(Scrollbar::pixelsPerLineStep());
-    FloatSize wheelTicks = Nix::WheelEvent::Vertical ? FloatSize(0, ticks) : FloatSize(ticks, 0);
+    FloatSize wheelTicks = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, ticks) : FloatSize(ticks, 0);
 
     return WebWheelEvent(type, position, globalPosition, delta, wheelTicks, WebWheelEvent::ScrollByPixelWheelEvent, modifiers, timestamp);
 }
