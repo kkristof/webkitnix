@@ -71,6 +71,8 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/soup/WebSoupRequestManager.cpp
     WebProcess/soup/WebKitSoupRequestGeneric.cpp
     WebProcess/soup/WebKitSoupRequestInputStream.cpp
+
+    WebProcess/WebCoreSupport/soup/WebFrameNetworkingContext.cpp
 )
 
 LIST(APPEND WebKit2_MESSAGES_IN_FILES
@@ -92,6 +94,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/nix"
+    "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/soup"
     "${WTF_DIR}/wtf/gobject"
     ${CAIRO_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
