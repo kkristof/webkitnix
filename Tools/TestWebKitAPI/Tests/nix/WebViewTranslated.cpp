@@ -12,6 +12,10 @@ namespace TestWebKitAPI {
 
 TEST(WebKitNix, WebViewTranslated)
 {
+    const WKSize size = WKSizeMake(100, 100);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ASSERT_TRUE(offscreenBuffer.makeCurrent());
+
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     const int translationDelta = 20;
@@ -26,12 +30,7 @@ TEST(WebKitNix, WebViewTranslated)
     client.setClearColor(0, 0, 1, 1);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
-
-    const WKSize size = WKSizeMake(100, 100);
     webView->setSize(size);
-
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
-    ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);

@@ -17,6 +17,10 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     // then translated to (10,10) position. After that it's applied a scale=2.0
     // At this point we will have a red rectangle of (40x40)px at (10,10).
 
+    const WKSize size = WKSizeMake(100, 100);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ASSERT_TRUE(offscreenBuffer.makeCurrent());
+
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     Util::ForceRepaintClient client;
@@ -31,12 +35,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     client.setClearColor(0, 0, 1, 1);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
-
-    const WKSize size = WKSizeMake(100, 100);
     webView->setSize(size);
-
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
-    ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);

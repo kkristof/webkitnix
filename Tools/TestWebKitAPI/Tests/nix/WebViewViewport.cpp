@@ -10,12 +10,16 @@ namespace TestWebKitAPI {
 
 TEST(WebKitNix, WebViewViewport)
 {
-    using namespace WebKit;
-
     // This test opens a page with contents size of 20000x980 pixels, a white
     // background, no viewport metatag and two black dots located at
     // 10000x400 and 10400x800, then it scales and scroll the page to check if
     // the black pixels are where they are expected to be.
+
+    const unsigned contentsWidth = 980;
+    const WKSize size = WKSizeMake(contentsWidth / 2, 200);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ASSERT_TRUE(offscreenBuffer.makeCurrent());
+    glViewport(0, 0, size.width, size.height);
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     Util::ForceRepaintClient client;
@@ -24,17 +28,9 @@ TEST(WebKitNix, WebViewViewport)
     client.setClearColor(0, 0, 1, 1);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
-
-    Util::PageLoader loader(webView.get());
-
-    const unsigned contentsWidth = 980;
-    const WKSize size = WKSizeMake(contentsWidth / 2, 200);
     webView->setSize(size);
 
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
-    ASSERT_TRUE(offscreenBuffer.makeCurrent());
-    glViewport(0, 0, size.width, size.height);
-
+    Util::PageLoader loader(webView.get());
     loader.waitForLoadURLAndRepaint("../nix/WebViewViewport");
     unsigned char sample[4];
 

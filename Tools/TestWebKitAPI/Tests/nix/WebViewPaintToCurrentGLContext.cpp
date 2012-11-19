@@ -12,6 +12,10 @@ namespace TestWebKitAPI {
 
 TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 {
+    const WKSize size = WKSizeMake(100, 100);
+    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ASSERT_TRUE(offscreenBuffer.makeCurrent());
+
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     Util::ForceRepaintClient client;
     std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
@@ -19,14 +23,8 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     client.setClearColor(0, 0, 1, 1);
     webView->initialize();
     WKPageSetUseFixedLayout(webView->pageRef(), true);
-
-    Util::PageLoader loader(webView.get());
-
-    const WKSize size = WKSizeMake(100, 100);
     webView->setSize(size);
-
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
-    ASSERT_TRUE(offscreenBuffer.makeCurrent());
+    Util::PageLoader loader(webView.get());
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
