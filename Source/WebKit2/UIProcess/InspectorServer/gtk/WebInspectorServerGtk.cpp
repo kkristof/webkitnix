@@ -25,9 +25,9 @@
 #include "config.h"
 #include "WebInspectorServer.h"
 
-#include "FileSystem.h"
 #include "WebInspectorProxy.h"
 #include "WebPageProxy.h"
+#include <WebCore/FileSystem.h>
 #include <WebCore/MIMETypeRegistry.h>
 #include <gio/gio.h>
 #include <glib.h>

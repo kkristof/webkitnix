@@ -29,26 +29,26 @@
 #include <wtf/text/WTFString.h>
 
 // Name of the test server application creating the webView object.
-static const char* s_testServerAppName = "InspectorTestServer";
+static const char* gTestServerAppName = "InspectorTestServer";
 
 // Max seconds to wait for the test server before inspecting it.
-static const int s_maxWaitForChild = 5;
+static const int gMaxWaitForChild = 5;
 
 // The PID for the test server running, so we can kill it if needed.
-static GPid s_childProcessPid = 0;
+static GPid gChildProcessPid = 0;
 
 // Whether the child has replied and it's ready.
-static bool s_childIsReady = false;
+static bool gChildIsReady = false;
 
 static void stopTestServer()
 {
     // Do nothing if there's no server running.
-    if (!s_childProcessPid)
+    if (!gChildProcessPid)
         return;
 
-    g_spawn_close_pid(s_childProcessPid);
-    kill(s_childProcessPid, SIGTERM);
-    s_childProcessPid = 0;
+    g_spawn_close_pid(gChildProcessPid);
+    kill(gChildProcessPid, SIGTERM);
+    gChildProcessPid = 0;
 }
 
 static void sigAbortHandler(int sigNum)
@@ -60,10 +60,10 @@ static void sigAbortHandler(int sigNum)
 static gpointer testServerMonitorThreadFunc(gpointer)
 {
     // Wait for the specified timeout to happen.
-    g_usleep(s_maxWaitForChild * G_USEC_PER_SEC);
+    g_usleep(gMaxWaitForChild * G_USEC_PER_SEC);
 
     // Kill the child process if not ready yet.
-    if (!s_childIsReady)
+    if (!gChildIsReady)
         stopTestServer();
 
     g_thread_exit(0);
@@ -72,7 +72,7 @@ static gpointer testServerMonitorThreadFunc(gpointer)
 
 static void startTestServerMonitor()
 {
-    s_childIsReady = false;
+    gChildIsReady = false;
 
 #if (!GLIB_CHECK_VERSION(2, 31, 0))
     g_thread_create(testServerMonitorThreadFunc, 0, FALSE, 0);
@@ -84,10 +84,7 @@ static void startTestServerMonitor()
 static void startTestServer()
 {
     // Prepare argv[] for spawning the server process.
-    GOwnPtr<char> testServerPath(g_build_filename(WEBKIT_EXEC_PATH, "WebKit2APITests", s_testServerAppName, NULL));
-
-    // Overwrite WEBKIT_INSPECTOR_SERVER variable with default value.
-    g_setenv("WEBKIT_INSPECTOR_SERVER", "127.0.0.1:2999", TRUE);
+    GOwnPtr<char> testServerPath(g_build_filename(WEBKIT_EXEC_PATH, "WebKit2APITests", gTestServerAppName, NULL));
 
     // We install a handler to ensure that we kill the child process
     // if the parent dies because of whatever the reason is.
@@ -101,7 +98,7 @@ static void startTestServer()
     // communication channel, so we know when it's ready.
     int childStdout = 0;
     g_assert(g_spawn_async_with_pipes(0, testServerArgv, 0, static_cast<GSpawnFlags>(0), 0, 0,
-        &s_childProcessPid, 0, &childStdout, 0, 0));
+        &gChildProcessPid, 0, &childStdout, 0, 0));
 
     // Start monitoring the test server (in a separate thread) to
     // ensure we don't block on the child process more than a timeout.
@@ -112,14 +109,14 @@ static void startTestServer()
     if (g_io_channel_read_chars(ioChannel, msg, 2, 0, 0) == G_IO_STATUS_NORMAL) {
         // Check whether the server sent a message saying it's ready
         // and store the result globally, so the monitor can see it.
-        s_childIsReady = msg[0] == 'O' && msg[1] == 'K';
+        gChildIsReady = msg[0] == 'O' && msg[1] == 'K';
     }
     g_io_channel_unref(ioChannel);
     close(childStdout);
 
     // The timeout was reached and the server is not ready yet, so
     // stop it inmediately, and let the unit tests fail.
-    if (!s_childIsReady)
+    if (!gChildIsReady)
         stopTestServer();
 }
 
@@ -193,7 +190,7 @@ static void testInspectorServerPageList(InspectorServerTest* test, gconstpointer
     g_assert(!error.get());
     valueString.set(WebViewTest::javascriptResultToCString(javascriptResult));
     String validInspectorURL = String("/webinspector/inspector.html?page=") + String::number(pageId);
-    g_assert_cmpstr(valueString.get(), ==, validInspectorURL.latin1().data());
+    g_assert_cmpstr(valueString.get(), ==, validInspectorURL.utf8().data());
 }
 
 // Test sending a raw remote debugging message through our web socket server.
@@ -241,8 +238,8 @@ static void openRemoteDebuggingSession(InspectorServerTest* test, gconstpointer)
     g_assert(javascriptResult);
     g_assert(!error.get());
 
-    String resolvedURL = String("http://127.0.0.1:2999/") + WebViewTest::javascriptResultToCString(javascriptResult);
-    test->loadURI(resolvedURL.latin1().data());
+    String resolvedURL = String("http://127.0.0.1:2999/") + String::fromUTF8(WebViewTest::javascriptResultToCString(javascriptResult));
+    test->loadURI(resolvedURL.utf8().data());
     test->waitUntilTitleChanged();
 
     g_assert_cmpstr(webkit_web_view_get_title(test->m_webView), ==, "Web Inspector - http://127.0.0.1:2999/");
@@ -251,6 +248,9 @@ static void openRemoteDebuggingSession(InspectorServerTest* test, gconstpointer)
 
 void beforeAll()
 {
+    // Overwrite WEBKIT_INSPECTOR_SERVER variable with default IP address but different port to avoid conflict with the test inspector server page.
+    g_setenv("WEBKIT_INSPECTOR_SERVER", "127.0.0.1:2998", TRUE);
+
     startTestServer();
     InspectorServerTest::add("WebKitWebInspectorServer", "test-page-list", testInspectorServerPageList);
     InspectorServerTest::add("WebKitWebInspectorServer", "test-remote-debugging-message", testRemoteDebuggingMessage);

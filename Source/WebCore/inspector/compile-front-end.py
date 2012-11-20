@@ -271,7 +271,6 @@ modules = [
             "TimelineModel.js",
             "TimelineOverviewPane.js",
             "TimelinePanel.js",
-            "TimelinePanelDescriptor.js",
             "TimelinePresentationModel.js",
             "TimelineFrameController.js"
         ]
@@ -305,6 +304,7 @@ modules = [
         "dependencies": ["components", "extensions"],
         "sources": [
             "SettingsScreen.js",
+            "OverridesView.js",
         ]
     },
     {

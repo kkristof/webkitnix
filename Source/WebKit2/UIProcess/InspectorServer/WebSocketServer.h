@@ -30,8 +30,14 @@
 
 #if ENABLE(INSPECTOR_SERVER)
 
+#if PLATFORM(GTK)
+#include <gio/gio.h>
+#endif
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
+#if PLATFORM(GTK)
+#include <wtf/gobject/GRefPtr.h>
+#endif
 #include <wtf/text/WTFString.h>
 
 #if PLATFORM(QT)

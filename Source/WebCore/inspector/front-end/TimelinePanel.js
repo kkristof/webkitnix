@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Intel Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -303,18 +304,28 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._operationInProgress = !!indicator;
         for (var i = 0; i < this._statusBarButtons.length; ++i)
-            this._statusBarButtons[i].disabled = this._operationInProgress;
-        this._glueParentButton.disabled = this._operationInProgress || !!this._frameController;
+            this._statusBarButtons[i].setEnabled(!this._operationInProgress);
+        this._glueParentButton.setEnabled(!this._operationInProgress && !this._frameController);
         this._miscStatusBarItems.removeChildren();
         this._miscStatusBarItems.appendChild(indicator ? indicator.element : this._statusBarFilters);
     },
 
     _registerShortcuts: function()
     {
-        this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.StartStopRecording, this._toggleTimelineButtonClicked.bind(this));
-        if (InspectorFrontendHost.canSave())
-            this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, this._saveToFile.bind(this));
-        this.registerShortcuts(WebInspector.TimelinePanelDescriptor.ShortcutKeys.LoadFromFile, this._fileSelectorElement.click.bind(this._fileSelectorElement));
+        var shortcut = WebInspector.KeyboardShortcut;
+        var modifiers = shortcut.Modifiers;
+        var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
+
+        this._shortcuts[shortcut.makeKey("e", modifiers.CtrlOrMeta)] = this._toggleTimelineButtonClicked.bind(this);
+        section.addKey(shortcut.shortcutToString("e", modifiers.CtrlOrMeta), WebInspector.UIString("Start/stop recording"));
+
+        if (InspectorFrontendHost.canSave()) {
+            this._shortcuts[shortcut.makeKey("s", modifiers.CtrlOrMeta)] = this._saveToFile.bind(this);
+            section.addKey(shortcut.shortcutToString("s", modifiers.CtrlOrMeta), WebInspector.UIString("Save timeline data"));
+        }
+
+        this._shortcuts[shortcut.makeKey("o", modifiers.CtrlOrMeta)] = this._fileSelectorElement.click.bind(this._fileSelectorElement);
+        section.addKey(shortcut.shortcutToString("o", modifiers.CtrlOrMeta), WebInspector.UIString("Load timeline data"));
     },
 
     _createFileSelector: function()
@@ -498,7 +509,7 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewModeSetting.set(mode);
         if (frameMode !== this._frameMode) {
             this._frameMode = frameMode;
-            this._glueParentButton.disabled = frameMode;
+            this._glueParentButton.setEnabled(!frameMode);
             this._presentationModel.setGlueRecords(this._glueParentButton.toggled && !frameMode);
             this._repopulateRecords();
 
@@ -1315,17 +1326,9 @@ WebInspector.TimelineRecordListRow.prototype = {
 
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();
-        var details = record.details();
-        if (details) {
-            var detailsContainer = document.createElement("span");
-            if (typeof details === "object") {
-                detailsContainer.appendChild(document.createTextNode("("));
-                detailsContainer.appendChild(details);
-                detailsContainer.appendChild(document.createTextNode(")"));
-            } else
-                detailsContainer.textContent = "(" + details + ")";
-            this._dataElement.appendChild(detailsContainer);
-        }
+
+        if (record.detailsNode())
+            this._dataElement.appendChild(record.detailsNode());
     },
 
     highlight: function(regExp, domChanges)
@@ -1347,7 +1350,10 @@ WebInspector.TimelineRecordListRow.prototype = {
  */
 WebInspector.TimelineRecordListRow.testContentMatching = function(record, regExp)
 {
-    return regExp.test(record.title + " (" + record.details() + ")");
+    var toSearchText = record.title;
+    if (record.detailsNode())
+        toSearchText += " " + record.detailsNode().textContent;
+    return regExp.test(toSearchText);
 }
 
 /**

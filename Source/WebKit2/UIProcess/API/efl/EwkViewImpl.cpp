@@ -34,6 +34,9 @@
 #include "PagePolicyClientEfl.h"
 #include "PageUIClientEfl.h"
 #include "ResourceLoadClientEfl.h"
+#include "WKDictionary.h"
+#include "WKGeometry.h"
+#include "WKNumber.h"
 #include "WKString.h"
 #include "WebContext.h"
 #include "WebPageGroup.h"
@@ -129,6 +132,7 @@ EwkViewImpl::EwkViewImpl(Evas_Object* view, PassRefPtr<EwkContext> context, Pass
     , m_displayTimer(this, &EwkViewImpl::displayTimerFired)
     , m_inputMethodContext(InputMethodContextEfl::create(this, smartData()->base.evas))
     , m_isHardwareAccelerated(true)
+    , m_setDrawsBackground(false)
 {
     ASSERT(m_view);
     ASSERT(m_context);
@@ -323,6 +327,21 @@ AffineTransform EwkViewImpl::transformToScreen() const
     return transform;
 }
 
+#if USE(COORDINATED_GRAPHICS)
+LayerTreeRenderer* EwkViewImpl::layerTreeRenderer()
+{
+    DrawingAreaProxy* drawingArea = page()->drawingArea();
+    if (!drawingArea)
+        return 0;
+
+    WebKit::LayerTreeCoordinatorProxy* layerTreeCoordinatorProxy = drawingArea->layerTreeCoordinatorProxy();
+    if (!layerTreeCoordinatorProxy)
+        return 0;
+
+    return layerTreeCoordinatorProxy->layerTreeRenderer();
+}
+#endif
+
 void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
 {
 #if USE(COORDINATED_GRAPHICS)
@@ -333,8 +352,12 @@ void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
     // We are supposed to clip to the actual viewport, nothing less.
     IntRect viewport(sd->view.x, sd->view.y, sd->view.w, sd->view.h);
 
-    LayerTreeRenderer* renderer = page()->drawingArea()->layerTreeCoordinatorProxy()->layerTreeRenderer();
+    LayerTreeRenderer* renderer = layerTreeRenderer();
+    if (!renderer)
+        return;
+
     renderer->setActive(true);
+    renderer->setDrawsBackground(m_setDrawsBackground);
     renderer->syncRemoteContent();
     if (m_isHardwareAccelerated) {
         renderer->paintToCurrentGLContext(transformToScene().toTransformationMatrix(), /* opacity */ 1, viewport);
@@ -347,8 +370,8 @@ void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
             return;
 
         RefPtr<cairo_t> graphicsContext = adoptRef(cairo_create(surface.get()));
-        cairo_translate(graphicsContext.get(), -m_scrollPosition.x(), -m_scrollPosition.y());
         cairo_scale(graphicsContext.get(), m_scaleFactor, m_scaleFactor);
+        cairo_translate(graphicsContext.get(), -m_scrollPosition.x(), -m_scrollPosition.y());
         renderer->paintToGraphicsContext(graphicsContext.get());
         evas_object_image_data_update_add(sd->image, 0, 0, viewport.width(), viewport.height());
     }
@@ -589,8 +612,9 @@ bool EwkViewImpl::createGLSurface(const IntSize& viewSize)
         Evas* evas = evas_object_evas_get(m_view);
         m_evasGL = adoptPtr(evas_gl_new(evas));
         if (!m_evasGL) {
+            WARN("Failed to create Evas_GL, falling back to software mode.");
             m_isHardwareAccelerated = false;
-            page()->drawingArea()->layerTreeCoordinatorProxy()->layerTreeRenderer()->setAccelerationMode(TextureMapper::SoftwareMode);
+            layerTreeRenderer()->setAccelerationMode(TextureMapper::SoftwareMode);
 #if ENABLE(WEBGL)
             m_pageProxy->pageGroup()->preferences()->setWebGLEnabled(false);
 #endif
@@ -635,7 +659,7 @@ bool EwkViewImpl::createGLSurface(const IntSize& viewSize)
 
 bool EwkViewImpl::enterAcceleratedCompositingMode()
 {
-    page()->drawingArea()->layerTreeCoordinatorProxy()->layerTreeRenderer()->setActive(true);
+    layerTreeRenderer()->setActive(true);
 
     if (!m_isHardwareAccelerated)
         return true;
@@ -826,12 +850,26 @@ void EwkViewImpl::informURLChange()
     informIconChange();
 }
 
-WKPageRef EwkViewImpl::createNewPage()
+WKPageRef EwkViewImpl::createNewPage(WKDictionaryRef windowFeatures)
 {
-    Evas_Object* newEwkView = 0;
-    smartCallback<CreateWindow>().call(&newEwkView);
+    Ewk_View_Smart_Data* sd = smartData();
+    ASSERT(sd->api);
 
-    if (!newEwkView)
+    Evas_Object* newEwkView = 0;
+
+    // Extract the width and height from the window attributes and pass them along to the embedder.
+    WKRetainPtr<WKStringRef> widthStr(AdoptWK, WKStringCreateWithUTF8CString("width"));
+    WKRetainPtr<WKStringRef> heightStr(AdoptWK, WKStringCreateWithUTF8CString("height"));
+
+    WKTypeRef ref = WKDictionaryGetItemForKey(windowFeatures, widthStr.get());
+    unsigned width = ref ? WKDoubleGetValue(static_cast<WKDoubleRef>(ref)) : 0;
+    ref = WKDictionaryGetItemForKey(windowFeatures, heightStr.get());
+    unsigned height = ref ? WKDoubleGetValue(static_cast<WKDoubleRef>(ref)) : 0;
+
+    if (!sd->api->window_create_new)
+        return 0;
+
+    if (!(newEwkView = sd->api->window_create_new(sd, width, height)))
         return 0;
 
     EwkViewImpl* newViewImpl = EwkViewImpl::fromEvasObject(newEwkView);

@@ -38,6 +38,9 @@ int main(int argc, char** argv)
 {
     gtk_init(&argc, &argv);
 
+    // Overwrite WEBKIT_INSPECTOR_SERVER variable with default value.
+    g_setenv("WEBKIT_INSPECTOR_SERVER", "127.0.0.1:2999", TRUE);
+
     WebKitWebView* webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
     webkit_settings_set_enable_developer_extras(webkit_web_view_get_settings(webView), TRUE);
     webkit_web_view_load_html(webView,

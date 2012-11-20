@@ -26,6 +26,8 @@
 #ifndef RemoteLayerTreeTransaction_h
 #define RemoteLayerTreeTransaction_h
 
+#include <WebCore/FloatPoint.h>
+#include <WebCore/FloatSize.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/WTFString.h>
 
@@ -44,6 +46,8 @@ public:
         NoChange = 0,
         NameChanged = 1 << 1,
         ChildrenChanged = 1 << 2,
+        PositionChanged = 1 << 3,
+        SizeChanged = 1 << 4,
     };
 
     struct LayerProperties {
@@ -56,22 +60,29 @@ public:
 
         String name;
         Vector<uint64_t> children;
+        WebCore::FloatPoint position;
+        WebCore::FloatSize size;
     };
 
-    RemoteLayerTreeTransaction();
+    explicit RemoteLayerTreeTransaction();
     ~RemoteLayerTreeTransaction();
 
     void encode(CoreIPC::ArgumentEncoder&) const;
     static bool decode(CoreIPC::ArgumentDecoder*, RemoteLayerTreeTransaction&);
 
+    uint64_t rootLayerID() const { return m_rootLayerID; }
+    void setRootLayerID(uint64_t rootLayerID);
     void layerPropertiesChanged(const RemoteGraphicsLayer*, unsigned changedProperties);
+    void setDestroyedLayerIDs(Vector<uint64_t>);
 
 #ifndef NDEBUG
     void dump() const;
 #endif
 
 private:
+    uint64_t m_rootLayerID;
     HashMap<uint64_t, LayerProperties> m_changedLayerProperties;
+    Vector<uint64_t> m_destroyedLayerIDs;
 };
 
 } // namespace WebKit

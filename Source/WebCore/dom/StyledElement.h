@@ -40,8 +40,8 @@ public:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() { return 0; }
     void invalidateStyleAttribute();
 
-    const StylePropertySet* inlineStyle() const { return attributeData() ? attributeData()->inlineStyle() : 0; }
-    StylePropertySet* ensureInlineStyle() { return mutableAttributeData()->ensureMutableInlineStyle(this); }
+    const StylePropertySet* inlineStyle() const { return attributeData() ? attributeData()->m_inlineStyle.get() : 0; }
+    StylePropertySet* ensureMutableInlineStyle();
     
     // Unlike StylePropertySet setters, these implement invalidation.
     bool setInlineStyleProperty(CSSPropertyID, int identifier, bool important = false);
@@ -56,15 +56,13 @@ public:
 
     virtual void collectStyleForPresentationAttribute(const Attribute&, StylePropertySet*) { }
 
-    // May be called by ElementAttributeData::cloneDataFrom().
-    enum ShouldReparseStyleAttribute { DoNotReparseStyleAttribute = 0, ReparseStyleAttribute = 1 };
-    void styleAttributeChanged(const AtomicString& newStyleString, ShouldReparseStyleAttribute = ReparseStyleAttribute);
-
 protected:
-    StyledElement(const QualifiedName&, Document*, ConstructionType);
+    StyledElement(const QualifiedName& name, Document* document, ConstructionType type)
+        : Element(name, document, type)
+    {
+    }
 
     virtual void attributeChanged(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void parseAttribute(const Attribute&) OVERRIDE;
 
     virtual bool isPresentationAttribute(const QualifiedName&) const { return false; }
 
@@ -75,8 +73,12 @@ protected:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
 private:
+    void styleAttributeChanged(const AtomicString& newStyleString);
+
     virtual void updateStyleAttribute() const;
     void inlineStyleChanged();
+    PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
+    void setInlineStyleFromString(const AtomicString&);
 
     void makePresentationAttributeCacheKey(PresentationAttributeCacheKey&) const;
     void rebuildPresentationAttributeStyle();
@@ -84,14 +86,17 @@ private:
 
 inline void StyledElement::invalidateStyleAttribute()
 {
-    clearIsStyleAttributeValid();
+    ASSERT(attributeData());
+    attributeData()->m_styleAttributeIsDirty = true;
 }
 
 inline const StylePropertySet* StyledElement::presentationAttributeStyle()
 {
-    if (attributeStyleDirty())
+    if (!attributeData())
+        return 0;
+    if (attributeData()->m_presentationAttributeStyleIsDirty)
         rebuildPresentationAttributeStyle();
-    return attributeData() ? attributeData()->presentationAttributeStyle() : 0;
+    return attributeData()->presentationAttributeStyle();
 }
 
 } //namespace

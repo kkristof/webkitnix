@@ -49,6 +49,7 @@ void CoordinatedBackingStoreTile::swapBuffers(WebCore::TextureMapper* textureMap
         shouldReset = true;
     }
 
+    ASSERT(textureMapper->maxTextureSize().width() >= m_tileRect.size().width() && textureMapper->maxTextureSize().height() >= m_tileRect.size().height());
     if (shouldReset)
         texture->reset(m_tileRect.size(), m_surface->flags() & ShareableBitmap::SupportsAlpha ? BitmapTexture::SupportsAlpha : 0);
 
@@ -74,6 +75,13 @@ void CoordinatedBackingStore::removeTile(int id)
 {
     ASSERT(m_tiles.contains(id));
     m_tilesToRemove.add(id);
+}
+
+void CoordinatedBackingStore::removeAllTiles()
+{
+    HashMap<int, CoordinatedBackingStoreTile>::iterator end = m_tiles.end();
+    for (HashMap<int, CoordinatedBackingStoreTile>::iterator it = m_tiles.begin(); it != end; ++it)
+        m_tilesToRemove.add(it->key);
 }
 
 void CoordinatedBackingStore::updateTile(int id, const IntRect& sourceRect, const IntRect& tileRect, PassRefPtr<ShareableSurface> backBuffer, const IntPoint& offset)
@@ -110,6 +118,8 @@ static bool shouldShowTileDebugVisuals()
 {
 #if PLATFORM(QT)
     return (qgetenv("QT_WEBKIT_SHOW_COMPOSITING_DEBUG_VISUALS") == "1");
+#elif USE(CAIRO)
+    return (String(getenv("WEBKIT_SHOW_COMPOSITING_DEBUG_VISUALS")) == "1");
 #endif
     return false;
 }

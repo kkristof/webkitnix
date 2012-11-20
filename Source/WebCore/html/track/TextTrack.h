@@ -114,6 +114,13 @@ public:
     void invalidateTrackIndex();
 
     bool isRendered();
+    int trackIndexRelativeToRenderedTracks();
+
+    bool hasBeenConfigured() const { return m_hasBeenConfigured; }
+    void setHasBeenConfigured(bool flag) { m_hasBeenConfigured = flag; }
+
+    virtual bool isDefault() const { return false; }
+    virtual void setIsDefault(bool) { }
 
 protected:
     TextTrack(ScriptExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
@@ -130,8 +137,10 @@ private:
     TextTrackClient* m_client;
     TextTrackType m_trackType;
     ReadinessState m_readinessState;
-    bool m_showingByDefault;
     int m_trackIndex;
+    int m_renderedTrackIndex;
+    bool m_showingByDefault;
+    bool m_hasBeenConfigured;
 };
 
 } // namespace WebCore

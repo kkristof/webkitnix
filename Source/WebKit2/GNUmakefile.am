@@ -88,6 +88,7 @@ libwebkit2gtk_@WEBKITGTK_API_MAJOR_VERSION@_@WEBKITGTK_API_MINOR_VERSION@_la_CPP
 	-I$(srcdir)/Source/WebKit2/WebProcess/WebCoreSupport/gtk \
 	-I$(srcdir)/Source/WebKit2/WebProcess/WebCoreSupport/soup \
 	-I$(srcdir)/Source/WebKit2/WebProcess/WebPage \
+    -I$(srcdir)/Source/WebKit2/WebProcess/WebPage/atk \
 	-I$(srcdir)/Source/WebKit2/WebProcess/WebPage/gtk \
 	-I$(top_builddir)/DerivedSources/WebKit2 \
 	-I$(top_builddir)/DerivedSources/WebKit2/include \
@@ -161,6 +162,7 @@ libwebkit2gtk_@WEBKITGTK_API_MAJOR_VERSION@_@WEBKITGTK_API_MINOR_VERSION@_la_LDF
 libwebkit2gtk_@WEBKITGTK_API_MAJOR_VERSION@_@WEBKITGTK_API_MINOR_VERSION@_la_LIBADD = \
 	-lpthread \
 	libWebCore.la \
+	libWebCorePlatform.la \
 	libWebCoreModules.la \
 	libjavascriptcoregtk-@WEBKITGTK_API_MAJOR_VERSION@.@WEBKITGTK_API_MINOR_VERSION@.la \
 	libWebCoreGtk.la \
@@ -532,6 +534,7 @@ Programs_WebKitPluginProcess_LDADD = \
 	-lpthread \
 	libjavascriptcoregtk-@WEBKITGTK_API_MAJOR_VERSION@.@WEBKITGTK_API_MINOR_VERSION@.la \
 	libWebCore.la \
+	libWebCorePlatform.la \
 	libWebCoreGtk2.la \
 	$(CAIRO_LIBS) \
 	$(COVERAGE_LDFLAGS) \
@@ -540,6 +543,7 @@ Programs_WebKitPluginProcess_LDADD = \
 	$(GSTREAMER_LIBS) \
 	$(GTK2_LIBS) \
 	$(JPEG_LIBS) \
+	$(LIBSECRET_LIBS) \
 	$(LIBSOUP_LIBS) \
 	$(LIBXML_LIBS) \
 	$(LIBXSLT_LIBS) \
@@ -579,6 +583,7 @@ EXTRA_DIST += \
 	$(WebKit2)/Scripts/webkit2/model.py \
 	$(WebKit2)/Scripts/webkit2/parser.py \
 	$(WebKit2)/UIProcess/API/gtk/webkit2marshal.list \
+	$(WebKit2)/UIProcess/InspectorServer/front-end/inspectorPageIndex.html \
 	$(WebKit2)/Scripts/generate-forwarding-headers.pl \
 	$(shell ls $(WebKit2)/PluginProcess/*.in) \
 	$(shell ls $(WebKit2)/Shared/*.in) \
@@ -608,6 +613,6 @@ EXTRA_DIST += \
 
 # Installing remote inspector files
 remoteinspectordir = ${datadir}/webkitgtk-@WEBKITGTK_API_VERSION@/webinspector
-dist_remoteinspector_DATA = \
+remoteinspector_DATA = \
 	$(WebKit2)/UIProcess/InspectorServer/front-end/inspectorPageIndex.html
 

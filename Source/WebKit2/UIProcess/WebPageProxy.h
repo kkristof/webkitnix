@@ -405,7 +405,9 @@ public:
     CGContextRef containingWindowGraphicsContext();
     bool shouldDelayWindowOrderingForEvent(const WebMouseEvent&);
     bool acceptsFirstMouse(int eventNumber, const WebMouseEvent&);
-    
+
+    void setAcceleratedCompositingRootLayer(const WebCore::GraphicsLayer*);
+
 #if USE(APPKIT)
     WKView* wkView() const;
 #endif
@@ -724,6 +726,7 @@ public:
     static WebCore::Color backingStoreUpdatesFlashColor();
 
     void saveDataToFileInDownloadsFolder(const String& suggestedFilename, const String& mimeType, const String& originatingURLString, WebData*);
+    void savePDFToFileInDownloadsFolder(const String& suggestedFilename, const String& originatingURLString, const CoreIPC::DataReference&);
 
     void linkClicked(const String&, const WebMouseEvent&);
 

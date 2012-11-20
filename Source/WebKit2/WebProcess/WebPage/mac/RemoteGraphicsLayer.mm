@@ -56,6 +56,7 @@ RemoteGraphicsLayer::RemoteGraphicsLayer(GraphicsLayerClient* client, RemoteLaye
 
 RemoteGraphicsLayer::~RemoteGraphicsLayer()
 {
+    willBeDestroyed();
 }
 
 void RemoteGraphicsLayer::setName(const String& name)
@@ -110,6 +111,31 @@ bool RemoteGraphicsLayer::replaceChild(GraphicsLayer* oldChild, GraphicsLayer* n
     return false;
 }
 
+void RemoteGraphicsLayer::removeFromParent()
+{
+    if (m_parent)
+        static_cast<RemoteGraphicsLayer*>(m_parent)->noteSublayersChanged();
+    GraphicsLayer::removeFromParent();
+}
+
+void RemoteGraphicsLayer::setPosition(const FloatPoint& position)
+{
+    if (position == m_position)
+        return;
+
+    GraphicsLayer::setPosition(position);
+    noteLayerPropertiesChanged(RemoteLayerTreeTransaction::PositionChanged);
+}
+
+void RemoteGraphicsLayer::setSize(const FloatSize& size)
+{
+    if (size == m_size)
+        return;
+
+    GraphicsLayer::setSize(size);
+    noteLayerPropertiesChanged(RemoteLayerTreeTransaction::SizeChanged);
+}
+
 void RemoteGraphicsLayer::setNeedsDisplay()
 {
     FloatRect hugeRect(-std::numeric_limits<float>::max() / 2, -std::numeric_limits<float>::max() / 2,
@@ -135,6 +161,12 @@ void RemoteGraphicsLayer::flushCompositingStateForThisLayerOnly()
     m_context->currentTransaction().layerPropertiesChanged(this, m_uncommittedLayerChanges);
 
     m_uncommittedLayerChanges = RemoteLayerTreeTransaction::NoChange;
+}
+
+void RemoteGraphicsLayer::willBeDestroyed()
+{
+    m_context->layerWillBeDestroyed(this);
+    GraphicsLayer::willBeDestroyed();
 }
 
 void RemoteGraphicsLayer::noteLayerPropertiesChanged(unsigned layerChanges)

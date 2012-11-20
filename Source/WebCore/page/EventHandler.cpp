@@ -156,7 +156,7 @@ public:
     OptionalCursor(const Cursor& cursor) : m_isCursorChange(true), m_cursor(cursor) { }
 
     bool isCursorChange() const { return m_isCursorChange; }
-    const Cursor& cursor() const { return m_cursor; }
+    const Cursor& cursor() const { ASSERT(m_isCursorChange); return m_cursor; }
 
 private:
     bool m_isCursorChange;
@@ -397,6 +397,7 @@ void EventHandler::clear()
 #endif
 #if ENABLE(GESTURE_EVENTS)
     m_scrollGestureHandlingNode = 0;
+    m_scrollbarHandlingScrollGesture = 0;
 #endif
     m_mouseMovedDurationRunningAverage = 0;
     m_baseEventType = PlatformEvent::NoType;
@@ -1538,7 +1539,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     }
     return pointerCursor();
 }
-    
+
 static LayoutPoint documentPointForWindowPoint(Frame* frame, const IntPoint& windowPoint)
 {
     FrameView* view = frame->view();
@@ -1873,8 +1874,10 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
             scrollbar->mouseMoved(mouseEvent); // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
         if (FrameView* view = m_frame->view()) {
             OptionalCursor optionalCursor = selectCursor(mev, scrollbar);
-            if (optionalCursor.isCursorChange())
-                view->setCursor(optionalCursor.cursor());
+            if (optionalCursor.isCursorChange()) {
+                m_currentMouseCursor = optionalCursor.cursor();
+                view->setCursor(m_currentMouseCursor);
+            }
         }
     }
     
@@ -2518,8 +2521,11 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         return false;
 
     Node* eventTarget = 0;
-    if (gestureEvent.type() == PlatformEvent::GestureScrollEnd || gestureEvent.type() == PlatformEvent::GestureScrollUpdate)
+    Scrollbar* scrollbar = 0;
+    if (gestureEvent.type() == PlatformEvent::GestureScrollEnd || gestureEvent.type() == PlatformEvent::GestureScrollUpdate) {
+        scrollbar = m_scrollbarHandlingScrollGesture.get();
         eventTarget = m_scrollGestureHandlingNode.get();
+    }
 
     IntPoint adjustedPoint = gestureEvent.position();
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
@@ -2537,10 +2543,27 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     if (!shouldGesturesTriggerActive())
         hitType |= HitTestRequest::ReadOnly;
 
-    if (!eventTarget || !(hitType & HitTestRequest::ReadOnly)) {
+    if ((!scrollbar && !eventTarget) || !(hitType & HitTestRequest::ReadOnly)) {
         IntPoint hitTestPoint = m_frame->view()->windowToContents(adjustedPoint);
-        HitTestResult result = hitTestResultAtPoint(hitTestPoint, false, false, DontHitTestScrollbars, hitType);
+        HitTestResult result = hitTestResultAtPoint(hitTestPoint, false, false, ShouldHitTestScrollbars, hitType);
         eventTarget = result.targetNode();
+        if (!scrollbar) {
+            FrameView* view = m_frame->view();
+            scrollbar = view ? view->scrollbarAtPoint(gestureEvent.position()) : 0;
+        }
+        if (!scrollbar)
+            scrollbar = result.scrollbar();
+    }
+
+    if (scrollbar) {
+        bool eventSwallowed = scrollbar->gestureEvent(gestureEvent);
+        if (gestureEvent.type() == PlatformEvent::GestureScrollBegin && eventSwallowed)
+            m_scrollbarHandlingScrollGesture = scrollbar;
+        else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd || !eventSwallowed)
+            m_scrollbarHandlingScrollGesture = 0;
+
+        if (eventSwallowed)
+            return true;
     }
 
     if (eventTarget) {
@@ -2655,6 +2678,11 @@ bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gesture
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
 {
     return handleGestureScrollCore(gestureEvent, ScrollByPixelWheelEvent, true);
+}
+
+bool EventHandler::isScrollbarHandlingGestures() const
+{
+    return m_scrollbarHandlingScrollGesture.get();
 }
 
 bool EventHandler::handleGestureScrollCore(const PlatformGestureEvent& gestureEvent, PlatformWheelEventGranularity granularity, bool latchedWheel)

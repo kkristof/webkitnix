@@ -62,7 +62,7 @@ private:
     virtual void didCloseWebSocketConnection(WebSocketServerConnection*);
 
     bool platformResourceForPath(const String& path, Vector<char>& data, String& contentType);
-#if (PLATFORM(QT) || PLATFORM(GTK)) || PLATFORM(NIX)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(NIX)
     void buildPageList(Vector<char>& data, String& contentType);
 #endif
 

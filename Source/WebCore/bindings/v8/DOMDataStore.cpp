@@ -57,9 +57,9 @@ DOMDataStore* DOMDataStore::current(v8::Isolate* isolate)
     V8PerIsolateData* data = isolate ? V8PerIsolateData::from(isolate) : V8PerIsolateData::current();
     if (UNLIKELY(!!data->domDataStore()))
         return data->domDataStore();
-    V8DOMWindowShell* context = V8DOMWindowShell::getEntered();
-    if (UNLIKELY(!!context))
-        return context->world()->isolatedWorldDOMDataStore();
+    V8DOMWindowShell* shell = V8DOMWindowShell::isolated(v8::Context::GetEntered());
+    if (UNLIKELY(!!shell))
+        return shell->world()->isolatedWorldDOMDataStore();
     return &mainWorldDOMDataStore;
 }
 
@@ -83,6 +83,9 @@ void DOMDataStore::weakCallback(v8::Persistent<v8::Value> value, void* context)
     key->clearWrapper();
     value.Dispose();
     value.Clear();
+    // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
+    // inside key->deref(), which causes Node destructions. We should
+    // make Node destructions incremental.
     info->derefObject(object);
 }
 

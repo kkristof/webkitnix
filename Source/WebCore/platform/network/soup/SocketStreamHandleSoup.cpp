@@ -100,6 +100,7 @@ SocketStreamHandle::SocketStreamHandle(GSocketConnection* socketConnection, Sock
     : SocketStreamHandleBase(KURL(), client)
     , m_readBuffer(0)
 {
+    LOG(Network, "SocketStreamHandle %p new client %p", this, m_client);
     m_id = activateHandle(this);
     connected(socketConnection, 0);
 }
@@ -164,10 +165,10 @@ void SocketStreamHandle::writeReady()
 
 int SocketStreamHandle::platformSend(const char* data, int length)
 {
+    LOG(Network, "SocketStreamHandle %p platformSend", this);
     if (!m_outputStream || !data)
         return 0;
 
-    LOG(Network, "SocketStreamHandle %p platformSend", this);
     GOwnPtr<GError> error;
     gssize written = g_pollable_output_stream_write_nonblocking(m_outputStream.get(), data, length, 0, &error.outPtr());
     if (error) {

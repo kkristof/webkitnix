@@ -31,7 +31,7 @@
 // ModifyAttribute - measure attribute modification performance
 
 var ModifyAttribute = {};
-var nLoops = 100000;
+var nLoops = 500000;
 
 ModifyAttribute.CreateElementToSetUp = function() {
     return document.createElement('div');

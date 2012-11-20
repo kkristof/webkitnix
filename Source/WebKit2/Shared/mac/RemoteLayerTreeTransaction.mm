@@ -30,6 +30,7 @@
 #include "MessageDecoder.h"
 #include "MessageEncoder.h"
 #include "RemoteGraphicsLayer.h"
+#include "WebCoreArgumentCoders.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 
@@ -51,6 +52,12 @@ void RemoteLayerTreeTransaction::LayerProperties::encode(CoreIPC::ArgumentEncode
 
     if (changedProperties & ChildrenChanged)
         encoder << children;
+
+    if (changedProperties & PositionChanged)
+        encoder << position;
+
+    if (changedProperties & SizeChanged)
+        encoder << size;
 }
 
 bool RemoteLayerTreeTransaction::LayerProperties::decode(CoreIPC::ArgumentDecoder* decoder, LayerProperties& result)
@@ -73,6 +80,15 @@ bool RemoteLayerTreeTransaction::LayerProperties::decode(CoreIPC::ArgumentDecode
         }
     }
 
+    if (result.changedProperties & PositionChanged) {
+        if (!decoder->decode(result.position))
+            return false;
+    }
+
+    if (result.changedProperties & SizeChanged) {
+        if (!decoder->decode(result.size))
+            return false;
+    }
     return true;
 }
 
@@ -86,15 +102,36 @@ RemoteLayerTreeTransaction::~RemoteLayerTreeTransaction()
 
 void RemoteLayerTreeTransaction::encode(CoreIPC::ArgumentEncoder& encoder) const
 {
+    encoder << m_rootLayerID;
     encoder << m_changedLayerProperties;
+    encoder << m_destroyedLayerIDs;
 }
 
 bool RemoteLayerTreeTransaction::decode(CoreIPC::ArgumentDecoder* decoder, RemoteLayerTreeTransaction& result)
 {
+    if (!decoder->decode(result.m_rootLayerID))
+        return false;
+    if (!result.m_rootLayerID)
+        return false;
+
     if (!decoder->decode(result.m_changedLayerProperties))
         return false;
 
+    if (!decoder->decode(result.m_destroyedLayerIDs))
+        return false;
+    for (uint64_t layerID: result.m_destroyedLayerIDs) {
+        if (!layerID)
+            return false;
+    }
+
     return true;
+}
+
+void RemoteLayerTreeTransaction::setRootLayerID(uint64_t rootLayerID)
+{
+    ASSERT_ARG(rootLayerID, rootLayerID);
+
+    m_rootLayerID = rootLayerID;
 }
 
 void RemoteLayerTreeTransaction::layerPropertiesChanged(const RemoteGraphicsLayer* graphicsLayer, unsigned changedProperties)
@@ -116,6 +153,17 @@ void RemoteLayerTreeTransaction::layerPropertiesChanged(const RemoteGraphicsLaye
             layerProperties.children.uncheckedAppend(childLayer->layerID());
         }
     }
+
+    if (changedProperties & PositionChanged)
+        layerProperties.position = graphicsLayer->position();
+
+    if (changedProperties & SizeChanged)
+        layerProperties.size = graphicsLayer->size();
+}
+
+void RemoteLayerTreeTransaction::setDestroyedLayerIDs(Vector<uint64_t> destroyedLayerIDs)
+{
+    m_destroyedLayerIDs = std::move(destroyedLayerIDs);
 }
 
 #ifndef NDEBUG
@@ -159,12 +207,32 @@ static void dumpChangedLayers(StringBuilder& builder, const HashMap<uint64_t, Re
             writeIndent(builder, 3);
             builder.append("(children (");
             for (size_t i = 0; i < layerProperties.children.size(); ++i) {
-                if (i != 0)
+                if (i)
                     builder.append(' ');
                 builder.appendNumber(layerProperties.children[i]);
             }
 
             builder.append(")");
+        }
+
+        if (layerProperties.changedProperties & RemoteLayerTreeTransaction::PositionChanged) {
+            builder.append('\n');
+            writeIndent(builder, 3);
+            builder.append("(position ");
+            builder.append(String::number(layerProperties.position.x()));
+            builder.append(" ");
+            builder.append(String::number(layerProperties.position.y()));
+            builder.append(')');
+        }
+
+        if (layerProperties.changedProperties & RemoteLayerTreeTransaction::SizeChanged) {
+            builder.append('\n');
+            writeIndent(builder, 3);
+            builder.append("(size ");
+            builder.append(String::number(layerProperties.size.width()));
+            builder.append(" ");
+            builder.append(String::number(layerProperties.size.height()));
+            builder.append(')');
         }
 
         builder.append(")\n");
@@ -176,7 +244,24 @@ void RemoteLayerTreeTransaction::dump() const
     StringBuilder builder;
 
     builder.append("(\n");
+
+    writeIndent(builder, 1);
+    builder.append("(root-layer ");
+    builder.appendNumber(m_rootLayerID);
+    builder.append(")\n");
+
     dumpChangedLayers(builder, m_changedLayerProperties);
+
+    if (!m_destroyedLayerIDs.isEmpty()) {
+        writeIndent(builder, 1);
+        builder.append("(destroyed-layers ");
+        for (size_t i = 0; i < m_destroyedLayerIDs.size(); ++i) {
+            if (i)
+                builder.append(' ');
+            builder.appendNumber(m_destroyedLayerIDs[i]);
+        }
+        builder.append(")\n");
+    }
     builder.append(")\n");
 
     fprintf(stderr, "%s", builder.toString().utf8().data());

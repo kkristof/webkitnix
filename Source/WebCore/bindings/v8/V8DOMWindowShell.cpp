@@ -176,7 +176,7 @@ static void setInjectedScriptContextDebugId(v8::Handle<v8::Context> targetContex
         snprintf(buffer, sizeof(buffer), "injected");
     else
         snprintf(buffer, sizeof(buffer), "injected,%d", debugId);
-    targetContext->SetData(v8::String::New(buffer));
+    targetContext->SetEmbedderData(0, v8::String::New(buffer));
 }
 
 PassOwnPtr<V8DOMWindowShell> V8DOMWindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world)
@@ -425,9 +425,8 @@ bool V8DOMWindowShell::installDOMWindow()
 
     V8DOMWindow::installPerContextProperties(windowWrapper, window);
 
-    V8DOMWrapper::setDOMWrapper(windowWrapper, &V8DOMWindow::info, window);
     V8DOMWrapper::setDOMWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8DOMWindow::info, window);
-    V8DOMWrapper::setJSWrapperForDOMObject(PassRefPtr<DOMWindow>(window), windowWrapper);
+    V8DOMWrapper::createDOMWrapper(PassRefPtr<DOMWindow>(window), &V8DOMWindow::info, windowWrapper);
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:

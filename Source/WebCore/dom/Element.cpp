@@ -46,7 +46,7 @@
 #include "HTMLCollection.h"
 #include "HTMLDocument.h"
 #include "HTMLElement.h"
-#include "HTMLFormCollection.h"
+#include "HTMLFormControlsCollection.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLLabelElement.h"
 #include "HTMLNames.h"
@@ -305,7 +305,7 @@ bool Element::hasAttribute(const QualifiedName& name) const
 
 const AtomicString& Element::getAttribute(const QualifiedName& name) const
 {
-    if (UNLIKELY(name == styleAttr) && !isStyleAttributeValid())
+    if (UNLIKELY(name == styleAttr) && attributeData() && attributeData()->m_styleAttributeIsDirty)
         updateStyleAttribute();
 
 #if ENABLE(SVG)
@@ -663,7 +663,7 @@ const AtomicString& Element::getAttribute(const AtomicString& name) const
     bool ignoreCase = shouldIgnoreAttributeCase(this);
 
     // Update the 'style' attribute if it's invalid and being requested:
-    if (!isStyleAttributeValid() && equalPossiblyIgnoringCase(name, styleAttr.localName(), ignoreCase))
+    if (attributeData() && attributeData()->m_styleAttributeIsDirty && equalPossiblyIgnoringCase(name, styleAttr.localName(), ignoreCase))
         updateStyleAttribute();
 
 #if ENABLE(SVG)
@@ -759,18 +759,18 @@ static bool checkNeedsStyleInvalidationForIdChange(const AtomicString& oldId, co
 
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue)
 {
-    parseAttribute(Attribute(name, newValue));
+    if (ElementShadow* parentElementShadow = shadowOfParentForDistribution(this)) {
+        if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
+            parentElementShadow->invalidateDistribution();
+    }
+
+    parseAttribute(name, newValue);
 
     document()->incDOMTreeVersion();
 
     StyleResolver* styleResolver = document()->styleResolverIfExists();
-    ElementShadow* elementShadow = shadowOfParentForDistribution(this);
-    if (elementShadow)
-        elementShadow->ensureSelectFeatureSetCollected();
-
     bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
     bool shouldInvalidateStyle = false;
-    bool shouldInvalidateDistribution = false;
 
     if (isIdAttributeName(name)) {
         AtomicString oldId = attributeData()->idForStyleResolution();
@@ -778,32 +778,23 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         if (newId != oldId) {
             attributeData()->setIdForStyleResolution(newId);
             shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver);
-            shouldInvalidateDistribution |= elementShadow && !oldId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(oldId);
-            shouldInvalidateDistribution |= elementShadow && !newId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(newId);  
         }
-    } else if (name == HTMLNames::nameAttr)
+    } else if (name == classAttr)
+        classAttributeChanged(newValue);
+    else if (name == HTMLNames::nameAttr)
         setHasName(!newValue.isNull());
     else if (name == HTMLNames::pseudoAttr)
         shouldInvalidateStyle |= testShouldInvalidateStyle && isInShadowTree();
 
     shouldInvalidateStyle |= testShouldInvalidateStyle && styleResolver->hasSelectorForAttribute(name.localName());
-    shouldInvalidateDistribution |= elementShadow && elementShadow->selectRuleFeatureSet().hasSelectorForAttribute(name.localName());
 
     invalidateNodeListCachesInAncestors(&name, this);
 
     if (shouldInvalidateStyle)
         setNeedsStyleRecalc();
-    if (shouldInvalidateDistribution)
-        elementShadow->invalidateDistribution();
-        
+
     if (AXObjectCache::accessibilityEnabled())
         document()->axObjectCache()->handleAttributeChanged(name, this);
-}
-
-void Element::parseAttribute(const Attribute& attribute)
-{
-    if (attribute.name() == classAttr)
-        classAttributeChanged(attribute.value());
 }
 
 template <typename CharacterType>
@@ -926,11 +917,6 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
     bool testShouldInvalidateStyle = attached() && styleResolver && styleChangeType() < FullStyleChange;
     bool shouldInvalidateStyle = false;
 
-    ElementShadow* elementShadow = shadowOfParentForDistribution(this);
-    if (elementShadow)
-        elementShadow->ensureSelectFeatureSetCollected();
-    bool shouldInvalidateDistribution = false;
-
     if (classStringHasClassName(newClassString)) {
         const ElementAttributeData* attributeData = ensureAttributeData();
         const bool shouldFoldCase = document()->inQuirksMode();
@@ -940,11 +926,10 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 
         const SpaceSplitString& newClasses = attributeData->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, newClasses, styleResolver);
-        shouldInvalidateDistribution = elementShadow && checkNeedsDistributionInvalidationForClassChange(oldClasses, newClasses, elementShadow);
     } else if (const ElementAttributeData* attributeData = this->attributeData()) {
         const SpaceSplitString& oldClasses = attributeData->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForClassChange(oldClasses, styleResolver);
-        shouldInvalidateDistribution = elementShadow && checkNeedsDistributionInvalidationForClassChange(oldClasses, elementShadow);
+
         attributeData->clearClass();
     }
 
@@ -953,8 +938,41 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 
     if (shouldInvalidateStyle)
         setNeedsStyleRecalc();
-    if (shouldInvalidateDistribution)
-        elementShadow->invalidateDistribution();
+}
+
+bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* elementShadow, const QualifiedName& name, const AtomicString& newValue)
+{
+    ASSERT(elementShadow);
+    elementShadow->ensureSelectFeatureSetCollected();
+
+    if (isIdAttributeName(name)) {
+        AtomicString oldId = attributeData()->idForStyleResolution();
+        AtomicString newId = makeIdForStyleResolution(newValue, document()->inQuirksMode());
+        if (newId != oldId) {
+            if (!oldId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(oldId))
+                return true;
+            if (!newId.isEmpty() && elementShadow->selectRuleFeatureSet().hasSelectorForId(newId))
+                return true;
+        }
+    }
+
+    if (name == HTMLNames::classAttr) {
+        const AtomicString& newClassString = newValue;
+        if (classStringHasClassName(newClassString)) {
+            const ElementAttributeData* attributeData = ensureAttributeData();
+            const bool shouldFoldCase = document()->inQuirksMode();
+            const SpaceSplitString& oldClasses = attributeData->classNames();
+            const SpaceSplitString newClasses(newClassString, shouldFoldCase);
+            if (checkNeedsDistributionInvalidationForClassChange(oldClasses, newClasses, elementShadow))
+                return true;
+        } else if (const ElementAttributeData* attributeData = this->attributeData()) {
+            const SpaceSplitString& oldClasses = attributeData->classNames();
+            if (checkNeedsDistributionInvalidationForClassChange(oldClasses, elementShadow))
+                return true;
+        }
+    }
+
+    return elementShadow->selectRuleFeatureSet().hasSelectorForAttribute(name.localName());
 }
 
 // Returns true is the given attribute is an event handler.
@@ -1027,6 +1045,8 @@ bool Element::hasEquivalentAttributes(const Element* other) const
 {
     const ElementAttributeData* attributeData = updatedAttributeData();
     const ElementAttributeData* otherAttributeData = other->updatedAttributeData();
+    if (attributeData == otherAttributeData)
+        return true;
     if (attributeData)
         return attributeData->isEquivalent(otherAttributeData);
     if (otherAttributeData)
@@ -1131,6 +1151,9 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
 
 void Element::removedFrom(ContainerNode* insertionPoint)
 {
+#if ENABLE(DIALOG_ELEMENT)
+    setIsInTopLayer(false);
+#endif
 #if ENABLE(FULLSCREEN_API)
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -1587,7 +1610,7 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
 PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
 {
     if (!attrNode) {
-        ec = NATIVE_TYPE_ERR;
+        ec = TYPE_MISMATCH_ERR;
         return 0;
     }
 
@@ -1629,7 +1652,7 @@ PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionCode& ec)
 PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
 {
     if (!attr) {
-        ec = NATIVE_TYPE_ERR;
+        ec = TYPE_MISMATCH_ERR;
         return 0;
     }
     if (attr->ownerElement() != this) {
@@ -1717,7 +1740,7 @@ void Element::removeAttribute(const AtomicString& name)
     AtomicString localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
     size_t index = attributeData()->getAttributeItemIndex(localName, false);
     if (index == notFound) {
-        if (UNLIKELY(localName == styleAttr) && !isStyleAttributeValid() && isStyledElement())
+        if (UNLIKELY(localName == styleAttr) && attributeData()->m_styleAttributeIsDirty && isStyledElement())
             static_cast<StyledElement*>(this)->removeAllInlineStyleProperties();
         return;
     }
@@ -2157,6 +2180,27 @@ void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(boo
 }
 #endif    
 
+#if ENABLE(DIALOG_ELEMENT)
+bool Element::isInTopLayer() const
+{
+    return hasRareData() && elementRareData()->isInTopLayer();
+}
+
+void Element::setIsInTopLayer(bool inTopLayer)
+{
+    if (isInTopLayer() == inTopLayer)
+        return;
+
+    ensureElementRareData()->setIsInTopLayer(inTopLayer);
+
+    if (inTopLayer)
+        document()->addToTopLayer(this);
+    else
+        document()->removeFromTopLayer(this);
+    setNeedsStyleRecalc(SyntheticStyleChange);
+}
+#endif
+
 #if ENABLE(POINTER_LOCK)
 void Element::webkitRequestPointerLock()
 {
@@ -2180,8 +2224,7 @@ SpellcheckAttributeState Element::spellcheckAttributeState() const
 
 bool Element::isSpellCheckingEnabled() const
 {
-    const Element* element = this;
-    while (element) {
+    for (const Element* element = this; element; element = element->parentOrHostElement()) {
         switch (element->spellcheckAttributeState()) {
         case SpellcheckAttributeTrue:
             return true;
@@ -2190,14 +2233,6 @@ bool Element::isSpellCheckingEnabled() const
         case SpellcheckAttributeDefault:
             break;
         }
-
-        ContainerNode* parent = const_cast<Element*>(element)->parentOrHostNode();
-        if (parent && parent->isElementNode())
-            element = toElement(parent);
-        else if (parent && parent->isShadowRoot())
-            element = toElement(parent->parentOrHostNode());
-        else
-            element = 0;
     }
 
     return true;
@@ -2402,7 +2437,7 @@ PassRefPtr<HTMLCollection> ElementRareData::ensureCachedHTMLCollection(Element* 
         collection = HTMLOptionsCollection::create(element);
     } else if (type == FormControls) {
         ASSERT(element->hasTagName(formTag) || element->hasTagName(fieldsetTag));
-        collection = HTMLFormCollection::create(element);
+        collection = HTMLFormControlsCollection::create(element);
 #if ENABLE(MICRODATA)
     } else if (type == ItemProperties) {
         collection = HTMLPropertiesCollection::create(element);
@@ -2509,8 +2544,6 @@ void Element::cloneAttributesFromElement(const Element& other)
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
 
-    setIsStyleAttributeValid(other.isStyleAttributeValid());
-
     other.updateInvalidAttributes();
     if (!other.m_attributeData) {
         m_attributeData.clear();
@@ -2541,11 +2574,6 @@ void Element::cloneAttributesFromElement(const Element& other)
 
     for (unsigned i = 0; i < m_attributeData->length(); ++i) {
         const Attribute* attribute = const_cast<const ElementAttributeData*>(m_attributeData.get())->attributeItem(i);
-        // This optimization isn't very nicely factored, but a huge win for cloning elements with inline style.
-        if (isStyledElement() && attribute->name() == HTMLNames::styleAttr) {
-            static_cast<StyledElement*>(this)->styleAttributeChanged(attribute->value(), StyledElement::DoNotReparseStyleAttribute);
-            continue;
-        }
         attributeChanged(attribute->name(), attribute->value());
     }
 }

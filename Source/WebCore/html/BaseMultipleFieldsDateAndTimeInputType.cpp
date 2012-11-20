@@ -130,7 +130,17 @@ bool BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrRea
 
 void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const String& value)
 {
-    element()->setValue(value, DispatchChangeEvent);
+    if (element()->isValidValue(value)) {
+        element()->setValue(value, DispatchChangeEvent);
+        return;
+    }
+
+    if (!m_dateTimeEditElement)
+        return;
+    DateComponents date;
+    unsigned end;
+    if (date.parseDate(value.characters(), value.length(), 0, end) && end == value.length())
+        m_dateTimeEditElement->setOnlyYearMonthDay(date);
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
@@ -315,7 +325,7 @@ FormControlState BaseMultipleFieldsDateAndTimeInputType::saveFormControlState() 
 void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     InputType::setValue(sanitizedValue, valueChanged, eventBehavior);
-    if (valueChanged)
+    if (valueChanged || (sanitizedValue.isEmpty() && m_dateTimeEditElement && m_dateTimeEditElement->valueAsDateTimeFieldsState().hasAnyValue()))
         updateInnerTextValue();
 }
 

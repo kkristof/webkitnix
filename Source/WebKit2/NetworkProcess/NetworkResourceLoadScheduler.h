@@ -26,6 +26,7 @@
 #ifndef NetworkResourceLoadScheduler_h
 #define NetworkResourceLoadScheduler_h
 
+#include "NetworkResourceLoader.h"
 #include <WebCore/ResourceLoaderOptions.h>
 #include <WebCore/ResourceRequest.h>
 #include <WebCore/Timer.h>
@@ -36,6 +37,7 @@
 namespace WebKit {
 
 class HostRecord;
+class NetworkResourceLoadParameters;
 class NetworkConnectionToWebProcess;
 typedef uint64_t ResourceLoadIdentifier;
 
@@ -46,7 +48,7 @@ public:
     NetworkResourceLoadScheduler();
     
     // Adds the request to the queue for its host and create a unique identifier for it.
-    ResourceLoadIdentifier scheduleNetworkRequest(const WebCore::ResourceRequest&, WebCore::ResourceLoadPriority, WebCore::ContentSniffingPolicy, NetworkConnectionToWebProcess*);
+    ResourceLoadIdentifier scheduleResourceLoad(const NetworkResourceLoadParameters&, NetworkConnectionToWebProcess*);
     
     // Creates a unique identifier for an already-in-progress load.
     ResourceLoadIdentifier addLoadInProgress(const WebCore::KURL&);
@@ -62,6 +64,8 @@ public:
     void suspendPendingRequests();
     void resumePendingRequests();
     
+    NetworkResourceLoader* networkResourceLoaderForIdentifier(ResourceLoadIdentifier);
+
 private:
     enum CreateHostPolicy {
         CreateIfNotFound,
@@ -79,6 +83,8 @@ private:
 
     static void removeScheduledLoadIdentifiers(void* context);
     void removeScheduledLoadIdentifiers();
+
+    HashMap<ResourceLoadIdentifier, RefPtr<NetworkResourceLoader> > m_resourceLoaders;
 
     typedef HashMap<String, HostRecord*, StringHash> HostMap;
     HostMap m_hosts;

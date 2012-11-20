@@ -139,7 +139,6 @@ InputHandler::InputHandler(WebPagePrivate* page)
     , m_delayKeyboardVisibilityChange(false)
     , m_request(0)
     , m_processingTransactionId(-1)
-    , m_focusZoomScale(0.0)
     , m_receivedBackspaceKeyDown(false)
     , m_expectedKeyUpChar(0)
 {
@@ -750,6 +749,24 @@ void InputHandler::requestSpellingCheckingOptions(imf_sp_text_t& spellCheckingOp
     const WebCore::IntPoint scrollPosition = m_webPage->mainFrame()->view()->scrollPosition();
     caretRect.move(scrollPosition.x(), scrollPosition.y());
 
+    // Calculate the offset for contentEditable since the marker offsets are relative to the node.
+    // Get caret position. Though the spelling markers might no longer exist, if this method is called we can assume the caret was placed on top of a marker earlier.
+    VisiblePosition caretPosition = m_currentFocusElement->document()->frame()->selection()->selection().visibleStart();
+
+    // Create a range from the start to end of word.
+    RefPtr<Range> rangeSelection = VisibleSelection(startOfWord(caretPosition), endOfWord(caretPosition)).toNormalizedRange();
+    if (!rangeSelection)
+        return;
+
+    unsigned location = 0;
+    unsigned length = 0;
+    TextIterator::getLocationAndLengthFromRange(m_currentFocusElement.get(), rangeSelection.get(), location, length);
+
+    if (location != notFound && length) {
+        spellCheckingOptionRequest.startTextPosition = location;
+        spellCheckingOptionRequest.endTextPosition = location + length;
+    }
+
     InputLog(LogLevelInfo, "InputHandler::requestSpellingCheckingOptions caretRect topLeft=(%d,%d), bottomRight=(%d,%d), startTextPosition=%d, endTextPosition=%d"
                             , caretRect.minXMinYCorner().x(), caretRect.minXMinYCorner().y(), caretRect.maxXMaxYCorner().x(), caretRect.maxXMaxYCorner().y()
                             , spellCheckingOptionRequest.startTextPosition, spellCheckingOptionRequest.endTextPosition);
@@ -1098,11 +1115,6 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
         break;
     }
     case VisibleSelection::NoSelection:
-        if (m_focusZoomScale) {
-            m_webPage->zoomAboutPoint(m_focusZoomScale, m_focusZoomLocation);
-            m_focusZoomScale = 0.0;
-            m_focusZoomLocation = WebCore::IntPoint();
-        }
         return;
     }
 
@@ -1114,18 +1126,17 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
     // The minimum size being defined as 3 mm is a good value based on my observations.
     static const int s_minimumTextHeightInPixels = Graphics::Screen::primaryScreen()->heightInMMToPixels(3);
 
-    if (m_webPage->isUserScalable() && fontHeight && fontHeight * m_webPage->currentScale() < s_minimumTextHeightInPixels && !isRunningDrt()) {
-        if (!m_focusZoomScale) {
-            m_focusZoomScale = m_webPage->currentScale();
-            m_focusZoomLocation = selectionFocusRect.location();
-        }
-        double zoomScaleRequired = static_cast<double>(s_minimumTextHeightInPixels) / fontHeight;
-        m_webPage->zoomAboutPoint(zoomScaleRequired, m_focusZoomLocation);
-        InputLog(LogLevelInfo, "InputHandler::ensureFocusTextElementVisible zooming in to %f at point %d, %d", zoomScaleRequired, m_focusZoomLocation.x(), m_focusZoomLocation.y());
-    } else {
-        m_focusZoomScale = 0.0;
-        m_focusZoomLocation = WebCore::IntPoint();
-    }
+    double zoomScaleRequired;
+    if (m_webPage->isUserScalable() && fontHeight && fontHeight * m_webPage->currentScale() < s_minimumTextHeightInPixels && !isRunningDrt())
+        zoomScaleRequired = static_cast<double>(s_minimumTextHeightInPixels) / fontHeight;
+    else
+        zoomScaleRequired = m_webPage->currentScale(); // Don't scale.
+
+    // The scroll location we should go to given the zoom required, could be adjusted later.
+    WebCore::FloatPoint offset(selectionFocusRect.location().y() - m_webPage->scrollPosition().x(), selectionFocusRect.location().y() - m_webPage->scrollPosition().y());
+    double inverseScale = zoomScaleRequired / m_webPage->currentScale();
+    WebCore::IntPoint destinationScrollLocation = WebCore::IntPoint(max(0, static_cast<int>(roundf(selectionFocusRect.location().x() - offset.x() / inverseScale))),
+                                                                    max(0, static_cast<int>(roundf(selectionFocusRect.location().y() - offset.y() / inverseScale))));
 
     if (elementFrame != mainFrame) { // Element is in a subframe.
         // Remove any scroll offset within the subframe to get the point relative to the main frame.
@@ -1141,7 +1152,9 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
     Position start = elementFrame->selection()->start();
     if (start.anchorNode() && start.anchorNode()->renderer()) {
         if (RenderLayer* layer = start.anchorNode()->renderer()->enclosingLayer()) {
-            WebCore::IntRect actualScreenRect = WebCore::IntRect(mainFrameView->scrollPosition(), m_webPage->actualVisibleSize());
+            // Screen rect after the required zoom.
+            WebCore::IntRect actualScreenRect = WebCore::IntRect(destinationScrollLocation.x(), destinationScrollLocation.y(), m_webPage->actualVisibleSize().width() / inverseScale, m_webPage->actualVisibleSize().height() / inverseScale);
+
             ScrollAlignment horizontalScrollAlignment = ScrollAlignment::alignToEdgeIfNeeded;
             ScrollAlignment verticalScrollAlignment = ScrollAlignment::alignToEdgeIfNeeded;
 
@@ -1188,14 +1201,25 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
             // In order to adjust the scroll position to ensure the focused input field is visible,
             // we allow overscrolling. However this overscroll has to be strictly allowed towards the
             // bottom of the page on the y axis only, where the virtual keyboard pops up from.
-            WebCore::IntPoint scrollLocation = revealRect.location();
-            scrollLocation.clampNegativeToZero();
+            destinationScrollLocation = revealRect.location();
+            destinationScrollLocation.clampNegativeToZero();
             WebCore::IntPoint maximumScrollPosition = WebCore::IntPoint(mainFrameView->contentsWidth() - actualScreenRect.width(), mainFrameView->contentsHeight() - actualScreenRect.height());
-            scrollLocation = scrollLocation.shrunkTo(maximumScrollPosition);
-            mainFrameView->setScrollPosition(scrollLocation);
-            mainFrameView->setConstrainsScrollingToContentEdge(true);
-            InputLog(LogLevelInfo, "InputHandler::ensureFocusTextElementVisible scrolling to point %d, %d", scrollLocation.x(), scrollLocation.y());
+            destinationScrollLocation = destinationScrollLocation.shrunkTo(maximumScrollPosition);
         }
+    }
+
+    if (destinationScrollLocation != mainFrameView->scrollPosition() || zoomScaleRequired != m_webPage->currentScale()) {
+        mainFrameView->setConstrainsScrollingToContentEdge(true);
+
+        InputLog(LogLevelInfo, "InputHandler::ensureFocusTextElementVisible zooming in to %f and scrolling to point %d, %d", zoomScaleRequired, destinationScrollLocation.x(), destinationScrollLocation.y());
+
+        // Animate to given scroll position & zoom level
+        m_webPage->m_finalBlockPoint = WebCore::FloatPoint(destinationScrollLocation);
+        m_webPage->m_blockZoomFinalScale = zoomScaleRequired;
+        m_webPage->m_shouldReflowBlock = false;
+        m_webPage->m_userPerformedManualZoom = true;
+        m_webPage->m_userPerformedManualScroll = true;
+        m_webPage->client()->animateBlockZoom(zoomScaleRequired, m_webPage->m_finalBlockPoint);
     }
     m_webPage->resumeBackingStore();
 }
@@ -1814,10 +1838,14 @@ bool InputHandler::setBatchEditingActive(bool active)
     ASSERT(backingStoreClient);
 
     // Enable / Disable the backingstore to prevent visual updates.
-    if (!active)
-        backingStoreClient->backingStore()->resumeScreenAndBackingStoreUpdates(BackingStore::RenderAndBlit);
-    else
-        backingStoreClient->backingStore()->suspendScreenAndBackingStoreUpdates();
+    // FIXME: Do we really need to suspend/resume both backingstore and screen here?
+    if (!active) {
+        backingStoreClient->backingStore()->resumeBackingStoreUpdates();
+        backingStoreClient->backingStore()->resumeScreenUpdates(BackingStore::RenderAndBlit);
+    } else {
+        backingStoreClient->backingStore()->suspendBackingStoreUpdates();
+        backingStoreClient->backingStore()->suspendScreenUpdates();
+    }
 
     return true;
 }
@@ -2177,7 +2205,7 @@ bool InputHandler::setText(spannable_string_t* spannableString)
     // Remove it and apply it as a keypress later.
     // Upstream Webkit bug created https://bugs.webkit.org/show_bug.cgi?id=70823
     bool requiresSpaceKeyPress = false;
-    if (textLength > 0 && textToInsert[textLength - 1] == 32 /* space */) {
+    if (textLength > 0 && textToInsert[textLength - 1] == KEYCODE_SPACE) {
         requiresSpaceKeyPress = true;
         textLength--;
         textToInsert.remove(textLength, 1);
@@ -2199,7 +2227,7 @@ bool InputHandler::setText(spannable_string_t* spannableString)
     }
 
     if (requiresSpaceKeyPress)
-        handleKeyboardInput(Platform::KeyboardEvent(32 /* space */, Platform::KeyboardEvent::KeyDown, 0), true /* changeIsPartOfComposition */);
+        handleKeyboardInput(Platform::KeyboardEvent(KEYCODE_SPACE, Platform::KeyboardEvent::KeyDown, 0), true /* changeIsPartOfComposition */);
 
     InputLog(LogLevelInfo, "InputHandler::setText Request being processed. Text after processing '%s'", elementText().latin1().data());
 

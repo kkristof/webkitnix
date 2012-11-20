@@ -77,7 +77,7 @@ v8::Handle<v8::Value> V8Document::evaluateCallback(const v8::Arguments& args)
 
     RefPtr<XPathNSResolver> resolver = toXPathNSResolver(args[2]);
     if (!resolver && !args[2]->IsNull() && !args[2]->IsUndefined())
-        return setDOMException(NATIVE_TYPE_ERR, args.GetIsolate());
+        return setDOMException(TYPE_MISMATCH_ERR, args.GetIsolate());
 
     int type = toInt32(args[3]);
     RefPtr<XPathResult> inResult;
@@ -95,20 +95,19 @@ v8::Handle<v8::Value> V8Document::evaluateCallback(const v8::Arguments& args)
     return toV8(result.release(), args.Holder(), args.GetIsolate());
 }
 
-v8::Handle<v8::Value> toV8(Document* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (!impl)
-        return v8NullWithCheck(isolate);
+    ASSERT(impl);
     if (impl->isHTMLDocument())
-        return toV8(static_cast<HTMLDocument*>(impl), creationContext, isolate);
+        return wrap(static_cast<HTMLDocument*>(impl), creationContext, isolate);
 #if ENABLE(SVG)
     if (impl->isSVGDocument())
-        return toV8(static_cast<SVGDocument*>(impl), creationContext, isolate);
+        return wrap(static_cast<SVGDocument*>(impl), creationContext, isolate);
 #endif
-    v8::Handle<v8::Object> wrapper = V8Document::wrap(impl, creationContext, isolate);
+    v8::Handle<v8::Object> wrapper = V8Document::createWrapper(impl, creationContext, isolate);
     if (wrapper.IsEmpty())
         return wrapper;
-    if (!V8DOMWindowShell::getEntered()) {
+    if (!worldForEnteredContextIfIsolated()) {
         if (Frame* frame = impl->frame())
             frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
     }

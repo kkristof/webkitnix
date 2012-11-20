@@ -68,6 +68,38 @@
 
 namespace WebCore {
 
+class V8WrapperInstantiationScope {
+public:
+    explicit V8WrapperInstantiationScope(v8::Handle<v8::Object> creationContext)
+        : m_didEnterContext(false)
+        , m_context(v8::Context::GetCurrent())
+    {
+        if (creationContext.IsEmpty())
+            return;
+        v8::Handle<v8::Context> contextForWrapper = creationContext->CreationContext();
+        // For performance, we enter the context only if the currently running context
+        // is different from the context that we are about to enter.
+        if (contextForWrapper == m_context)
+            return;
+        m_context = v8::Local<v8::Context>::New(contextForWrapper);
+        m_didEnterContext = true;
+        m_context->Enter();
+    }
+
+    ~V8WrapperInstantiationScope()
+    {
+        if (!m_didEnterContext)
+            return;
+        m_context->Exit();
+    }
+
+    v8::Handle<v8::Context> context() const { return m_context; }
+
+private:
+    bool m_didEnterContext;
+    v8::Handle<v8::Context> m_context;
+};
+
 void V8DOMWrapper::setNamedHiddenReference(v8::Handle<v8::Object> parent, const char* name, v8::Handle<v8::Value> child)
 {
     ASSERT(name);
@@ -93,19 +125,19 @@ PassRefPtr<NodeFilter> V8DOMWrapper::wrapNativeNodeFilter(v8::Handle<v8::Value> 
     return NodeFilter::create(V8NodeFilterCondition::create(filter));
 }
 
-v8::Local<v8::Object> V8DOMWrapper::instantiateV8Object(WrapperTypeInfo* type, void* impl)
+v8::Local<v8::Object> V8DOMWrapper::instantiateV8Object(v8::Handle<v8::Object> creationContext, WrapperTypeInfo* type, void* impl)
 {
-    V8PerContextData* perContextData = V8PerContextData::from(v8::Context::GetCurrent());
+    V8WrapperInstantiationScope scope(creationContext);
+
+    V8PerContextData* perContextData = V8PerContextData::from(scope.context());
     v8::Local<v8::Object> instance = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate()->GetFunction());
 
     // Avoid setting the DOM wrapper for failed allocations.
     if (instance.IsEmpty())
         return instance;
 
-    setDOMWrapper(instance, type, impl);
     if (type == &V8HTMLDocument::info)
         instance = V8HTMLDocument::wrapInShadowObject(instance, static_cast<Node*>(impl));
-
     return instance;
 }
 
@@ -126,8 +158,7 @@ bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
     ASSERT(object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount);
 
     v8::HandleScope scope;
-    v8::Handle<v8::Value> wrapper = object->GetInternalField(v8DOMWrapperObjectIndex);
-    ASSERT(wrapper->IsNumber() || wrapper->IsExternal());
+    ASSERT(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 
     return true;
 }
@@ -140,9 +171,7 @@ bool V8DOMWrapper::isWrapperOfType(v8::Handle<v8::Value> value, WrapperTypeInfo*
 
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
     ASSERT(object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount);
-
-    v8::Handle<v8::Value> wrapper = object->GetInternalField(v8DOMWrapperObjectIndex);
-    ASSERT_UNUSED(wrapper, wrapper->IsNumber() || wrapper->IsExternal());
+    ASSERT(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
 
     WrapperTypeInfo* typeInfo = static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
     return typeInfo == type;

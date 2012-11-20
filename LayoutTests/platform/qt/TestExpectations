@@ -188,6 +188,7 @@ compositing/visible-rect [ Skip ]
 # ENABLE(SHADOW_DOM) is disabled.
 editing/shadow
 fast/dom/shadow
+fast/frames/detached-shadow-frame.html
 inspector/elements/update-shadowdom.html
 
 # Fail until SUBPIXEL_LAYOUT is enabled
@@ -286,6 +287,9 @@ fast/js/names.html
 # Don't have GestureTapCancel event type
 touchadjustment/touch-links-active.html
 
+# Don't have gestureTapDown event type
+fast/events/touch/gesture/gesture-scrollbar.html
+
 # Don't have width/height on GestureLongPress necessary to enable adjustment
 touchadjustment/touch-links-longpress.html
 
@@ -294,8 +298,11 @@ fast/dom/timer-throttling-hidden-page.html
 
 # ENABLE(INPUT_MULTIPLE_FIELDS_UI) is disabled
 fast/forms/date-multiple-fields
+fast/forms/datetime-multiple-fields
+fast/forms/datetimelocal-multiple-fields
 fast/forms/month-multiple-fields
 fast/forms/time-multiple-fields
+fast/forms/week-multiple-fields
 
 # ENABLE(DRAGGABLE_REGION) is disabled
 fast/css/draggable-region-parser.html
@@ -395,6 +402,8 @@ fast/dom/HTMLAnchorElement/anchor-download-unset.html
 
 # For now, Web Audio API is disabled
 webaudio/
+webkit.org/b/101729 inspector-protocol/nmi-webaudio.html
+webkit.org/b/101729 inspector-protocol/nmi-webaudio-leak-test.html
 
 # [Qt] Enable WebGL by default for QtWebKit
 # https://bugs.webkit.org/show_bug.cgi?id=65998
@@ -2346,9 +2355,8 @@ webkit.org/b/99306 css3/filters/effect-blur-hw.html [ ImageOnlyFailure ] # Blur 
 webkit.org/b/100117 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html
 webkit.org/b/100117 editing/style/iframe-onload-crash-mac.html
 
-# REGRESSION(r134205): It made 2 fast/regions tests fail
-webkit.org/b/101933 fast/regions/region-style-inline-background-color.html
-webkit.org/b/101933 fast/regions/webkit-flow-inlines-dynamic.html
+# [Qt] New fast/dom/Window/open-window-min-size.html test fails on Qt.
+webkit.org/b/102226 fast/dom/Window/open-window-min-size.html
 
 # [Qt] New http/tests/inspector/network/image-as-text-loading-data-url.html fails
 webkit.org/b/100196 http/tests/inspector/network/image-as-text-loading-data-url.html
@@ -2375,3 +2383,9 @@ webkit.org/b/98523 fast/images/repaint-subrect-grid.html
 
 # [Qt] New css3/filters/effect-reference-ordering-hw.html crashes
 webkit.org/b/101925 css3/filters/effect-reference-ordering-hw.html
+
+# [Qt] fast/block/float/overhanging-tall-block.html asserts after r135025
+webkit.org/b/102675 [ Debug ] fast/block/float/overhanging-tall-block.html
+
+webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff.html [ Skip ]
+webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff-transient.html [ Skip ]

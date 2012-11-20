@@ -41,6 +41,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
+#include "NodeRenderStyle.h"
 #include "Page.h"
 #include "RenderLayer.h"
 #include "RenderTextControlSingleLine.h"
@@ -192,8 +193,7 @@ void TextFieldInputType::forwardEvent(Event* event)
 void TextFieldInputType::handleBlurEvent()
 {
     InputType::handleBlurEvent();
-    if (Frame* frame = element()->document()->frame())
-        frame->editor()->textFieldDidEndEditing(element());
+    element()->endEditing();
 }
 
 bool TextFieldInputType::shouldSubmitImplicitly(Event* event)

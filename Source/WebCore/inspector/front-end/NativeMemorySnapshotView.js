@@ -108,8 +108,11 @@ WebInspector.NativeSnapshotNode.prototype = {
     {
         var node = this;
         var viewProperties = null;
+        var dimmed = false;
         while (!viewProperties || viewProperties._fillStyle === "inherit") {
             viewProperties = WebInspector.MemoryBlockViewProperties._forMemoryBlock(node._nodeData);
+            if (viewProperties._fillStyle === "inherit")
+                dimmed = true;
             node = node.parent;
         }
 
@@ -139,6 +142,8 @@ WebInspector.NativeSnapshotNode.prototype = {
         barDiv.appendChild(percentDiv);
 
         var barHolderDiv = document.createElement("div");
+        if (dimmed)
+            barHolderDiv.className = "dimmed";
         barHolderDiv.appendChild(barDiv);
         cell.appendChild(barHolderDiv);
 
@@ -211,6 +216,7 @@ WebInspector.NativeMemoryProfileType.prototype = {
             }
             profileHeader._memoryBlock = memoryBlock;
             profileHeader.isTemporary = false;
+            profileHeader.sidebarElement.subtitle = Number.bytesToString(memoryBlock.size);
         }
         MemoryAgent.getProcessMemoryDistribution(didReceiveMemorySnapshot.bind(this));
         return false;

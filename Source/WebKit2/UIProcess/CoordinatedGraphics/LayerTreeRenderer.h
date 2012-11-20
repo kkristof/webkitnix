@@ -38,6 +38,11 @@
 #include <wtf/HashSet.h>
 #include <wtf/ThreadingPrimitives.h>
 
+namespace WebCore {
+class CustomFilterProgram;
+class CustomFilterProgramInfo;
+}
+
 namespace WebKit {
 
 class CoordinatedBackingStore;
@@ -71,7 +76,9 @@ public:
     void setVisibleContentsRect(const WebCore::FloatRect&);
     void didChangeScrollPosition(const WebCore::IntPoint& position);
 #if USE(GRAPHICS_SURFACE)
-    void syncCanvas(uint32_t id, const WebCore::IntSize& canvasSize, const WebCore::GraphicsSurfaceToken&, uint32_t frontBuffer);
+    void createCanvas(WebLayerID, const WebCore::IntSize&, PassRefPtr<WebCore::GraphicsSurface>);
+    void syncCanvas(WebLayerID, uint32_t frontBuffer);
+    void destroyCanvas(WebLayerID);
 #endif
 
     void detach();
@@ -85,15 +92,24 @@ public:
 #if ENABLE(CSS_FILTERS)
     void setLayerFilters(WebLayerID, const WebCore::FilterOperations&);
 #endif
+#if ENABLE(CSS_SHADERS)
+    void injectCachedCustomFilterPrograms(const WebCore::FilterOperations& filters) const;
+    void createCustomFilterProgram(int id, const WebCore::CustomFilterProgramInfo&);
+    void removeCustomFilterProgram(int id);
+#endif
 
     void createTile(WebLayerID, int, float scale);
     void removeTile(WebLayerID, int);
     void updateTile(WebLayerID, int, const TileUpdate&);
     void flushLayerChanges();
-    void createImage(int64_t, PassRefPtr<ShareableBitmap>);
-    void destroyImage(int64_t);
+    void createImageBacking(CoordinatedImageBackingID);
+    void updateImageBacking(CoordinatedImageBackingID, PassRefPtr<ShareableSurface>);
+    void clearImageBackingContents(CoordinatedImageBackingID);
+    void removeImageBacking(CoordinatedImageBackingID);
     void setLayerAnimations(WebLayerID, const WebCore::GraphicsLayerAnimations&);
     void setAnimationsLocked(bool);
+    void setBackgroundColor(const WebCore::Color&);
+    void setDrawsBackground(bool enable) { m_setDrawsBackground = enable; }
 
     void addCustomPlatformLayer(uint32_t rendererID, WebLayerID, WebCore::TextureMapperPlatformLayer*);
 
@@ -122,7 +138,8 @@ private:
     void dispatchOnMainThread(const Function<void()>&);
     void adjustPositionForFixedLayers();
 
-    void assignImageToLayer(WebCore::GraphicsLayer*, int64_t imageID);
+    void assignImageBackingToLayer(WebCore::GraphicsLayer*, CoordinatedImageBackingID);
+    void removeReleasedImageBackingsIfNeeded();
     void ensureRootLayer();
     void ensureLayer(WebLayerID);
     void commitTileOperations();
@@ -142,7 +159,11 @@ private:
     Mutex m_renderQueueMutex;
 
     OwnPtr<WebCore::TextureMapper> m_textureMapper;
-    HashMap<int64_t, RefPtr<WebCore::TextureMapperBackingStore> > m_directlyCompositedImages;
+
+    typedef HashMap<CoordinatedImageBackingID, RefPtr<CoordinatedBackingStore> > ImageBackingMap;
+    ImageBackingMap m_imageBackings;
+    Vector<RefPtr<CoordinatedBackingStore> > m_releasedImageBackings;
+
     HashSet<RefPtr<CoordinatedBackingStore> > m_backingStoresWithPendingBuffers;
 
 #if USE(GRAPHICS_SURFACE)
@@ -166,6 +187,13 @@ private:
     bool m_animationFrameRequested;
 #endif
     WebCore::TextureMapper::AccelerationMode m_accelerationMode;
+    WebCore::Color m_backgroundColor;
+    bool m_setDrawsBackground;
+
+#if ENABLE(CSS_SHADERS)
+    typedef HashMap<int, RefPtr<WebCore::CustomFilterProgram> > CustomFilterProgramMap;
+    CustomFilterProgramMap m_customFilterPrograms;
+#endif
 };
 
 };

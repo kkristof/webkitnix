@@ -706,10 +706,11 @@ private:
         case PhantomArguments:
         case CheckArray:
         case Arrayify:
-        case ArrayifyToStructure: {
+        case ArrayifyToStructure:
+        case Identity: {
             // This node should never be visible at this stage of compilation. It is
             // inserted by fixup(), which follows this phase.
-            ASSERT_NOT_REACHED();
+            CRASH();
             break;
         }
         
@@ -760,6 +761,7 @@ private:
         case CheckArgumentsNotCreated:
         case GlobalVarWatchpoint:
         case GarbageValue:
+        case InheritorIDWatchpoint:
             changed |= mergeDefaultFlags(node);
             break;
             
@@ -770,7 +772,7 @@ private:
             break;
             
         case LastNodeType:
-            ASSERT_NOT_REACHED();
+            CRASH();
             break;
 #else
         default:

@@ -219,6 +219,7 @@ SET(WebKit2_SOURCES
     Shared/API/c/WKUserContentURLPattern.cpp
 
     Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp
+    Shared/CoordinatedGraphics/WebCustomFilterProgramProxy.cpp
 
     Shared/Plugins/NPIdentifierData.cpp
     Shared/Plugins/NPObjectMessageReceiver.cpp
@@ -495,6 +496,7 @@ SET(WebKit2_SOURCES
     WebProcess/WebPage/WebPageGroupProxy.cpp
     WebProcess/WebPage/WebUndoStep.cpp
 
+    WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.cpp
     WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp
     WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.cpp
     WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp

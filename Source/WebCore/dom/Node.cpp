@@ -112,6 +112,10 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 
+#ifndef NDEBUG
+#include "RenderLayer.h"
+#endif
+
 #if ENABLE(GESTURE_EVENTS)
 #include "GestureEvent.h"
 #endif
@@ -1195,11 +1199,6 @@ static void checkAcceptChild(Node* newParent, Node* newChild, ExceptionCode& ec)
         ec = HIERARCHY_REQUEST_ERR;
         return;
     }
-
-    if (newParent->inDocument() && ChildFrameDisconnector::nodeHasDisconnector(newParent)) {
-        ec = NO_MODIFICATION_ALLOWED_ERR;
-        return;
-    }
 }
 
 void Node::checkReplaceChild(Node* newChild, Node* oldChild, ExceptionCode& ec)
@@ -1311,9 +1310,13 @@ void Node::detach()
 #ifndef NDEBUG
         for (Node* node = this; node; node = node->traverseNextNode(this)) {
             RenderObject* renderer = node->renderer();
-            // RenderFlowThread removes some elements from the regular tree
+            // RenderFlowThread and the top layer remove elements from the regular tree
             // hierarchy. They will be cleaned up when we call detach on them.
+#if ENABLE(DIALOG_ELEMENT)
+            ASSERT(!renderer || renderer->inRenderFlowThread() || (renderer->enclosingLayer()->isInTopLayerSubtree()));
+#else
             ASSERT(!renderer || renderer->inRenderFlowThread());
+#endif
         }
 #endif
     }
@@ -2619,9 +2622,9 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
 }
 #endif
 
-void Node::dispatchSimulatedClick(PassRefPtr<Event> event, bool sendMouseEvents, bool showPressedLook)
+void Node::dispatchSimulatedClick(Event* underlyingEvent, bool sendMouseEvents, bool showPressedLook)
 {
-    EventDispatcher::dispatchSimulatedClick(this, event, sendMouseEvents, showPressedLook);
+    EventDispatcher::dispatchSimulatedClick(this, underlyingEvent, sendMouseEvents, showPressedLook);
 }
 
 bool Node::dispatchBeforeLoadEvent(const String& sourceURL)

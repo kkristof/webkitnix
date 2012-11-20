@@ -41,10 +41,10 @@ namespace WebKit {
 
 static gboolean connectionCallback(GSocketService* service, GSocketConnection* connection, GObject* sourceObject, WebSocketServer* server)
 {
-#ifndef LOG_DISABLED
+#if !LOG_DISABLED
     GRefPtr<GSocketAddress> socketAddress = adoptGRef(g_socket_connection_get_remote_address(connection, 0));
-    GOwnPtr<gchar> addressStr(g_inet_address_to_string(g_inet_socket_address_get_address(G_INET_SOCKET_ADDRESS(socketAddress.get()))));
-    LOG(Network, "New Connection from %s:%d.", addressStr.get(), g_inet_socket_address_get_port(G_INET_SOCKET_ADDRESS(socketAddress.get())));
+    GOwnPtr<gchar> addressString(g_inet_address_to_string(g_inet_socket_address_get_address(G_INET_SOCKET_ADDRESS(socketAddress.get()))));
+    LOG(InspectorServer, "New Connection from %s:%d.", addressString.get(), g_inet_socket_address_get_port(G_INET_SOCKET_ADDRESS(socketAddress.get())));
 #endif
 
     OwnPtr<WebSocketServerConnection> webSocketConnection = adoptPtr(new WebSocketServerConnection(server->client(), server));
@@ -63,9 +63,7 @@ void WebSocketServer::platformInitialize()
 
 bool WebSocketServer::platformListen(const String& bindAddress, unsigned short port)
 {
-#ifndef LOG_DISABLED
-    LOG(Network, "Listen to address=%s, port=%d.", bindAddress.utf8().data(), port);
-#endif
+    LOG(InspectorServer, "Listen to address=%s, port=%d.", bindAddress.utf8().data(), port);
     GRefPtr<GInetAddress> address = adoptGRef(g_inet_address_new_from_string(bindAddress.utf8().data()));
     GRefPtr<GSocketAddress> socketAddress = adoptGRef(g_inet_socket_address_new(address.get(), port));
     return g_socket_listener_add_address(G_SOCKET_LISTENER(m_socketService.get()), socketAddress.get(), G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, 0, 0, 0);

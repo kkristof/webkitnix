@@ -232,10 +232,6 @@ http/tests/navigation/document-location-mouseover.html
 # Tests for features under development
 # ------------------------------------
 
-# HiDPI tests require test infrastructure enhancements
-fast/hidpi
-svg/as-image/image-respects-deviceScaleFactor.html
-
 # Skipped until new WebSocket protocol is implemented. http://webkit.org/b/50099
 http/tests/websocket/tests/hybi/
 
@@ -801,6 +797,7 @@ webkit.org/b/84333 http/tests/local/fileapi/send-dragged-file.html [ Failure ]
 webkit.org/b/84333 http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure ]
 webkit.org/b/84333 http/tests/local/formdata [ Failure ]
 webkit.org/b/84333 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+webkit.org/b/84333 media/video-src-blob.html [ Failure ]
 
 # EFL port needs Pasteboard implementation.
 webkit.org/b/84338 editing/deleting/paste-with-transparent-background-color.html [ Failure ]
@@ -1104,6 +1101,7 @@ webkit.org/b/77219 compositing/webgl/webgl-reflection.html [ Skip ]
 webkit.org/b/77219 fast/canvas/webgl [ Skip ]
 webkit.org/b/77219 fast/dom/constructed-objects-prototypes.html [ Failure ]
 webkit.org/b/77219 fast/events/constructors/webgl-context-event-constructor.html [ Skip ]
+webkit.org/b/77219 fast/images/webgl-teximage2d.html [ Skip ]
 webkit.org/b/77219 http/tests/canvas/webgl/origin-clean-conformance.html [ Skip ]
 webkit.org/b/77219 http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Skip ]
 webkit.org/b/77219 http/tests/security/webgl-remote-read-remote-image-allowed.html [ Skip ]
@@ -1144,6 +1142,9 @@ webkit.org/b/88080 http/tests/pointer-lock [ Skip ]
 
 # Requires WEB_AUDIO support.
 webkit.org/b/91738 webaudio [ Skip ]
+inspector-protocol/nmi-webaudio.html
+inspector-protocol/nmi-webaudio-leak-test.html
+
 
 # Requires MEDIA_STREAM support.
 webkit.org/b/87662 fast/mediastream [ Skip ]
@@ -1213,6 +1214,31 @@ webkit.org/b/85689 fast/animation/request-animation-frame-disabled.html [ Skip ]
 webkit.org/b/84835 editing/execCommand/4128080-2.html [ Failure ]
 webkit.org/b/84835 editing/execCommand/copy-without-selection.html [ Failure ]
 webkit.org/b/84835 editing/execCommand/findString-diacriticals.html [ Failure ]
+
+# These tests are passing when running on the MiniBrowser, but failing on
+# WebKitTestRunner because it doesn't support fixed layout.
+webkit.org/b/102517 css3/device-adapt/opera/cascading-001.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/cascading-002.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/cascading-003.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/cascading-004.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-001.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-004.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-005.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-006.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-007.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-008.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-009.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-010.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-011.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-013.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-014.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-015.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-016.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-017.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/constrain-020.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/syntax-001.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/syntax-002.xhtml [ Failure ]
+webkit.org/b/102517 css3/device-adapt/opera/syntax-003.xhtml [ Failure ]
 
 # DRT doesn't check for isPrinting().
 webkit.org/b/87226 printing/iframe-print.html [ Failure ]
@@ -1290,6 +1316,10 @@ webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-complex-shadow.html [ 
 webkit.org/b/91489 fast/dom/shadow/shadowdom-for-fieldset-only-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/95439 fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
 webkit.org/b/95439 fast/dom/shadow/shadowdom-for-textarea-with-placeholder.html [ ImageOnlyFailure ]
+
+# a:enabled and area:enabled are not correctly implemented yet.
+webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-anchor.html [ ImageOnlyFailure ]
+webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ ImageOnlyFailure ]
 
 # This test is specific to QuickTime media engine.
 Bug(EFL) media/video-does-not-loop.html
@@ -1397,8 +1427,11 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.ht
 
 # ENABLE(INPUT_MULTIPLE_FIELDS_UI) is disabled
 fast/forms/date-multiple-fields
+fast/forms/datetime-multiple-fields
+fast/forms/datetimelocal-multiple-fields
 webkit.org/b/97299 fast/forms/month-multiple-fields
 webkit.org/b/94186 fast/forms/time-multiple-fields
+fast/forms/week-multiple-fields
 
 webkit.org/b/93976 fast/css-generated-content/quotes-lang.html [ ImageOnlyFailure ]
 
@@ -1561,41 +1594,23 @@ Bug(EFL) media/context-menu-actions.html [ Failure ]
 # ESC key does not cancel context menu in EFL port
 Bug(EFL) editing/selection/5354455-1.html [ Failure ]
 
-# Regression from r133898
-Bug(EFL) animations/3d/change-transform-in-end-event.html [ Missing ]
-Bug(EFL) animations/3d/matrix-transform-type-animation.html [ Missing ]
-Bug(EFL) animations/3d/state-at-end-event-transform.html [ Missing ]
-Bug(EFL) animations/change-keyframes-name.html [ Failure Pass ]
-Bug(EFL) animations/combo-transform-translate+scale.html [ Failure Pass ]
-Bug(EFL) animations/negative-delay.html [ Failure Pass ]
-Bug(EFL) animations/play-state-suspend.html [ Failure Pass ]
-Bug(EFL) animations/suspend-resume-animation.html [ Failure Pass ]
-Bug(EFL) animations/suspend-resume-animation-events.html [ Failure Pass ]
-Bug(EFL) compositing/absolute-position-changed-with-composited-parent-layer.html [ Skip ]
-Bug(EFL) compositing/bounds-in-flipped-writing-mode.html [ Failure ]
-Bug(EFL) compositing/geometry/flipped-writing-mode.html [ Skip ]
-Bug(EFL) compositing/geometry/foreground-layer.html [ Skip ]
-Bug(EFL) compositing/geometry/repaint-foreground-layer.html [ Skip ]
-Bug(EFL) compositing/iframes/become-composited-nested-iframes.html [ Skip ]
-Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
-Bug(EFL) compositing/iframes/scroll-grandchild-iframe.html [ Skip ]
-Bug(EFL) compositing/layer-creation/animation-overlap-with-children.html [ Failure Pass ]
-Bug(EFL) compositing/layer-creation/fixed-position-and-transform.html [ Skip ]
-Bug(EFL) compositing/masks/simple-composited-mask.html [ Crash Pass ]
-Bug(EFL) compositing/overflow/overflow-auto-with-touch-no-overflow.html [ Failure ]
-Bug(EFL) compositing/overflow/overflow-hidden-with-touch.html [ Failure ]
-Bug(EFL) compositing/overflow/overflow-overlay-with-touch-no-overflow.html [ Failure ]
-Bug(EFL) compositing/overflow/overflow-scroll-with-touch-no-overflow.html [ Failure ]
-Bug(EFL) compositing/overflow/overflow-visible-with-touch.html [ Failure ]
+# Tests that create an extra graphics layer
+webkit.org/b/102697 compositing/overflow/overflow-auto-with-touch-no-overflow.html [ Failure ]
+webkit.org/b/102697 compositing/overflow/overflow-hidden-with-touch.html [ Failure ]
+webkit.org/b/102697 compositing/overflow/overflow-overlay-with-touch-no-overflow.html [ Failure ]
+webkit.org/b/102697 compositing/overflow/overflow-scroll-with-touch-no-overflow.html [ Failure ]
+webkit.org/b/102697 compositing/overflow/overflow-visible-with-touch.html [ Failure ]
 Bug(EFL) compositing/plugins/1x1-composited-plugin.html [ Failure ]
 Bug(EFL) compositing/plugins/large-to-small-composited-plugin.html [ Failure ]
-Bug(EFL) compositing/reflections/load-video-in-reflection.html [ Skip ]
+
+# Regression from r133898
+Bug(EFL) compositing/bounds-in-flipped-writing-mode.html [ Failure ]
+Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
+Bug(EFL) compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
+Bug(EFL) compositing/reflections/load-video-in-reflection.html [ Failure Timeout ]
 Bug(EFL) compositing/regions/webkit-flow-renderer-layer-compositing.html [ ImageOnlyFailure ]
 Bug(EFL) compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
-Bug(EFL) compositing/text-on-scaled-layer.html [ ImageOnlyFailure Pass ]
-Bug(EFL) compositing/text-on-scaled-surface.html [ ImageOnlyFailure Pass ]
-Bug(EFL) compositing/tiling/backface-preserve-3d-tiled.html [ Skip ]
-Bug(EFL) compositing/transitions/singular-scale-transition.html [ Skip ]
+Bug(EFL) compositing/tiling/backface-preserve-3d-tiled.html [ ImageOnlyFailure ]
 Bug(EFL) compositing/visibility/visibility-composited.html [ Failure ]
 Bug(EFL) editing/input/caret-at-the-edge-of-contenteditable.html [ Failure ]
 Bug(EFL) editing/input/reveal-caret-of-multiline-contenteditable.html [ Failure ]
@@ -1677,3 +1692,27 @@ webkit.org/b/101456 fast/repaint/block-selection-gap-in-table-cell.html [ ImageO
 
 # Identical failures on GTK, EFL and Qt.
 webkit.org/b/101539 editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
+
+# Wrong video colors.
+webkit.org/b/102091 media/video-colorspace-yuv420.html [ Skip ]
+webkit.org/b/102091 media/video-colorspace-yuv422.html [ Skip ]
+
+# HiDPI tests are failing to render correctly.
+webkit.org/b/102097 editing/spelling/inline-spelling-markers-hidpi.html [ Skip ]
+webkit.org/b/102097 fast/hidpi [ Skip ]
+webkit.org/b/102097 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ Skip ]
+webkit.org/b/102097 svg/as-image/image-respects-deviceScaleFactor.html [ Skip ]
+
+webkit.org/b/102100 svg/repaint/inner-svg-change-viewBox.svg [ ImageOnlyFailure ]
+
+webkit.org/b/102190 compositing/overflow/updating-scrolling-content.html [ Failure ]
+webkit.org/b/102190 fast/events/overflow-scroll-fake-mouse-move.html [ Failure ]
+
+webkit.org/b/102364 compositing/overflow/scrolling-without-painting.html [ Failure ]
+
+webkit.org/b/102367 fast/forms/zoomed-controls.html [ ImageOnlyFailure Missing ]
+
+webkit.org/b/102493 fast/events/mouse-cursor.html [ Failure ]
+
+webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff.html [ Skip ]
+webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff-transient.html [ Skip ]

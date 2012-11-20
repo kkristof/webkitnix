@@ -28,6 +28,7 @@
 #include "config.h"
 #include "WebContext.h"
 
+#include "Logging.h"
 #include "WebInspectorServer.h"
 #include <WebCore/FileSystem.h>
 #include <WebCore/NotImplemented.h>
@@ -44,24 +45,32 @@ static void initInspectorServer()
         return;
 
     initialized = true;
-    String envStr(g_getenv("WEBKIT_INSPECTOR_SERVER"));
+    String serverAddress(g_getenv("WEBKIT_INSPECTOR_SERVER"));
 
-    if (!envStr.isNull()) {
+    if (!serverAddress.isNull()) {
         String bindAddress = "127.0.0.1";
         unsigned short port = 2999;
 
         Vector<String> result;
-        envStr.split(":", result);
+        serverAddress.split(":", result);
 
         if (result.size() == 2) {
             bindAddress = result[0];
             bool ok = false;
             port = result[1].toInt(&ok);
-            if (!ok)
+            if (!ok) {
                 port = 2999;
-        }
-        WebInspectorServer::shared().listen(bindAddress, port);
+                LOG_ERROR("Couldn't parse the port. Use 2999 instead.");
+            }
+        } else
+            LOG_ERROR("Couldn't parse %s, wrong format? Use 127.0.0.1:2999 instead.", serverAddress.utf8().data());
+
+        if (!WebInspectorServer::shared().listen(bindAddress, port))
+            LOG_ERROR("Couldn't start listening on: IP address=%s, port=%d.", bindAddress.utf8().data(), port);
+        return;
     }
+
+    LOG(InspectorServer, "To start inspector server set WEBKIT_INSPECTOR_SERVER to 127.0.0.1:2999 for example.");
 #endif
 }
 

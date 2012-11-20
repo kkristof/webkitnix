@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -135,16 +136,21 @@ static inline PassRefPtr<ClipPathOperation> blendFunc(const AnimationBase*, Clip
     const BasicShape* fromShape = static_cast<ShapeClipPathOperation*>(from)->basicShape();
     const BasicShape* toShape = static_cast<ShapeClipPathOperation*>(to)->basicShape();
 
-    // FIXME: Support animations between different shapes in the future.
-    if (fromShape->type() != toShape->type())
-        return to;
-
-    // FIXME: Support animations between polygons in the future.
-    if (fromShape->type() == BasicShape::BASIC_SHAPE_POLYGON)
+    if (!fromShape->canBlend(toShape))
         return to;
 
     return ShapeClipPathOperation::create(toShape->blend(fromShape, progress));
 }
+
+#if ENABLE(CSS_EXCLUSIONS)
+static inline PassRefPtr<BasicShape> blendFunc(const AnimationBase*, BasicShape* from, BasicShape* to, double progress)
+{
+    if (!from->canBlend(to))
+        return to;
+
+    return to->blend(from, progress);
+}
+#endif
 
 #if ENABLE(CSS_FILTERS)
 static inline PassRefPtr<FilterOperation> blendFunc(const AnimationBase* anim, FilterOperation* fromOp, FilterOperation* toOp, double progress, bool blendToPassthrough = false)
@@ -396,6 +402,16 @@ public:
     {
     }
 };
+
+#if ENABLE(CSS_EXCLUSIONS)
+class PropertyWrapperBasicShape : public RefCountedPropertyWrapper<BasicShape> {
+public:
+    PropertyWrapperBasicShape(CSSPropertyID prop, BasicShape* (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<BasicShape>))
+        : RefCountedPropertyWrapper<BasicShape>(prop, getter, setter)
+    {
+    }
+};
+#endif
 
 class StyleImagePropertyWrapper : public RefCountedPropertyWrapper<StyleImage> {
 public:
@@ -1144,6 +1160,10 @@ void CSSPropertyAnimation::ensurePropertyMap()
 #endif
 
     gPropertyWrappers->append(new PropertyWrapperClipPath(CSSPropertyWebkitClipPath, &RenderStyle::clipPath, &RenderStyle::setClipPath));
+
+#if ENABLE(CSS_EXCLUSIONS)
+    gPropertyWrappers->append(new PropertyWrapperBasicShape(CSSPropertyWebkitShapeInside, &RenderStyle::shapeInside, &RenderStyle::setShapeInside));
+#endif
 
     gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitColumnRuleColor, MaybeInvalidColor, &RenderStyle::columnRuleColor, &RenderStyle::setColumnRuleColor, &RenderStyle::visitedLinkColumnRuleColor, &RenderStyle::setVisitedLinkColumnRuleColor));
     gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitTextStrokeColor, MaybeInvalidColor, &RenderStyle::textStrokeColor, &RenderStyle::setTextStrokeColor, &RenderStyle::visitedLinkTextStrokeColor, &RenderStyle::setVisitedLinkTextStrokeColor));

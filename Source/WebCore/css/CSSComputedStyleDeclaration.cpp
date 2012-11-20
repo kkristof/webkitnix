@@ -356,8 +356,8 @@ static const CSSPropertyID computedProperties[] = {
 #endif
 #if ENABLE(CSS_EXCLUSIONS)
     CSSPropertyWebkitWrapFlow,
-    CSSPropertyWebkitWrapMargin,
-    CSSPropertyWebkitWrapPadding,
+    CSSPropertyWebkitShapeMargin,
+    CSSPropertyWebkitShapePadding,
     CSSPropertyWebkitWrapThrough,
 #endif
 #if ENABLE(SVG)
@@ -1004,13 +1004,12 @@ static PassRefPtr<CSSValue> valueForGridTrackList(const Vector<Length>& trackLen
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForGridPosition(const Length& position)
+static PassRefPtr<CSSValue> valueForGridPosition(const GridPosition& position)
 {
     if (position.isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
 
-    ASSERT(position.isFixed());
-    return cssValuePool().createValue(position.value(), CSSPrimitiveValue::CSS_NUMBER);
+    return cssValuePool().createValue(position.integerPosition(), CSSPrimitiveValue::CSS_NUMBER);
 }
 
 static PassRefPtr<CSSValue> getDelayValue(const AnimationList* animList)
@@ -2498,10 +2497,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 #if ENABLE(CSS_EXCLUSIONS)
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
-        case CSSPropertyWebkitWrapMargin:
-            return cssValuePool().createValue(style->wrapMargin());
-        case CSSPropertyWebkitWrapPadding:
-            return cssValuePool().createValue(style->wrapPadding());
+        case CSSPropertyWebkitShapeMargin:
+            return cssValuePool().createValue(style->shapeMargin());
+        case CSSPropertyWebkitShapePadding:
+            return cssValuePool().createValue(style->shapePadding());
         case CSSPropertyWebkitShapeInside:
             if (!style->shapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);

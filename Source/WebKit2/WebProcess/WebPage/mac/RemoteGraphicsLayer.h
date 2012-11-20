@@ -52,10 +52,17 @@ private:
     virtual void addChildBelow(WebCore::GraphicsLayer* childLayer, WebCore::GraphicsLayer* sibling);
     virtual bool replaceChild(WebCore::GraphicsLayer* oldChild, WebCore::GraphicsLayer* newChild);
 
+    virtual void removeFromParent() OVERRIDE;
+
+    virtual void setPosition(const WebCore::FloatPoint&) OVERRIDE;
+    virtual void setSize(const WebCore::FloatSize&) OVERRIDE;
+
     virtual void setNeedsDisplay() OVERRIDE;
     virtual void setNeedsDisplayInRect(const WebCore::FloatRect&) OVERRIDE;
     virtual void flushCompositingState(const WebCore::FloatRect&) OVERRIDE;
     virtual void flushCompositingStateForThisLayerOnly() OVERRIDE;
+
+    virtual void willBeDestroyed() OVERRIDE;
 
     void noteLayerPropertiesChanged(unsigned layerChanges);
     void noteSublayersChanged();

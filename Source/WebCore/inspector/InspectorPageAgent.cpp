@@ -331,7 +331,8 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_frontend(0)
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
-    , m_didLoadEventFire(false)
+    , m_enabled(false)
+    , m_isFirstLayoutAfterOnLoad(false)
     , m_geolocationOverridden(false)
 {
 }
@@ -356,6 +357,16 @@ void InspectorPageAgent::restore()
     if (m_state->getBoolean(PageAgentState::pageAgentEnabled)) {
         ErrorString error;
         enable(&error);
+        bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
+        setScriptExecutionDisabled(0, scriptExecutionDisabled);
+        bool showFPSCounter = m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter);
+        setShowFPSCounter(0, showFPSCounter);
+
+        int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
+        int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
+        double currentFontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride);
+        bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
+        updateViewMetrics(currentWidth, currentHeight, currentFontScaleFactor, currentFitWindow);
 #if ENABLE(TOUCH_EVENTS)
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
 #endif
@@ -364,16 +375,14 @@ void InspectorPageAgent::restore()
 
 void InspectorPageAgent::enable(ErrorString*)
 {
+    m_enabled = true;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, true);
-    bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
-    setScriptExecutionDisabled(0, scriptExecutionDisabled);
-    bool showFPSCounter = m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter);
-    setShowFPSCounter(0, showFPSCounter);
     m_instrumentingAgents->setInspectorPageAgent(this);
 }
 
 void InspectorPageAgent::disable(ErrorString*)
 {
+    m_enabled = false;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, false);
     m_instrumentingAgents->setInspectorPageAgent(0);
 
@@ -724,7 +733,9 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
     m_client->setShowFPSCounter(show);
-    m_page->mainFrame()->view()->invalidate();
+
+    if (mainFrame() && mainFrame()->view())
+        mainFrame()->view()->invalidate();
 }
 
 void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum* status)
@@ -786,7 +797,7 @@ void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWor
 
 void InspectorPageAgent::domContentEventFired()
 {
-    m_didLoadEventFire = true;
+    m_isFirstLayoutAfterOnLoad = true;
     m_frontend->domContentEventFired(currentTime());
 }
 
@@ -892,7 +903,7 @@ void InspectorPageAgent::applyScreenHeightOverride(long* height)
 
 void InspectorPageAgent::didPaint(GraphicsContext* context, const LayoutRect& rect)
 {
-    if (!m_state->getBoolean(PageAgentState::showPaintRects))
+    if (!m_enabled || !m_state->getBoolean(PageAgentState::showPaintRects))
         return;
 
     static int colorSelector = 0;
@@ -909,21 +920,33 @@ void InspectorPageAgent::didPaint(GraphicsContext* context, const LayoutRect& re
 
 void InspectorPageAgent::didLayout()
 {
-    if (!m_didLoadEventFire)
+    bool isFirstLayout = m_isFirstLayoutAfterOnLoad;
+    if (isFirstLayout)
+        m_isFirstLayoutAfterOnLoad = false;
+
+    if (!m_enabled)
         return;
 
-    m_didLoadEventFire = false;
-    int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
-    int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
+    if (isFirstLayout) {
+        int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
+        int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
 
-    if (currentWidth && currentHeight)
-        m_client->autoZoomPageToFitWidth();
+        if (currentWidth && currentHeight)
+            m_client->autoZoomPageToFitWidth();
+    }
     m_overlay->update();
 }
 
 void InspectorPageAgent::didScroll()
 {
-    m_overlay->update();
+    if (m_enabled)
+        m_overlay->update();
+}
+
+void InspectorPageAgent::didRecalculateStyle()
+{
+    if (m_enabled)
+        m_overlay->update();
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Frame* frame)

@@ -423,8 +423,8 @@ void ScriptController::evaluateInIsolatedWorld(int worldID, const Vector<ScriptS
 
 bool ScriptController::shouldBypassMainWorldContentSecurityPolicy()
 {
-    if (V8DOMWindowShell* isolatedWorldShell = V8DOMWindowShell::getEntered())
-        return isolatedWorldShell->world()->isolatedWorldHasContentSecurityPolicy();
+    if (DOMWrapperWorld* world = worldForEnteredContextIfIsolated())
+        return world->isolatedWorldHasContentSecurityPolicy();
     return false;
 }
 
@@ -442,11 +442,13 @@ void ScriptController::finishedWithEvent(Event* event)
 
 v8::Local<v8::Context> ScriptController::currentWorldContext()
 {
-    if (V8DOMWindowShell* isolatedShell = V8DOMWindowShell::getEntered()) {
-        v8::Persistent<v8::Context> context = isolatedShell->context();
-        if (context.IsEmpty() || m_frame != toFrameIfNotDetached(context))
+    if (v8::Context::InContext()) {
+        v8::Handle<v8::Context> context = v8::Context::GetEntered();
+        if (V8DOMWindowShell::isolated(context)) {
+            if (m_frame == toFrameIfNotDetached(context))
+                return v8::Local<v8::Context>::New(context);
             return v8::Local<v8::Context>();
-        return v8::Local<v8::Context>::New(context);
+        }
     }
     return v8::Local<v8::Context>::New(windowShell(mainThreadNormalWorld())->context());
 }
@@ -691,7 +693,7 @@ bool ScriptController::setContextDebugId(int debugId)
         return false;
     v8::HandleScope scope;
     v8::Handle<v8::Context> context = m_windowShell->context();
-    if (!context->GetData()->IsUndefined())
+    if (!context->GetEmbedderData(0)->IsUndefined())
         return false;
 
     v8::Context::Scope contextScope(context);
@@ -699,7 +701,7 @@ bool ScriptController::setContextDebugId(int debugId)
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "page,%d", debugId);
     buffer[31] = 0;
-    context->SetData(v8::String::New(buffer));
+    context->SetEmbedderData(0, v8::String::New(buffer));
 
     return true;
 }
@@ -707,9 +709,9 @@ bool ScriptController::setContextDebugId(int debugId)
 int ScriptController::contextDebugId(v8::Handle<v8::Context> context)
 {
     v8::HandleScope scope;
-    if (!context->GetData()->IsString())
+    if (!context->GetEmbedderData(0)->IsString())
         return -1;
-    v8::String::AsciiValue ascii(context->GetData());
+    v8::String::AsciiValue ascii(context->GetEmbedderData(0));
     char* comma = strnstr(*ascii, ",", ascii.length());
     if (!comma)
         return -1;
