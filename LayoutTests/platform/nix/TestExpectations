@@ -307,17 +307,6 @@ fast/reflections [ Skip ]
 
 # tables
 fast/table/height-percent-test-vertical.html [ Failure ]
-fast/table/table-before-child-style-update.html [ Failure ]
-fast/table/table-cell-before-after-content-around-table-block.html [ Failure ]
-fast/table/table-cell-before-after-content-around-table-row.html [ Failure ]
-fast/table/table-cell-before-after-content-around-table.html [ Failure ]
-fast/table/table-row-before-after-content-around-block.html [ Failure ]
-fast/table/table-row-before-after-content-around-table.html [ Failure ]
-fast/table/table-row-before-child-style-update.html [ Failure ]
-fast/table/table-row-style-not-updated-with-after-content.html [ Failure ]
-fast/table/table-row-style-not-updated-with-before-content.html [ Failure ]
-fast/table/table-row-style-not-updated.html [ Failure ]
-fast/table/table-style-not-updated.html [ Failure ]
 fast/table/wide-colspan.html [ Failure ]
 fast/table/wide-column.html [ Failure ]
 
@@ -508,13 +497,10 @@ inspector-protocol/debugger-pause-dedicated-worker.html [ Failure Pass ]
 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Crash ]
 fast/css/relative-positioned-block-crash.html [ Failure ]
 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure ]
-fast/dom/navigator-cookieEnabled-no-crash.html [ Crash ]
 fast/events/touch/gesture/right-click-gestures-set-cursor-at-correct-position.html [ Skip ]
 fast/repaint/body-background-image.html [ Missing ]
 http/tests/xmlhttprequest/access-control-preflight-credential-async.html [ Failure ]
 http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
-http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html [ Failure ]
-transitions/negative-delay.html [ Failure ]
 
 #############################################################
 # DISABLED APIS
@@ -853,6 +839,7 @@ fast/parser/open-comment-in-textarea.html [ Skip ]
 fast/parser/tabs-in-scripts.html [ Skip ]
 fast/parser/title-error-test.html [ Skip ]
 fast/parser/xhtml-alternate-entities.xml [ Skip ]
+fast/repaint/body-background-image.html [ Missing ]
 fast/selectors [ Skip ]
 
 # tables
