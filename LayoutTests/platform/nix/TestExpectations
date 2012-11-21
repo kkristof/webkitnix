@@ -291,8 +291,9 @@ fast/reflections [ Skip ]
 
 # tables
 fast/table/height-percent-test-vertical.html [ Failure ]
-fast/table/wide-colspan.html [ Failure ]
-fast/table/wide-column.html [ Failure ]
+# Missing PNG expectation.
+fast/table/wide-colspan.html [ Failure Missing ]
+fast/table/wide-column.html [ Failure Missing ]
 
 fast/viewport/viewport-128.html [ Skip ]
 fast/workers/shared-worker-load-error.html [ Skip ]
@@ -523,13 +524,378 @@ http/tests/xmlhttprequest/cross-site-denied-response.html [ Failure Pass ]
 http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
 
 #############################################################
+# After pixel tests support.
+#############################################################
+
+# Paints red square instead of green one.
+compositing/culling/filter-occlusion-alpha.html [ ImageOnlyFailure ]
+
+# Red square instead of green one. Also the vertical scrollbar is slightly different.
+compositing/culling/filter-occlusion-alpha-large.html [ ImageOnlyFailure ]
+
+# Tests that track repaints with a gray overlay.
+compositing/clip-change.html [ ImageOnlyFailure ]
+compositing/geometry/foreground-offset-change.html [ ImageOnlyFailure ]
+compositing/iframes/repaint-after-losing-scrollbars.html [ ImageOnlyFailure ]
+compositing/iframes/scroll-fixed-transformed-element.html [ ImageOnlyFailure ]
+compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
+compositing/overflow/repaint-after-losing-scrollbars.html [ ImageOnlyFailure ]
+compositing/repaint/shrink-layer.html [ ImageOnlyFailure ]
+compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
+compositing/rtl/rtl-overflow-invalidation.html [ ImageOnlyFailure ]
+fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ ImageOnlyFailure ]
+
+# Output without "visible rects" entries. Repaint tracking?
+compositing/tiling/tile-cache-zoomed.html [ Failure ]
+compositing/visible-rect/2d-transformed.html [ Failure ]
+compositing/visible-rect/3d-transform-style.html [ Failure ]
+compositing/visible-rect/3d-transformed.html [ Failure ]
+compositing/visible-rect/animated-from-none.html [ Failure ]
+compositing/visible-rect/animated.html [ Failure ]
+compositing/visible-rect/clipped-by-viewport.html [ Failure ]
+compositing/visible-rect/clipped-visible-rect.html [ Failure ]
+compositing/visible-rect/iframe-and-layers.html [ Failure ]
+compositing/visible-rect/iframe-no-layers.html [ Failure ]
+compositing/visible-rect/nested-transform.html [ Failure ]
+compositing/visible-rect/scrolled.html [ Failure ]
+compositing/repaint/resize-repaint.html [ Failure ]
+
+# Image not scaled and gray overlay
+compositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
+
+# Gray overlay plus Layers 1 or 2 pixel shorter.
+compositing/iframes/iframe-content-flipping.html [ Failure ]
+
+# Video related: most requires "canPlayType" method.
+compositing/geometry/clipped-video-controller.html [ Failure ]
+compositing/self-painting-layers2.html [ Failure ]
+compositing/video-page-visibility.html [ Failure ]
+compositing/video/video-poster.html [ Failure ]
+compositing/video/video-with-invalid-source.html [ Failure ]
+compositing/visibility/visibility-simple-video-layer.html [ Failure ]
+http/tests/canvas/webgl/origin-clean-conformance.html [ Missing Failure ]
+
+# WebGL
+compositing/webgl/ [ ImageOnlyFailure Failure Missing ]
+compositing/visibility/visibility-simple-webgl-layer.html [ ImageOnlyFailure Failure ]
+# Does not paint the inner squares. Also stdout prints "CONSOLE MESSAGE: Unable to fetch WebGL rendering context for Canvas" 6 times.
+compositing/backface-visibility/backface-visibility-webgl.html [ ImageOnlyFailure Failure ]
+
+# Text rendered blurry.
+compositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
+
+# Blurry square
+compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
+
+# Text diff: Graphics Layers that should be hidden are being rendered.
+compositing/geometry/fixed-position-composited-switch.html [ Failure ]
+compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure ]
+compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
+
+# Empty cursor variables.
+fast/css/cursor-parsing-image-set.html [ Failure ]
+
+# Computed style failures.
+fast/css/style-scoped/style-scoped-nested.html [ Failure ]
+fast/css/style-scoped/style-scoped-with-important-rule.html [ Failure ]
+
+# Text diff: Graphics Layers hidden/appearing.
+compositing/geometry/limit-layer-bounds-fixed-positioned.html [ Failure ]
+compositing/geometry/limit-layer-bounds-opacity-transition.html [ Failure ]
+compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
+compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
+compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
+compositing/geometry/limit-layer-bounds-transformed-overflow.html [ Failure ]
+compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
+compositing/layer-creation/scroll-partial-update.html [ Failure ]
+compositing/iframes/leave-compositing-iframe.html [ Failure ]
+compositing/overflow/overflow-auto-with-touch-no-overflow.html [ Failure ]
+compositing/overflow/overflow-auto-with-touch-toggle.html [ Failure ]
+compositing/overflow/overflow-auto-with-touch.html [ Failure ]
+compositing/overflow/overflow-hidden-with-touch.html [ Failure ]
+compositing/overflow/overflow-overlay-with-touch-no-overflow.html [ Failure ]
+compositing/overflow/overflow-overlay-with-touch.html [ Failure ]
+compositing/overflow/overflow-scroll-with-touch-no-overflow.html [ Failure ]
+compositing/overflow/overflow-visible-with-touch.html [ Failure ]
+compositing/overflow/scrolling-content-clip-to-viewport.html [ Failure ]
+compositing/overflow/scrolling-without-painting.html [ Failure ]
+compositing/overflow/textarea-scroll-touch.html [ Failure ]
+compositing/overflow/updating-scrolling-content.html [ Failure ]
+compositing/iframes/iframe-size-to-zero.html [ Failure ]
+compositing/plugins/1x1-composited-plugin.html [ Failure ]
+compositing/plugins/large-to-small-composited-plugin.html [ Failure ]
+compositing/plugins/no-backing-store.html [ Failure ]
+compositing/plugins/small-to-large-composited-plugin.html [ Failure ]
+compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
+compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ Failure ]
+
+# Graphics Layer not being drawn. Also no vertical scrollbar in the scrolled tests.
+compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure Failure ]
+compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
+compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure Failure ]
+compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
+compositing/overflow/scrollbars-with-clipped-owner.html [ ImageOnlyFailure ]
+
+# Expected uses native scrollbars. Also the green square is slightly darker.
+compositing/geometry/tall-page-composited.html [ ImageOnlyFailure ]
+
+# Layer and render block differs are 1 pixel shorter.
+compositing/iframes/composited-iframe-scroll.html [ Failure ]
+compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
+
+# Slightly shorter page.
+fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
+fast/css/table-rules-attribute-groups-with-frame.html [ ImageOnlyFailure ]
+
+# Graphics layer differ 1 and 2 pixels in different parts.
+# Image diff shows actual image is slightly shorter.
+compositing/geometry/composited-in-columns.html [ ImageOnlyFailure Failure ]
+# Same as above plus image slightly blurry.
+compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
+
+# Graphics layer differ 1 and 2 pixels in different parts.
+compositing/geometry/preserve-3d-switching.html [ Failure ]
+compositing/tiling/huge-layer-img.html [ Failure ]
+compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
+compositing/iframes/page-cache-layer-tree.html [ Failure ]
+
+# A bunch of messages "no layer tree"
+compositing/overflow/automatically-opt-into-composited-scrolling.html [ Failure ]
+
+# Red squares with a gray bar instead of a green rectangle.
+compositing/images/direct-pdf-image.html [ ImageOnlyFailure ]
+
+# Requires eventSender.scheduleAsynchronousKeyDown()
+fast/dom/MutationObserver/end-of-task-delivery.html [ Failure ]
+
+# Requires MUTATION_OBSERVERS and FILE_SYSTEM
+fast/dom/MutationObserver/filesystem-callback-delivery.html [ Failure ]
+
+# Wrong events logged.
+fast/events/mouse-click-events.html [ Failure ]
+
+# CSS Sticky tests. Sticky doesn't seem to work.
+fast/css/sticky/inflow-sticky.html [ ImageOnlyFailure ]
+fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure ]
+fast/css/sticky/inline-sticky.html [ ImageOnlyFailure ]
+fast/css/sticky/replaced-sticky.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-as-positioning-container.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-both-sides.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-left.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-margins.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-side-margins.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-stacking-context.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-top-margins.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-top.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-writing-mode-horizontal-bt.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-writing-mode-vertical-lr.html [ ImageOnlyFailure ]
+fast/css/sticky/sticky-writing-mode-vertical-rl.html [ ImageOnlyFailure ]
+
+# Green square slightly darker and not scaled (z-change)
+transforms/3d/general/transform-origin-z-change.html [ ImageOnlyFailure ]
+
+# Green square slightly darker.
+transforms/3d/general/matrix-with-zoom-3d.html [ ImageOnlyFailure ]
+compositing/iframes/nested-iframe-scrolling.html [ ImageOnlyFailure ]
+compositing/reflections/backface-hidden-reflection.html [ ImageOnlyFailure ]
+compositing/z-order/negative-z-index.html [ ImageOnlyFailure ]
+
+# Tests missing expected results when running without --pixel-tests.
+fast/events/touch/gesture/long-press-on-draggable-element-triggers-drag.html [ Missing ]
+fast/events/touch/gesture/context-menu-on-long-tap.html [ Missing ]
+compositing/video/video-background-color.html [ Missing ]
+compositing/plugins/composited-plugin.html [ Missing ]
+compositing/images/direct-image-background-color.html [ Missing ]
+compositing/direct-image-compositing.html [ Missing ]
+compositing/transitions/scale-transition-no-start.html [ Missing ]
+compositing/transitions/singular-scale-transition.html [ Missing ]
+compositing/iframes/resizer.html [ Missing ]
+compositing/iframes/composited-iframe-alignment.html [ Missing ]
+compositing/iframes/iframe-copy-on-scroll.html [ Missing ]
+compositing/iframes/iframe-in-composited-layer.html [ Missing ]
+compositing/compositing-visible-descendant.html [ Missing ]
+compositing/animation/state-at-end-event-transform-layer.html [ Missing ]
+compositing/sibling-positioning.html [ Missing ]
+compositing/text-on-large-layer.html [ Missing ]
+compositing/masks/masked-ancestor.html [ Missing ]
+compositing/masks/multiple-masks.html [ Missing ]
+compositing/masks/simple-composited-mask.html [ Missing ]
+compositing/masks/direct-image-mask.html [ Missing ]
+compositing/visibility/visibility-composited.html [ Missing ]
+compositing/visibility/visibility-composited-transforms.html [ Missing ]
+compositing/overflow/overflow-clip-with-accelerated-scrolling-ancestor.html [ Missing ]
+compositing/overflow/clipping-ancestor-with-accelerated-scrolling-ancestor.html [ Missing ]
+compositing/overflow/theme-affects-visual-overflow.html [ Missing ]
+compositing/overflow/scroll-ancestor-update.html [ Missing ]
+compositing/overflow/fixed-position-ancestor-clip.html [ Missing ]
+compositing/overflow/remove-overflow-crash2.html [ Missing ]
+compositing/overflow/parent-overflow.html [ Missing ]
+compositing/overflow/overflow-positioning.html [ Missing ]
+compositing/overflow/overflow-compositing-descendant.html [ Missing ]
+compositing/overflow/ancestor-overflow.html [ Missing ]
+compositing/overflow/scrollbar-painting.html [ Missing ]
+compositing/overflow/nested-scrolling.html [ Missing ]
+compositing/overflow/overflow-scroll.html [ Missing ]
+compositing/color-matching/image-color-matching.html [ Missing ]
+compositing/color-matching/pdf-image-match.html [ Missing ]
+compositing/shadows/shadow-drawing.html [ Missing ]
+compositing/repaint/layer-repaint.html [ Missing ]
+compositing/repaint/overflow-into-content.html [ Missing ]
+compositing/repaint/content-into-overflow.html [ Missing ]
+compositing/repaint/opacity-between-absolute.html [ Missing ]
+compositing/repaint/composited-document-element.html [ Missing ]
+compositing/repaint/newly-composited-on-scroll.html [ Missing ]
+compositing/repaint/layer-repaint-rects.html [ Missing ]
+compositing/repaint/opacity-between-absolute2.html [ Missing ]
+compositing/repaint/become-overlay-composited-layer.html [ Missing ]
+compositing/layer-creation/fixed-position-scroll.html [ Missing ]
+compositing/layers-inside-overflow-scroll.html [ Missing ]
+compositing/geometry/abs-position-inside-opacity.html [ Missing ]
+compositing/geometry/root-layer-update.html [ Missing ]
+compositing/geometry/vertical-scroll-composited.html [ Missing ]
+compositing/geometry/transfrom-origin-on-zero-size-layer.html [ Missing ]
+compositing/geometry/fixed-in-composited.html [ Missing ]
+compositing/geometry/fixed-position.html [ Missing ]
+compositing/geometry/video-fixed-scrolling.html [ Missing ]
+compositing/geometry/clipping-foreground.html [ Missing ]
+compositing/geometry/partial-layout-update.html [ Missing ]
+compositing/geometry/video-opacity-overlay.html [ Missing ]
+compositing/geometry/horizontal-scroll-composited.html [ Missing ]
+compositing/geometry/layer-due-to-layer-children-deep.html [ Missing ]
+compositing/geometry/limit-layer-bounds-overflow-repaint.html [ Missing ]
+compositing/geometry/outline-change.html [ Missing ]
+compositing/geometry/composited-html-size.html [ Missing ]
+compositing/geometry/layer-due-to-layer-children.html [ Missing ]
+compositing/generated-content.html [ Missing ]
+compositing/reflections/compositing-change-inside-reflection.html [ Missing ]
+compositing/reflections/reflection-opacity.html [ Missing ]
+compositing/reflections/nested-reflection.html [ Missing ]
+compositing/reflections/nested-reflection-mask-change.html [ Missing ]
+compositing/reflections/reflection-positioning2.html [ Missing ]
+compositing/reflections/reflection-ordering.html [ Missing ]
+compositing/reflections/reflection-in-composited.html [ Missing ]
+compositing/reflections/simple-composited-reflections.html [ Missing ]
+compositing/reflections/nested-reflection-transformed2.html [ Missing ]
+compositing/reflections/deeply-nested-reflections.html [ Missing ]
+compositing/reflections/nested-reflection-transformed.html [ Missing ]
+compositing/reflections/nested-reflection-on-overflow.html [ Missing ]
+compositing/reflections/nested-reflection-transition.html [ Missing ]
+compositing/reflections/nested-reflection-size-change.html [ Missing ]
+compositing/reflections/reflection-positioning.html [ Missing ]
+compositing/reflections/masked-reflection-on-composited.html [ Missing ]
+compositing/reflections/nested-reflection-animated.html [ Missing ]
+compositing/reflections/transform-inside-reflection.html [ Missing ]
+compositing/reflections/nested-reflection-anchor-point.html [ Missing ]
+compositing/reflections/reflection-on-composited.html [ Missing ]
+compositing/reflections/nested-reflection-opacity.html [ Missing ]
+compositing/reflections/load-video-in-reflection.html [ Missing ]
+compositing/reflections/animation-inside-reflection.html [ Missing ]
+compositing/self-painting-layers.html [ Missing ]
+
+# Missing PNG and failing text (Graphics layer not being rendered).
+compositing/layer-creation/spanOverlapsCanvas.html [ Missing Failure ]
+
+# Tests missing results - PNG. Some of them have a text expectation.
+fast/layers/scroll-with-transform-layer.html [ Missing Pass ]
+fast/layers/scroll-with-transform-composited-layer.html [ Missing Pass ]
+fast/repaint/body-background-image.html [ Missing ]
+fast/dom/css-insert-import-rule.html [ Missing Pass ]
+fast/dom/importNodeXML.xhtml [ Missing Pass ]
+fast/dom/scroll-reveal-left-overflow.html [ Missing Pass ]
+fast/dom/importNodeHTML.html [ Missing Pass ]
+fast/dom/isindex-001.html [ Missing Pass ]
+fast/dom/attr_dead_doc.html [ Missing Pass ]
+fast/dom/comment-not-documentElement.html [ Missing Pass ]
+fast/dom/css-mediarule-deleteRule-update.html [ Missing Pass ]
+fast/dom/css-cached-import-rule.html [ Missing Pass ]
+fast/dom/css-mediarule-insertRule-update.html [ Missing Pass ]
+fast/dom/clone-contents-0-end-offset.html [ Missing Pass ]
+fast/dom/clone-node-dynamic-style.html [ Missing Pass ]
+fast/dom/gc-10.html [ Missing Pass ]
+fast/dom/scroll-reveal-top-overflow.html [ Missing Pass ]
+fast/dom/delete-contents.html [ Missing Pass ]
+fast/dom/createDocumentType.html [ Missing Pass ]
+fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Missing Pass ]
+fast/dom/focus-contenteditable.html [ Missing Pass ]
+fast/dom/anchor-text.html [ Missing Pass ]
+fast/dom/css-rule-functions.html [ Missing Pass ]
+fast/dom/34176.html [ Missing Pass ]
+fast/dom/52776.html [ Missing Pass ]
+fast/dom/isindex-002.html [ Missing Pass ]
+fast/dom/children-nodes.html [ Missing Pass ]
+fast/dom/inner-text.html [ Missing Pass ]
+fast/dom/blur-contenteditable.html [ Missing Pass ]
+fast/dom/outerText.html [ Missing Pass ]
+fast/dom/css-cached-import-rule.html [ Missing Pass ]
+fast/dom/css-mediarule-insertRule-update.html [ Missing Pass ]
+fast/dom/clone-contents-0-end-offset.html [ Missing Pass ]
+fast/dom/clone-node-dynamic-style.html [ Missing Pass ]
+fast/dom/gc-10.html [ Missing Pass ]
+fast/dom/scroll-reveal-top-overflow.html [ Missing Pass ]
+fast/dom/delete-contents.html [ Missing Pass ]
+fast/dom/createDocumentType.html [ Missing Pass ]
+fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ Missing Pass ]
+fast/css3-text/css3-text-decoration/text-decoration-style.html [ Missing Pass ]
+fast/table/wide-colspan.html [ Missing Failure ]
+fast/table/wide-column.html [ Missing Failure ]
+fast/table/height-percent-test-vertical.html [ Missing Failure ]
+fast/gradients/gradient-after-transparent-border.html [ Missing Pass ]
+fast/gradients/css3-color-stop-units.html [ Missing Pass ]
+fast/gradients/css3-linear-angle-gradients.html [ Missing Pass ]
+fast/gradients/css3-repeating-radial-gradients.html [ Missing Pass ]
+fast/gradients/css3-repeating-linear-gradients.html [ Missing Pass ]
+fast/gradients/css3-repeating-linear-gradients2.html [ Missing Pass ]
+fast/gradients/css3-color-stops.html [ Missing Pass ]
+fast/gradients/css3-radial-gradients.html [ Missing Pass ]
+fast/gradients/css3-linear-right-angle-gradients.html [ Missing Pass ]
+fast/gradients/css3-radial-gradients2.html [ Missing Pass ]
+fast/gradients/css3-radial-gradients3.html [ Missing Pass ]
+fast/scrolling/scrollbar-tickmarks-styled.html [ Missing Pass ]
+fast/css/compare-content-style.html [ Missing Pass ]
+fast/css/linear-gradient-currentcolor.html [ Missing Pass ]
+fast/css/border-radius-non-negative.html [ Missing Pass ]
+transforms/3d/hit-testing/backface-no-transform-hit-test.html [ Missing Pass ]
+transforms/3d/hit-testing/backface-hit-test.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-deep.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-3.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-2.html [ Missing Pass ]
+transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Missing Pass ]
+transforms/3d/general/perspective-non-layer.html [ Missing Pass ]
+transforms/3d/general/perspective-units.html [ Missing Pass ]
+compositing/video/video-controls-layer-creation.html [ Missing Pass ]
+compositing/images/content-image-change.html [ Missing Pass ]
+compositing/fixed-position-scroll-offset-history-restore.html [ Missing Pass ]
+compositing/animation/busy-indicator.html [ Missing Pass ]
+compositing/framesets/composited-frame-alignment.html [ Missing Pass ]
+compositing/scaling/tiled-layer-recursion.html [ Missing Pass ]
+compositing/overflow/overflow-scaled-descendant-overlapping.html [ Missing Pass ]
+compositing/flat-with-transformed-child.html [ Missing Pass ]
+compositing/repaint/same-size-invalidation.html [ Missing Pass ]
+compositing/culling/filter-occlusion-blur-large.html [ Missing Pass ]
+compositing/culling/filter-occlusion-blur.html [ Missing Pass ]
+compositing/geometry/repaint-foreground-layer.html [ Missing Pass ]
+compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ Missing Pass ]
+compositing/geometry/fixed-position-composited-page-scale.html [ Missing Pass ]
+compositing/geometry/foreground-layer.html [ Missing Pass ]
+compositing/geometry/fixed-position-iframe-composited-page-scale.html [ Missing Pass ]
+compositing/geometry/fixed-position-transform-composited-page-scale.html [ Missing Pass ]
+compositing/geometry/fixed-position-composited-page-scale-down.html [ Missing Pass ]
+compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ Missing Pass ]
+fast/text/zero-font-size.html [ Missing ]
+
+# Failing due to missing setUseDeferredFrameLoading
+http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Missing Failure ]
+
+#############################################################
 # DISABLED APIS
 #############################################################
 
 accessibility [ Skip ]
 animations [ Skip ]
 batterystatus [ Skip ]
-compositing [ Skip ]
 fast/canvas [ Skip ]
 fast/clip [ Skip ]
 fast/compact [ Skip ]
