@@ -498,9 +498,16 @@ inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Crash
 fast/css/relative-positioned-block-crash.html [ Failure ]
 fast/events/only-valid-drop-targets-receive-file-drop.html [ Failure ]
 fast/events/touch/gesture/right-click-gestures-set-cursor-at-correct-position.html [ Skip ]
-fast/repaint/body-background-image.html [ Missing ]
 http/tests/xmlhttprequest/access-control-preflight-credential-async.html [ Failure ]
 http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
+
+# need more investigation
+transitions/negative-delay.html [ Failure Pass ]
+# undefined gestureTapDown
+fast/events/touch/gesture/gesture-scrollbar.html [ Failure ]
+# cant find variable: webkitAudioContext
+inspector-protocol/nmi-webaudio.html [ Failure ]
+inspector-protocol/nmi-webaudio-leak-test.html [ Failure Crash ]
 
 #############################################################
 # DISABLED APIS
@@ -839,7 +846,6 @@ fast/parser/open-comment-in-textarea.html [ Skip ]
 fast/parser/tabs-in-scripts.html [ Skip ]
 fast/parser/title-error-test.html [ Skip ]
 fast/parser/xhtml-alternate-entities.xml [ Skip ]
-fast/repaint/body-background-image.html [ Missing ]
 fast/selectors [ Skip ]
 
 # tables
@@ -1145,6 +1151,11 @@ fast/mutation [ Skip ]
 fast/overflow [ Skip ]
 fast/regions [ Skip ]
 fast/repaint [ Skip ]
+
+# added from wk2 webkit.org/b/101773
+# Flaky pixel tests due to caching issues.
+fast/repaint/body-background-image.html [ ImageOnlyFailure Pass ]
+
 fast/replaced [ Skip ]
 fast/ruby [ Skip ]
 fast/runin [ Skip ]
