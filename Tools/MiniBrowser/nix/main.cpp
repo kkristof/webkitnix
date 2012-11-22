@@ -754,16 +754,38 @@ void MiniBrowser::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rec
     glPopMatrix();
 }
 
+struct Device {
+    enum Type {
+        Default,
+        N9,
+        IPad,
+        IPhone,
+        Android
+    };
+
+    int width;
+    int height;
+    const char* userAgent;
+};
+
+Device deviceList[] = {
+    { 1024, 768, "" },
+    { 854, 480, "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13" },
+    { 1024, 768, "Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3" },
+    { 960, 640, "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3" },
+    { 800, 480, "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30" }
+};
+
 int main(int argc, char* argv[])
 {
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
 
-    int width = DEFAULT_WIDTH;
-    int height = DEFAULT_HEIGHT;
+    int width = 0;
+    int height = 0;
     int viewportHorizontalDisplacement = 0;
     int viewportVerticalDisplacement = 0;
     std::string url;
-    const char* userAgent = 0;
+    Device::Type device = Device::Default;
     MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
     bool touchEmulationEnabled = false;
     const char* customLayerTestElement = 0;
@@ -791,23 +813,28 @@ int main(int argc, char* argv[])
                 fprintf(stderr, "--viewport-displacement format is HORIZDISPLACEMENTxVERTDISPLACEMENT.\n");
                 return 1;
             }
-        } else if (!strcmp(argv[i], "--n9")) {
-            userAgent = "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13";
-        } else if (!strcmp(argv[i], "--ipad")) {
-            userAgent = "Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3";
-        } else if (!strcmp(argv[i], "--iphone")) {
-            userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3";
-        } else if (!strcmp(argv[i], "--android")) {
-            userAgent = "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
-        } else if (!strcmp(argv[i], "--custom-layer-id")) {
+        } else if (!strcmp(argv[i], "--n9"))
+            device = Device::N9;
+        else if (!strcmp(argv[i], "--ipad"))
+            device = Device::IPad;
+        else if (!strcmp(argv[i], "--iphone"))
+            device = Device::IPhone;
+        else if (!strcmp(argv[i], "--android"))
+            device = Device::Android;
+        else if (!strcmp(argv[i], "--custom-layer-id"))
             customLayerTestElement = argv[++i];
-        } else
+        else
             url = argv[i];
     }
 
-    if (url.empty()) {
+    if (width == 0 && height == 0) {
+        width = deviceList[device].width;
+        height = deviceList[device].height;
+    }
+
+    if (url.empty())
         url = "http://www.google.com";
-    } else if (url.find("http") != 0 && url.find("file://") != 0) {
+    else if (url.find("http") != 0 && url.find("file://") != 0) {
         std::ifstream localFile(url.c_str());
         url.insert(0, localFile ? "file://" : "http://");
     }
@@ -820,8 +847,8 @@ int main(int argc, char* argv[])
         browser.setTouchEmulationMode(true);
     }
 
-    if (userAgent)
-        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(userAgent));
+    if (deviceList[device].userAgent)
+        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(deviceList[device].userAgent));
 
     if (browser.mode() == MiniBrowser::MobileMode)
         printf("Use Control + mouse wheel to zoom in and out.\n");
