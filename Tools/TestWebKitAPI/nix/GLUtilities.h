@@ -1,7 +1,11 @@
 #ifndef GLUtilities_h
 #define GLUtilities_h
 
+#if USE(OPENGL_ES_2)
+#include <GLES2/gl2.h>
+#elif USE(OPENGL)
 #include <GL/gl.h>
+#endif
 
 #if USE(EGL)
 #include <EGL/egl.h>

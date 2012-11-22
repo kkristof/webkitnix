@@ -19,7 +19,7 @@
 #include "config.h"
 #include "GLContext.h"
 
-#if USE(OPENGL)
+#if USE(OPENGL) || USE(OPENGL_ES_2)
 
 #if USE(EGL)
 #include "GLContextEGL.h"
@@ -176,5 +176,5 @@ GLContext* GLContext::getCurrent()
 
 } // namespace WebCore
 
-#endif // USE(OPENGL)
+#endif // USE(OPENGL) || USE(OPENGL_ES_2)
 

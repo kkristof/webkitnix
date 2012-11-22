@@ -81,16 +81,14 @@ LIST(APPEND WebCore_SOURCES
   platform/graphics/harfbuzz/ng/HarfBuzzShaper.cpp
 
   platform/graphics/ImageSource.cpp
-  platform/graphics/OpenGLShims.cpp
   platform/graphics/cairo/DrawingBufferCairo.cpp
   platform/graphics/cairo/GLContext.cpp
   platform/graphics/cairo/GraphicsContext3DCairo.cpp
   platform/graphics/cairo/GraphicsContext3DPrivate.cpp
   platform/graphics/nix/IconNix.cpp
   platform/graphics/nix/ImageNix.cpp
-  platform/graphics/opengl/Extensions3DOpenGL.cpp
+  platform/graphics/OpenGLShims.cpp
   platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
-  platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
   platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
   platform/graphics/texmap/TextureMapperGL.cpp
   platform/graphics/texmap/TextureMapperShaderManager.cpp
@@ -138,6 +136,30 @@ LIST(APPEND WebCore_SOURCES
   platform/text/TextCodecICU.cpp
 )
 
+IF (WTF_USE_OPENGL_ES_2)
+  LIST(APPEND WebCore_SOURCES
+    platform/graphics/opengl/Extensions3DOpenGLES.cpp
+    platform/graphics/opengl/GraphicsContext3DOpenGLES.cpp
+  )
+ELSE ()
+  LIST(APPEND WebCore_SOURCES
+    platform/graphics/opengl/Extensions3DOpenGL.cpp
+    platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
+  )
+  LIST(APPEND WebCore_LIBRARIES
+    ${OPENGL_gl_LIBRARY}
+  )
+ENDIF ()
+
+IF (WTF_USE_EGL)
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/egl" ${EGL_INCLUDE_DIR})
+  LIST(APPEND WebCore_SOURCES platform/graphics/egl/GLContextFromCurrentEGL.cpp)
+  LIST(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
+ELSE ()
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/glx")
+  LIST(APPEND WebCore_SOURCES platform/graphics/glx/GLContextFromCurrentGLX.cpp)
+ENDIF ()
+
 IF (ENABLE_BATTERY_STATUS)
     LIST(APPEND WebCore_INCLUDE_DIRECTORIES ${DBUS_INCLUDE_DIRS})
     LIST(APPEND WebCore_LIBRARIES ${DBUS_LIBRARIES})
@@ -165,7 +187,6 @@ LIST(APPEND WebCore_LIBRARIES
   ${LIBSOUP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${Platform_LIBRARY_NAME}
-  ${OPENGL_gl_LIBRARY}
   ${HARFBUZZ_LIBRARIES}
 )
 
@@ -221,15 +242,6 @@ IF (ENABLE_VIDEO)
   LIST(APPEND WebCore_LIBRARIES
     ${GSTREAMER_VIDEO_LIBRARIES}
   )
-ENDIF ()
-
-IF (WTF_USE_EGL)
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/egl" ${EGL_INCLUDE_DIR})
-  LIST(APPEND WebCore_SOURCES platform/graphics/egl/GLContextFromCurrentEGL.cpp)
-  LIST(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
-ELSE ()
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/glx")
-  LIST(APPEND WebCore_SOURCES platform/graphics/glx/GLContextFromCurrentGLX.cpp)
 ENDIF ()
 
 ADD_DEFINITIONS(-DWTF_USE_CROSS_PLATFORM_CONTEXT_MENUS=1

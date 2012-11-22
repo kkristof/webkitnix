@@ -2622,14 +2622,14 @@ ENDIF ()
 
 IF (WTF_USE_3D_GRAPHICS)
     LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-        ${OPENGL_INCLUDE_DIR}
+        #${OPENGL_INCLUDE_DIR}
         "${THIRDPARTY_DIR}/ANGLE/src"
         "${THIRDPARTY_DIR}/ANGLE/include/GLSLANG"
         "${WEBCORE_DIR}/platform/graphics/gpu"
     )
-    LIST(APPEND WebCore_LIBRARIES
-        ${OPENGL_gl_LIBRARY}
-    )
+#    LIST(APPEND WebCore_LIBRARIES
+#        ${OPENGL_gl_LIBRARY}
+#    )
 
     IF (BISON_VERSION EQUAL "2.5")
         # Bison 2.5 can not compile generated glslang.
