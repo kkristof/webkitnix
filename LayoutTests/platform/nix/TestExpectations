@@ -21,6 +21,8 @@ fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
 fast/js/sparse-array.html [ Pass Crash ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
+dom/html/level1/core/documentgetdoctypenodtd.html [ Crash ]
+dom/html/level2/events/DocumentEventCast01.html [ Crash ]
 
 ################################################################################
 # FAILURES
@@ -54,6 +56,9 @@ canvas/philip/tests/2d.text.draw.space.collapse.start.html [ Skip ]
 canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
 fast/xsl/sort-locale.xml [ Skip ]
+
+fast/events/context-nodrag.html [ Failure ]
+http/tests/canvas/webgl/origin-clean-conformance.html [ Failure ]
 
 scrollbars/scroll-rtl-or-bt-layer.html [ Skip ]
 scrollbars/scrollbar-click-does-not-blur-content.html [ Skip ]
