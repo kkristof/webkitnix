@@ -529,7 +529,8 @@ void MiniBrowser::webProcessRelaunched()
 
 void MiniBrowser::pageDidRequestScroll(WKPoint position)
 {
-    m_webView->setScrollPosition(adjustScrollPositionToBoundaries(position));
+    if (!m_webView->isSuspended())
+        m_webView->setScrollPosition(adjustScrollPositionToBoundaries(position));
 }
 
 void MiniBrowser::didChangeContentsSize(WKSize size)
@@ -606,6 +607,7 @@ void MiniBrowser::handlePanning(double timestamp, WKPoint delta)
     // When the user is panning around the contents we don't force the page scroll position
     // to respect any boundaries other than the physical constraints of the device from where
     // the user input came. This will be adjusted after the user interaction ends.
+    m_webView->suspendActiveDOMObjectsAndAnimations();
     WKPoint position = m_webView->scrollPosition();
     position.x -= delta.x;
     position.y -= delta.y;
@@ -615,6 +617,7 @@ void MiniBrowser::handlePanning(double timestamp, WKPoint delta)
 void MiniBrowser::handlePanningFinished(double timestamp)
 {
     adjustScrollPosition();
+    m_webView->resumeActiveDOMObjectsAndAnimations();
 }
 
 void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKPoint contentCenter)
@@ -623,6 +626,7 @@ void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKP
     // Scrolling: If the center of the pinch initially was position (120,120) in content
     //            coordinates, them during the page must be scrolled to keep the pinch center
     //            at the same coordinates.
+    m_webView->suspendActiveDOMObjectsAndAnimations();
     WKPoint position = WKPointMake(m_webView->scrollPosition().x - delta.x, m_webView->scrollPosition().y - delta.y);
 
     m_webView->setScrollPosition(position);
@@ -632,6 +636,7 @@ void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKP
 void MiniBrowser::handlePinchFinished(double timestamp)
 {
     adjustScrollPosition();
+    m_webView->resumeActiveDOMObjectsAndAnimations();
 }
 
 void MiniBrowser::scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior)

@@ -84,6 +84,7 @@ public:
         , m_active(true)
         , m_scale(1.f)
         , m_opacity(1.f)
+        , m_isSuspended(false)
     {
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
         cairo_matrix_t identityTransform;
@@ -216,6 +217,11 @@ public:
 
     virtual void updateTextInputState();
     virtual void didRenderFrame(const WebCore::IntSize&, const WebCore::IntRect&) { notImplemented(); }
+
+    virtual void suspendActiveDOMObjectsAndAnimations();
+    virtual void resumeActiveDOMObjectsAndAnimations();
+    virtual bool isSuspended();
+
 private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
@@ -237,6 +243,7 @@ private:
     bool m_focused;
     bool m_visible;
     bool m_active;
+    bool m_isSuspended;
     IntSize m_size;
     IntSize m_contentsSize;
     IntPoint m_lastCursorPosition;
@@ -353,7 +360,8 @@ void WebViewImpl::setScale(float scale)
         return;
 
     m_scale = scale;
-    commitViewportChanges();
+    if (!m_isSuspended)
+        commitViewportChanges();
 }
 
 void WebViewImpl::setSize(const WKSize& size)
@@ -379,7 +387,8 @@ void WebViewImpl::setScrollPosition(const WKPoint& position)
     if (!drawingArea)
         return;
 
-    drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
+    if (!m_isSuspended)
+        drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
 }
 
 WKPoint WebViewImpl::userViewportToContents(WKPoint point)
@@ -641,6 +650,24 @@ void WebViewImpl::updateTextInputState()
     const IntRect& cursorRect = editor.cursorRect;
     const IntRect& editorRect = editor.editorRect;
     m_client->updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
+}
+
+void WebViewImpl::suspendActiveDOMObjectsAndAnimations()
+{
+    m_webPageProxy->suspendActiveDOMObjectsAndAnimations();
+    m_isSuspended = true;
+}
+
+void WebViewImpl::resumeActiveDOMObjectsAndAnimations()
+{
+    m_webPageProxy->resumeActiveDOMObjectsAndAnimations();
+    m_isSuspended = false;
+    commitViewportChanges();
+}
+
+bool WebViewImpl::isSuspended()
+{
+    return m_isSuspended;
 }
 
 } // namespace Nix

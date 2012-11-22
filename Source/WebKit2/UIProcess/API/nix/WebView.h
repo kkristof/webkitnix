@@ -74,6 +74,10 @@ public:
 
     virtual uint32_t addCustomLayer(WKStringRef elementID) = 0;
     virtual void removeCustomLayer(uint32_t id) = 0;
+
+    virtual void suspendActiveDOMObjectsAndAnimations() = 0;
+    virtual void resumeActiveDOMObjectsAndAnimations() = 0;
+    virtual bool isSuspended() = 0;
 };
 
 } // namespace Nix
