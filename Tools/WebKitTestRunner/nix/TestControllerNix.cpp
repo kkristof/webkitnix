@@ -55,6 +55,10 @@ void TestController::platformInitialize()
 {
 }
 
+void TestController::platformDestroy()
+{
+}
+
 static gboolean timeoutCallback(gpointer)
 {
     fprintf(stderr, "FAIL: TestControllerRunLoop timed out.\n");

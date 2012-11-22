@@ -516,8 +516,6 @@ void WebViewImpl::paintToCurrentGLContext()
     if (!renderer)
         return;
 
-    renderer->syncRemoteContent();
-
     double x = 0;
     double y = 0;
     double width = m_size.width();
