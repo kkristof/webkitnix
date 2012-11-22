@@ -56,13 +56,13 @@ public:
     virtual void setDrawBackground(bool) = 0;
     virtual bool drawBackground() const = 0;
 
-    virtual void setScale(double) = 0;
-    virtual double scale() const  = 0;
+    virtual void setScale(float) = 0;
+    virtual float scale() const = 0;
 
     virtual WKSize visibleContentsSize() const = 0;
 
-    virtual void setOpacity(double) = 0;
-    virtual double opacity() const = 0;
+    virtual void setOpacity(float) = 0;
+    virtual float opacity() const = 0;
 
     virtual void paintToCurrentGLContext() = 0;
 

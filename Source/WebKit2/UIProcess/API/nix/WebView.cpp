@@ -46,14 +46,14 @@
 #include "WebPopupMenuProxy.h"
 #include "WebPreferences.h"
 #include "WindowsKeyboardCodes.h"
+#include <JavaScriptCore/WebKitAvailability.h>
 #include <WebCore/Scrollbar.h>
 #include <WebCore/TextureMapperGL.h>
-#include <wtf/text/WTFString.h>
-
 #include <WebKit2/NixEvents.h>
-#include <WebKit2/WebView.h>
-#include <JavaScriptCore/WebKitAvailability.h>
 #include <WebKit2/WKBundle.h>
+#include <WebKit2/WebView.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/MathExtras.h>
 
 using namespace WebCore;
 using namespace WebKit;
@@ -82,8 +82,8 @@ public:
         , m_focused(true)
         , m_visible(true)
         , m_active(true)
-        , m_scale(1.0)
-        , m_opacity(1.0)
+        , m_scale(1.f)
+        , m_opacity(1.f)
     {
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
         cairo_matrix_t identityTransform;
@@ -120,13 +120,13 @@ public:
     virtual void setDrawBackground(bool);
     virtual bool drawBackground() const;
 
-    virtual void setScale(double);
-    virtual double scale() const { return m_scale; }
+    virtual void setScale(float);
+    virtual float scale() const { return m_scale; }
 
     virtual WKSize visibleContentsSize() const { return WKSizeMake(m_size.width() / m_scale, m_size.height() / m_scale); }
 
-    virtual void setOpacity(double opacity) { m_opacity = opacity < 0.0 ? 0.0 : opacity > 1.0 ? 1.0 : opacity; }
-    virtual double opacity() const { return m_opacity; }
+    virtual void setOpacity(float opacity) { m_opacity = clampTo(opacity, 0.f, 1.f); }
+    virtual float opacity() const { return m_opacity; }
 
     virtual void paintToCurrentGLContext();
 
@@ -241,8 +241,8 @@ private:
     IntSize m_contentsSize;
     IntPoint m_lastCursorPosition;
     FloatPoint m_scrollPosition;
-    double m_scale;
-    double m_opacity;
+    float m_scale;
+    float m_opacity;
     cairo_matrix_t m_userViewportTransformation;
 
     class CustomRenderer : public TextureMapperPlatformLayer {
@@ -347,7 +347,7 @@ bool WebViewImpl::drawBackground() const
     return m_webPageProxy->drawsBackground();
 }
 
-void WebViewImpl::setScale(double scale)
+void WebViewImpl::setScale(float scale)
 {
     if (m_scale == scale)
         return;
@@ -595,7 +595,8 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation()
     cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
 
     cairo_matrix_t invertedScaleTransform;
-    cairo_matrix_init_scale(&invertedScaleTransform, 1.0 / m_scale, 1.0 / m_scale);
+    float invertedScale = 1.f / m_scale;
+    cairo_matrix_init_scale(&invertedScaleTransform, invertedScale, invertedScale);
 
     cairo_matrix_t transform;
     cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScaleTransform);
