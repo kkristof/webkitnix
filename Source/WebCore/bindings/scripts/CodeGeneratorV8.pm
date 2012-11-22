@@ -32,8 +32,6 @@ use constant FileNamePrefix => "V8";
 
 my $codeGenerator;
 
-my $outputDir = "";
-my $outputHeadersDir = "";
 
 my @headerContent = ();
 my @implContentHeader = ();
@@ -72,8 +70,6 @@ sub new
     my $reference = { };
 
     $codeGenerator = shift;
-    $outputDir = shift;
-    $outputHeadersDir = shift;
 
     bless($reference, $object);
     return $reference;
@@ -92,8 +88,6 @@ sub GenerateInterface
         $object->GenerateHeader($interface);
         $object->GenerateImplementation($interface);
     }
-
-    $object->WriteData($interface);
 }
 
 sub AddToImplIncludes
@@ -414,6 +408,11 @@ END
     if (IsConstructable($interface)) {
         push(@headerContent, <<END);
     static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);
+END
+    }
+    if (HasCustomConstructor($interface)) {
+        push(@headerContent, <<END);
+    static v8::Handle<v8::Value> constructorCallbackCustom(const v8::Arguments&);
 END
     }
 
@@ -761,6 +760,13 @@ sub IsConstructable
     return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"V8CustomConstructor"} || $interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"ConstructorTemplate"};
 }
 
+sub HasCustomConstructor
+{
+    my $interface = shift;
+
+    return $interface->extendedAttributes->{"CustomConstructor"} || $interface->extendedAttributes->{"V8CustomConstructor"};
+}
+
 sub IsReadonly
 {
     my $attribute = shift;
@@ -982,7 +988,7 @@ END
         } else {
             $functionName = "imp->${functionName}";
         }
-        unshift(@arguments, GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, \@implContentDecls, "    ", 0, 0));
+        unshift(@arguments, GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, \@implContentDecls, "    ", 0));
         $getterString = "${functionName}(" . join(", ", @arguments) . ")";
     } else {
         $getterString = "impInstance";
@@ -1299,7 +1305,7 @@ END
             } else {
                 $functionName = "imp->${functionName}";
             }
-            unshift(@arguments, GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, \@implContentDecls, "    ", 1, 0));
+            unshift(@arguments, GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, \@implContentDecls, "    ", 1));
             push(@implContentDecls, "    ${functionName}(" . join(", ", @arguments) . ");\n");
         }
     }
@@ -1621,20 +1627,15 @@ sub GenerateCallWith
     my $outputArray = shift;
     my $indent = shift;
     my $returnVoid = shift;
-    my $emptyContext = shift;
     my $function = shift;
 
     my @callWithArgs;
     if ($codeGenerator->ExtendedAttributeContains($callWith, "ScriptState")) {
-        if ($emptyContext) {
-            push(@$outputArray, $indent . "EmptyScriptState state;\n");
-            push(@callWithArgs, "&state");
-        } else {
-            push(@$outputArray, $indent . "ScriptState* state = ScriptState::current();\n");
-            push(@$outputArray, $indent . "if (!state)\n");
-            push(@$outputArray, $indent . "    return" . ($returnVoid ? "" : " v8Undefined()") . ";\n");
-            push(@callWithArgs, "state");
-        }
+        push(@$outputArray, $indent . "ScriptState* currentState = ScriptState::current();\n");
+        push(@$outputArray, $indent . "if (!currentState)\n");
+        push(@$outputArray, $indent . "    return" . ($returnVoid ? "" : " v8Undefined()") . ";\n");
+        push(@$outputArray, $indent . "ScriptState& state = *currentState;\n");
+        push(@callWithArgs, "&state");
     }
     if ($codeGenerator->ExtendedAttributeContains($callWith, "ScriptExecutionContext")) {
         push(@$outputArray, $indent . "ScriptExecutionContext* scriptContext = getScriptExecutionContext();\n");
@@ -1855,13 +1856,8 @@ sub GenerateOverloadedConstructorCallback
 v8::Handle<v8::Value> V8${interfaceName}::constructorCallback(const v8::Arguments& args)
 {
     INC_STATS("DOM.${interfaceName}.Constructor");
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.");
-
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
-
 END
+    push(@implContent, GenerateConstructorHeader());
 
     my $leastNumMandatoryParams = 255;
     foreach my $constructor (@{$interface->constructors}) {
@@ -1916,13 +1912,7 @@ v8::Handle<v8::Value> V8${interfaceName}::constructor${overloadedIndexString}Cal
 END
 
     if ($function->{overloadedIndex} == 0) {
-       push(@implContent, <<END);
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.");
-
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
-END
+        push(@implContent, GenerateConstructorHeader());
         push(@implContent, GenerateArgumentsCountCheck($function, $interface));
     }
 
@@ -1986,6 +1976,27 @@ END
     push(@implContent, "\n");
 }
 
+sub GenerateCustomConstructorCallback
+{
+    my $interface = shift;
+
+    my $interfaceName = $interface->name;
+    my $maybeObserveFeature = GenerateFeatureObservation($interface->extendedAttributes->{"V8MeasureAs"});
+    push(@implContent, <<END);
+v8::Handle<v8::Value> V8${interfaceName}::constructorCallback(const v8::Arguments& args)
+{
+    INC_STATS("DOM.${interfaceName}.Constructor");
+    ${maybeObserveFeature}
+END
+    push(@implContent, GenerateConstructorHeader());
+    push(@implContent, <<END);
+
+    return V8${interfaceName}::constructorCallbackCustom(args);
+}
+
+END
+}
+
 sub GenerateConstructorCallback
 {
     my $interface = shift;
@@ -2011,13 +2022,10 @@ sub GenerateEventConstructorCallback
 v8::Handle<v8::Value> V8${interfaceName}::constructorCallback(const v8::Arguments& args)
 {
     INC_STATS("DOM.${interfaceName}.Constructor");
+END
+    push(@implContent, GenerateConstructorHeader());
 
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.");
-
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
-
+    push(@implContent, <<END);
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
 
@@ -2118,12 +2126,9 @@ static v8::Handle<v8::Value> ${v8InterfaceName}ConstructorCallback(const v8::Arg
 {
     INC_STATS("DOM.${interfaceName}.Constructor");
     ${maybeObserveFeature}
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.");
-
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
-
+END
+    push(@implContent, GenerateConstructorHeader());
+    push(@implContent, <<END);
     Document* document = currentDocument(BindingState::instance());
 
     // Make sure the document is added to the DOM Node map. Otherwise, the ${interfaceName} instance
@@ -2205,6 +2210,18 @@ v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}Constructor::GetTemplate(
 }
 
 END
+}
+
+sub GenerateConstructorHeader
+{
+    my $content = <<END;
+    if (!args.IsConstructCall())
+        return throwTypeError("DOM object constructor cannot be called as a function.");
+
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
+        return args.Holder();
+END
+    return $content;
 }
 
 sub GenerateBatchedAttributeData
@@ -2862,9 +2879,11 @@ END
 
     push(@implContentDecls, "} // namespace ${interfaceName}V8Internal\n\n");
 
-    if ($interface->extendedAttributes->{"NamedConstructor"} && !($interface->extendedAttributes->{"V8CustomConstructor"} || $interface->extendedAttributes->{"CustomConstructor"})) {
+    if (HasCustomConstructor($interface)) {
+        GenerateCustomConstructorCallback($interface);
+    } elsif ($interface->extendedAttributes->{"NamedConstructor"}) {
         GenerateNamedConstructorCallback(@{$interface->constructors}[0], $interface);
-    } elsif ($interface->extendedAttributes->{"Constructor"} && !($interface->extendedAttributes->{"V8CustomConstructor"} || $interface->extendedAttributes->{"CustomConstructor"})) {
+    } elsif ($interface->extendedAttributes->{"Constructor"}) {
         GenerateConstructorCallback($interface);
     } elsif ($codeGenerator->IsConstructorTemplate($interface, "Event")) {
         GenerateEventConstructorCallback($interface);
@@ -3246,11 +3265,11 @@ sub GenerateCallbackHeader
 
     push(@headerContent, <<END);
 public:
-    static PassRefPtr<${v8InterfaceName}> create(v8::Local<v8::Value> value, ScriptExecutionContext* context)
+    static PassRefPtr<${v8InterfaceName}> create(v8::Handle<v8::Value> value, ScriptExecutionContext* context, v8::Handle<v8::Object> owner = v8::Handle<v8::Object>())
     {
         ASSERT(value->IsObject());
         ASSERT(context);
-        return adoptRef(new ${v8InterfaceName}(value->ToObject(), context));
+        return adoptRef(new ${v8InterfaceName}(v8::Handle<v8::Object>::Cast(value), context, owner));
     }
 
     virtual ~${v8InterfaceName}();
@@ -3282,8 +3301,16 @@ END
     push(@headerContent, <<END);
 
 private:
-    ${v8InterfaceName}(v8::Local<v8::Object>, ScriptExecutionContext*);
+    ${v8InterfaceName}(v8::Handle<v8::Object>, ScriptExecutionContext*, v8::Handle<v8::Object>);
 
+    static void weakCallback(v8::Persistent<v8::Value> wrapper, void* parameter)
+    {
+        ${v8InterfaceName}* object = static_cast<${v8InterfaceName}*>(parameter);
+        object->m_callback.Dispose();
+        object->m_callback.Clear();
+    }
+
+    // FIXME: m_callback should be a ScopedPersistent.
     v8::Persistent<v8::Object> m_callback;
     WorldContextHandle m_worldContext;
 };
@@ -3314,16 +3341,21 @@ sub GenerateCallbackImplementation
     push(@implContent, "#include <wtf/Assertions.h>\n\n");
     push(@implContent, "namespace WebCore {\n\n");
     push(@implContent, <<END);
-${v8InterfaceName}::${v8InterfaceName}(v8::Local<v8::Object> callback, ScriptExecutionContext* context)
+${v8InterfaceName}::${v8InterfaceName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context, v8::Handle<v8::Object> owner)
     : ActiveDOMCallback(context)
     , m_callback(v8::Persistent<v8::Object>::New(callback))
     , m_worldContext(UseCurrentWorld)
 {
+    if (!owner.IsEmpty()) {
+        owner->SetHiddenValue(V8HiddenPropertyName::callback(), callback);
+        m_callback.MakeWeak(this, &${v8InterfaceName}::weakCallback);
+    }
 }
 
 ${v8InterfaceName}::~${v8InterfaceName}()
 {
-    m_callback.Dispose();
+    if (!m_callback.IsEmpty())
+        m_callback.Dispose();
 }
 
 END
@@ -3524,7 +3556,7 @@ sub GenerateFunctionCallString()
 
     my $callWith = $function->signature->extendedAttributes->{"CallWith"};
     my @callWithOutput = ();
-    my @callWithArgs = GenerateCallWith($callWith, \@callWithOutput, $indent, 0, 1, $function);
+    my @callWithArgs = GenerateCallWith($callWith, \@callWithOutput, $indent, 0, $function);
     $result .= join("", @callWithOutput);
     unshift(@arguments, @callWithArgs);
     $index += @callWithArgs;
@@ -3582,8 +3614,11 @@ sub GenerateFunctionCallString()
     }
 
     if ($codeGenerator->ExtendedAttributeContains($callWith, "ScriptState")) {
-        $result .= $indent . "if (state.hadException())\n";
-        $result .= $indent . "    return throwError(state.exception(), args.GetIsolate());\n"
+        $result .= $indent . "if (state.hadException()) {\n";
+        $result .= $indent . "    v8::Local<v8::Value> exception = state.exception();\n";
+        $result .= $indent . "    state.clearException();\n";
+        $result .= $indent . "    return throwError(exception, args.GetIsolate());\n";
+        $result .= $indent . "}\n";
     }
 
     if ($isSVGTearOffType) {
@@ -4098,11 +4133,12 @@ sub NativeToJSValue
     return "toV8($value$getCreationContextArg$getIsolateArg)";
 }
 
-# Internal helper
 sub WriteData
 {
     my $object = shift;
     my $interface = shift;
+    my $outputDir = shift;
+    my $outputHeadersDir = shift;
 
     my $name = $interface->name;
     my $prefix = FileNamePrefix;

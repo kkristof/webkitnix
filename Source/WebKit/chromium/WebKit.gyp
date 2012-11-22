@@ -717,8 +717,10 @@
                                 # functions defined only in !WEBKIT_IMPLEMENTATION.
                                 'tests/AssociatedURLLoaderTest.cpp',
                                 'tests/EventListenerTest.cpp',
+                                'tests/FakeWebPlugin.cpp',
                                 'tests/FrameTestHelpers.cpp',
                                 'tests/IDBBindingUtilitiesTest.cpp',
+                                'tests/IDBRequestTest.cpp',
                                 'tests/LevelDBTest.cpp',
                                 'tests/ListenerLeakTest.cpp',
                                 'tests/LinkHighlightTest.cpp',
@@ -731,6 +733,7 @@
                                 'tests/WebImageTest.cpp',
                                 'tests/WebPageNewSerializerTest.cpp',
                                 'tests/WebPageSerializerTest.cpp',
+                                'tests/WebPluginContainerTest.cpp',
                                 'tests/WebViewTest.cpp',
                             ],
                             'conditions': [
@@ -1075,7 +1078,7 @@
         },
     ], # targets
     'conditions': [
-        ['os_posix==1 and OS!="mac" and gcc_version>=46', {
+        ['os_posix==1 and OS!="mac" and OS!="ios" and gcc_version>=46', {
             'target_defaults': {
                 # Disable warnings about c++0x compatibility, as some names (such
                 # as nullptr) conflict with upcoming c++0x types.

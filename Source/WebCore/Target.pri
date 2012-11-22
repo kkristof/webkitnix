@@ -385,7 +385,6 @@ SOURCES += \
     dom/DOMStringMap.cpp \
     dom/DatasetDOMStringMap.cpp \
     dom/DynamicNodeList.cpp \
-    dom/EditingText.cpp \
     dom/Element.cpp \
     dom/ElementAttributeData.cpp \
     dom/ElementRareData.cpp \
@@ -1564,7 +1563,6 @@ HEADERS += \
     dom/DOMTimeStamp.h \
     dom/DatasetDOMStringMap.h \
     dom/DynamicNodeList.h \
-    dom/EditingText.h \
     dom/Element.h \
     dom/ElementShadow.h \
     dom/ElementAttributeData.h \
@@ -1868,6 +1866,8 @@ HEADERS += \
     html/shadow/HTMLShadowElement.h \
     html/shadow/MediaControlElements.h \
     html/shadow/DetailsMarkerControl.h \
+    html/track/InbandTextTrack.h \
+    html/track/InbandTextTrackPrivate.h \
     html/track/LoadableTextTrack.h \
     html/track/TextTrack.h \
     html/track/TextTrackCue.h \
@@ -2446,6 +2446,7 @@ HEADERS += \
     rendering/style/CounterDirectives.h \
     rendering/style/CursorData.h \
     rendering/style/CursorList.h \
+    rendering/style/ExclusionShapeValue.h \
     rendering/style/FillLayer.h \
     rendering/style/KeyframeList.h \
     rendering/style/NinePieceImage.h \

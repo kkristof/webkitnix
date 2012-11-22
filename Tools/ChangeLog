@@ -1,3 +1,460 @@
+2012-11-22  Simon Hausmann  <simon.hausmann@digia.com>, Pierre Rossi <pierre.rossi@digia.com>
+
+        [Qt] Separate QWidget dependant code into separate WebKitWidgets static library
+        https://bugs.webkit.org/show_bug.cgi?id=102800
+
+        Reviewed by Tor Arne Vestbø.
+
+        This patch separates code that needs to use QWidget related APIs in
+        WebKit/qt/WebCoreSupport and Api from code that doesn't. This means for
+        example FrameLoaderClientQt.cpp remains in the WebKit1 static library,
+        while qwebpage.cpp and qwebframe.cpp become part of the WebKitWidgets
+        static library. WebKit1 is compiled without QT += widgets and therefore
+        any widget related dependency has been moved "up" and out of WebKit1 into
+        the WebKitWidgets library.
+
+        Between the code in WebKit.a and WebKitWidgets.a new adapters and
+        interfaces have been introduced, such as QWebPageAdapter and
+        QWebFrameAdapter. QWebPageAdapter, when used from WebKit1, is a way to
+        call out into the API layer, implemented by QWebPage (QWebPagePrivate).
+        The other way around if QWebPage wants to access WebCore or
+        WebCoreSupport related functionality, it will go through
+        QWebPageAdapater (as base class). The separation in the direction up
+        into the API layer is complete with this patch, no code in WebKit1
+        depends on QtWidgets. The separation the other way around, code in the
+        API layer not using any WebCore types, is not complete yet.
+
+        Some classes such as QWebSettings, QWebElement or
+        DumpRenderTreeSupportQt remain in WebKit1. While they are API layer,
+        they do not depend on widget related Qt APIs and they make much more
+        use of WebCore internal APIs and therefore are easier to keep in
+        WebKit1.
+
+        In the future we plan to place a real shared library boundary between
+        WebKit1 and WebKitWidgets, by keeping the WebKit1 static library as
+        part of the QtWebKit shared library and by turning the WebKitWidgets
+        static library into a shared one.
+
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp:
+        (WebCore::WebPage::resetSettings):
+        (WebCore::WebPage::createWindow):
+        (WebCore::DumpRenderTree::DumpRenderTree):
+        (WebCore::DumpRenderTree::resetToConsistentStateBeforeTesting):
+        (WebCore::DumpRenderTree::initJSObjects):
+        (WebCore::DumpRenderTree::dumpFrameScrollPosition):
+        (WebCore::DumpRenderTree::dumpFramesAsText):
+        (WebCore::DumpRenderTree::dump):
+        (WebCore::DumpRenderTree::createWindow):
+        (WebCore::DumpRenderTree::pageAdapter):
+        (WebCore):
+        (WebCore::DumpRenderTree::mainFrameAdapter):
+        * DumpRenderTree/qt/DumpRenderTreeQt.h:
+        (DumpRenderTree):
+        * DumpRenderTree/qt/EventSenderQt.cpp:
+        (EventSender::contextClick):
+        (EventSender::scalePageBy):
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        (TestRunner::reset):
+        (TestRunner::display):
+        (TestRunner::closeWebInspector):
+        (TestRunner::showWebInspector):
+        (TestRunner::evaluateInWebInspector):
+        (TestRunner::setFrameFlatteningEnabled):
+        (TestRunner::goBack):
+        (TestRunner::setDefersLoading):
+        (TestRunner::pauseAnimationAtTimeOnElementWithId):
+        (TestRunner::pauseTransitionAtTimeOnElementWithId):
+        (TestRunner::numberOfActiveAnimations):
+        (TestRunner::setCaretBrowsingEnabled):
+        (TestRunner::setAuthorAndUserStylesEnabled):
+        (TestRunner::callShouldCloseOnWebView):
+        (TestRunner::setSmartInsertDeleteEnabled):
+        (TestRunner::setSelectTrailingWhitespaceEnabled):
+        (TestRunner::execCommand):
+        (TestRunner::isCommandEnabled):
+        (TestRunner::findString):
+        (TestRunner::elementDoesAutoCompleteForElementWithId):
+        (TestRunner::setMockDeviceOrientation):
+        (TestRunner::setGeolocationPermission):
+        (TestRunner::numberOfPendingGeolocationPermissionRequests):
+        (TestRunner::setMockGeolocationPositionUnavailableError):
+        (TestRunner::setMockGeolocationPosition):
+        (TestRunner::evaluateScriptInIsolatedWorld):
+        (TestRunner::addUserStyleSheet):
+        (TestRunner::setMinimumTimerInterval):
+        * DumpRenderTree/qt/TextInputControllerQt.cpp:
+        (TextInputController::selectedRange):
+        (TextInputController::firstRectForCharacterRange):
+        (TextInputController::unmarkText):
+        * DumpRenderTree/qt/WorkQueueItemQt.cpp:
+        (LoadAlternateHTMLStringItem::invoke):
+        * qmake/mkspecs/features/default_post.prf:
+        * qmake/mkspecs/features/production_build.prf:
+        * qmake/mkspecs/features/webkit_modules.prf:
+        * qmake/mkspecs/modules/webkitwidgets.prf: Added.
+
+2012-11-22  Christophe Dumez  <christophe.dumez@intel.com>
+
+        WebKitTestRunner needs layoutTestController.setCacheModel
+        https://bugs.webkit.org/show_bug.cgi?id=42684
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add support for testRunner.setCacheModel to WebKitTestRunner.
+
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp:
+        (WTR::InjectedBundle::beginTesting):
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::setCacheModel):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+
+2012-11-22  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt][WTR] TestController::platformRunUntil should not do busy waiting
+        https://bugs.webkit.org/show_bug.cgi?id=101327
+
+        Reviewed by Simon Hausmann.
+
+        Avoid busy waiting for events in platformRunUntil while making
+        sure we don't change the behavior of modal event loops.
+
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::~TestController):
+        * WebKitTestRunner/TestController.h:
+        (TestController):
+        * WebKitTestRunner/efl/TestControllerEfl.cpp:
+        (WTR::TestController::platformDestroy):
+        (WTR):
+        * WebKitTestRunner/gtk/TestControllerGtk.cpp:
+        (WTR::TestController::platformDestroy):
+        (WTR):
+        * WebKitTestRunner/mac/TestControllerMac.mm:
+        (WTR::TestController::platformDestroy):
+        (WTR):
+        * WebKitTestRunner/qt/TestControllerQt.cpp:
+        (TestController::RunLoop): Helper class to handle
+        the event loop logic
+        (WTR):
+        (WTR::TestController::RunLoop::RunLoop):
+        (WTR::TestController::RunLoop::runUntil): Use QEventLoop to implement
+        the run loop. This is the appropriate API to push the WaitForMoreEvents
+        flag to QCoreApplication::processEvents and also being able to exit the
+        loop if we have timed out.
+        (WTR::TestController::RunLoop::notifyDone):
+        (WTR::TestController::RunLoop::timerFired):
+        (WTR::TestController::RunLoop::runModal):
+        (WTR::TestController::notifyDone):
+        (WTR::TestController::platformInitialize):
+        (WTR::TestController::platformDestroy):
+        (WTR::TestController::platformRunUntil):
+        (WTR::TestController::runModal):
+        * WebKitTestRunner/win/TestControllerWin.cpp:
+        (WTR::TestController::platformDestroy):
+        (WTR):
+
+2012-11-22  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        [EFL][WK2] Enable WKPreferences and AboutBlankLoad API tests
+        https://bugs.webkit.org/show_bug.cgi?id=102926
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add missing bits needed by WKPreferences and AboutBlankLoad API
+        tests in the test harness and enable these tests on EFL port.
+
+        * TestWebKitAPI/PlatformEfl.cmake:
+        * TestWebKitAPI/Tests/WebKit2/WKPreferences.cpp:
+        (TestWebKitAPI::TEST):
+        * TestWebKitAPI/efl/PlatformUtilities.cpp:
+        (TestWebKitAPI::Util::MIMETypeForWKURLResponse):
+        (Util):
+
+2012-11-21  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK][WTR] Implement AccessibilityUIElement::stringValue
+        https://bugs.webkit.org/show_bug.cgi?id=102951
+
+        Reviewed by Martin Robinson.
+
+        Implement AccessibilityUIElement::stringValue in the ATK backend
+        in the same manner it is implemented in DumpRenderTree.
+
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::replaceCharactersForResults):
+        (WTR):
+        (WTR::AccessibilityUIElement::stringValue):
+
+2012-11-21  Vineet Chaudhary  <rgf748@motorola.com>
+
+        Unreviewed. Adding myself to committers.py.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-11-21  Tien-Ren Chen  <trchen@chromium.org>
+
+        [chromium] Device scale factor should be no-op when applyDeviceScaleFactorInCompositor == 0
+        https://bugs.webkit.org/show_bug.cgi?id=100061
+
+        Reviewed by Adam Barth.
+
+        On Android we're using a different pixel scaling implementation
+        (WebCore::Settings::applyDefaultDeviceScaleFactorInCompositor() == 0) than other
+        platforms. In this mode, we don't make use of device-independent pixels. Device
+        scale factor is provided to WebKit and get merged into page scale factor. Other
+        than that device scale factor should have no effects on rendering.
+
+        * DumpRenderTree/chromium/WebPreferences.cpp:
+        (WebPreferences::applyTo):
+
+2012-11-21  Fady Samuel  <fsamuel@chromium.org>
+
+        Clear MousePressed state on context menu to avoid initiating a drag
+        https://bugs.webkit.org/show_bug.cgi?id=101786
+
+        Reviewed by Ojan Vafai.
+
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.cpp:
+        (WebTestRunner):
+        (WebTestRunner::EventSender::EventSender):
+        (WebTestRunner::EventSender::contextClick):
+        Only send a MouseUp on Windows. Keep the current mouse pressed state when
+        calling up a context menu.
+
+2012-11-21  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] KURL unit test crashing when tiled backing store is enabled on Release Bots
+        https://bugs.webkit.org/show_bug.cgi?id=102895
+
+        Reviewed by Gyuyoung Kim.
+
+        Change the link order so it wont override the new operator on gtest.
+        Looks like it was crashing because an allocator mismatch (using libc's
+        new and later fastMalloc delete. Thanks to Kangil Han for hinting on
+        the fastMalloc issue.
+
+        * TestWebKitAPI/CMakeLists.txt:
+
+2012-11-21  Kentaro Hara  <haraken@chromium.org>
+
+        Unreviewed, rolling out r135340.
+        http://trac.webkit.org/changeset/135340
+        https://bugs.webkit.org/show_bug.cgi?id=102492
+
+        It broke Safari's internal build
+
+        * WebKitTestRunner/InjectedBundle/Bindings/CodeGeneratorTestRunner.pm:
+        (new):
+        (GenerateModule):
+        (GenerateInterface):
+        (finish):
+
+2012-11-21  Yael Aharon  <yael.aharon@intel.com>, Gyuyoung Kim <gyuyoung.kim@samsung.com>
+
+        [EFL] Turn on WTF_USE_TILED_BACKING_STORE by default
+        https://bugs.webkit.org/show_bug.cgi?id=101526
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Turn on WTF_USE_TILED_BACKING_STORE for EFL port.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * TestWebKitAPI/CMakeLists.txt: No include KURL.cpp because of API test crash.
+
+2012-11-21  Jongseok Yang  <js45.yang@samsung.com>
+
+        [EFL][WK2] Rename ewk_view_setting_encoding_custom_XXX to ewk_view_custom_encoding_XXX
+        https://bugs.webkit.org/show_bug.cgi?id=102867
+
+        Reviewed by Gyuyoung Kim.
+
+        Rename ewk_view_setting_encoding_custom_XXX to ewk_view_custom_encoding_XXX.
+
+        ewk_view_setting_encoding_custom_XXX APIs might be misunderstanded as the "setting" word
+        because ewk_view_setting_encoding_custom_set triggers the "reload" operation.
+        And ewk_view_setting_XXX is not correct because there is ewk_settings object for settings.
+
+        * MiniBrowser/efl/main.c:
+        (on_key_down):
+
+2012-11-20  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r133859.
+        http://trac.webkit.org/changeset/133859
+        https://bugs.webkit.org/show_bug.cgi?id=102875
+
+        This patch makes API test broken (Requested by gyuyoung on
+        #webkit).
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-11-20  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Add Ewk_Window_Features API and related UI callbacks
+        https://bugs.webkit.org/show_bug.cgi?id=99114
+
+        Reviewed by Gyuyoung Kim.
+
+        Implemented window_create and window_close smartcallback functions.
+
+        * MiniBrowser/efl/main.c:
+        (on_window_create):
+        (on_window_close):
+        (window_create):
+
+2012-11-20  Ojan Vafai  <ojan@chromium.org>
+
+        Simplify builder filters now that we have lists of which builders run which tests
+        https://bugs.webkit.org/show_bug.cgi?id=102849
+
+        Reviewed by Dirk Pranke.
+
+        We only need filters when we load the same master for multiple groups in the
+        same test type, i.e. when we need to only include some of the builders that run
+        a given test suite on a given master.
+
+        Also, get rid of the DEFAULT_BUILDER enum. We were always using the first builder anyways.
+        Now just make it a method on BuilderGroup.
+
+        * TestResultServer/static-dashboards/builders.js:
+        (BuilderGroup.prototype.append):
+        (BuilderGroup.prototype.setup):
+        (BuilderGroup.prototype._defaultBuilder):
+        (BuilderGroup.prototype.master):
+        (requestBuilderList):
+        (isChromiumWebkitTipOfTreeTestRunner):
+        (isChromiumWebkitDepsTestRunner):
+        (loadBuildersList):
+        * TestResultServer/static-dashboards/flakiness_dashboard_unittests.js:
+        (test):
+
+2012-11-20  Ojan Vafai  <ojan@chromium.org>
+
+        Remove perfav master for webkit_unit_tests and test_shell_tests.
+        There are no bots on this master that run these tests.
+        * TestResultServer/static-dashboards/builders.js:
+
+2012-11-20  Ojan Vafai  <ojan@chromium.org>
+
+        Remove special case for layout tests when builders fail to load
+        https://bugs.webkit.org/show_bug.cgi?id=102842
+
+        Reviewed by Tony Chang.
+
+        Now that we load only builders that actually run the given test
+        type, we can reliably show errors to the users because it
+        represents a broken bot.
+        * TestResultServer/static-dashboards/loader.js:
+
+2012-11-15  Ojan Vafai  <ojan@chromium.org>
+
+        Generate a list of builders/test suites from the buildbot json
+        https://bugs.webkit.org/show_bug.cgi?id=102443
+
+        Reviewed by Dirk Pranke.
+
+        Instead of the cludgy things we do now to track which bots run which tests,
+        we generate all that data from the buildbots' json files.
+        This is the minimal amount to keep everything working. Once this lands,
+        we can also do a bunch of followup cleanup.
+
+        For now we commit the generated data. In theory, in the future, we could
+        have the test results server generate the data on the fly.
+
+        For the sake of easily understanding what changes when we run the generate script,
+        also checkin a pretty printed version of the output. The pretty printed version
+        is too large to serve as part of the flakiness dashboard though.
+
+        This also has the benefit of making the dashboard load much faster since
+        we no longer ever need to block on requests to buildbot.
+
+        * TestResultServer/generate_builders_json.py: Added.
+        (master_json_url):
+        (builder_json_url):
+        (cached_build_json_url):
+        (fetch_json):
+        (insert_builder_and_test_data):
+        (main):
+        * TestResultServer/generate_builders_json_unittest.py: Added.
+        (GenerateBuildersJsonTest):
+        (GenerateBuildersJsonTest.test_master_json_url):
+        (GenerateBuildersJsonTest.test_builder_json_url):
+        (GenerateBuildersJsonTest.test_cached_build_json_url):
+        (GenerateBuildersJsonTest.test_generate_json_data):
+        (GenerateBuildersJsonTest.test_generate_json_data.dummy_fetch_json):
+        * TestResultServer/static-dashboards/builders-pretty.jsonp: Added.
+        * TestResultServer/static-dashboards/builders.js:
+        (LOAD_BUILDBOT_DATA):
+        (BuilderGroup):
+        (BuilderGroup.prototype.append):
+        (BuilderGroup.prototype.master):
+        (requestBuilderList):
+        * TestResultServer/static-dashboards/builders.jsonp: Added.
+        * TestResultServer/static-dashboards/builders_unittests.js: Added.
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (showPopupForBuild):
+        (htmlForTestResults):
+        (htmlForIndividualTestOnAllBuildersWithResultsLinks):
+        (loadExpectationsLayoutTests):
+        * TestResultServer/static-dashboards/flakiness_dashboard_unittests.js:
+        (resetGlobals):
+        (test):
+        * TestResultServer/static-dashboards/loader.js:
+        * TestResultServer/static-dashboards/loader_unittests.js:
+        * TestResultServer/static-dashboards/run-embedded-unittests.html:
+        * TestResultServer/static-dashboards/run-unittests.html:
+        * TestResultServer/static-dashboards/timeline_explorer.html:
+
+2012-11-20  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WTR][Qt] Enable fixedLayout when needed by the test
+        https://bugs.webkit.org/show_bug.cgi?id=102811
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Create a flickable view for CSS Device Adaptation tests. This is
+        crucial for testing them since they will change the size of the
+        viewport.
+
+        * WebKitTestRunner/PlatformWebView.h:
+        (PlatformWebView):
+        * WebKitTestRunner/qt/PlatformWebViewQt.cpp:
+        (WTR::PlatformWebView::PlatformWebView):
+        (WTR::PlatformWebView::viewSupportsOptions):
+        (WTR):
+        * WebKitTestRunner/qt/main.cpp:
+        (main):
+
+2012-11-20  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WTR] WebKitTestRunner should be able to run tests using fixed layout
+        https://bugs.webkit.org/show_bug.cgi?id=102517
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        WTR will now request the creation of a view that has a page using
+        fixed layout for CSS Device Adaptation tests, but this feature might
+        be used in the future by any other test that requires a mobile-like type
+        of viewport (i.e. Viewport META tests should be ported).
+
+        The viewport type of the other tests remains unchanged and is restored
+        when the runner leaves the device-adapt/ folder.
+
+        * WebKitTestRunner/PlatformWebView.h:
+        (PlatformWebView):
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR):
+        (WTR::shouldUseFixedLayout):
+        (WTR::updateLayoutType):
+        (WTR::TestInvocation::invoke):
+        * WebKitTestRunner/efl/PlatformWebViewEfl.cpp:
+        (WTR::PlatformWebView::PlatformWebView):
+        (WTR::PlatformWebView::viewSupportsOptions):
+        (WTR):
+
 2012-11-20  Csaba Osztrogonác  <ossy@webkit.org>
 
         [Qt] REGRESSION(r128174): Fast build path doesn't work now

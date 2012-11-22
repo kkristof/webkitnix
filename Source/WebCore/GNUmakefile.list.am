@@ -2774,8 +2774,6 @@ webcore_sources += \
 	Source/WebCore/dom/DOMTimeStamp.h \
 	Source/WebCore/dom/DynamicNodeList.cpp \
 	Source/WebCore/dom/DynamicNodeList.h \
-	Source/WebCore/dom/EditingText.cpp \
-	Source/WebCore/dom/EditingText.h \
 	Source/WebCore/dom/Element.cpp \
 	Source/WebCore/dom/Element.h \
 	Source/WebCore/dom/ElementAttributeData.cpp \
@@ -3601,6 +3599,9 @@ webcore_sources += \
 	Source/WebCore/html/TimeInputType.h \
 	Source/WebCore/html/TimeRanges.cpp \
 	Source/WebCore/html/TimeRanges.h \
+	Source/WebCore/html/track/InbandTextTrack.cpp \
+	Source/WebCore/html/track/InbandTextTrack.h \
+	Source/WebCore/html/track/InbandTextTrackPrivate.h \
 	Source/WebCore/html/track/LoadableTextTrack.cpp \
 	Source/WebCore/html/track/LoadableTextTrack.h \
 	Source/WebCore/html/track/TextTrack.cpp \
@@ -3840,6 +3841,7 @@ webcore_sources += \
 	Source/WebCore/loader/cache/CachedStyleSheetClient.h \
 	Source/WebCore/loader/cache/CachedSVGDocument.cpp \
 	Source/WebCore/loader/cache/CachedSVGDocument.h \
+	Source/WebCore/loader/cache/CachedSVGDocumentReference.h \
 	Source/WebCore/loader/cache/CachedTextTrack.cpp \
 	Source/WebCore/loader/cache/CachedTextTrack.h \
 	Source/WebCore/loader/cache/CachedXSLStyleSheet.cpp \
@@ -4437,6 +4439,7 @@ webcore_sources += \
 	Source/WebCore/rendering/style/CursorData.h \
 	Source/WebCore/rendering/style/CursorList.h \
 	Source/WebCore/rendering/style/DataRef.h \
+	Source/WebCore/rendering/style/ExclusionShapeValue.h \
 	Source/WebCore/rendering/style/FillLayer.cpp \
 	Source/WebCore/rendering/style/FillLayer.h \
 	Source/WebCore/rendering/style/GridPosition.h \

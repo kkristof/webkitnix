@@ -81,7 +81,6 @@ class DocumentStyleSheetCollection;
 class DocumentType;
 class DocumentWeakReference;
 class DynamicNodeListCacheBase;
-class EditingText;
 class Element;
 class ElementAttributeData;
 class EntityReference;
@@ -525,7 +524,7 @@ public:
 
     // Special support for editing
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();
-    PassRefPtr<EditingText> createEditingTextNode(const String&);
+    PassRefPtr<Text> createEditingTextNode(const String&);
 
     void recalcStyle(StyleChange = NoChange);
     bool childNeedsAndNotInStyleRecalc();
@@ -1156,7 +1155,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-    PassRefPtr<ElementAttributeData> cachedImmutableAttributeData(const Element*, const Vector<Attribute>&);
+    PassRefPtr<ElementAttributeData> cachedImmutableAttributeData(const Vector<Attribute>&);
 
     void didRemoveAllPendingStylesheet();
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }

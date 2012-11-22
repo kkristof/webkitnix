@@ -113,9 +113,6 @@ http/tests/misc/acid2-pixel.html
 # BUG: no green in the rectangle
 http/tests/multipart/invalid-image-data.html
 
-# BUG: composited area is transparent
-compositing/geometry/vertical-scroll-composited.html
-
 # BUG: new windows do not have scrollbars
 fast/dom/Window/new-window-opener.html
 
@@ -126,8 +123,6 @@ fast/events/attempt-scroll-with-no-scrollbars.html
 fast/events/mouseout-on-window.html
 
 # BUG: wrong test results that need investigation
-compositing/checkerboard.html
-compositing/framesets/composited-frame-alignment.html
 compositing/images/direct-pdf-image.html
 compositing/reflections/backface-hidden-reflection.html
 editing/selection/extend-selection-after-double-click.html
@@ -717,6 +712,8 @@ webkit.org/b/100636 [ Debug ] jquery/traversing.html [ Failure Crash Pass ]
 
 webkit.org/b/96641 media/video-seek-past-end-playing.html [ Failure Pass ]
 
+webkit.org/b/102928 svg/foreignObject/viewport-foreignobject-crash.html [ Crash Failure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # FAILING TESTS
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -1215,31 +1212,6 @@ webkit.org/b/84835 editing/execCommand/4128080-2.html [ Failure ]
 webkit.org/b/84835 editing/execCommand/copy-without-selection.html [ Failure ]
 webkit.org/b/84835 editing/execCommand/findString-diacriticals.html [ Failure ]
 
-# These tests are passing when running on the MiniBrowser, but failing on
-# WebKitTestRunner because it doesn't support fixed layout.
-webkit.org/b/102517 css3/device-adapt/opera/cascading-001.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/cascading-002.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/cascading-003.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/cascading-004.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-001.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-004.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-005.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-006.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-007.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-008.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-009.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-010.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-011.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-013.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-014.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-015.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-016.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-017.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/constrain-020.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/syntax-001.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/syntax-002.xhtml [ Failure ]
-webkit.org/b/102517 css3/device-adapt/opera/syntax-003.xhtml [ Failure ]
-
 # DRT doesn't check for isPrinting().
 webkit.org/b/87226 printing/iframe-print.html [ Failure ]
 webkit.org/b/87226 printing/media-queries-print.html [ Missing ]
@@ -1604,6 +1576,7 @@ Bug(EFL) compositing/plugins/1x1-composited-plugin.html [ Failure ]
 Bug(EFL) compositing/plugins/large-to-small-composited-plugin.html [ Failure ]
 
 # Regression from r133898
+Bug(EFL) animations/negative-delay.html [ Failure Pass ]
 Bug(EFL) compositing/bounds-in-flipped-writing-mode.html [ Failure ]
 Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
 Bug(EFL) compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
@@ -1714,5 +1687,5 @@ webkit.org/b/102367 fast/forms/zoomed-controls.html [ ImageOnlyFailure Missing ]
 
 webkit.org/b/102493 fast/events/mouse-cursor.html [ Failure ]
 
-webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff.html [ Skip ]
-webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff-transient.html [ Skip ]
+# Fails until we enable the Resource Timing API.
+webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]

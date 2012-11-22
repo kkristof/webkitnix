@@ -1886,10 +1886,6 @@ css2.1/20110323/inline-non-replaced-height-002.htm
 # Regressions occured after Qt version update
 # ============================================================================= #
 
-# [Qt] fast/forms/textarea-appearance-wrap.html fails with Qt >= 4.7.1
-# https://bugs.webkit.org/show_bug.cgi?id=50145
-fast/forms/textarea-appearance-wrap.html
-
 # [Qt] 4 css2.1/t1202-counter tests fail with Qt >= 4.7.1
 # https://bugs.webkit.org/show_bug.cgi?id=50146
 css2.1/t1202-counter-09-b.html [ Failure ]
@@ -1999,13 +1995,6 @@ fast/loader/form-submission-after-beforeunload-cancel.html
 
 # This test verifies that a mismatch reftest will fail as intended if both results are same.
 fast/harness/sample-fail-mismatch-reftest.html
-
-# [Qt] REGRESSION(r93937): 4 failing and 3 flaky tests
-# https://bugs.webkit.org/show_bug.cgi?id=67118
-# Flaky
-fast/forms/number/number-large-padding.html
-fast/forms/number/number-spinbutton-capturing.html
-fast/forms/number/number-spinbutton-change-and-input-events.html
 
 # [Qt] fast/text/line-initial-and-final-swashes.html fails
 # https://bugs.webkit.org/show_bug.cgi?id=69719
@@ -2336,6 +2325,8 @@ webkit.org/b/94006 fast/css/word-spacing-characters-complex-text.html [ ImageOnl
 webkit.org/b/98525 plugins/mouse-click-plugin-clears-selection.html
 webkit.org/b/98525 plugins/netscape-dom-access.html
 webkit.org/b/98525 plugins/resize-from-plugin.html
+
+# [Qt] plugins/refcount-leaks.html fails
 webkit.org/b/98640 plugins/refcount-leaks.html
 
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
@@ -2387,5 +2378,33 @@ webkit.org/b/101925 css3/filters/effect-reference-ordering-hw.html
 # [Qt] fast/block/float/overhanging-tall-block.html asserts after r135025
 webkit.org/b/102675 [ Debug ] fast/block/float/overhanging-tall-block.html
 
-webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff.html [ Skip ]
-webkit.org/b/102744 fast/mutation/observer-wrapper-dropoff-transient.html [ Skip ]
+# [Qt] New fast/frames/frame-unload-crash2.html fails with timeout
+webkit.org/b/102877 fast/frames/frame-unload-crash2.html
+
+# Fails until we enable the Resource Timing API.
+webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
+
+# [Qt] REGRESSION(r135507): It made 13 tests fail
+# https://bugs.webkit.org/show_bug.cgi?id=103069
+fast/preloader/script.html
+http/tests/navigation/reload-subframe-object.html
+mhtml/check_domain.mht
+mhtml/multi_frames_binary.mht
+mhtml/multi_frames_ie.mht
+mhtml/multi_frames_unmht.mht
+mhtml/page_with_css_and_js_ie.mht
+mhtml/page_with_css_and_js_unmht.mht
+mhtml/page_with_image_ie.mht
+mhtml/page_with_image_unmht.mht
+mhtml/shared_buffer_bug.mht
+mhtml/simple_page_ie.mht
+mhtml/simple_page_unmht.mht
+
+# [Qt] REGRESSION(r135515): It made 3-3 tests fail and crash
+# https://bugs.webkit.org/show_bug.cgi?id=103073
+http/tests/appcache/origin-quota-continued-download-multiple-manifests.html
+http/tests/appcache/origin-quota-continued-download.html
+http/tests/appcache/origin-quota.html
+fast/dom/beforeload/remove-frame-in-beforeload-listener.html
+fast/parser/remove-misnested-iframe-parent-in-beforeload.html
+fast/parser/remove-misnested-iframe-in-beforeload.html
