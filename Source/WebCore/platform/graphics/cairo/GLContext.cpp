@@ -117,6 +117,7 @@ void GLContext::cleanupActiveContextsAtExit()
 
 PassOwnPtr<GLContext> GLContext::createContextForWindow(uint64_t windowHandle, GLContext* sharingContext)
 {
+#if !PLATFORM(NIX)
 #if USE(GLX)
     if (OwnPtr<GLContext> glxContext = GLContextGLX::createContext(windowHandle, sharingContext))
         return glxContext.release();
@@ -124,6 +125,7 @@ PassOwnPtr<GLContext> GLContext::createContextForWindow(uint64_t windowHandle, G
 #if USE(EGL)
     if (OwnPtr<GLContext> eglContext = GLContextEGL::createContext(windowHandle, sharingContext))
         return eglContext.release();
+#endif
 #endif
     return nullptr;
 }
@@ -135,6 +137,7 @@ GLContext::GLContext()
 
 PassOwnPtr<GLContext> GLContext::createOffscreenContext(GLContext* sharingContext)
 {
+#if !PLATFORM(NIX)
 #if USE(GLX)
     if (OwnPtr<GLContext> glxContext = GLContextGLX::createContext(0, sharingContext))
         return glxContext.release();
@@ -142,6 +145,7 @@ PassOwnPtr<GLContext> GLContext::createOffscreenContext(GLContext* sharingContex
 #if USE(EGL)
     if (OwnPtr<GLContext> eglContext = GLContextEGL::createContext(0, sharingContext))
         return eglContext.release();
+#endif
 #endif
     return nullptr;
 }
