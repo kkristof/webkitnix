@@ -197,7 +197,6 @@ SET(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSecurityOrigin.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSerializedScriptValue.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSerializedScriptValuePrivate.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSharedAPICast.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKString.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKStringPrivate.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKType.h"
@@ -206,7 +205,6 @@ SET(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKURLResponse.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKUserContentURLPattern.h"
 
-    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/C/WKAPICast.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/C/WKApplicationCacheManager.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/C/WKAuthenticationChallenge.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/C/WKAuthenticationDecisionListener.h"
@@ -259,7 +257,6 @@ SET(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/C/WebKit2_C.h"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundle.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundleAPICast.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundleBackForwardList.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundleBackForwardListItem.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundleDOMWindowExtension.h"
