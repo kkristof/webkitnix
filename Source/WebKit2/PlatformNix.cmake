@@ -57,8 +57,12 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/Downloads/nix/DownloadSoupErrorsNix.cpp
     WebProcess/Downloads/soup/DownloadSoup.cpp
 
-    WebProcess/nix/WebProcessNix.cpp
     WebProcess/nix/WebProcessMainNix.cpp
+
+    WebProcess/soup/WebProcessSoup.cpp
+    WebProcess/soup/WebSoupRequestManager.cpp
+    WebProcess/soup/WebKitSoupRequestGeneric.cpp
+    WebProcess/soup/WebKitSoupRequestInputStream.cpp
 
     WebProcess/InjectedBundle/gtk/InjectedBundleGtk.cpp
 
