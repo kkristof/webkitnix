@@ -1,5 +1,12 @@
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   "${WEBCORE_DIR}/platform/nix"
+  "${WEBCORE_DIR}/platform/cairo"
+  "${WEBCORE_DIR}/platform/graphics/cairo"
+  "${WEBCORE_DIR}/platform/graphics/freetype"
+  "${WEBCORE_DIR}/platform/graphics/harfbuzz/"
+  "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
+  "${WEBCORE_DIR}/platform/graphics/opengl"
+  "${WEBCORE_DIR}/platform/graphics/texmap"
   "${WEBCORE_DIR}/platform/linux"
   "${WEBCORE_DIR}/platform/mediastream/gstreamer"
   "${WEBCORE_DIR}/platform/network/soup"
@@ -38,9 +45,57 @@ LIST(APPEND WebCore_SOURCES
   platform/nix/SystemTimeNix.cpp
   platform/nix/TemporaryLinkStubs.cpp
   platform/nix/WidgetNix.cpp
+
+  platform/cairo/WidgetBackingStoreCairo.cpp
+  platform/graphics/cairo/BitmapImageCairo.cpp
+  platform/graphics/cairo/CairoUtilities.cpp
+  platform/graphics/cairo/FontCairo.cpp
+  platform/graphics/cairo/GradientCairo.cpp
+  platform/graphics/cairo/GraphicsContextCairo.cpp
+  platform/graphics/cairo/ImageBufferCairo.cpp
+  platform/graphics/cairo/ImageCairo.cpp
+  platform/graphics/cairo/IntRectCairo.cpp
+  platform/graphics/cairo/NativeImageCairo.cpp
+  platform/graphics/cairo/OwnPtrCairo.cpp
+  platform/graphics/cairo/PathCairo.cpp
+  platform/graphics/cairo/PatternCairo.cpp
+  platform/graphics/cairo/PlatformContextCairo.cpp
+  platform/graphics/cairo/PlatformPathCairo.cpp
+  platform/graphics/cairo/RefPtrCairo.cpp
+  platform/graphics/cairo/TileCairo.cpp
+  platform/graphics/cairo/TiledBackingStoreBackendCairo.cpp
+  platform/graphics/cairo/TransformationMatrixCairo.cpp
+
+  platform/image-decoders/cairo/ImageDecoderCairo.cpp
+
+  platform/graphics/WOFFFileFormat.cpp
+  platform/graphics/cairo/FontCairoHarfbuzzNG.cpp
+  platform/graphics/freetype/FontCacheFreeType.cpp
+  platform/graphics/freetype/FontCustomPlatformDataFreeType.cpp
+  platform/graphics/freetype/FontPlatformDataFreeType.cpp
+  platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
+  platform/graphics/freetype/SimpleFontDataFreeType.cpp
+  platform/graphics/harfbuzz/HarfBuzzShaperBase.cpp
+  platform/graphics/harfbuzz/ng/HarfBuzzNGFace.cpp
+  platform/graphics/harfbuzz/ng/HarfBuzzNGFaceCairo.cpp
+  platform/graphics/harfbuzz/ng/HarfBuzzShaper.cpp
+
   platform/graphics/ImageSource.cpp
+  platform/graphics/OpenGLShims.cpp
+  platform/graphics/cairo/DrawingBufferCairo.cpp
+  platform/graphics/cairo/GLContext.cpp
+  platform/graphics/cairo/GraphicsContext3DCairo.cpp
+  platform/graphics/cairo/GraphicsContext3DPrivate.cpp
   platform/graphics/nix/IconNix.cpp
   platform/graphics/nix/ImageNix.cpp
+  platform/graphics/opengl/Extensions3DOpenGL.cpp
+  platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
+  platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
+  platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
+  platform/graphics/texmap/TextureMapperGL.cpp
+  platform/graphics/texmap/TextureMapperShaderManager.cpp
+  platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
+
   platform/image-decoders/ImageDecoder.cpp
   platform/image-decoders/bmp/BMPImageDecoder.cpp
   platform/image-decoders/bmp/BMPImageReader.cpp
@@ -76,6 +131,11 @@ LIST(APPEND WebCore_SOURCES
   plugins/PluginView.cpp
   plugins/PluginPackageNone.cpp
   plugins/PluginViewNone.cpp
+
+  editing/SmartReplaceICU.cpp
+  platform/text/TextEncodingDetectorICU.cpp
+  platform/text/TextBreakIteratorICU.cpp
+  platform/text/TextCodecICU.cpp
 )
 
 IF (ENABLE_BATTERY_STATUS)
@@ -86,74 +146,6 @@ ENDIF ()
 LIST(APPEND WebCore_USER_AGENT_STYLE_SHEETS
     ${WEBCORE_DIR}/css/mediaControlsNix.css
     ${WEBCORE_DIR}/css/mediaControlsNixFullscreen.css
-)
-
-IF (WTF_USE_CAIRO)
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-    "${WEBCORE_DIR}/platform/cairo"
-    "${WEBCORE_DIR}/platform/graphics/cairo"
-  )
-  LIST(APPEND WebCore_SOURCES
-    platform/cairo/WidgetBackingStoreCairo.cpp
-    platform/graphics/cairo/BitmapImageCairo.cpp
-    platform/graphics/cairo/CairoUtilities.cpp
-    platform/graphics/cairo/FontCairo.cpp
-    platform/graphics/cairo/GradientCairo.cpp
-    platform/graphics/cairo/GraphicsContextCairo.cpp
-    platform/graphics/cairo/ImageBufferCairo.cpp
-    platform/graphics/cairo/ImageCairo.cpp
-    platform/graphics/cairo/IntRectCairo.cpp
-    platform/graphics/cairo/NativeImageCairo.cpp
-    platform/graphics/cairo/OwnPtrCairo.cpp
-    platform/graphics/cairo/PathCairo.cpp
-    platform/graphics/cairo/PatternCairo.cpp
-    platform/graphics/cairo/PlatformContextCairo.cpp
-    platform/graphics/cairo/PlatformPathCairo.cpp
-    platform/graphics/cairo/RefPtrCairo.cpp
-    platform/graphics/cairo/TileCairo.cpp
-    platform/graphics/cairo/TiledBackingStoreBackendCairo.cpp
-    platform/graphics/cairo/TransformationMatrixCairo.cpp
-
-    platform/image-decoders/cairo/ImageDecoderCairo.cpp
-  )
-
-  IF (WTF_USE_FREETYPE)
-    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-      "${WEBCORE_DIR}/platform/graphics/freetype"
-      "${WEBCORE_DIR}/platform/graphics/harfbuzz/"
-      "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
-      ${HARFBUZZ_INCLUDE_DIRS}
-    )
-    LIST(APPEND WebCore_SOURCES
-      platform/graphics/WOFFFileFormat.cpp
-      platform/graphics/cairo/FontCairoHarfbuzzNG.cpp
-      platform/graphics/freetype/FontCacheFreeType.cpp
-      platform/graphics/freetype/FontCustomPlatformDataFreeType.cpp
-      platform/graphics/freetype/FontPlatformDataFreeType.cpp
-      platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
-      platform/graphics/freetype/SimpleFontDataFreeType.cpp
-      platform/graphics/harfbuzz/HarfBuzzShaperBase.cpp
-      platform/graphics/harfbuzz/ng/HarfBuzzNGFace.cpp
-      platform/graphics/harfbuzz/ng/HarfBuzzNGFaceCairo.cpp
-      platform/graphics/harfbuzz/ng/HarfBuzzShaper.cpp
-    )
-    LIST(APPEND WebCore_LIBRARIES
-      ${HARFBUZZ_LIBRARIES}
-    )
-  ENDIF ()
-ENDIF ()
-
-IF (WTF_USE_ICU_UNICODE)
-  LIST(APPEND WebCore_SOURCES
-    editing/SmartReplaceICU.cpp
-    platform/text/TextEncodingDetectorICU.cpp
-    platform/text/TextBreakIteratorICU.cpp
-    platform/text/TextCodecICU.cpp
-  )
-ENDIF ()
-
-LIST(APPEND WebCore_SOURCES
-    platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
 )
 
 LIST(APPEND WebCore_LIBRARIES
@@ -173,6 +165,8 @@ LIST(APPEND WebCore_LIBRARIES
   ${LIBSOUP_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${Platform_LIBRARY_NAME}
+  ${OPENGL_gl_LIBRARY}
+  ${HARFBUZZ_LIBRARIES}
 )
 
 LIST(APPEND WebCore_INCLUDE_DIRECTORIES
@@ -185,6 +179,7 @@ LIST(APPEND WebCore_INCLUDE_DIRECTORIES
   ${GLIB_INCLUDE_DIRS}
   ${LIBSOUP_INCLUDE_DIRS}
   ${ZLIB_INCLUDE_DIRS}
+  ${HARFBUZZ_INCLUDE_DIRS}
 )
 
 IF (ENABLE_VIDEO OR ENABLE_WEB_AUDIO)
@@ -228,54 +223,13 @@ IF (ENABLE_VIDEO)
   )
 ENDIF ()
 
-IF (WTF_USE_3D_GRAPHICS)
-  SET(WTF_USE_OPENGL 1)
-  ADD_DEFINITIONS(-DWTF_USE_OPENGL=1)
-
-  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-    "${WEBCORE_DIR}/platform/graphics/cairo"
-    "${WEBCORE_DIR}/platform/graphics/opengl"
-    "${WEBCORE_DIR}/platform/graphics/texmap"
-  )
-
-  IF (WTF_USE_EGL)
-    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-      "${WEBCORE_DIR}/platform/graphics/egl"
-      ${EGL_INCLUDE_DIR}
-    )
-  ELSE ()
-    LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-      "${WEBCORE_DIR}/platform/graphics/glx"
-    )
-  ENDIF ()
-
-  LIST(APPEND WebCore_LIBRARIES
-    ${OPENGL_gl_LIBRARY}
-    ${EGL_LIBRARY}
-  )
-  LIST(APPEND WebCore_SOURCES
-    platform/graphics/OpenGLShims.cpp
-    platform/graphics/cairo/DrawingBufferCairo.cpp
-    platform/graphics/cairo/GLContext.cpp
-    platform/graphics/cairo/GraphicsContext3DCairo.cpp
-    platform/graphics/cairo/GraphicsContext3DPrivate.cpp
-    platform/graphics/opengl/Extensions3DOpenGL.cpp
-    platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
-    platform/graphics/opengl/GraphicsContext3DOpenGL.cpp
-    platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
-    platform/graphics/texmap/TextureMapperGL.cpp
-    platform/graphics/texmap/TextureMapperShaderManager.cpp
-  )
-
-  IF (WTF_USE_EGL)
-    LIST(APPEND WebCore_SOURCES
-        platform/graphics/egl/GLContextFromCurrentEGL.cpp
-    )
-  ELSE ()
-    LIST(APPEND WebCore_SOURCES
-        platform/graphics/glx/GLContextFromCurrentGLX.cpp
-    )
-  ENDIF ()
+IF (WTF_USE_EGL)
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/egl" ${EGL_INCLUDE_DIR})
+  LIST(APPEND WebCore_SOURCES platform/graphics/egl/GLContextFromCurrentEGL.cpp)
+  LIST(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
+ELSE ()
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/glx")
+  LIST(APPEND WebCore_SOURCES platform/graphics/glx/GLContextFromCurrentGLX.cpp)
 ENDIF ()
 
 ADD_DEFINITIONS(-DWTF_USE_CROSS_PLATFORM_CONTEXT_MENUS=1
