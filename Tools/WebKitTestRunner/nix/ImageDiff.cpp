@@ -37,6 +37,8 @@ extern "C" {
 #include <png.h>
 }
 
+#define PNG_SIG_SIZE 8
+
 using namespace std;
 
 static double tolerance = 0;
@@ -112,10 +114,8 @@ float calculateDifference(const PixelBuf *baselineImage, const PixelBuf *actualI
     int numberOfChannels = actualImage->channels;
 
     if ((width != baselineImage->width)
-        || (height != baselineImage->height)
-        || (numberOfChannels != baselineImage->channels)
-        || (actualImage->hasAlpha() != baselineImage->hasAlpha())) { // FIXME Gtk also tests alpha
-        fprintf(stderr, "Error, test and reference images have different properties.\n");
+        || (height != baselineImage->height)) {
+        fprintf(stderr, "Error, test and reference images differ in dimensions.\n");
         return 100;
     }
 
@@ -133,15 +133,27 @@ float calculateDifference(const PixelBuf *baselineImage, const PixelBuf *actualI
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             unsigned char* actualPixel = actualPixels + (y * actualRowStride) + (x * numberOfChannels);
-            unsigned char* basePixel = basePixels + (y * baseRowStride) + (x * numberOfChannels);
+            unsigned char* basePixel = basePixels + (y * baseRowStride) + (x * baselineImage->channels);
 
-            float red = (actualPixel[0] - basePixel[0]) / max<float>(255 - basePixel[0], basePixel[0]);
-            float green = (actualPixel[1] - basePixel[1]) / max<float>(255 - basePixel[1], basePixel[1]);
-            float blue = (actualPixel[2] - basePixel[2]) / max<float>(255 - basePixel[2], basePixel[2]);
-            float alpha = 0;
+            // Alpha handling. If an image has alpha channel, we multiply the RGB values by the corresponding
+            // alpha value.
+            float actualAlpha = 1.0;
+            float baseAlpha = 1.0;
             if (actualImage->hasAlpha())
-                alpha = (actualPixel[3] - basePixel[3]) / max<float>(255 - basePixel[3], basePixel[3]);
-            float distance = sqrtf(red * red + green * green + blue * blue + alpha * alpha) / 2;
+                actualAlpha = actualPixel[3] / 255.0;
+            if (baselineImage->hasAlpha())
+                baseAlpha = basePixel[3] / 255.0;
+
+            float diff[3]; // Red, green and blue channels.
+
+            for (int i = 0; i < 3; i++) {
+                float base = basePixel[i] * baseAlpha;
+                float actual = actualPixel[i] * actualAlpha;
+
+                diff[i] = (actual - base) / max<float>(255 - base, base);
+            }
+
+            float distance = sqrtf(pow(diff[0], 2) + pow(diff[1], 2) * pow(diff[2], 2));
             *currentDiffPixel++ = (unsigned char)(distance * 255);
 
             if (distance >= 1 / 255) {
@@ -193,6 +205,7 @@ int printImage(const PixelBuf* image)
     }
 
     if (setjmp(png_jmpbuf(pngPtr))) {
+        fprintf(stderr, "Error. Aborting.\n");
         png_destroy_write_struct(&pngPtr, &pngInfo);
         return -1;
     }
@@ -261,6 +274,15 @@ void printImageDifferences(PixelBuf* baselineImage, PixelBuf* actualImage, float
 // If somehow the incoming data is corrupt the comparison will fail as the next image load will fail anyway.
 PixelBuf* readPixbufFromStdin(long imageSize)
 {
+
+    unsigned char header[8];
+
+    fread(header, 1, PNG_SIG_SIZE, stdin);
+
+    if (png_sig_cmp(header, 0, PNG_SIG_SIZE)) {
+        fprintf(stderr, "Error. Aborting.\n");
+        return 0;
+    }
     // PNG Initialization stuff
     png_structp pngPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 
@@ -282,11 +304,14 @@ PixelBuf* readPixbufFromStdin(long imageSize)
     }
 
     if (setjmp(png_jmpbuf(pngPtr))) {
+        fprintf(stderr, "Error. Aborting.\n");
         png_destroy_read_struct(&pngPtr, &pngInfo, &pngEnd);
         return 0;
     }
 
     png_init_io(pngPtr, stdin);
+
+    png_set_sig_bytes(pngPtr, PNG_SIG_SIZE);
 
     png_read_info(pngPtr, pngInfo);
 
@@ -313,7 +338,9 @@ PixelBuf* readPixbufFromStdin(long imageSize)
 
     png_read_image(pngPtr, rowPointers);
 
+
     delete [] (png_bytep)rowPointers;
+    png_read_end(pngPtr, pngEnd);
     png_destroy_read_struct(&pngPtr, &pngInfo, &pngEnd);
     return image;
 }
@@ -334,6 +361,7 @@ int main(int argc, char* argv[])
 
     while (fgets(buffer, sizeof(buffer), stdin)) {
         // Convert the first newline into a NUL character so that strtok doesn't produce it.
+
         char* newLineCharacter = strchr(buffer, '\n');
         if (newLineCharacter)
             *newLineCharacter = '\0';
