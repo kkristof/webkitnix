@@ -21,12 +21,16 @@ fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
 fast/js/sparse-array.html [ Pass Crash ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
-dom/html/level1/core/documentgetdoctypenodtd.html [ Crash ]
-dom/html/level2/events/DocumentEventCast01.html [ Crash ]
 
 ################################################################################
 # FAILURES
 ################################################################################
+
+# Failing after commit 89f9eb2cda6fb29e8ee26eef6ca27af76f92b17c
+# Refactor V8 bindings to allow content scripts to access subframes
+# https://bugs.webkit.org/show_bug.cgi?id=93646
+http/tests/security/isolatedWorld/world-reuse.html [ Failure ]
+
 
 canvas/philip/tests/2d.composite.operation.clear.html [ Skip ]
 canvas/philip/tests/2d.composite.operation.darker.html [ Skip ]
@@ -775,6 +779,8 @@ fast/dom/HTMLStyleElement/insert-parser-generated.html [ Missing ]
 fast/dom/HTMLTableElement/colSpan.html [ Missing ]
 fast/dom/HTMLTableElement/createCaption.html [ Missing ]
 fast/dom/HTMLTextAreaElement/reset-textarea.html [ Missing ]
+fast/events/touch/gesture/context-menu-on-long-tap.html [ Missing ]
+fast/events/touch/gesture/long-press-on-draggable-element-triggers-drag.html [ Missing ]
 
 fast/encoding/invalid-UTF-8.html [ Skip ]
 fast/encoding/utf-16-big-endian.html [ Skip ]
