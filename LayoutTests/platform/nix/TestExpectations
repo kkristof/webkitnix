@@ -541,7 +541,6 @@ plugins [ Skip ]
 touchadjustment [ Skip ]
 webarchive [ Skip ]
 webaudio [ Skip ]
-webintents [ Skip ]
 
 
 ################################################################################
