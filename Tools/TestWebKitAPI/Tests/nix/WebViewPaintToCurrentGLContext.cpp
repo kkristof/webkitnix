@@ -5,7 +5,6 @@
 #include "WebView.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <GL/gl.h>
 #include <memory>
 
 namespace TestWebKitAPI {
