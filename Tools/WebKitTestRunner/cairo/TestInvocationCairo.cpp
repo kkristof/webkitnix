@@ -31,7 +31,7 @@
 
 #include "PixelDumpSupport.h"
 #include <WebKit2/WKImageCairo.h>
-#include <cairo/cairo.h>
+#include <cairo.h>
 #include <cstdio>
 #include <wtf/Assertions.h>
 #include <wtf/MD5.h>
