@@ -136,9 +136,9 @@ public:
     virtual void didChangeContentsSize(const WebCore::IntSize&) = 0;
 #endif // PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
 
-#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK)
     virtual void handleDownloadRequest(DownloadProxy*) = 0;
-#endif // PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)
+#endif // PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK)
 
 #if PLATFORM(QT) || PLATFORM(GTK)
     virtual void startDrag(const WebCore::DragData&, PassRefPtr<ShareableBitmap> dragImage) = 0;

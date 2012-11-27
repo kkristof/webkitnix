@@ -165,8 +165,6 @@ public:
 
     virtual void toolTipChanged(const String&, const String&) { notImplemented(); }
 
-    virtual void handleDownloadRequest(DownloadProxy*) { notImplemented(); }
-
     virtual void setCursor(const Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
     virtual void didChangeViewportProperties(const ViewportAttributes&) { notImplemented(); }
