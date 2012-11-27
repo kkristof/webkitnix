@@ -1,3 +1,257 @@
+2012-11-26  Daniel Bates  <dbates@webkit.org>
+
+        Substitute "allSeparators8Bit" for "allSeperators8Bit" in JSC::jsSpliceSubstringsWithSeparators()
+        <https://bugs.webkit.org/show_bug.cgi?id=103303>
+
+        Reviewed by Simon Fraser.
+
+        Fix misspelled word, "Seperators" [sic], in a local variable name in JSC::jsSpliceSubstringsWithSeparators().
+
+        * runtime/StringPrototype.cpp:
+        (JSC::jsSpliceSubstringsWithSeparators):
+
+2012-11-26  Daniel Bates  <dbates@webkit.org>
+
+        JavaScript fails to handle String.replace() with large replacement string
+        https://bugs.webkit.org/show_bug.cgi?id=102956
+        <rdar://problem/12738012>
+
+        Reviewed by Oliver Hunt.
+
+        Fix an issue where we didn't check for overflow when computing the length
+        of the result of String.replace() with a large replacement string.
+
+        * runtime/StringPrototype.cpp:
+        (JSC::jsSpliceSubstringsWithSeparators):
+
+2012-11-26  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Fix the LLInt build on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=97587
+
+        Reviewed by Simon Hausmann.
+
+        * DerivedSources.pri:
+        * JavaScriptCore.pro:
+
+2012-11-26  Oliver Hunt  <oliver@apple.com>
+
+        32-bit build fix.  Move the method decalration outside of the X86_64 only section.
+
+        * assembler/MacroAssembler.h:
+        (MacroAssembler):
+        (JSC::MacroAssembler::shouldConsiderBlinding):
+
+2012-11-26  Oliver Hunt  <oliver@apple.com>
+
+        Don't blind all the things.
+        https://bugs.webkit.org/show_bug.cgi?id=102572
+
+        Reviewed by Gavin Barraclough.
+
+        No longer blind all the constants in the instruction stream.  We use a
+        simple non-deterministic filter to avoid blinding everything.  Also modified
+        the basic integer blinding logic to avoid blinding small negative values.
+
+        * assembler/MacroAssembler.h:
+        (MacroAssembler):
+        (JSC::MacroAssembler::shouldConsiderBlinding):
+        (JSC::MacroAssembler::shouldBlind):
+
+2012-11-26  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        JSObject::copyButterfly doesn't handle undecided indexing types correctly
+        https://bugs.webkit.org/show_bug.cgi?id=102573
+
+        Reviewed by Filip Pizlo.
+
+        We don't do any copying into the newly allocated vector and we don't zero-initialize CopiedBlocks 
+        during the copying phase, so we end up with uninitialized memory in arrays which have undecided indexing 
+        types. We should just do the actual memcpy from the old block to the new one. 
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::copyButterfly): Just do the same thing that we do for other contiguous indexing types.
+
+2012-11-26  Julien BRIANCEAU   <jbrianceau@nds.com>
+
+        [sh4] JavaScriptCore JIT build is broken since r135330
+        Add missing implementation for sh4 arch.
+        https://bugs.webkit.org/show_bug.cgi?id=103145
+
+        Reviewed by Oliver Hunt.
+
+        * assembler/MacroAssemblerSH4.h:
+        (JSC::MacroAssemblerSH4::canJumpReplacePatchableBranchPtrWithPatch):
+        (MacroAssemblerSH4):
+        (JSC::MacroAssemblerSH4::startOfBranchPtrWithPatchOnRegister):
+        (JSC::MacroAssemblerSH4::revertJumpReplacementToBranchPtrWithPatch):
+        (JSC::MacroAssemblerSH4::startOfPatchableBranchPtrWithPatchOnAddress):
+        (JSC::MacroAssemblerSH4::revertJumpReplacementToPatchableBranchPtrWithPatch):
+        * assembler/SH4Assembler.h:
+        (JSC::SH4Assembler::revertJump):
+        (SH4Assembler):
+        (JSC::SH4Assembler::printInstr):
+
+2012-11-26  Yuqiang Xian  <yuqiang.xian@intel.com>
+
+        Use load64 instead of loadPtr to load a JSValue on JSVALUE64 platforms
+        https://bugs.webkit.org/show_bug.cgi?id=100909
+
+        Reviewed by Brent Fulgham.
+
+        This is a (trivial) fix after r132701.
+
+        * dfg/DFGOSRExitCompiler64.cpp:
+        (JSC::DFG::OSRExitCompiler::compileExit):
+
+2012-11-26  Gabor Ballabas  <gaborb@inf.u-szeged.hu>
+
+        [Qt][ARM] REGRESSION(r130826): It made 33 JSC test and 466 layout tests crash
+        https://bugs.webkit.org/show_bug.cgi?id=98857
+
+        Reviewed by Zoltan Herczeg.
+
+        Implement a new version of patchableBranch32 to fix crashing JSC
+        tests.
+
+        * assembler/MacroAssembler.h:
+        (MacroAssembler):
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::patchableBranch32):
+        (MacroAssemblerARM):
+
+2012-11-21  Filip Pizlo  <fpizlo@apple.com>
+
+        Any function that can log things should be able to easily log them to a memory buffer as well
+        https://bugs.webkit.org/show_bug.cgi?id=103000
+
+        Reviewed by Sam Weinig.
+
+        Change all users of WTF::dataFile() to expect a PrintStream& rather than a FILE*.
+
+        * bytecode/Operands.h:
+        (JSC::OperandValueTraits::dump):
+        (JSC::dumpOperands):
+        (JSC):
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::dump):
+        * dfg/DFGAbstractState.h:
+        (AbstractState):
+        * dfg/DFGAbstractValue.h:
+        (JSC::DFG::AbstractValue::dump):
+        * dfg/DFGCommon.h:
+        (JSC::DFG::NodeIndexTraits::dump):
+        * dfg/DFGStructureAbstractValue.h:
+        (JSC::DFG::StructureAbstractValue::dump):
+        * dfg/DFGVariableEvent.cpp:
+        (JSC::DFG::VariableEvent::dump):
+        (JSC::DFG::VariableEvent::dumpFillInfo):
+        (JSC::DFG::VariableEvent::dumpSpillInfo):
+        * dfg/DFGVariableEvent.h:
+        (VariableEvent):
+        * disassembler/Disassembler.h:
+        (JSC):
+        (JSC::tryToDisassemble):
+        * disassembler/UDis86Disassembler.cpp:
+        (JSC::tryToDisassemble):
+
+2012-11-23  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Implement new CSS3 background-position parsing.
+        https://bugs.webkit.org/show_bug.cgi?id=102104
+
+        Reviewed by Julien Chaffraix.
+
+        Protect the new feature behind a feature flag.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-11-23  Gabor Ballabas  <gaborb@inf.u-szeged.hu>
+
+        Fix the ARM traditional build after r135330
+        https://bugs.webkit.org/show_bug.cgi?id=102871
+
+        Reviewed by Zoltan Herczeg.
+
+        Added missing functionality to traditional ARM architecture.
+
+        * assembler/ARMAssembler.h:
+        (JSC::ARMAssembler::revertJump):
+        (ARMAssembler):
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::startOfPatchableBranchPtrWithPatchOnAddress):
+        (JSC::MacroAssemblerARM::startOfBranchPtrWithPatchOnRegister):
+        (MacroAssemblerARM):
+        (JSC::MacroAssemblerARM::revertJumpReplacementToBranchPtrWithPatch):
+
+2012-11-16  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: extract MemoryObjectInfo declaration into a separate file
+        https://bugs.webkit.org/show_bug.cgi?id=102510
+
+        Reviewed by Pavel Feldman.
+
+        Added new symbols for the methods that have moved into .../wtf/MemoryInstrumentation.cpp
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+
+2012-11-23  Julien BRIANCEAU   <jbrianceau@nds.com>
+
+        [sh4] JavaScriptCore JIT build is broken since r130839
+        Add missing implementation for sh4 arch.
+        https://bugs.webkit.org/show_bug.cgi?id=101479
+
+        Reviewed by Filip Pizlo.
+
+        * assembler/MacroAssemblerSH4.h:
+        (JSC::MacroAssemblerSH4::load8Signed):
+        (MacroAssemblerSH4):
+        (JSC::MacroAssemblerSH4::load16Signed):
+        (JSC::MacroAssemblerSH4::store8):
+        (JSC::MacroAssemblerSH4::store16):
+        (JSC::MacroAssemblerSH4::moveDoubleToInts):
+        (JSC::MacroAssemblerSH4::moveIntsToDouble):
+        (JSC::MacroAssemblerSH4::loadFloat):
+        (JSC::MacroAssemblerSH4::loadDouble):
+        (JSC::MacroAssemblerSH4::storeFloat):
+        (JSC::MacroAssemblerSH4::storeDouble):
+        (JSC::MacroAssemblerSH4::addDouble):
+        (JSC::MacroAssemblerSH4::convertFloatToDouble):
+        (JSC::MacroAssemblerSH4::convertDoubleToFloat):
+        (JSC::MacroAssemblerSH4::urshift32):
+        * assembler/SH4Assembler.h:
+        (JSC::SH4Assembler::sublRegReg):
+        (JSC::SH4Assembler::subvlRegReg):
+        (JSC::SH4Assembler::floatfpulfrn):
+        (JSC::SH4Assembler::fldsfpul):
+        (JSC::SH4Assembler::fstsfpul):
+        (JSC::SH4Assembler::dcnvsd):
+        (SH4Assembler):
+        (JSC::SH4Assembler::movbRegMem):
+        (JSC::SH4Assembler::sizeOfConstantPool):
+        (JSC::SH4Assembler::linkJump):
+        (JSC::SH4Assembler::printInstr):
+        (JSC::SH4Assembler::printBlockInstr):
+
+2012-11-22  Balazs Kilvady  <kilvadyb@homejinni.com>
+
+        Fix the MIPS build after r135330
+        https://bugs.webkit.org/show_bug.cgi?id=102872
+
+        Reviewed by Gavin Barraclough.
+
+        Revert/replace functions added to MIPS port.
+
+        * assembler/MIPSAssembler.h:
+        (JSC::MIPSAssembler::revertJumpToMove):
+        (MIPSAssembler):
+        (JSC::MIPSAssembler::replaceWithJump):
+        * assembler/MacroAssemblerMIPS.h:
+        (MacroAssemblerMIPS):
+        (JSC::MacroAssemblerMIPS::startOfBranchPtrWithPatchOnRegister):
+        (JSC::MacroAssemblerMIPS::revertJumpReplacementToBranchPtrWithPatch):
+        (JSC::MacroAssemblerMIPS::startOfPatchableBranchPtrWithPatchOnAddress):
+
 2012-11-21  Filip Pizlo  <fpizlo@apple.com>
 
         Rename dataLog() and dataLogV() to dataLogF() and dataLogFV()

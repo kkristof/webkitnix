@@ -152,6 +152,7 @@ public:
     virtual void setNeedsRedraw();
     virtual bool isInputThrottled() const;
     virtual bool handleInputEvent(const WebInputEvent&);
+    virtual bool hasTouchEventHandlersAt(const WebPoint&);
     virtual void mouseCaptureLost();
     virtual void setFocus(bool enable);
     virtual bool setComposition(
@@ -315,8 +316,6 @@ public:
     virtual void didBeginFrame();
     virtual void updateAnimations(double monotonicFrameBeginTime);
     virtual void applyScrollAndScale(const WebSize&, float);
-    virtual WebGraphicsContext3D* createContext3D() OVERRIDE;
-    virtual void didRebindGraphicsContext(bool success) OVERRIDE;
     virtual WebCompositorOutputSurface* createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE;
     virtual WebInputHandler* createInputHandler() OVERRIDE;

@@ -35,14 +35,42 @@
 
 namespace WebCore {
 
+struct ExtensionMap {
+    const char* extension;
+    const char* dotExtension;
+    const char* mimeType;
+};
+
+// This is a short list of extensions not recognized by the freedesktop shared mimetype database 1.0.
+static const ExtensionMap extensionMap[] = {
+    { "mht", ".mht", "application/x-mimearchive" },
+    { "mhtml", ".mhtml", "application/x-mimearchive" },
+    { "text", ".text", "text/plain" },
+    { "wmlc", ".wmlc", "application/vnd.wap.wmlc" },
+    { 0, 0, 0 }
+};
+
 String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
 {
     // QMimeDatabase lacks the ability to query by extension alone, so we create a fake filename to lookup.
-    const QString filename = QStringLiteral("filename.") + QString(ext.lower());
+    String suffix = ext.lower();
+    const QString filename = QStringLiteral("filename.") + QString(suffix);
 
     QMimeType mimeType = QMimeDatabase().mimeTypeForFile(filename, QMimeDatabase::MatchExtension);
-    if (mimeType.isValid() && !mimeType.isDefault())
+    if (mimeType.isValid() && !mimeType.isDefault()) {
+        // getMIMETypeForExtension is used for preload mimetype check, so image looking files can not be loaded as anything but images.
+        // Script looking files (.php) are loaded normally and will have their mimetype determined later.
+        if (mimeType.inherits(QStringLiteral("application/x-executable")))
+            return String();
         return mimeType.name();
+    }
+
+    const ExtensionMap *e = extensionMap;
+    while (e->extension) {
+        if (suffix == e->extension)
+            return e->mimeType;
+        ++e;
+    }
 
     return String();
 }
@@ -50,8 +78,15 @@ String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
 String MIMETypeRegistry::getMIMETypeForPath(const String& path)
 {
     QMimeType type = QMimeDatabase().mimeTypeForFile(path, QMimeDatabase::MatchExtension);
-    if (type.isValid())
+    if (type.isValid() && !type.isDefault())
         return type.name();
+
+    const ExtensionMap *e = extensionMap;
+    while (e->extension) {
+        if (path.endsWith(e->dotExtension))
+            return e->mimeType;
+        ++e;
+    }
 
     return defaultMIMEType();
 }

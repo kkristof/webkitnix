@@ -1,3 +1,554 @@
+2012-11-27  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [style] Add a style-check for enum-member names
+        https://bugs.webkit.org/show_bug.cgi?id=103157
+
+        Reviewed by Daniel Bates.
+
+        * Scripts/webkitpy/style/checkers/cpp.py:
+        (_EnumState):
+        (_EnumState.__init__):
+        (_EnumState.process_clean_line):
+        (check_enum_casing):
+        (check_style):
+        (process_line):
+        (_process_lines):
+        (CppChecker):
+        * Scripts/webkitpy/style/checkers/cpp_unittest.py:
+        (NoNonVirtualDestructorsTest.test_enum_casing):
+        (NoNonVirtualDestructorsTest.test_internal_braces.Foo):
+
+2012-11-26  Ryuan Choi  <ryuan.choi@gmail.com>
+
+        [EFL][jhbuild] Disable unnecessary options of elementary module
+        https://bugs.webkit.org/show_bug.cgi?id=103360
+
+        Reviewed by Gyuyoung Kim.
+
+        When jhbuild configures elementary, unnecessary options may be enabled by
+        user installed modules and it causes build break.
+
+        * efl/jhbuild.modules:
+        Added --disable-emap --disable-ethumb --disable-eweather to elementary.
+
+2012-11-26  Varun Jain  <varunjain@chromium.org>
+
+        LongPress and LongTap gestures should start drag/drop and open context menu respectively.
+        https://bugs.webkit.org/show_bug.cgi?id=101545
+
+        Reviewed by Antonio Gomes.
+
+        For LongPress, we simulate drag by sending a mouse down and mouse drag
+        events. If a drag is not started (because maybe there is no draggable
+        element), then we show context menu instead (which is the current
+        behavior for LongPress). For LongTap, we use the existing functions that
+        LongPress uses to summon the context menu. LongPress initiated drag and
+        drop can be enabled/disabled by the platform using the Setting
+        touchDragDropEnabled which is disabled by default.
+
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.cpp:
+        (WebTestRunner):
+        (WebTestRunner::EventSender::EventSender):
+        (WebTestRunner::EventSender::gestureLongTap):
+        (WebTestRunner::EventSender::gestureEvent):
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.h:
+        (EventSender):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::setTouchDragDropEnabled):
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+
+2012-11-26  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] Add setting to enable / disable HTML5 local storage functionality
+        https://bugs.webkit.org/show_bug.cgi?id=103224
+
+        Reviewed by Laszlo Gombos.
+
+        Add --local-storage command line argument to MiniBrowser to
+        explicitely disable HTML5 local storage functionality. This
+        is useful for testing purposes.
+
+        * MiniBrowser/efl/main.c:
+        (window_create):
+        (elm_main):
+
+2012-11-26  Zan Dobersek  <zandobersek@gmail.com>
+
+        Remove use of deprecated logging from most of webkitpy.tool
+        https://bugs.webkit.org/show_bug.cgi?id=103180
+
+        Reviewed by Dirk Pranke.
+
+        Remove calls to log and error methods of the deprecated_logging module, replacing them
+        by using Python's Logger objects. This patch covers the switch in all of webkitpy.tool
+        except the QueueEngine.
+
+        Unit tests are adjusted for these changes, moving output from expected stderr to expected logs.
+
+        * Scripts/webkitpy/tool/bot/commitqueuetask_unittest.py:
+        (MockCommitQueue.run_command):
+        (MockCommitQueue.command_passed):
+        (MockCommitQueue.command_failed):
+        (MockCommitQueue.report_flaky_tests):
+        (MockCommitQueue.archive_last_test_results):
+        (CommitQueueTaskTest._run_through_task):
+        (CommitQueueTaskTest.test_success_case):
+        (test_fast_success_case):
+        (test_clean_failure):
+        (test_update_failure):
+        (test_apply_failure):
+        (test_validate_changelog_failure):
+        (test_build_failure):
+        (test_red_build_failure):
+        (test_flaky_test_failure):
+        (test_failed_archive):
+        (test_double_flaky_test_failure):
+        (test_test_failure):
+        (test_red_test_failure):
+        (test_very_red_tree_retry):
+        (test_red_tree_patch_rejection):
+        (test_land_failure):
+        * Scripts/webkitpy/tool/bot/feeders.py:
+        (CommitQueueFeeder._update_work_items):
+        (EWSFeeder.feed):
+        * Scripts/webkitpy/tool/bot/feeders_unittest.py:
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader.py:
+        (LayoutTestResultsReader.archive):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader_unittest.py:
+        (test_archive_last_layout_test_results):
+        * Scripts/webkitpy/tool/bot/sheriff.py:
+        * Scripts/webkitpy/tool/commands/abstractsequencedcommand.py:
+        (AbstractSequencedCommand.execute):
+        * Scripts/webkitpy/tool/commands/commandtest.py:
+        (CommandsTest.assert_execute_outputs):
+        * Scripts/webkitpy/tool/commands/download.py:
+        (AbstractPatchProcessingCommand._process_patch.execute):
+        (ProcessBugsMixin._fetch_list_of_patches_to_process):
+        (ProcessURLsMixin._fetch_list_of_patches_to_process):
+        (AbstractRolloutPrepCommand._commit_info):
+        * Scripts/webkitpy/tool/commands/download_unittest.py:
+        (AbstractRolloutPrepCommandTest.test_commit_info):
+        (DownloadCommandsTest.test_build):
+        (DownloadCommandsTest.test_build_and_test):
+        (test_apply_attachment):
+        (test_apply_from_bug):
+        (test_apply_watch_list):
+        (test_land):
+        (test_land_red_builders):
+        (test_check_style):
+        (test_build_attachment):
+        (test_land_attachment):
+        (test_land_from_bug):
+        (test_land_from_url):
+        (test_prepare_rollout):
+        (test_create_rollout):
+        (test_create_rollout_resolved):
+        (test_rollout):
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (AbstractEarlyWarningSystem.handle_script_error.does):
+        * Scripts/webkitpy/tool/commands/earlywarningsystem_unittest.py:
+        (EarlyWarningSytemTest._default_expected_stderr):
+        (EarlyWarningSytemTest._default_expected_logs):
+        (EarlyWarningSytemTest._test_testing_ews):
+        * Scripts/webkitpy/tool/commands/openbugs.py:
+        (OpenBugs.execute):
+        * Scripts/webkitpy/tool/commands/openbugs_unittest.py:
+        (OpenBugsTest.test_args_parsing):
+        * Scripts/webkitpy/tool/commands/perfalizer.py:
+        (Perfalizer.handle_unexpected_error):
+        * Scripts/webkitpy/tool/commands/queries.py:
+        (PatchesInCommitQueue.execute):
+        (PatchesToCommitQueue._needs_commit_queue):
+        * Scripts/webkitpy/tool/commands/queries_unittest.py:
+        (QueryCommandsTest.test_bugs_to_commit):
+        (QueryCommandsTest.test_patches_in_commit_queue):
+        (QueryCommandsTest.test_patches_to_commit_queue):
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (AbstractQueue._cc_watchers):
+        (AbstractQueue.begin_work_queue):
+        (FeederQueue.handle_unexpected_error):
+        (CommitQueue.handle_script_error):
+        (AbstractReviewQueue.handle_unexpected_error):
+        (AbstractReviewQueue.handle_script_error):
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (test_auto_retry):
+        * Scripts/webkitpy/tool/commands/queuestest.py:
+        (QueuesTest.assert_outputs):
+        (QueuesTest._default_begin_work_queue_stderr):
+        (QueuesTest):
+        (QueuesTest._default_begin_work_queue_logs):
+        (QueuesTest.assert_queue_outputs):
+        * Scripts/webkitpy/tool/commands/roll_unittest.py:
+        (RollCommandsTest.test_update_chromium_deps):
+        (test_update_chromium_deps_older_revision):
+        * Scripts/webkitpy/tool/commands/sheriffbot.py:
+        (SheriffBot.handle_unexpected_error):
+        * Scripts/webkitpy/tool/commands/stepsequence.py:
+        (StepSequence.run_and_handle_errors):
+        * Scripts/webkitpy/tool/commands/upload.py:
+        (AssignToCommitter._assign_bug_to_last_patch_attacher):
+        (AbstractPatchUploadingCommand._prepare_state):
+        (PostCommits.execute):
+        (MarkBugFixed._determine_bug_id_and_svn_revision):
+        (MarkBugFixed.execute):
+        (CreateBug.create_bug_from_commit):
+        (CreateBug.execute):
+        * Scripts/webkitpy/tool/commands/upload_unittest.py:
+        (test_obsolete_attachments):
+        (test_land_safely):
+        (test_mark_bug_fixed):
+        * Scripts/webkitpy/tool/multicommandtool.py:
+        (Command.check_arguments_and_execute):
+        (MultiCommandTool.main):
+        * Scripts/webkitpy/tool/multicommandtool_unittest.py:
+        (CommandTest.test_required_arguments):
+        * Scripts/webkitpy/tool/steps/addsvnmimetypeforpng.py:
+        (AddSvnMimetypeForPng.run):
+        * Scripts/webkitpy/tool/steps/applypatch.py:
+        (ApplyPatch.run):
+        * Scripts/webkitpy/tool/steps/build.py:
+        (Build.run):
+        * Scripts/webkitpy/tool/steps/checkstyle.py:
+        * Scripts/webkitpy/tool/steps/closebug.py:
+        (CloseBug.run):
+        * Scripts/webkitpy/tool/steps/closebugforlanddiff.py:
+        (CloseBugForLandDiff.run):
+        * Scripts/webkitpy/tool/steps/closebugforlanddiff_unittest.py:
+        (CloseBugForLandDiffTest.test_empty_state):
+        * Scripts/webkitpy/tool/steps/commit.py:
+        (Commit.run):
+        * Scripts/webkitpy/tool/steps/commit_unittest.py:
+        (CommitTest._test_check_test_expectations):
+        * Scripts/webkitpy/tool/steps/ensurelocalcommitifneeded.py:
+        (EnsureLocalCommitIfNeeded.run):
+        * Scripts/webkitpy/tool/steps/obsoletepatches.py:
+        (ObsoletePatches.run):
+        * Scripts/webkitpy/tool/steps/preparechangelog.py:
+        (PrepareChangeLog.run):
+        * Scripts/webkitpy/tool/steps/reopenbugafterrollout.py:
+        (ReopenBugAfterRollout.run):
+        * Scripts/webkitpy/tool/steps/runtests.py:
+        (RunTests.run):
+        * Scripts/webkitpy/tool/steps/runtests_unittest.py:
+        (RunTestsTest.test_webkit_run_unit_tests):
+        * Scripts/webkitpy/tool/steps/steps_unittest.py:
+        (StepsTest.test_update_step):
+        (StepsTest.test_runtests_args):
+        * Scripts/webkitpy/tool/steps/update.py:
+        (Update.run):
+        * Scripts/webkitpy/tool/steps/updatechangelogswithreview_unittest.py:
+        (UpdateChangeLogsWithReviewerTest.test_guess_reviewer_from_bug):
+        (UpdateChangeLogsWithReviewerTest.test_guess_reviewer_from_multipatch_bug):
+        * Scripts/webkitpy/tool/steps/updatechangelogswithreviewer.py:
+        (UpdateChangeLogsWithReviewer._guess_reviewer_from_bug):
+        (UpdateChangeLogsWithReviewer.run):
+        * Scripts/webkitpy/tool/steps/updatechromiumdeps.py:
+        (UpdateChromiumDEPS._validate_revisions):
+        (UpdateChromiumDEPS.run):
+        * Scripts/webkitpy/tool/steps/validatechangelogs.py:
+        (ValidateChangeLogs._check_changelog_diff):
+        (ValidateChangeLogs.run):
+        * Scripts/webkitpy/tool/steps/validatechangelogs_unittest.py:
+        (ValidateChangeLogsTest._assert_start_line_produces_output):
+        * Scripts/webkitpy/tool/steps/validatereviewer.py:
+        (ValidateReviewer.run):
+
+2012-11-26  Zan Dobersek  <zandobersek@gmail.com>
+
+        Coverage testing in webkitpy should omit some paths
+        https://bugs.webkit.org/show_bug.cgi?id=103267
+
+        Reviewed by Dirk Pranke.
+
+        Omit testing coverage of any file under /usr directory and any file
+        that is of third party origin and was autoinstalled.
+
+        * Scripts/webkitpy/test/main.py:
+        (Tester._run_tests):
+
+2012-11-26  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        Text Autosizing: Add Text Autosizing APIs for WK2
+        https://bugs.webkit.org/show_bug.cgi?id=100633
+
+        Reviewed by Sam Weinig.
+
+        Add test cases for Text Autosizing in WKPreferences.
+
+        * TestWebKitAPI/Tests/WebKit2/WKPreferences.cpp:
+        (TestWebKitAPI::TEST):
+
+2012-11-26  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] REGRESSION(r135575): It made all tests assert
+        https://bugs.webkit.org/show_bug.cgi?id=103169
+
+        Reviewed by Simon Hausmann.
+
+        This fixes another regression introduced in r135515:
+        initializeWebKitQt shouldn't implicitely call initializeWebCoreQt
+        since it can be called from WebKit2 to initialize QStyle for testing.
+        This would then lead to things such as PlatformStrategies being
+        initialized twice.
+
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp: Also propagate the change to DRT this time.
+        (WebCore::DumpRenderTree::DumpRenderTree):
+
+2012-11-24  Zan Dobersek  <zandobersek@gmail.com>
+
+        Add the --order option to NRWT
+        https://bugs.webkit.org/show_bug.cgi?id=102229
+
+        Reviewed by Dirk Pranke.
+
+        The --order option controls in what order the gathered tests will be run.
+        There are 3 options:
+        - natural, the tests are sorted in natural order,
+        - random, the tests are sorted in random order,
+        - none, the tests are kept in the order in which they were specified through
+        arguments or the test list.
+
+        The natural option is the default one and maintains the current behavior.
+
+        The none option is primarily intended to be used with the --test-list option,
+        with the test list file expected to list specific test names.
+        When a directory is specified as one of the paths from under which tests should
+        be gathered and the none option is used, that path will expand to all the tests
+        under it, with these tests sorted in the natural order.
+
+        Using --order=random duplicated the behavior of the --randomize-order option, so
+        the latter is removed.
+
+        This patch also incorporates the change with which makes it is possible to specify
+        a test via arguments or the test list multiple tests and then have the test run
+        that many times.
+
+        * Scripts/webkitpy/common/find_files.py:
+        (find): Accept an optional sorting key that is used to sort files found in the directories
+        that the given paths specify.
+        (_normalized_find): Both paths that are then searched for the tests and the tests that
+        were found are now kept in lists. This makes it possible to run a test multiple times
+        by specifying it multiple times through arguments or the test list file.
+        (_normalized_find.sort_by_directory_key):
+        * Scripts/webkitpy/layout_tests/controllers/layout_test_finder.py:
+        (LayoutTestFinder.find_tests): Keep the paths where we should search for tests in a list.
+        (LayoutTestFinder.skip_tests): Subtracting from a set of paths is necessary.
+        * Scripts/webkitpy/layout_tests/controllers/layout_test_runner.py:
+        (LayoutTestRunner.__init__): The Sharder class no longer needs a test path separator.
+        (Sharder.__init__): Ditto.
+        (Sharder._resize_shards):
+        * Scripts/webkitpy/layout_tests/controllers/layout_test_runner_unittest.py:
+        (SharderTests.get_shards): Modify the Shader initializing as required.
+        (SharderTests.test_multiple_locked_shards): The natural sorting and test name key unit tests
+        are now moved to the base Port unit tests.
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (Manager._prepare_lists): Keep the test names in a list. Order that list as specified by
+        the new --order option.
+        * Scripts/webkitpy/layout_tests/port/base.py:
+        (Port.tests): This method should now return a list of all the tests found in the specified
+        paths.
+        (Port._real_tests): A list is required, so no conversion to a set is made.
+        (Port):
+        (Port.test_key): Place this method here for now, but it should really move into a separate
+        module.
+        (Port._natural_sort_key): Ditto.
+        (Port._natural_sort_key.tryint):
+        (Port._virtual_tests): A list is required, so the function now operates on that rather than
+        on a set.
+        * Scripts/webkitpy/layout_tests/port/base_unittest.py:
+        (PortTest.test_find_with_skipped_directories_2): Adjust the test case to check for an empty
+        list rather than an empty set.
+        (PortTest.test_dont_require_http_server):
+        (NaturalCompareTest): The natural sorting unit tests are placed here for now.
+        (NaturalCompareTest.assert_cmp):
+        (NaturalCompareTest.test_natural_compare):
+        (KeyCompareTest): The test name key unit tests are placed here for now.
+        (KeyCompareTest.assert_cmp):
+        (KeyCompareTest.test_test_key):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (parse_args): Remove the --randomize-order option, it's now possible to replicate its behavior
+        by using --order=random.
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py: Add unit tests covering
+        various aspects of this change.
+        (MainTest.test_natural_order):
+        (MainTest):
+        (MainTest.test_natural_order_test_specified_multiple_times):
+        (MainTest.test_random_order):
+        (MainTest.test_random_order_test_specified_multiple_times):
+        (MainTest.test_no_order):
+        (MainTest.test_no_order_test_specified_multiple_times):
+        (MainTest.test_no_order_with_directory_entries_in_natural_order):
+        * Scripts/webkitpy/tool/commands/queries.py:
+        (PrintExpectations.execute): Operate on a set of tests when printing out expectations.
+
+2012-11-24  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r135600.
+        http://trac.webkit.org/changeset/135600
+        https://bugs.webkit.org/show_bug.cgi?id=103173
+
+        It made EFL API test is failed (Requested by gyuyoung_mbp on
+        #webkit).
+
+        * TestWebKitAPI/PlatformEfl.cmake:
+        * TestWebKitAPI/efl/PlatformUtilities.cpp:
+        (TestWebKitAPI::Util::sleep):
+        * TestWebKitAPI/efl/PlatformWebView.cpp:
+
+2012-11-23  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Implement new CSS3 background-position parsing.
+        https://bugs.webkit.org/show_bug.cgi?id=102104
+
+        Reviewed by Julien Chaffraix.
+
+        Protect the new feature behind a feature flag.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2012-11-23  Mario Sanchez Prada  <mario@webkit.org>
+
+        Unreviewed. Update my e-mail address.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-11-23  Mateusz Leszko  <m.leszko@samsung.com>
+
+        [EFL][GTK] Adapt accessibility feature to WebKitTestRunner.
+        https://bugs.webkit.org/show_bug.cgi?id=100757
+
+        Reviewed by Laszlo Gombos.
+
+        Allow to build accessibility feature in WebkitTestRunner for EFL Platform.
+        Updating CMake files due to changes from Bug 99011.
+
+        * WebKitTestRunner/InjectedBundle/AccessibilityController.cpp:
+        (WTR::AccessibilityController::AccessibilityController):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/AccessibilityController.h:
+        (AccessibilityController):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.cpp:
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp: - Removed gtk/gtk.h dependency.
+        * WebKitTestRunner/PlatformEfl.cmake: - Adding atk includes.
+
+2012-11-16  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: extract MemoryObjectInfo declaration into a separate file
+        https://bugs.webkit.org/show_bug.cgi?id=102510
+
+        Reviewed by Pavel Feldman.
+
+        Added missing includes.
+
+        * TestWebKitAPI/Tests/WTF/MemoryInstrumentationTest.cpp:
+
+2012-11-23  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        [EFL][WK2] Add support for PlatformWebView::simulateSpacebarKeyPress() in TestWebKitAPI
+        https://bugs.webkit.org/show_bug.cgi?id=103123
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add support for PlatformWebView::simulateSpacebarKeyPress() and enable
+        WebKit2 API test ResponsivenessTimerDoesntFireEarly.
+
+        * TestWebKitAPI/PlatformEfl.cmake: Enable ResponsivenessTimerDoesntFireEarly
+        test.
+        * TestWebKitAPI/efl/PlatformUtilities.cpp:
+        (TestWebKitAPI::Util::sleep): Use usleep() instead of sleep since the
+        test case is passing 0.5 seconds to sleep.
+        * TestWebKitAPI/efl/PlatformWebView.cpp:
+        (TestWebKitAPI::PlatformWebView::simulateSpacebarKeyPress): Implemented.
+        (TestWebKitAPI):
+
+2012-11-23  Wojciech Bielawski  <w.bielawski@samsung.com>
+
+        [WK2][WKTR] WebKitTestRunner needs eventSender.contextClick()
+        https://bugs.webkit.org/show_bug.cgi?id=86881
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        eventSender object extended with contextClick() method in WebKitTestRunner.
+        contextClick() method returns an array of menu items objects with field 'title' containing title of single
+        context menu entry. According to some tests menu items objects shall also support 'click()' method, but it's not
+        delivered in this patch.
+
+        * WebKitTestRunner/InjectedBundle/Bindings/EventSendingController.idl:
+        * WebKitTestRunner/InjectedBundle/EventSendingController.cpp:
+        (WTR::EventSendingController::contextClick):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/EventSendingController.h:
+        (EventSendingController):
+
+2012-11-23  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Compiling against QtWebkit API requires QT_DLL to be defined
+        https://bugs.webkit.org/show_bug.cgi?id=102942
+
+        Reviewed by Tor Arne Vestbø.
+
+        Remove the requirement of having QT_DLL defined in order for the QWEBKIT_EXPORT
+        macro to be defined as Q_DECL_IMPORT. Instead unify the export macro definition
+        to follow the same rules as other Qt 5 modules, with the exception that instead of
+        QT_BUILD_WEBKIT_LIB we continue to use BUILDING_WEBKIT, because that's used also
+        in other cross-platform header files to determine the correct meaning of export
+        macros.
+
+        * qmake/mkspecs/features/default_post.prf:
+        * qmake/mkspecs/features/win32/default_post.prf:
+
+2012-11-23  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] QWebPage::shouldInterruptJavaScript should be virtual in Qt 5
+        https://bugs.webkit.org/show_bug.cgi?id=103111
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This function was added as a slot during Qt 4.x times because adding
+        virtual functions breaks binary compatibility. This constraint is gone
+        with the initial release of WebKit with Qt 5, and therefore we can
+        make it virtual now.
+
+        The change is fully source compatible as existing "re-implementations"
+        as slots will now be called through it being a virtual function. They
+        become unused slots.
+
+        * DumpRenderTree/qt/DumpRenderTreeQt.h:
+        (WebCore::WebPage::shouldInterruptJavaScript):
+        (WebPage):
+        * QtTestBrowser/webpage.h:
+        (WebPage):
+
+2012-11-22  Peter Beverloo  <peter@chromium.org>
+
+        [Chromium] Return an accurate exit code when running Android suites, and wait after restarting adb as root
+        https://bugs.webkit.org/show_bug.cgi?id=103065
+
+        Reviewed by Dirk Pranke.
+
+        This addresses two further reliability issues in the Android test running
+        scripts. Firstly, the run_tests.py script needs to have the --exit_code
+        argument passed in order to return non-zero codes, which we need for the
+        build master to distinguish failures from successful runs.
+
+        Secondly, it modifies the layout test runner to briefly wait (through
+        the wait-for-device command) after requesting a device to switch to root
+        mode. Without this waiting period, commands might get lost and thereby
+        unexpectedly fail.
+
+        * Scripts/run-api-tests:
+        * Scripts/run-chromium-webkit-unit-tests:
+        * Scripts/webkitpy/layout_tests/port/chromium_android.py:
+        (ChromiumAndroidDriver._setup_test):
+        (ChromiumAndroidDriver._restart_adb_as_root):
+
 2012-11-22  Simon Hausmann  <simon.hausmann@digia.com>, Pierre Rossi <pierre.rossi@digia.com>
 
         [Qt] Separate QWidget dependant code into separate WebKitWidgets static library

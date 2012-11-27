@@ -365,9 +365,7 @@ void ChromeClientQt::setStatusbarText(const String& msg)
 
 bool ChromeClientQt::shouldInterruptJavaScript()
 {
-    bool shouldInterrupt = false;
-    QMetaObject::invokeMethod(m_webPage->handle(), "shouldInterruptJavaScript", Qt::DirectConnection, Q_RETURN_ARG(bool, shouldInterrupt));
-    return shouldInterrupt;
+    return m_webPage->shouldInterruptJavaScript();
 }
 
 KeyboardUIMode ChromeClientQt::keyboardUIMode()
@@ -559,7 +557,7 @@ void ChromeClientQt::reachedApplicationCacheOriginQuota(SecurityOrigin* origin, 
     if (!WebCore::cacheStorage().calculateQuotaForOrigin(origin, quota))
         WebCore::cacheStorage().storeUpdatedQuotaForOrigin(origin, defaultOriginQuota);
 
-    emit m_webPage->applicationCacheQuotaExceeded(securityOrigin, defaultOriginQuota, static_cast<quint64>(totalSpaceNeeded));
+    m_webPage->applicationCacheQuotaExceeded(securityOrigin, defaultOriginQuota, static_cast<quint64>(totalSpaceNeeded));
 }
 
 #if ENABLE(INPUT_TYPE_COLOR)

@@ -107,7 +107,6 @@ void CoordinatedGraphicsLayer::didChangeGeometry()
 
 CoordinatedGraphicsLayer::CoordinatedGraphicsLayer(GraphicsLayerClient* client)
     : GraphicsLayer(client)
-    , m_maskTarget(0)
     , m_inUpdateMode(false)
     , m_shouldUpdateVisibleRect(true)
     , m_shouldSyncLayerState(true)
@@ -269,6 +268,8 @@ void CoordinatedGraphicsLayer::setContentsVisible(bool b)
     if (contentsAreVisible() == b)
         return;
     GraphicsLayer::setContentsVisible(b);
+    if (maskLayer())
+        maskLayer()->setContentsVisible(b);
 
     didChangeLayerState();
 }
@@ -390,8 +391,8 @@ void CoordinatedGraphicsLayer::setMaskLayer(GraphicsLayer* layer)
         return;
 
     layer->setSize(size());
+    layer->setContentsVisible(contentsAreVisible());
     CoordinatedGraphicsLayer* CoordinatedGraphicsLayer = toCoordinatedGraphicsLayer(layer);
-    CoordinatedGraphicsLayer->setMaskTarget(this);
     CoordinatedGraphicsLayer->didChangeLayerState();
     didChangeLayerState();
 
@@ -860,7 +861,10 @@ bool CoordinatedGraphicsLayer::selfOrAncestorHaveNonAffineTransforms()
     if (!m_layerTransform.combined().isAffine())
         return true;
 
-    return false;
+    if (!parent())
+        return false;
+
+    return toCoordinatedGraphicsLayer(parent())->selfOrAncestorHaveNonAffineTransforms();
 }
 
 bool CoordinatedGraphicsLayer::addAnimation(const KeyframeValueList& valueList, const IntSize& boxSize, const Animation* anim, const String& keyframesName, double delayAsNegativeTimeOffset)

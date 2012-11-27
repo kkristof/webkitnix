@@ -41,14 +41,14 @@ typedef WebCore::QStyleFacade* (*QtStyleFactoryFunction)(WebCore::Page*);
 namespace WebKit {
 
 void setWebKitWidgetsInitCallback(QtStyleFactoryFunction);
-void initializeWebKitQt();
-void setImagePlatformResource(const char* /* name */, const QPixmap&);
+Q_DECL_EXPORT void initializeWebKitQt();
+Q_DECL_EXPORT void setImagePlatformResource(const char* /* name */, const QPixmap&);
 
 }
 
 namespace WebCore {
 
-void initializeWebCoreQt();
+Q_DECL_EXPORT void initializeWebCoreQt();
 
 }
 

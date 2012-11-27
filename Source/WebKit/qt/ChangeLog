@@ -1,3 +1,262 @@
+2012-11-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r135786.
+        http://trac.webkit.org/changeset/135786
+        https://bugs.webkit.org/show_bug.cgi?id=103379
+
+        It made 3 plugin tests timeout on several platforms (Requested
+        by Ossy on #webkit).
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::setHtml):
+        (QWebFrame::setContent):
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        (DumpRenderTreeSupportQt::setAlternateHtml):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
+        * WebCoreSupport/QWebFrameAdapter.cpp:
+        (QWebFrameAdapter::load):
+
+2012-11-26  James Simonsen  <simonjam@chromium.org>
+
+        Consolidate FrameLoader::load() into one function taking a FrameLoadRequest
+        https://bugs.webkit.org/show_bug.cgi?id=102151
+
+        Reviewed by Adam Barth.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::QWebFrame):
+        (QWebFrame::load):
+        (QWebFrame::setHtml):
+        (QWebFrame::setContent):
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        (DumpRenderTreeSupportQt::setAlternateHtml):
+        (qt_dump_set_accepts_editing):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
+
+2012-11-26  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] REGRESSION(r135575): It made all tests assert
+        https://bugs.webkit.org/show_bug.cgi?id=103169
+
+        Reviewed by Simon Hausmann.
+
+        This fixes another regression introduced in r135515:
+        initializeWebKitQt shouldn't implicitely call initializeWebCoreQt
+        since it can be called from WebKit2 to initialize QStyle for testing.
+        This would then lead to things such as PlatformStrategies being
+        initialized twice.
+
+        * Api/qwebpage.cpp: Explicitely call initializeWebCoreQt().
+        (QWebPagePrivate::QWebPagePrivate):
+        * WebCoreSupport/InitWebCoreQt.cpp:
+        (WebKit::initializeWebKitQt):
+        (WebCore::initializeWebCoreQt):
+        * WebCoreSupport/InitWebCoreQt.h:
+        (WebCore):
+
+2012-11-26  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Make sure the QGLWidget context is current when creating the TextureMapper.
+        https://bugs.webkit.org/show_bug.cgi?id=103142
+
+        When creating the TextureMapperGL for WK1 we have to make sure
+        that the GL context provided by the QGLWidget is current.
+        Otherwise the GraphicsContext3DQt created by TextureMapperGL will pick up
+        the wrong pointer by calling QOpenGLContext::currentContext().
+
+        Reviewed by Simon Hausmann.
+
+        * WebCoreSupport/PageClientQt.cpp:
+        (WebCore::PageClientQGraphicsWidget::setRootGraphicsLayer):
+
+2012-11-26  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt] QStyleFacadeImp build break with latest Qt 5
+        https://bugs.webkit.org/show_bug.cgi?id=103198
+
+        Reviewed by Simon Hausmann.
+
+        Original patch by J-P Nurmi <jpnurmi@digia.com>.
+
+        Fixes QtWebKit build by replacing qobject_cast to
+        QMacStyle with calls to QObject::inherits. Also
+        replaces Q_WS_MAC preprocesser directives with Q_OS_MAC
+        for Qt 5 compatibility.
+
+        * WebCoreSupport/QStyleFacadeImp.cpp:
+        (WebKit::QStyleFacadeImp::getButtonMetrics):
+        (WebKit::QStyleFacadeImp::paintComboBox):
+        (WebKit::QStyleFacadeImp::paintInnerSpinButton):
+        (WebKit::QStyleFacadeImp::paintScrollBar):
+
+2012-11-24  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r135648 and r135649.
+        http://trac.webkit.org/changeset/135648
+        http://trac.webkit.org/changeset/135649
+        https://bugs.webkit.org/show_bug.cgi?id=103176
+
+        This change cannot be built with a qt-minimal configuration.
+        (Requested by zalbisser on #webkit).
+
+        * WebCoreSupport/PageClientQt.cpp:
+        (WebCore::PageClientQGraphicsWidget::setRootGraphicsLayer):
+
+2012-11-24  Zeno Albisser  <zeno@webkit.org>
+
+        Unreviewed Qt build fix:
+
+        Make sure QGLWidget definition is available.
+
+        * WebCoreSupport/PageClientQt.cpp:
+
+2012-11-24  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Make sure the QGLWidget context is current when creating the TextureMapper.
+        https://bugs.webkit.org/show_bug.cgi?id=103142
+
+        When creating the TextureMapperGL for WK1 we have to make sure
+        that the GL context provided by the QGLWidget is current.
+        Otherwise the GraphicsContext3DQt created by TextureMapperGL will pick up
+        the wrong pointer by calling QOpenGLContext::currentContext().
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * WebCoreSupport/PageClientQt.cpp:
+        (WebCore::PageClientQGraphicsWidget::setRootGraphicsLayer):
+
+2012-11-23  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r135575.
+        http://trac.webkit.org/changeset/135575
+        https://bugs.webkit.org/show_bug.cgi?id=103169
+
+        It made all tests assert (Requested by Ossy on #webkit).
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        * WebCoreSupport/InitWebCoreQt.cpp:
+        (WebKit::initializeWebKitQt):
+
+2012-11-23  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        tst_qwebpage fails after QMimeDatabase patch
+        https://bugs.webkit.org/show_bug.cgi?id=103125
+
+        Reviewed by Simon Hausmann.
+
+        Replace the static extension->mimetype table with a QMimeDatabase lookup
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::findText):
+        (tst_QWebPage::supportedContentType):
+
+2012-11-23  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Compiling against QtWebkit API requires QT_DLL to be defined
+        https://bugs.webkit.org/show_bug.cgi?id=102942
+
+        Reviewed by Tor Arne Vestbø.
+
+        Remove the requirement of having QT_DLL defined in order for the QWEBKIT_EXPORT
+        macro to be defined as Q_DECL_IMPORT. Instead unify the export macro definition
+        to follow the same rules as other Qt 5 modules, with the exception that instead of
+        QT_BUILD_WEBKIT_LIB we continue to use BUILDING_WEBKIT, because that's used also
+        in other cross-platform header files to determine the correct meaning of export
+        macros.
+
+        * Api/qwebkitglobal.h:
+
+2012-11-23  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] QWebPage::shouldInterruptJavaScript should be virtual in Qt 5
+        https://bugs.webkit.org/show_bug.cgi?id=103111
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This function was added as a slot during Qt 4.x times because adding
+        virtual functions breaks binary compatibility. This constraint is gone
+        with the initial release of WebKit with Qt 5, and therefore we can
+        make it virtual now.
+
+        The change is fully source compatible as existing "re-implementations"
+        as slots will now be called through it being a virtual function. They
+        become unused slots.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::shouldInterruptJavaScript):
+        * Api/qwebpage.h:
+        * Api/qwebpage_p.h:
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::shouldInterruptJavaScript):
+        * WebCoreSupport/QWebPageAdapter.h:
+        (QWebPageAdapter):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (JSTestPage::shouldInterruptJavaScript):
+        (JSTestPage):
+
+2012-11-23  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] REGRESSION(r135515): 3 appcache tests still failing
+        https://bugs.webkit.org/show_bug.cgi?id=103073
+
+        Rubber-stamped by Simon Hausmann.
+
+        Another sneaky typo.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::applicationCacheQuotaExceeded):
+
+2012-11-22  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] Avoid initializing PlatformStrategies twice.
+
+        Rubber-stamped by Simon Hausmann.
+
+        This fixes another regression introduced in r135515:
+        initializeWebKitQt shouldn't implicitely call initializeWebCoreQt
+        since it can be called from WebKit2 to initialize QStyle for testing.
+        This would then lead to things such as PlatformStrategies being
+        initialized twice.
+
+        * Api/qwebpage.cpp: Explicitely call initializeWebCoreQt().
+        (QWebPagePrivate::QWebPagePrivate):
+        * WebCoreSupport/InitWebCoreQt.cpp:
+        (WebKit::initializeWebKitQt):
+
+2012-11-23  Simon Hausmann  <simon.hausmann@digia.com>
+
+        Unreviewed trivial Qt/Win build fix:
+
+        Include FormState.h/HTMLFormElement.h in the FrameLoaderClient
+        declaration because MSVC needs it. Also fix Q_DECL_EXPORT declarations
+        for functions that are supposed to be exported.
+
+        * Api/qwebelement.cpp:
+        * WebCoreSupport/FrameLoaderClientQt.h:
+        * WebCoreSupport/InitWebCoreQt.h:
+        (WebKit):
+        * WebCoreSupport/InitWebKitQt.h:
+        (WebKit):
+
+2012-11-22  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] REGRESSION(r135515): It made 3-3 tests fail and crash
+        https://bugs.webkit.org/show_bug.cgi?id=103073
+
+        Rubber-stamped by Simon Hausmann.
+
+        Removing the QNetworkAccessManager member in FrameNetworkingContextQt
+        was right, but we need to be careful as to how we fetch it back.
+        Since the WebCore Page is not always valid, get the QNAM instance
+        straight from the frame adapter through its page adapter instead.
+
+        * WebCoreSupport/ChromeClientQt.cpp: [Style nit] Remove stray emit.
+        * WebCoreSupport/FrameNetworkingContextQt.cpp:
+        (WebCore::FrameNetworkingContextQt::networkAccessManager):
+
 2012-11-22  Simon Hausmann  <simon.hausmann@digia.com>
 
         Unreviewed MSVC Windows build fix: Include header files referenced in RefPtr

@@ -234,7 +234,7 @@ bool SelectionHandler::shouldUpdateSelectionOrCaretForPoint(const WebCore::IntPo
 
 void SelectionHandler::setCaretPosition(const WebCore::IntPoint &position)
 {
-    if (!m_webPage->m_inputHandler->isInputMode())
+    if (!m_webPage->m_inputHandler->isInputMode() || !m_webPage->focusedOrMainFrame()->document()->focusedNode())
         return;
 
     m_caretActive = true;
@@ -663,6 +663,10 @@ void SelectionHandler::selectObject(Node* node)
 {
     if (!node)
         return;
+
+    // Clear input focus if we're not selecting text there.
+    if (node != m_webPage->m_inputHandler->currentFocusElement().get())
+        m_webPage->clearFocusNode();
 
     m_selectionActive = true;
 

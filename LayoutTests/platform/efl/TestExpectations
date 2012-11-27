@@ -392,6 +392,9 @@ webkit.org/b/89052 fast/css/image-orientation
 webkit.org/b/94110 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ ImageOnlyFailure Missing ]
 webkit.org/b/94110 fast/css3-text/css3-text-decoration/text-decoration-style.html [ ImageOnlyFailure Missing ]
 
+# CSS3 Background is not yet enabled (needs ENABLE_CSS3_BACKGROUND).
+webkit.org/b/37514 fast/backgrounds/background-position-parsing-2.html [ Text ]
+
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] perf [ WontFix ]
 
@@ -1563,9 +1566,6 @@ webkit.org/b/100424 editing/selection/user-select-all-selection.html [ Failure ]
 # Entering into full screen playback mode fails when triggered by context menu
 Bug(EFL) media/context-menu-actions.html [ Failure ]
 
-# ESC key does not cancel context menu in EFL port
-Bug(EFL) editing/selection/5354455-1.html [ Failure ]
-
 # Tests that create an extra graphics layer
 webkit.org/b/102697 compositing/overflow/overflow-auto-with-touch-no-overflow.html [ Failure ]
 webkit.org/b/102697 compositing/overflow/overflow-hidden-with-touch.html [ Failure ]
@@ -1679,7 +1679,6 @@ webkit.org/b/102097 svg/as-image/image-respects-deviceScaleFactor.html [ Skip ]
 webkit.org/b/102100 svg/repaint/inner-svg-change-viewBox.svg [ ImageOnlyFailure ]
 
 webkit.org/b/102190 compositing/overflow/updating-scrolling-content.html [ Failure ]
-webkit.org/b/102190 fast/events/overflow-scroll-fake-mouse-move.html [ Failure ]
 
 webkit.org/b/102364 compositing/overflow/scrolling-without-painting.html [ Failure ]
 
@@ -1689,3 +1688,13 @@ webkit.org/b/102493 fast/events/mouse-cursor.html [ Failure ]
 
 # Fails until we enable the Resource Timing API.
 webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
+
+webkit.org/b/103109 fast/dom/shadow/host-wrapper-reclaimed.html [ Failure ]
+
+# Start of media player causes timeout.
+Bug(EFL) media/controls-right-click-on-timebar.html [ Failure ]
+
+# No spellcheck suggestions in context menu
+Bug(EFL) editing/spelling/context-menu-suggestions.html [ Failure ]
+
+webkit.org/b/102557 fast/backgrounds/background-opaque-images-over-color.html [ Failure ]

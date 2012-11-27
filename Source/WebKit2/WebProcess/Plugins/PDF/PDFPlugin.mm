@@ -523,6 +523,10 @@ bool PDFPlugin::handleMouseEvent(const WebMouseEvent& event)
         || IntRect(m_scrollCornerLayer.get().frame).contains(mousePosition))
         return false;
 
+    // Right-clicks and Control-clicks always call handleContextMenuEvent as well.
+    if (event.button() == WebMouseEvent::RightButton || (event.button() == WebMouseEvent::LeftButton && event.controlKey()))
+        return true;
+
     NSEvent *nsEvent = nsEventForWebMouseEvent(event);
 
     switch (event.type()) {
@@ -574,7 +578,7 @@ bool PDFPlugin::handleContextMenuEvent(const WebMouseEvent& event)
     NSMenu *nsMenu = [m_pdfLayerController.get() menuForEvent:nsEventForWebMouseEvent(event)];
 
     FrameView* frameView = webFrame()->coreFrame()->view();
-    IntPoint point = frameView->contentsToScreen(IntRect(event.position(), IntSize())).location();
+    IntPoint point = frameView->contentsToScreen(IntRect(frameView->windowToContents(event.position()), IntSize())).location();
     if (nsMenu) {
         WKPopupContextMenu(nsMenu, point);
         return true;
