@@ -26,12 +26,6 @@ http/tests/css/shared-stylesheet-mutation.html [ Skip ]
 # FAILURES
 ################################################################################
 
-# Failing after commit 89f9eb2cda6fb29e8ee26eef6ca27af76f92b17c
-# Refactor V8 bindings to allow content scripts to access subframes
-# https://bugs.webkit.org/show_bug.cgi?id=93646
-http/tests/security/isolatedWorld/world-reuse.html [ Failure ]
-
-
 canvas/philip/tests/2d.composite.operation.clear.html [ Skip ]
 canvas/philip/tests/2d.composite.operation.darker.html [ Skip ]
 canvas/philip/tests/2d.drawImage.broken.html [ Skip ]
@@ -505,6 +499,7 @@ http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 
 # need more investigation
 transitions/negative-delay.html [ Failure Pass ]
+fast/events/touch/gesture/touch-gesture-scroll-remove-node.html [ Failure ]
 # undefined gestureTapDown
 fast/events/touch/gesture/gesture-scrollbar.html [ Failure ]
 # cant find variable: webkitAudioContext
