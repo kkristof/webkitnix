@@ -848,6 +848,15 @@ void WebViewImpl::setShowFPSCounter(bool show)
     settingsImpl()->setShowFPSCounter(show);
 }
 
+void WebViewImpl::setShowPaintRects(bool show)
+{
+    if (isAcceleratedCompositingActive()) {
+        TRACE_EVENT0("webkit", "WebViewImpl::setShowPaintRects");
+        m_layerTreeView->setShowPaintRects(show);
+    }
+    settingsImpl()->setShowPaintRects(show);
+}
+
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
     ASSERT((event.type == WebInputEvent::RawKeyDown)
@@ -4201,6 +4210,12 @@ void WebViewImpl::scheduleComposite()
 
     ASSERT(!Platform::current()->compositorSupport()->isThreadingEnabled());
     m_client->scheduleComposite();
+}
+
+void WebViewImpl::createFontAtlas(SkBitmap& bitmap, WebRect asciiToRectTable[128], int& fontHeight)
+{
+    TRACE_EVENT0("webkit", "WebViewImpl::loadFontAtlas");
+    bitmap = WebCore::CompositorHUDFontAtlas::generateFontAtlas(asciiToRectTable, fontHeight);
 }
 
 void WebViewImpl::updateLayerTreeViewport()

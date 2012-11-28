@@ -309,6 +309,7 @@ public:
 #endif
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&);
     virtual WebViewBenchmarkSupport* benchmarkSupport();
+    virtual void setShowPaintRects(bool);
     virtual void setShowFPSCounter(bool);
 
     // WebLayerTreeViewClient
@@ -324,6 +325,7 @@ public:
     virtual void didCommitAndDrawFrame();
     virtual void didCompleteSwapBuffers();
     virtual void scheduleComposite();
+    virtual void createFontAtlas(SkBitmap&, WebRect[128], int&);
 
     // WebViewImpl
 
@@ -609,6 +611,7 @@ private:
 
     friend class WebView;  // So WebView::Create can call our constructor
     friend class WTF::RefCounted<WebViewImpl>;
+    friend void setCurrentInputEventForTest(const WebInputEvent*);
 
     enum DragAction {
       DragEnter,

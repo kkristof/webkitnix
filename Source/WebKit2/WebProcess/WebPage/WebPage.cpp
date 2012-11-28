@@ -325,6 +325,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 #endif
 
     m_page->setCanStartMedia(false);
+    m_mayStartMediaWhenInWindow = parameters.mayStartMediaWhenInWindow;
 
     m_pageGroup = WebProcess::shared().webPageGroup(parameters.pageGroupData);
     m_page->setGroupName(m_pageGroup->identifier());
@@ -364,7 +365,6 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     m_drawingArea->setPaintingEnabled(true);
     
     setMediaVolume(parameters.mediaVolume);
-    m_mayStartMediaWhenInWindow = parameters.mayStartMediaWhenInWindow;
 
     WebProcess::shared().addMessageReceiver(Messages::WebPage::messageReceiverName(), m_pageID, this);
 
@@ -826,7 +826,7 @@ void WebPage::loadURLRequest(const ResourceRequest& request, const SandboxExtens
     SendStopResponsivenessTimer stopper(this);
 
     m_sandboxExtensionTracker.beginLoad(m_mainFrame.get(), sandboxExtensionHandle);
-    m_mainFrame->coreFrame()->loader()->load(request, false);
+    m_mainFrame->coreFrame()->loader()->load(FrameLoadRequest(m_mainFrame->coreFrame(), request));
 }
 
 void WebPage::loadData(PassRefPtr<SharedBuffer> sharedBuffer, const String& MIMEType, const String& encodingName, const KURL& baseURL, const KURL& unreachableURL)
@@ -835,7 +835,7 @@ void WebPage::loadData(PassRefPtr<SharedBuffer> sharedBuffer, const String& MIME
 
     ResourceRequest request(baseURL);
     SubstituteData substituteData(sharedBuffer, MIMEType, encodingName, unreachableURL);
-    m_mainFrame->coreFrame()->loader()->load(request, substituteData, false);
+    m_mainFrame->coreFrame()->loader()->load(FrameLoadRequest(m_mainFrame->coreFrame(), request, substituteData));
 }
 
 void WebPage::loadHTMLString(const String& htmlString, const String& baseURLString)
@@ -875,8 +875,7 @@ void WebPage::linkClicked(const String& url, const WebMouseEvent& event)
     if (event.type() != WebEvent::NoType)
         coreEvent = MouseEvent::create(eventNames().clickEvent, frame->document()->defaultView(), platform(event), 0, 0);
 
-    frame->loader()->loadFrameRequest(FrameLoadRequest(frame->document()->securityOrigin(), ResourceRequest(url)), 
-        false, false, coreEvent.get(), 0, MaybeSendReferrer);
+    frame->loader()->loadFrameRequest(FrameLoadRequest(frame, ResourceRequest(url)), false, false, coreEvent.get(), 0, MaybeSendReferrer);
 }
 
 void WebPage::stopLoadingFrame(uint64_t frameID)

@@ -1,3 +1,480 @@
+2012-11-28  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Regression(r135962): m_pendingSyncBackingStores needs to be cleared in LayerTreeRenderer::purgeGLResources()
+        https://bugs.webkit.org/show_bug.cgi?id=103527
+
+        Reviewed by Jocelyn Turcotte.
+
+        Make sure m_pendingSyncBackingStores is cleared in
+        LayerTreeRenderer::purgeGLResources() to avoid trying to assign
+        backing store to layers after everything has been invalidated.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::purgeGLResources):
+
+2012-11-28  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Regression(r135962): ASSERTION FAILED: !m_pedningSyncBackingStores.contains(layer)
+        https://bugs.webkit.org/show_bug.cgi?id=103498
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        We hit the !m_pedningSyncBackingStores.contains(layer) assertion
+        in LayerTreeRenderer when 2 asynchronous backing store operations
+        are pending. The current code checks if the layer already has a
+        backing store in its guard but this is insufficient as it is not
+        checking the m_pendingSyncBackingStores hash for pending backing
+        store changes.
+
+        In this patch, we improve the guards in createBackingStoreIfNeeded()
+        and removeBackingStoreIfNeeded() to check not only if the layer has
+        already a backing store but also check m_pendingSyncBackingStores
+        for pending changes. This is safer and it allows for optimizations
+        in the cases where we have both a removal and a creation pending.
+        In those cases, we can simply cancel the pending operation instead
+        of queueing a new one.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::getBackingStore):
+        (WebKit::LayerTreeRenderer::createBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::removeBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::commitPendingBackingStoreOperations):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+
+2012-11-28  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [EFL][WK2] MiniBrowser rendering should not get blurry when scrolled down with different scale values
+        https://bugs.webkit.org/show_bug.cgi?id=103079
+
+        Reviewed by Simon Hausmann.
+
+        The problem was caused because we moved the page inside our viewport
+        in non-discrete units.
+
+        Now instead of changing the content visible in our viewport by
+        applying scale, and then transforming the CSS offset, we now first
+        discretely position the page in UI coordinates.
+
+        This patch also removes some dead code.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::transformFromScene):
+        (EwkViewImpl::displayTimerFired):
+
+           Transform according to the page position.
+
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl::setPagePosition): Now stores a float.
+        (EwkViewImpl::discretePagePosition): Returns the discrete page position.
+        (EwkViewImpl):
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::updateViewportSize):
+        (WebKit::PageClientLegacyImpl::pageDidRequestScroll):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::PageViewportControllerClientEfl):
+        (WebKit::PageViewportControllerClientEfl::setViewportPosition): Convert to page position.
+        (WebKit::PageViewportControllerClientEfl::setContentsScale):
+        (WebKit::PageViewportControllerClientEfl::didResumeContent):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (WebKit::PageViewportControllerClientEfl::scaleFactor): Use the value
+        from the view directly.
+        (WebKit::PageViewportControllerClientEfl::contentPosition):
+        (PageViewportControllerClientEfl):
+
+2012-11-28  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][WK2][AC] No need to export GL properties from EwkViewImpl class
+        https://bugs.webkit.org/show_bug.cgi?id=103505
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        No need to export GL data members from EwkViewImpl class, 
+        those are internal implementation objects not used by anyone outside the class.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::displayTimerFired):
+        (EwkViewImpl::createGLSurface):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl):
+        (EwkViewImpl::evasGLContext):
+        (EwkViewImpl::evasGLSurface):
+
+2012-11-28  Joone Hur  <joone.hur@intel.com>
+
+        [EFL][WK2][AC] Clear the viewport with white color
+        https://bugs.webkit.org/show_bug.cgi?id=103495
+
+        When initializing a GL surface, we should clear the buffer with white color.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::createGLSurface):
+
+2012-11-27  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Duplicated WebPageGroup initialization
+        https://bugs.webkit.org/show_bug.cgi?id=103229
+
+        Reviewed by Gyuyoung Kim.
+
+        WebPageGroup does not need to be created in creating EwkView when the pageGroupRef is 0
+        because the default WebPageGroup(m_defaultPageGroup) is created in WebContext constructor.
+
+        As a side effect on the duplicated initialization, pageGroupID increases even when the EwkView
+        is created with default context.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (createEwkView):
+
+2012-11-27  Huang Dongsung  <luxtella@company100.net>
+
+        REGRESSION(r135620): ASSERT(m_state.drawsContent && m_state.contentsVisible && !m_size.isEmpty()) hits in TextureMapperLayer::paintSelf().
+        https://bugs.webkit.org/show_bug.cgi?id=103171
+
+        Reviewed by Noam Rosenthal.
+
+        Ensure that TextureMapperLayer has a backing store when the layer has
+        drawsContent and contentsVisible properties and the size of the layer is not
+        empty.
+
+        LayerTreeRenderer::setLayerState() must not set a backing store to
+        TextureMapperLayer because setLayerState() just changes states of
+        GraphicsLayerTextureMapper instead of TextureMapperLayer.
+
+        Now LayerTreeRenderer::flushLayerChanges() sets a backing store as well as layer
+        states to TextureMapperLayer.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::getBackingStore):
+        (WebKit::LayerTreeRenderer::prepareContentBackingStore):
+        (WebKit::LayerTreeRenderer::createBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::removeBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::commitPendingBackingStoreOperations):
+        (WebKit::LayerTreeRenderer::flushLayerChanges):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (WebCore):
+
+2012-11-27  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Should not be able to edit read-only text annotations
+        https://bugs.webkit.org/show_bug.cgi?id=103387
+        <rdar://problem/12752313>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Don't allow read-only annotations to become active.
+
+        * WebKit2.xcodeproj/project.pbxproj: Add PDFAnnotationTextWidgetDetails.h.
+        * WebProcess/Plugins/PDF/PDFAnnotationTextWidgetDetails.h: Added.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::setActiveAnnotation): Bail if the annotation is read-only.
+        * WebProcess/Plugins/PDF/PDFPluginTextAnnotation.mm: Move PDFAnnotationTextWidget details category to PDFAnnotationTextWidgetDetails.h
+
+2012-11-27  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Refactor code managing a backing store in LayerTreeRenderer.
+        https://bugs.webkit.org/show_bug.cgi?id=103298
+
+        Reviewed by Noam Rosenthal.
+
+        This patch makes LayerTreeRenderer assign a content backing store to
+        TextureMapperLayer only in setLayerState(). Currently, createTile() can assign
+        the backing store to TextureMapperLayer and it can break the invariant condition
+        of TextureMapperLayer: TextureMapperLayer can have its own backing store only if
+        the layer has following conditions: drawsContent, contentsVisible and non empty
+        size.
+
+        In addition, the modified code about creating and removing a backing store
+        matches the same purpose code of CoordinatedGraphicsLayer and
+        GraphicsLayerTextureMapepr.
+
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (CoordinatedBackingStore):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::layerShouldHaveBackingStore):
+        (WebKit):
+        (WebKit::LayerTreeRenderer::setLayerState):
+        (WebKit::LayerTreeRenderer::getBackingStore):
+        (WebKit::LayerTreeRenderer::prepareContentBackingStore):
+        (WebKit::LayerTreeRenderer::createBackingStoreIfNeeded):
+        (WebKit::LayerTreeRenderer::removeBackingStore):
+        (WebKit::LayerTreeRenderer::resetBackingStoreSizeToLayerSize):
+        (WebKit::LayerTreeRenderer::createTile):
+        (WebKit::LayerTreeRenderer::removeTile):
+        (WebKit::LayerTreeRenderer::updateTile):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::adjustContentsScale):
+            This method does not create a backing store anymore because flushCompositingStateForThisLayerOnly()
+            can create a backing store if needed. Moreover, we must sync a layer state prior to creating a backing store
+            after this patch, because LayerTreeRenderer::createTile() does not create a backing store anymore.
+
+2012-11-27  James Simonsen  <simonjam@chromium.org>
+
+        Consolidate FrameLoader::load() into one function taking a FrameLoadRequest
+        https://bugs.webkit.org/show_bug.cgi?id=102151
+
+        Reviewed by Adam Barth.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::performFrameLoadURLRequest):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::loadURLRequest):
+        (WebKit::WebPage::loadData):
+
+2012-10-22  Jer Noble  <jer.noble@apple.com>
+
+        [WK2] [Mac] WebKit Full Screen API should use NSWindow full screen API.
+        https://bugs.webkit.org/show_bug.cgi?id=100025
+
+        Reviewed by Dan Bernstein.
+
+        Use the NSWindow full screen API when taking the WebView full screen. To facility the case where the browser window is already
+        in full screen mode, no longer hide the browser window when entering full screen. Instead, provide a placeholder view with 
+        instructions to click the placeholder to exit full screen.
+
+        * UIProcess/mac/WKFullScreenWindowController.h:
+        * UIProcess/mac/WKFullScreenWindowController.mm:
+        (-[WKFullScreenWindowController init]): Set self as the window's delegate; enable window's full screen action.
+        (-[WKFullScreenWindowController dealloc]): Clear our window's delegate.
+        (-[WKFullScreenWindowController applicationDidChangeScreenParameters:]): Remove reference to _updateWindowAndDockForFullScreen.
+        (-[WKFullScreenWindowController enterFullScreen:]):  Ditto. Create a WKFullScreenPlaceholderView instead of generic NSImageView.
+        (-[WKFullScreenWindowController beganEnterFullScreenWithInitialFrame:finalFrame:]): Ditto. Call NSWindow enterFullScreen: API.
+        (-[WKFullScreenWindowController finishedEnterFullScreenAnimation:]): Show the warning view.
+        (-[WKFullScreenWindowController exitFullScreen]): Hide the warning view.
+        (-[WKFullScreenWindowController beganExitFullScreenWithInitialFrame:finalFrame:]): Add special case where we are exiting
+            from full screen mode when the full screen window is not on screen.
+        (-[WKFullScreenWindowController finishedExitFullScreenAnimation:]): Remove reference to _updateMenuAndDockForFullScreen.
+        (-[WKFullScreenWindowController customWindowsToEnterFullScreenForWindow:]): Added. Return the background window and the full screen window.
+        (-[WKFullScreenWindowController customWindowsToExitFullScreenForWindow:]): Ditto.
+        (-[WKFullScreenWindowController window:startCustomAnimationToEnterFullScreenWithDuration:]): Added. Call through to _startEnterFullScreenAnimationWithDuration:
+        (-[WKFullScreenWindowController window:startCustomAnimationToExitFullScreenWithDuration:]): Added. Call through to _startExitFullScreenAnimationWithDuration:
+
+2012-11-27  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL][WK2] 3D pixel tests are failing
+        https://bugs.webkit.org/show_bug.cgi?id=102833
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added an API for generating a snapshot, to be used from WebKitTestRunner.
+
+        * PlatformEfl.cmake:
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewGetSnapshot):
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::onFaviconChanged):
+        (EwkViewImpl::takeSnapshot):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl):
+        * UIProcess/API/efl/SnapshotImageGL.cpp: Added.
+        (getImageFromCurrentTexture):
+        * UIProcess/API/efl/SnapshotImageGL.h: Added.
+
+2012-11-27  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Page scale factor should affect subframe PDFs
+        https://bugs.webkit.org/show_bug.cgi?id=103291
+        <rdar://problem/12555249>
+
+        Reviewed by Darin Adler.
+
+        For subframe PDFs, hand PDFKit the pageScaleFactor for the parent page
+        so it can scale its drawing appropriately.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h: Add updatePageAndDeviceScaleFactors.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::pdfDocumentDidLoad): Call updatePageAndDeviceScaleFactors
+        instead of manually updating PDFLayerController's device scale factor.
+        (WebKit::PDFPlugin::updatePageAndDeviceScaleFactors): Hand PDFLayerController
+        the "underlying" (non-zoom) content scale, which is the product of the
+        device scale and the page scale.
+        (WebKit::PDFPlugin::contentsScaleFactorChanged): Use updatePageAndDeviceScaleFactors.
+        (WebKit::PDFPlugin::geometryDidChange): Use updatePageAndDeviceScaleFactors to keep
+        PDFLayerController's notion of the page scale up to date when the plugin's
+        geometry changes.
+
+2012-11-27  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Scroll bars do not grow on hover
+        https://bugs.webkit.org/show_bug.cgi?id=103382
+        <rdar://problem/12555262>
+
+        Reviewed by Beth Dakin.
+
+        PDFPlugin needs to forward relevant mouse events to the scrollbars.
+        In addition, it needs to implement currentMousePosition so ScrollableArea and friends
+        can find the mouse position at arbitrary times.
+
+        I also took this opportunity to factor some coordinate space conversion functions out.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (WebKit::PDFPlugin::currentMousePosition): Added. Return the last mouse position in our coordinate space.
+        (WebKit::PDFPlugin::convertFromRootViewToPlugin): Added.
+        (WebKit::PDFPlugin::convertFromPluginToPDFView): Added.
+        (PDFPlugin):
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::convertFromRootViewToPlugin): Convert a point from content space to plugin space, via the transform we get in geometryDidChange.
+        (WebKit::PDFPlugin::convertFromPluginToPDFView): Convert a point from plugin space to PDFLayerController's flipped coordinate space.
+        (WebKit::PDFPlugin::geometryDidChange): Use convertFromPluginToPDFView.
+        (WebKit::PDFPlugin::nsEventForWebMouseEvent): Cache the mouse position in plugin space instead of PDFLayerController space. Use our new conversion functions.
+        (WebKit::PDFPlugin::handleMouseEvent): Forward relevant mouse events to scrollbars:
+        Determine which scrollbar the mouse is over now, and which it was previously over, and use that to:
+        If the mouse is moved over a scrollbar, send mouseEntered to the scrollbar.
+        If the mouse is moved out of a scrollbar, send mouseExited to the scrollbar.
+        If the mouse is currently over a scrollbar, send mouseMoved/Up/Down to the scrollbar instead of PDFLayerController.
+        If the mouse is currently over the scroll corner, bail, because nobody should get those events.
+
+2012-11-27  Dan Bernstein  <mitz@apple.com>
+
+        Entering Tab View after a bunch of YouTube pages were opened in background tabs makes all of them start playing simultaneously
+        https://bugs.webkit.org/show_bug.cgi?id=103358
+
+        Reviewed by Adele Peterson.
+
+        To fix this, this patch adds WKPageSetMayStartMediaWhenInWindow(), which allows the client to
+        prevent media from starting automatically when the view is put in a window.
+
+        * Shared/WebPageCreationParameters.cpp:
+        (WebKit::WebPageCreationParameters::encode): Encode mayStartMediaWhenInWindow.
+        (WebKit::WebPageCreationParameters::decode): Decode mayStartMediaWhenInWindow.
+        * Shared/WebPageCreationParameters.h:
+        (WebPageCreationParameters): Added boolean member mayStartMediaWhenInWindow.
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageSetMayStartMediaWhenInWindow): Added. Calls through to WebPageProxy.
+        * UIProcess/API/C/WKPagePrivate.h: Declared WKPageSetMayStartMediaWhenInWindow.
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::WebPageProxy): Added initializiation of m_mayStartMediaWhenInWindow
+        to true, the value matching the current behavior.
+        (WebKit::WebPageProxy::setMayStartMediaWhenInWindow): Added. Updates
+        m_mayStartMediaWhenInWindow and sends a message to the Web process to do the same.
+        (WebKit::WebPageProxy::creationParameters): Changed to set mayStartMediaWhenInWindow in the
+        process creation parameters.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Declared setMayStartMediaWhenInWindow() and added member variable
+        m_mayStartMediaWhenInWindow.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage): Initialized m_mayStartMediaWhenInWindow from the creation
+        parameters.
+        (WebKit::WebPage::setIsInWindow): Made starting of media upon being added to a window
+        conditional on m_mayStartMediaWhenInWindow.
+        (WebKit::WebPage::setMayStartMediaWhenInWindow): Added. Sets m_mayStartMediaWhenInWindow. If
+        already in a window when changing from false to true, starts m_setCanStartMediaTimer.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Declared setMayStartMediaWhenInWindow() and added member variable m_mayStartMediaWhenInWindow.
+        * WebProcess/WebPage/WebPage.messages.in: Added SetMayStartMediaWhenInWindow.
+
+2012-11-27  Pratik Solanki  <psolanki@apple.com>
+
+        objc/objc-runtime.h does not exist on all PLATFORM(MAC)
+        https://bugs.webkit.org/show_bug.cgi?id=101780
+
+        Reviewed by Brent Fulgham.
+
+        Clean up header includes so we don't include objc/objc-runtime.h.
+
+        * PluginProcess/mac/PluginProcessShim.mm:
+        * UIProcess/API/mac/PDFViewController.mm:
+
+2012-11-27  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] WebPageProxy::relatedPages() cannot assume that this page is known to process
+        https://bugs.webkit.org/show_bug.cgi?id=103433
+        <rdar://problem/12543513>
+
+        Reviewed by Jessie Berlin.
+
+        * UIProcess/WebPageProxy.cpp: (WebKit::WebPageProxy::relatedPages): Removed an incorrect
+        assertion, and modified code to not rely on its condition being true.
+
+2012-11-27  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][Qt][WK2] Tiles not always painted
+        https://bugs.webkit.org/show_bug.cgi?id=103271
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        The problem turned up because visible content was synchromized before the new fixed
+        layout size had been applied in the web process.
+
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didChangeViewportSize):
+        (WebKit::PageViewportController::didChangeViewportAttributes):
+
+2012-11-27  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL] Graphics layer edges are sometimes very pixelated
+        https://bugs.webkit.org/show_bug.cgi?id=103302
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        The call setEnableEdgeDistanceAntialiasing(true) was lost in the refactoring of
+        http://trac.webkit.org/changeset/135401.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::paintToCurrentGLContext):
+
+2012-11-27  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [X11] Allow empty plugin name and description during scan plugin
+        https://bugs.webkit.org/show_bug.cgi?id=103234
+
+        Reviewed by Simon Hausmann.
+
+        Empty entries should be allowed when split the output string of scan plugin
+        because the plugin name and the description can be empty string.
+
+        * UIProcess/Plugins/qt/PluginProcessProxyQt.cpp:
+        (WebKit::PluginProcessProxy::scanPlugin):
+        * UIProcess/Plugins/unix/PluginProcessProxyUnix.cpp:
+        (WebKit::PluginProcessProxy::scanPlugin):
+
+2012-11-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r135819.
+        http://trac.webkit.org/changeset/135819
+        https://bugs.webkit.org/show_bug.cgi?id=103388
+
+        It broke many tests on Qt and EFL WK2 platforms (Requested by
+        Ossy on #webkit).
+
+        * Shared/WebPageCreationParameters.cpp:
+        (WebKit::WebPageCreationParameters::encode):
+        (WebKit::WebPageCreationParameters::decode):
+        * Shared/WebPageCreationParameters.h:
+        (WebPageCreationParameters):
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageCopyRelatedPages):
+        * UIProcess/API/C/WKPagePrivate.h:
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::WebPageProxy):
+        (WebKit::WebPageProxy::creationParameters):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+        (WebKit::WebPage::setIsInWindow):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+
+2012-11-27  Kyungjin Kim  <gen.kim@samsung.com>
+
+        [WK2] Expose Accelerated2dCanvas flag set and get in WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=103008
+
+        Reviewed by Gyuyoung Kim.
+
+        Fix API names in WKPreferences from 2d to 2D.
+
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetAccelerated2DCanvasEnabled):
+        (WKPreferencesGetAccelerated2DCanvasEnabled):
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+
 2012-11-27  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r135786.

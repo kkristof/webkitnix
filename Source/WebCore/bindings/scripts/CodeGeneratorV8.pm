@@ -478,10 +478,17 @@ END
     if ($interfaceName eq "HTMLElement") {
         push(@headerContent, <<END);
     friend v8::Handle<v8::Object> createV8HTMLWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> createV8HTMLDirectWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     } elsif ($interfaceName eq "SVGElement") {
         push(@headerContent, <<END);
     friend v8::Handle<v8::Object> createV8SVGWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> createV8SVGDirectWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> createV8SVGFallbackWrapper(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+END
+    } elsif ($interfaceName eq "HTMLUnknownElement") {
+        push(@headerContent, <<END);
+    friend v8::Handle<v8::Object> createV8HTMLFallbackWrapper(HTMLUnknownElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     } elsif ($interfaceName eq "Element") {
         push(@headerContent, <<END);
@@ -586,10 +593,11 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const v8::AccessorInf
     // in an isolated world. The fastest way we know how to do that is to check
     // whether the holder's inline wrapper is the same wrapper we see in the
     // v8::AccessorInfo.
-    v8::Handle<v8::Object> wrapper = (holder->wrapper() == info.Holder()) ? impl->wrapper() : DOMDataStore::getNode(impl, info.GetIsolate());
+    v8::Handle<v8::Object> holderWrapper = info.Holder();
+    v8::Handle<v8::Object> wrapper = (holder->wrapper() == holderWrapper) ? impl->wrapper() : DOMDataStore::getNode(impl, info.GetIsolate());
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, info.Holder(), info.GetIsolate());
+    return wrap(impl, holderWrapper, info.GetIsolate());
 }
 END
         }
@@ -1222,8 +1230,8 @@ END
             my $namespace = $codeGenerator->NamespaceForAttributeName($interfaceName, $contentAttributeName);
             AddToImplIncludes("${namespace}.h");
             push(@implContentDecls, "    Element* imp = V8Element::toNative(info.Holder());\n");
-            push(@implContentDecls, "    AtomicString v = toWebCoreAtomicStringWithNullCheck(value);\n");
-            push(@implContentDecls, "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, v);\n");
+            push(@implContentDecls, "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, value);\n");
+            push(@implContentDecls, "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n");
             push(@implContentDecls, "}\n\n");
             push(@implContentDecls, "#endif // ${conditionalString}\n\n") if $conditionalString;
             return;
@@ -1374,7 +1382,8 @@ static v8::Handle<v8::Value> ${functionName}EventListenerCallback(const v8::Argu
     INC_STATS("DOM.${interfaceName}.${functionName}EventListener()");
     RefPtr<EventListener> listener = V8DOMWrapper::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
-        V8${interfaceName}::toNative(args.Holder())->${functionName}EventListener(toWebCoreAtomicString(args[0]), listener${passRefPtrHandling}, args[2]->BooleanValue());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
+        V8${interfaceName}::toNative(args.Holder())->${functionName}EventListener(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
 END
     if ($requiresHiddenDependency) {
         push(@implContentDecls, <<END);
@@ -1745,7 +1754,7 @@ sub GenerateParametersCheck
                 my $nativeValue = "${parameterName}NativeValue";
                 my $paramType = $parameter->type;
                 $parameterCheckString .= "    $paramType $parameterName = 0;\n";
-                $parameterCheckString .= "    TRYCATCH(double, $nativeValue, args[$paramIndex]->NumberValue());\n";
+                $parameterCheckString .= "    V8TRYCATCH(double, $nativeValue, args[$paramIndex]->NumberValue());\n";
                 $parameterCheckString .= "    if (!isnan($nativeValue))\n";
                 $parameterCheckString .= "        $parameterName = clampTo<$paramType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
@@ -1807,7 +1816,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "        $parameterName.append(V8${argType}::toNative(v8::Handle<v8::Object>::Cast(args[i])));\n";
                 $parameterCheckString .= "    }\n";
             } else {
-                $parameterCheckString .= "    TRYCATCH(Vector<$nativeElementType>, $parameterName, toNativeArguments<$nativeElementType>(args, $paramIndex));\n";
+                $parameterCheckString .= "    V8TRYCATCH(Vector<$nativeElementType>, $parameterName, toNativeArguments<$nativeElementType>(args, $paramIndex));\n";
             }
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $value = JSValueToNative($parameter, "MAYBE_MISSING_PARAMETER(args, $paramIndex, $parameterDefaultPolicy)", "args.GetIsolate()");
@@ -1827,7 +1836,7 @@ sub GenerateParametersCheck
                     $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
                 }
             }
-            $parameterCheckString .= "    TRYCATCH($nativeType, $parameterName, " .
+            $parameterCheckString .= "    V8TRYCATCH($nativeType, $parameterName, " .
                  JSValueToNative($parameter, "MAYBE_MISSING_PARAMETER(args, $paramIndex, $parameterDefaultPolicy)", "args.GetIsolate()") . ");\n";
             if ($nativeType eq 'Dictionary') {
                $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject())\n";
@@ -2029,10 +2038,10 @@ END
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
 
-    TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, type, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, type, args[0]);
     ${interfaceName}Init eventInit;
     if (args.Length() >= 2) {
-        TRYCATCH(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
+        V8TRYCATCH(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
         if (!fill${interfaceName}Init(eventInit, options))
             return v8Undefined();
     }
@@ -4205,7 +4214,7 @@ sub ConvertToV8StringResource
 
     die "Wrong native type passed: $nativeType" unless $nativeType =~ /^V8StringResource/;
     if ($signature->type eq "DOMString") {
-        my $macro = "TRYCATCH_FOR_V8STRINGRESOURCE";
+        my $macro = "V8TRYCATCH_FOR_V8STRINGRESOURCE";
         $macro .= "_$suffix" if $suffix;
         return "$macro($nativeType, $variableName, $value);"
     } else {

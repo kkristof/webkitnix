@@ -22,7 +22,6 @@ crbug.com/24182 [ SnowLeopard Debug ] fast/dom/Window/window-postmessage-clone-d
 crbug.com/24182 [ Android Linux Mac Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/frames/calculate-percentage.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/frames/frameset-frameborder-boolean-values.html [ Pass Slow ]
-crbug.com/24182 [ Mac Win Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Pass Slow ]
 crbug.com/24182 [ Debug ] fast/frames/valid.html [ Pass Slow ]
 webkit.org/b/77184 [ Debug ] fast/js/dfg-double-vote-fuzz.html [ Pass Slow ]
 webkit.org/b/92948 [ Debug ] fast/js/dfg-osr-entry-hoisted-clobbered-structure-check.html [ Pass Timeout ]
@@ -2859,24 +2858,8 @@ webkit.org/b/61169 [ Android Linux Win ] css3/images/optimize-contrast-image.htm
 
 webkit.org/b/96720 fast/forms/time-multiple-fields/time-multiple-fields-preserve-value-after-history-back.html [ Pass Timeout ]
 webkit.org/b/96720 fast/forms/date-multiple-fields/date-multiple-fields-preserve-value-after-history-back.html [ Pass Timeout ]
+webkit.org/b/96720 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Pass Timeout ]
 webkit.org/b/98906 platform/chromium/fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
-
-# Needs rebaseline
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-rtl.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/102888 platform/chromium/fast/forms/suggestion-picker/datetime-suggestion-picker-appearance-with-scroll-bar.html [ Pass ImageOnlyFailure Missing ]
-webkit.org/b/103350 fast/forms/date/date-appearance-pseudo-classes.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103350 fast/forms/month/month-appearance-pseudo-classes.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103350 fast/forms/time/time-appearance-pseudo-classes.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103350 fast/forms/week/week-appearance-pseudo-classes.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103373 fast/forms/date/date-appearance-basic.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103373 fast/forms/time/time-appearance-basic.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103373 fast/forms/month/month-appearance-basic.html [ Pass ImageOnlyFailure ]
-webkit.org/b/103373 fast/forms/week/week-appearance-basic.html [ Pass ImageOnlyFailure ]
-
 
 # New test added in r87324
 crbug.com/83994 [ Win ] platform/win/plugins/call-javascript-that-destroys-plugin.html [ Failure ]
@@ -3707,6 +3690,9 @@ webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-start-time.html [ F
 
 webkit.org/b/94242 [ Android Debug ] media/track/track-cues-sorted-before-dispatch.html [ Crash Pass Timeout ]
 
+# Chromium still has the CC toggle button, not the menu of tracks.
+webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Skip ]
+
 # Supposedly started failing between CR r140760 and CR r141216.  The failures
 # look like they involve antialiasing; the fact that the test clearly expects
 # these pixels not to be antialiased means these shouldn't just be rebaselined
@@ -3971,7 +3957,7 @@ webkit.org/b/97816 [ Linux ] platform/chromium/compositing/plugins/webplugin-ref
 webkit.org/b/63899 [ Mac Win Android ] fast/replaced/border-radius-clip-content-edge.html [ Pass ImageOnlyFailure ]
 
 # Started failing on r128793
-webkit.org/b/96953 [ Win ] http/tests/inspector/network/network-xhr-replay.html [ Timeout ]
+webkit.org/b/96953 [ Win Linux ] http/tests/inspector/network/network-xhr-replay.html [ Timeout Crash ]
 
 webkit.org/b/96596 fast/js/array-bad-time.html [ Failure ]
 webkit.org/b/96596 fast/js/array-slow-put.html [ Failure ]
@@ -4045,8 +4031,6 @@ webkit.org/b/89167 media/track/track-cue-rendering-vertical.html [ Failure ]
 #webkit.org/b/98766 [ Android ] media/track/track-cue-rendering-vertical.html [ Failure ]
 #webkit.org/b/98766 [ Android ] media/track/track-cue-rendering-horizontal.html [ Failure ]
 
-# Require rebaselining after webkig.org/b/88871
-webkit.org/b/88871 [ Linux Mac ] media/video-empty-source.html [ Failure ]
 
 webkit.org/b/98686 editing/pasteboard/data-transfer-items.html [ Failure ]
 
@@ -4205,7 +4189,7 @@ webkit.org/b/101408 platform/chromium/fast/forms/calendar-picker/calendar-picker
 
 webkit.org/b/101539 [ Linux Win ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
-webkit.org/b/101618 [ Win ] http/tests/inspector/indexeddb/database-data.html [ Crash ]
+webkit.org/b/101618 [ Win Linux ] http/tests/inspector/indexeddb/database-data.html [ Pass Crash ]
 
 webkit.org/b/90022 fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
 webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
@@ -4221,9 +4205,9 @@ webkit.org/b/102131 [ Win ] fast/workers/worker-exception-during-navigation.html
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Text ]
 webkit.org/b/102277 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Text ]
-webkit.org/b/102294 platform/chromium/virtual/deferred/fast/images/exif-orientation.html [ ImageOnlyFailure ]
-webkit.org/b/102294 platform/chromium/virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure ]
-webkit.org/b/102294 platform/chromium/virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ ImageOnlyFailure ]
+webkit.org/b/102294 [ Mac ] platform/chromium/virtual/deferred/fast/images/exif-orientation.html [ ImageOnlyFailure ]
+webkit.org/b/102294 [ Mac ] platform/chromium/virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure ]
+webkit.org/b/102294 [ Mac ] platform/chromium/virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ ImageOnlyFailure ]
 
 # This test is consistently leaking state into the next test.
 webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
@@ -4263,3 +4247,14 @@ webkit.org/b/103308 [ SnowLeopard Lion ] css3/filters/custom/custom-filter-trans
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 webkit.org/b/103363 [ Mac ] touchadjustment/touch-links-longpress.html [ Failure ]
 webkit.org/b/103376 [ Mac Debug ] svg/animations/mpath-remove-from-dependents-on-delete-crash.html [ Pass Timeout ]
+webkit.org/b/103183 [ Win7 SnowLeopard Lion ] media/video-duration-known-after-eos.html [ Pass Crash ]
+webkit.org/b/103446 [ Mac ] http/tests/canvas/canvas-slow-font-loading.html [ ImageOnlyFailure ]
+webkit.org/b/103447 [ MountainLion ] fast/canvas/font-update.html [ ImageOnlyFailure ]
+webkit.org/b/103449 [ MountainLion Win  ] platform/chromium/virtual/gpu/fast/canvas/font-update.html [ ImageOnlyFailure Pass ]
+webkit.org/b/103451 [ Release Mac Win  ] fast/frames/frame-name-reset.html [ Crash Pass ]
+webkit.org/b/103183 [ Linux Debug ] media/video-currentTime-set.html [ Crash ]
+webkit.org/b/103471 [ Win Mac Linux ] http/tests/navigation/slowmetaredirect-basic.html [ Pass Timeout ]
+webkit.org/b/103472 [ Mac Win Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Pass Slow Crash ]
+
+# Rebaseline after https://codereview.chromium.org/11421080/ lands.
+Bug(scherkus) [ Win Mac Linux ] http/tests/media/video-buffered-range-contains-currentTime.html [ ImageOnlyFailure ]
