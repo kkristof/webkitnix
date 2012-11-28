@@ -60,8 +60,6 @@ fast/events/context-nodrag.html [ Failure ]
 http/tests/canvas/webgl/origin-clean-conformance.html [ Failure ]
 
 scrollbars/scroll-rtl-or-bt-layer.html [ Skip ]
-scrollbars/scrollbar-click-does-not-blur-content.html [ Skip ]
-scrollbars/scrollbar-iframe-click-does-not-blur-content.html [ Skip ]
 userscripts/user-style-all-frames.html [ Skip ]
 
 # Missing testRunner.enableAutoResizeMode
