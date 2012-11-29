@@ -44,14 +44,14 @@ namespace WebKit {
 
 class WebEventFactory {
 public:
-    static WebMouseEvent createWebMouseEvent(const Nix::MouseEvent&, WebCore::IntPoint* lastCursorPosition);
-    static WebWheelEvent createWebWheelEvent(const Nix::WheelEvent&);
-    static WebKeyboardEvent createWebKeyboardEvent(const Nix::KeyEvent&);
+    static WebMouseEvent createWebMouseEvent(const NIXMouseEvent&, WebCore::IntPoint* lastCursorPosition);
+    static WebWheelEvent createWebWheelEvent(const NIXWheelEvent&);
+    static WebKeyboardEvent createWebKeyboardEvent(const NIXKeyEvent&);
 #if ENABLE(GESTURE_EVENTS)
-    static WebGestureEvent createWebGestureEvent(const Nix::GestureEvent&);
+    static WebGestureEvent createWebGestureEvent(const NIXGestureEvent&);
 #endif
 #if ENABLE(TOUCH_EVENTS)
-    static WebTouchEvent createWebTouchEvent(const Nix::TouchEvent&);
+    static WebTouchEvent createWebTouchEvent(const NIXTouchEvent&);
 #endif
 };
 

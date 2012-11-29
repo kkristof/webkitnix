@@ -61,7 +61,7 @@ public:
     NativeWebMouseEvent(const Evas_Event_Mouse_Up*, const WebCore::AffineTransform&, const WebCore::AffineTransform&);
     NativeWebMouseEvent(const Evas_Event_Mouse_Move*, const WebCore::AffineTransform&, const WebCore::AffineTransform&);
 #elif PLATFORM(NIX)
-    NativeWebMouseEvent(const Nix::MouseEvent& event, WebCore::IntPoint* lastCursorPosition);
+    NativeWebMouseEvent(const NIXMouseEvent& event, WebCore::IntPoint* lastCursorPosition);
 #endif
 
 #if USE(APPKIT)
@@ -75,7 +75,7 @@ public:
 #elif PLATFORM(EFL)
     const void* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(NIX)
-    const Nix::MouseEvent nativeEvent() const { return m_nativeEvent; }
+    const NIXMouseEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
@@ -90,7 +90,7 @@ private:
 #elif PLATFORM(EFL)
     const void* m_nativeEvent;
 #elif PLATFORM(NIX)
-    const Nix::MouseEvent m_nativeEvent;
+    NIXMouseEvent m_nativeEvent;
 #endif
 };
 

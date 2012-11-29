@@ -42,18 +42,18 @@ namespace WebKit {
 class NativeWebGestureEvent : public WebGestureEvent {
 public:
 #if PLATFORM(NIX)
-    NativeWebGestureEvent(const Nix::GestureEvent& event);
+    NativeWebGestureEvent(const NIXGestureEvent& event);
 #elif PLATFORM(QT)
     NativeWebGestureEvent(const QTouchEvent::TouchPoint&, const WebEvent::Type&, const QTransform& fromItemTransform);
 #endif
 
 #if PLATFORM(NIX)
-    const Nix::GestureEvent nativeEvent() const { return m_nativeEvent; }
+    const NIXGestureEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
 #if PLATFORM(NIX)
-    const Nix::GestureEvent m_nativeEvent;
+    NIXGestureEvent m_nativeEvent;
 #endif
 };
 

@@ -29,8 +29,8 @@ public:
     virtual void viewNeedsDisplay(WKRect area);
     virtual void webProcessCrashed(WKStringRef url);
     virtual void webProcessRelaunched() { }
-    virtual void doneWithTouchEvent(const TouchEvent&, bool wasEventHandled);
-    virtual void doneWithGestureEvent(const GestureEvent&, bool wasEventHandled);
+    virtual void doneWithTouchEvent(const NIXTouchEvent&, bool wasEventHandled);
+    virtual void doneWithGestureEvent(const NIXGestureEvent&, bool wasEventHandled);
     virtual void pageDidRequestScroll(WKPoint position);
     virtual void didChangeContentsSize(WKSize size);
     virtual void didFindZoomableArea(WKPoint target, WKRect area);
@@ -88,6 +88,12 @@ public:
 
     virtual void sendEvent(const Nix::InputEvent&) = 0;
 
+    virtual void sendMouseEvent(const NIXMouseEvent&) = 0;
+    virtual void sendWheelEvent(const NIXWheelEvent&) = 0;
+    virtual void sendKeyEvent(const NIXKeyEvent&) = 0;
+    virtual void sendTouchEvent(const NIXTouchEvent&) = 0;
+    virtual void sendGestureEvent(const NIXGestureEvent&) = 0;
+
     virtual uint32_t addCustomLayer(WKStringRef elementID) = 0;
     virtual void removeCustomLayer(uint32_t id) = 0;
 
@@ -108,8 +114,8 @@ typedef Nix::WebView NIXView;
 typedef void (*NIXViewCallback)(const void* clientInfo);
 typedef void (*NIXViewViewNeedsDisplayCallback)(WKRect area, const void* clientInfo);
 typedef void (*NIXViewWebProcessCrashedCallback)(WKStringRef url, const void* clientInfo);
-typedef void (*NIXViewDoneWithTouchEventCallback)(const Nix::TouchEvent* touchEvent, bool wasEventHandled, const void* clientInfo);
-typedef void (*NIXViewDoneWithGestureEventCallback)(const Nix::GestureEvent* GestureEvent, bool wasEventHandled, const void* clientInfo);
+typedef void (*NIXViewDoneWithTouchEventCallback)(const NIXTouchEvent* touchEvent, bool wasEventHandled, const void* clientInfo);
+typedef void (*NIXViewDoneWithGestureEventCallback)(const NIXGestureEvent* gestureEvent, bool wasEventHandled, const void* clientInfo);
 typedef void (*NIXViewPageDidRequestScrollCallback)(WKPoint position, const void* clientInfo);
 typedef void (*NIXViewPageDidChangeContentsSizeCallback)(WKSize size, const void* clientInfo);
 typedef void (*NIXViewPageDidFindZoomableAreaCallback)(WKPoint target, WKRect area, const void* clientInfo);
@@ -189,11 +195,11 @@ WK_EXPORT void NIXViewRemoveCustomLayer(NIXView* view, uint32_t id);
 
 WK_EXPORT WKPageRef NIXViewPageRef(NIXView* view);
 
-WK_EXPORT void NIXViewSendMouseEvent(NIXView* view, Nix::MouseEvent* event);
-WK_EXPORT void NIXViewSendWheelEvent(NIXView* view, Nix::WheelEvent* event);
-WK_EXPORT void NIXViewSendKeyEvent(NIXView* view, Nix::KeyEvent* event);
-WK_EXPORT void NIXViewSendTouchEvent(NIXView* view, Nix::TouchEvent* event);
-WK_EXPORT void NIXViewSendGestureEvent(NIXView* view, Nix::GestureEvent* event);
+WK_EXPORT void NIXViewSendMouseEvent(NIXView* view, const NIXMouseEvent* event);
+WK_EXPORT void NIXViewSendWheelEvent(NIXView* view, const NIXWheelEvent* event);
+WK_EXPORT void NIXViewSendKeyEvent(NIXView* view, const NIXKeyEvent* event);
+WK_EXPORT void NIXViewSendTouchEvent(NIXView* view, const NIXTouchEvent* event);
+WK_EXPORT void NIXViewSendGestureEvent(NIXView* view, const NIXGestureEvent* event);
 
 WK_EXPORT void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view);
 WK_EXPORT void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView* view);

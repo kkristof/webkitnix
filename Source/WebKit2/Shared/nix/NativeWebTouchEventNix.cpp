@@ -31,7 +31,7 @@
 
 namespace WebKit {
 
-NativeWebTouchEvent::NativeWebTouchEvent(const Nix::TouchEvent& event)
+NativeWebTouchEvent::NativeWebTouchEvent(const NIXTouchEvent& event)
     : WebTouchEvent(WebEventFactory::createWebTouchEvent(event))
     , m_nativeEvent(event)
 {

@@ -59,7 +59,7 @@ public:
 #elif PLATFORM(EFL)
     NativeWebWheelEvent(const Evas_Event_Mouse_Wheel*, const WebCore::AffineTransform& toWebContent, const WebCore::AffineTransform& toDeviceScreen);
 #elif PLATFORM(NIX)
-    NativeWebWheelEvent(const Nix::WheelEvent& event);
+    NativeWebWheelEvent(const NIXWheelEvent& event);
 #endif
 
 #if USE(APPKIT)
@@ -73,7 +73,7 @@ public:
 #elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* nativeEvent() const { return m_nativeEvent; }
 #elif PLATFORM(NIX)
-    const Nix::WheelEvent* nativeEvent() const { return &m_nativeEvent; }
+    const NIXWheelEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
@@ -88,7 +88,7 @@ private:
 #elif PLATFORM(EFL)
     const Evas_Event_Mouse_Wheel* m_nativeEvent;
 #elif PLATFORM(NIX)
-    const Nix::WheelEvent m_nativeEvent;
+    NIXWheelEvent m_nativeEvent;
 #endif
 };
 

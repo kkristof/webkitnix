@@ -47,20 +47,20 @@ public:
 #elif PLATFORM(EFL)
     NativeWebTouchEvent(Ewk_Touch_Event_Type, const Eina_List*, const Evas_Modifier*, const WebCore::AffineTransform& toWebContent, const WebCore::AffineTransform& toDeviceScreen, double timestamp);
 #elif PLATFORM(NIX)
-    NativeWebTouchEvent(const Nix::TouchEvent& event);
+    NativeWebTouchEvent(const NIXTouchEvent& event);
 #endif
 
 #if PLATFORM(QT)
     const QTouchEvent* nativeEvent() const { return &m_nativeEvent; }
 #elif PLATFORM(NIX)
-    const Nix::TouchEvent nativeEvent() const { return m_nativeEvent; }
+    const NIXTouchEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
 #if PLATFORM(QT)
     const QTouchEvent m_nativeEvent;
 #elif PLATFORM(NIX)
-    const Nix::TouchEvent m_nativeEvent;
+    NIXTouchEvent m_nativeEvent;
 #endif
 };
 

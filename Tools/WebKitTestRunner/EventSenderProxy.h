@@ -106,11 +106,11 @@ private:
 #endif
 #elif PLATFORM(NIX)
 #if ENABLE(TOUCH_EVENTS)
-    void sendCurrentTouchEvent(Nix::InputEvent::Type touchType);
+    void sendCurrentTouchEvent(NIXInputEventType touchType);
 #endif
-    void sendOrQueueEvent(Nix::InputEvent*);
-    Nix::MouseEvent* createMouseEvent(Nix::InputEvent::Type type, unsigned int button, WKEventModifiers wkModifiers);
-    Nix::KeyEvent* createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned modifiers, bool shouldUseUpperCase = false, bool isKeypad = false);
+    void sendOrQueueEvent(NIXInputEvent*);
+    NIXMouseEvent* createMouseEvent(NIXInputEventType type, unsigned int button, WKEventModifiers wkModifiers);
+    NIXKeyEvent* createKeyEvent(NIXInputEventType type, unsigned code, unsigned modifiers, bool shouldUseUpperCase = false, bool isKeypad = false);
 #endif
 
     double m_time;

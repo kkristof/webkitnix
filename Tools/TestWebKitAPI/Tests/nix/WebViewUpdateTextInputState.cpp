@@ -25,9 +25,9 @@ static void updateTextInputState(bool isContentEditable, WKRect, WKRect, const v
     didChangeToContentEditable = isContentEditable;
 }
 
-static void doneWithGestureEvent(const Nix::GestureEvent* event, bool, const void*)
+static void doneWithGestureEvent(const NIXGestureEvent* event, bool, const void*)
 {
-    isDoneWithSingleTapEvent = event->type == Nix::InputEvent::GestureSingleTap;
+    isDoneWithSingleTapEvent = event->base.type == kNIXInputEventTypeGestureSingleTap;
 }
 
 TEST(WebKitNix, WebViewWebProcessCrashed)
@@ -56,14 +56,14 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     WKPageLoadURL(NIXViewPageRef(view.get()), editableContentUrl.get());
     Util::run(&didFinishLoad);
 
-    Nix::GestureEvent tapEvent;
-    tapEvent.type = Nix::InputEvent::GestureSingleTap;
-    tapEvent.timestamp = 0;
-    tapEvent.modifiers = 0;
-    tapEvent.x = 55;
-    tapEvent.y = 55;
-    tapEvent.globalX = 55;
-    tapEvent.globalY = 55;
+    NIXGestureEvent tapEvent;
+    tapEvent.base.type = kNIXInputEventTypeGestureSingleTap;
+    tapEvent.base.timestamp = 0;
+    tapEvent.base.modifiers = static_cast<NIXInputEventModifiers>(0);
+    tapEvent.base.x = 55;
+    tapEvent.base.y = 55;
+    tapEvent.base.globalX = 55;
+    tapEvent.base.globalY = 55;
     tapEvent.width = 20;
     tapEvent.height = 20;
     tapEvent.deltaX = 0.0;

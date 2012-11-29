@@ -212,29 +212,29 @@ WKPageRef NIXViewPageRef(NIXView* view)
     return view->pageRef();
 }
 
-void NIXViewSendMouseEvent(NIXView* view, Nix::MouseEvent* event)
+void NIXViewSendMouseEvent(NIXView* view, const NIXMouseEvent* event)
 {
-    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+    view->sendMouseEvent(*event);
 }
 
-void NIXViewSendWheelEvent(NIXView* view, Nix::WheelEvent* event)
+void NIXViewSendWheelEvent(NIXView* view, const NIXWheelEvent* event)
 {
-    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+    view->sendWheelEvent(*event);
 }
 
-void NIXViewSendKeyEvent(NIXView* view, Nix::KeyEvent* event)
+void NIXViewSendKeyEvent(NIXView* view, const NIXKeyEvent* event)
 {
-    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+    view->sendKeyEvent(*event);
 }
 
-void NIXViewSendTouchEvent(NIXView* view, Nix::TouchEvent* event)
+void NIXViewSendTouchEvent(NIXView* view, const NIXTouchEvent* event)
 {
-    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+    view->sendTouchEvent(*event);
 }
 
-void NIXViewSendGestureEvent(NIXView* view, Nix::GestureEvent* event)
+void NIXViewSendGestureEvent(NIXView* view, const NIXGestureEvent* event)
 {
-    view->sendEvent(static_cast<const Nix::InputEvent&>(*event));
+    view->sendGestureEvent(*event);
 }
 
 void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view)
@@ -276,13 +276,13 @@ void WebViewClient::webProcessCrashed(WKStringRef url)
         m_viewClient->webProcessCrashed(url, m_viewClient->clientInfo);
 }
 
-void WebViewClient::doneWithTouchEvent(const TouchEvent& event, bool wasEventHandled)
+void WebViewClient::doneWithTouchEvent(const NIXTouchEvent& event, bool wasEventHandled)
 {
     if (m_viewClient && m_viewClient->doneWithTouchEvent)
         m_viewClient->doneWithTouchEvent(&event, wasEventHandled, m_viewClient->clientInfo);
 }
 
-void WebViewClient::doneWithGestureEvent(const GestureEvent& event, bool wasEventHandled)
+void WebViewClient::doneWithGestureEvent(const NIXGestureEvent& event, bool wasEventHandled)
 {
     if (m_viewClient && m_viewClient->doneWithGestureEvent)
         m_viewClient->doneWithGestureEvent(&event, wasEventHandled, m_viewClient->clientInfo);
@@ -385,6 +385,12 @@ public:
 
     virtual void sendEvent(const Nix::InputEvent&);
 
+    virtual void sendMouseEvent(const NIXMouseEvent&);
+    virtual void sendWheelEvent(const NIXWheelEvent&);
+    virtual void sendKeyEvent(const NIXKeyEvent&);
+    virtual void sendTouchEvent(const NIXTouchEvent&);
+    virtual void sendGestureEvent(const NIXGestureEvent&);
+
     // PageClient.
     virtual PassOwnPtr<DrawingAreaProxy> createDrawingAreaProxy();
     virtual void setViewNeedsDisplay(const IntRect&);
@@ -474,11 +480,6 @@ private:
     cairo_matrix_t userViewportToContentTransformation() const;
     cairo_matrix_t contentToUserViewportTransformation() const;
 
-    void sendMouseEvent(const Nix::MouseEvent&);
-    void sendWheelEvent(const Nix::WheelEvent&);
-    void sendKeyEvent(const Nix::KeyEvent&);
-    void sendTouchEvent(const Nix::TouchEvent& event);
-    void sendGestureEvent(const Nix::GestureEvent& event);
     uint32_t addCustomLayer(WKStringRef elementID);
     void removeCustomLayer(uint32_t);
 
@@ -698,45 +699,34 @@ WKPageRef WebViewImpl::pageRef()
     return toAPI(m_webPageProxy.get());
 }
 
-void WebViewImpl::sendEvent(const Nix::InputEvent& event)
+void WebViewImpl::sendEvent(const Nix::InputEvent&)
 {
-    using namespace Nix;
-
-    switch (event.type) {
-        case InputEvent::MouseDown:
-        case InputEvent::MouseUp:
-        case InputEvent::MouseMove:
-            sendMouseEvent(static_cast<const Nix::MouseEvent&>(event));
-            break;
-        case InputEvent::Wheel:
-            sendWheelEvent(static_cast<const Nix::WheelEvent&>(event));
-            break;
-        case InputEvent::KeyDown:
-        case InputEvent::KeyUp:
-            sendKeyEvent(static_cast<const Nix::KeyEvent&>(event));
-            break;
-        case InputEvent::TouchStart:
-        case InputEvent::TouchMove:
-        case InputEvent::TouchEnd:
-        case InputEvent::TouchCancel:
-            sendTouchEvent(static_cast<const Nix::TouchEvent&>(event));
-            break;
-        case InputEvent::GestureSingleTap:
-            sendGestureEvent(static_cast<const Nix::GestureEvent&>(event));
-            break;
-        default:
-            notImplemented();
-    }
+    notImplemented();
 }
 
-void WebViewImpl::sendMouseEvent(const Nix::MouseEvent& event)
+void WebViewImpl::sendMouseEvent(const NIXMouseEvent& event)
 {
     m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, &m_lastCursorPosition));
 }
 
-void WebViewImpl::sendTouchEvent(const Nix::TouchEvent& event)
+void WebViewImpl::sendTouchEvent(const NIXTouchEvent& event)
 {
     m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event));
+}
+
+void WebViewImpl::sendWheelEvent(const NIXWheelEvent& event)
+{
+    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event));
+}
+
+void WebViewImpl::sendKeyEvent(const NIXKeyEvent& event)
+{
+    m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(event));
+}
+
+void WebViewImpl::sendGestureEvent(const NIXGestureEvent& event)
+{
+    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
 }
 
 // TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
@@ -868,32 +858,17 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation() const
     return transform;
 }
 
-void WebViewImpl::sendWheelEvent(const Nix::WheelEvent& event)
-{
-    m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event));
-}
-
-void WebViewImpl::sendKeyEvent(const KeyEvent& event)
-{
-    m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(event));
-}
-
-void WebViewImpl::sendGestureEvent(const GestureEvent& event)
-{
-    m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
-}
-
 #if ENABLE(TOUCH_EVENTS)
 void WebViewImpl::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
 {
-    m_client->doneWithTouchEvent(event.nativeEvent(), wasEventHandled);
+    m_client->doneWithTouchEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
 #if ENABLE(GESTURE_EVENTS)
 void WebViewImpl::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
 {
-    m_client->doneWithGestureEvent(event.nativeEvent(), wasEventHandled);
+    m_client->doneWithGestureEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
