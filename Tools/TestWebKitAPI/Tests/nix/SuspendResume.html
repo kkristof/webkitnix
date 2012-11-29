@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <body>
+        <script type="text/javascript">
+            function changeText(){
+                requestAnimationFrame(changeText);
+                var currentTime = new Date().getTime();
+                // This <div> was kept to ease debugging process
+                document.getElementById('divToUpdate').innerText = currentTime;
+                document.title = currentTime;
+            }
+            changeText();
+        </script>
+        <div id='divToUpdate'> </div>
+    </body>
+</html>

@@ -142,6 +142,7 @@ SET(test_webkitnix_api_LIBRARIES
 )
 
 SET(test_webkitnix_api_BINARIES
+    SuspendResume
     WebViewPaintToCurrentGLContext
     WebViewTranslated
     WebViewViewport
