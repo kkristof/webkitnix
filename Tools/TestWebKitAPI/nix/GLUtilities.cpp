@@ -2,7 +2,6 @@
 
 #include "GLUtilities.h"
 #include <iostream>
-#include <GL/gl.h>
 #include <png.h>
 
 using namespace std;
