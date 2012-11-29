@@ -42,9 +42,11 @@ void GestureRecognizer::reset()
 static const int PanDistanceThreshold = 10;
 static const int MaxDoubleTapInterval = 500;
 
-bool exceedsPanThreshold(const Nix::TouchPoint& first, const Nix::TouchPoint& last)
+static bool exceedsPanThreshold(const Nix::TouchPoint& first, const Nix::TouchPoint& last)
 {
-    return std::abs(first.globalX - last.globalX) > PanDistanceThreshold || std::abs(first.globalY - last.globalY);
+    float deltaX = first.globalX - last.globalX;
+    float deltaY = first.globalY - last.globalY;
+    return std::max(deltaX, deltaY) > PanDistanceThreshold;
 }
 
 void GestureRecognizer::doubleTapTimerTriggered()
