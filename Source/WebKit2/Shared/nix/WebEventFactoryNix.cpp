@@ -610,7 +610,7 @@ WebTouchEvent WebEventFactory::createWebTouchEvent(const NIXTouchEvent& event)
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
     double timestamp = event.base.timestamp;
 
-    for (size_t i = 0; i < event.touchPoints.size(); ++i) {
+    for (unsigned i = 0; i < event.numTouchPoints; ++i) {
         const NIXTouchPoint& touch = event.touchPoints[i];
         uint32_t id = static_cast<uint32_t>(touch.id);
         WebPlatformTouchPoint::TouchPointState state = convertToWebTouchState(touch.state);

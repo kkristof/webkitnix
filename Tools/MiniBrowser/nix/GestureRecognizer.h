@@ -43,8 +43,8 @@ private:
     void pinchInProgress(const NIXTouchEvent&);
 
     void updatePanningData(double, const NIXTouchPoint&);
-    void setupPinchData(const std::vector<NIXTouchPoint>& points);
-    void updatePinchData(double, const std::vector<NIXTouchPoint>& points);
+    void setupPinchData(const NIXTouchEvent&);
+    void updatePinchData(double, const NIXTouchEvent&);
 
     typedef void (GestureRecognizer::*StateFunction)(const NIXTouchEvent&);
     StateFunction m_state;

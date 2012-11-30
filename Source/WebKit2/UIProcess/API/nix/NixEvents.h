@@ -1121,9 +1121,11 @@ typedef struct {
     unsigned id;
 } NIXTouchPoint;
 
+#define NIX_TOUCH_EVENT_MAX_TOUCH_POINTS 10
 typedef struct {
     NIXInputEvent base;
-    std::vector<NIXTouchPoint> touchPoints;
+    unsigned numTouchPoints;
+    NIXTouchPoint touchPoints[NIX_TOUCH_EVENT_MAX_TOUCH_POINTS];
 } NIXTouchEvent;
 
 typedef struct {

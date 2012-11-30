@@ -371,7 +371,9 @@ void EventSenderProxy::sendCurrentTouchEvent(NIXInputEventType touchType)
     ev->base.modifiers = touchModifiers;
     ev->base.timestamp = convertToNixTimestamp(m_time);
     ev->base.type = touchType;
-    ev->touchPoints = touchPoints;
+    for (size_t i = 0; i < touchPoints.size(); i++)
+        ev->touchPoints[i] = touchPoints[i];
+    ev->numTouchPoints = touchPoints.size();
     sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(ev));
 
     for (size_t i = 0; i < touchPoints.size(); ++i) {
