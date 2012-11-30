@@ -1467,6 +1467,7 @@ SET(WebCore_SOURCES
     html/TextInputType.cpp
     html/TimeInputType.cpp
     html/TimeRanges.cpp
+    html/TypeAhead.cpp
     html/URLInputType.cpp
     html/ValidationMessage.cpp
     html/ValidityState.cpp
@@ -2552,9 +2553,7 @@ ENDIF()
 
 IF (ENABLE_SMOOTH_SCROLLING)
     LIST(APPEND WebCore_SOURCES
-        platform/ActivePlatformGestureAnimation.cpp
         platform/ScrollAnimatorNone.cpp
-        platform/TouchFlingPlatformGestureCurve.cpp
     )
 ENDIF ()
 

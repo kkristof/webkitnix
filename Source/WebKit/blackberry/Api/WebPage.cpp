@@ -3635,9 +3635,11 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
 
     IntSize viewportSizeAfter = actualVisibleSize();
 
-    IntSize offset(
-        roundf((viewportSizeBefore.width() - viewportSizeAfter.width()) / 2.0),
-        roundf((viewportSizeBefore.height() - viewportSizeAfter.height()) / 2.0));
+    IntSize offset;
+    if (hasPendingOrientation) {
+        offset = IntSize(roundf((viewportSizeBefore.width() - viewportSizeAfter.width()) / 2.0),
+            roundf((viewportSizeBefore.height() - viewportSizeAfter.height()) / 2.0));
+    }
 
     // As a special case, if we were anchored to the top left position at
     // the beginning of the rotation then preserve that anchor.
@@ -5799,6 +5801,7 @@ void WebPagePrivate::didChangeSettings(WebSettings* webSettings)
 
     coreSettings->setFirstScheduledLayoutDelay(webSettings->firstScheduledLayoutDelay());
     coreSettings->setUseCache(webSettings->useWebKitCache());
+    coreSettings->setCookieEnabled(webSettings->areCookiesEnabled());
 
 #if ENABLE(SQL_DATABASE)
     // DatabaseTracker can only be initialized for once, so it doesn't

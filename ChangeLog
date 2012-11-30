@@ -1,3 +1,91 @@
+2012-11-30  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] Unreviewed build break
+
+        Rubber-stamped by Simon Hausmann.
+
+        Poor man's way to trigger a clean build on a bot.
+
+        * WebKit.pro:
+
+2012-11-30  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Unreviewed doc fix
+
+        Add additional search paths for API folders.
+
+        * Source/qtwebkit.qdocconf:
+
+2012-11-30  Simon Hausmann  <simon.hausmann@digia.com>, Pierre Rossi  <pierre.rossi@digia.com>
+
+        [Qt] Separate Qt WebKit into Qt WebKit and Qt WebKit Widgets
+        https://bugs.webkit.org/show_bug.cgi?id=99314
+
+        Reviewed by Tor Arne Vestbø.
+
+        This big change separates QtWebKit into QtWebKit and QtWebKitWidgets as
+        shared libraries.
+
+        It's a big refactoring that mostly involves moving WebCore dependent
+        code into QtWebKit and accessing it through exported QWebFrameAdapter
+        and QWebPageAdapter classes.
+
+        * Source/QtWebKit.pro:
+        * Source/api.pri:
+        * Source/sync.profile:
+        * Source/widgetsapi.pri: Added.
+        * WebKit.pro:
+
+2012-11-30  Tor Arne Vestbø  <tor.arne.vestbo@digia.com>
+
+        [Qt] Build as a regular Qt module when production_build is enabled
+
+        Instead of always setting CONFIG+=force_independent. This means the
+        libs, headers, and documentation will end up in qtbase for developer
+        builds of Qt, instead of always in the QtWebKit build directory.
+
+        Reviewed by Simon Hausmann.
+
+        * Source/api.pri:
+
+2012-11-29  Rafael Weinstein  <rafaelw@chromium.org>
+
+        [HTMLTemplateElement] Add feature flag
+        https://bugs.webkit.org/show_bug.cgi?id=103694
+
+        Reviewed by Adam Barth.
+
+        This flag will guard the implementation of the HTMLTemplateElement.
+        http://dvcs.w3.org/hg/webcomponents/raw-file/tip/spec/templates/index.html
+
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2012-11-28  Michael Pruett  <michael@68k.org>
+
+        IndexedDB: Remove duplicate toWireString() and createFromWire() methods in JSC SerializedScriptValue
+        https://bugs.webkit.org/show_bug.cgi?id=103554
+
+        Reviewed by Kentaro Hara.
+
+        In r135022, duplicate createFromWire() and toWireString() methods
+        were added to the JSC version of SerializedScriptValue. In
+        order to allow the JSC SerializedScriptValue to compile when
+        ENABLE(INDEXED_DATABASE) is turned on, these new methods have
+        been removed and the old methods have been moved outside the
+        ENABLE(INDEXED_DATABASE) guard.
+
+        * Source/autotools/symbols.filter:
+
+2012-11-28  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Shadow] Move Distribution stuffs from ShadowRoot
+        https://bugs.webkit.org/show_bug.cgi?id=103481
+
+        Reviewed by Hajime Morita.
+
+        * Source/autotools/symbols.filter:
+
 2012-11-26  Halton Huo  <halton.huo@intel.com>
 
         [EFL] CMake shows ENABLE_3D_RENDERING and ENABLE_WEBGL is still OFF when AC is enabled
