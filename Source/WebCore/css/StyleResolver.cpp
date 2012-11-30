@@ -1398,7 +1398,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document* document, CSSF
         documentStyle->setPageScaleTransform(frame ? frame->frameScaleFactor() : 1);
         documentStyle->setLocale(document->contentLanguage());
     }
-    // FIXME: This overrides any -webkit-user-modify inherited from the parent iframe.
+    // This overrides any -webkit-user-modify inherited from the parent iframe.
     documentStyle->setUserModify(document->inDesignMode() ? READ_WRITE : READ_ONLY);
 
     Element* docElement = document->documentElement();
@@ -2659,7 +2659,7 @@ bool StyleResolver::useSVGZoomRules()
     return m_element && m_element->isSVGElement();
 }
 
-static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, StyleResolver* selector, Length& length)
+static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, StyleResolver* selector, GridTrackSize& trackSize)
 {
     Length workingLength = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | ViewportPercentageConversion | AutoConversion>(selector->style(), selector->rootElementStyle(), selector->style()->effectiveZoom());
     if (workingLength.isUndefined())
@@ -2668,20 +2668,16 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, StyleResol
     if (primitiveValue->isLength())
         workingLength.setQuirk(primitiveValue->isQuirkValue());
 
-    length = workingLength;
+    trackSize.setLength(workingLength);
     return true;
 }
 
-static bool createGridTrackList(CSSValue* value, Vector<Length>& lengths, StyleResolver* selector)
+static bool createGridTrackList(CSSValue* value, Vector<GridTrackSize>& trackSizes, StyleResolver* selector)
 {
     // Handle 'none'.
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
-        if (primitiveValue->getIdent() == CSSValueNone) {
-            lengths.append(Length(Undefined));
-            return true;
-        }
-        return false;
+        return primitiveValue->getIdent() == CSSValueNone;
     }
 
     if (value->isValueList()) {
@@ -2690,11 +2686,11 @@ static bool createGridTrackList(CSSValue* value, Vector<Length>& lengths, StyleR
             if (!currValue->isPrimitiveValue())
                 return false;
 
-            Length length;
-            if (!createGridTrackBreadth(static_cast<CSSPrimitiveValue*>(currValue), selector, length))
+            GridTrackSize trackSize;
+            if (!createGridTrackBreadth(static_cast<CSSPrimitiveValue*>(currValue), selector, trackSize))
                 return false;
 
-            lengths.append(length);
+            trackSizes.append(trackSize);
         }
         return true;
     }
@@ -3544,17 +3540,17 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     }
 #endif
     case CSSPropertyWebkitGridColumns: {
-        Vector<Length> lengths;
-        if (!createGridTrackList(value, lengths, this))
+        Vector<GridTrackSize> trackSizes;
+        if (!createGridTrackList(value, trackSizes, this))
             return;
-        m_style->setGridColumns(lengths);
+        m_style->setGridColumns(trackSizes);
         return;
     }
     case CSSPropertyWebkitGridRows: {
-        Vector<Length> lengths;
-        if (!createGridTrackList(value, lengths, this))
+        Vector<GridTrackSize> trackSizes;
+        if (!createGridTrackList(value, trackSizes, this))
             return;
-        m_style->setGridRows(lengths);
+        m_style->setGridRows(trackSizes);
         return;
     }
 
@@ -3776,7 +3772,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitLineSnap:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
-    case CSSPropertyWebkitMaskAttachment:
     case CSSPropertyWebkitMaskBoxImage:
     case CSSPropertyWebkitMaskBoxImageOutset:
     case CSSPropertyWebkitMaskBoxImageRepeat:
@@ -3806,6 +3801,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitRegionOverflow:
 #endif
     case CSSPropertyWebkitRtlOrdering:
+    case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextDecorationLine:
@@ -3958,7 +3954,7 @@ void StyleResolver::checkForGenericFamilyChange(RenderStyle* style, RenderStyle*
         size = fontSizeForKeyword(m_checker.document(), CSSValueXxSmall + childFont.keywordSize() - 1, childFont.useFixedDefaultSize());
     else {
         Settings* settings = documentSettings();
-        float fixedScaleFactor = settings
+        float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
             ? static_cast<float>(settings->defaultFixedFontSize()) / settings->defaultFontSize()
             : 1;
         size = parentFont.useFixedDefaultSize() ?

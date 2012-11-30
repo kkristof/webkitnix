@@ -71,6 +71,7 @@ public:
 #endif // USE(ACCELERATED_COMPOSITING)
 
     virtual void updateTextInputState();
+    virtual void handleWillSetInputMethodState();
     virtual void displayView();
     virtual void scrollView(const WebCore::IntRect& scrollRect, const WebCore::IntSize& scrollOffset);
 

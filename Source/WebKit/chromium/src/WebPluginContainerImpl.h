@@ -113,7 +113,6 @@ public:
     virtual void zoomLevelChanged(double zoomLevel);    
     virtual void setOpaque(bool);
     virtual bool isRectTopmost(const WebRect&);
-    virtual void setIsAcceptingTouchEvents(bool);
     virtual void requestTouchEventType(TouchEventRequestType);
     virtual void setWantsWheelEvents(bool);
     virtual WebPoint windowToLocalPoint(const WebPoint&);
@@ -150,7 +149,7 @@ public:
     void didFinishLoading();
     void didFailLoading(const WebCore::ResourceError&);
 
-    NPObject* scriptableObject();
+    virtual NPObject* scriptableObject() OVERRIDE;
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 

@@ -506,6 +506,9 @@ fast/events/touch/gesture/gesture-scrollbar.html [ Failure ]
 inspector-protocol/nmi-webaudio.html [ Failure ]
 inspector-protocol/nmi-webaudio-leak-test.html [ Failure Crash ]
 
+# After merge from 2012-11-30. Fails with extra PASS messages.
+http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html [ Failure ]
+
 #############################################################
 # DISABLED APIS
 #############################################################
