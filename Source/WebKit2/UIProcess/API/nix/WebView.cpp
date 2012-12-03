@@ -221,10 +221,12 @@ public:
     virtual bool isSuspended();
 
 private:
+    IntPoint roundedViewportPosition() const;
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
-    cairo_matrix_t userViewportToContentTransformation();
+    cairo_matrix_t userViewportToContentTransformation() const;
+    cairo_matrix_t contentToUserViewportTransformation() const;
 
     void sendMouseEvent(const Nix::MouseEvent&);
     void sendWheelEvent(const Nix::WheelEvent&);
@@ -373,6 +375,12 @@ void WebViewImpl::setSize(const WKSize& size)
     commitViewportChanges();
 }
 
+
+IntPoint WebViewImpl::roundedViewportPosition() const
+{
+    return IntPoint(round(m_scrollPosition.x() * m_scale), round(m_scrollPosition.y() * m_scale));
+}
+
 void WebViewImpl::setScrollPosition(const WKPoint& position)
 {
     if (m_scrollPosition.x() == position.x && m_scrollPosition.y() == position.y)
@@ -517,6 +525,27 @@ FloatRect WebViewImpl::visibleRect() const
     return visibleRect;
 }
 
+cairo_matrix_t WebViewImpl::contentToUserViewportTransformation() const
+{
+    cairo_matrix_t transform;
+    if (m_webPageProxy->useFixedLayout()) {
+        // We switch the order between scale and translate here to make the resulting matrix hold
+        // integer values for translation. If we did the natural order, the translation would be
+        // the product between scroll position and scale and it could yield a float number for offset,
+        // which would make the tiles blurry when painted. In the reverse order, we apply translation first
+        // but it is a translation that already takes into account the scale, so the new matrix should be the
+        // the same as in the natural order. In this case, though, we are free to do the rounding of the offset
+        // and now will never translate into non-integer unit, producing now a slightly different matrix with
+        // rounded translation.
+        IntPoint roundedScrollPosition = roundedViewportPosition();
+        cairo_matrix_init_translate(&transform, -roundedScrollPosition.x(), -roundedScrollPosition.y());
+        cairo_matrix_scale(&transform, m_scale, m_scale);
+    } else
+        cairo_matrix_init_scale(&transform, m_scale, m_scale);
+    cairo_matrix_multiply(&transform, &transform, &m_userViewportTransformation);
+    return transform;
+}
+
 void WebViewImpl::paintToCurrentGLContext()
 {
     LayerTreeRenderer* renderer = layerTreeRenderer();
@@ -530,15 +559,8 @@ void WebViewImpl::paintToCurrentGLContext()
     cairo_matrix_transform_point(&m_userViewportTransformation, &x, &y);
     cairo_matrix_transform_distance(&m_userViewportTransformation, &width, &height);
 
-    cairo_matrix_t transform;
-    cairo_matrix_init_scale(&transform, m_scale, m_scale);
-
-    if (m_webPageProxy->useFixedLayout())
-        cairo_matrix_translate(&transform, -m_scrollPosition.x(), -m_scrollPosition.y());
-    cairo_matrix_multiply(&transform, &transform, &m_userViewportTransformation);
-
     FloatRect rect(x, y, width, height);
-    renderer->paintToCurrentGLContext(toTransformationMatrix(transform), m_opacity, rect);
+    renderer->paintToCurrentGLContext(toTransformationMatrix(contentToUserViewportTransformation()), m_opacity, rect);
 }
 
 void WebViewImpl::commitViewportChanges()
@@ -593,22 +615,10 @@ void WebViewImpl::pageTransitionViewportReady()
     m_webPageProxy->commitPageTransitionViewport();
 }
 
-cairo_matrix_t WebViewImpl::userViewportToContentTransformation()
+cairo_matrix_t WebViewImpl::userViewportToContentTransformation() const
 {
-    cairo_matrix_t invertedViewTransform = m_userViewportTransformation;
-    cairo_matrix_invert(&invertedViewTransform);
-
-    cairo_matrix_t invertedScrollTransform;
-    cairo_matrix_init_translate(&invertedScrollTransform, m_scrollPosition.x(), m_scrollPosition.y());
-
-    cairo_matrix_t invertedScaleTransform;
-    float invertedScale = 1.f / m_scale;
-    cairo_matrix_init_scale(&invertedScaleTransform, invertedScale, invertedScale);
-
-    cairo_matrix_t transform;
-    cairo_matrix_multiply(&transform, &invertedViewTransform, &invertedScaleTransform);
-    cairo_matrix_multiply(&transform, &transform, &invertedScrollTransform);
-
+    cairo_matrix_t transform = contentToUserViewportTransformation();
+    cairo_matrix_invert(&transform);
     return transform;
 }
 
