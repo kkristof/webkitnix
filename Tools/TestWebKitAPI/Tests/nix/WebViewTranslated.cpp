@@ -23,8 +23,15 @@ TEST(WebKitNix, WebViewTranslated)
     client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
 
-    cairo_matrix_t transform;
-    cairo_matrix_init_translate(&transform, translationDelta, translationDelta);
+    cairo_matrix_t cairoTransform;
+    cairo_matrix_init_translate(&cairoTransform, translationDelta, translationDelta);
+    NIXMatrix transform;
+    transform.xx = cairoTransform.xx;
+    transform.yx = cairoTransform.yx;
+    transform.xy = cairoTransform.xy;
+    transform.yy = cairoTransform.yy;
+    transform.x0 = cairoTransform.x0;
+    transform.y0 = cairoTransform.y0;
     NIXViewSetUserViewportTransformation(view.get(), &transform);
 
     NIXViewInitialize(view.get());

@@ -54,6 +54,7 @@
 #include <WebKit2/WebView.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/MathExtras.h>
+#include <cairo.h>
 
 using namespace WebCore;
 using namespace WebKit;
@@ -94,9 +95,16 @@ void NIXViewSetScrollPosition(NIXView* view, WKPoint position)
     view->setScrollPosition(position);
 }
 
-void NIXViewSetUserViewportTransformation(NIXView* view, cairo_matrix_t* userViewportTransformation)
+void NIXViewSetUserViewportTransformation(NIXView* view, const NIXMatrix* userViewportTransformation)
 {
-    view->setUserViewportTransformation(*userViewportTransformation);
+    cairo_matrix_t transform;
+    transform.xx = userViewportTransformation->xx;
+    transform.yx = userViewportTransformation->yx;
+    transform.xy = userViewportTransformation->xy;
+    transform.yy = userViewportTransformation->yy;
+    transform.x0 = userViewportTransformation->x0;
+    transform.y0 = userViewportTransformation->y0;
+    view->setUserViewportTransformation(transform);
 }
 
 WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point)

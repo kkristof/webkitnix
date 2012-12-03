@@ -5,6 +5,8 @@
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
+
+// TODO: Remove this include together with the C++ API.
 #include <cairo.h>
 
 #ifdef __cplusplus
@@ -146,7 +148,13 @@ WK_EXPORT void NIXViewSetSize(NIXView* view, WKSize size);
 WK_EXPORT WKPoint NIXViewScrollPosition(NIXView* view);
 WK_EXPORT void NIXViewSetScrollPosition(NIXView* view, WKPoint position);
 
-WK_EXPORT void NIXViewSetUserViewportTransformation(NIXView* view, cairo_matrix_t* userViewportTransformation);
+typedef struct {
+    double xx; double yx;
+    double xy; double yy;
+    double x0; double y0;
+} NIXMatrix;
+
+WK_EXPORT void NIXViewSetUserViewportTransformation(NIXView* view, const NIXMatrix* userViewportTransformation);
 WK_EXPORT WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point);
 
 WK_EXPORT bool NIXViewIsFocused(NIXView* view);
