@@ -141,6 +141,7 @@ IF (WTF_USE_OPENGL_ES_2)
     platform/graphics/opengl/Extensions3DOpenGLES.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGLES.cpp
   )
+  LIST(APPEND WebCore_LIBRARIES ${OPENGLES2_LIBRARIES})
 ELSE ()
   LIST(APPEND WebCore_SOURCES
     platform/graphics/opengl/Extensions3DOpenGL.cpp
