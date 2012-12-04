@@ -64,9 +64,9 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
     const char* httpProxy = getenv("http_proxy");
     if (httpProxy) {
         const char* noProxy = getenv("no_proxy");
-        SoupProxyURIResolver* resolverEfl = soupProxyResolverWkNew(httpProxy, noProxy);
-        soup_session_add_feature(session, SOUP_SESSION_FEATURE(resolverEfl));
-        g_object_unref(resolverEfl);
+        SoupProxyURIResolver* resolverNix = soupProxyResolverWkNew(httpProxy, noProxy);
+        soup_session_add_feature(session, SOUP_SESSION_FEATURE(resolverNix));
+        g_object_unref(resolverNix);
     }
 
     CoordinatedGraphicsLayer::initFactory();
