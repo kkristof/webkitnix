@@ -890,12 +890,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueLogical || valueID == CSSValueVisual)
             return true;
         break;
-
-    case CSSPropertyWebkitRubyPosition:
-        if (valueID == CSSValueBefore || valueID == CSSValueAfter)
-            return true;
-        break;
-
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
         // auto | start | end | left | right | center | justify
@@ -1063,7 +1057,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitRegionOverflow:
 #endif
     case CSSPropertyWebkitRtlOrdering:
-    case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
 #endif // CSS3_TEXT
@@ -1657,6 +1650,11 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveVariableNameValue
 static inline bool isComma(CSSParserValue* value)
 { 
     return value && value->unit == CSSParserValue::Operator && value->iValue == ','; 
+}
+
+static inline bool isForwardSlashOperator(CSSParserValue* value)
+{
+    return value && value->unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
 bool CSSParser::validWidth(CSSParserValue* value)
@@ -2880,7 +2878,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitRegionOverflow:
 #endif
     case CSSPropertyWebkitRtlOrdering:
-    case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
 #endif // CSS3_TEXT
@@ -3009,7 +3006,7 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
         }
 
         bool sizeCSSPropertyExpected = false;
-        if ((val->unit == CSSParserValue::Operator && val->iValue == '/') && foundPositionCSSProperty) {
+        if (isForwardSlashOperator(val) && foundPositionCSSProperty) {
             sizeCSSPropertyExpected = true;
             m_valueList->next();
         }
@@ -4520,19 +4517,45 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
     }
 
     RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-    while (value) {
-        bool valid = validUnit(value, FLength | FPercent) || value->id == CSSValueAuto;
-        if (!valid)
+    while (m_valueList->current()) {
+        if (!parseGridTrackGroup(values.get()))
             return false;
 
-        RefPtr<CSSPrimitiveValue> primitiveValue = value->id == CSSValueAuto ? cssValuePool().createIdentifierValue(CSSValueAuto) : createPrimitiveNumericValue(value);
-        values->append(primitiveValue.release());
-        value = m_valueList->next();
+        m_valueList->next();
     }
     addProperty(propId, values.release(), important);
     return true;
 }
 
+bool CSSParser::parseGridTrackGroup(CSSValueList* values)
+{
+    return parseGridTrackMinMax(values);
+}
+
+bool CSSParser::parseGridTrackMinMax(CSSValueList* values)
+{
+    CSSParserValue* currentValue = m_valueList->current();
+    if (currentValue->id == CSSValueAuto) {
+        RefPtr<CSSPrimitiveValue> autoValue = cssValuePool().createIdentifierValue(CSSValueAuto);
+        values->append(autoValue.release());
+        return true;
+    }
+
+    if (PassRefPtr<CSSPrimitiveValue> trackBreadth = parseGridBreadth(currentValue)) {
+        values->append(trackBreadth);
+        return true;
+    }
+
+    return false;
+}
+
+PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* currentValue)
+{
+    if (!validUnit(currentValue, FLength | FPercent))
+        return 0;
+
+    return createPrimitiveNumericValue(currentValue);
+}
 
 #if ENABLE(DASHBOARD_SUPPORT)
 
@@ -5062,7 +5085,7 @@ bool CSSParser::parseFont(bool important)
     if (!value)
         return false;
 
-    if (value->unit == CSSParserValue::Operator && value->iValue == '/') {
+    if (isForwardSlashOperator(value)) {
         // The line-height property.
         value = m_valueList->next();
         if (!value)
@@ -6353,7 +6376,7 @@ bool CSSParser::parseBorderImage(CSSPropertyID propId, RefPtr<CSSValue>& result,
     while (CSSParserValue* val = m_valueList->current()) {
         context.setCanAdvance(false);
 
-        if (!context.canAdvance() && context.allowSlash() && val->unit == CSSParserValue::Operator && val->iValue == '/')
+        if (!context.canAdvance() && context.allowSlash() && isForwardSlashOperator(val))
             context.commitSlash();
 
         if (!context.canAdvance() && context.allowImage()) {
@@ -6769,7 +6792,7 @@ bool CSSParser::parseAspectRatio(bool important)
     CSSParserValue* op = m_valueList->valueAt(1);
     CSSParserValue* rvalue = m_valueList->valueAt(2);
 
-    if (op->unit != CSSParserValue::Operator || op->iValue != '/')
+    if (!isForwardSlashOperator(op))
         return false;
 
     if (!validUnit(lvalue, FNumber | FNonNeg) || !validUnit(rvalue, FNumber | FNonNeg))
@@ -10789,6 +10812,28 @@ void CSSParser::markRuleHeaderEnd()
         setRuleHeaderEnd<LChar>(m_dataStart8.get());
     else
         setRuleHeaderEnd<UChar>(m_dataStart16.get());
+}
+
+void CSSParser::markSelectorStart()
+{
+    if (!isExtractingSourceData())
+        return;
+    ASSERT(!m_selectorRange.end);
+
+    m_selectorRange.start = tokenStartOffset();
+}
+
+void CSSParser::markSelectorEnd()
+{
+    if (!isExtractingSourceData())
+        return;
+    ASSERT(!m_selectorRange.end);
+    ASSERT(m_currentRuleDataStack->size());
+
+    m_selectorRange.end = tokenStartOffset();
+    m_currentRuleDataStack->last()->selectorRanges.append(m_selectorRange);
+    m_selectorRange.start = 0;
+    m_selectorRange.end = 0;
 }
 
 void CSSParser::markRuleBodyStart()

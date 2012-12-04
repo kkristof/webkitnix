@@ -263,6 +263,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         if (viewStyle->writingMode() != newStyle->writingMode() && (isRootRenderer || !document()->writingModeSetOnDocumentElement())) {
             viewStyle->setWritingMode(newStyle->writingMode());
             viewRenderer->setHorizontalWritingMode(newStyle->isHorizontalWritingMode());
+            viewRenderer->markAllDescendantsWithFloatsForLayout();
             if (isBodyRenderer) {
                 document()->documentElement()->renderer()->style()->setWritingMode(newStyle->writingMode());
                 document()->documentElement()->renderer()->setHorizontalWritingMode(newStyle->isHorizontalWritingMode());
@@ -1047,18 +1048,25 @@ LayoutRect RenderBox::maskClipRect()
 void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,
     BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
 {
-    if (!fillLayer)
-        return;
+    Vector<const FillLayer*, 8> layers;
+    const FillLayer* curLayer = fillLayer;
+    while (curLayer) {
+        layers.append(curLayer);
+        // Stop traversal when an opaque layer is encountered.
+        // FIXME : It would be possible for the following occlusion culling test to be more aggressive 
+        // on layers with no repeat by testing whether the image covers the layout rect.
+        // Testing that here would imply duplicating a lot of calculations that are currently done in
+        // RenderBoxModelOBject::paintFillLayerExtended. A more efficient solution might be to move
+        // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
+        // and pass it down.
+        if (curLayer->hasOpaqueImage(this) && curLayer->clipOccludesNextLayers(curLayer == fillLayer) && curLayer->image()->canRender(this, style()->effectiveZoom()) && curLayer->hasRepeatXY())
+            break;
+        curLayer = curLayer->next();
+    }
 
-    // FIXME : It would be possible for the following occlusion culling test to be more aggressive 
-    // on layers with no repeat by testing whether the image covers the layout rect.
-    // Testing that here would imply duplicating a lot of calculations that are currently done in
-    // RenderBoxModelOBject::paintFillLayerExtended. A more efficient solution might be to move
-    // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
-    // and pass it down.
-    if (fillLayer->next() && (!fillLayer->hasOpaqueImage(this) || !fillLayer->image()->canRender(this, style()->effectiveZoom()) || !fillLayer->hasRepeatXY()))
-        paintFillLayers(paintInfo, c, fillLayer->next(), rect, bleedAvoidance, op, backgroundObject);
-    paintFillLayer(paintInfo, c, fillLayer, rect, bleedAvoidance, op, backgroundObject);
+    Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
+    for (Vector<const FillLayer*>::const_reverse_iterator it = layers.rbegin(); it != topLayer; ++it)
+        paintFillLayer(paintInfo, c, *it, rect, bleedAvoidance, op, backgroundObject);
 }
 
 void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer* fillLayer, const LayoutRect& rect,
@@ -1821,7 +1829,7 @@ void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& compute
     }
     
     if (!hasPerpendicularContainingBlock && containerLogicalWidth && containerLogicalWidth != (computedValues.m_extent + computedValues.m_margins.m_start + computedValues.m_margins.m_end)
-            && !isFloating() && !isInline() && !cb->isFlexibleBoxIncludingDeprecated()) {
+        && !isFloating() && !isInline() && !cb->isFlexibleBoxIncludingDeprecated() && !cb->isRenderGrid()) {
         LayoutUnit newMargin = containerLogicalWidth - computedValues.m_extent - cb->marginStartForChild(this);
         bool hasInvertedDirection = cb->style()->isLeftToRightDirection() != style()->isLeftToRightDirection();
         if (hasInvertedDirection)

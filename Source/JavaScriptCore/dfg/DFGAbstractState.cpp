@@ -1383,7 +1383,9 @@ bool AbstractState::execute(unsigned indexInBlock)
         forNode(nodeIndex).set(SpecFunction);
         break;
             
-    case GetScope:
+    case GetMyScope:
+    case SkipTopScope:
+    case SkipScope:
         node.setCanExit(false);
         forNode(nodeIndex).set(SpecCellOther);
         break;
@@ -1560,7 +1562,8 @@ bool AbstractState::execute(unsigned indexInBlock)
             node.setCanExit(false);
             break;
         }
-        ASSERT(node.arrayMode().conversion() == Array::Convert);
+        ASSERT(node.arrayMode().conversion() == Array::Convert
+            || node.arrayMode().conversion() == Array::RageConvert);
         node.setCanExit(true);
         forNode(node.child1()).filter(SpecCell);
         if (node.child2())

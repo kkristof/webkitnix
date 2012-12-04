@@ -368,6 +368,7 @@ void LayerTreeRenderer::deleteLayer(WebLayerID layerID)
         return;
 
     layer->removeFromParent();
+    m_pendingSyncBackingStores.remove(toTextureMapperLayer(layer.get()));
     m_fixedLayers.remove(layerID);
 #if USE(GRAPHICS_SURFACE)
     m_surfaceBackingStores.remove(layerID);
@@ -555,9 +556,7 @@ void LayerTreeRenderer::removeImageBacking(CoordinatedImageBackingID imageID)
     ASSERT(m_imageBackings.contains(imageID));
 
     // We don't want TextureMapperLayer refers a dangling pointer.
-    ImageBackingMap::iterator it = m_imageBackings.find(imageID);
-    m_releasedImageBackings.append(it->value);
-    m_imageBackings.remove(imageID);
+    m_releasedImageBackings.append(m_imageBackings.take(imageID));
 }
 
 void LayerTreeRenderer::assignImageBackingToLayer(GraphicsLayer* layer, CoordinatedImageBackingID imageID)

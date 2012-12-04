@@ -77,11 +77,11 @@ class DocumentFragment;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
+class DocumentSharedObjectPool;
 class DocumentStyleSheetCollection;
 class DocumentType;
 class DocumentWeakReference;
 class Element;
-class ElementAttributeData;
 class EntityReference;
 class Event;
 class EventListener;
@@ -205,9 +205,6 @@ enum NodeListInvalidationType {
     InvalidateOnAnyAttrChange,
 };
 const int numNodeListInvalidationTypes = InvalidateOnAnyAttrChange + 1;
-
-struct ImmutableAttributeDataCacheEntry;
-typedef HashMap<unsigned, OwnPtr<ImmutableAttributeDataCacheEntry>, AlreadyHashed> ImmutableAttributeDataCache;
 
 class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext {
 public:
@@ -1137,6 +1134,10 @@ public:
 
     IntSize viewportSize() const;
 
+#if ENABLE(CSS_DEVICE_ADAPTATION)
+    IntSize initialViewportSize() const;
+#endif
+
 #if ENABLE(LINK_PRERENDER)
     Prerenderer* prerenderer() { return m_prerenderer.get(); }
 #endif
@@ -1153,7 +1154,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-    PassRefPtr<ElementAttributeData> cachedImmutableAttributeData(const Vector<Attribute>&);
+    DocumentSharedObjectPool* sharedObjectPool() { return m_sharedObjectPool.get(); }
 
     void didRemoveAllPendingStylesheet();
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
@@ -1169,6 +1170,10 @@ public:
     void addToTopLayer(Element*);
     void removeFromTopLayer(Element*);
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
+#endif
+
+#if ENABLE(TEMPLATE_ELEMENT)
+    Document* templateContentsOwnerDocument();
 #endif
 
 protected:
@@ -1515,7 +1520,10 @@ private:
     RefPtr<DOMSecurityPolicy> m_domSecurityPolicy;
 #endif
 
-    ImmutableAttributeDataCache m_immutableAttributeDataCache;
+    void sharedObjectPoolClearTimerFired(Timer<Document>*);
+    Timer<Document> m_sharedObjectPoolClearTimer;
+
+    OwnPtr<DocumentSharedObjectPool> m_sharedObjectPool;
 
 #ifndef NDEBUG
     bool m_didDispatchViewportPropertiesChanged;
@@ -1523,6 +1531,10 @@ private:
 
     typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
     LocaleIdentifierToLocaleMap m_localeCache;
+
+#if ENABLE(TEMPLATE_ELEMENT)
+    RefPtr<Document> m_templateContentsOwnerDocument;
+#endif
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()
@@ -1536,6 +1548,11 @@ inline void Document::notifyRemovePendingSheetIfNeeded()
 inline bool Node::isDocumentNode() const
 {
     return this == m_document;
+}
+
+inline TreeScope* Node::treeScope() const
+{
+    return hasRareData() ? m_data.m_rareData->treeScope() : documentInternal();
 }
 
 inline Node::Node(Document* document, ConstructionType type)

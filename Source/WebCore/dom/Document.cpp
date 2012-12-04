@@ -55,6 +55,7 @@
 #include "DocumentFragment.h"
 #include "DocumentLoader.h"
 #include "DocumentMarkerController.h"
+#include "DocumentSharedObjectPool.h"
 #include "DocumentStyleSheetCollection.h"
 #include "DocumentType.h"
 #include "Editor.h"
@@ -500,6 +501,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_scheduledTasksAreSuspended(false)
     , m_visualUpdatesAllowed(true)
     , m_visualUpdatesSuppressionTimer(this, &Document::visualUpdatesSuppressionTimerFired)
+    , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
@@ -785,7 +787,7 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
     selectorQueryCache()->invalidate();
     if (inQuirksMode() != wasInQuirksMode) {
         // All user stylesheets have to reparse using the different mode.
-        m_styleSheetCollection->clearPageUserStyleSheet();
+        m_styleSheetCollection->clearPageUserSheet();
         m_styleSheetCollection->invalidateInjectedStyleSheetCache();
     }
 }
@@ -2491,6 +2493,10 @@ void Document::implicitClose()
 void Document::setParsing(bool b)
 {
     m_bParsing = b;
+
+    if (m_bParsing && !m_sharedObjectPool)
+        m_sharedObjectPool = DocumentSharedObjectPool::create();
+
     if (!m_bParsing && view())
         view()->scheduleRelayout();
 
@@ -3179,7 +3185,7 @@ void Document::styleResolverChanged(StyleResolverUpdateFlag updateFlag)
     if (didLayoutWithPendingStylesheets() && !m_styleSheetCollection->hasPendingSheets()) {
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
         if (renderer())
-            renderer()->repaint();
+            renderView()->repaintViewAndCompositedLayers();
     }
 
     if (!stylesheetChangeRequiresStyleRecalc)
@@ -4415,9 +4421,17 @@ void Document::finishedParsing()
         InspectorInstrumentation::domContentLoadedEventFired(f.get());
     }
 
-    // The ElementAttributeData sharing cache is only used during parsing since
-    // that's when the majority of immutable attribute data will be created.
-    m_immutableAttributeDataCache.clear();
+    // Schedule dropping of the DocumentSharedObjectPool. We keep it alive for a while after parsing finishes
+    // so that dynamically inserted content can also benefit from sharing optimizations.
+    // Note that we don't refresh the timer on pool access since that could lead to huge caches being kept
+    // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
+    static const int timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds = 10;
+    m_sharedObjectPoolClearTimer.startOneShot(timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds);
+}
+
+void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
+{
+    m_sharedObjectPool.clear();
 }
 
 PassRefPtr<XPathExpression> Document::createExpression(const String& expression,
@@ -4541,17 +4555,6 @@ void Document::initSecurityContext()
     enforceSandboxFlags(m_frame->loader()->effectiveSandboxFlags());
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
     setContentSecurityPolicy(ContentSecurityPolicy::create(this));
-
-    if (SecurityPolicy::allowSubstituteDataAccessToLocal()) {
-        // If this document was loaded with substituteData, then the document can
-        // load local resources.  See https://bugs.webkit.org/show_bug.cgi?id=16756
-        // and https://bugs.webkit.org/show_bug.cgi?id=19760 for further
-        // discussion.
-        
-        DocumentLoader* documentLoader = loader();
-        if (documentLoader && documentLoader->substituteData().isValid())
-            securityOrigin()->grantLoadLocalResources();
-    }
 
     if (Settings* settings = this->settings()) {
         if (!settings->webSecurityEnabled()) {
@@ -5643,6 +5646,15 @@ IntSize Document::viewportSize() const
     return view()->visibleContentRect(/* includeScrollbars */ true).size();
 }
 
+#if ENABLE(CSS_DEVICE_ADAPTATION)
+IntSize Document::initialViewportSize() const
+{
+    if (!view())
+        return IntSize();
+    return view()->initialViewportSize();
+}
+#endif
+
 Node* eventTargetNodeForDocument(Document* doc)
 {
     if (!doc)
@@ -5860,65 +5872,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_listsInvalidatedAtDocument);
 }
 
-class ImmutableAttributeDataCacheKey {
-public:
-    ImmutableAttributeDataCacheKey(const Attribute* attributes, unsigned attributeCount)
-        : m_attributes(attributes)
-        , m_attributeCount(attributeCount)
-    { }
-
-    bool operator!=(const ImmutableAttributeDataCacheKey& other) const
-    {
-        if (m_attributeCount != other.m_attributeCount)
-            return true;
-        return memcmp(m_attributes, other.m_attributes, sizeof(Attribute) * m_attributeCount);
-    }
-
-    unsigned hash() const
-    {
-        return StringHasher::hashMemory(m_attributes, m_attributeCount * sizeof(Attribute));
-    }
-
-private:
-    const Attribute* m_attributes;
-    unsigned m_attributeCount;
-};
-
-struct ImmutableAttributeDataCacheEntry {
-    ImmutableAttributeDataCacheEntry(const ImmutableAttributeDataCacheKey& k, PassRefPtr<ElementAttributeData> v)
-        : key(k)
-        , value(v)
-    { }
-
-    ImmutableAttributeDataCacheKey key;
-    RefPtr<ElementAttributeData> value;
-};
-
-PassRefPtr<ElementAttributeData> Document::cachedImmutableAttributeData(const Vector<Attribute>& attributes)
-{
-    ASSERT(!attributes.isEmpty());
-
-    ImmutableAttributeDataCacheKey cacheKey(attributes.data(), attributes.size());
-    unsigned cacheHash = cacheKey.hash();
-
-    ImmutableAttributeDataCache::iterator cacheIterator = m_immutableAttributeDataCache.add(cacheHash, nullptr).iterator;
-    if (cacheIterator->value && cacheIterator->value->key != cacheKey)
-        cacheHash = 0;
-
-    RefPtr<ElementAttributeData> attributeData;
-    if (cacheHash && cacheIterator->value)
-        attributeData = cacheIterator->value->value;
-    else
-        attributeData = ElementAttributeData::createImmutable(attributes);
-
-    if (!cacheHash || cacheIterator->value)
-        return attributeData.release();
-
-    cacheIterator->value = adoptPtr(new ImmutableAttributeDataCacheEntry(ImmutableAttributeDataCacheKey(attributeData->immutableAttributeArray(), attributeData->length()), attributeData));
-
-    return attributeData.release();
-}
-
 bool Document::haveStylesheetsLoaded() const
 {
     return !m_styleSheetCollection->hasPendingSheets() || m_ignorePendingStylesheets;
@@ -5934,5 +5887,23 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
         result.iterator->value = Locale::create(localeKey);
     return *(result.iterator->value);
 }
+
+#if ENABLE(TEMPLATE_ELEMENT)
+Document* Document::templateContentsOwnerDocument()
+{
+    // If DOCUMENT does not have a browsing context, Let TEMPLATE CONTENTS OWNER be DOCUMENT and abort these steps.
+    if (!m_frame)
+        return this;
+
+    if (!m_templateContentsOwnerDocument) {
+        if (isHTMLDocument())
+            m_templateContentsOwnerDocument = HTMLDocument::create(0, blankURL());
+        else
+            m_templateContentsOwnerDocument = Document::create(0, blankURL());
+    }
+
+    return m_templateContentsOwnerDocument.get();
+}
+#endif
 
 } // namespace WebCore

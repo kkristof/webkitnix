@@ -188,6 +188,10 @@ fast/dom/shadow
 fast/frames/detached-shadow-frame.html
 inspector/elements/update-shadowdom.html
 
+# ENABLE(TEMPLATE_ELEMENT) is disabled.
+fast/dom/HTMLTemplateElement
+html5lib/run-template.html
+
 # Fail until SUBPIXEL_LAYOUT is enabled
 # https://bugs.webkit.org/show_bug.cgi?id=85532
 fast/sub-pixel
@@ -333,9 +337,6 @@ webkit.org/b/89052 fast/css/image-orientation
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
 
-# CSS3 Background is not yet enabled (needs ENABLE_CSS3_BACKGROUND).
-webkit.org/b/37514 fast/backgrounds/background-position-parsing-2.html [ Text ]
-
 # Web Inspector: Implement support for InspectorClient::overrideDeviceMetrics() in platforms other than Chromium
 # https://bugs.webkit.org/show_bug.cgi?id=82886
 webkit.org/b/82886 inspector/styles/override-screen-size.html [ Skip ]
@@ -450,7 +451,7 @@ http/tests/security/video-cross-origin-readback.html
 http/tests/security/contentSecurityPolicy/1.1
 
 # Proximity Events is now supported.
-fast/dom/Proximity
+proximity
 fast/events/constructors/device-proximity-event-constructor.html
 
 # Missing support in DRT for Geolocation's Coordinate attributes.
@@ -898,6 +899,44 @@ http/tests/misc/webtiming-origins.html
 # https://bugs.webkit.org/show_bug.cgi?id=57983
 media
 
+# Opera-submitted tests to W3C for <track>, a lot of failures still.
+webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/crossOrigin.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/onremovetrack.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/track-element/cloneNode.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/track-element/src-clear-cues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing/001.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Skip ] 
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
+
 # https://bugs.webkit.org/show_bug.cgi?id=38376
 media/media-document-audio-size.html
 
@@ -1163,6 +1202,7 @@ fast/events/constructors/media-key-event-constructor.html
 
 # missing testRunner.setStorageDatabaseIdleInterval() implementation
 storage/domstorage/storage-close-database-on-idle.html
+storage/domstorage/localstorage/close-idle-localstorage-databases-immediately.html
 
 # Missing targetDiv1.webkitRequestFullscreen() implementation
 # https://bugs.webkit.org/show_bug.cgi?id=92078

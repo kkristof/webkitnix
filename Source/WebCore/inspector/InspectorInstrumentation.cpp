@@ -607,18 +607,6 @@ void InspectorInstrumentation::didProcessRuleImpl(const InspectorInstrumentation
         cssAgent->didProcessRule();
 }
 
-void InspectorInstrumentation::willProcessTaskImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->willProcessTask();
-}
-
-void InspectorInstrumentation::didProcessTaskImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didProcessTask();
-}
-
 void InspectorInstrumentation::applyUserAgentOverrideImpl(InstrumentingAgents* instrumentingAgents, String* userAgent)
 {
     if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
@@ -655,6 +643,12 @@ bool InspectorInstrumentation::shouldApplyScreenHeightOverrideImpl(Instrumenting
         return !!height;
     }
     return false;
+}
+
+void InspectorInstrumentation::applyEmulatedMediaImpl(InstrumentingAgents* instrumentingAgents, String* media)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->applyEmulatedMedia(media);
 }
 
 void InspectorInstrumentation::willSendRequestImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)

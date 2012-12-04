@@ -678,7 +678,7 @@ IntRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* laye
 {
     if (!canBeComposited(layer))
         return IntRect();
-    return layer->calculateLayerBounds(ancestorLayer, 0, RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants);
+    return layer->calculateLayerBounds(ancestorLayer, 0, RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants | RenderLayer::DontConstrainForMask);
 }
 
 void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* /*child*/)
@@ -1340,16 +1340,20 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayer* com
 }
 
 
-void RenderLayerCompositor::repaintCompositedLayersAbsoluteRect(const IntRect& absRect)
+void RenderLayerCompositor::repaintCompositedLayers(const IntRect* absRect)
 {
-    recursiveRepaintLayerRect(rootRenderLayer(), absRect);
+    recursiveRepaintLayer(rootRenderLayer(), absRect);
 }
 
-void RenderLayerCompositor::recursiveRepaintLayerRect(RenderLayer* layer, const IntRect& rect)
+void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntRect* rect)
 {
     // FIXME: This method does not work correctly with transforms.
-    if (layer->isComposited() && !layer->backing()->paintsIntoCompositedAncestor())
-        layer->setBackingNeedsRepaintInRect(rect);
+    if (layer->isComposited() && !layer->backing()->paintsIntoCompositedAncestor()) {
+        if (rect)
+            layer->setBackingNeedsRepaintInRect(*rect);
+        else
+            layer->setBackingNeedsRepaint();
+    }
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer);
@@ -1360,9 +1364,12 @@ void RenderLayerCompositor::recursiveRepaintLayerRect(RenderLayer* layer, const 
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = negZOrderList->at(i);
-                IntRect childRect(rect);
-                curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
-                recursiveRepaintLayerRect(curLayer, childRect);
+                if (rect) {
+                    IntRect childRect(*rect);
+                    curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
+                    recursiveRepaintLayer(curLayer, &childRect);
+                } else
+                    recursiveRepaintLayer(curLayer);
             }
         }
 
@@ -1370,9 +1377,12 @@ void RenderLayerCompositor::recursiveRepaintLayerRect(RenderLayer* layer, const 
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = posZOrderList->at(i);
-                IntRect childRect(rect);
-                curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
-                recursiveRepaintLayerRect(curLayer, childRect);
+                if (rect) {
+                    IntRect childRect(*rect);
+                    curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
+                    recursiveRepaintLayer(curLayer, &childRect);
+                } else
+                    recursiveRepaintLayer(curLayer);
             }
         }
     }
@@ -1380,9 +1390,12 @@ void RenderLayerCompositor::recursiveRepaintLayerRect(RenderLayer* layer, const 
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
-            IntRect childRect(rect);
-            curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
-            recursiveRepaintLayerRect(curLayer, childRect);
+            if (rect) {
+                IntRect childRect(*rect);
+                curLayer->convertToPixelSnappedLayerCoords(layer, childRect);
+                recursiveRepaintLayer(curLayer, &childRect);
+            } else
+                recursiveRepaintLayer(curLayer);
         }
     }
 }
@@ -1961,7 +1974,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
 
     // Fixed position elements that are invisible in the current view don't get their own layer.
     if (FrameView* frameView = m_renderView->frameView()) {
-        IntRect viewBounds = IntRect(IntPoint(frameView->scrollOffsetForFixedPosition()), frameView->layoutSize());
+        IntRect viewBounds = frameView->visibleContentRect();
         IntRect layerBounds = calculateCompositedBounds(layer, rootRenderLayer());
         if (!viewBounds.intersects(layerBounds))
             return false;

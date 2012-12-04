@@ -595,6 +595,22 @@ static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection
     return CSSReflectValue::create(reflection->direction(), offset.release(), valueForNinePieceImage(reflection->mask()));
 }
 
+static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer* layer, const RenderStyle* style)
+{
+    RefPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
+    if (layer->isBackgroundOriginSet()) {
+        ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition);
+        positionList->append(cssValuePool().createValue(layer->backgroundXOrigin()));
+    }
+    positionList->append(zoomAdjustedPixelValueForLength(layer->xPosition(), style));
+    if (layer->isBackgroundOriginSet()) {
+        ASSERT(propertyID == CSSPropertyBackgroundPosition);
+        positionList->append(cssValuePool().createValue(layer->backgroundYOrigin()));
+    }
+    positionList->append(zoomAdjustedPixelValueForLength(layer->yPosition(), style));
+    return positionList.release();
+}
+
 static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSPropertyID propertyID, RenderView* renderView)
 {
     if (!style)
@@ -983,25 +999,35 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 }
 #endif
 
-static PassRefPtr<CSSValue> valueForGridTrackBreadth(const GridTrackSize& trackSize, const RenderStyle* style)
+static PassRefPtr<CSSValue> valueForGridTrackBreadth(const GridTrackSize& trackSize, const RenderStyle* style, RenderView *renderView)
 {
-    if (trackSize.length().isPercent())
-        return cssValuePool().createValue(trackSize.length());
     if (trackSize.length().isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
-    return zoomAdjustedPixelValue(trackSize.length().value(), style);
+    if (trackSize.length().isViewportPercentage())
+        return zoomAdjustedPixelValue(valueForLength(trackSize.length(), 0, renderView), style);
+    return zoomAdjustedPixelValueForLength(trackSize.length(), style);
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackList(const Vector<GridTrackSize>& trackSizes, const RenderStyle* style)
+static PassRefPtr<CSSValue> valueForGridTrackMinMax(const GridTrackSize& trackSize, const RenderStyle* style, RenderView* renderView)
+{
+    return valueForGridTrackBreadth(trackSize, style, renderView);
+}
+
+static PassRefPtr<CSSValue> valueForGridTrackGroup(const Vector<GridTrackSize>& trackSizes, const RenderStyle* style, RenderView* renderView)
+{
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    for (size_t i = 0; i < trackSizes.size(); ++i)
+        list->append(valueForGridTrackMinMax(trackSizes[i], style, renderView));
+    return list.release();
+}
+
+static PassRefPtr<CSSValue> valueForGridTrackList(const Vector<GridTrackSize>& trackSizes, const RenderStyle* style, RenderView *renderView)
 {
     // Handle the 'none' case here.
     if (!trackSizes.size())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
-    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    for (size_t i = 0; i < trackSizes.size(); ++i)
-        list->append(valueForGridTrackBreadth(trackSizes[i], style));
-    return list.release();
+    return valueForGridTrackGroup(trackSizes, style, renderView);
 }
 
 static PassRefPtr<CSSValue> valueForGridPosition(const GridPosition& position)
@@ -1571,21 +1597,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBackgroundPosition:
         case CSSPropertyWebkitMaskPosition: {
             const FillLayer* layers = propertyID == CSSPropertyWebkitMaskPosition ? style->maskLayers() : style->backgroundLayers();
-            if (!layers->next()) {
-                RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-                list->append(zoomAdjustedPixelValueForLength(layers->xPosition(), style.get()));
-                list->append(zoomAdjustedPixelValueForLength(layers->yPosition(), style.get()));
-                return list.release();
-            }
+            if (!layers->next())
+                return createPositionListForLayer(propertyID, layers, style.get());
 
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next()) {
-                RefPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
-                positionList->append(zoomAdjustedPixelValueForLength(currLayer->xPosition(), style.get()));
-                positionList->append(zoomAdjustedPixelValueForLength(currLayer->yPosition(), style.get()));
-                list->append(positionList);
-            }
-
+            for (const FillLayer* currLayer = layers; currLayer; currLayer = currLayer->next())
+                list->append(createPositionListForLayer(propertyID, currLayer, style.get()));
             return list.release();
         }
         case CSSPropertyBackgroundPositionX:
@@ -1823,10 +1840,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return list.release();
         }
         case CSSPropertyWebkitGridColumns: {
-            return valueForGridTrackList(style->gridColumns(), style.get());
+            return valueForGridTrackList(style->gridColumns(), style.get(), m_node->document()->renderView());
         }
         case CSSPropertyWebkitGridRows: {
-            return valueForGridTrackList(style->gridRows(), style.get());
+            return valueForGridTrackList(style->gridRows(), style.get(), m_node->document()->renderView());
         }
 
         case CSSPropertyWebkitGridColumn:
@@ -2022,8 +2039,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->position());
         case CSSPropertyRight:
             return getPositionOffsetValue(style.get(), CSSPropertyRight, m_node->document()->renderView());
-        case CSSPropertyWebkitRubyPosition:
-            return cssValuePool().createValue(style->rubyPosition());
         case CSSPropertyTableLayout:
             return cssValuePool().createValue(style->tableLayout());
         case CSSPropertyTextAlign:

@@ -1080,7 +1080,7 @@ void WebPagePrivate::setLoadState(LoadState state)
 
             m_previousContentsSize = IntSize();
             m_backingStore->d->resetRenderQueue();
-            m_backingStore->d->resetTiles(true /* resetBackground */);
+            m_backingStore->d->resetTiles();
             m_backingStore->d->setScrollingOrZooming(false, false /* shouldBlit */);
             m_shouldZoomToInitialScaleAfterLoadFinished = false;
             m_userPerformedManualZoom = false;
@@ -3513,8 +3513,12 @@ void WebPagePrivate::resumeBackingStore()
     if (!m_backingStore->d->isActive()
         || shouldResetTilesWhenShown()
         || directRendering) {
-        // We need to reset all tiles so that we do not show any tiles whose content may
-        // have been replaced by another WebPage instance (i.e. another tab).
+        // Let the previously active backingstore release its tile buffers so
+        // the new WebPage instance (e.g. another tab) can render its contents.
+        WebPage* currentOwner = BackingStorePrivate::currentBackingStoreOwner();
+        if (currentOwner && currentOwner != m_webPage)
+            BackingStorePrivate::currentBackingStoreOwner()->d->m_backingStore->d->resetTiles();
+
         BackingStorePrivate::setCurrentBackingStoreOwner(m_webPage);
 
         // If we're OpenGL compositing, switching to accel comp drawing of the root layer
@@ -3523,7 +3527,7 @@ void WebPagePrivate::resumeBackingStore()
             setCompositorDrawsRootLayer(!m_backingStore->d->isActive());
 
         m_backingStore->d->orientationChanged(); // Updates tile geometry and creates visible tile buffer.
-        m_backingStore->d->resetTiles(true /* resetBackground */);
+        m_backingStore->d->resetTiles();
         m_backingStore->d->updateTiles(false /* updateVisible */, false /* immediate */);
 
         // This value may have changed, so we need to update it.
@@ -3799,7 +3803,7 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
             ensureContentVisible(!newVisibleRectContainsOldVisibleRect);
 
         if (needsLayout) {
-            m_backingStore->d->resetTiles(true);
+            m_backingStore->d->resetTiles();
             m_backingStore->d->updateTiles(false /* updateVisible */, false /* immediate */);
         }
 
@@ -4010,8 +4014,15 @@ bool WebPage::touchEvent(const Platform::TouchEvent& event)
     else if (tEvent.m_type == Platform::TouchEvent::TouchStart || tEvent.m_type == Platform::TouchEvent::TouchCancel)
         d->m_pluginMayOpenNewTab = false;
 
-    if (tEvent.m_type == Platform::TouchEvent::TouchStart)
+    if (tEvent.m_type == Platform::TouchEvent::TouchStart) {
         d->clearCachedHitTestResult();
+        d->m_touchEventHandler->doFatFingers(tEvent.m_points[0]);
+
+        // Draw tap highlight as soon as possible if we can
+        Element* elementUnderFatFinger = d->m_touchEventHandler->lastFatFingersResult().nodeAsElementIfApplicable();
+        if (elementUnderFatFinger)
+            d->m_touchEventHandler->drawTapHighlight();
+    }
 
     bool handled = false;
 

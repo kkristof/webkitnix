@@ -367,6 +367,9 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     
     setMediaVolume(parameters.mediaVolume);
 
+    // We use the DidFirstLayout milestone to determine when to unfreeze the layer tree.
+    m_page->addLayoutMilestones(DidFirstLayout);
+
     WebProcess::shared().addMessageReceiver(Messages::WebPage::messageReceiverName(), m_pageID, this);
 
     // FIXME: This should be done in the object constructors, and the objects themselves should be message receivers.
@@ -521,8 +524,9 @@ PassRefPtr<Plugin> WebPage::createPlugin(WebFrame* frame, HTMLPlugInElement* plu
 
     if (pluginPath.isNull()) {
 #if PLATFORM(MAC)
-        if (parameters.mimeType == "application/pdf"
-            || (parameters.mimeType.isEmpty() && parameters.url.path().lower().endsWith(".pdf"))) {
+        String path = parameters.url.path();
+        if ((parameters.mimeType == "application/pdf" || parameters.mimeType == "application/postscript")
+            || (parameters.mimeType.isEmpty() && (path.endsWith(".pdf", false) || path.endsWith(".ps", false)))) {
 #if ENABLE(PDFKIT_PLUGIN)
             if (pdfPluginEnabled())
                 return PDFPlugin::create(frame);
@@ -1026,7 +1030,6 @@ void WebPage::sendViewportAttributesChanged()
     int deviceHeight = (settings->deviceHeight() > 0) ? settings->deviceHeight() : m_viewportSize.height();
 
     ViewportAttributes attr = computeViewportAttributes(m_page->viewportArguments(), minimumLayoutFallbackWidth, deviceWidth, deviceHeight, m_page->deviceScaleFactor(), m_viewportSize);
-    attr.initialScale = m_page->viewportArguments().zoom; // Resets auto (-1) if no value was set by user.
 
     // Keep the current position, update size only.
     // For the new loads position is already reset to (0,0).
@@ -1034,11 +1037,20 @@ void WebPage::sendViewportAttributesChanged()
     IntPoint contentFixedOrigin = view->fixedVisibleContentRect().location();
 
     // Put the width and height to the viewport width and height. In css units however.
-    // FIXME: This should be in scaled units but this currently affects viewport attributes calculation.
     IntSize contentFixedSize = m_viewportSize;
+
     contentFixedSize.scale(1 / m_page->deviceScaleFactor());
 
+#if ENABLE(CSS_DEVICE_ADAPTATION)
+    // CSS viewport descriptors might be applied to already affected viewport size
+    // if the page enables/disables stylesheets, so need to keep initial viewport size.
+    view->setInitialViewportSize(contentFixedSize);
+#endif
+
+    contentFixedSize.scale(1 / attr.initialScale);
     setFixedVisibleContentRect(IntRect(contentFixedOrigin, contentFixedSize));
+
+    attr.initialScale = m_page->viewportArguments().zoom; // Resets auto (-1) if no value was set by user.
 
     // This also takes care of the relayout.
     setFixedLayoutSize(roundedIntSize(attr.layoutSize));
@@ -3261,20 +3273,23 @@ void WebPage::drawRectToImage(uint64_t frameID, const PrintInfo& printInfo, cons
 #else
         ASSERT(coreFrame->document()->printing());
 #endif
+
+        RefPtr<ShareableBitmap> bitmap = ShareableBitmap::createShareable(rect.size(), ShareableBitmap::SupportsAlpha);
+        OwnPtr<GraphicsContext> graphicsContext = bitmap->createGraphicsContext();
+
 #if PLATFORM(MAC)
         if (RetainPtr<PDFDocument> pdfDocument = pdfDocumentForPrintingFrame(coreFrame)) {
             ASSERT(!m_printContext);
-            RefPtr<ShareableBitmap> bitmap = ShareableBitmap::createShareable(rect.size(), ShareableBitmap::SupportsAlpha);
-            OwnPtr<GraphicsContext> graphicsContext = bitmap->createGraphicsContext();
             graphicsContext->scale(FloatSize(1, -1));
             graphicsContext->translate(0, -rect.height());
             drawPDFDocument(graphicsContext->platformContext(), pdfDocument.get(), printInfo, rect);
-            image = WebImage::create(bitmap.release());
         } else
 #endif
         {
-            image = scaledSnapshotWithOptions(rect, 1, SnapshotOptionsShareable | SnapshotOptionsExcludeSelectionHighlighting);
+            m_printContext->spoolRect(*graphicsContext, rect);
         }
+
+        image = WebImage::create(bitmap.release());
     }
 #endif
 

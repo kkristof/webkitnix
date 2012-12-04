@@ -1,3 +1,54 @@
+2012-12-04  Pierre Rossi  <pierre.rossi@digia.com>
+
+        [Qt] Yet another unreviewed speculative windows build fix. 
+
+        WebKit2 relies on the QWEBKIT_EXPORT macro from WebKit1 as well.
+
+        * Api/qwebkitglobal.h:
+
+2012-12-03  Pierre Rossi  <pierre.rossi@digia.com>
+
+        [Qt] Unreviewed speculative Windows buildfix.
+
+        Somehow it seems messing around with the export macros made some old issues resurface. 
+
+        * Api/qwebsettings.cpp:
+        (qt_networkAccessAllowed):
+        * Api/qwebsettings.h:
+        * Api/qwebkitglobal.h: fix an obvious blunder from r136394.
+
+2012-12-03  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        Document::initSecurityContext() fails to call securityOrigin().grantLoadLocalResources()
+        https://bugs.webkit.org/show_bug.cgi?id=68711
+
+        Reviewed by Adam Barth.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::testStopScheduledPageRefresh): Unmark the expected failure.
+
+2012-12-03  Pierre Rossi  <pierre.rossi@digia.com>
+
+        [Qt] Use a separate QWEBKITWIDGETS_EXPORT macro for WebKitWidgets
+        https://bugs.webkit.org/show_bug.cgi?id=103844
+
+        Reviewed by Simon Hausmann.
+
+        Let's follow the common practice and have one export macro per library.
+        We can't rely on BUILDING_WEBKIT anymore in that case, so we use the
+        qmake defines instead.
+
+        * Api/qwebkitglobal.h: Updated the import/export logic.
+        * WidgetApi/qgraphicswebview.h: s/QWEBKIT/QWEBKITWIDGETS/
+        * WidgetApi/qwebframe.h: Ditto.
+        * WidgetApi/qwebinspector.h: Ditto.
+        * WidgetApi/qwebpage.h: Ditto.
+        * WidgetApi/qwebview.h: Ditto.
+        * WidgetSupport/InitWebKitQt.cpp:
+        (WebKit::initializeWebKitWidgets): use QWEBKITWIDGETS_EXPORT.
+        * WidgetSupport/InitWebKitQt.h:
+        (WebKit): Ditto.
+
 2012-11-30  Pierre Rossi  <pierre.rossi@gmail.com>
 
         [Qt] Introduce setTextSizeMultiplier in the page adapter as well.

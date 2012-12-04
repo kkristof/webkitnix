@@ -1,3 +1,579 @@
+2012-12-04  Yuni Jeong  <yhnet.jung@samsung.com>
+
+        [EFL][WK2] Add APIs to toggle plug-ins support.
+        https://bugs.webkit.org/show_bug.cgi?id=101920
+
+        Reviewed by Gyuyoung Kim.
+
+        Add setting APIs to toggle plug-ins support and add corresponding API tests.
+
+        * UIProcess/API/efl/ewk_settings.cpp:
+        (ewk_settings_plugins_enabled_set):
+        (ewk_settings_plugins_enabled_get):
+        * UIProcess/API/efl/ewk_settings.h:
+        * UIProcess/API/efl/tests/test_ewk2_settings.cpp:
+        (TEST_F):
+
+2012-12-04  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] Do not override previously set flags of QQuickWebView when enabling drag&drop
+        https://bugs.webkit.org/show_bug.cgi?id=103901
+
+        Reviewed by Jocelyn Turcotte.
+
+        Setting the specific flag instead of resetting all the flags
+        when enabling QQuickItem::ItemAcceptsDrops.
+        This fixes clipping of the contents of QQuickWebView.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+
+2012-12-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Avoid unnecessary heap allocations during drag and drop operations
+        https://bugs.webkit.org/show_bug.cgi?id=87938
+
+        Reviewed by Martin Robinson.
+
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp:
+        (webkitWebViewBaseDragDataReceived): Create DragData for the given
+        DataObjectGtk in the stack.
+        (webkitWebViewBaseDragMotion): Ditto.
+        (webkitWebViewBaseDragDrop): Ditto.
+
+2012-12-04  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [EFL][WK2] Use consistent class names inside Ewk classes
+        https://bugs.webkit.org/show_bug.cgi?id=103015
+
+        Reviewed by Gyuyoung Kim.
+
+        WebKit EFL doesn't use '_' in class names.
+        This patch removes the remaining uses of '_' inside Ewk classes.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::EwkViewImpl):
+        (EwkViewImpl::~EwkViewImpl):
+        (EwkViewImpl::informIconChange):
+        (EwkViewImpl::requestColorPicker):
+        (EwkViewImpl::requestPopupMenu):
+        * UIProcess/API/efl/ewk_back_forward_list.cpp:
+        (EwkBackForwardList::nextItem):
+        (EwkBackForwardList::previousItem):
+        (EwkBackForwardList::currentItem):
+        (EwkBackForwardList::itemAt):
+        (EwkBackForwardList::getFromCacheOrCreate):
+        (EwkBackForwardList::createEinaList):
+        * UIProcess/API/efl/ewk_back_forward_list_private.h:
+        (EwkBackForwardList):
+        * UIProcess/API/efl/ewk_context.cpp:
+        (EwkContext::EwkContext):
+        (EwkContext::cookieManager):
+        (EwkContext::databaseManager):
+        (EwkContext::ensureFaviconDatabase):
+        (EwkContext::faviconDatabase):
+        (EwkContext::storageManager):
+        * UIProcess/API/efl/ewk_context_private.h:
+        (EwkContext):
+        * UIProcess/API/efl/ewk_cookie_manager.cpp:
+        (EwkCookieManager::cookiesDidChange):
+        (getAcceptPolicyCallback):
+        (getHostnamesWithCookiesCallback):
+        * UIProcess/API/efl/ewk_cookie_manager_private.h:
+        (EwkCookieManager::create):
+        * UIProcess/API/efl/ewk_database_manager.cpp:
+        (EwkDatabaseManager::createOriginList):
+        (getDatabaseOriginsCallback):
+        * UIProcess/API/efl/ewk_database_manager_private.h:
+        (EwkDatabaseManager):
+        * UIProcess/API/efl/ewk_favicon_database.cpp:
+        (EwkFaviconDatabase::didChangeIconForPageURL):
+        (EwkFaviconDatabase::iconDataReadyForPageURL):
+        * UIProcess/API/efl/ewk_popup_menu.cpp:
+        (EwkPopupMenu::EwkPopupMenu):
+        (EwkPopupMenu::~EwkPopupMenu):
+        * UIProcess/API/efl/ewk_storage_manager.cpp:
+        (EwkStorageManager::createOriginList):
+        (getStorageOriginsCallback):
+        * UIProcess/API/efl/ewk_storage_manager_private.h:
+        (EwkStorageManager):
+
+2012-12-03  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Reorder messages to LayerTreeCoordinatorProxy
+        https://bugs.webkit.org/show_bug.cgi?id=103843
+
+        Reviewed by Noam Rosenthal.
+
+        Remove updateViewport() in LayerTreeCoordinatorProxy::setRootCompositingLayer()
+        because LayerTreeCoordinatorProxy::didRenderFrame() is always called after
+        setting the root layer. There is no behaviour changes because setting the root
+        layer isn't actually applied to TextureMapperLayer until DidRenderFrame message
+        is received.
+
+        This is in preparation for refactoring TextureMapper to work in an actor
+        model (http://webkit.org/b/103854).
+
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::setRootCompositingLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+
+2012-12-03  Anders Carlsson  <andersca@apple.com>
+
+        Make it easier to add more web process initialization parameters
+        https://bugs.webkit.org/show_bug.cgi?id=103942
+
+        Reviewed by Andreas Kling.
+
+        Add a WebProcessInitializationParameters struct to make it easier to add more initialization
+        parameters in the future. Also, fix naming and spelling errors.
+
+        * WebProcess/mac/WebProcessInitialization.h:
+        (WebProcessInitializationParameters):
+        (WebKit):
+        * WebProcess/mac/WebProcessInitialization.mm:
+        (WebKit::initializeWebProcess):
+        * WebProcess/mac/WebProcessMainMac.mm:
+        (WebKit::WebProcessMain):
+        * WebProcess/mac/WebProcessServiceEntryPoints.h:
+        * WebProcess/mac/WebProcessServiceEntryPoints.mm:
+        (WebKit::WebProcessServiceEventHandler):
+        (webProcessServiceMain):
+        (initializeWebProcessForWebProcessServiceForWebKitDevelopment):
+        * WebProcessService/WebProcessServiceMain.mm:
+        (main):
+        * WebProcessServiceForWebKitDevelopment/WebProcessServiceForWebKitDevelopmentMain.mm:
+        (WebProcessServiceForWebKitDevelopmentEventHandler):
+
+2012-12-03  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: <embed> and <object> PDFs affect their parent frame's page scale
+        https://bugs.webkit.org/show_bug.cgi?id=103286
+        <rdar://problem/12752315>
+
+        Reviewed by Dan Bernstein.
+
+        Style fixes after http://trac.webkit.org/changeset/136316.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::isFullFramePlugin):
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [Mac] Enable CSS3 background-position offset by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103905
+
+        Reviewed by Simon Fraser.
+
+        Turn the flag on by default.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-12-03  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL][WK2] Add contents,size,changed signal to the ewk_view API
+        https://bugs.webkit.org/show_bug.cgi?id=103094
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        This patch emits signal to let applications know contents size.
+        Applications can use this signal to give some additional behavior such as
+        minimap, external scroll for quick movement.
+
+        * UIProcess/API/efl/EwkViewCallbacks.h: Added contents,size,changed signal.
+        * UIProcess/API/efl/EwkViewImpl.cpp: Removed dead code.
+        * UIProcess/API/efl/EwkViewImpl.h: Ditto.
+        (EwkViewImpl):
+        * UIProcess/API/efl/ewk_view.h: Added test case.
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (onContentsSizeChanged):
+        (TEST_F):
+        * UIProcess/efl/PageClientDefaultImpl.cpp: Emitted contents,size,changed signal.
+        (WebKit::PageClientDefaultImpl::didChangeContentsSize):
+        * UIProcess/efl/PageClientLegacyImpl.cpp: Ditto.
+        (WebKit::PageClientLegacyImpl::didChangeContentsSize):
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::contentsSizeChanged):
+        Sended DidChangeContentsSize message although TILED_BACKINGSTORE is disabled.
+
+2012-12-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed fix after r136292 to make GIT-SVN repositories happy.
+
+        * win/WebKit2ExportGenerator.vcproj: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorCommon.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorDebug.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorDebugAll.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorDebugCairoCFLite.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorPostBuild.cmd: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorPreBuild.cmd: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorProduction.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorRelease.vsprops: Added property svn:eol-style.
+        * win/WebKit2ExportGeneratorReleaseCairoCFLite.vsprops: Added property svn:eol-style.
+
+2012-12-03  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] New resize tests fail
+        https://bugs.webkit.org/show_bug.cgi?id=103875
+
+        Reviewed by Jocelyn Turcotte.
+
+        Removes reference to unused viewportSpy, adds clearing the sizeSpy to the init method instead.   
+
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_resize.qml:
+
+2012-12-03  Joaquim Rocha  <jrocha@igalia.com>
+
+        [GTK] Custom URI schemes stop working on Epiphany using WebKit2 after killing the web process
+        https://bugs.webkit.org/show_bug.cgi?id=103729
+
+        Reviewed by Carlos Garcia Campos.
+
+        When a URI scheme is registered and the WebProcess is killed,
+        those schemes would not work anymore after the process is relaunched.
+
+        This was observed in Epiphany and possibly affects any port that
+        uses libsoup.
+
+        * Shared/WebProcessCreationParameters.cpp:
+        (WebKit::WebProcessCreationParameters::encode): Encode the registered URI schemes.
+        (WebKit::WebProcessCreationParameters::decode): Decode the registered URI schemes.
+        * Shared/WebProcessCreationParameters.h: Add the urlSchemesRegistered Vector to hold the registered URI schemes.
+        (WebProcessCreationParameters):
+        * UIProcess/efl/WebContextEfl.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess): Assign the parameters.urlSchemesRegistered from the URI schemes
+        registered in the WebSoupRequestManagerProxy and removed the notImplemented() call.
+        * UIProcess/gtk/WebContextGtk.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess): Assign the parameters.urlSchemesRegistered from the URI schemes
+        registered in the WebSoupRequestManagerProxy.
+        * UIProcess/soup/WebSoupRequestManagerProxy.cpp:
+        (WebKit::WebSoupRequestManagerProxy::registerURIScheme): Add the given scheme to the m_registeredURISchemes Vector.
+        * UIProcess/soup/WebSoupRequestManagerProxy.h:
+        (WebKit::WebSoupRequestManagerProxy::registeredURISchemes): Return the m_registeredURISchemes.
+        (WebSoupRequestManagerProxy): Define the m_registeredURISchemes to hold the schemes that are registered.
+        * WebProcess/soup/WebProcessSoup.cpp:
+        (WebKit::WebProcess::platformInitializeWebProcess): Call m_soupRequestManager.registerURIScheme for each URI scheme
+        found in the parameters.
+        * WebProcess/soup/WebSoupRequestManager.h: Make registerURIScheme public.
+        (WebSoupRequestManager):
+
+2012-12-03  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        CSS Device Adaptation: window.innerWidth returns wrong value if CSS viewport descriptors are applied
+        https://bugs.webkit.org/show_bug.cgi?id=103737
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        ViewportStyleResolver used frame view visibleContentRect size as initial viewport size.
+        This however caused a problem when page enabled/disabled CSS stylesheets, having viewport
+        descriptors. Viewport descriptors from new stylesheet were applied to the visibleContentRect
+        affected already by the viewport descriptors from the previous stylesheet.
+
+        New 'initialViewportSize' property (http://dev.w3.org/csswg/css-device-adapt/#initial-viewport)
+        was added to frame view so that viewport descriptors can always be applied to the reliable
+        viewport size.
+
+        Both newly added 'initialViewportSize' property and 'fixedVisibleContentRect' property
+        are assigned appropriately now in WebPage::sendViewportAttributesChanged().
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::sendViewportAttributesChanged):
+
+2012-12-02  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Reorder messages to LayerTreeCoordinatorProxy
+        https://bugs.webkit.org/show_bug.cgi?id=103843
+
+        Reviewed by Noam Rosenthal.
+
+        Send messages to the UI process by the tree order.
+        This is in preparation for refactoring TextureMapper to work in an actor
+        model (http://webkit.org/b/103854).
+
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+
+2012-12-02  Ryuan Choi  <ryuan.choi@gmail.com>
+
+        [EFL][WK2] Update comments of header files which mentions deprecated API
+        https://bugs.webkit.org/show_bug.cgi?id=103718
+
+        Reviewed by Gyuyoung Kim.
+
+        Updated comments which mentions XXX_unref() which was replaced to ewk_object_unref()
+
+        * UIProcess/API/efl/ewk_context.h:
+        * UIProcess/API/efl/ewk_database_manager.h:
+        * UIProcess/API/efl/ewk_storage_manager.h:
+
+2012-12-02  Huang Dongsung  <luxtella@company100.net>
+
+        REGRESSION(r134376): ASSERT(!m_mainBackingStore) hits in CoordinatedGraphicsLayer::syncImageBacking().
+        https://bugs.webkit.org/show_bug.cgi?id=103845
+
+        Reviewed by Noam Rosenthal.
+
+        flushCompositingStateForThisLayerOnly() calls syncImageBacking() before calling
+        updateContentBuffers(). It means there can be the moment that
+        CoordinatedGraphicsLayer has m_mainBackingStore although
+        shouldHaveBackingStore() return false.
+        This patch changes syncImageBacking() to check shouldHaveBackingStore() instead
+        of m_mainBackingStore.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::syncImageBacking):
+        (WebCore::CoordinatedGraphicsLayer::adjustContentsScale):
+        (WebCore::CoordinatedGraphicsLayer::updateContentBuffers):
+        (WebCore::CoordinatedGraphicsLayer::shouldHaveBackingStore):
+        (WebCore):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayer):
+
+2012-12-02  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        Rename WebSocketServerGtk.cpp as WebSocketServerSoup.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=103743
+
+        Reviewed by Gustavo Noronha Silva.
+
+        EFL port is using a GSocket based implementation as well.
+        WebSocketServerSoup can be used together.
+
+        * GNUmakefile.list.am:
+        * UIProcess/InspectorServer/soup/WebSocketServerSoup.cpp: Renamed from Source/WebKit2/UIProcess/InspectorServer/gtk/WebSocketServerGtk.cpp.
+        (WebKit):
+        (WebKit::connectionCallback):
+        (WebKit::WebSocketServer::platformInitialize):
+        (WebKit::WebSocketServer::platformListen):
+        (WebKit::WebSocketServer::platformClose):
+
+2012-12-02  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [CoordinatedGraphics] LayerTreeRenderer::removeImageBacking() calls HashMap::find() twice
+        https://bugs.webkit.org/show_bug.cgi?id=103815
+
+        Reviewed by Noam Rosenthal.
+
+        Call HashMap::take() in LayerTreeRenderer::removeImageBacking()
+        to avoid calling HashMap::find() twice. find() was called once
+        explicitly to get an iterator and a second time to remove the
+        value from the value from the HashMap. We could have used
+        remove(iterator) instead of remove(key) but using take() results
+        in simpler code.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::removeImageBacking):
+
+2012-12-02  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Images disappear randomly
+        https://bugs.webkit.org/show_bug.cgi?id=103522
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Currently, we delete layers before synchronizing layer states of layers. It
+        causes flash. This patch deletes layers after the synchronization.
+
+        In addiation, this patch removes updateViewport() in
+        LayerTreeCoordinatorProxy::deleteCompositingLayer() because
+        LayerTreeCoordinatorProxy::didRenderFrame() is always called after
+        deleting layers.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::deleteCompositingLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+
+2012-12-02  Brent Fulgham  <bfulgham@webkit.org>
+
+        [Windows, WinCairo] Revise export definitions to match mac.
+        https://bugs.webkit.org/show_bug.cgi?id=103687
+
+        Reviewed by Tim Horton.
+
+        Update export definition files to use the same feature exclusion
+        macros as other generated ports.
+
+        * win/WebKit2.def.in: Added additional build macro guards.
+
+2012-12-02  No'am Rosenthal  <noam@webkit.org>
+
+        [CoordinatedGraphics] Crash in TextureMapperLayer::setBackingStore()
+        https://bugs.webkit.org/show_bug.cgi?id=103714
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Remove a layer from the m_pendingSyncBackingStores map when it is deleted.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::deleteLayer):
+
+2012-12-02  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL][WK2] MiniBrowser should have a legacy mode
+        https://bugs.webkit.org/show_bug.cgi?id=103679
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        We need a way to create a web view in legacy mode, while still using the default context.
+        WKViewCreate creates a legacy view, so change it to create a default context if a context
+        was not passed.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_base_add):
+
+2012-12-01  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Support PDF form editing in <iframe>s
+        https://bugs.webkit.org/show_bug.cgi?id=103287
+        <rdar://problem/10326917>
+
+        Reviewed by Dan Bernstein.
+
+        PDFPlugin form editing depends on having a Document that has the same
+        size and position as the plugin; this is true not only in the full-main-frame
+        case, but also in the <iframe> case. Therefore, we can enable form editing
+        for <iframe> PDFPlugins.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::supportsForms): Support form editing whenever
+        our Document's widget is our PluginView (which will only be true in the
+        full-main-frame or <iframe> case).
+
+2012-12-01  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: <embed> and <object> PDFs affect their parent frame's page scale
+        https://bugs.webkit.org/show_bug.cgi?id=103286
+        <rdar://problem/12752315>
+
+        Reviewed by Dan Bernstein.
+
+        Detecting whether or not a PDFPlugin is a full-page plugin or not is not
+        as simple as checking isMainFrame(), because <embed> and <object> will
+        cause PDFPlugin to live in the main frame, while still not being full-page.
+        We also have to check that the main frame's document is a PluginDocument,
+        and whether that PluginDocument's PluginWidget is our PDFPlugin's PluginView.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Add isFullFramePlugin.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::isFullFramePlugin): Check whether the main frame is
+        backed by a PluginDocument, and that that PluginDocument corresponds
+        to this PDFPlugin.
+        (WebKit::PDFPlugin::handlesPageScaleFactor): Use isFullFramePlugin.
+        (WebKit::PDFPlugin::supportsForms): Use isFullFramePlugin.
+
+2012-12-01  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Use spoolRect instead of snapshots for print preview
+        https://bugs.webkit.org/show_bug.cgi?id=103798
+        <rdar://problem/12686749>
+
+        Reviewed by Sam Weinig.
+
+        Revert to using spoolRect instead of snapshotting for printing; this was a bogus
+        change I made in http://trac.webkit.org/changeset/133935 which was irrelevant to
+        the core of that change, and incorrectly disregards the Frame parameter passed to
+        beginPrinting, instead using the WebPage's current Frame.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::drawRectToImage):
+
+2012-11-30  Anders Carlsson  <andersca@apple.com>
+
+        Always listen for the DidFirstLayout layout milestone
+        https://bugs.webkit.org/show_bug.cgi?id=103795
+        <rdar://problem/12790268>
+
+        Reviewed by Dan Bernstein.
+
+        The DidFirstLayout layout milestone is used to determine when to unfreeze the layer tree, so we always want to listen for it.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+
+2012-11-30  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        [Qt] Unreviewed speculative Mac build fix after r136232
+
+        cleanup an oversight from r136235
+
+        * PluginProcess.pro: s/webkit/webkitwidgets/
+
+2012-11-30  Brent Fulgham  <bfulgham@webkit.org>
+
+        [Windows, WinCairo] Generate library export symbol file.
+        https://bugs.webkit.org/show_bug.cgi?id=103687
+
+        Reviewed by Tim Horton.
+
+        Generate the export definition file based on the compile options
+        and port settings. Get rid of the old hand-written file, and use
+        a revised master input file that allows using conditional
+        settings to generate the output, much like the Mac and other
+        ports do.
+
+        * win/WebKit2.def: Removed.
+        * win/WebKit2.def.in: Added.
+        * win/WebKit2Apple.vsprops:
+        * win/WebKit2CFLite.def: Removed.
+        * win/WebKit2CFLite.vsprops:
+        * win/WebKit2Common.vsprops:
+        * win/WebKit2ExportGenerator.vcproj: Added.
+        * win/WebKit2ExportGeneratorCommon.vsprops: Added.
+        * win/WebKit2ExportGeneratorDebug.vsprops: Added.
+        * win/WebKit2ExportGeneratorDebugAll.vsprops: Added.
+        * win/WebKit2ExportGeneratorDebugCairoCFLite.vsprops: Added.
+        * win/WebKit2ExportGeneratorPostBuild.cmd: Added.
+        * win/WebKit2ExportGeneratorPreBuild.cmd: Added.
+        * win/WebKit2ExportGeneratorProduction.vsprops: Added.
+        * win/WebKit2ExportGeneratorRelease.vsprops: Added.
+        * win/WebKit2ExportGeneratorReleaseCairoCFLite.vsprops: Added.
+
+2012-11-30  Tim Horton  <timothy_horton@apple.com>
+
+        (Simple)PDFPlugin: Support conversion of PostScript documents
+        https://bugs.webkit.org/show_bug.cgi?id=103289
+        <rdar://problem/10235708>
+
+        Reviewed by Dan Bernstein.
+
+        SimplePDFPlugin (and PDFPlugin) should support converting PostScript files
+        to PDF before handing them off to their respective backends.
+
+        As PDFPlugin inherits from SimplePDFPlugin, it gets the new functionality automatically.
+
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h: Add convertPostScriptDataIfNeeded(), and m_isPostScript.
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.mm:
+        (WebKit::SimplePDFPlugin::pluginInfo): SimplePDFPlugin should claim to support PDF and PostScript.
+        (WebKit::convertPostScriptDataSourceToPDF): PS->PDF conversion code, copied from PDFViewController (which I intend to remove).
+        (WebKit::SimplePDFPlugin::convertPostScriptDataIfNeeded): Check if the loaded data represents a PS file; if so, convert it.
+        (WebKit::SimplePDFPlugin::streamDidReceiveResponse): Check if the loaded data is of MIME type application/postscript, and store that in m_isPostScript.
+        (WebKit::SimplePDFPlugin::streamDidFinishLoading): Call convertPostScriptDataIfNeeded when we finish loading.
+        (WebKit::SimplePDFPlugin::manualStreamDidReceiveResponse): Ditto from streamDidReceiveResponse.
+        (WebKit::SimplePDFPlugin::manualStreamDidFinishLoading): Ditto from streamDidFinishLoading.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::createPlugin): Use (Simple)PDFPlugin for PostScript files too.
+
+2012-11-30  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: "Show Definition" context menu item should be implemented
+        https://bugs.webkit.org/show_bug.cgi?id=103389
+        <rdar://problem/12710751>
+
+        Reviewed by Dan Bernstein.
+
+        Call existing dictionary popup code when the context menu "Show Definition" item is selected.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Add showDefinitionForAttributedString and convertFromPDFViewToRootView.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate showDefinitionForAttributedString:atPoint:]): Forward this call to PDFPlugin.
+        (WebKit::PDFPlugin::showDefinitionForAttributedString): Create a DictionaryPopupInfo with the necessary information.
+        Ask WebPageProxy to show the dictionary popup.
+        (WebKit::PDFPlugin::convertFromPDFViewToRootView): Convert a point from PDFLayerController space to the root view space.
+
 2012-11-30  Simon Hausmann  <simon.hausmann@digia.com>
 
         Unreviewed trivial Qt build fix:

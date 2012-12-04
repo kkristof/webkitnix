@@ -310,6 +310,10 @@ fast/text/unicode-variation-selector.html
 fast/forms/file/input-file-entries.html
 http/tests/security/contentSecurityPolicy/filesystem-urls-match-self.html
 
+# ENABLE(TEMPLATE_ELEMENT) is disabled.
+fast/dom/HTMLTemplateElement
+html5lib/run-template.html
+
 # Transparent image being produced
 fast/frames/transparent-scrollbar.html
 
@@ -391,9 +395,6 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3-text work is still in progress.
 webkit.org/b/94110 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ ImageOnlyFailure Missing ]
 webkit.org/b/94110 fast/css3-text/css3-text-decoration/text-decoration-style.html [ ImageOnlyFailure Missing ]
-
-# CSS3 Background is not yet enabled (needs ENABLE_CSS3_BACKGROUND).
-webkit.org/b/37514 fast/backgrounds/background-position-parsing-2.html [ Text ]
 
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] perf [ WontFix ]
@@ -614,8 +615,6 @@ webkit.org/b/90928 fast/dom/Orientation [ Skip ]
 # EFL port does not implement DeviceMotion
 webkit.org/b/95300 fast/dom/DeviceMotion [ Skip ]
 
-# The EFL port has no support for accessibility features
-Bug(EFL) accessibility [ Skip ]
 webkit.org/b/98895 perf/accessibility-title-ui-element.html [ Skip ]
 
 # Taken from Chromium, this test verifies that a mismatch reftest will fail if both results are the
@@ -718,6 +717,44 @@ webkit.org/b/68878 webkit.org/b/102993 media/video-playing-and-pause.html [ Fail
 webkit.org/b/98621 webkit.org/b/102993 media/video-controls-rendering.html [ Failure Pass ]
 webkit.org/b/96641 media/video-seek-past-end-playing.html [ Failure Pass ]
 
+# Opera-submitted tests to W3C for <track>, a lot of failures still.
+webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/crossOrigin.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Skip ]
+webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/onremovetrack.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/track-element/cloneNode.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/track-element/src-clear-cues.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing/001.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html [ Skip ] 
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
+webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
+
 webkit.org/b/100636 [ Debug ] jquery/traversing.html [ Failure Crash Pass ]
 
 webkit.org/b/102928 svg/foreignObject/viewport-foreignobject-crash.html [ Crash Failure Pass ]
@@ -726,6 +763,8 @@ webkit.org/b/102928 svg/foreignObject/viewport-foreignobject-crash.html [ Crash 
 webkit.org/b/49182 animations/stop-animation-on-suspend.html [ Failure Pass ]
 
 webkit.org/b/103383 fast/css/counters/element-removal-crash.xhtml [ Failure Pass ]
+
+webkit.org/b/103880 fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # FAILING TESTS
@@ -1379,7 +1418,7 @@ webkit.org/b/91210 http/tests/w3c/webperf/approved/navigation-timing/html/test_t
 webkit.org/b/92352 css3/flexbox/flex-rounding.html [ Failure ]
 
 # Proximity Events is not supported.
-webkit.org/b/92942 fast/dom/Proximity
+webkit.org/b/92942 proximity
 webkit.org/b/92942 fast/events/constructors/device-proximity-event-constructor.html
 
 # Tests are outdated: spaces are not supposed to be collapsed anymore
@@ -1601,7 +1640,6 @@ Bug(EFL) fast/forms/basic-textareas-quirks.html [ Missing ]
 Bug(EFL) fast/forms/input-disabled-color.html [ Missing ]
 Bug(EFL) fast/forms/input-readonly-dimmed.html [ Missing ]
 Bug(EFL) fast/forms/input-text-scroll-left-on-blur.html [ Missing ]
-Bug(EFL) fast/js/array-sort-modifying-tostring.html [ Crash ]
 Bug(EFL) fast/layers/layer-visibility-sublayer.html [ Failure ]
 Bug(EFL) fast/layers/layer-visibility.html [ Failure ]
 Bug(EFL) fast/media/mq-transform-02.html [ Failure ]
@@ -1645,6 +1683,14 @@ webkit.org/b/101439 media/progress-events-generated-correctly.html [ Failure ]
 
 webkit.org/b/101456 fast/repaint/block-selection-gap-in-table-cell.html [ ImageOnlyFailure ]
 
+# Needs rebaseline.
+webkit.org/b/103665 mathml/presentation/roots.xhtml [ Failure ]
+webkit.org/b/103665 mathml/presentation/row-alignment.xhtml [ Failure ]
+webkit.org/b/103665 mathml/presentation/sub.xhtml  [ Failure ]
+webkit.org/b/103665 mathml/presentation/subsup.xhtml  [ Failure ]
+webkit.org/b/103665 mathml/presentation/sup.xhtml [ Failure ]
+webkit.org/b/103665 mathml/presentation/tables.xhtml [ Failure ]
+
 # Identical failures on GTK, EFL and Qt.
 webkit.org/b/101539 editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
@@ -1681,3 +1727,9 @@ Bug(EFL) editing/spelling/context-menu-suggestions.html [ Failure ]
 
 # Newly added test in r136225 fails on GTK bot too.
 webkit.org/b/103740 editing/selection/caret-alignment-for-vertical-text.html [ Failure ]
+
+# All debug bots timeout (crash) on this one
+webkit.org/b/56496 [ Debug ] fast/js/array-sort-modifying-tostring.html [ Crash Pass ]
+
+# volume is reset when mediaelement.src is modified
+webkit.org/b/103893 media/video-volume.html [ Failure ]

@@ -63,8 +63,6 @@ public:
     virtual IDBDatabaseMetadata metadata() const;
     virtual PassRefPtr<IDBObjectStoreBackendInterface> createObjectStore(int64_t id, const String& name, const IDBKeyPath&, bool autoIncrement, IDBTransactionBackendInterface*, ExceptionCode&);
     virtual void deleteObjectStore(int64_t, IDBTransactionBackendInterface*, ExceptionCode&);
-    // FIXME: Remove this as part of https://bugs.webkit.org/show_bug.cgi?id=102733.
-    virtual PassRefPtr<IDBTransactionBackendInterface> transaction(const Vector<int64_t>&, unsigned short);
     virtual PassRefPtr<IDBTransactionBackendInterface> createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode);
     virtual void close(PassRefPtr<IDBDatabaseCallbacks>);
 
@@ -84,14 +82,14 @@ private:
     size_t connectionCount();
     void processPendingCalls();
 
-    static void createObjectStoreInternal(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, PassRefPtr<IDBObjectStoreBackendImpl>, PassRefPtr<IDBTransactionBackendImpl>);
-    static void deleteObjectStoreInternal(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, PassRefPtr<IDBObjectStoreBackendImpl>, PassRefPtr<IDBTransactionBackendImpl>);
-    static void setIntVersionInternal(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, int64_t version, PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, PassRefPtr<IDBTransactionBackendImpl>);
+    class CreateObjectStoreOperation;
+    class DeleteObjectStoreOperation;
+    class VersionChangeOperation;
 
-    // These are used as setVersion transaction abort tasks.
-    static void removeObjectStoreFromMap(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, PassRefPtr<IDBObjectStoreBackendImpl>);
-    static void addObjectStoreToMap(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, PassRefPtr<IDBObjectStoreBackendImpl>);
-    static void resetVersion(ScriptExecutionContext*, PassRefPtr<IDBDatabaseBackendImpl>, const String& version, int64_t intVersion);
+    // When a "versionchange" transaction aborts, these restore the back-end object hierarchy.
+    class CreateObjectStoreAbortOperation;
+    class DeleteObjectStoreAbortOperation;
+    class VersionChangeAbortOperation;
 
     RefPtr<IDBBackingStore> m_backingStore;
     IDBDatabaseMetadata m_metadata;

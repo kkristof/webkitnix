@@ -180,7 +180,7 @@ my @features = (
       define => "ENABLE_CSS_FILTERS", default => isAppleWebKit() || isBlackBerry(), value => \$cssFiltersSupport },
 
     { option => "css3-background", desc => "Toggle CSS3 Background support",
-      define => "ENABLE_CSS3_BACKGROUND", default => 0, value => \$css3BackgroundSupport },
+      define => "ENABLE_CSS3_BACKGROUND", default => 1, value => \$css3BackgroundSupport },
 
     { option => "css3-conditional-rules", desc => "Toggle CSS3 Conditional Rules support (i.e. \@supports)",
       define => "ENABLE_CSS3_CONDITIONAL_RULES", default => 0, value => \$css3ConditionalRulesSupport },
@@ -396,7 +396,7 @@ my @features = (
       define => "USE_SYSTEM_MALLOC", default => isWinCE(), value => \$systemMallocSupport },
 
     { option => "template-tag", desc => "Toggle Templates Tag support",
-      define => "ENABLE_TEMPLATE_ELEMENT", default => !isAppleWinWebKit(), value => \$templateTagSupport },
+      define => "ENABLE_TEMPLATE_ELEMENT", default => 0, value => \$templateTagSupport },
 
     { option => "text-autosizing", desc => "Toggle Text Autosizing support",
       define => "ENABLE_TEXT_AUTOSIZING", default => 0, value => \$textAutosizingSupport },

@@ -785,6 +785,43 @@ template<> inline CSSPrimitiveValue::operator EBoxDecorationBreak() const
 }
 #endif
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(BackgroundEdgeOrigin e)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_IDENT;
+    switch (e) {
+    case TopEdge:
+        m_value.ident = CSSValueTop;
+        break;
+    case RightEdge:
+        m_value.ident = CSSValueRight;
+        break;
+    case BottomEdge:
+        m_value.ident = CSSValueBottom;
+        break;
+    case LeftEdge:
+        m_value.ident = CSSValueLeft;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator BackgroundEdgeOrigin() const
+{
+    switch (m_value.ident) {
+    case CSSValueTop:
+        return TopEdge;
+    case CSSValueRight:
+        return RightEdge;
+    case CSSValueBottom:
+        return BottomEdge;
+    case CSSValueLeft:
+        return LeftEdge;
+    }
+
+    ASSERT_NOT_REACHED();
+    return TopEdge;
+}
+
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxSizing e)
     : CSSValue(PrimitiveClass)
 {
@@ -2809,33 +2846,6 @@ template<> inline CSSPrimitiveValue::operator TextCombine() const
 
     ASSERT_NOT_REACHED();
     return TextCombineNone;
-}
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(RubyPosition position)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_IDENT;
-    switch (position) {
-    case RubyPositionBefore:
-        m_value.ident = CSSValueBefore;
-        break;
-    case RubyPositionAfter:
-        m_value.ident = CSSValueAfter;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator RubyPosition() const
-{
-    switch (m_value.ident) {
-    case CSSValueBefore:
-        return RubyPositionBefore;
-    case CSSValueAfter:
-        return RubyPositionAfter;
-    }
-
-    ASSERT_NOT_REACHED();
-    return RubyPositionBefore;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextEmphasisPosition position)

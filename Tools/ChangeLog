@@ -1,3 +1,568 @@
+2012-12-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Chromium Android Release (Perf) to the list of perf. bots.
+
+        * BuildSlaveSupport/build.webkit.org-config/templates/root.html:
+
+2012-12-04  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Insert the jhbuild wrapper command at the beginning of the command list
+        https://bugs.webkit.org/show_bug.cgi?id=103991
+
+        Reviewed by Martin Robinson.
+
+        Insert the Tools/gtk/run-with-jhbuild wrapper at the beginning of the
+        command that's being formed in multiprocessing bootstrap. The wrapper is
+        an executable Python script while the command being wrapped perhaps isn't
+        and therefore requires the Python interpreter to be listed at the beginning
+        of the command sublist that is then executed by the wrapper.
+
+        Specifically, the webkitpy/layout_tests/run_webkit_tests.py module file
+        is about to lose the executable bit and the Python-signaling shebang line.
+        The Jhbuild wrapper simply executes the command that's passed, but that errs
+        in this case unless the Python executable is executed and the module file
+        is passed to it as an argument.
+
+        * Scripts/webkitpy/common/multiprocessing_bootstrap.py:
+        (run):
+
+2012-12-04  Peter Beverloo  <peter@chromium.org>
+
+        Add the Chromium Android Release (Perf) bot
+        https://bugs.webkit.org/show_bug.cgi?id=103891
+
+        Reviewed by Eric Seidel.
+
+        Add configuration for the bot itself. It will be triggered by the Chromium
+        Android Release builder. When running for Android, the DownloadAndPerfTest
+        factory will also add the OutputAndroidDeviceStatus step.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (DownloadAndPerfTestFactory.__init__):
+
+2012-12-04  Peter Beverloo  <peter@chromium.org>
+
+        [Chromium] The ChromiumAndroidDriver constructor should not rely on adb being available
+        https://bugs.webkit.org/show_bug.cgi?id=103758
+
+        Reviewed by Eric Seidel.
+
+        Lazily initialize the adb command parameters rather than initializing it in the
+        constructor now that there is an assert if adb is not available on the system and
+        we're not in a Chromium Android checkout.
+
+        * Scripts/webkitpy/layout_tests/port/chromium_android.py:
+        (ChromiumAndroidDriver.__init__):
+        (ChromiumAndroidDriver._push_file_if_needed):
+        (ChromiumAndroidDriver._run_adb_command):
+        (ChromiumAndroidDriver.cmd_line):
+        (ChromiumAndroidDriver._start_once):
+        (ChromiumAndroidDriver._read_prompt):
+        (ChromiumAndroidDriver):
+        (ChromiumAndroidDriver._adb_command):
+
+2012-12-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Dromaeo should report individual test result
+        https://bugs.webkit.org/show_bug.cgi?id=99800
+
+        Reviewed by Eric Seidel.
+
+        Ignore subtest results spit out by Dromaeo tests.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest): Added a line to ignore.
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (MainTest.test_parse_output_with_subtests): Added.
+
+2012-12-03  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed, functionality fix after r136437.
+
+        Calling sys.exit actually raises a SystemExit exception that
+        is then handled in the second block and causes the script to
+        return an 'exceptional' exit code rather than the code presenting
+        the number of failed tests.
+
+        This is just a temporary fix to get the faultless bots green while
+        they are unnecessarily red at the moment. The problem and a proper
+        fix will be properly addressed.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+
+2012-12-03  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136460.
+        http://trac.webkit.org/changeset/136460
+        https://bugs.webkit.org/show_bug.cgi?id=103958
+
+        This patch caused compile error when building DumpRenderTree
+        (Requested by tasak on #webkit).
+
+        * Scripts/webkitpy/common/config/build_unittest.py:
+        (ShouldBuildTest):
+
+2012-12-03  Scott Violet  <sky@chromium.org>
+
+        [chromium] Remove linux theme related files and switch to default
+        https://bugs.webkit.org/show_bug.cgi?id=103897
+
+        Reviewed by Darin Fisher.
+
+        * Scripts/webkitpy/common/config/build_unittest.py:
+        (ShouldBuildTest): linux->default
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Disable WebKit2 API tests on Apple Windows port.
+        https://bugs.webkit.org/show_bug.cgi?id=103929.
+
+        Reviewed by Timothy Horton.
+
+        * Scripts/run-api-tests:
+        (runTestsBySuite):
+
+2012-12-03  Dirk Pranke  <dpranke@chromium.org>
+
+        webkitpy's run_webkit_tests should initialize the printer earlier on
+        https://bugs.webkit.org/show_bug.cgi?id=103661
+
+        Reviewed by Eric Seidel.
+
+        Initialize the printer before computing the derived options
+        from the command line arguments, so that we can safely log from
+        port methods.
+
+        Also clean up a few miscellaneous lint warnings.
+
+        * Scripts/webkitpy/layout_tests/port/chromium_android.py:
+        (ChromiumAndroidPort.path_to_adb):
+        * Scripts/webkitpy/layout_tests/port/mac.py:
+        (MacPort.default_child_processes):
+        (MacPort.sample_process):
+        (MacPort.start_helper):
+        (MacPort.stop_helper):
+        (MacPort.nm_command):
+        * Scripts/webkitpy/layout_tests/port/mac_unittest.py:
+        (test_default_child_processes):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (run):
+        (_set_up_derived_options):
+
+2012-12-03  Dirk Pranke  <dpranke@chromium.org>
+
+        webkitpy: autoinstaller is failing on windows
+        https://bugs.webkit.org/show_bug.cgi?id=103699
+
+        Reviewed by Tony Chang.
+
+        Attempt to fix the python autoinstaller to work for pylint on win32
+        again ... it turns out one of the dependent packages contains
+        a write-protected test file and windows will choke when it tries to move
+        it into place. Fortunately we can just delete the file prior to
+        installing it in the final location, but we have to jump through
+        a couple of hoops to do so.
+
+        Also, make sure that we're flattening nested module names like
+        "logilab/common" into either safe basenames (logilab_common) or
+        host-specific subdirs (logilab\common) as needed.
+
+        * Scripts/webkitpy/common/system/autoinstall.py:
+        (AutoInstaller._url_downloaded_path):
+        (AutoInstaller._install):
+        (AutoInstaller.install):
+        * Scripts/webkitpy/thirdparty/__init__.py:
+        (AutoinstallImportHook._install_pylint):
+
+2012-12-03  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: clean up exception propagation / handling for interrupts and early exits
+        https://bugs.webkit.org/show_bug.cgi?id=103830
+
+        Reviewed by Ojan Vafai.
+
+        The code for propagating early exits out of the test run was
+        convoluted and hard to follow. By adjusting the WorkerException to
+        derive from BaseException rather than Exception (which is a fair
+        way of representing an error that was really unexpected/unrecoverable
+        anyway) and pushing the TestRunInterruptedException into the
+        ResultSummary (which is also fair since it was more of a result
+        than an exception) this allows us to consolidate and clean up
+        a bunch of the try/catch logic and pass fewer state flags around.
+
+        There are no real functional changes to this patch; there's an
+        API change in that we stop exporting TestRunInterruptedException
+        and WorkerException out of the Manager, and the existence of the
+        MessagePool is now completely hidden.
+
+        * Scripts/webkitpy/common/message_pool.py:
+        (WorkerException):
+        * Scripts/webkitpy/layout_tests/controllers/layout_test_runner.py:
+        (LayoutTestRunner.run_tests):
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (summarize_results):
+        (Manager.run):
+        * Scripts/webkitpy/layout_tests/controllers/manager_unittest.py:
+        (ResultSummaryTest.summarized_results):
+        * Scripts/webkitpy/layout_tests/models/result_summary.py:
+        (ResultSummary.__init__):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (run):
+        (main):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (MainTest.test_exception_raised.of):
+        (MainTest.test_exception_raised):
+        (MainTest.test_run_force):
+        * Scripts/webkitpy/layout_tests/views/printing_unittest.py:
+        (Testprinter.test_print_unexpected_results.get_unexpected_results):
+        (Testprinter):
+
+2012-12-03  Julien BRIANCEAU   <jbrianceau@nds.com>
+
+        Add Qt/SH4 build slave to build.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=103384
+
+        Reviewed by Csaba Osztrogonác.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        Enable CSS3 background-position offset by default
+        https://bugs.webkit.org/show_bug.cgi?id=103917
+
+        Reviewed by Benjamin Poulain.
+
+        Even though each port may enable or not the feature we still need
+        to pass it at configure time otherwise it will be disabled.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-12-03  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed. Adding myself to committers.py.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-03  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [CMake] Enable building WebKit2-only build for the EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=103820
+
+        Reviewed by Gyuyoung Kim.
+
+        Set ENABLE_WEBKIT2 to OFF if build-webkit was run with --no-webkit2.
+        Never set ENABLE_WEBKIT in build-webkit. This will simplyfy invoking
+        cmake directly. Initialize $cmakeArgs to avoid potential
+        warnings when running the script.
+
+        * Scripts/build-webkit:
+
+2012-12-03  Tommy Widenflycht  <tommyw@google.com>
+
+        Speech Recognition API: Update SpeechRecognitionEvent to match the specification
+        https://bugs.webkit.org/show_bug.cgi?id=103407
+
+        Reviewed by Kentaro Hara.
+
+        Changing the mock to use the new results delivery API.
+
+        * DumpRenderTree/chromium/MockWebSpeechRecognizer.cpp:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [Qt] Enable CSS3 background-position offsets by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103877
+
+        Reviewed by Tor Arne Vestbø.
+
+        Enable by default CSS3 background-position offsets.
+
+        * qmake/mkspecs/features/features.pri:
+
+2012-12-03  KyungTae Kim  <ktf.kim@samsung.com>
+
+        [EFL][WK2] Use float variable for zoom levels for MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=103863
+
+        Reviewed by Gyuyoung Kim.
+
+        Use float instead of int for zoomLevels variables for a clearer expression
+
+        * MiniBrowser/efl/main.c:
+        (on_key_down):
+
+2012-12-02  KyungTae Kim  <ktf.kim@samsung.com>
+
+        [EFL][WK2] Add support for a zoom level setting to MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=99285
+
+        Reviewed by Gyuyoung Kim.
+
+         Add support for a zoom level setting to MiniBrowser.
+         Shortcuts for setting operations are same as common browsers:
+         Ctrl + '+' to zoom in, Ctrl + '-' to zoom out and Ctrl + '0' to zoom to default.
+
+        * MiniBrowser/efl/main.c:
+        (on_key_down):
+
+2012-12-02  KyungTae Kim  <ktf.kim@samsung.com>
+
+        [EFL][WK2] ECORE_GETOPT_VALUE_BOOL need to be used for Eina_Bool
+        https://bugs.webkit.org/show_bug.cgi?id=103835
+
+        Reviewed by Kentaro Hara.
+
+        Because legacy_behavior_enabled is Eina_Bool, ECORE_GETOPT_VALUE_BOOL need to be used
+
+        * MiniBrowser/efl/main.c:
+        (elm_main):
+
+2012-12-02  Mike West  <mkwst@chromium.org>
+
+        Garden-o-matic shouldn't die when blank JSON results are received.
+        https://bugs.webkit.org/show_bug.cgi?id=103838
+
+        Reviewed by Adam Barth.
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/base.js:
+            If the JSONP string doesn't contain '(' or ')', return an empty object.
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/base_unittests.js:
+            Check that this behavior stays in place.
+
+2012-12-02  Eric Seidel  <eric@webkit.org>
+
+        run-perf-tests --profile should use iprofiler instead of instruments on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=103765
+
+        Unreviewed.  Updating the unittests after my previous change.
+
+        * Scripts/webkitpy/common/system/profiler_unittest.py:
+        (ProfilerFactoryTest.test_basic):
+
+2012-12-02  Julie Parent  <jparent@chromium.org>
+
+        Remove dead code in flakiness dashboard for obsolete buildDir option
+        https://bugs.webkit.org/show_bug.cgi?id=103792
+
+        Reviewed by Dirk Pranke.
+
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (initBuilders):
+
+2012-12-02  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: clean up logic for retrying failed tests a bit
+        https://bugs.webkit.org/show_bug.cgi?id=103829
+
+        Reviewed by Ojan Vafai.
+
+        The code for determining when to retry test failures and
+        show the results.html file was awkward and could stand some
+        cleaning up. This patch should have no functional changes.
+
+        The routine called _get_failures() returned a dict of test names
+        to failure types, but we only ever used the names, so I've converted
+        it to return a list (and renamed it); also, the show_results_html()
+        file was calling that routine to figure out if anything failed, when
+        the information was already in the result_summary (as either
+        unexpected_results or total_failures), so we were doing unnecessary work.
+
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (Manager.__init__):
+        (Manager.run):
+        (Manager._run_tests):
+        (Manager._failed_test_names):
+        (Manager._copy_results_html_file):
+
+2012-12-02  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: remove unused methods in manager.py
+        https://bugs.webkit.org/show_bug.cgi?id=103828
+
+        Reviewed by Eric Seidel.
+
+        These two methods weren't being called by anything and were no
+        longer needed.
+
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (Manager._get_failures):
+        (Manager._upload_json_files):
+
+2012-12-02  Laszlo Gombos  <l.gombos@samsung.com>
+
+        Correct the spelling of the cmakeargs argument
+        https://bugs.webkit.org/show_bug.cgi?id=103814
+
+        Reviewed by Darin Adler.
+
+        The script expects cmakeargs (plural), so lets get the
+        documentation of the script report the same.
+
+        * Scripts/build-webkit:
+
+2012-12-02  Mike West  <mkwst@chromium.org>
+
+        [gtk] Enable the CSP_NEXT runtime flag.
+        https://bugs.webkit.org/show_bug.cgi?id=103810
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (resetDefaultsToConsistentValues):
+            Turn on the CSP_NEXT runtime flag when running tests under GTK.
+
+2012-12-02  Eric Seidel  <eric@webkit.org>
+
+        run-perf-tests --profile should use iprofiler instead of instruments on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=103765
+
+        Reviewed by Ryosuke Niwa.
+
+        Stephanie pointed out that iprofiler is the newer command-line interface
+        to replace /usr/bin/instruments in Instruments 4 (which according to the
+        interblags is supported on everything since 10.6.6), so I've moved --profile
+        to use iprofiler on Mac.
+
+        I also made the IProfiler class wait for iprofiler to complete so that
+        iprofiler won't continue running after run-perf-tests is complete (and
+        spam over the top of your shell output).
+
+        There are a couple of "got-chas" to this approach:
+        1.  iprofiler will ask for your password the first time you run it, which may
+            cause your first test to fail.  /usr/bin/instruments doesn't seem to do that.
+        2.  iprofiler has nice (but kinda awkward for our purposes) support for separate
+            directory and basename arguments, making IProfiler a somewhat awkward
+            baseclass of SingleFileOutputProfiler
+
+        I suspect we'll iterate from here.  It does seem slightly faster than
+        /usr/bin/instruments was.
+
+        * Scripts/webkitpy/common/system/profiler.py:
+        (ProfilerFactory.create_profiler):
+        (IProfiler):
+        (IProfiler.__init__):
+        (IProfiler.attach_to_pid):
+
+2012-12-02  Yongjun Zhang  <yongjun_zhang@apple.com>
+
+        Need a method to close all idle localstorage databases immediately.
+        https://bugs.webkit.org/show_bug.cgi?id=103469
+
+        Reviewed by David Kilzer.
+
+        Add an JS method to TestRunner, to enable testing closing idle local storage databases in
+        DumpRenderTree layout tests.
+
+        * DumpRenderTree/TestRunner.cpp:
+        (closeIdleLocalStorageDatabasesCallback):
+        (TestRunner::staticFunctions):
+        * DumpRenderTree/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        (TestRunner::closeIdleLocalStorageDatabases):
+        * DumpRenderTree/efl/TestRunnerEfl.cpp:
+        (TestRunner::closeIdleLocalStorageDatabases):
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        (TestRunner::closeIdleLocalStorageDatabases):
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        (TestRunner::closeIdleLocalStorageDatabases):
+        * DumpRenderTree/win/TestRunnerWin.cpp:
+        (TestRunner::closeIdleLocalStorageDatabases):
+        * DumpRenderTree/wx/TestRunnerWx.cpp:
+        (TestRunner::closeIdleLocalStorageDatabases):
+
+2012-12-02  Yael Aharon  <yael.aharon@intel.com>
+
+        [EFL][WK2] MiniBrowser should have a legacy mode
+        https://bugs.webkit.org/show_bug.cgi?id=103679
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add an option to start MiniBrowser in legacy mode.
+
+        * MiniBrowser/efl/main.c:
+        (window_create):
+        (elm_main):
+
+2012-12-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136236.
+        http://trac.webkit.org/changeset/136236
+        https://bugs.webkit.org/show_bug.cgi?id=103833
+
+        [chromium] Flakey crashes in SpeechRecognitionEvent::emma
+        during GC. (Requested by mkwst on #webkit).
+
+        * DumpRenderTree/chromium/MockWebSpeechRecognizer.cpp:
+
+2012-12-01  Zan Dobersek  <zandobersek@gmail.com>
+
+        [XvfbDriver] XvfbDriverTest.test_next_free_display is flaky on builders using XvfbDriver
+        https://bugs.webkit.org/show_bug.cgi?id=103806
+
+        Reviewed by Dirk Pranke.
+
+        There are occasional mishaps on builders where XvfbDriver doesn't properly
+        clean up the Xvfb instance it was managing so the related guard lock files
+        are still existing when the webkitpy unit tests are run. This can cause failures
+        in XvfbDriverTest.test_next_free_display as the test tries to acquire displays
+        with a specific number but is unable to due to the stale locks.
+
+        The solution to this is to use MockFileLock when inside unit test. This is achievable
+        by creating a file lock through the SystemHost instance connected to the Port object,
+        the latter available to the Driver.
+
+        * Scripts/webkitpy/common/system/file_lock_mock.py:
+        (MockFileLock.acquire_lock): Return True to signal lock acquiring succeeded.
+        (MockFileLock.release_lock): Return True to signal lock releasing succeeded.
+        * Scripts/webkitpy/layout_tests/port/xvfbdriver.py:
+        (XvfbDriver._next_free_display): Create the file lock through a mockable way.
+        * Scripts/webkitpy/layout_tests/port/xvfbdriver_unittest.py:
+        (XvfbDriverTest.test_next_free_display): Enable back the unit test.
+
+2012-12-01  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] A11y tests in WK2 report badly-formatted AX roles
+        https://bugs.webkit.org/show_bug.cgi?id=102947
+
+        Reviewed by Xan Lopez.
+
+        As in DRT, convert the ATK accessibility roles to corresponding AXRoles.
+        These are expected in both tests and their baselines.
+
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::roleToString):
+        (WTR):
+        (WTR::AccessibilityUIElement::role):
+
+2012-11-30  Mike West  <mkwst@chromium.org>
+
+        CSP 1.1: Make the CSP_NEXT flag runtime enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=103652
+
+        Reviewed by Adam Barth.
+
+        Ensures that the new SecurityPolicy runtime flag is enabled for Chromium's tests.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+
+2012-11-30  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Removed temporary debugging change from DRT (r136300).
+
+        * DumpRenderTree/win/DumpRenderTree.cpp:
+        (dump):
+
+2012-11-30  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Temporary change to DRT for debugging purposes.
+
+        * DumpRenderTree/win/DumpRenderTree.cpp:
+        (dump):
+
 2012-11-29  Tommy Widenflycht  <tommyw@google.com>
 
         Speech Recognition API: Update SpeechRecognitionEvent to match the specification

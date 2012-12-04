@@ -154,12 +154,11 @@ public:
     static void didMatchRule(const InspectorInstrumentationCookie&, bool matched);
     static InspectorInstrumentationCookie willProcessRule(Document*, const StyleRule*);
     static void didProcessRule(const InspectorInstrumentationCookie&);
-    static void willProcessTask(Page*);
-    static void didProcessTask(Page*);
 
     static void applyUserAgentOverride(Frame*, String*);
     static void applyScreenWidthOverride(Frame*, long*);
     static void applyScreenHeightOverride(Frame*, long*);
+    static void applyEmulatedMedia(Frame*, String*);
     static bool shouldApplyScreenWidthOverride(Frame*);
     static bool shouldApplyScreenHeightOverride(Frame*);
     static void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
@@ -348,12 +347,11 @@ private:
     static void didMatchRuleImpl(const InspectorInstrumentationCookie&, bool matched);
     static InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, const StyleRule*);
     static void didProcessRuleImpl(const InspectorInstrumentationCookie&);
-    static void willProcessTaskImpl(InstrumentingAgents*);
-    static void didProcessTaskImpl(InstrumentingAgents*);
 
     static void applyUserAgentOverrideImpl(InstrumentingAgents*, String*);
     static void applyScreenWidthOverrideImpl(InstrumentingAgents*, long*);
     static void applyScreenHeightOverrideImpl(InstrumentingAgents*, long*);
+    static void applyEmulatedMediaImpl(InstrumentingAgents*, String*);
     static bool shouldApplyScreenWidthOverrideImpl(InstrumentingAgents*);
     static bool shouldApplyScreenHeightOverrideImpl(InstrumentingAgents*);
     static void willSendRequestImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
@@ -1032,24 +1030,6 @@ inline void InspectorInstrumentation::didProcessRule(const InspectorInstrumentat
 #endif
 }
 
-inline void InspectorInstrumentation::willProcessTask(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        willProcessTaskImpl(instrumentingAgents);
-#endif
-}
-
-inline void InspectorInstrumentation::didProcessTask(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        didProcessTaskImpl(instrumentingAgents);
-#endif
-}
-
 inline void InspectorInstrumentation::applyUserAgentOverride(Frame* frame, String* userAgent)
 {
 #if ENABLE(INSPECTOR)
@@ -1085,6 +1065,15 @@ inline bool InspectorInstrumentation::shouldApplyScreenWidthOverride(Frame* fram
         return shouldApplyScreenWidthOverrideImpl(instrumentingAgents);
 #endif
     return false;
+}
+
+inline void InspectorInstrumentation::applyEmulatedMedia(Frame* frame, String* media)
+{
+#if ENABLE(INSPECTOR)
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        applyEmulatedMediaImpl(instrumentingAgents, media);
+#endif
 }
 
 inline bool InspectorInstrumentation::shouldApplyScreenHeightOverride(Frame* frame)

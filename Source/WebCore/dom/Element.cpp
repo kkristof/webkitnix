@@ -37,6 +37,7 @@
 #include "DatasetDOMStringMap.h"
 #include "Document.h"
 #include "DocumentFragment.h"
+#include "DocumentSharedObjectPool.h"
 #include "ElementRareData.h"
 #include "ExceptionCode.h"
 #include "FlowThreadController.h"
@@ -209,7 +210,7 @@ inline ElementRareData* Element::ensureElementRareData()
     
 OwnPtr<NodeRareData> Element::createRareData()
 {
-    return adoptPtr(new ElementRareData);
+    return adoptPtr(new ElementRareData(documentInternal()));
 }
 
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, blur);
@@ -976,12 +977,10 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector, Frag
         }
     }
 
-    // When the document is in parsing state, we cache immutable ElementAttributeData objects with the
-    // input attribute vector as key. (This cache is held by Document.)
-    if (!document() || !document()->parsing())
-        m_attributeData = ElementAttributeData::createImmutable(filteredAttributes);
+    if (document() && document()->sharedObjectPool())
+        m_attributeData = document()->sharedObjectPool()->cachedImmutableElementAttributeData(filteredAttributes);
     else
-        m_attributeData = document()->cachedImmutableAttributeData(filteredAttributes);
+        m_attributeData = ElementAttributeData::createImmutable(filteredAttributes);
 
     // Iterate over the set of attributes we already have on the stack in case
     // attributeChanged mutates m_attributeData.
@@ -1054,18 +1053,11 @@ const QualifiedName& Element::imageSourceAttributeName() const
 
 bool Element::rendererIsNeeded(const NodeRenderingContext& context)
 {
-    return (document()->documentElement() == this) || (context.style()->display() != NONE);
+    return context.style()->display() != NONE;
 }
 
-RenderObject* Element::createRenderer(RenderArena* arena, RenderStyle* style)
+RenderObject* Element::createRenderer(RenderArena*, RenderStyle* style)
 {
-    if (document()->documentElement() == this && style->display() == NONE) {
-        // Ignore display: none on root elements.  Force a display of block in that case.
-        RenderBlock* result = new (arena) RenderBlock(this);
-        if (result)
-            result->setAnimatableStyle(style);
-        return result;
-    }
     return RenderObject::createObject(this, style);
 }
 

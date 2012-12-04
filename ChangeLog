@@ -1,3 +1,99 @@
+2012-12-04  Kondapally Kalyan  <kalyan.kondapally@intel.com>
+
+        [EFL][WK2][AC] USE_GRAPHICS_SURFACE should be enabled only if Xcomposite and Xrender extensions are found.
+        https://bugs.webkit.org/show_bug.cgi?id=103710.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        When using GLX back-end we are dependent on GLX support, Xcomposite and Xrender extensions.
+        In this case, GraphicsSurface usage depends on Xcomposite and Xrender extensions. 
+        USE_GRAPHICS_SURFACE should be enabled only if Xcomposite and Xrender extensions are found.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-12-03  Pierre Rossi  <pierre.rossi@digia.com>
+
+        [Qt] another stab at fixing the windows build 
+
+        It seems the QT_BUILD_{TARGET}_LIB are not set as they should by qt_module.prf.
+        Define them by hand to be on the safe side.
+
+        * Source/widgetsapi.pri:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [EFL] Enable CSS3 background-position offsets by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103879
+
+        Reviewed by Laszlo Gombos.
+
+        Enable the feature for EFL only.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [GTK] Enable CSS3 background-background position offset by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103903
+
+        Reviewed by Philippe Normand.
+
+        Turn on the flag by default.
+
+        * configure.ac:
+
+2012-12-03  Cosmin Truta  <ctruta@rim.com>
+
+        [BlackBerry] Enable HIDDEN_PAGE_DOM_TIMER_THROTTLING
+        https://bugs.webkit.org/show_bug.cgi?id=103842
+
+        Reviewed by Yong Li.
+
+        Set ENABLE_HIDDEN_PAGE_DOM_TIMER_THROTTLING to ON.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2012-12-03  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [CMake] Enable building WebKit2-only build for the EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=103820
+
+        Reviewed by Gyuyoung Kim.
+
+        To create a WebKit2-only build for EFL use the following command:
+        build-webkit --efl --cmakeargs="-DENABLE_WEBKIT=OFF".
+
+        * CMakeLists.txt: Turn on WebKit1 support if it is not explicitly set (enabled or disabled) for
+        all CMake based ports.
+
+        * Source/cmake/OptionsEfl.cmake: Enable WebKit2 
+        for the EFL port if it is not explicitly set (enabled or disabled).
+
+2012-12-03  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt][Mac] QtWebKitWidgets has wrong install_name.
+
+        This part got lost during the library split.
+        It was done for QtWebKit before, but it also
+        needs to be applied to QtWebKitWidgets.
+
+        Reviewed by Tor Arne Vestbø.
+
+        * Source/widgetsapi.pri:
+
+2012-11-30  Justin Novosad  <junov@google.com>
+
+        [Chromium] Animation updates fail when using a canvas as a CSS backround-image style with -webkit-canvas
+        https://bugs.webkit.org/show_bug.cgi?id=103643
+
+        Reviewed by Stephen White.
+
+        New test to verify that elements using a canvas as a style image
+        source are redrawn when the canvas is animated.  Added as a manual test
+        because the bug was not reproducible in DumpRenderTree.
+
+        * ManualTests/animated-canvas-as-background.html: Added.
+
 2012-11-30  Pierre Rossi  <pierre.rossi@gmail.com>
 
         [Qt] Unreviewed build break

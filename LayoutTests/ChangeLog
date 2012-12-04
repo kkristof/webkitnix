@@ -1,3 +1,2465 @@
+2012-12-04  Mike West  <mkwst@chromium.org>
+
+        Log to console when forms and popups are blocked by 'sandbox'.
+        https://bugs.webkit.org/show_bug.cgi?id=103615
+
+        Reviewed by Adam Barth.
+
+        * fast/frames/sandboxed-iframe-attribute-parsing-expected.txt:
+        * fast/frames/sandboxed-iframe-forms-dynamic-expected.txt:
+        * fast/frames/sandboxed-iframe-forms-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-top-by-name-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-windowopen-expected.txt:
+        * http/tests/security/no-popup-from-sandbox.html:
+        * http/tests/security/popup-allowed-by-sandbox-is-sandboxed.html:
+            Updating effected tests with new console warnings.
+
+2012-12-04  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaseline for r136508.
+
+        * platform/chromium-linux/compositing/masks/masked-ancestor-expected.png:
+        * platform/chromium-mac-lion/compositing/masks/masked-ancestor-expected.png:
+        * platform/chromium-mac-snowleopard/compositing/masks/masked-ancestor-expected.png:
+        * platform/chromium-mac/compositing/masks/masked-ancestor-expected.png:
+        * platform/chromium-win/compositing/masks/masked-ancestor-expected.png:
+        * platform/efl-wk1/compositing/masks: Added.
+        * platform/efl-wk1/compositing/masks/masked-ancestor-expected.png: Added.
+        * platform/efl/compositing/masks/masked-ancestor-expected.png: Removed.
+
+2012-12-04  Ken Kania  <kkania@chromium.org>
+
+        Inspector: Introduce Input.dispatchKeyEvent and DOM.focus for typing simulation.
+        https://bugs.webkit.org/show_bug.cgi?id=103530
+
+        Reviewed by Yury Semikhatsky.
+
+        Input.dispatchKeyEvent simply calls EventHandler::keyEvent with the key event data
+        from the command parameters. The client will be responsible for providing proper
+        events to simulate desired typing behavior.
+        DOM.focus calls focus on a dom element.
+
+        * inspector-protocol/dom-focus-expected.txt: Added.
+        * inspector-protocol/dom-focus.html: Added.
+        * inspector-protocol/input/dispatchKeyEvent-expected.txt: Added.
+        * inspector-protocol/input/dispatchKeyEvent.html: Added.
+
+2012-12-04  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed mathml rebaseline.
+
+        * platform/chromium-linux-x86/mathml/presentation/sub-expected.txt: Removed.
+        * platform/chromium-mac-lion/mathml/presentation/sub-expected.txt: Removed.
+        * platform/chromium/mathml/presentation/sub-expected.txt: Removed.
+        * platform/efl-wk1/mathml: Added.
+        * platform/efl-wk1/mathml/presentation: Added.
+        * platform/efl-wk1/mathml/presentation/roots-expected.txt: Added.
+        * platform/efl-wk1/mathml/presentation/row-alignment-expected.txt: Added.
+        * platform/efl-wk1/mathml/presentation/sub-expected.txt: Added.
+        * platform/efl-wk1/mathml/presentation/subsup-expected.txt: Added.
+        * platform/efl/mathml/presentation/roots-expected.txt: Removed.
+        * platform/efl/mathml/presentation/row-alignment-expected.txt: Removed.
+        * platform/efl/mathml/presentation/sub-expected.txt: Removed.
+        * platform/efl/mathml/presentation/subsup-expected.txt: Removed.
+
+2012-12-04  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed, skip new broken tests in chromium.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-04  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium expectations update, mark unskipped svg tests as slow.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-04  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaseline for r136506 and 136502.
+
+        * platform/chromium-linux/compositing/absolute-position-changed-with-composited-parent-layer-expected.png: Removed.
+        * platform/chromium-linux/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.png: Removed.
+        * platform/chromium-linux/media/track/opera: Added.
+        * platform/chromium-linux/media/track/opera/interfaces: Added.
+        * platform/chromium-linux/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-linux/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-linux/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-linux/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-linux/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/chromium-mac-lion/media/track/opera: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-mac-lion/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/media/track/opera: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-mac-snowleopard/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/chromium-mac/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.png:
+        * platform/chromium-mac/compositing/repaint/newly-composited-on-scroll-expected.png:
+        * platform/chromium-mac/media/track/opera: Added.
+        * platform/chromium-mac/media/track/opera/interfaces: Added.
+        * platform/chromium-mac/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-mac/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-mac/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-mac/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-mac/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/chromium-win-xp/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.png: Removed.
+        * platform/chromium-win-xp/media/track/opera: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-win-xp/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/chromium-win/compositing/absolute-position-changed-with-composited-parent-layer-expected.png: Removed.
+        * platform/chromium-win/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.png:
+        * platform/chromium-win/compositing/iframes/composited-iframe-alignment-expected.png:
+        * platform/chromium-win/compositing/reflections/reflection-in-composited-expected.png:
+        * platform/chromium-win/media/track/opera: Added.
+        * platform/chromium-win/media/track/opera/interfaces: Added.
+        * platform/chromium-win/media/track/opera/interfaces/HTMLElement: Added.
+        * platform/chromium-win/media/track/opera/interfaces/HTMLElement/HTMLMediaElement: Added.
+        * platform/chromium-win/media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack-expected.txt: Added.
+        * platform/chromium-win/media/track/opera/interfaces/TextTrack: Added.
+        * platform/chromium-win/media/track/opera/interfaces/TextTrack/kind-expected.txt: Added.
+        * platform/efl-wk1/compositing/iframes: Added.
+        * platform/efl-wk1/compositing/iframes/composited-iframe-alignment-expected.png: Added.
+        * platform/efl-wk1/compositing/reflections/reflection-in-composited-expected.png: Added.
+        * platform/efl-wk1/compositing/repaint/newly-composited-on-scroll-expected.png: Added.
+        * platform/efl/compositing/iframes/composited-iframe-alignment-expected.png: Removed.
+        * platform/efl/compositing/reflections/reflection-in-composited-expected.png: Removed.
+        * platform/efl/compositing/repaint/newly-composited-on-scroll-expected.png: Removed.
+
+2012-12-04  Robert Hogan  <robert@webkit.org>
+
+        Redrawing issue with inserting new inline element between existing inline elements
+        https://bugs.webkit.org/show_bug.cgi?id=50315
+
+        Reviewed by Levi Weintraub.
+
+        * fast/inline/layout-after-inserting-nested-br-expected.html: Added.
+        * fast/inline/layout-after-inserting-nested-br.html: Added.
+
+2012-12-04  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        IntSize::scale() should return rounded value
+        https://bugs.webkit.org/show_bug.cgi?id=103984
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Test css3/device-adapt/viewport-width-not-affecting-next-page.html is not flaky any more.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-04  Stephen Chenney  <schenney@chromium.org>
+
+        [chromium] Turn on the new Skia mask blur algorithm.
+        https://bugs.webkit.org/show_bug.cgi?id=103906
+
+        Unreviewed roll out.
+
+        The previous patch was premature and is causing issues rolling skia deps and Chromium deps.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-04  Antoine Quint  <graouts@apple.com>
+
+        TextTrack's .kind property should return lower-case values
+        https://bugs.webkit.org/show_bug.cgi?id=103411
+
+        Reviewed by Eric Carlson.
+
+        Stop skipping passing tests.
+
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+
+2012-12-04  Markus Heintz  <markusheintz@chromium.org>
+
+        Web Inspector: Updating test expectations after viewport console warnings cleanup.
+        https://bugs.webkit.org/show_bug.cgi?id=102890
+
+        Reviewed by Jochen Eisinger.
+
+        Updating test expectations after improving the console message text
+        for a viewport console warning and change the log level to warning.
+
+        * fast/viewport/viewport-121-expected.txt:
+        * fast/viewport/viewport-122-expected.txt:
+        * fast/viewport/viewport-125-expected.txt:
+        * fast/viewport/viewport-126-expected.txt:
+        * fast/viewport/viewport-127-expected.txt:
+        * fast/viewport/viewport-134-expected.txt:
+        * fast/viewport/viewport-52-expected.txt:
+        * fast/viewport/viewport-53-expected.txt:
+        * fast/viewport/viewport-54-expected.txt:
+        * fast/viewport/viewport-55-expected.txt:
+        * fast/viewport/viewport-77-expected.txt:
+        * fast/viewport/viewport-83-expected.txt:
+        * fast/viewport/viewport-84-expected.txt:
+        * fast/viewport/viewport-87-expected.txt:
+        * fast/viewport/viewport-warnings-3-expected.txt:
+        * fast/viewport/viewport-warnings-5-expected.txt:
+        * fast/viewport/viewport-warnings-6-expected.txt:
+
+2012-12-04  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * platform/chromium/TestExpectations:
+        Update flaky tests' expectations.
+
+2012-12-04  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * platform/chromium/TestExpectations:
+        Mark css3/filters/effect-reference-hw.html and
+        css3/filters/effect-reference-ordering-hw.html as crash.
+
+2012-12-04  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding failure expectations for the sixth and seventh SVG viewspec tests.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-03  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: [Overrides] Add ability to override the page CSS media type
+        https://bugs.webkit.org/show_bug.cgi?id=103752
+
+        Reviewed by Pavel Feldman.
+
+        The test invokes PageAgent.setEmulatedMedia() and emits the WebInspector.cssModel.mediaQueryResultChanged() signal.
+
+        * inspector/styles/media-emulation-expected.txt: Added.
+        * inspector/styles/media-emulation.html: Added.
+
+2012-12-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix a test and re-enable fast/harness/perftests on Chromium.
+
+        * fast/harness/perftests/runs-per-second-log.html:
+        * platform/chromium/TestExpectations:
+
+2012-12-04  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * platform/chromium/TestExpectations:
+        Updated about 200 tests' expectations, because the tests were
+        reported as "expected to XXX, but YYY".
+
+2012-12-03  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: [REGRESSION] [Styles] Rule disappears if edited selector does not affect selected node
+        https://bugs.webkit.org/show_bug.cgi?id=103059
+
+        Reviewed by Pavel Feldman.
+
+        * http/tests/inspector/elements-test.js:
+        (initialize_ElementTest.InspectorTest.dumpSelectedElementStyles):
+          Add dumping of the [no-affect] flag for rules not affecting the currently selected element.
+        * inspector/styles/commit-selector-expected.txt: Rebaseline.
+
+2012-12-04  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        Make svg/dom/viewspec-parser-*.html non-flaky
+        https://bugs.webkit.org/show_bug.cgi?id=103744
+
+        Reviewed by Dirk Schulze.
+
+        Modified viewspec-parser-*.html in two ways:
+        - remove duplicate testing: the five files were all running
+          the exact same tests (only a few percent were unique).
+        - move the test division out of viewspec-parser.js to make it more
+          visible, divide the tests into logical sets.
+
+        * platform/efl-wk2/TestExpectations:
+        * svg/dom/resources/viewspec-parser.js:
+        (startViewspecTests):
+        * svg/dom/viewspec-parser-1-expected.txt:
+        * svg/dom/viewspec-parser-1.html:
+        * svg/dom/viewspec-parser-2-expected.txt:
+        * svg/dom/viewspec-parser-2.html:
+        * svg/dom/viewspec-parser-3-expected.txt:
+        * svg/dom/viewspec-parser-3.html:
+        * svg/dom/viewspec-parser-4-expected.txt:
+        * svg/dom/viewspec-parser-4.html:
+        * svg/dom/viewspec-parser-5-expected.txt:
+        * svg/dom/viewspec-parser-5.html:
+        * svg/dom/viewspec-parser-6-expected.txt: Added.
+        * svg/dom/viewspec-parser-6.html: Added.
+        * svg/dom/viewspec-parser-7-expected.txt: Added.
+        * svg/dom/viewspec-parser-7.html: Added.
+
+2012-12-03  Nate Chapin  <japhet@chromium.org>
+
+        svg/foreignObject/viewport-foreignObject-crash.html recurses infinitely sometimes
+        https://bugs.webkit.org/show_bug.cgi?id=103935.
+
+        Reviewed by Abhishek Arya.
+
+        * svg/foreignObject/viewport-foreignobject-crash.html:
+
+2012-12-03  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Correct database version after aborted upgrade
+        https://bugs.webkit.org/show_bug.cgi?id=103763
+
+        Reviewed by Tony Chang.
+
+        Update test expectations and tweak a test so it's testing what it claimed.
+
+        * storage/indexeddb/intversion-abort-in-initial-upgradeneeded-expected.txt:
+        * storage/indexeddb/mozilla/resources/versionchange-abort.js:
+        (postAbort):
+        * storage/indexeddb/mozilla/versionchange-abort-expected.txt:
+        * storage/indexeddb/resources/unblocked-version-changes.js:
+        (onUpgradeNeeded):
+        * storage/indexeddb/unblocked-version-changes-expected.txt:
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Gardening of Apple Windows port.
+        https://bugs.webkit.org/show_bug.cgi?id=102603.
+
+        * platform/win/TestExpectations:
+
+2012-12-03  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * platform/chromium/TestExpectations:
+        Marked the following tests as crash timeout for Android:
+        media/encrypted-media/encrypted-media-syntax.html,
+        media/encrypted-media/encrypted-media-events.html, and
+        media/encrypted-media/encrypted-media-not-loaded.html.
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed gardening of Apple Windows Port.
+        https://bugs.webkit.org/show_bug.cgi?id=97026
+
+        * platform/win/TestExpectations:
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Removing expected failing results for Windows port. Test now works.
+        https://bugs.webkit.org/show_bug.cgi?id=51469
+
+        * platform/win/fast/js/large-expressions-expected.txt: Removed.
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Skip fast/js/kde/Array.html.
+        https://bugs.webkit.org/show_bug.cgi?id=103962.
+
+        * platform/win/TestExpectations:
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Line ending fix.
+
+        * platform/win/css3/filters/effect-reference-expected.txt:
+        * platform/win/css3/filters/effect-reference-hw-expected.txt:
+
+2012-12-03  Rafael Weinstein  <rafaelw@chromium.org>
+
+        Implement HTMLTemplateElement
+        https://bugs.webkit.org/show_bug.cgi?id=86031
+
+        Reviewed by Adam Barth.
+
+        * fast/dom/HTMLTemplateElement/cloneNode-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/cloneNode.html: Added.
+        * fast/dom/HTMLTemplateElement/inertContents-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/inertContents.html: Added.
+        * fast/dom/HTMLTemplateElement/innerHTML-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/innerHTML.html: Added.
+        * fast/dom/HTMLTemplateElement/ownerDocument-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/ownerDocument.html: Added.
+        * html5lib/resources/template.dat: Added.
+        * html5lib/run-template-expected.txt: Added.
+        * html5lib/run-template.html: Added.
+        * resources/dump-as-markup.js:
+        (Markup._get):
+        (Markup._getSelectionFromNode):
+
+2012-12-03  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        [CSS Grid Layout] Support percentage paddings and margins on grid items
+        https://bugs.webkit.org/show_bug.cgi?id=103677
+
+        Reviewed by Tony Chang.
+
+        * resources/check-layout.js:
+        Extended check-layout to be able to query paddings and margins. Note that in order to compare,
+        the attribute with the returned value from getComputedStyle, we need to trim the unit ("px")
+        from the actual values. This trick also works in FireFox and Opera.
+
+        * fast/css-grid-layout/percent-padding-margin-resolution-grid-item-expected.txt: Added.
+        * fast/css-grid-layout/percent-padding-margin-resolution-grid-item.html: Added.
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Expected failing results on Windows.
+
+        * platform/win/css3/filters: Added.
+        * platform/win/css3/filters/effect-reference-expected.txt: Added.
+        * platform/win/css3/filters/effect-reference-hw-expected.txt: Added.
+
+2012-12-03  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * platform/chromium/TestExpectations:
+        Removed duplicate entries for compositing/masks/masked-ancestor.html.
+        Fixed overriding: compositing/masks/simple-composited-mask.html.
+
+2012-12-03  Antoine Quint  <graouts@apple.com>
+
+        Add Opera-submitted W3C <track> tests to LayoutTests
+        https://bugs.webkit.org/show_bug.cgi?id=103887
+
+        Reviewed by Eric Carlson.
+
+        Adding the Opera-submitted W3C <track> testsuite and test results for passing tests. Failing tests are skipped
+        on all platforms.
+
+        * media/track/opera/idl/media-idl-tests.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLMediaElement/addTextTrack.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLMediaElement/crossOrigin.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLMediaElement/textTracks-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLMediaElement/textTracks.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/default-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/default.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/label-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/label.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/readyState-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/readyState.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/srclang-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/srclang.html: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/track-expected.txt: Added.
+        * media/track/opera/interfaces/HTMLElement/HTMLTrackElement/track.html: Added.
+        * media/track/opera/interfaces/TextTrack/activeCues.html: Added.
+        * media/track/opera/interfaces/TextTrack/addCue.html: Added.
+        * media/track/opera/interfaces/TextTrack/constants-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrack/constants.html: Added.
+        * media/track/opera/interfaces/TextTrack/cues.html: Added.
+        * media/track/opera/interfaces/TextTrack/kind.html: Added.
+        * media/track/opera/interfaces/TextTrack/label-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrack/label.html: Added.
+        * media/track/opera/interfaces/TextTrack/language-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrack/language.html: Added.
+        * media/track/opera/interfaces/TextTrack/mode-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrack/mode.html: Added.
+        * media/track/opera/interfaces/TextTrack/oncuechange-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrack/oncuechange.html: Added.
+        * media/track/opera/interfaces/TextTrack/removeCue.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/align.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/endTime.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/id.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/line.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/onenter.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/onexit.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/pauseOnExit.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/snapToLines.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/startTime.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/text.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/track.html: Added.
+        * media/track/opera/interfaces/TextTrackCue/vertical.html: Added.
+        * media/track/opera/interfaces/TextTrackCueList/getCueById-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrackCueList/getCueById.html: Added.
+        * media/track/opera/interfaces/TextTrackCueList/getter.html: Added.
+        * media/track/opera/interfaces/TextTrackCueList/length-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrackCueList/length.html: Added.
+        * media/track/opera/interfaces/TextTrackList/getter.html: Added.
+        * media/track/opera/interfaces/TextTrackList/length-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrackList/length.html: Added.
+        * media/track/opera/interfaces/TextTrackList/onaddtrack-expected.txt: Added.
+        * media/track/opera/interfaces/TextTrackList/onaddtrack.html: Added.
+        * media/track/opera/interfaces/TextTrackList/onremovetrack.html: Added.
+        * media/track/opera/interfaces/TrackEvent/constructor.html: Added.
+        * media/track/opera/interfaces/TrackEvent/createEvent.html: Added.
+        * media/track/opera/resources/WebIDLParser.js: Added.
+        (window.WebIDLParser):
+        (window.WebIDLParser.):
+        * media/track/opera/resources/idlharness.js: Added.
+        (.):
+        * media/track/opera/resources/media/sunflower.mp4: Added.
+        * media/track/opera/resources/media/sunflower.webm: Added.
+        * media/track/opera/track/track-element/cloneNode.html: Added.
+        * media/track/opera/track/track-element/src-clear-cues.html: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/buildtests.py: Added.
+        (appendtest):
+        * media/track/opera/track/webvtt/parsing-cue-data/common.js: Added.
+        (format):
+        (test_serializer):
+        (.if):
+        (print_diffs):
+        (runTests.tests.forEach):
+        (runTests):
+        (trackError):
+        (removeElm):
+        * media/track/opera/track/webvtt/parsing-cue-data/dat/entities.dat: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/dat/tags.dat: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/dat/timestamps.dat: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/dat/tree-building.dat: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/tests/entities.html: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/tests/tags.html: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/tests/timestamps.html: Added.
+        * media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html: Added.
+        * media/track/opera/track/webvtt/parsing/001.html: Added.
+        * media/track/opera/track/webvtt/parsing/support/.htaccess: Added.
+        * media/track/opera/track/webvtt/parsing/support/arrows.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/cue-counts.json: Added.
+        * media/track/opera/track/webvtt/parsing/support/header-garbage.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/header-space.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/header-tab.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/header-timings.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/ids.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/newlines.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/no-signature.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/nulls.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/omitted-hours.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-align.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-line.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-multiple.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-position.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-size.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/settings-vertical.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-bom.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-formfeed.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-lowercase.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-no-newline.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-null.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-space-no-newline.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-space.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-tab-no-newline.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-tab.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-timings.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-too-short.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-two-boms.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/signature-websrt.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/space-chars.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/timings-60.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/timings-garbage.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/timings-negative.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/timings-too-long.vtt: Added.
+        * media/track/opera/track/webvtt/parsing/support/timings-too-short.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/12345_timestamps.html: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/support/12345_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/support/class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/support/voice_with_evil_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_completely_move_up-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_completely_move_up.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_partially_move_down-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_partially_move_down.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_partially_move_up-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_cues_overlapping_partially_move_up.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_tracks-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/2_tracks.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/3_tracks-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/3_tracks.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_end-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_end.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_end_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_end_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_50-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_50.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_gt_50-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_gt_50.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_lt_50-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_lt_50.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_lt_50_size_gt_maximum_size-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_position_lt_50_size_gt_maximum_size.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_middle_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_start-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_start.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_start_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/align_start_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/audio_has_no_subtitles-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/audio_has_no_subtitles.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/basic-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/basic.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/bidi_ruby-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/bidi_ruby.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_LF_u05D0-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_LF_u05D0.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_u2028_u05D0-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_u2028_u05D0.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_u2029_u05D0-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u002E_u2029_u05D0.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u0041_first-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u0041_first.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u05D0_first-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u05D0_first.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u0628_first-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u0628_first.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u06E9_no_strong_dir-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/bidi/u06E9_no_strong_dir.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/build-manifest.py: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/cue_too_long-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/cue_too_long.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/decode_escaped_entities-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/decode_escaped_entities.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/disable_controls_reposition-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/disable_controls_reposition.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_align_position_line_size-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_align_position_line_size.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_align_position_line_size_while_paused-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_align_position_line_size_while_paused.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_line-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_line.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_text-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_text.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_text_while_paused-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_cue_text_while_paused.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_remove_cue_while_paused-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/dom_override_remove_cue_while_paused.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/enable_controls_reposition-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/enable_controls_reposition.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/9_cues_overlapping_completely-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/9_cues_overlapping_completely.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/9_cues_overlapping_completely_all_cues_have_same_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/9_cues_overlapping_completely_all_cues_have_same_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/media_404_omit_subtitles-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/media_404_omit_subtitles.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/media_height_19-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/media_height_19.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/single_quote-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/single_quote.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/size_90-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/size_90.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/size_99-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/size_99.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/9_cues_overlapping_completely.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/9_cues_overlapping_completely_all_cues_have_same_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/single_quote.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/size_90.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/size_99.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/evil/support/test.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_-2_wrapped_cue_grow_upwards-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_-2_wrapped_cue_grow_upwards.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_0_is_top-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_0_is_top.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_1_wrapped_cue_grow_downwards-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_1_wrapped_cue_grow_downwards.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_50_percent-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_50_percent.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_integer_and_percent_mixed_overlap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_integer_and_percent_mixed_overlap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_integer_and_percent_mixed_overlap_move_up-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_integer_and_percent_mixed_overlap_move_up.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_percent_and_integer_mixed_overlap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_percent_and_integer_mixed_overlap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_percent_and_integer_mixed_overlap_move_up-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/line_percent_and_integer_mixed_overlap_move_up.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media/background.gif: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media/white.mp4: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media/white.webm: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media_height400_with_controls-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media_height400_with_controls.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media_with_controls-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/media_with_controls.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/navigate_cue_position-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/navigate_cue_position.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/one_line_cue_plus_wrapped_cue-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/one_line_cue_plus_wrapped_cue.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/reftest.list: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/repaint-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/repaint.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_shorthand_css_relative_url-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/background_shorthand_css_relative_url.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_hex-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_hex.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_hsla-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_hsla.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_rgba-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/color_rgba.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/cue_selector_single_colon-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/cue_selector_single_colon.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/inherit_values_from_media_element-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/inherit_values_from_media_element.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_overline-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_overline.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_overline_underline_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_overline_underline_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_underline-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-decoration_underline.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_nowrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_nowrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue/white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_box-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_box.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_shorthand_css_relative_url-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/background_shorthand_css_relative_url.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_animation_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_animation_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_timestamp_future-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_timestamp_future.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_timestamp_past-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_timestamp_past.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_transition_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_transition_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_nowrap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_nowrap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_with_class-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_with_class.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_with_class_object_specific_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/bold_object/bold_with_class_object_specific_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_animation_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_animation_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_timestamp_future-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_timestamp_future.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_timestamp_past-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_timestamp_past.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_transition_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_transition_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_nowrap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_nowrap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_with_class-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_with_class.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_with_class_object_specific_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/class_object/class_with_class_object_specific_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_hex-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_hex.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_hsla-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_hsla.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_rgba-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/color_rgba.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/cue_func_selector_single_colon-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/cue_func_selector_single_colon.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/id_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/id_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/inherit_values_from_media_element-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/inherit_values_from_media_element.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_animation_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_animation_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_timestamp_future-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_timestamp_future.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_timestamp_past-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_timestamp_past.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_transition_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_transition_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_nowrap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_nowrap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_with_class-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_with_class.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_with_class_object_specific_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/italic_object/italic_with_class_object_specific_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/not_allowed_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/not_allowed_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/not_root_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/not_root_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/root_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/root_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/root_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/root_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_overline-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_overline.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_overline_underline_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_overline_underline_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_underline-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-decoration_underline.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/type_selector_root-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/type_selector_root.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_animation_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_animation_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_timestamp_future-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_timestamp_future.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_timestamp_past-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_timestamp_past.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_transition_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_transition_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_nowrap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_nowrap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_with_class-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_with_class.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_with_class_object_specific_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_animation_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_animation_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_background_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_background_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_background_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_background_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_color-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_color.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_font_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_font_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_font_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_font_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_namespace-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_namespace.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_outline_properties-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_outline_properties.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_outline_shorthand-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_outline_shorthand.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_text-decoration_line-through-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_text-decoration_line-through.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_text-shadow-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_text-shadow.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_timestamp_future-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_timestamp_future.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_timestamp_past-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_timestamp_past.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_transition_with_timestamp-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_transition_with_timestamp.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_voice_attribute-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_voice_attribute.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_nowrap-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_nowrap.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_with_class-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_with_class.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_with_class_object_specific_selector-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/voice_object/voice_with_class_object_specific_selector.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_normal_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_normal_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_nowrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_nowrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre-line_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre-line_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre-wrap_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre-wrap_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/cue_function/white-space_pre_wrapped.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/bold_object_default_font-style-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/bold_object_default_font-style.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/italic_object_default_font-style-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/italic_object_default_font-style.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/underline_object_default_font-style-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/selectors/default_styles/underline_object_default_font-style.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/size_50-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/size_50.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/2_cues_overlapping_completely_move_up.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/2_cues_overlapping_partially_move_down.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/2_cues_overlapping_partially_move_up.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_end.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_end_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle_position_50.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle_position_gt_50.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle_position_lt_50.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_middle_position_lt_50_size_gt_maximum_size.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_start.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/align_start_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/bidi_ruby.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/bold_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/bold_with_2_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/bold_with_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/class_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/class_with_2_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/class_with_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/cue_with_id.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/decode_escaped_entities.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/foo.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/foo_c_bar.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/foo_space_space_bar_LF_baz.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/italic_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/italic_with_2_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/italic_with_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_-2_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_0.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_1_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_50_percent.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_integer_and_percent_overlap.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_integer_and_percent_overlap_move_up.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_percent_and_integer_overlap.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/line_percent_and_integer_overlap_move_up.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/one_line_cue_plus_wrapped_cue.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/refTestWait.js: Added.
+        (takeScreenshot):
+        (takeScreenshoDelayed):
+        * media/track/opera/track/webvtt/rendering/reftest/support/size_50.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_bold.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_bold_with_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_class_with_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_italic.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_italic_with_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_two_voices.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_underline.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_underline_with_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_voice.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/test_voice_with_class.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/too_many_cues.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/too_many_cues_wrapped.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u002E_LF_u05D0.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u002E_u2028_u05D0.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u002E_u2029_u05D0.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u0041_first.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u05D0_first.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u0628_first.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/u06E9_no_strong_dir.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/underline_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/underline_with_2_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/underline_with_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/very_long_cue.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/voice_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/voice_with_2_timestamps.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/voice_with_timestamp.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/white-spaces.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/white-spaces_long.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/support/white-spaces_long_size_20.vtt: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/too_many_cues-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/too_many_cues.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/too_many_cues_wrapped-ref.html: Added.
+        * media/track/opera/track/webvtt/rendering/reftest/too_many_cues_wrapped.html: Added.
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+
+2012-12-03  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, add Chromium GTK+ baselines after r136409 (mathml sup/sub box changes).
+
+        * platform/gtk/TestExpectations:
+        * platform/gtk/mathml/presentation/roots-expected.txt:
+        * platform/gtk/mathml/presentation/row-alignment-expected.txt:
+        * platform/gtk/mathml/presentation/sub-expected.txt:
+        * platform/gtk/mathml/presentation/subsup-expected.txt:
+        * platform/gtk/mathml/presentation/sup-expected.txt:
+        * platform/gtk/mathml/presentation/tables-expected.txt:
+
+2012-12-03  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, add Chromium Win/Mac baselines after r136409 (mathml sup/sub box changes).
+
+        * platform/chromium-mac-lion/mathml/presentation/row-alignment-expected.txt: Removed.
+        * platform/chromium-mac-lion/mathml/presentation/sub-expected.txt: Added.
+        * platform/chromium-mac-lion/mathml/presentation/subsup-expected.txt: Removed.
+        * platform/chromium-mac-lion/mathml/presentation/sup-expected.txt: Copied from LayoutTests/platform/chromium-mac-snowleopard/mathml/presentation/sup-expected.txt.
+        * platform/chromium-mac-lion/mathml/presentation/tables-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/roots-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/row-alignment-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/sub-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/subsup-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/sup-expected.txt:
+        * platform/chromium-mac-snowleopard/mathml/presentation/tables-expected.txt:
+        * platform/chromium-mac/mathml/presentation/roots-expected.txt: Renamed from LayoutTests/platform/chromium/mathml/presentation/roots-expected.txt.
+        * platform/chromium-mac/mathml/presentation/row-alignment-expected.txt:
+        * platform/chromium-mac/mathml/presentation/sub-expected.txt: Added.
+        * platform/chromium-mac/mathml/presentation/subsup-expected.txt:
+        * platform/chromium-mac/mathml/presentation/sup-expected.txt: Copied from LayoutTests/platform/chromium-mac-snowleopard/mathml/presentation/sup-expected.txt.
+        * platform/chromium-mac/mathml/presentation/tables-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/roots-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/row-alignment-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/sub-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/subsup-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/sup-expected.txt:
+        * platform/chromium-win-xp/mathml/presentation/tables-expected.txt:
+        * platform/chromium-win/mathml/presentation/roots-expected.txt:
+        * platform/chromium-win/mathml/presentation/row-alignment-expected.txt:
+        * platform/chromium-win/mathml/presentation/sub-expected.txt:
+        * platform/chromium-win/mathml/presentation/subsup-expected.txt:
+        * platform/chromium-win/mathml/presentation/sup-expected.txt:
+        * platform/chromium-win/mathml/presentation/tables-expected.txt:
+        * platform/chromium/TestExpectations:
+        * platform/chromium/mathml/presentation/row-alignment-expected.txt: Removed.
+        * platform/chromium/mathml/presentation/subsup-expected.txt: Removed.
+
+2012-12-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed gardening on Apple Windows port.
+
+        * platform/win/TestExpectations:
+
+2012-12-03  Xan Lopez  <xlopez@igalia.com>
+
+        Unreviewed gardening.
+
+        Update grid layout tests with proper expected results for cosmetic
+        debug() changes I did in the previous patch.
+
+        * fast/css-grid-layout/grid-columns-rows-get-set-expected.txt:
+        * fast/css-grid-layout/resources/grid-columns-rows-get-set.js:
+
+2012-12-03  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-03  Simon Fraser  <simon.fraser@apple.com>
+
+        When animating mask-postion on a composited layer, element renders incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=103700
+
+        Reviewed by Tim Horton.
+
+        Test that dumps the layer tree for a composited layer with a mask.
+
+        * compositing/masks/mask-layer-size-expected.txt: Added.
+        * compositing/masks/mask-layer-size.html: Added.
+
+2012-12-03  Xan Lopez  <xan@igalia.com>
+
+        [CSS Grid Layout] Support <percentage> and viewport-relative breadth sizes
+        https://bugs.webkit.org/show_bug.cgi?id=103335
+
+        Reviewed by Julien Chaffraix.
+
+        * fast/css-grid-layout/breadth-size-resolution-grid-expected.txt: Added.
+        * fast/css-grid-layout/breadth-size-resolution-grid.html: Added.
+        * fast/css-grid-layout/grid-columns-rows-get-set-expected.txt:
+        * fast/css-grid-layout/grid-columns-rows-get-set-multiple-expected.txt:
+        * fast/css-grid-layout/grid-columns-rows-get-set-multiple.html:
+        * fast/css-grid-layout/grid-columns-rows-get-set.html:
+        * fast/css-grid-layout/percent-grid-item-in-percent-grid-track-expected.txt:
+        * fast/css-grid-layout/percent-grid-item-in-percent-grid-track-in-percent-grid-expected.txt:
+        * fast/css-grid-layout/resources/grid-columns-rows-get-set-multiple.js:
+        * fast/css-grid-layout/resources/grid-columns-rows-get-set.js:
+
+2012-12-03  Max Vujovic  <mvujovic@adobe.com>
+
+        [CSS Shaders] Do not clamp indirect array indices during CSS Shaders ANGLE validation pass
+        https://bugs.webkit.org/show_bug.cgi?id=102731
+
+        Reviewed by Dean Jackson.
+
+        Add a vertex shader which indirectly indexes a uniform array. This shader should validate,
+        compile, and execute properly.
+
+        The GLSL ES 1.0 spec [1], Appendix A, Section 5 "Uniforms (excluding samplers)" says:
+        "In the vertex shader, support for all forms of array indexing is mandated."
+
+        [1]: http://www.khronos.org/registry/gles/specs/2.0/GLSL_ES_Specification_1.0.17.pdf
+
+        * css3/filters/custom/custom-filter-array-uniform-indirect-index-expected.html: Added.
+        * css3/filters/custom/custom-filter-array-uniform-indirect-index.html: Added.
+        * css3/filters/resources/array-indirect-index.vs: Added.
+
+2012-12-03  Tony Chang  <tony@chromium.org>
+
+        Performance degradation while rendering MathML content, freezes the tab.
+        https://bugs.webkit.org/show_bug.cgi?id=102585
+
+        Reviewed by Eric Seidel.
+
+        Add a regression test for nested fractions. The O(2^n) layout time should
+        be fixed by r136324.
+
+        * mathml/presentation/mfrac-nested-expected.txt: Added.
+        * mathml/presentation/mfrac-nested.html: Added.
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [EFL] Enable CSS3 background-position offsets by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103879
+
+        Reviewed by Laszlo Gombos.
+
+        Enable by default the new CSS3 background position offsets therefore we
+        can unskip the tests.
+
+        * platform/efl/TestExpectations:
+
+2012-12-03  Stephen White  <senorblanco@chromium.org>
+
+        [chromium]  Unreviewed gardening.
+        Fix duplicate test expectations.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-03  Philip Rogers  <pdr@google.com>
+
+        Invalidate SVG width on width attribute change.
+        https://bugs.webkit.org/show_bug.cgi?id=103304
+
+        Reviewed by Dirk Schulze.
+
+        * svg/custom/root-size-attribute-changes-expected.html: Added.
+        * svg/custom/root-size-attribute-changes.html: Added.
+
+2012-12-03  Stephen White  <senorblanco@chromium.org>
+
+        [chromium] Turn on the new Skia mask blur algorithm.
+        https://bugs.webkit.org/show_bug.cgi?id=103906
+
+        Reviewed by Adrienne Walker.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [Mac] Enable CSS3 background-position offset by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103905
+
+        Reviewed by Simon Fraser.
+
+        Enable by default the new CSS3 background position offsets therefore we
+        can unskip the tests.
+
+        * platform/mac/TestExpectations:
+
+2012-12-03  Takashi Sakamoto  <tasak@google.com>
+
+        [style scoped]: style scoped needs more tests.
+        https://bugs.webkit.org/show_bug.cgi?id=99821
+
+        Reviewed by Dimitri Glazkov.
+
+        Test cases in this patch validate dynamically creating, moving and
+        removing a scoped style works well.
+
+        * fast/css/style-scoped/style-scoped-with-dom-operation-expected.txt: Added.
+        * fast/css/style-scoped/style-scoped-with-dom-operation.html: Added.
+
+2012-12-03  Anton Vayvod  <avayvod@chromium.org>
+
+        Text Autosizing: don't autosize horizontal menu items implemented via floating list items
+        https://bugs.webkit.org/show_bug.cgi?id=103840
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Floating list items are often used to implement horizontal menus. Currently, text autosizing 
+        disregards such elements as autosizing containers. List items are often then autosized as part
+        of a bigger cluster (usually the whole page) and look too big.
+        This change turns floating list items into autosizing clusters so they are autosized separately
+        resulting in no font size multiplication for menu items implemented in this manner.
+
+        * fast/text-autosizing/cluster-list-item-expected.html: Renamed from LayoutTests/fast/text-autosizing/list-item-out-of-flow-expected.html.
+        * fast/text-autosizing/cluster-list-item.html: Renamed from LayoutTests/fast/text-autosizing/list-item-out-of-flow.html; added case for a floating list item.
+
+2012-12-03  Tony Chang  <tony@chromium.org>
+
+        [mathml] Improve performance of nested sup or sub elements
+        https://bugs.webkit.org/show_bug.cgi?id=103665
+
+        Reviewed by Darin Adler.
+
+        Update Chromium Linux baselines and mark tests as failing on other platforms.
+        The mathml.css change causes these pixel results changes. This doesn't change
+        the pixel results, it is only a change to the render tree. The render boxes
+        should more tightly wrap the superscripts and subscripts but be positioned
+        in the same place.
+
+        * mathml/presentation/sup-nested-expected.txt: Added.
+        * mathml/presentation/sup-nested.html: Added.
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/chromium-linux/mathml/presentation/roots-expected.txt:
+        * platform/chromium-linux/mathml/presentation/row-alignment-expected.txt:
+        * platform/chromium-linux/mathml/presentation/sub-expected.txt:
+        * platform/chromium-linux/mathml/presentation/subsup-expected.txt:
+        * platform/chromium-linux/mathml/presentation/sup-expected.txt:
+        * platform/chromium-linux/mathml/presentation/tables-expected.txt:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [GTK] Enable CSS3 background-background position offset by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103903
+
+        Reviewed by Philippe Normand.
+
+        Enable by default the new CSS3 background position offsets therefore we
+        can unskip the tests.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-03  Hajime Morrita  <morrita@google.com>
+
+        Corrupted DOM tree during appendChild/insertBefore
+        https://bugs.webkit.org/show_bug.cgi?id=103601
+
+        Reviewed by Abhishek Arya.
+
+        * fast/events/mutation-during-append-child-expected.txt: Added.
+        * fast/events/mutation-during-append-child.html: Added.
+        * fast/events/mutation-during-insert-before-expected.txt: Added.
+        * fast/events/mutation-during-insert-before.html: Added.
+
+2012-12-03  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        [GTK][EFL] Gardening for media/video-volume.html
+        https://bugs.webkit.org/show_bug.cgi?id=103894
+
+        Unreviewed gardening: media/video-volume.html fails with
+        gstreamer.
+
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+
+2012-12-03  Balazs Kelemen  <kbalazs@webkit.org>
+
+        Unreviewed Qt gardening.
+
+        Remove image expectation for tests that now pass.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+
+2012-12-03  Stephen Chenney  <schenney@chromium.org>
+
+        [Chromium] Expectations fix up
+
+        Unreviewed expectations.
+
+        Two tests appear to have been out-of-date when they were last rebaselined.
+
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/shadows: Added.
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png: Added.
+        * platform/chromium-win-xp/svg/carto.net: Removed.
+        * platform/chromium-win-xp/svg/carto.net/colourpicker-expected.png: Removed.
+        * platform/chromium-win/svg/carto.net/colourpicker-expected.png:
+
+2012-12-03  Balazs Kelemen  <kbalazs@webkit.org>
+
+        svg/custom/baseval-animval-equality.svg should use dumpAsText
+        https://bugs.webkit.org/show_bug.cgi?id=103873
+
+        Reviewed by Dirk Schulze.
+
+        Turn it to a dumpAsText test.
+
+        * platform/chromium-mac-lion/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/chromium-mac-snowleopard/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/chromium-mac/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/chromium-win/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/chromium/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/gtk/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/mac-lion/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/mac-wk2/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/mac/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * platform/qt/svg/custom/baseval-animval-equality-expected.txt: Removed.
+        * svg/custom/baseval-animval-equality-expected.txt: Added.
+        * svg/custom/baseval-animval-equality.svg:
+
+2012-12-03  Erik Arvidsson  <arv@chromium.org>
+
+        Update Acid3 test to the latest version
+        https://bugs.webkit.org/show_bug.cgi?id=102943
+
+        Reviewed by Ojan Vafai.
+
+        The Acid3 test has been updated to not break when browsers starts to implement new
+        standards. This updates our copy of the Acid3 test.
+
+        * fast/dom/Range/acid3-surround-contents.html:
+        * http/tests/misc/acid3.html:
+
+2012-12-03  Tommy Widenflycht  <tommyw@google.com>
+
+        Speech Recognition API: Update SpeechRecognitionEvent to match the specification
+        https://bugs.webkit.org/show_bug.cgi?id=103407
+
+        Reviewed by Kentaro Hara.
+
+        Updating basic tests and removing emma tests temporarily.
+
+        * fast/speech/scripted/emma-expected.txt: Removed.
+        * fast/speech/scripted/emma.html: Removed.
+        * fast/speech/scripted/speechrecognition-basics-expected.txt:
+        * fast/speech/scripted/speechrecognition-basics.html:
+
+2012-12-03  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        [EFL] Gardening, mark tests flaky
+        https://bugs.webkit.org/show_bug.cgi?id=103884
+
+        Unreviewed gardening to mark tests flaky based on flakiness dashboard.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/TestExpectations:
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [Qt] Enable CSS3 background-position offsets by default.
+        https://bugs.webkit.org/show_bug.cgi?id=103877
+
+        Reviewed by Tor Arne Vestbø.
+
+        Enable by default the new CSS3 background position offsets therefore we
+        can unskip the tests.
+
+        * platform/qt/TestExpectations:
+
+2012-12-03  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136377.
+        http://trac.webkit.org/changeset/136377
+        https://bugs.webkit.org/show_bug.cgi?id=103881
+
+        Causes crashes on debug builds that use JSC. (Requested by
+        mkwst on #webkit).
+
+        * fast/frames/sandboxed-iframe-autofocus-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-parsing-space-characters-expected.txt:
+        * fast/frames/xss-auditor-handles-file-urls-expected.txt:
+        * html5lib/run-test11-expected.txt:
+        * http/tests/inspector/console-xhr-logging-expected.txt:
+        * http/tests/misc/bubble-drag-events-expected.txt:
+        * http/tests/misc/drag-over-iframe-invalid-source-crash-expected.txt:
+        * http/tests/misc/iframe-invalid-source-crash-expected.txt:
+        * http/tests/misc/image-blocked-src-change-expected.txt:
+        * http/tests/misc/image-blocked-src-no-change-expected.txt:
+        * http/tests/security/cross-origin-xsl-BLOCKED-expected.txt:
+        * http/tests/security/frame-loading-via-document-write-expected.txt:
+        * http/tests/security/mixedContent/insecure-css-in-iframe-expected.txt:
+        * http/tests/security/mixedContent/insecure-css-in-main-frame-expected.txt:
+        * http/tests/security/mixedContent/insecure-image-in-main-frame-expected.txt:
+        * http/tests/security/xss-DENIED-xml-external-entity-expected.txt:
+        * http/tests/security/xssAuditor/base-href-control-char-expected.txt:
+        * http/tests/security/xssAuditor/base-href-expected.txt:
+        * http/tests/security/xssAuditor/base-href-null-char-expected.txt:
+        * http/tests/security/xssAuditor/base-href-scheme-relative-expected.txt:
+        * http/tests/security/xssAuditor/cookie-injection-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-code-attribute-2-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-code-attribute-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/form-action-expected.txt:
+        * http/tests/security/xssAuditor/full-block-base-href-expected.txt:
+        * http/tests/security/xssAuditor/full-block-get-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/full-block-iframe-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/full-block-iframe-no-inherit-expected.txt:
+        * http/tests/security/xssAuditor/full-block-javascript-link-expected.txt:
+        * http/tests/security/xssAuditor/full-block-link-onclick-expected.txt:
+        * http/tests/security/xssAuditor/full-block-object-tag-expected.txt:
+        * http/tests/security/xssAuditor/full-block-post-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/full-block-script-tag-expected.txt:
+        * http/tests/security/xssAuditor/full-block-script-tag-with-source-expected.txt:
+        * http/tests/security/xssAuditor/get-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/iframe-injection-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-more-encoding-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode2-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode3-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-url-encoded-expected.txt:
+        * http/tests/security/xssAuditor/iframe-onload-GBK-char-expected.txt:
+        * http/tests/security/xssAuditor/iframe-onload-in-svg-tag-expected.txt:
+        * http/tests/security/xssAuditor/iframe-srcdoc-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-GBK-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-accented-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char-default-encoding-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char2-default-encoding-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char2-expected.txt:
+        * http/tests/security/xssAuditor/inline-event-HTML-entities-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-named-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-null-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-ampersand-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-control-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-null-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-one-plus-one-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-url-encoded-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-ampersand-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-control-char-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-entities-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-null-char-expected.txt:
+        * http/tests/security/xssAuditor/link-opens-new-window-expected.txt:
+        * http/tests/security/xssAuditor/malformed-HTML-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-1-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-2-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-3-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-4-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-5-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-6-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-7-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-8-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-9-expected.txt:
+        * http/tests/security/xssAuditor/meta-tag-http-refresh-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/object-tag-expected.txt:
+        * http/tests/security/xssAuditor/object-tag-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/open-attribute-body-expected.txt:
+        * http/tests/security/xssAuditor/open-event-handler-iframe-expected.txt:
+        * http/tests/security/xssAuditor/open-iframe-src-expected.txt:
+        * http/tests/security/xssAuditor/open-script-src-expected.txt:
+        * http/tests/security/xssAuditor/post-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-comment-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-entity-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-long-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-quote-expected.txt:
+        * http/tests/security/xssAuditor/report-script-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-twice-url-encode-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-twice-url-encode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-backslash-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-double-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-single-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-convoluted-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-entities-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-open-redirect-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-redirect-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode-surrogate-pair-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode4-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode5-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-actual-comma-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-callbacks-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-comma-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-fancy-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-invalid-closing-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-invalid-url-encoding-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-double-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-entities-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-no-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-relative-scheme-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-same-host-with-query-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-unterminated-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-three-times-url-encoded-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment-U2028-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment4-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-big5-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-long-string-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-sjis-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-01-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-02-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-03-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-04-expected.txt:
+        * platform/chromium-linux/http/tests/security/xssAuditor/javascript-link-HTML-entities-null-char-expected.txt:
+        * platform/chromium-mac/http/tests/security/cross-origin-xsl-BLOCKED-expected.txt:
+        * platform/chromium-win/http/tests/security/cross-origin-xsl-BLOCKED-expected.txt:
+        * platform/chromium/http/tests/inspector/console-xhr-logging-expected.txt:
+        * platform/chromium/http/tests/misc/bubble-drag-events-expected.txt:
+        * platform/chromium/http/tests/misc/drag-over-iframe-invalid-source-crash-expected.txt:
+        * platform/chromium/http/tests/misc/iframe-invalid-source-crash-expected.txt:
+        * platform/chromium/http/tests/security/mixedContent/insecure-image-in-main-frame-allowed-expected.txt:
+        * platform/chromium/http/tests/security/mixedContent/insecure-image-in-main-frame-blocked-expected.txt:
+        * platform/chromium/http/tests/security/xssAuditor/javascript-link-control-char2-expected.txt:
+        * platform/chromium/svg/custom/polyline-setattribute-points-null-expected.txt:
+        * platform/mac/svg/custom/clip-path-referencing-use2-expected.txt:
+        * platform/mac/svg/custom/polyline-setattribute-points-null-expected.txt:
+        * svg/custom/invalid-length-units-expected.txt:
+        * svg/custom/poly-parsing-error-expected.txt:
+        * svg/dom/fuzz-path-parser-expected.txt:
+        * svg/dom/path-parser-expected.txt:
+        * svg/dom/points-parser-expected.txt:
+
+2012-12-03  Kihong Kwon  <kihong.kwon@samsung.com>
+
+        Remove useless included header and change position of Proximity Events test cases
+        https://bugs.webkit.org/show_bug.cgi?id=103871
+
+        Reviewed by Antonio Gomes.
+
+        Change the path of Proximity Events test cases from LayoutTests/fast/dom/Proximity to LayoutTests/proximity.
+
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+        * platform/wincairo/TestExpectations:
+        * proximity/check-event-deviceproximity-expected.txt: Renamed from LayoutTests/fast/dom/Proximity/check-event-deviceproximity-expected.txt.
+        * proximity/check-event-deviceproximity.html: Renamed from LayoutTests/fast/dom/Proximity/check-event-deviceproximity.html.
+        * proximity/create-event-deviceproximity-expected.txt: Renamed from LayoutTests/fast/dom/Proximity/create-event-deviceproximity-expected.txt.
+        * proximity/create-event-deviceproximity.html: Renamed from LayoutTests/fast/dom/Proximity/create-event-deviceproximity.html.
+
+2012-12-03  János Badics  <jbadics@inf.u-szeged.hu>
+
+        [Qt] Gardening after r136280, r136323, r136164 and r136031.
+        https://bugs.webkit.org/show_bug.cgi?id=103876
+
+        Reviewed by Csaba Osztrogonác.
+
+        r136280: Added Qt baseline for fast/events/stopPropagation-submit.html.
+        r136323: Skipped storage/domstorage/localstorage/close-idle-localstorage-databases-immediately.html
+        r136164: Skipped fast/dom/Geolocation/cached-position-iframe.html on Qt-WK2
+        r136031: Updated Qt-WK2 baselines for http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag* tests.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+        * platform/qt-5.0-wk2/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-expected.txt:
+        * platform/qt-5.0-wk2/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body-expected.txt:
+        * platform/qt-5.0-wk2/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny-expected.txt:
+        * platform/qt/TestExpectations:
+        * platform/qt/fast/events/stopPropagation-submit-expected.txt: Added.
+
+2012-12-03  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Implement CSS3 background-position offsets rendering.
+        https://bugs.webkit.org/show_bug.cgi?id=103440
+
+        Reviewed by Julien Chaffraix.
+
+        Uncomment the computed style tests from background-position-parsing-2
+        and add the expected output. Add a new
+        background-position-rendering test to verify that the background has a
+        correct position with the new <position> value. I also covered some old
+        CSS 2.1 values for verification.
+
+        * fast/backgrounds/background-position-parsing-2-expected.txt:
+        * fast/backgrounds/background-position-parsing-2.html:
+        * fast/backgrounds/background-position-rendering-expected.html: Added.
+        * fast/backgrounds/background-position-rendering.html: Added.
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+        * platform/wincairo/TestExpectations:
+
+2012-12-03  Mike West  <mkwst@chromium.org>
+
+        Web Inspector: Autogenerate stack traces and line numbers when possible.
+        https://bugs.webkit.org/show_bug.cgi?id=100650
+
+        Reviewed by Yury Semikhatsky.
+
+        New line numbers! Huzzah! (Also, removing some that shouldn't be there).
+
+        * http/tests/inspector/console-xhr-logging-expected.txt:
+        * platform/chromium/http/tests/inspector/console-xhr-logging-expected.txt:
+            One new stack trace! OMG!
+        * fast/frames/sandboxed-iframe-autofocus-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-parsing-space-characters-expected.txt:
+        * fast/frames/xss-auditor-handles-file-urls-expected.txt:
+        * html5lib/run-test11-expected.txt:
+        * http/tests/misc/bubble-drag-events-expected.txt:
+        * http/tests/misc/drag-over-iframe-invalid-source-crash-expected.txt:
+        * http/tests/misc/iframe-invalid-source-crash-expected.txt:
+        * http/tests/misc/image-blocked-src-change-expected.txt:
+        * http/tests/misc/image-blocked-src-no-change-expected.txt:
+        * http/tests/security/cross-origin-xsl-BLOCKED-expected.txt:
+        * http/tests/security/frame-loading-via-document-write-expected.txt:
+        * http/tests/security/mixedContent/insecure-css-in-iframe-expected.txt:
+        * http/tests/security/mixedContent/insecure-css-in-main-frame-expected.txt:
+        * http/tests/security/mixedContent/insecure-image-in-main-frame-expected.txt:
+        * http/tests/security/xss-DENIED-xml-external-entity-expected.txt:
+        * http/tests/security/xssAuditor/base-href-control-char-expected.txt:
+        * http/tests/security/xssAuditor/base-href-expected.txt:
+        * http/tests/security/xssAuditor/base-href-null-char-expected.txt:
+        * http/tests/security/xssAuditor/base-href-scheme-relative-expected.txt:
+        * http/tests/security/xssAuditor/cookie-injection-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-code-attribute-2-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-code-attribute-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/embed-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/form-action-expected.txt:
+        * http/tests/security/xssAuditor/full-block-base-href-expected.txt:
+        * http/tests/security/xssAuditor/full-block-get-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/full-block-iframe-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/full-block-iframe-no-inherit-expected.txt:
+        * http/tests/security/xssAuditor/full-block-javascript-link-expected.txt:
+        * http/tests/security/xssAuditor/full-block-link-onclick-expected.txt:
+        * http/tests/security/xssAuditor/full-block-object-tag-expected.txt:
+        * http/tests/security/xssAuditor/full-block-post-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/full-block-script-tag-expected.txt:
+        * http/tests/security/xssAuditor/full-block-script-tag-with-source-expected.txt:
+        * http/tests/security/xssAuditor/get-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/iframe-injection-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-more-encoding-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode2-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-twice-url-encode3-expected.txt:
+        * http/tests/security/xssAuditor/iframe-javascript-url-url-encoded-expected.txt:
+        * http/tests/security/xssAuditor/iframe-onload-GBK-char-expected.txt:
+        * http/tests/security/xssAuditor/iframe-onload-in-svg-tag-expected.txt:
+        * http/tests/security/xssAuditor/iframe-srcdoc-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-GBK-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-accented-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char-default-encoding-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char2-default-encoding-expected.txt:
+        * http/tests/security/xssAuditor/img-onerror-non-ASCII-char2-expected.txt:
+        * http/tests/security/xssAuditor/inline-event-HTML-entities-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-named-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-HTML-entities-null-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-ampersand-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-control-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-null-char-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-one-plus-one-expected.txt:
+        * http/tests/security/xssAuditor/javascript-link-url-encoded-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-ampersand-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-control-char-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-entities-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-expected.txt:
+        * http/tests/security/xssAuditor/link-onclick-null-char-expected.txt:
+        * http/tests/security/xssAuditor/link-opens-new-window-expected.txt:
+        * http/tests/security/xssAuditor/malformed-HTML-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-1-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-2-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-3-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-4-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-5-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-6-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-7-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-8-expected.txt:
+        * http/tests/security/xssAuditor/malformed-xss-protection-header-9-expected.txt:
+        * http/tests/security/xssAuditor/meta-tag-http-refresh-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-expected.txt:
+        * http/tests/security/xssAuditor/object-embed-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/object-tag-expected.txt:
+        * http/tests/security/xssAuditor/object-tag-javascript-url-expected.txt:
+        * http/tests/security/xssAuditor/open-attribute-body-expected.txt:
+        * http/tests/security/xssAuditor/open-event-handler-iframe-expected.txt:
+        * http/tests/security/xssAuditor/open-iframe-src-expected.txt:
+        * http/tests/security/xssAuditor/open-script-src-expected.txt:
+        * http/tests/security/xssAuditor/post-from-iframe-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-comment-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-entity-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-long-expected.txt:
+        * http/tests/security/xssAuditor/property-escape-quote-expected.txt:
+        * http/tests/security/xssAuditor/report-script-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-twice-url-encode-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char-twice-url-encode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-Big5-char2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-backslash-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-double-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-addslashes-single-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-convoluted-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-entities-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-inside-svg-tag3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-open-redirect-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-post-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-redirect-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode-surrogate-pair-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode4-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-16bit-unicode5-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-actual-comma-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-callbacks-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-comma-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-fancy-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-invalid-closing-tag-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-invalid-url-encoding-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-control-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-data-url3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-double-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-entities-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-no-quote-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-null-char-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-relative-scheme-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-same-host-with-query-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-source-unterminated-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-three-times-url-encoded-16bit-unicode-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment-U2028-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment2-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment3-expected.txt:
+        * http/tests/security/xssAuditor/script-tag-with-trailing-comment4-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-big5-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-long-string-expected.txt:
+        * http/tests/security/xssAuditor/xss-filter-bypass-sjis-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-01-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-02-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-03-expected.txt:
+        * http/tests/security/xssAuditor/xss-protection-parsing-04-expected.txt:
+        * platform/chromium-mac/http/tests/security/cross-origin-xsl-BLOCKED-expected.txt:
+        * platform/chromium/http/tests/misc/bubble-drag-events-expected.txt:
+        * platform/chromium/http/tests/misc/drag-over-iframe-invalid-source-crash-expected.txt:
+        * platform/chromium/http/tests/misc/iframe-invalid-source-crash-expected.txt:
+        * platform/chromium/http/tests/security/mixedContent/insecure-image-in-main-frame-allowed-expected.txt:
+        * platform/chromium/http/tests/security/mixedContent/insecure-image-in-main-frame-blocked-expected.txt:
+        * platform/chromium/http/tests/security/xssAuditor/javascript-link-control-char2-expected.txt:
+        * platform/chromium/svg/custom/polyline-setattribute-points-null-expected.txt:
+        * platform/mac/svg/custom/clip-path-referencing-use2-expected.txt:
+        * platform/mac/svg/custom/polyline-setattribute-points-null-expected.txt:
+        * svg/custom/invalid-length-units-expected.txt:
+        * svg/custom/poly-parsing-error-expected.txt:
+        * svg/dom/SVGScriptElement/script-onerror-bubbling-expected.txt:
+        * svg/dom/fuzz-path-parser-expected.txt:
+        * svg/dom/path-parser-expected.txt:
+        * svg/dom/points-parser-expected.txt:
+
+2012-12-03  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding a failure expectation for editing/selection/caret-alignment-for-vertical-text.html.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-03  Mateusz Leszko  <m.leszko@samsung.com>
+
+        [EFL] Accessibility gardening
+        https://bugs.webkit.org/show_bug.cgi?id=103735
+
+        Unreviewed, EFL accessibility gardening.
+
+        Unskipping accessibility tests. Skipping failing ones.
+
+        * platform/efl-wk1/TestExpectations:
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/TestExpectations:
+
+2012-12-03  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        CSS Device Adaptation: window.innerWidth returns wrong value if CSS viewport descriptors are applied
+        https://bugs.webkit.org/show_bug.cgi?id=103737
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added new test css3/device-adapt/viewport-width-check-window-innerwidth-correct.html.
+
+        * css3/device-adapt/viewport-width-check-window-innerwidth-correct-expected.txt: Added.
+        * css3/device-adapt/viewport-width-check-window-innerwidth-correct.html: Added.
+
+2012-12-03  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: [Styles] Retain selector case as written in the source code
+        https://bugs.webkit.org/show_bug.cgi?id=103118
+
+        Reviewed by Antti Koivisto.
+
+        * inspector/styles/selector-list-expected.txt: Added.
+        * inspector/styles/selector-list.html: Added.
+        * inspector/styles/styles-add-new-rule-expected.txt: Rebaselined.
+
+2012-12-02  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed, WebKit2 gardening.
+
+        Skip storage/domstorage/localstorage/close-idle-localstorage-databases-immediately.html
+        on WebKit2 since testRunner.closeIdleLocalStorageDatabases() is not implemented yet.
+
+        * platform/wk2/TestExpectations:
+
+2012-12-02  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL] Unskip fast/js/array-sort-modifying-tostring.html in release mode
+        https://bugs.webkit.org/show_bug.cgi?id=103850
+
+        Unreviewed, EFL gardening.
+
+        This case has been passed in release mode, whereas crashed occasionally in debug mode.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/TestExpectations:
+
+2012-12-02  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, webkit gardening. Rebaseline of fast/css/font-weight-1.
+
+        * platform/chromium-mac-snowleopard/fast/css/font-weight-1-expected.png: Added.
+        * platform/chromium-mac/fast/css/font-weight-1-expected.png: Added.
+        * platform/chromium-mac/fast/css/font-weight-1-expected.txt: Added.
+
+2012-12-02  Kunihiko Sakamoto  <ksakamoto@chromium.org>
+
+        [chromium] platform/chromium/fast/forms/calendar-picker/calendar-picker-datetime-with-step.html is failing on all platforms.
+        https://bugs.webkit.org/show_bug.cgi?id=103817
+
+        Reviewed by Kent Tamura.
+
+        Adding initial value to the datetime input. Without it, the test fails
+        because calendar picker opens current month.
+
+        * platform/chromium/TestExpectations:
+        * platform/chromium/fast/forms/calendar-picker/calendar-picker-datetime-with-step.html:
+
+2012-12-02  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, webkit gardening.
+        https://bugs.webkit.org/show_bug.cgi?id=103834
+
+        * platform/chromium/TestExpectations:
+        Mark month-multiple-fields-keyboard-events.html as FAIL for WinXP.
+
+2012-12-02  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL][WK1] Change AC bug url appropriately
+        https://bugs.webkit.org/show_bug.cgi?id=103808
+
+        Unreviewed, EFL gardening.
+
+        From https://bugs.webkit.org/show_bug.cgi?id=103488 to https://bugs.webkit.org/show_bug.cgi?id=103847
+
+        * platform/efl-wk1/TestExpectations:
+
+2012-12-02  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, webkit gardening, fix webkit lint.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-02  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [chromium] Correct the location of synthetic mouse events when page is zoomed
+        https://bugs.webkit.org/show_bug.cgi?id=103823
+
+        Reviewed by Adam Barth.
+
+        * platform/chromium/plugins/touch-events-synthesized-expected.txt:
+        * platform/chromium/plugins/touch-events-synthesized.html:
+
+2012-12-02  Robert Hogan  <robert@webkit.org>
+
+        Bad rendering of web page because of image's height is set to 100%
+        https://bugs.webkit.org/show_bug.cgi?id=28035
+
+        Reviewed by Eric Seidel.
+
+        * fast/css/computed-image-width-with-percent-height-expected.html: Added.
+        * fast/css/computed-image-width-with-percent-height-quirksmode-expected.html: Added.
+        * fast/css/computed-image-width-with-percent-height-quirksmode.html: Added.
+        * fast/css/computed-image-width-with-percent-height.html: Added.
+
+2012-12-02  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSS Regions] regionlayoutupdate event fires continuously
+        https://bugs.webkit.org/show_bug.cgi?id=102101
+
+        Reviewed by David Hyatt.
+
+        Add a test to make sure that for a flow thread with auto-height region, the regionlayoutupdate event is not unnecessary triggered.
+
+        * fast/regions/autoheight-regionlayoutupdate-multipletimes-expected.txt: Added.
+        * fast/regions/autoheight-regionlayoutupdate-multipletimes.html: Added.
+
+2012-12-02  Mike West  <mkwst@chromium.org>
+
+        [gtk] Enable the CSP_NEXT runtime flag.
+        https://bugs.webkit.org/show_bug.cgi?id=103810
+
+        Reviewed by Adam Barth.
+
+        * platform/gtk/TestExpectations:
+            Unskipping CSP 1.1 tests for GTK.
+
+2012-12-02  Mike West  <mkwst@chromium.org>
+
+        [chromium] Unreviewed gardening.
+
+        Skipping failing tests on mac.
+
+        * platform/chromium/TestExpectations:
+            Mark fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events.html
+            and widening fast/css/font-weight-1.html to include 'Mac'.
+
+2012-12-02  Rik Cabanier  <cabanier@adobe.com>
+
+        Extend JavaScript support for blending in canvas
+        https://bugs.webkit.org/show_bug.cgi?id=101804
+
+        Reviewed by Dirk Schulze.
+
+        Added a test that checks that all blendingmodes are supported
+
+        * canvas/philip/tests/2d.composite.globalComposite-expected.txt: Added.
+        * canvas/philip/tests/2d.composite.globalComposite.html: Added.
+
+2012-12-02  Kent Tamura  <tkent@chromium.org>
+
+        [Chromium] fast/forms/*-multiple-fields/*-multiple-fields-preserve-value-after-history-back.html is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=96720
+
+        * platform/chromium/TestExpectations: Mark them Slow
+
+2012-12-02  Elliott Sprehn  <esprehn@gmail.com>
+
+        documentElement should not always get a renderer
+        https://bugs.webkit.org/show_bug.cgi?id=103475
+
+        Reviewed by Ojan Vafai.
+
+        Test that using display: none on the documentElement hides the document.
+
+        * fast/css/display-none-documentElement-expected.html: Added.
+        * fast/css/display-none-documentElement.html: Added.
+
+2012-12-02  Pan Deng  <pan.deng@intel.com>
+
+        [Resource Timing]Test cases of cross origin resource timing.
+        https://bugs.webkit.org/show_bug.cgi?id=84886.
+
+        Reviewed by Tony Gentilcore.
+
+        Test cases in this patch validate resource timing behavior when cross origin request with/without "allow-timing-origin" response header. 
+
+        * http/tests/w3c/webperf/resources/blank_page_green_with_allow_timing.php: Added.
+        * http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request-expected.txt: Added.
+        * http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html: Added.
+        * http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request-expected.txt: Added.
+        * http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html: Added.
+
+2012-12-02  Justin Novosad  <junov@google.com>
+
+        Fix occlusion culling logic to handle css background layer clipping
+        https://bugs.webkit.org/show_bug.cgi?id=103276
+
+        Reviewed by Simon Fraser.
+
+        New ref test that verifies the superposition of background layers with
+        the layers having smaller clip regions than the layers beneath them.
+        This test ensures the bottom layers are not removed by culling
+        optimizations.
+
+        * fast/backgrounds/background-opaque-clipped-gradients-expected.html: Added.
+        * fast/backgrounds/background-opaque-clipped-gradients.html: Added.
+
+2012-12-02  Tony Chang  <tony@chromium.org>
+
+        Avoid a second layout of flex items in layoutAndPlaceChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=102352
+
+        Reviewed by Ojan Vafai.
+
+        Add a test case to make sure we relayout when a sibling is stretching.
+
+        * css3/flexbox/stretch-after-sibling-size-change-expected.txt: Added.
+        * css3/flexbox/stretch-after-sibling-size-change.html: Added.
+
+2012-12-02  Yongjun Zhang  <yongjun_zhang@apple.com>
+
+        Need a method to close all idle localstorage databases immediately.
+        https://bugs.webkit.org/show_bug.cgi?id=103469
+
+        Reviewed by David Kilzer.
+
+        * storage/domstorage/localstorage/close-idle-localstorage-databases-immediately-expected.txt: Added.
+        * storage/domstorage/localstorage/close-idle-localstorage-databases-immediately.html: Added.
+        * storage/resources/storage-close-idle-localstorage-databases-immediately.html: Added.
+
+2012-12-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136236.
+        http://trac.webkit.org/changeset/136236
+        https://bugs.webkit.org/show_bug.cgi?id=103833
+
+        [chromium] Flakey crashes in SpeechRecognitionEvent::emma
+        during GC. (Requested by mkwst on #webkit).
+
+        * fast/speech/scripted/emma-expected.txt:
+        * fast/speech/scripted/emma.html:
+        * fast/speech/scripted/speechrecognition-basics-expected.txt:
+        * fast/speech/scripted/speechrecognition-basics.html:
+
+2012-12-01  Mike West  <mkwst@chromium.org>
+
+        [chromium] Unreviewed gardening. Skipping crashing tests.
+
+        The DEPS roll containing r170422 is causing three crashes cross-platform
+        in the Chromium port. Skipping them here, filed crbug.com/163785 to fix.
+
+        * platform/chromium/TestExpectations:
+            Marked media/encrypted-media/encrypted-media-events.html,
+            media/encrypted-media/encrypted-media-not-loaded.html, and
+            media/encrypted-media/encrypted-media-syntax.html as crashing.
+
+2012-12-01  Mike West  <mkwst@chromium.org>
+
+        [chromium] Unreviewed gardening. Skipping calendar-picker-datetime-with-step.html.
+
+        It looks like platform/chromium/fast/forms/calendar-picker/calendar-picker-datetime-with-step.html
+        started failing at midnight PST, December 1st. I don't think it handled
+        the month change correctly. Filed https://bugs.webkit.org/show_bug.cgi?id=103817
+        to cover the fix.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-01  Mike West  <mkwst@chromium.org>
+
+        [gtk] Unreviewed gardening. Skipping CSP 1.1 tests.
+
+        The CSP 1.1 tests are failing under GTK after r136305 made the CSP_NEXT
+        flag runtime enabled. Will fix in webkit.org/b/103810, skipping for now.
+
+        * platform/gtk/TestExpectations:
+            Skipping CSP 1.1 tests.
+
+2012-11-30  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Shorten a file name as the test renamed in r136122 is still hosing Chromium Win perf. bot.
+
+        * http/tests/inspector/network/resources/script-as-text-with-a-very-very-very-very-very-very-very-very-very-very-very-very-very-very-long-url.php: Renamed.
+        * http/tests/inspector/network/resources/script-as-text-with-a-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-long-url.php: Removed.
+        * http/tests/inspector/network/script-as-text-loading-long-url.html:
+
+2012-11-30  Sujin Park  <sujjin.park@gmail.com>
+
+        [EFL][WK1] Gardening test cases which are not crashed after r135662
+        https://bugs.webkit.org/show_bug.cgi?id=103803
+
+        Unreviewed, EFL gardening.
+
+        * platform/efl-wk1/TestExpectations:
+
+2012-11-30  Jer Noble  <jer.noble@apple.com>
+
+        Add support for the 'unpause()' method on MediaController.
+        https://bugs.webkit.org/show_bug.cgi?id=103751
+
+        Reviewed by Eric Carlson.
+
+        Add new test for unpause() and playbackState() methods.
+
+        * media/media-controller-unpause.html:
+        * media/media-controller-unpause-expected.txt:
+        * media/media-controller-playback.html:
+        * media/media-controller-playback-expected.txt:
+
+2012-11-30  Zhenyao Mo  <zmo@google.com>
+
+        Unreviewed, webkit gardening, fix webkit lint.
+
+        * platform/chromium/TestExpectations:
+
+2012-11-30  Simon Fraser  <simon.fraser@apple.com>
+
+        Use the correct path to a test in TestExpectations.
+
+        * platform/chromium/TestExpectations:
+
+2012-11-30  Simon Fraser  <simon.fraser@apple.com>
+
+        Make RenderLayer::updateLayerPosition() private
+        https://bugs.webkit.org/show_bug.cgi?id=102624
+
+        Reviewed by Ryosuke Niwa.
+
+        New results with correctly computed event offsets.
+
+        * fast/events/stopPropagation-submit-expected.txt:
+
+2012-11-30  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136142.
+        http://trac.webkit.org/changeset/136142
+        https://bugs.webkit.org/show_bug.cgi?id=103768
+
+        break a bunch of interactive_ui_tests in chromium win
+        (Requested by zhenyao_home on #webkit).
+
+        * fast/ruby/position-after.html: Removed.
+        * platform/mac/fast/ruby/position-after-expected.png: Removed.
+        * platform/mac/fast/ruby/position-after-expected.txt: Removed.
+
+2012-11-30  Stephen Chenney  <schenney@chromium.org>
+
+        [Chromium] Rebaselining tests affected by recent Skia changes
+
+        Unreviewed test expectations updates.
+
+        Due to the Win7 builders being so far behind, some Win7 expectations may be wrong.
+        Also fixes https://bugs.webkit.org/show_bug.cgi?id=103722
+
+        * platform/chromium-linux-x86/svg/transforms: Added.
+        * platform/chromium-linux-x86/svg/transforms/text-with-mask-with-svg-transform-expected.png: Added.
+        * platform/chromium-linux/fast/canvas/canvas-incremental-repaint-expected.png:
+        * platform/chromium-linux/fast/text/line-initial-and-final-swashes-expected.png: Removed.
+        * platform/chromium-linux/svg/transforms/text-with-pattern-with-svg-transform-expected.png:
+        * platform/chromium-mac-lion/compositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac-lion/fast/box-shadow/basic-shadows-expected.png:
+        * platform/chromium-mac-lion/fast/box-shadow/box-shadow-transformed-expected.png:
+        * platform/chromium-mac-lion/fast/box-shadow/inset-expected.png:
+        * platform/chromium-mac-lion/fast/canvas/canvas-incremental-repaint-expected.png:
+        * platform/chromium-mac-lion/fast/repaint/shadow-multiple-horizontal-expected.png:
+        * platform/chromium-mac-lion/fast/repaint/shadow-multiple-strict-horizontal-expected.png:
+        * platform/chromium-mac-lion/fast/repaint/shadow-multiple-strict-vertical-expected.png:
+        * platform/chromium-mac-lion/fast/repaint/shadow-multiple-vertical-expected.png:
+        * platform/chromium-mac-lion/fast/transforms/shadows-expected.png:
+        * platform/chromium-mac-lion/fast/transforms/transformed-focused-text-input-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-step-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-step-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-step-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/color/color-suggestion-picker-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/color/color-suggestion-picker-one-row-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/color/color-suggestion-picker-two-row-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/fast/forms/color/color-suggestion-picker-with-scrollbar-appearance-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac-lion/svg/W3C-SVG-1.1/animate-elem-81-t-expected.png:
+        * platform/chromium-mac-lion/svg/W3C-SVG-1.1/animate-elem-82-t-expected.png:
+        * platform/chromium-mac-lion/svg/W3C-SVG-1.1/painting-stroke-02-t-expected.png:
+        * platform/chromium-mac-lion/svg/css/group-with-shadow-expected.png:
+        * platform/chromium-mac-lion/svg/custom/linking-a-03-b-transform-expected.png:
+        * platform/chromium-mac-lion/svg/custom/linking-a-03-b-viewBox-transform-expected.png:
+        * platform/chromium-mac-lion/svg/custom/pattern-rotate-expected.png:
+        * platform/chromium-mac-lion/svg/custom/stroke-width-large-expected.png:
+        * platform/chromium-mac-lion/svg/custom/use-transform-expected.png:
+        * platform/chromium-mac-lion/svg/transforms/text-with-pattern-with-svg-transform-expected.png:
+        * platform/chromium-mac-snowleopard/compositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac-snowleopard/fast/box-shadow/basic-shadows-expected.png:
+        * platform/chromium-mac-snowleopard/fast/box-shadow/box-shadow-transformed-expected.png:
+        * platform/chromium-mac-snowleopard/fast/repaint/shadow-multiple-horizontal-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/repaint/shadow-multiple-strict-horizontal-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/repaint/shadow-multiple-strict-vertical-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/repaint/shadow-multiple-vertical-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/transforms/transformed-focused-text-input-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-step-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-step-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-step-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/color/color-suggestion-picker-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/color/color-suggestion-picker-one-row-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/color/color-suggestion-picker-two-row-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/fast/forms/color/color-suggestion-picker-with-scrollbar-appearance-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac-snowleopard/svg/W3C-SVG-1.1/animate-elem-81-t-expected.png:
+        * platform/chromium-mac-snowleopard/svg/W3C-SVG-1.1/animate-elem-82-t-expected.png:
+        * platform/chromium-mac-snowleopard/svg/custom/pattern-rotate-expected.png:
+        * platform/chromium-mac-snowleopard/svg/custom/stroke-width-large-expected.png:
+        * platform/chromium-mac/compositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac/fast/box-shadow/basic-shadows-expected.png:
+        * platform/chromium-mac/fast/box-shadow/box-shadow-clipped-slices-expected.png:
+        * platform/chromium-mac/fast/box-shadow/box-shadow-radius-expected.png:
+        * platform/chromium-mac/fast/box-shadow/box-shadow-transformed-expected.png:
+        * platform/chromium-mac/fast/box-shadow/inset-box-shadow-radius-expected.png:
+        * platform/chromium-mac/fast/box-shadow/inset-box-shadows-expected.png:
+        * platform/chromium-mac/fast/box-shadow/inset-expected.png:
+        * platform/chromium-mac/fast/box-shadow/scaled-box-shadow-expected.png:
+        * platform/chromium-mac/fast/box-shadow/single-pixel-shadow-expected.png:
+        * platform/chromium-mac/fast/canvas/canvas-incremental-repaint-expected.png:
+        * platform/chromium-mac/fast/repaint/shadow-multiple-horizontal-expected.png:
+        * platform/chromium-mac/fast/repaint/shadow-multiple-strict-horizontal-expected.png:
+        * platform/chromium-mac/fast/repaint/shadow-multiple-strict-vertical-expected.png:
+        * platform/chromium-mac/fast/repaint/shadow-multiple-vertical-expected.png:
+        * platform/chromium-mac/fast/repaint/transform-replaced-shadows-expected.png:
+        * platform/chromium-mac/fast/transforms/shadows-expected.png:
+        * platform/chromium-mac/fast/transforms/transformed-focused-text-input-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-step-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-step-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-step-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/color/color-suggestion-picker-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/color/color-suggestion-picker-one-row-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/color/color-suggestion-picker-two-row-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/fast/forms/color/color-suggestion-picker-with-scrollbar-appearance-expected.png:
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-mac/svg/W3C-SVG-1.1/animate-elem-81-t-expected.png:
+        * platform/chromium-mac/svg/W3C-SVG-1.1/animate-elem-82-t-expected.png:
+        * platform/chromium-mac/svg/W3C-SVG-1.1/painting-stroke-02-t-expected.png:
+        * platform/chromium-mac/svg/css/group-with-shadow-expected.png:
+        * platform/chromium-mac/svg/custom/linking-a-03-b-transform-expected.png:
+        * platform/chromium-mac/svg/custom/linking-a-03-b-viewBox-transform-expected.png:
+        * platform/chromium-mac/svg/custom/pattern-rotate-expected.png:
+        * platform/chromium-mac/svg/custom/stroke-width-large-expected.png:
+        * platform/chromium-mac/svg/custom/use-transform-expected.png:
+        * platform/chromium-mac/svg/filters/shadow-on-rect-with-filter-expected.png:
+        * platform/chromium-mac/svg/transforms/text-with-pattern-with-svg-transform-expected.png:
+        * platform/chromium-win-xp/compositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-win-xp/fast/repaint/shadow-multiple-horizontal-expected.png: Removed.
+        * platform/chromium-win-xp/fast/repaint/shadow-multiple-strict-horizontal-expected.png: Removed.
+        * platform/chromium-win-xp/fast/repaint/shadow-multiple-strict-vertical-expected.png: Removed.
+        * platform/chromium-win-xp/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru-expected.png:
+        * platform/chromium-win-xp/platform/chromium/fast/forms/color: Removed.
+        * platform/chromium-win-xp/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-win-xp/svg/css/group-with-shadow-expected.png:
+        * platform/chromium-win/compositing/shadows/shadow-drawing-expected.png:
+        * platform/chromium-win/fast/box-shadow/basic-shadows-expected.png:
+        * platform/chromium-win/fast/box-shadow/box-shadow-clipped-slices-expected.png:
+        * platform/chromium-win/fast/box-shadow/box-shadow-transformed-expected.png:
+        * platform/chromium-win/fast/box-shadow/inset-box-shadows-expected.png:
+        * platform/chromium-win/fast/box-shadow/inset-expected.png:
+        * platform/chromium-win/fast/canvas/canvas-incremental-repaint-expected.png:
+        * platform/chromium-win/fast/repaint/shadow-multiple-horizontal-expected.png:
+        * platform/chromium-win/fast/repaint/shadow-multiple-strict-horizontal-expected.png:
+        * platform/chromium-win/fast/repaint/shadow-multiple-strict-vertical-expected.png:
+        * platform/chromium-win/fast/repaint/shadow-multiple-vertical-expected.png:
+        * platform/chromium-win/fast/text/line-initial-and-final-swashes-expected.png: Copied from LayoutTests/platform/chromium-linux/fast/text/line-initial-and-final-swashes-expected.png.
+        * platform/chromium-win/fast/transforms/shadows-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ru-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-step-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/month-picker-appearance-step-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/calendar-picker/week-picker-appearance-step-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/color/color-suggestion-picker-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/color/color-suggestion-picker-one-row-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/color/color-suggestion-picker-two-row-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/fast/forms/color/color-suggestion-picker-with-scrollbar-appearance-expected.png:
+        * platform/chromium-win/platform/chromium/virtual/softwarecompositing/shadows/shadow-drawing-expected.png: Added.
+        * platform/chromium-win/svg/W3C-SVG-1.1/animate-elem-81-t-expected.png:
+        * platform/chromium-win/svg/W3C-SVG-1.1/animate-elem-82-t-expected.png:
+        * platform/chromium-win/svg/W3C-SVG-1.1/painting-stroke-02-t-expected.png:
+        * platform/chromium-win/svg/css/group-with-shadow-expected.png:
+        * platform/chromium-win/svg/custom/linking-a-03-b-transform-expected.png:
+        * platform/chromium-win/svg/custom/linking-a-03-b-viewBox-transform-expected.png:
+        * platform/chromium-win/svg/custom/pattern-rotate-expected.png:
+        * platform/chromium-win/svg/custom/stroke-width-large-expected.png:
+        * platform/chromium-win/svg/custom/use-transform-expected.png:
+        * platform/chromium-win/svg/transforms/text-with-pattern-with-svg-transform-expected.png:
+        * platform/chromium/TestExpectations:
+
+2012-11-30  James Simonsen  <simonjam@chromium.org>
+
+        Report CSS as initiator instead of elements, except body
+        https://bugs.webkit.org/show_bug.cgi?id=103546
+
+        Reviewed by Tony Gentilcore.
+
+        * platform/chromium/fast/loader/resource-request-callbacks-expected.txt: Rebaseline to match new behavior.
+
+2012-11-30  Michelangelo De Simone  <michelangelo@webkit.org>
+
+        [CSS Shaders] Clamp input colors before blending
+        https://bugs.webkit.org/show_bug.cgi?id=98962
+
+        Reviewed by Dean Jackson.
+
+        Test to check the correct clamping of color values.
+
+        * css3/filters/custom/custom-filter-color-clamping-expected.html: Added.
+        * css3/filters/custom/custom-filter-color-clamping-negative-expected.html: Added.
+        * css3/filters/custom/custom-filter-color-clamping-negative.html: Added.
+        * css3/filters/custom/custom-filter-color-clamping.html: Added.
+        * css3/filters/resources/custom-filter-color-clamping-negative.fs: Added.
+        * css3/filters/resources/custom-filter-color-clamping.fs: Added.
+
+2012-11-30  Abhishek Arya  <inferno@chromium.org>
+
+        Crash due to intruding float not removed after writing mode changed.
+        https://bugs.webkit.org/show_bug.cgi?id=100149
+
+        Reviewed by Levi Weintraub.
+
+        * fast/block/float/intruding-float-not-removed-writing-mode-expected.txt: Added.
+        * fast/block/float/intruding-float-not-removed-writing-mode.xhtml: Added.
+
 2012-11-30  Florin Malita  <fmalita@chromium.org>
 
         SVG pattern data deleted while in use

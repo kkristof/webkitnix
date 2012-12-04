@@ -68,6 +68,7 @@ public:
     void clickedLink(NSURL *);
     void saveToPDF();
     void writeItemsToPasteboard(NSArray *items, NSArray *types);
+    void showDefinitionForAttributedString(NSAttributedString *, CGPoint);
 
 private:
     explicit PDFPlugin(WebFrame*);
@@ -102,8 +103,11 @@ private:
     WebCore::IntPoint convertFromRootViewToPlugin(const WebCore::IntPoint&) const;
     
     bool supportsForms();
+    bool isFullFramePlugin();
 
     void updatePageAndDeviceScaleFactors();
+
+    WebCore::IntPoint convertFromPDFViewToRootView(const WebCore::IntPoint&) const;
 
     RetainPtr<CALayer> m_containerLayer;
     RetainPtr<CALayer> m_contentLayer;

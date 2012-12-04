@@ -488,6 +488,7 @@ SET(WebCore_IDL_FILES
     html/HTMLTableElement.idl
     html/HTMLTableRowElement.idl
     html/HTMLTableSectionElement.idl
+    html/HTMLTemplateElement.idl
     html/HTMLTextAreaElement.idl
     html/HTMLTitleElement.idl
     html/HTMLTrackElement.idl
@@ -1145,6 +1146,7 @@ SET(WebCore_SOURCES
     dom/DocumentFragment.cpp
     dom/DocumentParser.cpp
     dom/DocumentOrderedMap.cpp
+    dom/DocumentSharedObjectPool.cpp
     dom/DocumentStyleSheetCollection.cpp
     dom/DocumentType.cpp
     dom/Element.cpp
@@ -1430,6 +1432,7 @@ SET(WebCore_SOURCES
     html/HTMLTableRowElement.cpp
     html/HTMLTableRowsCollection.cpp
     html/HTMLTableSectionElement.cpp
+    html/HTMLTemplateElement.cpp
     html/HTMLTextAreaElement.cpp
     html/HTMLTextFormControlElement.cpp
     html/HTMLTitleElement.cpp
@@ -1595,6 +1598,7 @@ SET(WebCore_SOURCES
     inspector/InspectorFrontendHost.cpp
     inspector/InspectorHistory.cpp
     inspector/InspectorIndexedDBAgent.cpp
+    inspector/InspectorInputAgent.cpp
     inspector/InspectorInstrumentation.cpp
     inspector/InspectorMemoryAgent.cpp
     inspector/InspectorOverlay.cpp

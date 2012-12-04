@@ -36,7 +36,6 @@
 
 namespace WebCore {
 
-class Document;
 class SpeechRecognitionError;
 class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
@@ -48,7 +47,7 @@ struct SpeechRecognitionEventInit : public EventInit {
     RefPtr<SpeechRecognitionResult> result;
     RefPtr<SpeechRecognitionResultList> resultHistory;
 
-    short resultIndex;
+    unsigned long resultIndex;
     RefPtr<SpeechRecognitionResultList> results;
 };
 
@@ -66,7 +65,6 @@ public:
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results.get(); }
-    Document* emma();
 
     // DEPRECATED
     SpeechRecognitionResult* result() const { return m_result.get(); }
@@ -84,7 +82,6 @@ private:
 
     unsigned long m_resultIndex;
     RefPtr<SpeechRecognitionResultList> m_results;
-    RefPtr<Document> m_emma;
 
     // DEPRECATED
     RefPtr<SpeechRecognitionResult> m_result;

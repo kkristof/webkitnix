@@ -68,7 +68,6 @@ IDBDatabase::IDBDatabase(ScriptExecutionContext* context, PassRefPtr<IDBDatabase
 {
     // We pass a reference of this object before it can be adopted.
     relaxAdoptionRequirement();
-    m_metadata = m_backend->metadata();
 }
 
 IDBDatabase::~IDBDatabase()
@@ -93,7 +92,6 @@ void IDBDatabase::transactionCreated(IDBTransaction* transaction)
     if (transaction->isVersionChange()) {
         ASSERT(!m_versionChangeTransaction);
         m_versionChangeTransaction = transaction;
-        m_metadata = m_backend->metadata();
     }
 }
 
@@ -106,7 +104,6 @@ void IDBDatabase::transactionFinished(IDBTransaction* transaction)
     if (transaction->isVersionChange()) {
         ASSERT(m_versionChangeTransaction == transaction);
         m_versionChangeTransaction = 0;
-        m_metadata = m_backend->metadata();
     }
 
     if (m_closePending && m_transactions.isEmpty())
@@ -133,11 +130,11 @@ PassRefPtr<IDBAny> IDBDatabase::version() const
 PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionCode& ec)
 {
     if (!m_versionChangeTransaction) {
-        ec = IDBDatabaseException::IDB_INVALID_STATE_ERR;
+        ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = IDBDatabaseException::TRANSACTION_INACTIVE_ERR;
+        ec = IDBDatabaseException::TransactionInactiveError;
         return 0;
     }
 
@@ -152,12 +149,12 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     }
 
     if (containsObjectStore(name)) {
-        ec = IDBDatabaseException::CONSTRAINT_ERR;
+        ec = IDBDatabaseException::ConstraintError;
         return 0;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
-        ec = IDBDatabaseException::IDB_SYNTAX_ERR;
+        ec = IDBDatabaseException::SyntaxError;
         return 0;
     }
 
@@ -166,7 +163,7 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
         options.get("autoIncrement", autoIncrement);
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
-        ec = IDBDatabaseException::IDB_INVALID_ACCESS_ERR;
+        ec = IDBDatabaseException::InvalidAccessError;
         return 0;
     }
 
@@ -189,17 +186,17 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
 void IDBDatabase::deleteObjectStore(const String& name, ExceptionCode& ec)
 {
     if (!m_versionChangeTransaction) {
-        ec = IDBDatabaseException::IDB_INVALID_STATE_ERR;
+        ec = IDBDatabaseException::InvalidStateError;
         return;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = IDBDatabaseException::TRANSACTION_INACTIVE_ERR;
+        ec = IDBDatabaseException::TransactionInactiveError;
         return;
     }
 
     int64_t objectStoreId = findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-        ec = IDBDatabaseException::IDB_NOT_FOUND_ERR;
+        ec = IDBDatabaseException::NotFoundError;
         return;
     }
 
@@ -213,7 +210,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionCode& ec)
 PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionCode& ec)
 {
     if (!scope.size()) {
-        ec = IDBDatabaseException::IDB_INVALID_ACCESS_ERR;
+        ec = IDBDatabaseException::InvalidAccessError;
         return 0;
     }
 
@@ -222,7 +219,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
         return 0;
 
     if (m_versionChangeTransaction || m_closePending) {
-        ec = IDBDatabaseException::IDB_INVALID_STATE_ERR;
+        ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
 
@@ -230,7 +227,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     for (size_t i = 0; i < scope.size(); ++i) {
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-            ec = IDBDatabaseException::IDB_NOT_FOUND_ERR;
+            ec = IDBDatabaseException::NotFoundError;
             return 0;
         }
         objectStoreIds.append(objectStoreId);

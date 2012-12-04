@@ -152,6 +152,9 @@ public:
 
     bool cssGridLayoutEnabled() const;
     bool parseGridTrackList(CSSPropertyID, bool important);
+    bool parseGridTrackGroup(CSSValueList*);
+    bool parseGridTrackMinMax(CSSValueList*);
+    PassRefPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
 
     bool parseDashboardRegions(CSSPropertyID, bool important);
 
@@ -350,6 +353,7 @@ public:
 
     // tokenizer methods and data
     size_t m_parsedTextPrefixLength;
+    SourceRange m_selectorRange;
     SourceRange m_propertyRange;
     OwnPtr<RuleSourceDataList> m_currentRuleDataStack;
     RefPtr<CSSRuleSourceData> m_currentRuleData;
@@ -358,6 +362,8 @@ public:
     void fixUnparsedPropertyRanges(CSSRuleSourceData*);
     void markRuleHeaderStart(CSSRuleSourceData::Type);
     void markRuleHeaderEnd();
+    void markSelectorStart();
+    void markSelectorEnd();
     void markRuleBodyStart();
     void markRuleBodyEnd();
     void markPropertyStart();

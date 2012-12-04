@@ -94,13 +94,11 @@ void LayerTreeCoordinatorProxy::removeUpdateAtlas(int atlasID)
 void LayerTreeCoordinatorProxy::deleteCompositingLayer(WebLayerID id)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::deleteLayer, m_renderer.get(), id));
-    updateViewport();
 }
 
 void LayerTreeCoordinatorProxy::setRootCompositingLayer(WebLayerID id)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setRootLayerID, m_renderer.get(), id));
-    updateViewport();
 }
 
 void LayerTreeCoordinatorProxy::setCompositingLayerState(WebLayerID id, const WebLayerInfo& info)

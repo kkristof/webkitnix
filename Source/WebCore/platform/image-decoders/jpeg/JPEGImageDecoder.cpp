@@ -40,20 +40,9 @@
 #include "config.h"
 #include "JPEGImageDecoder.h"
 #include "PlatformInstrumentation.h"
-#include <stdio.h>  // Needed by jpeglib.h for FILE.
 #include <wtf/PassOwnPtr.h>
 
-#if OS(WINCE)
-// Remove warning: 'FAR' macro redefinition
-#undef FAR
-
-// jmorecfg.h in libjpeg checks for XMD_H with the comment: "X11/xmd.h correctly defines INT32"
-// fix INT32 redefinition error by pretending we are X11/xmd.h
-#define XMD_H
-#endif
-
 extern "C" {
-#include "jpeglib.h"
 #if USE(ICCJPEG)
 #include "iccjpeg.h"
 #endif
@@ -646,12 +635,12 @@ bool JPEGImageDecoder::setFailed()
     return ImageDecoder::setFailed();
 }
 
-template <int colorSpace>
+template <J_COLOR_SPACE colorSpace>
 void setPixel(ImageFrame& buffer, ImageFrame::PixelData* currentAddress, JSAMPARRAY samples, int column)
 {
-    JSAMPLE* jsample = *samples + column * (static_cast<J_COLOR_SPACE>(colorSpace) == JCS_RGB ? 3 : 4);
+    JSAMPLE* jsample = *samples + column * (colorSpace == JCS_RGB ? 3 : 4);
 
-    switch (static_cast<J_COLOR_SPACE>(colorSpace)) {
+    switch (colorSpace) {
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
     case JCS_EXT_BGRA:
         buffer.setRGBA(currentAddress, jsample[2], jsample[1], jsample[0], 0xFF);
@@ -677,7 +666,7 @@ void setPixel(ImageFrame& buffer, ImageFrame::PixelData* currentAddress, JSAMPAR
     }
 }
 
-template <int colorSpace, bool isScaled>
+template <J_COLOR_SPACE colorSpace, bool isScaled>
 bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
 {
     JSAMPARRAY samples = m_reader->samples();
@@ -712,7 +701,7 @@ bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
     return true;
 }
 
-template <int colorSpace>
+template <J_COLOR_SPACE colorSpace>
 bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
 {
     return m_scaled ? outputScanlines<colorSpace, true>(buffer) : outputScanlines<colorSpace, false>(buffer);
@@ -740,9 +729,8 @@ bool JPEGImageDecoder::outputScanlines()
 
     jpeg_decompress_struct* info = m_reader->info();
 
-#if !ENABLE(IMAGE_DECODER_DOWN_SAMPLING) && defined(TURBO_JPEG_RGB_SWIZZLE)
-    if (turboSwizzled(info->out_color_space)) {
-        ASSERT(!m_scaled);
+#if defined(TURBO_JPEG_RGB_SWIZZLE)
+    if (!m_scaled && turboSwizzled(info->out_color_space)) {
         while (info->output_scanline < info->output_height) {
             unsigned char* row = reinterpret_cast<unsigned char*>(buffer.getAddr(0, info->output_scanline));
             if (jpeg_read_scanlines(info, &row, 1) != 1)

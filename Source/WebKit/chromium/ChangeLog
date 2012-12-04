@@ -1,3 +1,340 @@
+2012-12-04  Charlie Reis  <creis@chromium.org>
+
+        Add FrameLoaderClient::didDisownOpener
+        https://bugs.webkit.org/show_bug.cgi?id=103789
+
+        Reviewed by Darin Fisher.
+
+        Forwards the didDisownOpener notification to the WebFrameClient.
+
+        * public/WebFrameClient.h:
+        (WebFrameClient):
+        (WebKit::WebFrameClient::didDisownOpener):
+        * src/FrameLoaderClientImpl.cpp:
+        (WebKit::FrameLoaderClientImpl::didDisownOpener):
+        (WebKit):
+        * src/FrameLoaderClientImpl.h:
+        (FrameLoaderClientImpl):
+
+2012-12-04  Stephen Chenney  <schenney@chromium.org>
+
+        [chromium] Turn on the new Skia mask blur algorithm.
+        https://bugs.webkit.org/show_bug.cgi?id=103906
+
+        Unreviewed roll out.
+
+        The previous patch was premature and is causing issues rolling skia deps and Chromium deps.
+
+        * skia_webkit.gyp:
+
+2012-12-03  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Correct database version after aborted upgrade
+        https://bugs.webkit.org/show_bug.cgi?id=103763
+
+        Reviewed by Tony Chang.
+
+        Pass previously created proxy along in an open onSuccess, rather than a useless wrapper.
+
+        * src/WebIDBCallbacksImpl.cpp:
+        (WebKit::WebIDBCallbacksImpl::WebIDBCallbacksImpl):
+        (WebKit::WebIDBCallbacksImpl::onSuccess):
+        (WebKit::WebIDBCallbacksImpl::onUpgradeNeeded):
+        * src/WebIDBCallbacksImpl.h:
+        (WebCore):
+        (WebIDBCallbacksImpl):
+
+2012-12-03  Rafael Weinstein  <rafaelw@chromium.org>
+
+        Implement HTMLTemplateElement
+        https://bugs.webkit.org/show_bug.cgi?id=86031
+
+        Reviewed by Adam Barth.
+
+        Turning on HTMLTemplateElement for chromium port.
+
+        * features.gypi:
+
+2012-12-03  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136460.
+        http://trac.webkit.org/changeset/136460
+        https://bugs.webkit.org/show_bug.cgi?id=103958
+
+        This patch caused compile error when building DumpRenderTree
+        (Requested by tasak on #webkit).
+
+        * WebKit.gyp:
+        * public/linux/WebRenderTheme.h: Added.
+        (WebKit):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setScrollbarColors):
+        (WebKit::WebViewImpl::setSelectionColors):
+        * src/linux/WebRenderTheme.cpp: Added.
+        (WebKit):
+        (WebKit::setCaretBlinkInterval):
+
+2012-12-03  Scott Violet  <sky@chromium.org>
+
+        [chromium] Remove linux theme related files and switch to default
+        https://bugs.webkit.org/show_bug.cgi?id=103897
+
+        Reviewed by Darin Fisher.
+
+        linux theme related files are now named default. This removes
+        linux files updates build files and removes ifdefs.
+
+        * WebKit.gyp: update rules.
+        * public/linux/WebRenderTheme.h: Removed.
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setScrollbarColors): Update ifdefs
+        (WebKit::WebViewImpl::setSelectionColors): Update ifdefs
+        * src/linux/WebRenderTheme.cpp: Removed.
+
+2012-12-03  Fady Samuel  <fsamuel@chromium.org>
+
+        [Chromium] Expose removeAttribute in WebElement
+        https://bugs.webkit.org/show_bug.cgi?id=103780
+
+        Reviewed by Darin Fisher.
+
+        * public/WebElement.h:
+        (WebElement):
+        * src/WebElement.cpp:
+        (WebKit::WebElement::removeAttribute):
+        (WebKit):
+
+2012-12-03  Eugene Klyuchnikov  <eustas@chromium.org>
+
+        Web Inspector: Make main-thread monitoring go through InspectorController
+        https://bugs.webkit.org/show_bug.cgi?id=103550
+
+        Reviewed by Pavel Feldman.
+
+        InspectorInstrumentation was a wrong path.
+
+        * src/InspectorClientImpl.cpp: Remove TaskObserver implementation, and
+        listen/unlisten methods.
+        * src/InspectorClientImpl.h: Ditto.
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::~WebDevToolsAgentImpl):
+        Unsubscribe for main thread activity events.
+        (WebKit::WebDevToolsAgentImpl::detach): Ditto.
+        (WebKit::WebDevToolsAgentImpl::attach):
+        Subscribe for main thread activity events.
+        (WebKit::WebDevToolsAgentImpl::willProcessTask): Implement TasObserver
+        interface. Froward to InspectorController.
+        (WebKit::WebDevToolsAgentImpl::didProcessTask): Ditto.
+        * src/WebDevToolsAgentImpl.h: Implement TasObserver interface.
+
+2012-12-03  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: remove IDBDatabaseBackendInterface::transaction()
+        https://bugs.webkit.org/show_bug.cgi?id=102733
+
+        Reviewed by Darin Fisher.
+
+        Part 3 of a refactor - just remove the proxy code for the now
+        defunct transaction method.
+
+        * public/WebIDBDatabase.h:
+        * src/IDBDatabaseBackendProxy.cpp:
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+        * tests/IDBDatabaseBackendTest.cpp:
+
+2012-12-03  Sami Kyostila  <skyostil@chromium.org>
+
+        [chromium] Tell WebInputHandlerClient when end of input is reached for current vsync period
+        https://bugs.webkit.org/show_bug.cgi?id=103648
+
+        Reviewed by James Robinson.
+
+        Let the WebInputHandlerClient know when we've received the final input event
+        for the current vsync period.
+
+        Test: WebCompositorInputHandlerImplTest.lastInputEventForVSync
+
+        * src/WebCompositorInputHandlerImpl.cpp:
+        (WebKit::WebCompositorInputHandlerImpl::handleInputEvent):
+
+2012-12-03  Stephen White  <senorblanco@chromium.org>
+
+        [chromium] Turn on the new Skia mask blur algorithm.
+        https://bugs.webkit.org/show_bug.cgi?id=103906
+
+        Reviewed by Adrienne Walker.
+
+        * skia_webkit.gyp:
+
+2012-12-03  Erik Arvidsson  <arv@chromium.org>
+
+        [Chromium] Fix issue with hard coded error codes in quota error
+        https://bugs.webkit.org/show_bug.cgi?id=103892
+
+        Reviewed by Darin Fisher.
+
+        Chromium currently hard codes the enum values for QuotaStatusCode. To fix
+        this we need to do a few iteration of changes. This is the first step and
+        it exposes the enums that Chromium depends on.
+
+        * public/WebStorageQuotaError.h:
+
+2012-12-03  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Rename exception enum members from UGLY_ERR to PrettyError
+        https://bugs.webkit.org/show_bug.cgi?id=103759
+
+        Reviewed by Darin Fisher.
+
+        Update IDBDatabaseException enum names/values to match WebCore.
+
+        * public/WebIDBDatabaseException.h:
+        * src/AssertMatchingEnums.cpp:
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit::IDBFactoryBackendProxy::allowIndexedDB):
+        * tests/IDBRequestTest.cpp:
+
+2012-12-03  Tommy Widenflycht  <tommyw@google.com>
+
+        Speech Recognition API: Update SpeechRecognitionEvent to match the specification
+        https://bugs.webkit.org/show_bug.cgi?id=103407
+
+        Reviewed by Kentaro Hara.
+
+        Adding the new didReceiveResults method.
+
+        * public/WebSpeechRecognizerClient.h:
+        * src/SpeechRecognitionClientProxy.cpp:
+        (WebKit::SpeechRecognitionClientProxy::didReceiveResults):
+        (WebKit):
+        * src/SpeechRecognitionClientProxy.h:
+        (SpeechRecognitionClientProxy):
+
+2012-12-03  Sami Kyostila  <skyostil@chromium.org>
+
+        [chromium] Mark last input event for current vsync interval
+        https://bugs.webkit.org/show_bug.cgi?id=103647
+
+        Reviewed by James Robinson.
+
+        On Android all input events are triggered at the start of a vsync to maximize
+        the amount of time an application has for painting. Add a field to
+        WebInputEvent to indicate when the input event is the final one for the
+        current vsync interval. This information will be used for more efficient
+        render scheduling.
+
+        * public/WebInputEvent.h:
+        (WebKit::WebInputEvent::WebInputEvent):
+
+2012-12-02  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [chromium] Correct the location of synthetic mouse events when page is zoomed
+        https://bugs.webkit.org/show_bug.cgi?id=103823
+
+        Reviewed by Adam Barth.
+
+        The event-location conversion function expects absolute locations. Change the
+        function name to reflect that, and use the absolute location of the touch-points
+        when converting from touch events.
+
+        * src/WebInputEventConversion.cpp:
+        (WebKit::convertAbsoluteLocationForRenderObject):
+        (WebKit::updateWebMouseEventFromWebCoreMouseEvent):
+        (WebKit::WebMouseEventBuilder::WebMouseEventBuilder):
+        (WebKit::addTouchPoints):
+        (WebKit::WebGestureEventBuilder::WebGestureEventBuilder):
+
+2012-12-02  Miguel Garcia  <miguelg@chromium.org>
+
+        [Chromium] Create an enum for the kind of date input and use that on WebDateTimeChooserParams instead of a bare WebString
+        https://bugs.webkit.org/show_bug.cgi?id=103746
+
+        Reviewed by Kent Tamura.
+
+        Using an enum makes the chromium part much simpler and prevents makes sure that new items are added explicitly.
+
+        * WebKit.gyp:
+        * public/WebDateTimeChooserParams.h:
+        (WebDateTimeChooserParams):
+        * public/WebDateTimeInputType.h: Copied from Source/WebKit/chromium/public/WebTextInputType.h.
+        (WebKit):
+        * public/WebTextInputType.h:
+        * public/WebViewClient.h:
+        (WebViewClient):
+        * src/ExternalDateTimeChooser.cpp:
+        (WebKit::ExternalDateTimeChooser::openDateTimeChooser):
+        (WebKit::ExternalDateTimeChooser::webType):
+        (WebKit):
+        * src/ExternalDateTimeChooser.h:
+        (ExternalDateTimeChooser):
+
+2012-12-02  Robert Kroeger  <rjkroege@chromium.org>
+
+        [chromium] make sourceDevice available to more WebGestureEvent subtypes
+        https://bugs.webkit.org/show_bug.cgi?id=103551
+
+        Reviewed by James Robinson.
+
+        Added an additional data payload to WebGestureEvent that can
+        contain the source device (touchpad or touchscreen).
+
+        * public/WebInputEvent.h:
+        * src/WebInputEvent.cpp:
+        (SameSizeAsWebGestureEvent):
+
+2012-12-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136236.
+        http://trac.webkit.org/changeset/136236
+        https://bugs.webkit.org/show_bug.cgi?id=103833
+
+        [chromium] Flakey crashes in SpeechRecognitionEvent::emma
+        during GC. (Requested by mkwst on #webkit).
+
+        * public/WebSpeechRecognizerClient.h:
+        * src/SpeechRecognitionClientProxy.cpp:
+        * src/SpeechRecognitionClientProxy.h:
+        (SpeechRecognitionClientProxy):
+
+2012-11-30  Mike West  <mkwst@chromium.org>
+
+        CSP 1.1: Make the CSP_NEXT flag runtime enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=103652
+
+        Reviewed by Adam Barth.
+
+        The CSP_NEXT flag continues to be enabled on the Chromium port, but this
+        patch now locks the features away behind the securityPolicy runtime
+        flag.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isExperimentalContentSecurityPolicyFeaturesEnabled):
+            Adds the feature to WebRuntimeFeatures so it can be toggled from
+            inside Chromium.
+
+2012-11-30  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Suppress the new separable mask blurs in skia until the tests can be rebaselined.
+        https://bugs.webkit.org/show_bug.cgi?id=103766
+
+        Unreviewed.
+
+        * skia_webkit.gyp:
+
+2012-11-30  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
 2012-11-29  Tommy Widenflycht  <tommyw@google.com>
 
         Speech Recognition API: Update SpeechRecognitionEvent to match the specification

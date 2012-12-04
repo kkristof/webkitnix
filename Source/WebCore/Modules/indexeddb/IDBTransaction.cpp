@@ -47,12 +47,14 @@ namespace WebCore {
 PassRefPtr<IDBTransaction> IDBTransaction::create(ScriptExecutionContext* context, int64_t id, PassRefPtr<IDBTransactionBackendInterface> backend, const Vector<String>& objectStoreNames, IDBTransaction::Mode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
-    return create(context, id, backend, objectStoreNames, mode, db, openDBRequest);
+    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, backend, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata())));
+    transaction->suspendIfNeeded();
+    return transaction.release();
 }
 
-PassRefPtr<IDBTransaction> IDBTransaction::create(ScriptExecutionContext* context, int64_t id, PassRefPtr<IDBTransactionBackendInterface> backend, const Vector<String>& objectStoreNames, IDBTransaction::Mode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest)
+PassRefPtr<IDBTransaction> IDBTransaction::create(ScriptExecutionContext* context, int64_t id, PassRefPtr<IDBTransactionBackendInterface> backend, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, backend, objectStoreNames, mode, db, openDBRequest)));
+    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, backend, Vector<String>(), VERSION_CHANGE, db, openDBRequest, previousMetadata)));
     transaction->suspendIfNeeded();
     return transaction.release();
 }
@@ -88,7 +90,7 @@ const AtomicString& IDBTransaction::modeReadWriteLegacy()
 }
 
 
-IDBTransaction::IDBTransaction(ScriptExecutionContext* context, int64_t id, PassRefPtr<IDBTransactionBackendInterface> backend, const Vector<String>& objectStoreNames, IDBTransaction::Mode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest)
+IDBTransaction::IDBTransaction(ScriptExecutionContext* context, int64_t id, PassRefPtr<IDBTransactionBackendInterface> backend, const Vector<String>& objectStoreNames, IDBTransaction::Mode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
     : ActiveDOMObject(context, this)
     , m_backend(backend)
     , m_id(id)
@@ -99,6 +101,7 @@ IDBTransaction::IDBTransaction(ScriptExecutionContext* context, int64_t id, Pass
     , m_state(Active)
     , m_hasPendingActivity(true)
     , m_contextStopped(false)
+    , m_previousMetadata(previousMetadata)
 {
     ASSERT(m_backend);
 
@@ -146,7 +149,7 @@ void IDBTransaction::setError(PassRefPtr<DOMError> error)
 PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, ExceptionCode& ec)
 {
     if (m_state == Finished) {
-        ec = IDBDatabaseException::IDB_INVALID_STATE_ERR;
+        ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
 
@@ -155,14 +158,14 @@ PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, Excep
         return it->value;
 
     if (!isVersionChange() && !m_objectStoreNames.contains(name)) {
-        ec = IDBDatabaseException::IDB_NOT_FOUND_ERR;
+        ec = IDBDatabaseException::NotFoundError;
         return 0;
     }
 
     int64_t objectStoreId = m_database->findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
         ASSERT(isVersionChange());
-        ec = IDBDatabaseException::IDB_NOT_FOUND_ERR;
+        ec = IDBDatabaseException::NotFoundError;
         return 0;
     }
 
@@ -214,7 +217,7 @@ void IDBTransaction::setActive(bool active)
 void IDBTransaction::abort(ExceptionCode& ec)
 {
     if (m_state == Finishing || m_state == Finished) {
-        ec = IDBDatabaseException::IDB_INVALID_STATE_ERR;
+        ec = IDBDatabaseException::InvalidStateError;
         return;
     }
 
@@ -307,6 +310,7 @@ void IDBTransaction::onAbort(PassRefPtr<IDBDatabaseError> error)
     if (isVersionChange()) {
         for (IDBObjectStoreMetadataMap::iterator it = m_objectStoreCleanupMap.begin(); it != m_objectStoreCleanupMap.end(); ++it)
             it->key->setMetadata(it->value);
+        m_database->setMetadata(m_previousMetadata);
     }
     m_objectStoreCleanupMap.clear();
     closeOpenCursors();

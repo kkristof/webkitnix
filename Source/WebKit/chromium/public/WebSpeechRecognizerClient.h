@@ -73,7 +73,7 @@ public:
 
     // To be called when the speech recognizer provides new results.
     // - newFinalResults contains zero or more final results that are new since
-    // the last time the functions was called.
+    // the last time the function was called.
     // - currentInterimResults contains zero or more inteirm results that
     // replace the interim results that were reported the last time this
     // function was called.

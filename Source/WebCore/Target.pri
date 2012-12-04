@@ -375,6 +375,7 @@ SOURCES += \
     dom/DocumentMarker.cpp \
     dom/DocumentOrderedMap.cpp \
     dom/DocumentParser.cpp \
+    dom/DocumentSharedObjectPool.cpp \
     dom/DocumentStyleSheetCollection.cpp \
     dom/DocumentType.cpp \
     dom/DOMCoreException.cpp \
@@ -658,6 +659,7 @@ SOURCES += \
     html/HTMLTableRowElement.cpp \
     html/HTMLTableRowsCollection.cpp \
     html/HTMLTableSectionElement.cpp \
+    html/HTMLTemplateElement.cpp \
     html/HTMLTextAreaElement.cpp \
     html/HTMLTextFormControlElement.cpp \
     html/HTMLTitleElement.cpp \
@@ -770,6 +772,7 @@ SOURCES += \
     inspector/InspectorFrontendClientLocal.cpp \
     inspector/InspectorFrontendHost.cpp \
     inspector/InspectorHistory.cpp \
+    inspector/InspectorInputAgent.cpp \
     inspector/InspectorInstrumentation.cpp \
     inspector/InspectorMemoryAgent.cpp \
     inspector/InspectorOverlay.cpp \
@@ -1556,6 +1559,7 @@ HEADERS += \
     dom/DocumentMarker.h \
     dom/DocumentMarkerController.h \
     dom/DocumentOrderedMap.h \
+    dom/DocumentSharedObjectPool.h \
     dom/DocumentStyleSheetCollection.h \
     dom/DocumentType.h \
     dom/DOMError.h \
@@ -1823,6 +1827,7 @@ HEADERS += \
     html/HTMLTableRowElement.h \
     html/HTMLTableRowsCollection.h \
     html/HTMLTableSectionElement.h \
+    html/HTMLTemplateElement.h \
     html/HTMLTextAreaElement.h \
     html/HTMLTextFormControlElement.h \
     html/HTMLTitleElement.h \
@@ -2209,7 +2214,6 @@ HEADERS += \
     platform/image-decoders/ico/ICOImageDecoder.h \
     platform/image-decoders/gif/GIFImageDecoder.h \
     platform/image-decoders/gif/GIFImageReader.h \
-    platform/image-decoders/jpeg/JPEGImageDecoder.h \
     platform/image-decoders/png/PNGImageDecoder.h \
     platform/KillRing.h \
     platform/KURL.h \
@@ -4046,6 +4050,7 @@ use?(LIBPNG) {
 }
 
 use?(LIBJPEG) {
+    HEADERS += platform/image-decoders/jpeg/JPEGImageDecoder.h
     SOURCES += platform/image-decoders/jpeg/JPEGImageDecoder.cpp
 }
 
