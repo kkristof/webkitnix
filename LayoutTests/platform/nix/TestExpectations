@@ -21,6 +21,9 @@ fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
 fast/js/sparse-array.html [ Pass Crash ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
+canvas/philip/tests/2d.clearRect.zero.html [ Failure ]
+dom/html/level2/events/DocumentEventCast01.html [ Failure ]
+fast/workers/storage/change-version-handle-reuse-worker.html [ Failure ]
 
 ################################################################################
 # FAILURES
@@ -506,8 +509,17 @@ fast/events/touch/gesture/gesture-scrollbar.html [ Failure ]
 inspector-protocol/nmi-webaudio.html [ Failure ]
 inspector-protocol/nmi-webaudio-leak-test.html [ Failure Crash ]
 
-# After merge from 2012-11-30. Fails with extra PASS messages.
-http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html [ Failure ]
+# need to turn on HTMLTemplateElement - ENABLE(TEMPLATE_ELEMENT)
+fast/dom/HTMLTemplateElement/cloneNode.html [ Failure ]
+fast/dom/HTMLTemplateElement/inertContents.html [ Failure ]
+fast/dom/HTMLTemplateElement/innerHTML.html [ Failure ]
+fast/dom/HTMLTemplateElement/ownerDocument.html [ Failure ]
+fast/dom/HTMLTemplateElement/ownerDocumentXHTML.xhtml [ Failure ]
+html5lib/run-template.html [ Failure ]
+
+# proximity not enabled
+proximity/check-event-deviceproximity.html [ Failure ]
+proximity/create-event-deviceproximity.html [ Failure ]
 
 #############################################################
 # DISABLED APIS
