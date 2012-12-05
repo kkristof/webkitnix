@@ -27,7 +27,7 @@ static void updateTextInputState(bool isContentEditable, WKRect, WKRect, const v
 
 static void doneWithGestureEvent(const NIXGestureEvent* event, bool, const void*)
 {
-    isDoneWithSingleTapEvent = event->base.type == kNIXInputEventTypeGestureSingleTap;
+    isDoneWithSingleTapEvent = event->type == kNIXInputEventTypeGestureSingleTap;
 }
 
 TEST(WebKitNix, WebViewWebProcessCrashed)
@@ -57,13 +57,13 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     Util::run(&didFinishLoad);
 
     NIXGestureEvent tapEvent;
-    tapEvent.base.type = kNIXInputEventTypeGestureSingleTap;
-    tapEvent.base.timestamp = 0;
-    tapEvent.base.modifiers = static_cast<NIXInputEventModifiers>(0);
-    tapEvent.base.x = 55;
-    tapEvent.base.y = 55;
-    tapEvent.base.globalX = 55;
-    tapEvent.base.globalY = 55;
+    tapEvent.type = kNIXInputEventTypeGestureSingleTap;
+    tapEvent.timestamp = 0;
+    tapEvent.modifiers = static_cast<NIXInputEventModifiers>(0);
+    tapEvent.x = 55;
+    tapEvent.y = 55;
+    tapEvent.globalX = 55;
+    tapEvent.globalY = 55;
     tapEvent.width = 20;
     tapEvent.height = 20;
     tapEvent.deltaX = 0.0;

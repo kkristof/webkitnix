@@ -1063,18 +1063,21 @@ enum {
 };
 typedef uint32_t NIXInputEventModifiers;
 
-typedef struct {
-    NIXInputEventType type;
-    NIXInputEventModifiers modifiers;
-    double timestamp;
-    int x;
-    int y;
-    int globalX;
+#define NIX_INPUT_EVENT_BASE \
+    NIXInputEventType type; \
+    NIXInputEventModifiers modifiers; \
+    double timestamp; \
+    int x; \
+    int y; \
+    int globalX; \
     int globalY;
+
+typedef struct {
+    NIX_INPUT_EVENT_BASE
 } NIXInputEvent;
 
 typedef struct {
-    NIXInputEvent base;
+    NIX_INPUT_EVENT_BASE
     // If a symbol has both lower and upper cases available, pass upper case as "key".
     NIXKeyEventKey key;
     // Use "shouldUseUpperCase" to disambiguate whether you really want to use its upper case.
@@ -1084,7 +1087,7 @@ typedef struct {
 } NIXKeyEvent;
 
 typedef struct {
-    NIXInputEvent base;
+    NIX_INPUT_EVENT_BASE
     WKEventMouseButton button;
     int clickCount;
 } NIXMouseEvent;
@@ -1095,7 +1098,7 @@ typedef enum {
 } NIXWheelEventOrientation;
 
 typedef struct {
-    NIXInputEvent base;
+    NIX_INPUT_EVENT_BASE
     float delta;
     NIXWheelEventOrientation orientation;
 } NIXWheelEvent;
@@ -1123,13 +1126,13 @@ typedef struct {
 
 #define NIX_TOUCH_EVENT_MAX_TOUCH_POINTS 10
 typedef struct {
-    NIXInputEvent base;
+    NIX_INPUT_EVENT_BASE
     unsigned numTouchPoints;
     NIXTouchPoint touchPoints[NIX_TOUCH_EVENT_MAX_TOUCH_POINTS];
 } NIXTouchEvent;
 
 typedef struct {
-    NIXInputEvent base;
+    NIX_INPUT_EVENT_BASE
     int width;
     int height;
     float deltaX;

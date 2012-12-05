@@ -18,7 +18,7 @@ MockedTouchPoint::MockedTouchPoint()
     selected = false;
 }
 
-static inline bool isSingleTouch(const NIXInputEvent& event)
+static inline bool isSingleTouch(const NIXMouseEvent& event)
 {
     return !(event.modifiers & kNIXInputEventModifiersControlKey);
 }
@@ -84,15 +84,15 @@ bool TouchMocker::handleMousePress(const NIXMouseEvent& event, const WKPoint& wi
     NIXTouchPointState state = m_touchPoints.count(event.button) ? kNIXTouchPointStateTouchMoved : kNIXTouchPointStateTouchPressed;
 
     trackTouchPoint(event.button, state, event, windowPos);
-    sendCurrentTouchEvent(state, event.base.timestamp);
+    sendCurrentTouchEvent(state, event.timestamp);
     m_touchPoints[event.button].selected = true;
     return true;
 }
 
 bool TouchMocker::handleMouseRelease(const NIXMouseEvent& event)
 {
-    if (isSingleTouch(event.base))
-        releaseTouchPoints(event.base.timestamp);
+    if (isSingleTouch(event))
+        releaseTouchPoints(event.timestamp);
     else
         m_touchPoints[event.button].selected = false;
     return true;
@@ -107,7 +107,7 @@ bool TouchMocker::handleMouseMove(const NIXMouseEvent& event, const WKPoint& win
     for (; it != m_touchPoints.end(); ++it) {
         if (it->second.selected) {
             trackTouchPoint(it->first, kNIXTouchPointStateTouchMoved, event, windowPos);
-            sendCurrentTouchEvent(kNIXTouchPointStateTouchMoved, event.base.timestamp);
+            sendCurrentTouchEvent(kNIXTouchPointStateTouchMoved, event.timestamp);
         }
     }
 
@@ -117,7 +117,7 @@ bool TouchMocker::handleMouseMove(const NIXMouseEvent& event, const WKPoint& win
 bool TouchMocker::handleKeyRelease(const NIXKeyEvent& event)
 {
     if (event.key == kNIXKeyEventKey_Control) {
-        releaseTouchPoints(event.base.timestamp);
+        releaseTouchPoints(event.timestamp);
         return true;
     }
     return false;
@@ -157,28 +157,28 @@ void TouchMocker::trackTouchPoint(WKEventMouseButton id, NIXTouchPointState stat
     MockedTouchPoint& touch = m_touchPoints[id];
     touch.id = static_cast<unsigned>(id);
     touch.state = state;
-    touch.x = event.base.x;
-    touch.y = event.base.y;
+    touch.x = event.x;
+    touch.y = event.y;
     touch.windowX = windowPos.x;
     touch.windowY = windowPos.y;
-    touch.globalX = event.base.globalX;
-    touch.globalY = event.base.globalY;
+    touch.globalX = event.globalX;
+    touch.globalY = event.globalY;
 }
 
 void TouchMocker::sendCurrentTouchEvent(NIXTouchPointState state, double timestamp)
 {
     NIXTouchEvent ev;
-    ev.base.timestamp = timestamp;
+    ev.timestamp = timestamp;
 
     switch (state) {
     case kNIXTouchPointStateTouchPressed:
-        ev.base.type = kNIXInputEventTypeTouchStart;
+        ev.type = kNIXInputEventTypeTouchStart;
         break;
     case kNIXTouchPointStateTouchMoved:
-        ev.base.type = kNIXInputEventTypeTouchMove;
+        ev.type = kNIXInputEventTypeTouchMove;
         break;
     case kNIXTouchPointStateTouchReleased:
-        ev.base.type = kNIXInputEventTypeTouchEnd;
+        ev.type = kNIXInputEventTypeTouchEnd;
         break;
     }
 

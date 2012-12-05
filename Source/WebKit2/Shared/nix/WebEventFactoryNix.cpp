@@ -540,30 +540,30 @@ static String keyTextForNixKeyEvent(const NIXKeyEvent& event)
 
 WebMouseEvent WebEventFactory::createWebMouseEvent(const NIXMouseEvent& event, WebCore::IntPoint* lastCursorPosition)
 {
-    WebEvent::Type type = convertToWebEventType(event.base.type);
+    WebEvent::Type type = convertToWebEventType(event.type);
     WebMouseEvent::Button button = convertToWebMouseEventButton(event.button);
 
-    float deltaX = event.base.x - lastCursorPosition->x();
-    float deltaY = event.base.y - lastCursorPosition->y();
+    float deltaX = event.x - lastCursorPosition->x();
+    float deltaY = event.y - lastCursorPosition->y();
     int clickCount = event.clickCount;
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
-    double timestamp = event.base.timestamp;
-    IntPoint globalPosition = IntPoint(event.base.globalX, event.base.globalY);
-    lastCursorPosition->setX(event.base.x);
-    lastCursorPosition->setY(event.base.y);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
+    IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
+    lastCursorPosition->setX(event.x);
+    lastCursorPosition->setY(event.y);
 
-    return WebMouseEvent(type, button, WebCore::IntPoint(event.base.x, event.base.y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
+    return WebMouseEvent(type, button, WebCore::IntPoint(event.x, event.y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
 }
 
 WebWheelEvent WebEventFactory::createWebWheelEvent(const NIXWheelEvent& event)
 {
-    WebEvent::Type type = convertToWebEventType(event.base.type);
+    WebEvent::Type type = convertToWebEventType(event.type);
 
-    IntPoint position = IntPoint(event.base.x, event.base.y);
-    IntPoint globalPosition = IntPoint(event.base.globalX, event.base.globalY);
+    IntPoint position = IntPoint(event.x, event.y);
+    IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     FloatSize delta = event.orientation == kNIXWheelEventOrientationVertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
-    double timestamp = event.base.timestamp;
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
 
     const float ticks = event.delta / float(Scrollbar::pixelsPerLineStep());
     FloatSize wheelTicks = event.orientation == kNIXWheelEventOrientationVertical ? FloatSize(0, ticks) : FloatSize(ticks, 0);
@@ -573,7 +573,7 @@ WebWheelEvent WebEventFactory::createWebWheelEvent(const NIXWheelEvent& event)
 
 WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const NIXKeyEvent& event)
 {
-    WebEvent::Type type = convertToWebEventType(event.base.type);
+    WebEvent::Type type = convertToWebEventType(event.type);
     const WTF::String text = keyTextForNixKeyEvent(event);
     const WTF::String unmodifiedText = text;
     bool isAutoRepeat = false;
@@ -583,19 +583,19 @@ WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const NIXKeyEvent& even
     int windowsVirtualKeyCode = windowsKeyCodeForKeyEvent(event.key, isKeypad);
     int nativeVirtualKeyCode = 0;
     int macCharCode = 0;
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
-    double timestamp = event.base.timestamp;
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
 
     return WebKeyboardEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
 }
 
 WebGestureEvent WebEventFactory::createWebGestureEvent(const NIXGestureEvent& event)
 {
-    WebEvent::Type type = convertToWebEventType(event.base.type);
-    IntPoint position = IntPoint(event.base.x, event.base.y);
-    IntPoint globalPosition = IntPoint(event.base.globalX, event.base.globalY);
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
-    double timestamp = event.base.timestamp;
+    WebEvent::Type type = convertToWebEventType(event.type);
+    IntPoint position = IntPoint(event.x, event.y);
+    IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
     IntSize area = IntSize(event.width, event.height);
     FloatPoint delta = FloatPoint(event.deltaX, event.deltaY);
 
@@ -605,10 +605,10 @@ WebGestureEvent WebEventFactory::createWebGestureEvent(const NIXGestureEvent& ev
 #if ENABLE(TOUCH_EVENTS)
 WebTouchEvent WebEventFactory::createWebTouchEvent(const NIXTouchEvent& event)
 {
-    WebEvent::Type type = convertToWebEventType(event.base.type);
+    WebEvent::Type type = convertToWebEventType(event.type);
     Vector<WebPlatformTouchPoint> touchPoints;
-    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.base.modifiers);
-    double timestamp = event.base.timestamp;
+    WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
+    double timestamp = event.timestamp;
 
     for (unsigned i = 0; i < event.numTouchPoints; ++i) {
         const NIXTouchPoint& touch = event.touchPoints[i];

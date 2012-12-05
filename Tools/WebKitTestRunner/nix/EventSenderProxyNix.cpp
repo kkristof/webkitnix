@@ -140,14 +140,14 @@ static unsigned convertToNixModifiers(WKEventModifiers modifiersRef)
 NIXMouseEvent* EventSenderProxy::createMouseEvent(NIXInputEventType type, unsigned button, WKEventModifiers wkModifiers)
 {
     NIXMouseEvent* ev = new NIXMouseEvent;
-    ev->base.type = type;
-    ev->base.modifiers = convertToNixModifiers(wkModifiers);
-    ev->base.timestamp = convertToNixTimestamp(m_time);
+    ev->type = type;
+    ev->modifiers = convertToNixModifiers(wkModifiers);
+    ev->timestamp = convertToNixTimestamp(m_time);
     ev->button = (WKEventMouseButton) button;
-    ev->base.x = m_position.x;
-    ev->base.y = m_position.y;
-    ev->base.globalX = m_position.x;
-    ev->base.globalY = m_position.y;
+    ev->x = m_position.x;
+    ev->y = m_position.y;
+    ev->globalX = m_position.x;
+    ev->globalY = m_position.y;
     ev->clickCount = m_clickCount;
     return ev;
 }
@@ -192,10 +192,10 @@ void EventSenderProxy::leapForward(int milliseconds)
 NIXKeyEvent* EventSenderProxy::createKeyEvent(NIXInputEventType type, unsigned code, unsigned nixModifiers, bool shouldUseUpperCase, bool isKeypad)
 {
     NIXKeyEvent* ev = new NIXKeyEvent;
-    ev->base.type = type;
+    ev->type = type;
     ev->key = static_cast<NIXKeyEventKey>(code);
-    ev->base.modifiers = nixModifiers;
-    ev->base.timestamp = convertToNixTimestamp(m_time);
+    ev->modifiers = nixModifiers;
+    ev->timestamp = convertToNixTimestamp(m_time);
     ev->shouldUseUpperCase = shouldUseUpperCase;
     ev->isKeypad = isKeypad;
     return ev;
@@ -368,9 +368,9 @@ void EventSenderProxy::setTouchModifier(WKEventModifiers wkModifier, bool enable
 void EventSenderProxy::sendCurrentTouchEvent(NIXInputEventType touchType)
 {
     NIXTouchEvent* ev = new NIXTouchEvent;
-    ev->base.modifiers = touchModifiers;
-    ev->base.timestamp = convertToNixTimestamp(m_time);
-    ev->base.type = touchType;
+    ev->modifiers = touchModifiers;
+    ev->timestamp = convertToNixTimestamp(m_time);
+    ev->type = touchType;
     for (size_t i = 0; i < touchPoints.size(); i++)
         ev->touchPoints[i] = touchPoints[i];
     ev->numTouchPoints = touchPoints.size();

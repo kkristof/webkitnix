@@ -272,9 +272,9 @@ static KeySym chooseSymbolForXKeyEvent(const XKeyEvent& event, bool* useUpperCas
 static NIXKeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const KeySym& symbol, bool useUpperCase)
 {
     NIXKeyEvent nixEvent;
-    nixEvent.base.type = (event.type == KeyPress) ? kNIXInputEventTypeKeyDown : kNIXInputEventTypeKeyUp;
-    nixEvent.base.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    nixEvent.base.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    nixEvent.type = (event.type == KeyPress) ? kNIXInputEventTypeKeyDown : kNIXInputEventTypeKeyUp;
+    nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
     nixEvent.shouldUseUpperCase = useUpperCase;
     nixEvent.isKeypad = isKeypadKeysym(symbol);
     nixEvent.key = convertXKeySymToNativeKeycode(symbol);
@@ -284,16 +284,16 @@ static NIXKeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const K
 static NIXMouseEvent convertXButtonEventToNixButtonEvent(NIXView* view, const XButtonEvent& event, NIXInputEventType type, unsigned clickCount)
 {
     NIXMouseEvent nixEvent;
-    nixEvent.base.type = type;
+    nixEvent.type = type;
     nixEvent.button = convertXEventButtonToNativeMouseButton(event.button);
     WKPoint contentsPoint = NIXViewUserViewportToContents(view, WKPointMake(event.x, event.y));
-    nixEvent.base.x = contentsPoint.x;
-    nixEvent.base.y = contentsPoint.y;
-    nixEvent.base.globalX = event.x_root;
-    nixEvent.base.globalY = event.y_root;
+    nixEvent.x = contentsPoint.x;
+    nixEvent.y = contentsPoint.y;
+    nixEvent.globalX = event.x_root;
+    nixEvent.globalY = event.y_root;
     nixEvent.clickCount = clickCount;
-    nixEvent.base.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    nixEvent.base.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
     return nixEvent;
 }
 
@@ -352,13 +352,13 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
     const float pixelsPerStep = 40.0f;
 
     NIXWheelEvent nixEvent;
-    nixEvent.base.type = kNIXInputEventTypeWheel;
-    nixEvent.base.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    nixEvent.base.timestamp = convertXEventTimeToNixTimestamp(event.time);
-    nixEvent.base.x = contentsPoint.x;
-    nixEvent.base.y = contentsPoint.y;
-    nixEvent.base.globalX = event.x_root;
-    nixEvent.base.globalY = event.y_root;
+    nixEvent.type = kNIXInputEventTypeWheel;
+    nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    nixEvent.x = contentsPoint.x;
+    nixEvent.y = contentsPoint.y;
+    nixEvent.globalX = event.x_root;
+    nixEvent.globalY = event.y_root;
     nixEvent.delta = pixelsPerStep * (event.button == 4 ? 1 : -1);
     nixEvent.orientation = event.state & ShiftMask ? kNIXWheelEventOrientationHorizontal : kNIXWheelEventOrientationVertical;
     NIXViewSendWheelEvent(m_view, &nixEvent);
@@ -427,16 +427,16 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
 void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
 {
     NIXMouseEvent nixEvent;
-    nixEvent.base.type = kNIXInputEventTypeMouseMove;
+    nixEvent.type = kNIXInputEventTypeMouseMove;
     nixEvent.button = kWKEventMouseButtonNoButton;
     WKPoint contentsPoint = NIXViewUserViewportToContents(m_view, WKPointMake(event.x, event.y));
-    nixEvent.base.x = contentsPoint.x;
-    nixEvent.base.y = contentsPoint.y;
-    nixEvent.base.globalX = event.x_root;
-    nixEvent.base.globalY = event.y_root;
+    nixEvent.x = contentsPoint.x;
+    nixEvent.y = contentsPoint.y;
+    nixEvent.globalX = event.x_root;
+    nixEvent.globalY = event.y_root;
     nixEvent.clickCount = 0;
-    nixEvent.base.modifiers = convertXEventModifiersToNativeModifiers(event.state);
-    nixEvent.base.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
+    nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
     if (m_touchMocker && m_touchMocker->handleMouseMove(nixEvent, WKPointMake(event.x, event.y))) {
         scheduleUpdateDisplay();
         return;
@@ -618,7 +618,7 @@ void MiniBrowser::doneWithGestureEvent(const NIXGestureEvent* event, bool wasEve
 
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
 
-    if (event->base.type == kNIXInputEventTypeGestureSingleTap && mb->m_shouldFocusEditableArea) {
+    if (event->type == kNIXInputEventTypeGestureSingleTap && mb->m_shouldFocusEditableArea) {
         mb->m_shouldFocusEditableArea = false;
         mb->adjustViewportToTextInputArea();
     }
@@ -634,13 +634,13 @@ double MiniBrowser::scale()
 void MiniBrowser::handleSingleTap(double timestamp, const NIXTouchPoint& touchPoint)
 {
     NIXGestureEvent gestureEvent;
-    gestureEvent.base.type = kNIXInputEventTypeGestureSingleTap;
-    gestureEvent.base.timestamp = timestamp;
-    gestureEvent.base.modifiers = 0;
-    gestureEvent.base.x = touchPoint.x;
-    gestureEvent.base.y = touchPoint.y;
-    gestureEvent.base.globalX = touchPoint.globalX;
-    gestureEvent.base.globalY = touchPoint.globalY;
+    gestureEvent.type = kNIXInputEventTypeGestureSingleTap;
+    gestureEvent.timestamp = timestamp;
+    gestureEvent.modifiers = 0;
+    gestureEvent.x = touchPoint.x;
+    gestureEvent.y = touchPoint.y;
+    gestureEvent.globalX = touchPoint.globalX;
+    gestureEvent.globalY = touchPoint.globalY;
     gestureEvent.width = 20;
     gestureEvent.height = 20;
     gestureEvent.deltaX = 0.0;
