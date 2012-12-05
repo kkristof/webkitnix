@@ -44,8 +44,8 @@ static const int MaxDoubleTapInterval = 500;
 
 static bool exceedsPanThreshold(const Nix::TouchPoint& first, const Nix::TouchPoint& last)
 {
-    float deltaX = first.globalX - last.globalX;
-    float deltaY = first.globalY - last.globalY;
+    float deltaX = std::abs(first.globalX - last.globalX);
+    float deltaY = std::abs(first.globalY - last.globalY);
     return std::max(deltaX, deltaY) > PanDistanceThreshold;
 }
 
