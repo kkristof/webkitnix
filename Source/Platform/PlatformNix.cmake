@@ -1,5 +1,6 @@
 SET (Platform_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/nix/NixPlatform.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nix/NixPlatformExportMacros.h"
 )
 
 SET (Platform_SOURCES )
