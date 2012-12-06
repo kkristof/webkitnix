@@ -44,6 +44,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "StyleResolver.h"
+#include "Text.h"
 #include "markup.h"
 
 // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
@@ -164,15 +165,10 @@ PassRefPtr<Node> ShadowRoot::cloneNode(bool)
     return 0;
 }
 
-PassRefPtr<Node> ShadowRoot::cloneNode(bool deep, ExceptionCode& ec)
+PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionCode& ec)
 {
-    RefPtr<Node> clone = cloneNode(deep);
-    if (!clone) {
-        ec = DATA_CLONE_ERR;
-        return 0;
-    }
-
-    return clone;
+    ec = DATA_CLONE_ERR;
+    return 0;
 }
 
 String ShadowRoot::innerHTML() const
@@ -201,6 +197,26 @@ bool ShadowRoot::childTypeAllowed(NodeType type) const
     default:
         return false;
     }
+}
+
+void ShadowRoot::recalcStyle(StyleChange change)
+{
+    // ShadowRoot doesn't support custom callbacks.
+    ASSERT(!hasCustomCallbacks());
+
+    StyleResolver* styleResolver = document()->styleResolver();
+    styleResolver->pushParentShadowRoot(this);
+
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        if (child->isElementNode())
+            static_cast<Element*>(child)->recalcStyle(change);
+        else if (child->isTextNode())
+            toText(child)->recalcTextStyle(change);
+    }
+
+    styleResolver->popParentShadowRoot(this);
+    clearNeedsStyleRecalc();
+    clearChildNeedsStyleRecalc();
 }
 
 ElementShadow* ShadowRoot::owner() const

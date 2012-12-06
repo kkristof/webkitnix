@@ -274,6 +274,18 @@ void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parame
     for (size_t i = 0; i < parameters.urlSchemesForWhichDomainRelaxationIsForbidden.size(); ++i)
         setDomainRelaxationForbiddenForURLScheme(parameters.urlSchemesForWhichDomainRelaxationIsForbidden[i]);
 
+    for (size_t i = 0; i < parameters.urlSchemesRegisteredAsLocal.size(); ++i)
+        registerURLSchemeAsLocal(parameters.urlSchemesRegisteredAsLocal[i]);
+
+    for (size_t i = 0; i < parameters.urlSchemesRegisteredAsNoAccess.size(); ++i)
+        registerURLSchemeAsNoAccess(parameters.urlSchemesRegisteredAsNoAccess[i]);
+
+    for (size_t i = 0; i < parameters.urlSchemesRegisteredAsDisplayIsolated.size(); ++i)
+        registerURLSchemeAsDisplayIsolated(parameters.urlSchemesRegisteredAsDisplayIsolated[i]);
+
+    for (size_t i = 0; i < parameters.urlSchemesRegisteredAsCORSEnabled.size(); ++i)
+        registerURLSchemeAsCORSEnabled(parameters.urlSchemesRegisteredAsCORSEnabled[i]);
+
     setDefaultRequestTimeoutInterval(parameters.defaultRequestTimeoutInterval);
 
     if (parameters.shouldAlwaysUseComplexTextCodePath)
@@ -385,6 +397,20 @@ void WebProcess::userPreferredLanguagesChanged(const Vector<String>& languages) 
 void WebProcess::fullKeyboardAccessModeChanged(bool fullKeyboardAccessEnabled)
 {
     m_fullKeyboardAccessEnabled = fullKeyboardAccessEnabled;
+}
+
+void WebProcess::ensurePrivateBrowsingSession()
+{
+#if (PLATFORM(MAC) || USE(CFNETWORK)) && !PLATFORM(WIN)
+    WebFrameNetworkingContext::ensurePrivateBrowsingSession();
+#endif
+}
+
+void WebProcess::destroyPrivateBrowsingSession()
+{
+#if (PLATFORM(MAC) || USE(CFNETWORK)) && !PLATFORM(WIN)
+    WebFrameNetworkingContext::destroyPrivateBrowsingSession();
+#endif
 }
 
 void WebProcess::setVisitedLinkTable(const SharedMemory::Handle& handle)

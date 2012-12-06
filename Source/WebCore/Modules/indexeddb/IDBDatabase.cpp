@@ -48,7 +48,6 @@
 #include "ScriptExecutionContext.h"
 #include <limits>
 #include <wtf/Atomics.h>
-#include <wtf/Threading.h>
 
 namespace WebCore {
 
@@ -108,6 +107,16 @@ void IDBDatabase::transactionFinished(IDBTransaction* transaction)
 
     if (m_closePending && m_transactions.isEmpty())
         closeConnection();
+}
+
+void IDBDatabase::onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error)
+{
+    ASSERT_NOT_REACHED();
+}
+
+void IDBDatabase::onComplete(int64_t transactionId)
+{
+    ASSERT_NOT_REACHED();
 }
 
 PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const

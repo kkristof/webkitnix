@@ -35,6 +35,7 @@
 #include "BindingSecurity.h"
 #include "DOMWrapperWorld.h"
 #include "Document.h"
+#include "NodeFilter.h"
 #include "V8BindingMacros.h"
 #include "V8DOMConfiguration.h"
 #include "V8DOMWrapper.h"
@@ -92,28 +93,87 @@ namespace WebCore {
     // Convert v8 types to a WTF::String. If the V8 string is not already
     // an external string then it is transformed into an external string at this
     // point to avoid repeated conversions.
-    String toWebCoreString(v8::Handle<v8::Value>);
-
-    // Convert a V8 value to a WTF::AtomicString.
-    AtomicString toWebCoreAtomicString(v8::Handle<v8::Value>);
-
-    // Return a V8 external string that shares the underlying buffer with the given
-    // WebCore string. The reference counting mechanism is used to keep the
-    // underlying buffer alive while the string is still live in the V8 engine.
-    inline v8::Local<v8::String> v8ExternalString(const String& string, v8::Isolate* isolate = 0)
+    //
+    // FIXME: Replace all the call sites with V8TRYCATCH_FOR_V8STRINGRESOURCE().
+    // Using this method will lead to a wrong behavior, because you cannot stop the
+    // execution when an exception is thrown inside stringResource.prepare().
+    inline String toWebCoreString(v8::Handle<v8::Value> value)
     {
-        StringImpl* stringImpl = string.impl();
-        if (!stringImpl)
-            return isolate ? v8::String::Empty(isolate) : v8::String::Empty();
-        if (UNLIKELY(!isolate))
-            isolate = v8::Isolate::GetCurrent();
-        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(stringImpl, isolate);
+        V8StringResource<> stringResource(value);
+        if (!stringResource.prepare())
+            return String();
+        return stringResource;
+    }
+
+    // FIXME: See the above comment.
+    inline String toWebCoreStringWithNullCheck(v8::Handle<v8::Value> value)
+    {
+        V8StringResource<WithNullCheck> stringResource(value);
+        if (!stringResource.prepare())
+            return String();
+        return stringResource;
+    }
+
+    // FIXME: See the above comment.
+    inline String toWebCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
+    {
+        V8StringResource<WithUndefinedOrNullCheck> stringResource(value);
+        if (!stringResource.prepare())
+            return String();
+        return stringResource;
+    }
+
+    // FIXME: See the above comment.
+    inline AtomicString toWebCoreAtomicString(v8::Handle<v8::Value> value)
+    {
+        V8StringResource<> stringResource(value);
+        if (!stringResource.prepare())
+            return AtomicString();
+        return stringResource;
+    }
+
+    // FIXME: See the above comment.
+    inline AtomicString toWebCoreAtomicStringWithNullCheck(v8::Handle<v8::Value> value)
+    {
+        V8StringResource<WithNullCheck> stringResource(value);
+        if (!stringResource.prepare())
+            return AtomicString();
+        return stringResource;
     }
 
     // Convert a string to a V8 string.
+    // Return a V8 external string that shares the underlying buffer with the given
+    // WebCore string. The reference counting mechanism is used to keep the
+    // underlying buffer alive while the string is still live in the V8 engine.
     inline v8::Handle<v8::String> v8String(const String& string, v8::Isolate* isolate = 0)
     {
-        return v8ExternalString(string, isolate);
+        if (UNLIKELY(!isolate))
+            isolate = v8::Isolate::GetCurrent();
+        if (string.isNull())
+            return v8::String::Empty(isolate);
+        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
+    }
+
+    // FIXME: All call sites of this method should use v8String().
+    inline v8::Handle<v8::String> deprecatedV8String(const String& string)
+    {
+        return v8String(string, v8::Isolate::GetCurrent());
+    }
+
+    inline v8::Handle<v8::Value> v8StringOrNull(const String& string, v8::Isolate* isolate)
+    {
+        ASSERT(isolate);
+        if (string.isNull())
+            return v8Null(isolate);
+        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
+    }
+
+    inline v8::Handle<v8::Value> v8StringOrUndefined(const String& string, v8::Isolate* isolate)
+    {
+        ASSERT(isolate);
+        if (string.isNull())
+            return v8::Undefined(isolate);
+        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
     }
 
     inline v8::Handle<v8::Integer> v8Integer(int value, v8::Isolate* isolate = 0)
@@ -121,6 +181,12 @@ namespace WebCore {
         if (UNLIKELY(!isolate))
             isolate = v8::Isolate::GetCurrent();
         return V8PerIsolateData::from(isolate)->integerCache()->v8Integer(value, isolate);
+    }
+
+    // FIXME: All call sites of this method should use v8Integer().
+    inline v8::Handle<v8::Integer> deprecatedV8Integer(int value)
+    {
+        return v8Integer(value, v8::Isolate::GetCurrent());
     }
 
     inline v8::Handle<v8::Integer> v8UnsignedInteger(unsigned value, v8::Isolate* isolate = 0)
@@ -267,7 +333,6 @@ namespace WebCore {
         return result;
     }
 
-
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/WD-WebIDL-20120207/#es-sequence
     inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length)
@@ -280,7 +345,7 @@ namespace WebCore {
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
 
-        V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::New("length")));
+        V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
             throwTypeError();
@@ -292,6 +357,8 @@ namespace WebCore {
 
         return v8Value;
     }
+
+    PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>);
 
     // Convert a value to a 32-bit integer.  The conversion fails if the
     // value cannot be converted to an integer or converts to nan or to an infinity.
@@ -360,31 +427,6 @@ namespace WebCore {
         return isolate ? v8Boolean(value, isolate) : v8Boolean(value);
     }
 
-    inline String toWebCoreStringWithNullCheck(v8::Handle<v8::Value> value)
-    {
-        return value->IsNull() ? String() : toWebCoreString(value);
-    }
-
-    inline String toWebCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
-    {
-        return (value->IsNull() || value->IsUndefined()) ? String() : toWebCoreString(value);
-    }
-
-    inline AtomicString toWebCoreAtomicStringWithNullCheck(v8::Handle<v8::Value> value)
-    {
-        return value->IsNull() ? AtomicString() : toWebCoreAtomicString(value);
-    }
-
-    inline v8::Handle<v8::Value> v8StringOrNull(const String& str, v8::Isolate* isolate = 0)
-    {
-        return str.isNull() ? v8::Handle<v8::Value>(v8::Null()) : v8::Handle<v8::Value>(v8String(str, isolate));
-    }
-
-    inline v8::Handle<v8::Value> v8StringOrUndefined(const String& str, v8::Isolate* isolate = 0)
-    {
-        return str.isNull() ? v8::Handle<v8::Value>(v8::Undefined()) : v8::Handle<v8::Value>(v8String(str, isolate));
-    }
-
     inline double toWebCoreDate(v8::Handle<v8::Value> object)
     {
         return (object->IsDate() || object->IsNumber()) ? object->NumberValue() : std::numeric_limits<double>::quiet_NaN();
@@ -397,7 +439,7 @@ namespace WebCore {
 
     v8::Persistent<v8::FunctionTemplate> createRawTemplate();
 
-    PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value>);
+    PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value>, v8::Isolate*);
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>);
 
     v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context>);

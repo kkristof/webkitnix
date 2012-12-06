@@ -364,3 +364,35 @@ Eina_Bool ewk_settings_plugins_enabled_get(const Ewk_Settings* settings)
 
     return settings->preferences()->pluginsEnabled();
 }
+
+Eina_Bool ewk_settings_default_font_size_set(Ewk_Settings* settings, int size)
+{
+    EINA_SAFETY_ON_NULL_RETURN_VAL(settings, false);
+
+    settings->preferences()->setDefaultFontSize(size);
+
+    return true;
+}
+
+int ewk_settings_default_font_size_get(const Ewk_Settings* settings)
+{
+    EINA_SAFETY_ON_NULL_RETURN_VAL(settings, 0);
+
+    return settings->preferences()->defaultFontSize();
+}
+
+Eina_Bool ewk_settings_private_browsing_enabled_set(Ewk_Settings* settings, Eina_Bool enable)
+{
+    EINA_SAFETY_ON_NULL_RETURN_VAL(settings, false);
+
+    settings->preferences()->setPrivateBrowsingEnabled(enable);
+
+    return true;
+}
+
+Eina_Bool ewk_settings_private_browsing_enabled_get(const Ewk_Settings* settings)
+{
+    EINA_SAFETY_ON_NULL_RETURN_VAL(settings, false);
+
+    return settings->preferences()->privateBrowsingEnabled();
+}

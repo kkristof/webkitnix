@@ -1654,7 +1654,8 @@ static inline bool isComma(CSSParserValue* value)
 
 static inline bool isForwardSlashOperator(CSSParserValue* value)
 {
-    return value && value->unit == CSSParserValue::Operator && value->iValue == '/';
+    ASSERT(value);
+    return value->unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
 bool CSSParser::validWidth(CSSParserValue* value)
@@ -2718,8 +2719,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return parseTextEmphasisStyle(important);
 
     case CSSPropertyWebkitTextOrientation:
-        // FIXME: For now just support upright and vertical-right.
-        if (id == CSSValueVerticalRight || id == CSSValueUpright)
+        // FIXME: For now just support sideways, sideways-right, upright and vertical-right.
+        if (id == CSSValueSideways || id == CSSValueSidewaysRight || id == CSSValueVerticalRight || id == CSSValueUpright)
             validPrimitive = true;
         break;
 
@@ -3856,12 +3857,17 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
 #endif
 }
 
+inline bool CSSParser::isPotentialPositionValue(CSSParserValue* value)
+{
+    return !value->id || isBackgroundPositionKeyword(value->id);
+}
+
 void CSSParser::parseFillBackgroundPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
 {
     unsigned numberOfValues = 0;
     for (unsigned i = valueList->currentIndex(); i < valueList->size(); ++i, ++numberOfValues) {
         CSSParserValue* current = valueList->valueAt(i);
-        if (isComma(current) || !current)
+        if (isComma(current) || !current || (current->unit == CSSParserValue::Operator && current->iValue == '/') || !isPotentialPositionValue(current))
             break;
     }
 
@@ -4130,16 +4136,14 @@ bool CSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, 
                     break;
                 case CSSPropertyBackgroundPosition:
 #if ENABLE(CSS3_BACKGROUND)
-                    if (!inShorthand()) {
-                        parseFillBackgroundPosition(m_valueList.get(), currValue, currValue2);
-                        // parseFillBackgroundPosition advances the m_valueList pointer
-                        break;
-                    }
+                    parseFillBackgroundPosition(m_valueList.get(), currValue, currValue2);
+                    // parseFillBackgroundPosition advances the m_valueList pointer.
+                    break;
                     // Fall through to CSS 2.1 parsing.
 #endif
                 case CSSPropertyWebkitMaskPosition:
                     parseFillPosition(m_valueList.get(), currValue, currValue2);
-                    // parseFillPosition advances the m_valueList pointer
+                    // parseFillPosition advances the m_valueList pointer.
                     break;
                 case CSSPropertyBackgroundPositionX:
                 case CSSPropertyWebkitMaskPositionX: {
@@ -4536,8 +4540,25 @@ bool CSSParser::parseGridTrackMinMax(CSSValueList* values)
 {
     CSSParserValue* currentValue = m_valueList->current();
     if (currentValue->id == CSSValueAuto) {
-        RefPtr<CSSPrimitiveValue> autoValue = cssValuePool().createIdentifierValue(CSSValueAuto);
-        values->append(autoValue.release());
+        values->append(cssValuePool().createIdentifierValue(CSSValueAuto));
+        return true;
+    }
+
+    if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "minmax(")) {
+        // The spec defines the following grammar: minmax( <track-breadth> , <track-breadth> )
+        CSSParserValueList* arguments = currentValue->function->args.get();
+        if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
+            return false;
+
+        RefPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0));
+        if (!minTrackBreadth)
+            return false;
+
+        RefPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
+        if (!maxTrackBreadth)
+            return false;
+
+        values->append(createPrimitiveValuePair(minTrackBreadth, maxTrackBreadth));
         return true;
     }
 

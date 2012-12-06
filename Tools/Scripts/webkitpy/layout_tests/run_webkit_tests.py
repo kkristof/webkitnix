@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (C) 2010 Google Inc. All rights reserved.
 # Copyright (C) 2010 Gabor Rapcsanyi (rgabor@inf.u-szeged.hu), University of Szeged
 # Copyright (C) 2011 Apple Inc. All rights reserved.
@@ -40,6 +39,7 @@ from webkitpy.common.host import Host
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port import configuration_options, platform_options
+from webkitpy.layout_tests.views import buildbot_results
 from webkitpy.layout_tests.views import printing
 
 
@@ -87,23 +87,20 @@ def lint(port, options):
     return 0
 
 
-def run(port, options, args, regular_output=sys.stderr, buildbot_output=sys.stdout):
+def run(port, options, args, logging_stream):
     try:
-        printer = printing.Printer(port, options, regular_output, buildbot_output, logger=logging.getLogger())
+        printer = printing.Printer(port, options, logging_stream, logger=logging.getLogger())
 
         _set_up_derived_options(port, options)
-
-        if options.lint_test_files:
-            return lint(port, options)
-
         manager = Manager(port, options, printer)
         printer.print_config(port.results_directory())
 
-        unexpected_result_count = manager.run(args)
-        _log.debug("Testing completed, Exit status: %d" % unexpected_result_count)
-        return unexpected_result_count
+        run_details = manager.run(args)
+        _log.debug("Testing completed, Exit status: %d" % run_details.exit_code)
+        return run_details
     finally:
         printer.cleanup()
+
 
 def _set_up_derived_options(port, options):
     """Sets the options values that depend on other options values."""
@@ -290,9 +287,6 @@ def parse_args(args=None):
             help="Show all failures in results.html, rather than only regressions"),
         optparse.make_option("--clobber-old-results", action="store_true",
             default=False, help="Clobbers test results from previous runs."),
-        optparse.make_option("--no-record-results", action="store_false",
-            default=True, dest="record_results",
-            help="Don't record the results."),
         optparse.make_option("--http", action="store_true", dest="http",
             default=True, help="Run HTTP and WebSocket tests (default)"),
         optparse.make_option("--no-http", action="store_false", dest="http",
@@ -403,7 +397,7 @@ def parse_args(args=None):
     return option_parser.parse_args(args)
 
 
-def main(argv=None):
+def main(argv=None, stdout=sys.stdout, stderr=sys.stderr):
     options, args = parse_args(argv)
     if options.platform and 'test' in options.platform:
         # It's a bit lame to import mocks into real code, but this allows the user
@@ -418,23 +412,31 @@ def main(argv=None):
         port = host.port_factory.get(options.platform, options)
     except NotImplementedError, e:
         # FIXME: is this the best way to handle unsupported port names?
-        print >> sys.stderr, str(e)
+        print >> stderr, str(e)
         return EXCEPTIONAL_EXIT_STATUS
 
     logging.getLogger().setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
     try:
-        return run(port, options, args)
+        if options.lint_test_files:
+            return lint(port, options)
+
+        run_details = run(port, options, args, stderr)
+
+        bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
+        bot_printer.print_results(run_details)
+
+        return run_details.exit_code
     except Exception, e:
-        print >> sys.stderr, '\n%s raised: %s' % (e.__class__.__name__, str(e))
-        traceback.print_exc(file=sys.stderr)
+        print >> stderr, '\n%s raised: %s' % (e.__class__.__name__, str(e))
+        traceback.print_exc(file=stderr)
         raise
 
 
 if '__main__' == __name__:
     try:
-        sys.exit(main())
+        exit_status = main()
     except KeyboardInterrupt:
-        sys.exit(INTERRUPTED_EXIT_STATUS)
+        exit_status = INTERRUPTED_EXIT_STATUS
     except BaseException, e:
-        if e.__class__ is not SystemExit:
-            sys.exit(EXCEPTIONAL_EXIT_STATUS)
+        exit_status = EXCEPTIONAL_EXIT_STATUS
+    sys.exit(exit_status)

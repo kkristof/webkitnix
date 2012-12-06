@@ -341,6 +341,7 @@ void LayerTreeRenderer::setLayerState(WebLayerID id, const WebLayerInfo& layerIn
     layer->setBackfaceVisibility(layerInfo.backfaceVisible);
     layer->setContentsOpaque(layerInfo.contentsOpaque);
     layer->setContentsRect(layerInfo.contentsRect);
+    layer->setContentsToBackgroundColor(layerInfo.backgroundColor);
     layer->setDrawsContent(layerInfo.drawsContent);
     layer->setContentsVisible(layerInfo.contentsVisible);
     toGraphicsLayerTextureMapper(layer)->setFixedToViewport(layerInfo.fixedToViewport);
@@ -484,7 +485,7 @@ void LayerTreeRenderer::resetBackingStoreSizeToLayerSize(GraphicsLayer* graphics
     backingStore->setSize(graphicsLayer->size());
 }
 
-void LayerTreeRenderer::createTile(WebLayerID layerID, int tileID, float scale)
+void LayerTreeRenderer::createTile(WebLayerID layerID, uint32_t tileID, float scale)
 {
     GraphicsLayer* layer = layerByID(layerID);
     ASSERT(layer);
@@ -494,7 +495,7 @@ void LayerTreeRenderer::createTile(WebLayerID layerID, int tileID, float scale)
     resetBackingStoreSizeToLayerSize(layer);
 }
 
-void LayerTreeRenderer::removeTile(WebLayerID layerID, int tileID)
+void LayerTreeRenderer::removeTile(WebLayerID layerID, uint32_t tileID)
 {
     GraphicsLayer* layer = layerByID(layerID);
     ASSERT(layer);
@@ -507,7 +508,7 @@ void LayerTreeRenderer::removeTile(WebLayerID layerID, int tileID)
     m_backingStoresWithPendingBuffers.add(backingStore);
 }
 
-void LayerTreeRenderer::updateTile(WebLayerID layerID, int tileID, const TileUpdate& update)
+void LayerTreeRenderer::updateTile(WebLayerID layerID, uint32_t tileID, const TileUpdate& update)
 {
     GraphicsLayer* layer = layerByID(layerID);
     ASSERT(layer);

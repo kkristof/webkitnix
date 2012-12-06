@@ -981,8 +981,10 @@ FloatPoint RenderLayer::perspectiveOrigin() const
 RenderLayer* RenderLayer::stackingContext() const
 {
     RenderLayer* layer = parent();
-    while (layer && !layer->isRootLayer() && !layer->renderer()->isRoot() && layer->renderer()->style()->hasAutoZIndex())
+    while (layer && !layer->isStackingContext())
         layer = layer->parent();
+
+    ASSERT(!layer || layer->isStackingContext());
     return layer;
 }
 
@@ -2970,6 +2972,8 @@ bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint&
     }
 
     int resizeControlSize = max(resizeControlRect.height(), 0);
+
+    // FIXME: We should hit test the m_scrollCorner and pass it back through the result.
 
     if (m_vBar && m_vBar->shouldParticipateInHitTesting()) {
         LayoutRect vBarRect(verticalScrollbarStart(0, box->width()),

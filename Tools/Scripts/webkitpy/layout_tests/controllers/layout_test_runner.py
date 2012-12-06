@@ -28,12 +28,12 @@
 
 import logging
 import math
-import re
 import threading
 import time
 
 from webkitpy.common import message_pool
 from webkitpy.layout_tests.controllers import single_test_runner
+from webkitpy.layout_tests.models.result_summary import ResultSummary
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_results
@@ -61,48 +61,46 @@ class TestRunInterruptedException(Exception):
 
 
 class LayoutTestRunner(object):
-    def __init__(self, options, port, printer, results_directory, expectations, test_is_slow_fn):
+    def __init__(self, options, port, printer, results_directory, test_is_slow_fn):
         self._options = options
         self._port = port
         self._printer = printer
         self._results_directory = results_directory
-        self._expectations = None
         self._test_is_slow = test_is_slow_fn
         self._sharder = Sharder(self._port.split_test, self._options.max_locked_shards)
+        self._filesystem = self._port.host.filesystem
 
-        self._current_result_summary = None
+        self._expectations = None
+        self._test_inputs = []
         self._needs_http = None
         self._needs_websockets = None
         self._retrying = False
-        self._test_files_list = []
-        self._all_results = []
-        self._group_stats = {}
-        self._worker_stats = {}
-        self._filesystem = self._port.host.filesystem
 
-    def run_tests(self, test_inputs, expectations, result_summary, num_workers, needs_http, needs_websockets, retrying):
-        """Returns a tuple of (thread_timings, test_timings, individual_test_timings):
-            thread_timings is a list of dicts with the total runtime
-                of each thread with 'name', 'num_tests', 'total_time' properties
-            test_timings is a list of timings for each sharded subdirectory
-                of the form [time, directory_name, num_tests]
-            individual_test_timings is a list of run times for each test
-                in the form {filename:filename, test_run_time:test_run_time}
-        """
-        self._current_result_summary = result_summary
+        self._current_result_summary = None
+        self._remaining_locked_shards = []
+        self._has_http_lock = False
+
+    def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, needs_http, needs_websockets, retrying):
         self._expectations = expectations
+        self._test_inputs = test_inputs
         self._needs_http = needs_http
         self._needs_websockets = needs_websockets
         self._retrying = retrying
-        self._test_files_list = [test_input.test_name for test_input in test_inputs]
-        self._printer.num_tests = len(self._test_files_list)
+
+        result_summary = ResultSummary(self._expectations, len(test_inputs))
+        self._current_result_summary = result_summary
+        self._remaining_locked_shards = []
+        self._has_http_lock = False
+        self._printer.num_tests = len(test_inputs)
         self._printer.num_completed = 0
 
-        self._all_results = []
-        self._group_stats = {}
-        self._worker_stats = {}
-        self._has_http_lock = False
-        self._remaining_locked_shards = []
+        if not retrying:
+            self._printer.print_expected(result_summary, self._expectations.get_tests_with_result_type)
+
+        for test_name in set(tests_to_skip):
+            result = test_results.TestResult(test_name)
+            result.type = test_expectations.SKIP
+            result_summary.add(result, expected=True, test_is_slow=self._test_is_slow(test_name))
 
         self._printer.write_update('Sharding tests ...')
         locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs, int(self._options.child_processes), self._options.fully_parallel)
@@ -124,7 +122,7 @@ class LayoutTestRunner(object):
         self._printer.print_workers_and_shards(num_workers, len(all_shards), len(locked_shards))
 
         if self._options.dry_run:
-            return (self._worker_stats.values(), self._group_stats, self._all_results)
+            return result_summary
 
         self._printer.write_update('Starting %s ...' % grammar.pluralize('worker', num_workers))
 
@@ -144,8 +142,7 @@ class LayoutTestRunner(object):
         finally:
             self.stop_servers_with_lock()
 
-        # FIXME: Move these stats into ResultSummary and return that.
-        return (self._worker_stats.values(), self._group_stats, self._all_results)
+        return result_summary
 
     def _worker_factory(self, worker_connection):
         results_directory = self._results_directory
@@ -155,13 +152,13 @@ class LayoutTestRunner(object):
         return Worker(worker_connection, results_directory, self._options)
 
     def _mark_interrupted_tests_as_skipped(self, result_summary):
-        for test_name in self._test_files_list:
-            if test_name not in result_summary.results:
-                result = test_results.TestResult(test_name, [test_failures.FailureEarlyExit()])
+        for test_input in self._test_inputs:
+            if test_input.test_name not in result_summary.results:
+                result = test_results.TestResult(test_input.test_name, [test_failures.FailureEarlyExit()])
                 # FIXME: We probably need to loop here if there are multiple iterations.
                 # FIXME: Also, these results are really neither expected nor unexpected. We probably
                 # need a third type of result.
-                result_summary.add(result, expected=False, test_is_slow=self._test_is_slow(test_name))
+                result_summary.add(result, expected=False, test_is_slow=self._test_is_slow(test_input.test_name))
 
     def _interrupt_if_at_failure_limits(self, result_summary):
         # Note: The messages in this method are constructed to match old-run-webkit-tests
@@ -231,9 +228,7 @@ class LayoutTestRunner(object):
     def _handle_started_test(self, worker_name, test_input, test_timeout_sec):
         self._printer.print_started_test(test_input.test_name)
 
-    def _handle_finished_test_list(self, worker_name, list_name, num_tests, elapsed_time):
-        self._group_stats[list_name] = (num_tests, elapsed_time)
-
+    def _handle_finished_test_list(self, worker_name, list_name):
         def find(name, test_lists):
             for i in range(len(test_lists)):
                 if test_lists[i].name == name:
@@ -246,11 +241,7 @@ class LayoutTestRunner(object):
             if not self._remaining_locked_shards and not self._port.requires_http_server():
                 self.stop_servers_with_lock()
 
-    def _handle_finished_test(self, worker_name, result, elapsed_time, log_messages=[]):
-        self._worker_stats.setdefault(worker_name, {'name': worker_name, 'num_tests': 0, 'total_time': 0})
-        self._worker_stats[worker_name]['total_time'] += elapsed_time
-        self._worker_stats[worker_name]['num_tests'] += 1
-        self._all_results.append(result)
+    def _handle_finished_test(self, worker_name, result, log_messages=[]):
         self._update_summary_with_result(self._current_result_summary, result)
 
 
@@ -290,11 +281,9 @@ class Worker(object):
 
     def handle(self, name, source, test_list_name, test_inputs):
         assert name == 'test_list'
-        start_time = time.time()
         for test_input in test_inputs:
-            self._run_test(test_input)
-        elapsed_time = time.time() - start_time
-        self._caller.post('finished_test_list', test_list_name, len(test_inputs), elapsed_time)
+            self._run_test(test_input, test_list_name)
+        self._caller.post('finished_test_list', test_list_name)
 
     def _update_test_input(self, test_input):
         if test_input.reference_files is None:
@@ -305,7 +294,7 @@ class Worker(object):
         else:
             test_input.should_run_pixel_test = self._port.should_run_as_pixel_test(test_input)
 
-    def _run_test(self, test_input):
+    def _run_test(self, test_input, shard_name):
         self._batch_count += 1
 
         stop_when_done = False
@@ -319,9 +308,11 @@ class Worker(object):
         self._caller.post('started_test', test_input, test_timeout_sec)
 
         result = self._run_test_with_timeout(test_input, test_timeout_sec, stop_when_done)
+        result.shard_name = shard_name
+        result.worker_name = self._name
+        result.total_run_time = time.time() - start
 
-        elapsed_time = time.time() - start
-        self._caller.post('finished_test', result, elapsed_time)
+        self._caller.post('finished_test', result)
 
         self._clean_up_after_test(test_input, result)
 

@@ -58,7 +58,6 @@ public:
     {
         copyToVector(orderValues, m_orderValues);
         std::sort(m_orderValues.begin(), m_orderValues.end());
-        first();
     }
 
     RenderBox* currentChild() { return m_currentChild; }
@@ -329,10 +328,13 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     RenderBlock::startDelayUpdateScrollInfo();
 
-    WTF::Vector<LineContext> lineContexts;
+    Vector<LineContext> lineContexts;
     OrderHashSet orderValues;
     computeMainAxisPreferredSizes(relayoutChildren, orderValues);
     m_orderIterator = adoptPtr(new OrderIterator(this, orderValues));
+
+    ChildFrameRects oldChildRects;
+    appendChildFrameRects(oldChildRects);
     layoutFlexItems(*m_orderIterator, lineContexts);
 
     LayoutUnit oldClientAfterEdge = clientLogicalBottom();
@@ -349,6 +351,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
     computeRegionRangeForBlock();
     clearChildOverrideSizes();
 
+    repaintChildrenDuringLayoutIfMoved(oldChildRects);
     // FIXME: css3/flexbox/repaint-rtl-column.html seems to repaint more overflow than it needs to.
     computeOverflow(oldClientAfterEdge);
     statePusher.pop();
@@ -364,6 +367,35 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
     setNeedsLayout(false);
 }
 
+void RenderFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)
+{
+    ASSERT(m_orderIterator);
+
+    for (RenderBox* child = m_orderIterator->first(); child; child = m_orderIterator->next()) {
+        if (!child->isOutOfFlowPositioned())
+            childFrameRects.append(child->frameRect());
+    }
+}
+
+void RenderFlexibleBox::repaintChildrenDuringLayoutIfMoved(const ChildFrameRects& oldChildRects)
+{
+    ASSERT(m_orderIterator);
+
+    size_t childIndex = 0;
+    for (RenderBox* child = m_orderIterator->first(); child; child = m_orderIterator->next()) {
+        if (child->isOutOfFlowPositioned())
+            continue;
+
+        // If the child moved, we have to repaint it as well as any floating/positioned
+        // descendants. An exception is if we need a layout. In this case, we know we're going to
+        // repaint ourselves (and the child) anyway.
+        if (!selfNeedsLayout() && child->checkForRepaintDuringLayout())
+            child->repaintDuringLayoutIfMoved(oldChildRects[childIndex]);
+        ++childIndex;
+    }
+    ASSERT(childIndex == oldChildRects.size());
+}
+
 void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset, PaintInfo& paintInfoForChild, bool usePrintRect)
 {
     ASSERT(m_orderIterator);
@@ -374,7 +406,7 @@ void RenderFlexibleBox::paintChildren(PaintInfo& paintInfo, const LayoutPoint& p
     }
 }
 
-void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(OrderIterator& iterator, WTF::Vector<LineContext>& lineContexts, LayoutUnit& oldClientAfterEdge)
+void RenderFlexibleBox::repositionLogicalHeightDependentFlexItems(OrderIterator& iterator, Vector<LineContext>& lineContexts, LayoutUnit& oldClientAfterEdge)
 {
     LayoutUnit crossAxisStartEdge = lineContexts.isEmpty() ? LayoutUnit() : lineContexts[0].crossAxisOffset;
     alignFlexLines(iterator, lineContexts);
@@ -664,21 +696,10 @@ LayoutPoint RenderFlexibleBox::flowAwareLocationForChild(RenderBox* child) const
 
 void RenderFlexibleBox::setFlowAwareLocationForChild(RenderBox* child, const LayoutPoint& location)
 {
-    LayoutRect oldFrameRect = child->frameRect();
-
     if (isHorizontalFlow())
         child->setLocation(location);
     else
         child->setLocation(location.transposedPoint());
-
-    // If the child moved, we have to repaint it as well as any floating/positioned
-    // descendants. An exception is if we need a layout. In this case, we know we're going to
-    // repaint ourselves (and the child) anyway.
-    // FIXME: In some cases, we might overpaint as we move a child multiple times. We could reduce
-    // overpainting by keeping track of the original position of a child and running this check on
-    // the final position.
-    if (!selfNeedsLayout() && child->checkForRepaintDuringLayout())
-        child->repaintDuringLayoutIfMoved(oldFrameRect);
 }
 
 LayoutUnit RenderFlexibleBox::mainAxisBorderAndPaddingExtentForChild(RenderBox* child) const
@@ -702,7 +723,7 @@ LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox* 
     return std::max(LayoutUnit(0), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
 }
 
-void RenderFlexibleBox::layoutFlexItems(OrderIterator& iterator, WTF::Vector<LineContext>& lineContexts)
+void RenderFlexibleBox::layoutFlexItems(OrderIterator& iterator, Vector<LineContext>& lineContexts)
 {
     OrderedFlexItemList orderedChildren;
     LayoutUnit preferredMainAxisExtent;
@@ -710,12 +731,13 @@ void RenderFlexibleBox::layoutFlexItems(OrderIterator& iterator, WTF::Vector<Lin
     double totalWeightedFlexShrink;
     LayoutUnit minMaxAppliedMainAxisExtent;
 
+    iterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
     while (computeNextFlexLine(iterator, orderedChildren, preferredMainAxisExtent, totalFlexGrow, totalWeightedFlexShrink, minMaxAppliedMainAxisExtent)) {
         LayoutUnit availableFreeSpace = mainAxisContentExtent(preferredMainAxisExtent) - preferredMainAxisExtent;
         FlexSign flexSign = (minMaxAppliedMainAxisExtent < preferredMainAxisExtent + availableFreeSpace) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
-        WTF::Vector<LayoutUnit> childSizes;
+        Vector<LayoutUnit> childSizes;
         while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, childSizes)) {
             ASSERT(totalFlexGrow >= 0 && totalWeightedFlexShrink >= 0);
             ASSERT(inflexibleItems.size() > 0);
@@ -758,6 +780,8 @@ LayoutUnit RenderFlexibleBox::autoMarginOffsetInMainAxis(const OrderedFlexItemLi
 
 void RenderFlexibleBox::updateAutoMarginsInMainAxis(RenderBox* child, LayoutUnit autoMarginOffset)
 {
+    ASSERT(autoMarginOffset >= 0);
+
     if (isHorizontalFlow()) {
         if (child->style()->marginLeft().isAuto())
             child->setMarginLeft(autoMarginOffset);
@@ -788,6 +812,7 @@ LayoutUnit RenderFlexibleBox::availableAlignmentSpaceForChild(LayoutUnit lineCro
 bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUnit availableAlignmentSpace)
 {
     ASSERT(!child->isOutOfFlowPositioned());
+    ASSERT(availableAlignmentSpace >= 0);
 
     bool isHorizontal = isHorizontalFlow();
     Length start = isHorizontal ? child->style()->marginTop() : child->style()->marginLeft();
@@ -924,7 +949,7 @@ bool RenderFlexibleBox::computeNextFlexLine(OrderIterator& iterator, OrderedFlex
     return true;
 }
 
-void RenderFlexibleBox::freezeViolations(const WTF::Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems)
+void RenderFlexibleBox::freezeViolations(const Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems)
 {
     for (size_t i = 0; i < violations.size(); ++i) {
         RenderBox* child = violations[i].child;
@@ -938,13 +963,13 @@ void RenderFlexibleBox::freezeViolations(const WTF::Vector<Violation>& violation
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.
-bool RenderFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, WTF::Vector<LayoutUnit>& childSizes)
+bool RenderFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, Vector<LayoutUnit>& childSizes)
 {
     childSizes.clear();
     LayoutUnit totalViolation = 0;
     LayoutUnit usedFreeSpace = 0;
-    WTF::Vector<Violation> minViolations;
-    WTF::Vector<Violation> maxViolations;
+    Vector<Violation> minViolations;
+    Vector<Violation> maxViolations;
     for (size_t i = 0; i < children.size(); ++i) {
         RenderBox* child = children[i];
         if (child->isOutOfFlowPositioned()) {
@@ -1080,7 +1105,7 @@ void RenderFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(RenderBox* chil
         child->updateLogicalHeight();
 }
 
-void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const WTF::Vector<LayoutUnit>& childSizes, LayoutUnit availableFreeSpace, WTF::Vector<LineContext>& lineContexts)
+void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit>& childSizes, LayoutUnit availableFreeSpace, Vector<LineContext>& lineContexts)
 {
     ASSERT(childSizes.size() == children.size());
 
@@ -1216,7 +1241,7 @@ static LayoutUnit alignContentSpaceBetweenChildren(LayoutUnit availableFreeSpace
     return 0;
 }
 
-void RenderFlexibleBox::alignFlexLines(OrderIterator& iterator, WTF::Vector<LineContext>& lineContexts)
+void RenderFlexibleBox::alignFlexLines(OrderIterator& iterator, Vector<LineContext>& lineContexts)
 {
     if (!isMultiline() || style()->alignContent() == AlignContentFlexStart)
         return;
@@ -1254,10 +1279,10 @@ void RenderFlexibleBox::adjustAlignmentForChild(RenderBox* child, LayoutUnit del
     setFlowAwareLocationForChild(child, flowAwareLocationForChild(child) + LayoutSize(0, delta));
 }
 
-void RenderFlexibleBox::alignChildren(OrderIterator& iterator, const WTF::Vector<LineContext>& lineContexts)
+void RenderFlexibleBox::alignChildren(OrderIterator& iterator, const Vector<LineContext>& lineContexts)
 {
     // Keep track of the space between the baseline edge and the after edge of the box for each line.
-    WTF::Vector<LayoutUnit> minMarginAfterBaselines;
+    Vector<LayoutUnit> minMarginAfterBaselines;
 
     RenderBox* child = iterator.first();
     for (size_t lineNumber = 0; lineNumber < lineContexts.size(); ++lineNumber) {
@@ -1273,7 +1298,7 @@ void RenderFlexibleBox::alignChildren(OrderIterator& iterator, const WTF::Vector
                 continue;
             }
 
-            if (updateAutoMarginsInCrossAxis(child, availableAlignmentSpaceForChild(lineCrossAxisExtent, child)))
+            if (updateAutoMarginsInCrossAxis(child, std::max(LayoutUnit(0), availableAlignmentSpaceForChild(lineCrossAxisExtent, child))))
                 continue;
 
             switch (alignmentForChild(child)) {
@@ -1373,7 +1398,7 @@ void RenderFlexibleBox::flipForRightToLeftColumn(OrderIterator& iterator)
     }
 }
 
-void RenderFlexibleBox::flipForWrapReverse(OrderIterator& iterator, const WTF::Vector<LineContext>& lineContexts, LayoutUnit crossAxisStartEdge)
+void RenderFlexibleBox::flipForWrapReverse(OrderIterator& iterator, const Vector<LineContext>& lineContexts, LayoutUnit crossAxisStartEdge)
 {
     LayoutUnit contentExtent = crossAxisContentExtent();
     RenderBox* child = iterator.first();

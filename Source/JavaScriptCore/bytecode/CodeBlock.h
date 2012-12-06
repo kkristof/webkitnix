@@ -129,6 +129,8 @@ namespace JSC {
     public:
         JS_EXPORT_PRIVATE virtual ~CodeBlock();
         
+        UnlinkedCodeBlock* unlinkedCodeBlock() const { return m_unlinkedCode.get(); }
+
         CodeBlockHash hash() const;
         void dumpAssumingJITType(PrintStream&, JITCode::JITType) const;
         void dump(PrintStream&) const;
@@ -159,6 +161,11 @@ namespace JSC {
             ASSERT(result);
             ASSERT(JITCode::isBaselineCode(result->getJITType()));
             return result;
+        }
+#else
+        CodeBlock* baselineVersion()
+        {
+            return this;
         }
 #endif
 
@@ -1182,8 +1189,6 @@ namespace JSC {
 #endif
         virtual void visitWeakReferences(SlotVisitor&);
         virtual void finalizeUnconditionally();
-
-        UnlinkedCodeBlock* unlinkedCodeBlock() const { return m_unlinkedCode.get(); }
 
     private:
         friend class DFGCodeBlocks;

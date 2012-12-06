@@ -324,9 +324,6 @@ webkit.org/b/92873 gamepad/gamepad-polling-access.html
 webkit.org/b/85580 fast/css/variables
 webkit.org/b/85580 inspector/styles/variables
 
-# UndoManager is not yet enabled.
-webkit.org/b/87908 editing/undomanager
-
 # CSS image-resolution is not yet enabled.
 webkit.org/b/85262 fast/css/image-resolution
 
@@ -905,13 +902,10 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
@@ -919,7 +913,6 @@ webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Ski
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
@@ -1295,6 +1288,9 @@ svg/text/text-intro-05-t.svg
 svg/text/text-tselect-02-f.svg
 
 webkit.org/b/98718 svg/animations/animate-css-xml-attributeType.html [ Failure Pass ]
+
+# https://bugs.webkit.org/show_bug.cgi?id=104054
+webkit.org/b/104054 svg/custom/use-href-update-crash.svg [ Failure Pass ]
 
 # [Qt] svg/animations/animate-path-nested-transforms.html fails
 # https://bugs.webkit.org/show_bug.cgi?id=48987
@@ -1704,6 +1700,7 @@ fast/text/international/plane2.html
 fast/text/international/unicode-bidi-plaintext.html
 fast/text/international/vertical-text-glyph-test.html
 fast/text/international/vertical-text-metrics-test.html
+fast/text/orientation-sideways.html
 fast/writing-mode/japanese-ruby-horizontal-bt.html
 fast/writing-mode/japanese-ruby-vertical-lr.html
 fast/writing-mode/japanese-ruby-vertical-rl.html
@@ -2438,3 +2435,5 @@ webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
 
 # [Qt] A new compositing bug uncovered by r135859
 webkit.org/b/103424 fast/backgrounds/background-opaque-images-over-color.html
+
+webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]

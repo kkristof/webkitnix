@@ -884,6 +884,10 @@ void SelectionHandler::selectionPositionChanged(bool forceUpdateWithoutChange)
     // Enter selection mode if selection type is RangeSelection, and disable selection if
     // selection is active and becomes caret selection.
     Frame* frame = m_webPage->focusedOrMainFrame();
+
+    if (frame->view()->needsLayout())
+        return;
+
     WebCore::IntPoint framePos = m_webPage->frameOffset(frame);
     if (m_selectionActive && (m_caretActive || frame->selection()->isNone()))
         m_selectionActive = false;
@@ -973,12 +977,9 @@ void SelectionHandler::caretPositionChanged()
     SelectionLog(LogLevelInfo, "SelectionHandler::caretPositionChanged");
 
     WebCore::IntRect caretLocation;
-    // If the input field is empty, we always turn off the caret.
     // If the input field is not active, we must be turning off the caret.
-    bool emptyInputField = m_webPage->m_inputHandler->elementText().isEmpty();
-    if (emptyInputField || (!m_webPage->m_inputHandler->isInputMode() && m_caretActive)) {
-        if (!emptyInputField)
-            m_caretActive = false;
+    if (!m_webPage->m_inputHandler->isInputMode() && m_caretActive) {
+        m_caretActive = false;
         // Send an empty caret change to turn off the caret.
         m_webPage->m_client->notifyCaretChanged(caretLocation, m_webPage->m_touchEventHandler->lastFatFingersResult().isTextInput() /* userTouchTriggered */);
         return;
@@ -1014,10 +1015,12 @@ void SelectionHandler::caretPositionChanged()
         nodeBoundingBox.intersect(clippingRectForContent);
     }
 
-    SelectionLog(LogLevelInfo, "SelectionHandler::caretPositionChanged: %s line input, single line bounding box (%d, %d) %dx%d",
-        isSingleLineInput ? "single" : "multi", nodeBoundingBox.x(), nodeBoundingBox.y(), nodeBoundingBox.width(), nodeBoundingBox.height());
+    SelectionLog(LogLevelInfo, "SelectionHandler::caretPositionChanged: %s line input, single line bounding box (%d, %d) %dx%d%s",
+        isSingleLineInput ? "single" : "multi", nodeBoundingBox.x(), nodeBoundingBox.y(), nodeBoundingBox.width(), nodeBoundingBox.height(),
+        m_webPage->m_inputHandler->elementText().isEmpty() ? ", empty text field" : "");
 
-    m_webPage->m_client->notifyCaretChanged(caretLocation, m_webPage->m_touchEventHandler->lastFatFingersResult().isTextInput() /* userTouchTriggered */, isSingleLineInput, nodeBoundingBox);
+    m_webPage->m_client->notifyCaretChanged(caretLocation, m_webPage->m_touchEventHandler->lastFatFingersResult().isTextInput() /* userTouchTriggered */,
+        isSingleLineInput, nodeBoundingBox, m_webPage->m_inputHandler->elementText().isEmpty());
 }
 
 bool SelectionHandler::selectionContains(const WebCore::IntPoint& point)

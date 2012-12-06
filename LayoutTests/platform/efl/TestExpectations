@@ -586,9 +586,6 @@ Bug(EFL) fast/forms/textarea/textarea-placeholder-paint-order.html [ Missing ]
 # Implementing copy{En,De}codedHostName only to test them does not make sense
 webkit.org/b/86080 fast/encoding/idn-security.html [ Skip ]
 
-# UndoManager is not yet enabled.
-webkit.org/b/87908 editing/undomanager
-
 # Disable webaudio codec tests, including proprietary codecs.
 webkit.org/b/88794 webaudio/codec-tests
 
@@ -723,13 +720,10 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
@@ -737,7 +731,6 @@ webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Ski
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
@@ -1076,11 +1069,6 @@ webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html
 Bug(EFL) http/tests/security/isolatedWorld/didClearWindowObject.html
 
 # EFL has accelerated compositing disabled
-webkit.org/b/99043 compositing/backface-visibility/backface-visibility-3d.html [ ImageOnlyFailure ]
-webkit.org/b/99044 compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ ImageOnlyFailure ]
-webkit.org/b/99045 compositing/backface-visibility/backface-visibility-image.html [ ImageOnlyFailure ]
-webkit.org/b/99047 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
-webkit.org/b/99048 compositing/backface-visibility/backface-visibility-simple.html [ ImageOnlyFailure ]
 webkit.org/b/99050 compositing/culling/filter-occlusion-alpha-large.html [ ImageOnlyFailure ]
 webkit.org/b/99051 compositing/culling/filter-occlusion-alpha.html [ ImageOnlyFailure ]
 webkit.org/b/99185 compositing/culling/filter-occlusion-blur-large.html [ ImageOnlyFailure Missing ]
@@ -1529,19 +1517,6 @@ webkit.org/b/98587 fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Ima
 
 webkit.org/b/99878 css3/flexbox/flexbox-baseline-margins.html [ Missing ImageOnlyFailure ]
 
-webkit.org/b/100463 mathml/msubsup-fuzz.html [ Crash Pass ]
-# Needs rebaseline
-webkit.org/b/97990 mathml/presentation/attributes.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/fractions.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/fractions-vertical-alignment.xhtml [ Failure ]
-webkit.org/b/97990 mathml/presentation/roots.xhtml [ Failure ]
-webkit.org/b/99921 mathml/presentation/fenced.xhtml [ Failure ]
-# Needs rebaseline after bug 97390
-webkit.org/b/97390 mathml/presentation/mo-stretch.html [ Failure Pass ]
-webkit.org/b/97390 mathml/presentation/row-alignment.xhtml [ Failure Pass ]
-webkit.org/b/97390 mathml/presentation/tables.xhtml [ Failure Pass ]
-webkit.org/b/97390 mathml/presentation/subsup.xhtml [ Failure Pass ]
-
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
 
@@ -1622,7 +1597,6 @@ Bug(EFL) compositing/bounds-in-flipped-writing-mode.html [ Failure ]
 Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
 Bug(EFL) compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
 Bug(EFL) compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
-Bug(EFL) compositing/tiling/backface-preserve-3d-tiled.html [ ImageOnlyFailure ]
 Bug(EFL) compositing/visibility/visibility-composited.html [ Failure ]
 Bug(EFL) editing/input/caret-at-the-edge-of-contenteditable.html [ Failure ]
 Bug(EFL) editing/input/reveal-caret-of-multiline-contenteditable.html [ Failure ]
@@ -1632,7 +1606,6 @@ Bug(EFL) editing/selection/caret-ltr.html [ Failure Pass ]
 Bug(EFL) editing/selection/caret-ltr-2-left.html [ Failure Pass ]
 Bug(EFL) editing/selection/caret-ltr-2.html [ Failure Pass ]
 Bug(EFL) editing/selection/caret-rtl-2.html [ Failure Pass ]
-Bug(EFL) fast/block/basic/020.html [ Failure ]
 Bug(EFL) fast/css/hover-update.html [ Failure Pass ]
 Bug(EFL) fast/dynamic/012.html [ Failure ]
 Bug(EFL) fast/dynamic/layer-hit-test-crash.html [ Failure ]
@@ -1652,18 +1625,7 @@ Bug(EFL) media/track/track-cues-pause-on-exit.html [ Failure Pass ]
 Bug(EFL) media/video-played-collapse.html [ Failure Pass ]
 Bug(EFL) svg/animations/reinserting-svg-into-document.html [ Failure Pass ]
 Bug(EFL) svg/animations/svgenum-animation-7.html [ Failure Pass ]
-Bug(EFL) transforms/3d/general/perspective-non-layer.html [ Missing ]
-Bug(EFL) transforms/3d/general/perspective-units.html [ Missing ]
-Bug(EFL) transforms/3d/hit-testing/backface-hit-test.html [ Missing ]
-Bug(EFL) transforms/3d/hit-testing/backface-no-transform-hit-test.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-2.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-3.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-deep.html [ Missing ]
 Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-origins.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Missing ]
-Bug(EFL) transforms/3d/point-mapping/3d-point-mapping.html [ Missing ]
 Bug(EFL) transitions/negative-delay.html [ Failure Pass ]
 
 # Media paint regressions
@@ -1682,14 +1644,6 @@ webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while
 webkit.org/b/101439 media/progress-events-generated-correctly.html [ Failure ]
 
 webkit.org/b/101456 fast/repaint/block-selection-gap-in-table-cell.html [ ImageOnlyFailure ]
-
-# Needs rebaseline.
-webkit.org/b/103665 mathml/presentation/roots.xhtml [ Failure ]
-webkit.org/b/103665 mathml/presentation/row-alignment.xhtml [ Failure ]
-webkit.org/b/103665 mathml/presentation/sub.xhtml  [ Failure ]
-webkit.org/b/103665 mathml/presentation/subsup.xhtml  [ Failure ]
-webkit.org/b/103665 mathml/presentation/sup.xhtml [ Failure ]
-webkit.org/b/103665 mathml/presentation/tables.xhtml [ Failure ]
 
 # Identical failures on GTK, EFL and Qt.
 webkit.org/b/101539 editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]

@@ -26,8 +26,9 @@
 #ifndef IDBDatabaseBackendInterface_h
 #define IDBDatabaseBackendInterface_h
 
+#include "IDBTransaction.h"
 #include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
+#include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(INDEXED_DATABASE)
@@ -47,7 +48,7 @@ typedef int ExceptionCode;
 // This is implemented by IDBDatabaseBackendImpl and optionally others (in order to proxy
 // calls across process barriers). All calls to these classes should be non-blocking and
 // trigger work on a background thread if necessary.
-class IDBDatabaseBackendInterface : public ThreadSafeRefCounted<IDBDatabaseBackendInterface> {
+class IDBDatabaseBackendInterface : public RefCounted<IDBDatabaseBackendInterface> {
 public:
     virtual ~IDBDatabaseBackendInterface() { }
 
@@ -55,8 +56,14 @@ public:
 
     virtual PassRefPtr<IDBObjectStoreBackendInterface> createObjectStore(int64_t, const String& name, const IDBKeyPath&, bool autoIncrement, IDBTransactionBackendInterface*, ExceptionCode&) = 0;
     virtual void deleteObjectStore(int64_t, IDBTransactionBackendInterface*, ExceptionCode&) = 0;
-    virtual PassRefPtr<IDBTransactionBackendInterface> createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, unsigned short mode) = 0;
+    // FIXME: Remove this method in https://bugs.webkit.org/show_bug.cgi?id=103923.
+    virtual PassRefPtr<IDBTransactionBackendInterface> createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, IDBTransaction::Mode) = 0;
+    virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode) = 0;
     virtual void close(PassRefPtr<IDBDatabaseCallbacks>) = 0;
+
+    // Transaction-specific operations.
+    virtual void commit(int64_t transactionId) = 0;
+    virtual void abort(int64_t transactionId) = 0;
 };
 
 } // namespace WebCore

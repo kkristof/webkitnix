@@ -1,3 +1,549 @@
+2012-12-06  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        [Chromium] Expose acceleratedCompositingForScrollableFramesEnabled in WebKit API
+        https://bugs.webkit.org/show_bug.cgi?id=104272
+
+        We may need the API to enable compositing scrollable frames in Chromium.
+
+        Reviewed by Darin Fisher.
+
+        * public/WebSettings.h:
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setAcceleratedCompositingForScrollableFramesEnabled):
+        (WebKit):
+        * src/WebSettingsImpl.h:
+        (WebSettingsImpl):
+
+2012-12-06  W. James MacLean  <wjmaclean@chromium.org>
+
+        [chromium] Should apply link highlight to largest enclosing node with a handCursor.
+        https://bugs.webkit.org/show_bug.cgi?id=104264
+
+        Reviewed by Adrienne Walker.
+
+        Link highlights sometimes only apply to part of a link, if we select an enclosed
+        node (e.g. font changes in link text). The highlight should be applied to the
+        largest enclosing node that still has handCursor set.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::bestTouchLinkNode):
+
+2012-12-06  Tommy Widenflycht  <tommyw@google.com>
+
+        Speech Recognition API: Change the error code to a string on SpeechRecognitionError
+        https://bugs.webkit.org/show_bug.cgi?id=104254
+
+        Reviewed by Adam Barth.
+
+        Minor WebCore type changes.
+
+        * src/AssertMatchingEnums.cpp:
+        * src/SpeechRecognitionClientProxy.cpp:
+        (WebKit::SpeechRecognitionClientProxy::didReceiveError):
+
+2012-12-06  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136784 and r136802.
+        http://trac.webkit.org/changeset/136784
+        http://trac.webkit.org/changeset/136802
+        https://bugs.webkit.org/show_bug.cgi?id=104231
+
+        breaks chromium canary (Requested by morrita on #webkit).
+
+        * WebKit.gyp:
+        * public/linux/WebRenderTheme.h: Added.
+        (WebKit):
+        * public/platform/linux/WebThemeEngine.h: Added.
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setScrollbarColors):
+        (WebKit::WebViewImpl::setSelectionColors):
+        * src/linux/WebRenderTheme.cpp: Added.
+        (WebKit):
+        (WebKit::setCaretBlinkInterval):
+
+2012-12-05  Takashi Sakamoto  <tasak@google.com>
+
+        Add win8/* to Chromium DEPS (r171376)
+        https://bugs.webkit.org/show_bug.cgi?id=104228
+
+        Reviewed by Hajime Morita.
+
+        Since updated chromium DEPS to r171376, now printing/printing.gyp
+        requires win8/* for windows build.
+
+        * DEPS:
+
+2012-12-05  Takashi Sakamoto  <tasak@google.com>
+
+        Unreviewed, WebKit gardening.
+
+        * WebKit.gyp:
+        Removed public/linux/WebRenderTheme.h. The file was removed.
+
+2012-12-05  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-12-05  Greg Billock  <gbillock@google.com>
+
+        Add runtime enable for web intents.
+        https://bugs.webkit.org/show_bug.cgi?id=103669
+
+        Reviewed by Adam Barth.
+
+        Propagate runtime setting to enable/disable web intents Javascript API.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableWebIntents):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isWebIntentsEnabled):
+
+2012-12-05  Scott Violet  <sky@chromium.org>
+
+        [chromium] Remove linux theme related files and switch to default
+        https://bugs.webkit.org/show_bug.cgi?id=103897
+
+        Reviewed by Tony Chang.
+
+        Linux theme related files are now named Default.
+
+        * WebKit.gyp:
+        * public/linux/WebRenderTheme.h: Removed.
+        * public/platform/linux/WebThemeEngine.h: Removed.
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setScrollbarColors): Cleanup ifdefs.
+        (WebKit::WebViewImpl::setSelectionColors): Cleanup ifdefs.
+        * src/linux/WebRenderTheme.cpp: Removed.
+
+2012-12-05  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Allow multiple transactions to interleave request execution
+        https://bugs.webkit.org/show_bug.cgi?id=97570
+
+        Reviewed by Tony Chang.
+
+        Map to IDBTransaction::Mode enum as appropriate.
+
+        * src/IDBDatabaseBackendProxy.cpp:
+        (WebKit::IDBDatabaseBackendProxy::createTransaction):
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::createTransaction):
+         * tests/IDBDatabaseBackendTest.cpp:
+
+2012-12-05  Eberhard Graether  <egraether@google.com>
+
+        [chromium] Remove WebLayerTreeView API to set font atlas
+        https://bugs.webkit.org/show_bug.cgi?id=102960
+
+        Reviewed by James Robinson.
+
+        Removes old font atlas creation from WebViewImpl.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::setShowFPSCounter):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        (WebKit):
+        * src/WebViewImpl.h:
+
+2012-12-05  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed, rolling out r136735.
+        http://trac.webkit.org/changeset/136735
+        https://bugs.webkit.org/show_bug.cgi?id=102699
+
+        Broke Chrome/Win build.
+
+        * src/PlatformSupport.cpp:
+        (WebCore):
+        (WebCore::PlatformSupport::paintButton):
+        (WebCore::PlatformSupport::paintMenuList):
+        (WebCore::PlatformSupport::paintScrollbarArrow):
+        (WebCore::PlatformSupport::paintScrollbarThumb):
+        (WebCore::PlatformSupport::paintScrollbarTrack):
+        (WebCore::PlatformSupport::paintSpinButton):
+        (WebCore::PlatformSupport::paintTextField):
+        (WebCore::PlatformSupport::paintTrackbar):
+        (WebCore::PlatformSupport::paintProgressBar):
+
+2012-12-05  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed, rolling out r136741.
+        http://trac.webkit.org/changeset/136741
+        https://bugs.webkit.org/show_bug.cgi?id=104151
+
+        Broke Chrome/Win build.
+
+        * WebKit.gyp:
+        * src/PlatformSupport.cpp:
+        (WebCore):
+        (WebCore::WorkerContextProxy::create):
+        * src/WorkerContextProxy.cpp: Removed.
+
+2012-12-05  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Move WorkerContextProxy::create out of PlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=104151
+
+        Reviewed by Adam Barth.
+
+        Doesn't really solve the layering violation as much as kick it
+        down the road a bit. Part of a refactoring series; see tracking
+        bug 82948.
+
+        * WebKit.gyp:
+        * src/PlatformSupport.cpp:
+        (WebCore):
+        * src/WorkerContextProxy.cpp: Added.
+        (WebCore):
+        (WebCore::WebCore::WorkerContextProxy::create):
+
+2012-12-05  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium][Win] Remove theme-related functions from PlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=102699
+
+        Reviewed by Adam Barth.
+
+        Call theme engine directly instead of going through
+        PlatformSupport. Part of a refactoring series. See tracking bug 82948.
+
+        * src/PlatformSupport.cpp:
+        (WebCore::PlatformSupport::pluginScriptableObject):
+
+2012-12-05  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed, rolling out r136609.
+        http://trac.webkit.org/changeset/136609
+        https://bugs.webkit.org/show_bug.cgi?id=103793
+
+        Breaking Chrome/Mac Debug builds.
+
+        * WebKit.gyp:
+
+2012-12-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Stub out transaction-backend methods
+        https://bugs.webkit.org/show_bug.cgi?id=103921
+
+        Reviewed by Dimitri Glazkov.
+
+        Add new signatures for refactoring, to allow
+        transaction_ids to make is through the open/onUpgradeNeeded
+        loop.
+
+        * public/WebIDBCallbacks.h:
+        (WebKit::WebIDBCallbacks::onUpgradeNeeded):
+        * public/WebIDBDatabase.h:
+        (WebKit::WebIDBDatabase::createTransaction):
+        (WebKit::WebIDBDatabase::abort):
+        (WebKit::WebIDBDatabase::commit):
+        (WebIDBDatabase):
+        * public/WebIDBDatabaseCallbacks.h:
+        (WebIDBDatabaseCallbacks):
+        (WebKit::WebIDBDatabaseCallbacks::onAbort):
+        (WebKit::WebIDBDatabaseCallbacks::onComplete):
+        * public/WebIDBFactory.h:
+        (WebKit::WebIDBFactory::open):
+        * src/IDBCallbacksProxy.cpp:
+        (WebKit::IDBCallbacksProxy::onUpgradeNeeded):
+        (WebKit):
+        * src/IDBCallbacksProxy.h:
+        (IDBCallbacksProxy):
+        * src/IDBDatabaseBackendProxy.cpp:
+        (WebKit::IDBDatabaseBackendProxy::createTransaction):
+        (WebKit):
+        (WebKit::IDBDatabaseBackendProxy::commit):
+        (WebKit::IDBDatabaseBackendProxy::abort):
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/IDBDatabaseCallbacksProxy.cpp:
+        (WebKit::IDBDatabaseCallbacksProxy::onAbort):
+        (WebKit):
+        (WebKit::IDBDatabaseCallbacksProxy::onComplete):
+        * src/IDBDatabaseCallbacksProxy.h:
+        (IDBDatabaseCallbacksProxy):
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit::IDBFactoryBackendProxy::open):
+        (WebKit):
+        * src/IDBFactoryBackendProxy.h:
+        (IDBFactoryBackendProxy):
+        * src/WebIDBCallbacksImpl.cpp:
+        (WebKit::WebIDBCallbacksImpl::onUpgradeNeeded):
+        (WebKit):
+        * src/WebIDBCallbacksImpl.h:
+        (WebIDBCallbacksImpl):
+        * src/WebIDBDatabaseCallbacksImpl.cpp:
+        (WebKit::WebIDBDatabaseCallbacksImpl::onAbort):
+        (WebKit):
+        (WebKit::WebIDBDatabaseCallbacksImpl::onComplete):
+        * src/WebIDBDatabaseCallbacksImpl.h:
+        (WebIDBDatabaseCallbacksImpl):
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::createTransaction):
+        (WebKit):
+        (WebKit::WebIDBDatabaseImpl::abort):
+        (WebKit::WebIDBDatabaseImpl::commit):
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+        * src/WebIDBFactoryImpl.cpp:
+        (WebKit::WebIDBFactoryImpl::open):
+        (WebKit):
+        * src/WebIDBFactoryImpl.h:
+        (WebIDBFactoryImpl):
+        * tests/IDBAbortOnCorruptTest.cpp:
+        * tests/IDBDatabaseBackendTest.cpp:
+
+2012-11-27  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: remove IDBDatabaseBackendInterface::transaction()
+        https://bugs.webkit.org/show_bug.cgi?id=102733
+
+        Reviewed by Darin Fisher.
+
+        Part 3 of a refactor - just remove the proxy code for the now
+        defunct transaction method.
+
+        * public/WebIDBDatabase.h:
+        * src/IDBDatabaseBackendProxy.cpp:
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+        * tests/IDBDatabaseBackendTest.cpp:
+
+2012-12-05  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Replace use of ScriptExecutionContext::Task (Part 2)
+        https://bugs.webkit.org/show_bug.cgi?id=103931
+
+        Reviewed by Tony Chang.
+
+        Now that IDBCallbacks uses real RefPtr<> a mock class needs to be heap allocated.
+
+        * tests/IDBAbortOnCorruptTest.cpp:
+        (WebCore::MockIDBCallbacks::create):
+        (WebCore::MockIDBCallbacks::MockIDBCallbacks):
+        (MockIDBCallbacks):
+        (WebCore::TEST):
+
+2012-12-05  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-12-05  Keishi Hattori  <keishi@webkit.org>
+
+        Fix text direction in datalist popup for time controls
+        https://bugs.webkit.org/show_bug.cgi?id=103853
+
+        Reviewed by Kent Tamura.
+
+        * src/DateTimeChooserImpl.cpp:
+        (WebKit::DateTimeChooserImpl::writeDocument): Renamed isCalendarRTL to isLocaleRTL.
+
+2012-12-04  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Remove toV8Object()
+        https://bugs.webkit.org/show_bug.cgi?id=103987
+
+        Reviewed by Adam Barth.
+
+        toV8Object() is used only for MessagePort and ArrayBuffer
+        only by SerializedScriptValue. It is wasteful to generate
+        toV8Object() for all interfaces.
+
+        No tests. No change in behavior.
+
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::toV8Value):
+        * src/WebBlob.cpp:
+        (WebKit::WebBlob::toV8Value):
+
+2012-12-04  David Dorwin  <ddorwin@chromium.org>
+
+        [Chromium] Detach the frame and destroy the page immediately upon request to closeHelperPlugin().
+        https://bugs.webkit.org/show_bug.cgi?id=103947
+
+        Reviewed by Kent Tamura.
+
+        In the case that the host page is being destroyed, some of the objects
+        the page depends on, specifically RenderViewImpl, may be destroyed by
+        the time close() is called asynchronously.
+        The frameDetached() calling code was originally copied from
+        WebViewImpl::close(), but WebViewImpl does not have an asynchronous
+        closing mechanism like the WebWidgets.
+
+        This is the fix for http://crbug.com/160650
+
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::WebHelperPluginImpl::init):
+        (WebKit::WebHelperPluginImpl::closeHelperPlugin):
+        (WebKit::WebHelperPluginImpl::destoryPage):
+        (WebKit):
+        (WebKit::WebHelperPluginImpl::close):.
+        (WebKit::WebHelperPlugin::create):
+        * src/WebHelperPluginImpl.h:
+        (WebHelperPluginImpl):
+        * src/WebPagePopupImpl.cpp: Made similar changes since it follows the same model. (I think the way popups are closed has prevented the race condition from occurring for popups.)
+        (WebKit::WebPagePopupImpl::destoryPage):
+        (WebKit):
+        (WebKit::WebPagePopupImpl::close):
+        (WebKit::WebPagePopupImpl::closePopup):
+        * src/WebPagePopupImpl.h:
+        (WebPagePopupImpl):
+
+2012-12-04  David Dorwin  <ddorwin@chromium.org>
+
+        [Chromium] Removed obsolete local variable from WebViewImpl.cpp.
+        https://bugs.webkit.org/show_bug.cgi?id=104050
+
+        Reviewed by Kent Tamura.
+
+        These lines were added with the file in 50739#L761 but the later use
+        of this variable at L779 has since been removed.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::close):
+
+2012-12-04  Alpha Lam  <hclam@chromium.org>
+
+        [chromium] Implement cache eviction logic in ImageDecodingStore
+        https://bugs.webkit.org/show_bug.cgi?id=103480
+
+        Reviewed by James Robinson.
+
+        Added ImageDecodingStoreTest for unit testing new image cache.
+
+        New tests:
+
+        ImageDecodingStoreTest.evictOneCache
+
+        Test eviction of one cache entry by setting a smaller cache limit.
+
+        ImageDecodingStoreTest.pruneOrderIsLeastRecentlyUsed
+
+        Test eviction order is least recently used.
+
+        ImageDecodingStoreTest.pruneCausedByInsertion
+
+        Test that eviction is triggered also by cache insertion.
+
+        ImageDecodingStoreTest.cacheInUseNotEvicted
+
+        Test that cache in use is not evicted.
+
+        ImageDecodingStoreTest.destroyImageFrameGenerator
+
+        Test that deleting a ImageFrameGenerator causes associated cache
+        entries to be removed.
+
+        * WebKit.gypi:
+        * tests/ImageDecodingStoreTest.cpp: Added.
+        (WebCore):
+        (ImageDecodingStoreTest):
+        (WebCore::ImageDecodingStoreTest::SetUp):
+        (WebCore::ImageDecodingStoreTest::TearDown):
+        (WebCore::ImageDecodingStoreTest::createCompleteImage):
+        (WebCore::ImageDecodingStoreTest::insertCache):
+        (WebCore::ImageDecodingStoreTest::lockCache):
+        (WebCore::ImageDecodingStoreTest::unlockCache):
+        (WebCore::ImageDecodingStoreTest::evictOneCache):
+        (WebCore::ImageDecodingStoreTest::isCacheAlive):
+        (WebCore::TEST_F):
+
+2012-12-04  Kenneth Russell  <kbr@google.com>
+
+        Associate URLs with GraphicsContext3D instances created for WebGL
+        https://bugs.webkit.org/show_bug.cgi?id=103793
+
+        Reviewed by Adam Barth.
+
+        * WebKit.gyp:
+            Allow WebURL.h to be included directly or indirectly from Platform.h.
+
+2012-12-04  Adam Barth  <abarth@webkit.org>
+
+        [V8] Cleanup style in V8DOMWrapper
+        https://bugs.webkit.org/show_bug.cgi?id=104062
+
+        Reviewed by Kentaro Hara.
+
+        * src/WebBindings.cpp:
+        (WebKit::getRangeImpl):
+
+2012-12-04  Stephen White  <senorblanco@chromium.org>
+
+        [chromium] Turn on the new Skia mask blur algorithm.
+        https://bugs.webkit.org/show_bug.cgi?id=103906
+
+        Reviewed by Adrienne Walker.
+
+        * skia_webkit.gyp:
+
+2012-12-04  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-11-30  David Grogan  <dgrogan@chromium.org>
+
+        IndexedDB: Propagate more leveldb errors to IDBIndex and IDBObjectStore
+        https://bugs.webkit.org/show_bug.cgi?id=103782
+
+        Reviewed by Tony Chang.
+
+        * tests/IDBFakeBackingStore.h:
+          Remove changed methods that are no longer necessary.
+
+2012-12-04  Stephen White  <senorblanco@chromium.org>
+
+        Rolled DEPS (w/Linux build fix).  Unreviewed.
+
+        * DEPS:
+
+2012-12-04  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed, rolling out r136530.
+        http://trac.webkit.org/changeset/136530
+
+        Broke build.webkit.org linux build
+
+        * DEPS:
+
+2012-12-04  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2012-12-04  Eberhard Graether  <egraether@google.com>
+
+        [chromium] fix showFPScounter and showPaintRects not toggleable after page change
+        https://bugs.webkit.org/show_bug.cgi?id=103937
+
+        Reviewed by Pavel Feldman.
+
+        This change avoids updating the WebSettings and uses fields for showFPSCounter and
+        showPaintRects in WebViewImpl instead, which hold the values between InspectorPageAgent::restore()
+        and WebViewImpl::setIsAcceleratedCompositingActive().
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::setShowFPSCounter):
+        (WebKit::WebViewImpl::setShowPaintRects):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        * src/WebViewImpl.h:
+
 2012-12-04  Charlie Reis  <creis@chromium.org>
 
         Add FrameLoaderClient::didDisownOpener

@@ -165,6 +165,8 @@ public:
     void setZoom(float f) { m_fontDirty |= style()->setZoom(f); }
     void setEffectiveZoom(float f) { m_fontDirty |= style()->setEffectiveZoom(f); }
     void setTextSizeAdjust(bool b) { m_fontDirty |= style()->setTextSizeAdjust(b); }
+    void setWritingMode(WritingMode writingMode) { m_fontDirty |= style()->setWritingMode(writingMode); }
+    void setTextOrientation(TextOrientation textOrientation) { m_fontDirty |= style()->setTextOrientation(textOrientation); }
     bool hasParentNode() const { return m_parentNode; }
 
     void resetAuthorStyle();
@@ -457,6 +459,9 @@ private:
     // the last reference to a style declaration are garbage collected.
     void sweepMatchedPropertiesCache(Timer<StyleResolver>*);
 
+    bool classNamesAffectedByRules(const SpaceSplitString&) const;
+    bool sharingCandidateHasIdenticalStyleAffectingAttributes(StyledElement*) const;
+
     unsigned m_matchedPropertiesCacheAdditionsSinceLastSweep;
 
     typedef HashMap<unsigned, MatchedPropertiesCacheItem> MatchedPropertiesCache;
@@ -488,6 +493,7 @@ private:
     StyledElement* m_styledElement;
     RenderRegion* m_regionForStyling;
     EInsideLink m_elementLinkState;
+    bool m_elementAffectedByClassRules;
     ContainerNode* m_parentNode;
     CSSValue* m_lineHeightValue;
     bool m_fontDirty;

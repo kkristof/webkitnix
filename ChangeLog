@@ -1,3 +1,137 @@
+2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Optimize binary size by removing dead sections on unix/gcc
+        https://bugs.webkit.org/show_bug.cgi?id=102827
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Turn on -ffunction-sections -fdata-sections --gc-section flags
+        on unix for the gcc toolchain for release builds to optimize binary
+        size for the Efl port.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-12-06  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [EFL] Fix destination path in Source/PlatformEfl.cmake
+        https://bugs.webkit.org/show_bug.cgi?id=104237
+
+        Reviewed by Laszlo Gombos.
+
+        Remove InspectorBackendCommands.js when copying it for the consistency in Source/PlatformEfl.cmake.
+
+        * Source/PlatformEfl.cmake:
+
+2012-12-06  Shinya Kawanaka  <shinyak@chromium.org>
+
+        Internals.getElementByIdInShadowRoot is nonsense now.
+        https://bugs.webkit.org/show_bug.cgi?id=104241
+
+        Reviewed by Kent Tamura.
+
+        * Source/autotools/symbols.filter:
+
+2012-12-05  Halton Huo  <halton.huo@intel.com>
+
+        [CMake] Unify coding style for CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=103605
+
+        Reviewed by Laszlo Gombos.
+
+        Update cmake files(.cmake, CMakeLists.txt) with following style rules:
+        1. Indentation
+        1.1 Use spaces, not tabs.
+        1.2 Four spaces as indent.
+        2. Spacing
+        2.1 Place one space between control statements and their parentheses.
+            For eg, if (), else (), elseif (), endif (), foreach (),
+            endforeach (), while (), endwhile (), break ().
+        2.2 Do not place spaces between function and macro statements and
+            their parentheses. For eg, macro(), endmacro(), function(),
+            endfunction().
+        2.3 Do not place spaces between a command or function or macro and its
+            parentheses, or between a parenthesis and its content. For eg,
+            message("testing") not message( "testing") or message ("testing" )
+        2.4 No space at line ending.
+        3. Lowercase when call commands macros and functions. For eg,
+           add_executable() not ADD_EXECUTABLE(), set() not SET().
+
+        * CMakeLists.txt:
+        * Source/CMakeLists.txt:
+        * Source/PlatformEfl.cmake:
+        * Source/cmake/EFLHelpers.cmake:
+        * Source/cmake/FindATK.cmake:
+        * Source/cmake/FindCFLite.cmake:
+        * Source/cmake/FindCairo.cmake:
+        * Source/cmake/FindDBus.cmake:
+        * Source/cmake/FindDirectX.cmake:
+        * Source/cmake/FindE_DBus.cmake:
+        * Source/cmake/FindEcore.cmake:
+        * Source/cmake/FindEdje.cmake:
+        * Source/cmake/FindEet.cmake:
+        * Source/cmake/FindEeze.cmake:
+        * Source/cmake/FindEfreet.cmake:
+        * Source/cmake/FindEina.cmake:
+        * Source/cmake/FindElementary.cmake:
+        * Source/cmake/FindEnchant.cmake:
+        * Source/cmake/FindEvas.cmake:
+        * Source/cmake/FindFontconfig.cmake:
+        * Source/cmake/FindGLIB.cmake:
+        * Source/cmake/FindGStreamer.cmake:
+        * Source/cmake/FindGperf.cmake:
+        * Source/cmake/FindHarfBuzz.cmake:
+        * Source/cmake/FindICU.cmake:
+        * Source/cmake/FindLibSoup.cmake:
+        * Source/cmake/FindQuickTimeSDK.cmake:
+        * Source/cmake/FindSqlite.cmake:
+        * Source/cmake/OptionsBlackBerry.cmake:
+        * Source/cmake/OptionsCommon.cmake:
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/OptionsWinCE.cmake:
+        * Source/cmake/OptionsWindows.cmake:
+        * Source/cmake/WebKitFS.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmake/WebKitHelpers.cmake:
+        * Source/cmake/WebKitMacros.cmake:
+        * Source/cmake/WebKitPackaging.cmake:
+        * Source/cmake/gtest/CMakeLists.txt:
+
+2012-12-05  Yong Li  <yoli@rim.com>
+
+        [BlackBerry] Build with libjpegturbo
+        https://bugs.webkit.org/show_bug.cgi?id=104152
+
+        Reviewed by Rob Buis.
+
+        RIM PR# 196975.
+        This change is made by Ming Xie to link with libjpegturbo.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2012-12-05  Leo Yang  <leoyang@rim.com>
+
+        [BlackBerry] Enable CSS_IMAGE_RESOLUTION
+        https://bugs.webkit.org/show_bug.cgi?id=104132
+
+        Reviewed by Yong Li.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2012-12-05  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [CMake] Enable to build WebKit sources without Tools
+        https://bugs.webkit.org/show_bug.cgi?id=103918
+
+        Reviewed by Gyuyoung Kim.
+
+        Turn on building Tools by default only if ENABLE_TOOLS is not explicitly set
+        (enabled or disabled) and the Tools directory exists for all CMake based ports.
+
+        This change enables the possibility to build WebKit even if the Tools directory 
+        does not exists.
+
+        * CMakeLists.txt:
+
 2012-12-04  Kondapally Kalyan  <kalyan.kondapally@intel.com>
 
         [EFL][WK2][AC] USE_GRAPHICS_SURFACE should be enabled only if Xcomposite and Xrender extensions are found.

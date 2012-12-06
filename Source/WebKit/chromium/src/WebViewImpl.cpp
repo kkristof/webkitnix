@@ -431,7 +431,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_compositorSurfaceReady(false)
     , m_deviceScaleInCompositor(1)
     , m_inputHandlerIdentifier(-1)
-    , m_isFontAtlasLoaded(false)
 #endif
 #if ENABLE(INPUT_SPEECH)
     , m_speechInputClient(SpeechInputClientImpl::create(client))
@@ -454,6 +453,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_flingModifier(0)
     , m_validationMessage(ValidationMessageClientImpl::create(*client))
     , m_suppressInvalidations(false)
+    , m_showFPSCounter(false)
+    , m_showPaintRects(false)
 {
     // WebKit/win/WebView.cpp does the same thing, except they call the
     // KJS specific wrapper around this method. We need to have threading
@@ -840,12 +841,9 @@ void WebViewImpl::setShowFPSCounter(bool show)
 {
     if (isAcceleratedCompositingActive()) {
         TRACE_EVENT0("webkit", "WebViewImpl::setShowFPSCounter");
-#if USE(ACCELERATED_COMPOSITING)
-        loadFontAtlasIfNecessary();
-#endif
         m_layerTreeView->setShowFPSCounter(show);
     }
-    settingsImpl()->setShowFPSCounter(show);
+    m_showFPSCounter = show;
 }
 
 void WebViewImpl::setShowPaintRects(bool show)
@@ -854,7 +852,7 @@ void WebViewImpl::setShowPaintRects(bool show)
         TRACE_EVENT0("webkit", "WebViewImpl::setShowPaintRects");
         m_layerTreeView->setShowPaintRects(show);
     }
-    settingsImpl()->setShowPaintRects(show);
+    m_showPaintRects = show;
 }
 
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
@@ -1223,6 +1221,10 @@ Node* WebViewImpl::bestTouchLinkNode(const WebGestureEvent& touchEvent)
     while (bestTouchNode && !invokesHandCursor(bestTouchNode, shiftKey, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
+    // We should pick the largest enclosing node with hand cursor set.
+    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), shiftKey, m_page->mainFrame()))
+        bestTouchNode = bestTouchNode->parentNode();
+
     return bestTouchNode;
 }
 
@@ -1527,15 +1529,12 @@ PageGroup* WebViewImpl::defaultPageGroup()
 
 void WebViewImpl::close()
 {
-    RefPtr<WebFrameImpl> mainFrameImpl;
-
     if (m_page) {
         // Initiate shutdown for the entire frameset.  This will cause a lot of
         // notifications to be sent.
-        if (m_page->mainFrame()) {
-            mainFrameImpl = WebFrameImpl::fromFrame(m_page->mainFrame());
+        if (m_page->mainFrame())
             m_page->mainFrame()->loader()->frameDetached();
-        }
+
         m_page.clear();
     }
 
@@ -4039,15 +4038,10 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_client->didActivateCompositor(m_inputHandlerIdentifier);
             m_isAcceleratedCompositingActive = true;
             m_compositorCreationFailed = false;
-            m_isFontAtlasLoaded = false;
             if (m_pageOverlays)
                 m_pageOverlays->update();
-
-            if (layerTreeViewSettings.showPlatformLayerTree)
-                loadFontAtlasIfNecessary();
-
-            if (settingsImpl()->showFPSCounter())
-                setShowFPSCounter(true);
+            m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
+            m_layerTreeView->setShowPaintRects(m_showPaintRects);
         } else {
             m_nonCompositedContentHost.clear();
             m_isAcceleratedCompositingActive = false;
@@ -4057,21 +4051,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     }
     if (page())
         page()->mainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
-}
-
-void WebViewImpl::loadFontAtlasIfNecessary()
-{
-    ASSERT(m_layerTreeView);
-
-    if (m_isFontAtlasLoaded)
-        return;
-
-    TRACE_EVENT0("webkit", "WebViewImpl::loadFontAtlas");
-    WebRect asciiToRectTable[128];
-    int fontHeight;
-    SkBitmap bitmap = WebCore::CompositorHUDFontAtlas::generateFontAtlas(asciiToRectTable, fontHeight);
-    m_layerTreeView->setFontAtlas(asciiToRectTable, bitmap, fontHeight);
-    m_isFontAtlasLoaded = true;
 }
 
 #endif

@@ -358,23 +358,6 @@ static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
     return ruleSet.release();
 }
 
-void StyleResolver::collectFeatures()
-{
-    m_features.clear();
-    // Collect all ids and rules using sibling selectors (:first-child and similar)
-    // in the current set of stylesheets. Style sharing code uses this information to reject
-    // sharing candidates.
-    m_features.add(defaultStyle->features());
-    m_features.add(m_authorStyle->features());
-    if (m_scopeResolver)
-        m_scopeResolver->collectFeaturesTo(m_features);
-    if (m_userStyle)
-        m_features.add(m_userStyle->features());
-
-    m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
-    m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
-}
-
 void StyleResolver::resetAuthorStyle()
 {
     m_authorStyle = RuleSet::create();
@@ -961,6 +944,15 @@ void StyleResolver::matchAllRules(MatchResult& result, bool includeSMILPropertie
 #endif
 }
 
+bool StyleResolver::classNamesAffectedByRules(const SpaceSplitString& classNames) const
+{
+    for (unsigned i = 0; i < classNames.size(); ++i) {
+        if (m_features.classesInRules.contains(classNames[i].impl()))
+            return true;
+    }
+    return false;
+}
+
 inline void StyleResolver::initElement(Element* e)
 {
     if (m_element != e) {
@@ -1134,32 +1126,40 @@ static inline bool elementHasDirectionAuto(Element* element)
     return element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto();
 }
 
-static inline bool haveIdenticalStyleAffectingAttributes(StyledElement* a, StyledElement* b)
+bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(StyledElement* sharingCandidate) const
 {
-    if (a->attributeData() == b->attributeData())
+    if (m_element->attributeData() == sharingCandidate->attributeData())
         return true;
-    if (a->fastGetAttribute(XMLNames::langAttr) != b->fastGetAttribute(XMLNames::langAttr))
+    if (m_element->fastGetAttribute(XMLNames::langAttr) != sharingCandidate->fastGetAttribute(XMLNames::langAttr))
         return false;
-    if (a->fastGetAttribute(langAttr) != b->fastGetAttribute(langAttr))
+    if (m_element->fastGetAttribute(langAttr) != sharingCandidate->fastGetAttribute(langAttr))
         return false;
-    if (a->hasClass()) {
+
+    if (!m_elementAffectedByClassRules) {
+        if (sharingCandidate->hasClass() && classNamesAffectedByRules(sharingCandidate->classNames()))
+            return false;
+    } else if (sharingCandidate->hasClass()) {
 #if ENABLE(SVG)
         // SVG elements require a (slow!) getAttribute comparision because "class" is an animatable attribute for SVG.
-        if (a->isSVGElement()) {
-            if (a->getAttribute(classAttr) != b->getAttribute(classAttr))
+        if (m_element->isSVGElement()) {
+            if (m_element->getAttribute(classAttr) != sharingCandidate->getAttribute(classAttr))
                 return false;
-        } else
+        } else {
 #endif
-        if (a->attributeData()->classNames() != b->attributeData()->classNames())
-            return false;
-    }
+            if (m_element->classNames() != sharingCandidate->classNames())
+                return false;
+#if ENABLE(SVG)
+        }
+#endif
+    } else
+        return false;
 
-    if (a->presentationAttributeStyle() != b->presentationAttributeStyle())
+    if (m_styledElement->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
         return false;
 
 #if ENABLE(PROGRESS_ELEMENT)
-    if (a->hasTagName(progressTag)) {
-        if (static_cast<HTMLProgressElement*>(a)->isDeterminate() != static_cast<HTMLProgressElement*>(b)->isDeterminate())
+    if (m_element->hasTagName(progressTag)) {
+        if (static_cast<HTMLProgressElement*>(m_element)->isDeterminate() != static_cast<HTMLProgressElement*>(sharingCandidate)->isDeterminate())
             return false;
     }
 #endif
@@ -1176,8 +1176,6 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     if (style->unique())
         return false;
     if (element->tagQName() != m_element->tagQName())
-        return false;
-    if (element->hasClass() != m_element->hasClass())
         return false;
     if (element->inlineStyle())
         return false;
@@ -1199,7 +1197,7 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
         return false;
     if (element == element->document()->cssTarget())
         return false;
-    if (!haveIdenticalStyleAffectingAttributes(element, m_styledElement))
+    if (!sharingCandidateHasIdenticalStyleAffectingAttributes(element))
         return false;
     if (element->additionalPresentationAttributeStyle() != m_styledElement->additionalPresentationAttributeStyle())
         return false;
@@ -1292,6 +1290,10 @@ RenderStyle* StyleResolver::locateSharedStyle()
         return 0;
     if (elementHasDirectionAuto(m_element))
         return 0;
+
+    // Cache whether m_element is affected by any known class selectors.
+    // FIXME: This shouldn't be a member variable. The style sharing code could be factored out of StyleResolver.
+    m_elementAffectedByClassRules = m_element && m_element->hasClass() && classNamesAffectedByRules(m_element->classNames());
 
     // Check previous siblings and their cousins.
     unsigned count = 0;
@@ -1387,6 +1389,40 @@ static void setStylesForPaginationMode(Pagination::Mode paginationMode, RenderSt
     }
 }
 
+static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
+{
+    if (style->isHorizontalWritingMode()) {
+        fontOrientation = Horizontal;
+        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+        return;
+    }
+
+    switch (style->textOrientation()) {
+    case TextOrientationVerticalRight:
+        fontOrientation = Vertical;
+        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+        return;
+    case TextOrientationUpright:
+        fontOrientation = Vertical;
+        glyphOrientation = NonCJKGlyphOrientationUpright;
+        return;
+    case TextOrientationSideways:
+        if (style->writingMode() == LeftToRightWritingMode) {
+            // FIXME: This should map to sideways-left, which is not supported yet.
+            fontOrientation = Vertical;
+            glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+            return;
+        }
+        fontOrientation = Horizontal;
+        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+        return;
+    case TextOrientationSidewaysRight:
+        fontOrientation = Horizontal;
+        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+        return;
+    }
+}
+
 PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document* document, CSSFontSelector* fontSelector)
 {
     Frame* frame = document->frame();
@@ -1467,6 +1503,12 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document* document, CSSF
         fontDescription.setComputedSize(StyleResolver::getComputedSizeFromSpecifiedSize(document, documentStyle.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules));
     } else
         fontDescription.setUsePrinterFont(document->printing());
+
+    FontOrientation fontOrientation;
+    NonCJKGlyphOrientation glyphOrientation;
+    getFontAndGlyphOrientation(documentStyle.get(), fontOrientation, glyphOrientation);
+    fontDescription.setOrientation(fontOrientation);
+    fontDescription.setNonCJKGlyphOrientation(glyphOrientation);
 
     documentStyle->setFontDescription(fontDescription);
     documentStyle->font().update(fontSelector);
@@ -2085,6 +2127,26 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
     return false;
 }
 
+static void checkForOrientationChange(RenderStyle* style, const RenderStyle* parentStyle)
+{
+    FontOrientation childFontOrientation;
+    NonCJKGlyphOrientation childGlyphOrientation;
+    getFontAndGlyphOrientation(style, childFontOrientation, childGlyphOrientation);
+
+    FontOrientation parentFontOrientation;
+    NonCJKGlyphOrientation parentGlyphOrientation;
+    getFontAndGlyphOrientation(parentStyle, parentFontOrientation, parentGlyphOrientation);
+
+    if (childFontOrientation == parentFontOrientation && childGlyphOrientation == parentGlyphOrientation)
+        return;
+
+    const FontDescription& childFont = style->fontDescription();
+    FontDescription newFontDescription(childFont);
+    newFontDescription.setNonCJKGlyphOrientation(childGlyphOrientation);
+    newFontDescription.setOrientation(childFontOrientation);
+    style->setFontDescription(newFontDescription);
+}
+
 void StyleResolver::updateFont()
 {
     if (!m_fontDirty)
@@ -2093,6 +2155,7 @@ void StyleResolver::updateFont()
     checkForTextSizeAdjust();
     checkForGenericFamilyChange(style(), m_parentStyle);
     checkForZoomChange(style(), m_parentStyle);
+    checkForOrientationChange(style(), m_parentStyle);
     m_style->font().update(m_fontSelector);
     m_fontDirty = false;
 }
@@ -2688,11 +2751,22 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, StyleResol
 
 static bool createGridTrackMinMax(CSSPrimitiveValue* primitiveValue, StyleResolver* selector, GridTrackSize& trackSize)
 {
-    Length workingLength;
-    if (!createGridTrackBreadth(primitiveValue, selector, workingLength))
+    Pair* minMaxTrackBreadth = primitiveValue->getPairValue();
+    if (!minMaxTrackBreadth) {
+        Length workingLength;
+        if (!createGridTrackBreadth(primitiveValue, selector, workingLength))
+            return false;
+
+        trackSize.setLength(workingLength);
+        return true;
+    }
+
+    Length minTrackBreadth;
+    Length maxTrackBreadth;
+    if (!createGridTrackBreadth(minMaxTrackBreadth->first(), selector, minTrackBreadth) || !createGridTrackBreadth(minMaxTrackBreadth->second(), selector, maxTrackBreadth))
         return false;
 
-    trackSize.setLength(workingLength);
+    trackSize.setMinMax(minTrackBreadth, maxTrackBreadth);
     return true;
 }
 
@@ -3506,14 +3580,21 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         HANDLE_INHERIT_AND_INITIAL(writingMode, WritingMode);
         
         if (primitiveValue)
-            m_style->setWritingMode(*primitiveValue);
-        
+            setWritingMode(*primitiveValue);
+
         // FIXME: It is not ok to modify document state while applying style.
         if (m_element && m_element == m_element->document()->documentElement())
             m_element->document()->setWritingModeSetOnDocumentElement(true);
-        FontDescription fontDescription = m_style->fontDescription();
-        fontDescription.setOrientation(m_style->isHorizontalWritingMode() ? Horizontal : Vertical);
-        setFontDescription(fontDescription);
+
+        return;
+    }
+
+    case CSSPropertyWebkitTextOrientation: {
+        HANDLE_INHERIT_AND_INITIAL(textOrientation, TextOrientation);
+
+        if (primitiveValue)
+            setTextOrientation(*primitiveValue);
+
         return;
     }
 
@@ -3839,7 +3920,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextEmphasisStyle:
     case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTextOrientation:
     case CSSPropertyWebkitTextSecurity:
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTransformOrigin:
@@ -5149,6 +5229,29 @@ void StyleResolver::loadPendingResources()
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments();
 #endif
+}
+
+void StyleResolver::collectFeatures()
+{
+    m_features.clear();
+    // Collect all ids and rules using sibling selectors (:first-child and similar)
+    // in the current set of stylesheets. Style sharing code uses this information to reject
+    // sharing candidates.
+    m_features.add(defaultStyle->features());
+    m_features.add(m_authorStyle->features());
+    if (document()->isViewSource()) {
+        if (!defaultViewSourceStyle)
+            loadViewSourceStyle();
+        m_features.add(defaultViewSourceStyle->features());
+    }
+
+    if (m_scopeResolver)
+        m_scopeResolver->collectFeaturesTo(m_features);
+    if (m_userStyle)
+        m_features.add(m_userStyle->features());
+
+    m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
+    m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
 }
 
 void StyleResolver::MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

@@ -441,10 +441,42 @@ void Node::setDocument(Document* document)
 
 void Node::setTreeScope(TreeScope* scope)
 {
-    if (!hasRareData() && scope->rootNode()->isDocumentNode())
+    if (!hasUncommonNodeData() && scope->rootNode()->isDocumentNode())
         return;
 
-    ensureRareData()->setTreeScope(scope);
+    if (!hasUncommonNodeData()) {
+        m_data.m_rareData = UncommonNodeData::create(scope, m_data.m_renderer);
+        setFlag(HasUncommonNodeData);
+    } else
+        rareData()->setTreeScope(scope);
+}
+
+Node* Node::pseudoAwarePreviousSibling() const
+{
+    if (isElementNode() && !previousSibling()) {
+        Element* parent = parentOrHostElement();
+        if (!parent)
+            return 0;
+        if (isAfterPseudoElement() && parent->lastChild())
+            return parent->lastChild();
+        if (!isBeforePseudoElement())
+            return parent->beforePseudoElement();
+    }
+    return previousSibling();
+}
+
+Node* Node::pseudoAwareNextSibling() const
+{
+    if (isElementNode() && !nextSibling()) {
+        Element* parent = parentOrHostElement();
+        if (!parent)
+            return 0;
+        if (isBeforePseudoElement() && parent->firstChild())
+            return parent->firstChild();
+        if (!isAfterPseudoElement())
+            return parent->afterPseudoElement();
+    }
+    return nextSibling();
 }
 
 NodeRareData* Node::rareData() const
@@ -460,15 +492,21 @@ NodeRareData* Node::ensureRareData()
 
     NodeRareData* data = createRareData().leakPtr();
     ASSERT(data);
-    data->setRenderer(m_data.m_renderer);
+    data->setRenderer(renderer());
+    data->setTreeScope(treeScope());
+
+    if (hasUncommonNodeData())
+        delete m_data.m_rareData;
+
     m_data.m_rareData = data;
-    setFlag(HasRareDataFlag);
+    setFlag(HasUncommonNodeData);
+
     return data;
 }
 
-OwnPtr<NodeRareData> Node::createRareData()
+PassOwnPtr<NodeRareData> Node::createRareData()
 {
-    return adoptPtr(new NodeRareData(documentInternal()));
+    return adoptPtr(new NodeRareData());
 }
 
 void Node::clearRareData()
@@ -482,7 +520,7 @@ void Node::clearRareData()
     RenderObject* renderer = m_data.m_rareData->renderer();
     delete m_data.m_rareData;
     m_data.m_renderer = renderer;
-    clearFlag(HasRareDataFlag);
+    clearFlag(HasUncommonNodeData);
 }
 
 Node* Node::toNode()
@@ -704,6 +742,9 @@ bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatmen
 {
     if (document()->frame() && document()->frame()->page() && document()->frame()->page()->isEditable() && !shadowRoot())
         return true;
+
+    if (isPseudoElement())
+        return false;
 
     // Ideally we'd call ASSERT(!needsStyleRecalc()) here, but
     // ContainerNode::setFocus() calls setNeedsStyleRecalc(), so the assertion

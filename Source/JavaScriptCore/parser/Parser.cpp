@@ -871,7 +871,7 @@ template <FunctionRequirements requirements, bool nameIsInContainingScope, class
         functionScope->saveFunctionInfo(newInfo.get());
     }
     context.setFunctionStart(body, functionStart);
-
+    
     failIfFalse(popScope(functionScope, TreeBuilder::NeedsFreeVariableInfo));
     matchOrFail(CLOSEBRACE);
     

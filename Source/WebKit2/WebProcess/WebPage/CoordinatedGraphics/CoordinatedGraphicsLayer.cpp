@@ -359,6 +359,16 @@ bool CoordinatedGraphicsLayer::setFilters(const FilterOperations& newFilters)
 }
 #endif
 
+void CoordinatedGraphicsLayer::setContentsToBackgroundColor(const Color& color)
+{
+    if (m_layerInfo.backgroundColor == color)
+        return;
+    m_layerInfo.backgroundColor = color;
+
+    // This is in line with what CA does.
+    setBackgroundColor(color);
+    didChangeLayerState();
+}
 
 void CoordinatedGraphicsLayer::setContentsToImage(Image* image)
 {
@@ -727,19 +737,19 @@ PassOwnPtr<GraphicsContext> CoordinatedGraphicsLayer::beginContentUpdate(const I
     return m_coordinator->beginContentUpdate(size, contentsOpaque() ? 0 : ShareableBitmap::SupportsAlpha, atlas, offset);
 }
 
-void CoordinatedGraphicsLayer::createTile(int tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
+void CoordinatedGraphicsLayer::createTile(uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
 {
     if (m_coordinator)
         m_coordinator->createTile(id(), tileID, updateInfo, tileRect);
 }
 
-void CoordinatedGraphicsLayer::updateTile(int tileID, const SurfaceUpdateInfo& updateInfo, const IntRect& tileRect)
+void CoordinatedGraphicsLayer::updateTile(uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const IntRect& tileRect)
 {
     if (m_coordinator)
         m_coordinator->updateTile(id(), tileID, updateInfo, tileRect);
 }
 
-void CoordinatedGraphicsLayer::removeTile(int tileID)
+void CoordinatedGraphicsLayer::removeTile(uint32_t tileID)
 {
     if (m_coordinator)
         m_coordinator->removeTile(id(), tileID);

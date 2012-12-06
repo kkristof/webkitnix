@@ -1,3 +1,527 @@
+2012-12-06  Oliver Hunt  <oliver@apple.com>
+
+        Build fix, last patch rolled out logic that is now needed on ToT.
+
+        * parser/ASTBuilder.h:
+        (ASTBuilder):
+        (JSC::ASTBuilder::setFunctionStart):
+        * parser/Nodes.h:
+        (JSC::FunctionBodyNode::setFunctionStart):
+        (JSC::FunctionBodyNode::functionStart):
+        (FunctionBodyNode):
+        * parser/Parser.cpp:
+        (JSC::::parseFunctionInfo):
+        * parser/SyntaxChecker.h:
+        (JSC::SyntaxChecker::setFunctionStart):
+
+2012-12-05  Oliver Hunt  <oliver@apple.com>
+
+        Remove harmful string->function cache
+        https://bugs.webkit.org/show_bug.cgi?id=104193
+
+        Reviewed by Alexey Proskuryakov.
+
+        Remove the string->function code cache that turned out to actually
+        be quite harmful.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCache::getFunctionCodeBlock):
+        * runtime/CodeCache.h:
+        (JSC::CodeCache::clear):
+
+2012-12-05  Halton Huo  <halton.huo@intel.com>
+
+        [CMake] Unify coding style for CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=103605
+
+        Reviewed by Laszlo Gombos.
+
+        Update cmake files(.cmake, CMakeLists.txt) with following style rules:
+        1. Indentation
+        1.1 Use spaces, not tabs.
+        1.2 Four spaces as indent.
+        2. Spacing
+        2.1 Place one space between control statements and their parentheses.
+            For eg, if (), else (), elseif (), endif (), foreach (),
+            endforeach (), while (), endwhile (), break ().
+        2.2 Do not place spaces between function and macro statements and
+            their parentheses. For eg, macro(), endmacro(), function(),
+            endfunction().
+        2.3 Do not place spaces between a command or function or macro and its
+            parentheses, or between a parenthesis and its content. For eg,
+            message("testing") not message( "testing") or message ("testing" )
+        2.4 No space at line ending.
+        3. Lowercase when call commands macros and functions. For eg,
+           add_executable() not ADD_EXECUTABLE(), set() not SET().
+
+        * CMakeLists.txt:
+        * PlatformBlackBerry.cmake:
+        * PlatformEfl.cmake:
+        * PlatformWinCE.cmake:
+        * shell/CMakeLists.txt:
+        * shell/PlatformBlackBerry.cmake:
+        * shell/PlatformEfl.cmake:
+        * shell/PlatformWinCE.cmake:
+
+2012-12-05  Oliver Hunt  <oliver@apple.com>
+
+        Empty parse cache when receiving a low memory warning
+        https://bugs.webkit.org/show_bug.cgi?id=104161
+
+        Reviewed by Filip Pizlo.
+
+        This adds a function to the globaldata to empty all code related data
+        structures (code in the heap and the code cache).
+        It also adds a function to allow the CodeCache to actually be cleared
+        at all. 
+
+        * runtime/CodeCache.h:
+        (CacheMap):
+        (JSC::CacheMap::clear):
+        (JSC::CodeCache::clear):
+        (CodeCache):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::discardAllCode):
+        (JSC):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+
+2012-12-05  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC profiler should not count executions of op_call_put_result because doing so changes DFG codegen
+        https://bugs.webkit.org/show_bug.cgi?id=104102
+
+        Reviewed by Oliver Hunt.
+
+        This removes op_call_put_result from profiling, since profiling it has an effect on
+        codegen. This fix enables all of SunSpider, V8, and Kraken to be profiled with the
+        new profiler.
+        
+        To make this all fit together, the profiler now also reports in its output the exact
+        bytecode opcode name for each instruction (in addition to the stringified dump of that
+        bytecode), so that tools that grok the output can take note of op_call_put_result and
+        work around the fact that it has no counts.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        (JSC::DFG::ByteCodeParser::parseCodeBlock):
+        * dfg/DFGDriver.cpp:
+        (JSC::DFG::compile):
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        * profiler/ProfilerBytecode.cpp:
+        (JSC::Profiler::Bytecode::toJS):
+        * profiler/ProfilerBytecode.h:
+        (JSC::Profiler::Bytecode::Bytecode):
+        (JSC::Profiler::Bytecode::opcodeID):
+        (Bytecode):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        * runtime/CommonIdentifiers.h:
+
+2012-12-04  Filip Pizlo  <fpizlo@apple.com>
+
+        display-profiler-output should be able to show source code
+        https://bugs.webkit.org/show_bug.cgi?id=104073
+
+        Reviewed by Oliver Hunt.
+
+        Modify the profiler database to store source code. For functions, we store the
+        function including the function signature.
+
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::unlinkedCodeBlock):
+        (CodeBlock):
+        * profiler/ProfilerBytecodes.cpp:
+        (JSC::Profiler::Bytecodes::Bytecodes):
+        (JSC::Profiler::Bytecodes::toJS):
+        * profiler/ProfilerBytecodes.h:
+        (Bytecodes):
+        (JSC::Profiler::Bytecodes::sourceCode):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::addBytecodes):
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        * profiler/ProfilerDatabase.h:
+        (Database):
+        * runtime/CommonIdentifiers.h:
+        * runtime/Executable.h:
+        (FunctionExecutable):
+        (JSC::FunctionExecutable::unlinkedExecutable):
+
+2012-12-02  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC should be able to report profiling data associated with the IR dumps and disassembly
+        https://bugs.webkit.org/show_bug.cgi?id=102999
+
+        Reviewed by Gavin Barraclough.
+
+        Added a new profiler to JSC. It's simply called "Profiler" in anticipation of it
+        ultimately replacing the previous profiling infrastructure. This profiler counts the
+        number of times that a bytecode executes in various engines, and will record both the
+        counts and all disassembly and bytecode dumps, into a database that can be at any
+        time turned into either a JS object using any global object or global data of your
+        choice, or can be turned into a JSON string, or saved to a file.
+        
+        Currently the only use of this is the new '-p <file>' flag to the jsc command-line.
+        
+        The profiler is always compiled in and normally incurs no execution time cost, but is
+        only activated when you create a Profiler::Database and install it in
+        JSGlobalData::m_perBytecodeProfiler. From that point on, all code blocks will be
+        compiled along with disassembly and bytecode dumps stored into the Profiler::Database,
+        and all code blocks will have execution counts, which are also stored in the database.
+        The database will continue to keep information about code blocks alive even after they
+        are otherwise GC'd.
+        
+        This currently still has some glitches, like the fact that it only counts executions
+        in the JITs. Doing execution counting in the LLInt might require a bit of a rethink
+        about how the counting is expressed - currently it is implicit in bytecode, so there
+        is no easy way to "turn it on" in the LLInt. Also, right now there is no information
+        recorded about OSR exits or out-of-line stubs. But, even so, it's quite cool, and
+        gives you a peek into what JSC is doing that would otherwise not be possible.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::~CodeBlock):
+        * bytecode/CodeBlock.h:
+        (CodeBlock):
+        (JSC::CodeBlock::baselineVersion):
+        * bytecode/CodeOrigin.cpp:
+        (JSC::InlineCallFrame::baselineCodeBlock):
+        (JSC):
+        * bytecode/CodeOrigin.h:
+        (InlineCallFrame):
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * dfg/DFGDisassembler.cpp:
+        (JSC::DFG::Disassembler::dump):
+        (DFG):
+        (JSC::DFG::Disassembler::reportToProfiler):
+        (JSC::DFG::Disassembler::dumpHeader):
+        (JSC::DFG::Disassembler::append):
+        (JSC::DFG::Disassembler::createDumpList):
+        * dfg/DFGDisassembler.h:
+        (Disassembler):
+        (JSC::DFG::Disassembler::DumpedOp::DumpedOp):
+        (DumpedOp):
+        * dfg/DFGGraph.cpp:
+        (JSC::DFG::Graph::Graph):
+        (JSC::DFG::Graph::dumpCodeOrigin):
+        (JSC::DFG::Graph::dump):
+        * dfg/DFGGraph.h:
+        (Graph):
+        * dfg/DFGJITCompiler.cpp:
+        (JSC::DFG::JITCompiler::JITCompiler):
+        (JSC::DFG::JITCompiler::compile):
+        (JSC::DFG::JITCompiler::compileFunction):
+        * dfg/DFGNode.h:
+        (Node):
+        (JSC::DFG::Node::hasExecutionCounter):
+        (JSC::DFG::Node::executionCounter):
+        * dfg/DFGNodeType.h:
+        (DFG):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * jit/JIT.cpp:
+        (JSC::JIT::JIT):
+        (JSC::JIT::privateCompileMainPass):
+        (JSC::JIT::privateCompile):
+        * jit/JIT.h:
+        (JIT):
+        * jit/JITDisassembler.cpp:
+        (JSC::JITDisassembler::dump):
+        (JSC::JITDisassembler::reportToProfiler):
+        (JSC):
+        (JSC::JITDisassembler::dumpHeader):
+        (JSC::JITDisassembler::firstSlowLabel):
+        (JSC::JITDisassembler::dumpVectorForInstructions):
+        (JSC::JITDisassembler::dumpForInstructions):
+        (JSC::JITDisassembler::reportInstructions):
+        * jit/JITDisassembler.h:
+        (JITDisassembler):
+        (DumpedOp):
+        * jsc.cpp:
+        (CommandLine::CommandLine):
+        (CommandLine):
+        (printUsageStatement):
+        (CommandLine::parseArguments):
+        (jscmain):
+        * profiler/ProfilerBytecode.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::Bytecode::toJS):
+        * profiler/ProfilerBytecode.h: Added.
+        (Profiler):
+        (Bytecode):
+        (JSC::Profiler::Bytecode::Bytecode):
+        (JSC::Profiler::Bytecode::bytecodeIndex):
+        (JSC::Profiler::Bytecode::description):
+        (JSC::Profiler::getBytecodeIndexForBytecode):
+        * profiler/ProfilerBytecodes.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::Bytecodes::Bytecodes):
+        (JSC::Profiler::Bytecodes::~Bytecodes):
+        (JSC::Profiler::Bytecodes::indexForBytecodeIndex):
+        (JSC::Profiler::Bytecodes::forBytecodeIndex):
+        (JSC::Profiler::Bytecodes::dump):
+        (JSC::Profiler::Bytecodes::toJS):
+        * profiler/ProfilerBytecodes.h: Added.
+        (Profiler):
+        (Bytecodes):
+        (JSC::Profiler::Bytecodes::append):
+        (JSC::Profiler::Bytecodes::id):
+        (JSC::Profiler::Bytecodes::hash):
+        (JSC::Profiler::Bytecodes::size):
+        (JSC::Profiler::Bytecodes::at):
+        * profiler/ProfilerCompilation.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::Compilation::Compilation):
+        (JSC::Profiler::Compilation::~Compilation):
+        (JSC::Profiler::Compilation::addDescription):
+        (JSC::Profiler::Compilation::executionCounterFor):
+        (JSC::Profiler::Compilation::toJS):
+        * profiler/ProfilerCompilation.h: Added.
+        (Profiler):
+        (Compilation):
+        (JSC::Profiler::Compilation::bytecodes):
+        (JSC::Profiler::Compilation::kind):
+        * profiler/ProfilerCompilationKind.cpp: Added.
+        (WTF):
+        (WTF::printInternal):
+        * profiler/ProfilerCompilationKind.h: Added.
+        (Profiler):
+        (WTF):
+        * profiler/ProfilerCompiledBytecode.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::CompiledBytecode::CompiledBytecode):
+        (JSC::Profiler::CompiledBytecode::~CompiledBytecode):
+        (JSC::Profiler::CompiledBytecode::toJS):
+        * profiler/ProfilerCompiledBytecode.h: Added.
+        (Profiler):
+        (CompiledBytecode):
+        (JSC::Profiler::CompiledBytecode::originStack):
+        (JSC::Profiler::CompiledBytecode::description):
+        * profiler/ProfilerDatabase.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::Database::Database):
+        (JSC::Profiler::Database::~Database):
+        (JSC::Profiler::Database::addBytecodes):
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        (JSC::Profiler::Database::notifyDestruction):
+        (JSC::Profiler::Database::newCompilation):
+        (JSC::Profiler::Database::toJS):
+        (JSC::Profiler::Database::toJSON):
+        (JSC::Profiler::Database::save):
+        * profiler/ProfilerDatabase.h: Added.
+        (Profiler):
+        (Database):
+        * profiler/ProfilerExecutionCounter.h: Added.
+        (Profiler):
+        (ExecutionCounter):
+        (JSC::Profiler::ExecutionCounter::ExecutionCounter):
+        (JSC::Profiler::ExecutionCounter::address):
+        (JSC::Profiler::ExecutionCounter::count):
+        * profiler/ProfilerOrigin.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::Origin::Origin):
+        (JSC::Profiler::Origin::dump):
+        (JSC::Profiler::Origin::toJS):
+        * profiler/ProfilerOrigin.h: Added.
+        (JSC):
+        (Profiler):
+        (Origin):
+        (JSC::Profiler::Origin::Origin):
+        (JSC::Profiler::Origin::operator!):
+        (JSC::Profiler::Origin::bytecodes):
+        (JSC::Profiler::Origin::bytecodeIndex):
+        (JSC::Profiler::Origin::operator!=):
+        (JSC::Profiler::Origin::operator==):
+        (JSC::Profiler::Origin::hash):
+        (JSC::Profiler::Origin::isHashTableDeletedValue):
+        (JSC::Profiler::OriginHash::hash):
+        (JSC::Profiler::OriginHash::equal):
+        (OriginHash):
+        (WTF):
+        * profiler/ProfilerOriginStack.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::OriginStack::OriginStack):
+        (JSC::Profiler::OriginStack::~OriginStack):
+        (JSC::Profiler::OriginStack::append):
+        (JSC::Profiler::OriginStack::operator==):
+        (JSC::Profiler::OriginStack::hash):
+        (JSC::Profiler::OriginStack::dump):
+        (JSC::Profiler::OriginStack::toJS):
+        * profiler/ProfilerOriginStack.h: Added.
+        (JSC):
+        (Profiler):
+        (OriginStack):
+        (JSC::Profiler::OriginStack::OriginStack):
+        (JSC::Profiler::OriginStack::operator!):
+        (JSC::Profiler::OriginStack::size):
+        (JSC::Profiler::OriginStack::fromBottom):
+        (JSC::Profiler::OriginStack::fromTop):
+        (JSC::Profiler::OriginStack::isHashTableDeletedValue):
+        (JSC::Profiler::OriginStackHash::hash):
+        (JSC::Profiler::OriginStackHash::equal):
+        (OriginStackHash):
+        (WTF):
+        * runtime/CommonIdentifiers.h:
+        * runtime/ExecutionHarness.h:
+        (JSC::prepareForExecution):
+        (JSC::prepareFunctionForExecution):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        (JSC::JSGlobalData::~JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        * runtime/Options.h:
+        (JSC):
+
+2012-12-04  Filip Pizlo  <fpizlo@apple.com>
+
+        Rename Profiler to LegacyProfiler
+        https://bugs.webkit.org/show_bug.cgi?id=104031
+
+        Rubber stamped by Mark Hahnenberg
+
+        Make room in the namespace for https://bugs.webkit.org/show_bug.cgi?id=102999.
+
+        * API/JSProfilerPrivate.cpp:
+        (JSStartProfiling):
+        (JSEndProfiling):
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::throwException):
+        (JSC::Interpreter::execute):
+        (JSC::Interpreter::executeCall):
+        (JSC::Interpreter::executeConstruct):
+        * jit/JIT.h:
+        * jit/JITCode.h:
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * jit/JITStubs.h:
+        (JSC):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+        * profiler/LegacyProfiler.cpp: Added.
+        (JSC):
+        (JSC::LegacyProfiler::profiler):
+        (JSC::LegacyProfiler::startProfiling):
+        (JSC::LegacyProfiler::stopProfiling):
+        (JSC::dispatchFunctionToProfiles):
+        (JSC::LegacyProfiler::willExecute):
+        (JSC::LegacyProfiler::didExecute):
+        (JSC::LegacyProfiler::exceptionUnwind):
+        (JSC::LegacyProfiler::createCallIdentifier):
+        (JSC::createCallIdentifierFromFunctionImp):
+        * profiler/LegacyProfiler.h: Added.
+        (JSC):
+        (LegacyProfiler):
+        (JSC::LegacyProfiler::currentProfiles):
+        * profiler/ProfileGenerator.cpp:
+        (JSC::ProfileGenerator::addParentForConsoleStart):
+        * profiler/ProfileNode.cpp:
+        * profiler/Profiler.cpp: Removed.
+        * profiler/Profiler.h: Removed.
+        * runtime/JSGlobalData.h:
+        (JSC):
+        (JSC::JSGlobalData::enabledProfiler):
+        (JSGlobalData):
+        * runtime/JSGlobalObject.cpp:
+        (JSC::JSGlobalObject::~JSGlobalObject):
+
+2012-12-03  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should inline code blocks that use scoped variable access
+        https://bugs.webkit.org/show_bug.cgi?id=103974
+
+        Reviewed by Oliver Hunt.
+
+        This mostly just turns on something we could have done all along, but also adds a few key
+        necessities to make this right:
+        
+        1) Constant folding of SkipScope, since if we inline with a known JSFunction* then the
+           scope is constant.
+        
+        2) Interference analysis for GetLocal<->PutScopedVar and SetLocal<->GetScopedVar.
+        
+        This is not meant to be a speed-up on major benchmarks since we don't yet inline most
+        closure calls for entirely unrelated reasons. But on toy programs it can be >2x faster.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::getScope):
+        (JSC::DFG::ByteCodeParser::parseResolveOperations):
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::scopedVarLoadElimination):
+        (JSC::DFG::CSEPhase::scopedVarStoreElimination):
+        (JSC::DFG::CSEPhase::getLocalLoadElimination):
+        (JSC::DFG::CSEPhase::setLocalStoreElimination):
+        * dfg/DFGCapabilities.h:
+        (JSC::DFG::canInlineResolveOperations):
+
+2012-12-03  Filip Pizlo  <fpizlo@apple.com>
+
+        Replace JSValue::description() with JSValue::dump(PrintStream&)
+        https://bugs.webkit.org/show_bug.cgi?id=103866
+
+        Reviewed by Darin Adler.
+
+        JSValue now has a dump() method. Anywhere that you would have wanted to use
+        description(), you can either do toCString(value).data(), or if the callee
+        is a print()/dataLog() method then you just pass the value directly.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+        * bytecode/CodeBlock.cpp:
+        (JSC::valueToSourceString):
+        (JSC::CodeBlock::finalizeUnconditionally):
+        * bytecode/ValueProfile.h:
+        (JSC::ValueProfileBase::dump):
+        * bytecode/ValueRecovery.h:
+        (JSC::ValueRecovery::dump):
+        * dfg/DFGAbstractValue.h:
+        (JSC::DFG::AbstractValue::dump):
+        * dfg/DFGGraph.cpp:
+        (JSC::DFG::Graph::dump):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::dumpRegisters):
+        * jsc.cpp:
+        (functionDescribe):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::llint_trace_value):
+        * runtime/JSValue.cpp:
+        (JSC::JSValue::dump):
+        * runtime/JSValue.h:
+
+2012-12-04  Filip Pizlo  <fpizlo@apple.com>
+
+        jsc command line tool's support for typed arrays should be robust against array buffer allocation errors
+        https://bugs.webkit.org/show_bug.cgi?id=104020
+        <rdar://problem/12802478>
+
+        Reviewed by Mark Hahnenberg.
+
+        Check for null buffers, since that's what typed array allocators are supposed to do. WebCore does it,
+        and that is indeed the contract of ArrayBuffer and TypedArrayBase.
+
+        * JSCTypedArrayStubs.h:
+        (JSC):
+
 2012-12-03  Peter Rybin  <prybin@chromium.org>
 
         Web Inspector: make ASSERTION FAILED: foundPropertiesCount == object->size() more useful

@@ -48,6 +48,7 @@
 #include "LLIntExceptions.h"
 #include "LowLevelInterpreter.h"
 #include "Operations.h"
+#include <wtf/StringPrintStream.h>
 
 namespace JSC { namespace LLInt {
 
@@ -184,17 +185,18 @@ extern "C" SlowPathReturnType llint_trace_value(ExecState* exec, Instruction* pc
         EncodedJSValue asValue;
     } u;
     u.asValue = JSValue::encode(value);
-    dataLogF("%p / %p: executing bc#%zu, op#%u: Trace(%d): %d: %d: %08x:%08x: %s\n",
-            exec->codeBlock(),
-            exec,
-            static_cast<intptr_t>(pc - exec->codeBlock()->instructions().begin()),
-            exec->globalData().interpreter->getOpcodeID(pc[0].u.opcode),
-            fromWhere,
-            operand,
-            pc[operand].u.operand,
-            u.bits.tag,
-            u.bits.payload,
-            value.description());
+    dataLogF(
+        "%p / %p: executing bc#%zu, op#%u: Trace(%d): %d: %d: %08x:%08x: %s\n",
+        exec->codeBlock(),
+        exec,
+        static_cast<intptr_t>(pc - exec->codeBlock()->instructions().begin()),
+        exec->globalData().interpreter->getOpcodeID(pc[0].u.opcode),
+        fromWhere,
+        operand,
+        pc[operand].u.operand,
+        u.bits.tag,
+        u.bits.payload,
+        toCString(value).data());
     LLINT_END_IMPL();
 }
 
@@ -1647,7 +1649,7 @@ LLINT_SLOW_PATH_DECL(slow_path_debug)
 LLINT_SLOW_PATH_DECL(slow_path_profile_will_call)
 {
     LLINT_BEGIN();
-    if (Profiler* profiler = globalData.enabledProfiler())
+    if (LegacyProfiler* profiler = globalData.enabledProfiler())
         profiler->willExecute(exec, LLINT_OP(1).jsValue());
     LLINT_END();
 }
@@ -1655,7 +1657,7 @@ LLINT_SLOW_PATH_DECL(slow_path_profile_will_call)
 LLINT_SLOW_PATH_DECL(slow_path_profile_did_call)
 {
     LLINT_BEGIN();
-    if (Profiler* profiler = globalData.enabledProfiler())
+    if (LegacyProfiler* profiler = globalData.enabledProfiler())
         profiler->didExecute(exec, LLINT_OP(1).jsValue());
     LLINT_END();
 }

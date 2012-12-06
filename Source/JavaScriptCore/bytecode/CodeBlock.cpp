@@ -48,6 +48,7 @@
 #include "SlotVisitorInlines.h"
 #include <stdio.h>
 #include <wtf/StringExtras.h>
+#include <wtf/StringPrintStream.h>
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(DFG_JIT)
@@ -99,7 +100,7 @@ static String valueToSourceString(ExecState* exec, JSValue val)
     if (val.isString())
         return makeString("\"", escapeQuotes(val.toString(exec)->value(exec)), "\"");
 
-    return val.description();
+    return toString(val);
 }
 
 static CString constantName(ExecState* exec, int k, JSValue value)
@@ -1917,6 +1918,9 @@ CodeBlock::CodeBlock(ScriptExecutable* ownerExecutable, UnlinkedCodeBlock* unlin
 
 CodeBlock::~CodeBlock()
 {
+    if (m_globalData->m_perBytecodeProfiler)
+        m_globalData->m_perBytecodeProfiler->notifyDestruction(this);
+    
 #if ENABLE(DFG_JIT)
     // Remove myself from the set of DFG code blocks. Note that I may not be in this set
     // (because I'm not a DFG code block), in which case this is a no-op anyway.
@@ -2233,15 +2237,13 @@ void CodeBlock::finalizeUnconditionally()
                 JSCell* to = transition.m_to.get();
                 if ((!origin || Heap::isMarked(origin)) && Heap::isMarked(from))
                     continue;
-                dataLogF("    Transition under %s, ", JSValue(origin).description());
-                dataLogF("%s -> ", JSValue(from).description());
-                dataLogF("%s.\n", JSValue(to).description());
+                dataLog("    Transition under ", JSValue(origin), ", ", JSValue(from), " -> ", JSValue(to), ".\n");
             }
             for (unsigned i = 0; i < m_dfgData->weakReferences.size(); ++i) {
                 JSCell* weak = m_dfgData->weakReferences[i].get();
                 if (Heap::isMarked(weak))
                     continue;
-                dataLogF("    Weak reference %s.\n", JSValue(weak).description());
+                dataLog("    Weak reference ", JSValue(weak), ".\n");
             }
         }
         

@@ -130,7 +130,7 @@ InputHandler::InputHandler(WebPagePrivate* page)
     , m_currentFocusElement(0)
     , m_inputModeEnabled(false)
     , m_processingChange(false)
-    , m_changingFocus(false)
+    , m_shouldEnsureFocusTextElementVisibleOnSelectionChanged(false)
     , m_currentFocusElementType(TextEdit)
     , m_currentFocusElementTextEditMask(DEFAULT_STYLE)
     , m_composingTextStart(0)
@@ -843,6 +843,9 @@ void InputHandler::setElementFocused(Element* element)
     if (frame->selection()->isFocused() != isInputModeEnabled())
         frame->selection()->setFocused(isInputModeEnabled());
 
+    // Ensure visible when refocusing.
+    m_shouldEnsureFocusTextElementVisibleOnSelectionChanged = isActiveTextEdit();
+
     // Clear the existing focus node details.
     setElementUnfocused(true /*refocusOccuring*/);
 
@@ -1118,6 +1121,7 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
         break;
     }
     case VisibleSelection::NoSelection:
+        m_shouldEnsureFocusTextElementVisibleOnSelectionChanged = true;
         return;
     }
 
@@ -1150,6 +1154,7 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
         }
     }
 
+    bool shouldConstrainScrollingToContentEdge = true;
     Position start = elementFrame->selection()->start();
     if (start.anchorNode() && start.anchorNode()->renderer()) {
         if (RenderLayer* layer = start.anchorNode()->renderer()->enclosingLayer()) {
@@ -1198,7 +1203,9 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
                                                                  horizontalScrollAlignment,
                                                                  verticalScrollAlignment));
 
-            mainFrameView->setConstrainsScrollingToContentEdge(false);
+            // Don't constrain scroll position when animation finishes.
+            shouldConstrainScrollingToContentEdge = false;
+
             // In order to adjust the scroll position to ensure the focused input field is visible,
             // we allow overscrolling. However this overscroll has to be strictly allowed towards the
             // bottom of the page on the y axis only, where the virtual keyboard pops up from.
@@ -1210,8 +1217,6 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
     }
 
     if (destinationScrollLocation != mainFrameView->scrollPosition() || zoomScaleRequired != m_webPage->currentScale()) {
-        mainFrameView->setConstrainsScrollingToContentEdge(true);
-
         InputLog(LogLevelInfo, "InputHandler::ensureFocusTextElementVisible zooming in to %f and scrolling to point %d, %d", zoomScaleRequired, destinationScrollLocation.x(), destinationScrollLocation.y());
 
         // Animate to given scroll position & zoom level
@@ -1220,6 +1225,7 @@ void InputHandler::ensureFocusTextElementVisible(CaretScrollType scrollType)
         m_webPage->m_shouldReflowBlock = false;
         m_webPage->m_userPerformedManualZoom = true;
         m_webPage->m_userPerformedManualScroll = true;
+        m_webPage->m_shouldConstrainScrollingToContentEdge = shouldConstrainScrollingToContentEdge;
         m_webPage->client()->animateBlockZoom(zoomScaleRequired, m_webPage->m_finalBlockPoint);
     }
 }
@@ -1417,7 +1423,10 @@ void InputHandler::selectionChanged()
     // Scroll the field if necessary. This must be done even if we are processing
     // a change as the text change may have moved the caret. IMF doesn't require
     // the update, but the user needs to see the caret.
-    ensureFocusTextElementVisible(EdgeIfNeeded);
+    if (m_shouldEnsureFocusTextElementVisibleOnSelectionChanged) {
+        ensureFocusTextElementVisible(EdgeIfNeeded);
+        m_shouldEnsureFocusTextElementVisibleOnSelectionChanged = false;
+    }
 
     ASSERT(m_currentFocusElement->document() && m_currentFocusElement->document()->frame());
 
@@ -2315,10 +2324,6 @@ bool InputHandler::setSpannableTextAndRelativeCursor(spannable_string_t* spannab
         m_composingTextStart = insertionPoint;
         m_composingTextEnd = insertionPoint + spannableString->length;
     }
-
-    // Scroll the field if necessary. The automatic update is suppressed
-    // by the processing change guard.
-    ensureFocusTextElementVisible(EdgeIfNeeded);
 
     return true;
 }

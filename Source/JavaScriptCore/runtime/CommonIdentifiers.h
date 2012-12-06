@@ -31,19 +31,30 @@
     macro(arguments) \
     macro(Array) \
     macro(bind) \
+    macro(bytecode) \
+    macro(bytecodeIndex) \
+    macro(bytecodes) \
+    macro(bytecodesID) \
     macro(call) \
     macro(callee) \
     macro(caller) \
+    macro(compilationKind) \
+    macro(compilations) \
     macro(compile) \
     macro(configurable) \
     macro(constructor) \
+    macro(counters) \
+    macro(description) \
+    macro(descriptions) \
     macro(enumerable) \
     macro(eval) \
     macro(exec) \
+    macro(executionCount) \
     macro(fromCharCode) \
     macro(global) \
     macro(get) \
     macro(hasOwnProperty) \
+    macro(hash) \
     macro(ignoreCase) \
     macro(index) \
     macro(input) \
@@ -56,11 +67,14 @@
     macro(name) \
     macro(now) \
     macro(Object) \
+    macro(opcode) \
+    macro(origin) \
     macro(parse) \
     macro(propertyIsEnumerable) \
     macro(prototype) \
     macro(set) \
     macro(source) \
+    macro(sourceCode) \
     macro(stack) \
     macro(test) \
     macro(toExponential) \

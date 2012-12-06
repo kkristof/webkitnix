@@ -86,7 +86,7 @@ webkit.org/b/24182 [ Debug ] fast/dom/css-delete-doc.html [ Pass Slow ]
 webkit.org/b/100272 [ Debug ] fast/media/w3c/test_media_queries.html [ Pass Slow ]
 webkit.org/b/70878 [ Linux Debug ] http/tests/xmlhttprequest/xmlhttprequest-test-send-flag.html [ Pass Slow ]
 webkit.org/b/102179 [ Win Debug ] platform/chromium/virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Slow ]
-webkit.org/b/102463 [ Win Debug ] fast/forms/validation-message-appearance.html [ Pass ImageOnlyFailure ]
+webkit.org/b/102463 [ Debug ] fast/forms/validation-message-appearance.html [ Pass ImageOnlyFailure ]
 webkit.org/b/102464 [ Debug ] fast/images/webgl-teximage2d.html [ Pass Timeout ]
 webkit.org/b/102464 [ Debug ] platform/chromium/virtual/deferred/fast/images/webgl-teximage2d.html [ Pass Timeout ]
 webkit.org/b/103744 svg/dom/viewspec-parser-7.html [ Pass Timeout ]
@@ -108,7 +108,7 @@ webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 webkit.org/b/101236 [ Debug ] css3/filters/custom/custom-filter-animation.html [ Pass Timeout ]
 
 # Has been failing since r133544-133546
-Bug(senorblanco) [ Release ] fast/js/toString-and-valueOf-override.html [ Failure ]
+webkit.org/b/104282 [ Release ] fast/js/toString-and-valueOf-override.html [ Failure ]
 
 webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.html [ Pass Slow ]
 
@@ -1134,9 +1134,6 @@ webkit.org/b/66268 [ Linux Win ] editing/deleting/regional-indicators.html [ Fai
 webkit.org/b/67121 [ Debug ] editing/selection/move-by-word-visually-multi-space.html [ Pass Slow ]
 webkit.org/b/67121 [ Android Release ] editing/selection/move-by-word-visually-multi-space.html [ Pass Slow ]
 
-# UndoManager is not yet enabled.
-webkit.org/b/87908 editing/undomanager
-
 # -----------------------------------------------------------------
 # Security tests
 # -----------------------------------------------------------------
@@ -1295,7 +1292,7 @@ webkit.org/b/98569 svg/custom/gradient-with-1d-boundingbox.svg [ Failure Pass ]
 webkit.org/b/98569 svg/custom/recursive-gradient.svg [ Failure Pass ]
 
 # Failure: drawing a filled shadow for a fill=transparent rectangle.
-webkit.org/b/76557 [ Win Mac Android ] svg/custom/transform-with-shadow-and-gradient.svg [ ImageOnlyFailure ]
+webkit.org/b/76557 svg/custom/transform-with-shadow-and-gradient.svg [ ImageOnlyFailure ]
 
 webkit.org/b/78422 [ Android Linux Win ] svg/animations/animate-text-nested-transforms.html [ Failure ]
 
@@ -1672,7 +1669,7 @@ webkit.org/b/98647 [ Android ] css3/filters/effect-hue-rotate-hw.html [ ImageOnl
 webkit.org/b/98647 [ Android ] css3/filters/effect-invert-hw.html [ ImageOnlyFailure ]
 webkit.org/b/98647 [ Android ] css3/filters/effect-opacity-hw.html [ ImageOnlyFailure ]
 # Commented out until more generalized failure below is fixed & rebaselined.
-# webkit.org/b/98647 [ Android ] css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
+webkit.org/b/98647 [ Android ] css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
 webkit.org/b/98647 [ Android ] css3/filters/effect-saturate-hw.html [ ImageOnlyFailure ]
 webkit.org/b/98647 [ Android ] css3/filters/effect-sepia-hw.html [ ImageOnlyFailure ]
 webkit.org/b/98647 [ Android ] css3/filters/filter-change-repaint-composited.html [ ImageOnlyFailure ]
@@ -2183,7 +2180,7 @@ crbug.com/42875 sputnik [ WontFix ]
 crbug.com/43319 [ Android Linux Debug ] fast/forms/select-empty-option-height.html [ Pass Timeout ]
 
 # Not included in tests modified by 81992, but started failing on Android at same time:
-crbug.com/77494 [ Win7 Android ] fast/repaint/transform-replaced-shadows.html [ Failure ImageOnlyFailure ]
+crbug.com/77494 [ Android ] fast/repaint/transform-replaced-shadows.html [ Failure ImageOnlyFailure ]
 
 crbug.com/43890 [ Win ] http/tests/loading/basic.html [ Failure Pass ]
 
@@ -2279,12 +2276,12 @@ crbug.com/47035 [ Win Debug ] fast/loader/stateobjects/document-destroyed-naviga
 
 # CSS3 Hyphenation landed in http://trac.webkit.org/changeset/61548
 # We don't implement it yet.
-crbug.com/47083 [ Win Mac Android ] fast/text/hyphens.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 [ Win Mac Android ] fast/text/hyphenate-character.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 [ Win Mac Android ] fast/text/hyphenate-first-word.html [ Failure ImageOnlyFailure ]
+crbug.com/47083 fast/text/hyphens.html [ Failure ImageOnlyFailure ]
+crbug.com/47083 fast/text/hyphenate-character.html [ Failure ImageOnlyFailure ]
+crbug.com/47083 fast/text/hyphenate-first-word.html [ Failure ImageOnlyFailure ]
 crbug.com/47083 fast/text/hyphenate-limit-lines.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 [ Win Mac Android ] fast/text/hyphenate-limit-before-after.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 [ Win Mac Android ] fast/text/hyphenate-locale.html [ Failure ImageOnlyFailure ]
+crbug.com/47083 fast/text/hyphenate-limit-before-after.html [ Failure ImageOnlyFailure ]
+crbug.com/47083 fast/text/hyphenate-locale.html [ Failure ImageOnlyFailure ]
 
 crbug.com/48239 fast/js/function-apply.html [ Failure ]
 crbug.com/48239 fast/js/function-apply-aliased.html [ Failure Pass ]
@@ -2529,8 +2526,8 @@ crbug.com/67540 [ Android Linux ] fast/repaint/text-emphasis-v.html [ ImageOnlyF
 crbug.com/67540 webkit.org/b/94735 [ Linux ] fast/text/emphasis-overlap.html [ Failure ImageOnlyFailure ]
 
 # See also CRBUG139863
-crbug.com/67442 [ Android Linux Win ] fast/canvas/fillText-shadow.html [ Failure ]
-crbug.com/67442 [ Linux Win ] platform/chromium/virtual/gpu/fast/canvas/fillText-shadow.html [ Failure ]
+crbug.com/67442 fast/canvas/fillText-shadow.html [ Failure ]
+crbug.com/67442 platform/chromium/virtual/gpu/fast/canvas/fillText-shadow.html [ Failure ]
 
 crbug.com/68436 [ Android Linux Debug ] fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Pass Timeout ]
 crbug.com/68436 [ Mac Win Debug ] fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Failure Timeout ]
@@ -2806,10 +2803,6 @@ crbug.com/83504 [ Mac ] fast/css/custom-font-xheight.html [ Failure Pass ]
 webkit.org/b/61169 [ Android Linux Win ] css3/images/optimize-contrast-canvas.html [ ImageOnlyFailure ]
 webkit.org/b/61169 [ Android Linux Win ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 
-webkit.org/b/96720 fast/forms/time-multiple-fields/time-multiple-fields-preserve-value-after-history-back.html [ Pass Slow ]
-webkit.org/b/96720 fast/forms/date-multiple-fields/date-multiple-fields-preserve-value-after-history-back.html [ Pass Slow ]
-webkit.org/b/96720 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Pass Slow ]
-webkit.org/b/96720 fast/forms/week-multiple-fields/week-multiple-fields-preserve-value-after-history-back.html [ Pass Slow ]
 webkit.org/b/98906 platform/chromium/fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
 
 # New test added in r87324
@@ -3000,13 +2993,10 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
@@ -3014,7 +3004,6 @@ webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Ski
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
@@ -4064,7 +4053,7 @@ webkit.org/b/83471 [ Debug ] svg/as-image/img-relative-width.html [ ImageOnlyFai
 webkit.org/b/101253 [ Lion Debug ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Pass Failure ]
 
 # Has been flaky since at least r133043
-webkit.org/b/101229 inspector-protocol/debugger-pause-dedicated-worker.html [ Failure Pass Crash ]
+webkit.org/b/101229 inspector-protocol/debugger-pause-dedicated-worker.html [ Pass Crash ]
 
 # Started failing with r133224-133226 (probably 133224)
 webkit.org/b/101255 [ Mac Android ] fast/repaint/block-selection-gap-in-table-cell.html [ ImageOnlyFailure ]
@@ -4111,10 +4100,9 @@ webkit.org/b/101897 [ MountainLion ] fast/regions/region-style-inline-background
 
 webkit.org/b/79446 svg/repaint/image-with-clip-path.svg [ Pass ImageOnlyFailure ]
 
-# Need to update after fixing webkit.org/b/103990.
-# webkit.org/b/100142 [ Win Mac ] css3/filters/effect-reference-hw.html [ Failure ImageOnlyFailure ]
+webkit.org/b/100142 [ Win ] css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
+webkit.org/b/100142 [ Mac ] css3/filters/effect-reference-hw.html [ Failure ]
 
-webkit.org/b/103990 css3/filters/effect-reference-hw.html [ Crash ]
 webkit.org/b/103990 css3/filters/effect-reference-ordering-hw.html [ Crash ]
 
 
@@ -4238,13 +4226,31 @@ webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/nested-reflection-
 webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 webkit.org/b/103721 [ Mac Win Linux ] platform/chromium/compositing/huge-layer-rotated.html [ ImageOnlyFailure ]
 
-crbug.com/163785 media/encrypted-media/encrypted-media-events.html [ Crash Timeout ]
-crbug.com/163785 media/encrypted-media/encrypted-media-not-loaded.html [ Crash Timeout ]
-crbug.com/163785 media/encrypted-media/encrypted-media-syntax.html [ Crash Timeout ]
-
 webkit.org/b/103834 [ Mac XP ] fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events.html [ Failure ]
 
 # New tests added in r136492 that does not work in chromium
 webkit.org/b/99800 fast/harness/perftests/runs-per-second-iterations.html [ Failure ]
 webkit.org/b/99800 fast/harness/perftests/perf-runner-compute-statistics.html [ Failure ]
-webkit.org/b/99800 fast/harness/perftests/runs-per-second-log.html [ Failure ]
+webkit.org/b/99800 fast/harness/perftests/runs-per-second-log.html [ ImageOnlyFailure Failure Missing ]
+
+# Flaky on mac debug since r136472 or earlier
+webkit.org/b/104023 [ Mac Debug ] fast/dom/HTMLTemplateElement/inertContents.html [ Failure Pass ]
+
+# Needs platform-specific results
+webkit.org/b/104035 fast/text/orientation-sideways.html [ Missing ]
+webkit.org/b/104172 fast/text/decorations-with-text-combine.html [ Missing ]
+
+# Crash since r136588.
+webkit.org/b/104090 [ Mac Debug ] fast/css-grid-layout/grid-columns-rows-get-set-multiple.html [ Crash ]
+webkit.org/b/104090 [ Mac Debug ] fast/css-grid-layout/grid-columns-rows-get-set.html [ Crash ]
+
+webkit.org/b/104092 fast/frames/paint-iframe-background.html [ Failure Pass ]
+
+webkit.org/b/103487 [ Linux ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
+
+# Missing since r136656
+webkit.org/b/103510 css3/flexbox/repaint-column-reverse.html [ Missing ]
+
+# Flaky
+webkit.org/b/104283 [ XP ] fonts/monospace.html [ Failure Pass ]
+webkit.org/b/104283 [ Mac Debug ] fonts/monospace.html [ ImageOnlyFailure Pass ]

@@ -471,14 +471,31 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/parser/SourceProviderCacheItem.h \
 	Source/JavaScriptCore/parser/SyntaxChecker.h \
 	Source/JavaScriptCore/profiler/CallIdentifier.h \
+	Source/JavaScriptCore/profiler/ProfilerBytecode.cpp \
+	Source/JavaScriptCore/profiler/ProfilerBytecode.h \
+	Source/JavaScriptCore/profiler/ProfilerBytecodes.cpp \
+	Source/JavaScriptCore/profiler/ProfilerBytecodes.h \
+	Source/JavaScriptCore/profiler/ProfilerCompilation.cpp \
+	Source/JavaScriptCore/profiler/ProfilerCompilation.h \
+	Source/JavaScriptCore/profiler/ProfilerCompilationKind.cpp \
+	Source/JavaScriptCore/profiler/ProfilerCompilationKind.h \
+	Source/JavaScriptCore/profiler/ProfilerCompiledBytecode.cpp \
+	Source/JavaScriptCore/profiler/ProfilerCompiledBytecode.h \
+	Source/JavaScriptCore/profiler/ProfilerDatabase.cpp \
+	Source/JavaScriptCore/profiler/ProfilerDatabase.h \
+	Source/JavaScriptCore/profiler/ProfilerExecutionCounter.h \
+	Source/JavaScriptCore/profiler/ProfilerOrigin.cpp \
+	Source/JavaScriptCore/profiler/ProfilerOrigin.h \
+	Source/JavaScriptCore/profiler/ProfilerOriginStack.cpp \
+	Source/JavaScriptCore/profiler/ProfilerOriginStack.h \
 	Source/JavaScriptCore/profiler/Profile.cpp \
 	Source/JavaScriptCore/profiler/ProfileGenerator.cpp \
 	Source/JavaScriptCore/profiler/ProfileGenerator.h \
 	Source/JavaScriptCore/profiler/Profile.h \
 	Source/JavaScriptCore/profiler/ProfileNode.cpp \
 	Source/JavaScriptCore/profiler/ProfileNode.h \
-	Source/JavaScriptCore/profiler/Profiler.cpp \
-	Source/JavaScriptCore/profiler/Profiler.h \
+	Source/JavaScriptCore/profiler/LegacyProfiler.cpp \
+	Source/JavaScriptCore/profiler/LegacyProfiler.h \
 	Source/JavaScriptCore/runtime/ArgList.cpp \
 	Source/JavaScriptCore/runtime/ArgList.h \
 	Source/JavaScriptCore/runtime/Arguments.cpp \

@@ -1,3 +1,254 @@
+2012-12-05  Halton Huo  <halton.huo@intel.com>
+
+        [CMake] Unify coding style for CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=103605
+
+        Reviewed by Laszlo Gombos.
+
+        Update cmake files(.cmake, CMakeLists.txt) with following style rules:
+        1. Indentation
+        1.1 Use spaces, not tabs.
+        1.2 Four spaces as indent.
+        2. Spacing
+        2.1 Place one space between control statements and their parentheses.
+            For eg, if (), else (), elseif (), endif (), foreach (),
+            endforeach (), while (), endwhile (), break ().
+        2.2 Do not place spaces between function and macro statements and
+            their parentheses. For eg, macro(), endmacro(), function(),
+            endfunction().
+        2.3 Do not place spaces between a command or function or macro and its
+            parentheses, or between a parenthesis and its content. For eg,
+            message("testing") not message( "testing") or message ("testing" )
+        2.4 No space at line ending.
+        3. Lowercase when call commands macros and functions. For eg,
+           add_executable() not ADD_EXECUTABLE(), set() not SET().
+
+        * CMakeLists.txt:
+        * wtf/CMakeLists.txt:
+        * wtf/PlatformBlackBerry.cmake:
+        * wtf/PlatformEfl.cmake:
+        * wtf/PlatformWinCE.cmake:
+
+2012-12-04  Jon Lee  <jonlee@apple.com>
+
+        Extend StringHasher to take a stream of characters
+        https://bugs.webkit.org/show_bug.cgi?id=104076
+        <rdar://problem/12811887>
+
+        Reviewed by Darin Adler.
+
+        We essentially move computeHash() to a member function of StringHasher. This allows clients of the
+        hasher to append strings to the general hash, without having to first concatenate the strings.
+
+        * wtf/StringHasher.h:
+        (WTF::StringHasher::addCharacters): Same as computeHash(), except also take into account the possibility
+        that there is a pending character to hash. If this is the case, we align the word boundary by consuming the
+        first character in data, adjust the length, move the data pointer forward one, and update the hasher's
+        pending character state. Also add an early return so that we are guaranteed at least one character in case
+        we run into this situation.
+        (WTF::StringHasher::computeHash): Refactor into addCharacters().
+
+2012-12-04  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: simplify reportMemoryUsage signature
+        https://bugs.webkit.org/show_bug.cgi?id=104028
+
+        Reviewed by Vsevolod Vlasov.
+
+        Removed const& modifier from instrumented pointer type. Was const T* const&,
+        now it is const T*
+
+        * wtf/MemoryInstrumentation.cpp:
+        (WTF::MemoryClassInfo::addRawBuffer):
+        * wtf/MemoryInstrumentation.h:
+        (MemoryInstrumentation):
+        (WTF::MemoryInstrumentation::selectInstrumentationMethod):
+        (WTF::MemoryInstrumentation::reportObjectMemoryUsage):
+        (MemoryClassInfo):
+        (WTF::reportMemoryUsage):
+        (WTF::MemoryInstrumentation::addObjectImpl):
+        (WTF):
+        * wtf/MemoryInstrumentationArrayBufferView.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashCountedSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashMap.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationListHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationParsedURL.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationString.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationVector.h:
+        (WTF::reportMemoryUsage):
+
+2012-12-01  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC should be able to report profiling data associated with the IR dumps and disassembly
+        https://bugs.webkit.org/show_bug.cgi?id=102999
+
+        Reviewed by Gavin Barraclough.
+
+        Made some minor changes to support the new profiler. FileOutputStream now has an
+        open() method, and DataLog uses it. StringPrintStream has a reset() method, which
+        allows you to reuse the same StringPrintStream for creating multiple strings.
+        SegmentedVector now has a const operator[]. And, WTFString now can do fromUTF8() on
+        a CString directly.
+
+        * wtf/DataLog.cpp:
+        (WTF::initializeLogFileOnce):
+        * wtf/FilePrintStream.cpp:
+        (WTF::FilePrintStream::open):
+        (WTF):
+        * wtf/FilePrintStream.h:
+        * wtf/SegmentedVector.h:
+        (WTF::SegmentedVector::at):
+        (SegmentedVector):
+        (WTF::SegmentedVector::operator[]):
+        * wtf/StringPrintStream.cpp:
+        (WTF::StringPrintStream::reset):
+        (WTF):
+        * wtf/StringPrintStream.h:
+        (StringPrintStream):
+        * wtf/text/WTFString.cpp:
+        (WTF::String::fromUTF8):
+        (WTF):
+        * wtf/text/WTFString.h:
+        (String):
+
+2012-12-04  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136597.
+        http://trac.webkit.org/changeset/136597
+        https://bugs.webkit.org/show_bug.cgi?id=104065
+
+        broke Windows compilation (Requested by yurys on #webkit).
+
+        * wtf/MemoryInstrumentation.cpp:
+        (WTF::MemoryClassInfo::addRawBuffer):
+        * wtf/MemoryInstrumentation.h:
+        (MemoryInstrumentation):
+        (WTF::MemoryInstrumentation::selectInstrumentationMethod):
+        (WTF::MemoryInstrumentation::reportObjectMemoryUsage):
+        (MemoryClassInfo):
+        (WTF::reportMemoryUsage):
+        (WTF::MemoryInstrumentation::addObjectImpl):
+        (WTF):
+        * wtf/MemoryInstrumentationArrayBufferView.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashCountedSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashMap.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationListHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationParsedURL.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationString.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationVector.h:
+        (WTF::reportMemoryUsage):
+
+2012-12-04  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: simplify reportMemoryUsage signature
+        https://bugs.webkit.org/show_bug.cgi?id=104028
+
+        Reviewed by Vsevolod Vlasov.
+
+        Removed const& modifier from instrumented pointer type. Was const T* const&,
+        now it is const T*
+
+        * wtf/MemoryInstrumentation.cpp:
+        (WTF::MemoryClassInfo::addRawBuffer):
+        * wtf/MemoryInstrumentation.h:
+        (MemoryInstrumentation):
+        (WTF::MemoryInstrumentation::selectInstrumentationMethod):
+        (WTF::MemoryInstrumentation::reportObjectMemoryUsage):
+        (MemoryClassInfo):
+        (WTF::reportMemoryUsage):
+        (WTF::MemoryInstrumentation::addObjectImpl):
+        (WTF):
+        * wtf/MemoryInstrumentationArrayBufferView.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashCountedSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashMap.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationListHashSet.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationParsedURL.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationString.h:
+        (WTF::reportMemoryUsage):
+        * wtf/MemoryInstrumentationVector.h:
+        (WTF::reportMemoryUsage):
+
+2012-12-03  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: NMI introduce heap graph recording API
+        https://bugs.webkit.org/show_bug.cgi?id=103232
+
+        Reviewed by Vsevolod Vlasov.
+
+        MemoryInstrumentationClient is extended with several methods for reporting
+        heap graph vertices and edges. Edge source is always idenfied by heap object
+        address. Target node might be either a destination object address(either real
+        or adjusted if the edge was retrieved from a pointer to a base class) or a
+        MemoryObjectInfo in case of internal buffers.
+
+        * wtf/MemoryInstrumentation.cpp:
+        (WTF::MemoryInstrumentation::reportEdge):
+        (WTF):
+        (WTF::MemoryInstrumentation::reportLinkToBuffer): report edge between the object
+        and a buffer which it owns.
+        (WTF::MemoryInstrumentation::InstrumentedPointerBase::process):
+        (WTF::MemoryClassInfo::addRawBuffer):
+        (WTF::MemoryClassInfo::addPrivateBuffer):
+        * wtf/MemoryInstrumentation.h:
+        (MemoryInstrumentationClient):
+        (WTF::MemoryInstrumentationClient::reportNode):
+        (WTF::MemoryInstrumentationClient::reportEdge):
+        (WTF::MemoryInstrumentationClient::reportLeaf):
+        (WTF::MemoryInstrumentationClient::reportBaseAddress): if we found an object by a pointer
+        to base class it may have different value than real object address. Report both real and
+        adjusted addresses so that they both can be used for identifying corresponding heap graph
+        node.
+        (WTF::MemoryInstrumentation::addRootObject):
+        (MemoryInstrumentation):
+        (WTF::MemoryInstrumentation::addObject):
+        (WTF::MemoryInstrumentation::addRawBuffer):
+        (WTF::MemoryInstrumentation::OwningTraits::addObject):
+        (WTF::MemoryClassInfo::addMember):
+        (MemoryClassInfo):
+        (WTF::MemoryInstrumentation::addObjectImpl):
+        * wtf/MemoryObjectInfo.h: added methods for repoting class name and some name string.
+        (WTF::MemoryObjectInfo::setClassName):
+        (WTF::MemoryObjectInfo::setName):
+        (MemoryObjectInfo):
+
+2012-12-03  Filip Pizlo  <fpizlo@apple.com>
+
+        Replace JSValue::description() with JSValue::dump(PrintStream&)
+        https://bugs.webkit.org/show_bug.cgi?id=103866
+
+        Reviewed by Darin Adler.
+
+        Make it easier to get a String from a StringPrintStream.
+
+        * wtf/StringPrintStream.cpp:
+        (WTF::StringPrintStream::toString):
+        * wtf/StringPrintStream.h:
+        (StringPrintStream):
+        (WTF::toString):
+
 2012-12-02  Filip Pizlo  <fpizlo@apple.com>
 
         It should be possible to build and run with DFG_ENABLE(PROPAGATION_VERBOSE)

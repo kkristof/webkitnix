@@ -46,7 +46,6 @@ namespace JSC {
     class RegisterID;
     class JSScope;
     class ScopeNode;
-    class SourceProviderCacheItem;
 
     typedef unsigned CodeFeatures;
 

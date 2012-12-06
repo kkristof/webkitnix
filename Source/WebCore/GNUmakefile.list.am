@@ -451,8 +451,6 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSIDBCursor.h \
 	DerivedSources/WebCore/JSIDBCursorWithValue.cpp \
 	DerivedSources/WebCore/JSIDBCursorWithValue.h \
-	DerivedSources/WebCore/JSIDBDatabaseException.cpp \
-	DerivedSources/WebCore/JSIDBDatabaseException.h \
 	DerivedSources/WebCore/JSIDBDatabase.cpp \
 	DerivedSources/WebCore/JSIDBDatabase.h \
 	DerivedSources/WebCore/JSIDBFactory.cpp \
@@ -465,12 +463,16 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSIDBKeyRange.h \
 	DerivedSources/WebCore/JSIDBObjectStore.cpp \
 	DerivedSources/WebCore/JSIDBObjectStore.h \
+	DerivedSources/WebCore/JSIDBOpenDBRequest.cpp \
+	DerivedSources/WebCore/JSIDBOpenDBRequest.h \
 	DerivedSources/WebCore/JSIDBRequest.cpp \
 	DerivedSources/WebCore/JSIDBRequest.h \
 	DerivedSources/WebCore/JSIDBTransaction.cpp \
 	DerivedSources/WebCore/JSIDBTransaction.h \
 	DerivedSources/WebCore/JSIDBVersionChangeEvent.cpp \
 	DerivedSources/WebCore/JSIDBVersionChangeEvent.h \
+	DerivedSources/WebCore/JSIDBUpgradeNeededEvent.cpp \
+	DerivedSources/WebCore/JSIDBUpgradeNeededEvent.h \
 	DerivedSources/WebCore/JSIDBVersionChangeRequest.cpp \
 	DerivedSources/WebCore/JSIDBVersionChangeRequest.h \
 	DerivedSources/WebCore/JSImageData.cpp \
@@ -1217,7 +1219,6 @@ dom_binding_idls += \
 	$(WebCore)/Modules/indexeddb/IDBAny.idl \
 	$(WebCore)/Modules/indexeddb/IDBCursor.idl \
 	$(WebCore)/Modules/indexeddb/IDBCursorWithValue.idl \
-	$(WebCore)/Modules/indexeddb/IDBDatabaseException.idl \
 	$(WebCore)/Modules/indexeddb/IDBDatabase.idl \
 	$(WebCore)/Modules/indexeddb/IDBFactory.idl \
 	$(WebCore)/Modules/indexeddb/IDBIndex.idl \
@@ -1229,6 +1230,7 @@ dom_binding_idls += \
 	$(WebCore)/Modules/indexeddb/IDBTransaction.idl \
 	$(WebCore)/Modules/indexeddb/IDBUpgradeNeededEvent.idl \
 	$(WebCore)/Modules/indexeddb/IDBVersionChangeEvent.idl \
+	$(WebCore)/Modules/indexeddb/IDBUpgradeNeededEvent.idl \
 	$(WebCore)/Modules/indexeddb/IDBVersionChangeRequest.idl \
 	$(WebCore)/Modules/indexeddb/WorkerContextIndexedDatabase.idl \
 	$(WebCore)/Modules/mediasource/MediaSource.idl \
@@ -2242,6 +2244,7 @@ webcore_sources += \
 	Source/WebCore/bindings/js/DOMWrapperWorld.h \
 	Source/WebCore/bindings/js/GCController.cpp \
 	Source/WebCore/bindings/js/GCController.h \
+	Source/WebCore/bindings/js/IDBBindingUtilities.cpp \
 	Source/WebCore/bindings/js/IDBBindingUtilities.h \
 	Source/WebCore/bindings/js/JSArrayBufferCustom.cpp \
 	Source/WebCore/bindings/js/JSArrayBufferViewHelper.h \
@@ -2270,7 +2273,6 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSCustomSQLStatementErrorCallback.cpp \
 	Source/WebCore/bindings/js/JSCustomXPathNSResolver.cpp \
 	Source/WebCore/bindings/js/JSCustomXPathNSResolver.h \
-	Source/WebCore/bindings/js/JSDependentRetained.h \
 	Source/WebCore/bindings/js/JSDictionary.cpp \
 	Source/WebCore/bindings/js/JSDictionary.h \
 	Source/WebCore/bindings/js/JSDOMBinding.cpp \
@@ -2342,7 +2344,6 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSHistoryCustom.h \
 	Source/WebCore/bindings/js/JSIDBAnyCustom.cpp \
 	Source/WebCore/bindings/js/JSIDBKeyCustom.cpp \
-	Source/WebCore/bindings/js/JSIDBVersionChangeRequestCustom.cpp \
 	Source/WebCore/bindings/js/JSImageConstructor.cpp \
 	Source/WebCore/bindings/js/JSImageConstructor.h \
 	Source/WebCore/bindings/js/JSImageDataCustom.cpp \
@@ -2902,6 +2903,8 @@ webcore_sources += \
 	Source/WebCore/dom/ProgressEvent.h \
 	Source/WebCore/dom/PropertyNodeList.cpp \
 	Source/WebCore/dom/PropertyNodeList.h \
+	Source/WebCore/dom/PseudoElement.cpp \
+	Source/WebCore/dom/PseudoElement.h \
 	Source/WebCore/dom/QualifiedName.cpp \
 	Source/WebCore/dom/QualifiedName.h \
 	Source/WebCore/dom/RangeBoundaryPoint.h \
@@ -3560,10 +3563,12 @@ webcore_sources += \
 	Source/WebCore/html/shadow/InsertionPoint.h \
 	Source/WebCore/html/shadow/ImageInnerElement.cpp \
 	Source/WebCore/html/shadow/ImageInnerElement.h \
-	Source/WebCore/html/shadow/MediaControls.cpp \
-	Source/WebCore/html/shadow/MediaControls.h \
 	Source/WebCore/html/shadow/MediaControlElements.cpp \
 	Source/WebCore/html/shadow/MediaControlElements.h \
+	Source/WebCore/html/shadow/MediaControlElementTypes.cpp \
+	Source/WebCore/html/shadow/MediaControlElementTypes.h \
+	Source/WebCore/html/shadow/MediaControls.cpp \
+	Source/WebCore/html/shadow/MediaControls.h \
 	Source/WebCore/html/shadow/MediaControlsApple.cpp \
 	Source/WebCore/html/shadow/MediaControlsApple.h \
 	Source/WebCore/html/shadow/MeterShadowElement.cpp \
@@ -4325,6 +4330,10 @@ webcore_sources += \
 	Source/WebCore/rendering/RenderMarquee.h \
 	Source/WebCore/rendering/RenderMedia.cpp \
 	Source/WebCore/rendering/RenderMedia.h \
+	Source/WebCore/rendering/RenderMediaControlElements.cpp \
+	Source/WebCore/rendering/RenderMediaControlElements.h \
+	Source/WebCore/rendering/RenderMediaControls.cpp \
+	Source/WebCore/rendering/RenderMediaControls.h \
 	Source/WebCore/rendering/RenderMenuList.cpp \
 	Source/WebCore/rendering/RenderMenuList.h \
 	Source/WebCore/rendering/RenderMeter.cpp \
@@ -5856,6 +5865,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/text/LocaleNone.cpp \
 	Source/WebCore/platform/text/LocaleToScriptMapping.h \
 	Source/WebCore/platform/text/LocaleToScriptMappingDefault.cpp \
+	Source/WebCore/platform/text/NonCJKGlyphOrientation.h \
 	Source/WebCore/platform/text/ParserUtilities.h \
 	Source/WebCore/platform/text/PlatformLocale.cpp \
 	Source/WebCore/platform/text/PlatformLocale.h \
@@ -5891,7 +5901,6 @@ webcore_platform_sources += \
 	Source/WebCore/platform/text/TextEncoding.h \
 	Source/WebCore/platform/text/TextEncodingRegistry.cpp \
 	Source/WebCore/platform/text/TextEncodingRegistry.h \
-	Source/WebCore/platform/text/TextOrientation.h \
 	Source/WebCore/platform/text/TextStream.cpp \
 	Source/WebCore/platform/text/TextStream.h \
 	Source/WebCore/platform/text/transcoder/FontTranscoder.cpp \

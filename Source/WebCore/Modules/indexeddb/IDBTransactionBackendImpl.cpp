@@ -35,16 +35,19 @@
 #include "IDBObjectStoreBackendImpl.h"
 #include "IDBTracing.h"
 #include "IDBTransactionCoordinator.h"
-#include "ScriptExecutionContext.h"
 
 namespace WebCore {
 
-PassRefPtr<IDBTransactionBackendImpl> IDBTransactionBackendImpl::create(int64_t id, const Vector<int64_t>& objectStoreIds, unsigned short mode, IDBDatabaseBackendImpl* database)
+PassRefPtr<IDBTransactionBackendImpl> IDBTransactionBackendImpl::create(int64_t id, const Vector<int64_t>& objectStoreIds, IDBTransaction::Mode mode, IDBDatabaseBackendImpl* database)
 {
-    return adoptRef(new IDBTransactionBackendImpl(id, objectStoreIds, mode, database));
+    HashSet<int64_t> objectStoreHashSet;
+    for (size_t i = 0; i < objectStoreIds.size(); ++i)
+        objectStoreHashSet.add(objectStoreIds[i]);
+
+    return adoptRef(new IDBTransactionBackendImpl(id, objectStoreHashSet, mode, database));
 }
 
-IDBTransactionBackendImpl::IDBTransactionBackendImpl(int64_t id, const Vector<int64_t>& objectStoreIds, unsigned short mode, IDBDatabaseBackendImpl* database)
+IDBTransactionBackendImpl::IDBTransactionBackendImpl(int64_t id, const HashSet<int64_t>& objectStoreIds, IDBTransaction::Mode mode, IDBDatabaseBackendImpl* database)
     : m_id(id)
     , m_objectStoreIds(objectStoreIds)
     , m_mode(mode)
@@ -55,6 +58,9 @@ IDBTransactionBackendImpl::IDBTransactionBackendImpl(int64_t id, const Vector<in
     , m_taskTimer(this, &IDBTransactionBackendImpl::taskTimerFired)
     , m_pendingPreemptiveEvents(0)
 {
+    // We pass a reference of this object before it can be adopted.
+    relaxAdoptionRequirement();
+
     m_database->transactionCoordinator()->didCreateTransaction(this);
 }
 
@@ -76,7 +82,7 @@ PassRefPtr<IDBObjectStoreBackendInterface> IDBTransactionBackendImpl::objectStor
     return objectStore.release();
 }
 
-bool IDBTransactionBackendImpl::scheduleTask(TaskType type, PassOwnPtr<ScriptExecutionContext::Task> task, PassOwnPtr<ScriptExecutionContext::Task> abortTask)
+bool IDBTransactionBackendImpl::scheduleTask(TaskType type, PassOwnPtr<Operation> task, PassOwnPtr<Operation> abortTask)
 {
     if (m_state == Finished)
         return false;
@@ -123,8 +129,8 @@ void IDBTransactionBackendImpl::abort(PassRefPtr<IDBDatabaseError> error)
 
     // Run the abort tasks, if any.
     while (!m_abortTaskQueue.isEmpty()) {
-        OwnPtr<ScriptExecutionContext::Task> task(m_abortTaskQueue.takeFirst());
-        task->performTask(0);
+        OwnPtr<Operation> task(m_abortTaskQueue.takeFirst());
+        task->perform(0);
     }
 
     // Backing store resources (held via cursors) must be released before script callbacks
@@ -254,8 +260,8 @@ void IDBTransactionBackendImpl::taskTimerFired(Timer<IDBTransactionBackendImpl>*
     TaskQueue* taskQueue = m_pendingPreemptiveEvents ? &m_preemptiveTaskQueue : &m_taskQueue;
     while (!taskQueue->isEmpty() && m_state != Finished) {
         ASSERT(m_state == Running);
-        OwnPtr<ScriptExecutionContext::Task> task(taskQueue->takeFirst());
-        task->performTask(0);
+        OwnPtr<Operation> task(taskQueue->takeFirst());
+        task->perform(this);
 
         // Event itself may change which queue should be processed next.
         taskQueue = m_pendingPreemptiveEvents ? &m_preemptiveTaskQueue : &m_taskQueue;

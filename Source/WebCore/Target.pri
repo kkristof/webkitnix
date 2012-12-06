@@ -441,6 +441,7 @@ SOURCES += \
     dom/ProcessingInstruction.cpp \
     dom/ProgressEvent.cpp \
     dom/PropertyNodeList.cpp \
+    dom/PseudoElement.cpp \
     dom/QualifiedName.cpp \
     dom/Range.cpp \
     dom/RangeException.cpp \
@@ -1618,6 +1619,7 @@ HEADERS += \
     dom/ProcessingInstruction.h \
     dom/ProgressEvent.h \
     dom/PropertyNodeList.h \
+    dom/PseudoElement.h \
     dom/QualifiedName.h \
     dom/Range.h \
     dom/RegisteredEventListener.h \
@@ -1873,7 +1875,10 @@ HEADERS += \
     html/shadow/ContentSelectorQuery.h \
     html/shadow/HTMLContentElement.h \
     html/shadow/HTMLShadowElement.h \
+    html/shadow/MediaControlElementTypes.h \
     html/shadow/MediaControlElements.h \
+    html/shadow/MediaControls.h \
+    html/shadow/MediaControlsApple.h \
     html/shadow/DetailsMarkerControl.h \
     html/track/InbandTextTrack.h \
     html/track/InbandTextTrackPrivate.h \
@@ -2409,6 +2414,8 @@ HEADERS += \
     rendering/RenderListItem.h \
     rendering/RenderListMarker.h \
     rendering/RenderMarquee.h \
+    rendering/RenderMediaControlElements.h \
+    rendering/RenderMediaControls.h \
     rendering/RenderMedia.h \
     rendering/RenderMenuList.h \
     rendering/RenderMeter.h \
@@ -3222,11 +3229,14 @@ enable?(VIDEO) {
         html/HTMLVideoElement.cpp \
         html/MediaController.cpp \
         html/MediaFragmentURIParser.cpp \
+        html/shadow/MediaControlElementTypes.cpp \
         html/shadow/MediaControlElements.cpp \
         html/TimeRanges.cpp \
         platform/graphics/MediaPlayer.cpp \
         rendering/RenderVideo.cpp \
-        rendering/RenderMedia.cpp
+        rendering/RenderMedia.cpp \
+        rendering/RenderMediaControls.cpp \
+        rendering/RenderMediaControlElements.cpp
 
     use?(QTKIT) {
         INCLUDEPATH += \

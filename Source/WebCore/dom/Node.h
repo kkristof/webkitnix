@@ -110,23 +110,85 @@ enum StyleChangeType {
     SyntheticStyleChange = 3 << nodeStyleChangeShift
 };
 
-class NodeRareDataBase {
+class UncommonNodeData {
 public:
+    static UncommonNodeData* create(TreeScope* scope, RenderObject* renderer)
+    {
+        return new UncommonNodeData(scope, renderer);
+    }
+
     RenderObject* renderer() const { return m_renderer; }
     void setRenderer(RenderObject* renderer) { m_renderer = renderer; }
 
     TreeScope* treeScope() const { return m_treeScope; }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
-    virtual ~NodeRareDataBase() { }
+    virtual ~UncommonNodeData() { }
+
+    bool isNodeRareData() const { return m_isNodeRareData; }
+
 protected:
-    NodeRareDataBase(TreeScope* scope)
-        : m_treeScope(scope)
+    UncommonNodeData()
+        : m_tabIndex(0)
+        , m_childIndex(0)
+        , m_isNodeRareData(true)
+        , m_tabIndexWasSetExplicitly(false)
+        , m_isFocused(false)
+        , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
+        , m_styleAffectedByEmpty(false)
+        , m_isInCanvasSubtree(false)
+#if ENABLE(FULLSCREEN_API)
+        , m_containsFullScreenElement(false)
+#endif
+#if ENABLE(DIALOG_ELEMENT)
+        , m_isInTopLayer(false)
+#endif
+        , m_childrenAffectedByHover(false)
+        , m_childrenAffectedByActive(false)
+        , m_childrenAffectedByDrag(false)
+        , m_childrenAffectedByFirstChildRules(false)
+        , m_childrenAffectedByLastChildRules(false)
+        , m_childrenAffectedByDirectAdjacentRules(false)
+        , m_childrenAffectedByForwardPositionalRules(false)
+        , m_childrenAffectedByBackwardPositionalRules(false)
     {
     }
 private:
+    UncommonNodeData(TreeScope* scope, RenderObject* renderer)
+        : m_renderer(renderer)
+        , m_treeScope(scope)
+        , m_isNodeRareData(false)
+    {
+    }
+
     RenderObject* m_renderer;
     TreeScope* m_treeScope;
+protected:
+    short m_tabIndex;
+    unsigned short m_childIndex;
+    bool m_isNodeRareData : 1;
+    bool m_tabIndexWasSetExplicitly : 1;
+    bool m_isFocused : 1;
+    bool m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
+    bool m_styleAffectedByEmpty : 1;
+    bool m_isInCanvasSubtree : 1;
+#if ENABLE(FULLSCREEN_API)
+    bool m_containsFullScreenElement : 1;
+#endif
+#if ENABLE(DIALOG_ELEMENT)
+    bool m_isInTopLayer : 1;
+#endif
+    bool m_childrenAffectedByHover : 1;
+    bool m_childrenAffectedByActive : 1;
+    bool m_childrenAffectedByDrag : 1;
+    // Bits for dynamic child matching.
+    // We optimize for :first-child and :last-child. The other positional child selectors like nth-child or
+    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
+    bool m_childrenAffectedByFirstChildRules : 1;
+    bool m_childrenAffectedByLastChildRules : 1;
+    bool m_childrenAffectedByDirectAdjacentRules : 1;
+    bool m_childrenAffectedByForwardPositionalRules : 1;
+    bool m_childrenAffectedByBackwardPositionalRules : 1;
 };
 
 class Node : public EventTarget, public ScriptWrappable, public TreeShared<Node, ContainerNode> {
@@ -190,6 +252,9 @@ public:
     bool hasAttributes() const;
     NamedNodeMap* attributes() const;
 
+    Node* pseudoAwarePreviousSibling() const;
+    Node* pseudoAwareNextSibling() const;
+
     virtual KURL baseURI() const;
     
     void getSubresourceURLs(ListHashSet<KURL>&) const;
@@ -233,6 +298,11 @@ public:
     bool isTextNode() const { return getFlag(IsTextFlag); }
     bool isHTMLElement() const { return getFlag(IsHTMLFlag); }
     bool isSVGElement() const { return getFlag(IsSVGFlag); }
+
+    bool isPseudoElement() const { return pseudoId() != NOPSEUDO; }
+    bool isBeforePseudoElement() const { return pseudoId() == BEFORE; }
+    bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
+    PseudoId pseudoId() const { return (isElementNode() && hasCustomCallbacks()) ? customPseudoId() : NOPSEUDO; }
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
@@ -515,10 +585,10 @@ public:
     // Integration with rendering tree
 
     // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
-    RenderObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
+    RenderObject* renderer() const { return hasUncommonNodeData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
     void setRenderer(RenderObject* renderer)
     {
-        if (hasRareData())
+        if (hasUncommonNodeData())
             m_data.m_rareData->setRenderer(renderer);
         else
             m_data.m_renderer = renderer;
@@ -702,7 +772,7 @@ private:
         IsActiveFlag = 1 << 10,
         IsHoveredFlag = 1 << 11,
         InActiveChainFlag = 1 << 12,
-        HasRareDataFlag = 1 << 13,
+        HasUncommonNodeData = 1 << 13,
         IsDocumentFragmentFlag = 1 << 14,
 
         // These bits are used by derived classes, pulled up here so they can
@@ -742,6 +812,7 @@ protected:
         CreateText = DefaultNodeFlags | IsTextFlag,
         CreateContainer = DefaultNodeFlags | IsContainerFlag, 
         CreateElement = CreateContainer | IsElementFlag, 
+        CreatePseudoElement =  CreateElement | InDocumentFlag,
         CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag,
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,
         CreateStyledElement = CreateElement | IsStyledElementFlag, 
@@ -754,13 +825,19 @@ protected:
     };
     Node(Document*, ConstructionType);
 
+    virtual PseudoId customPseudoId() const
+    {
+        ASSERT(hasCustomCallbacks());
+        return NOPSEUDO;
+    }
+
     virtual void didMoveToNewDocument(Document* oldDocument);
     
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
     void setTabIndexExplicitly(short);
     void clearTabIndexExplicitly();
-    
-    bool hasRareData() const { return getFlag(HasRareDataFlag); }
+
+    bool hasRareData() const { return hasUncommonNodeData() && m_data.m_rareData->isNodeRareData(); }
 
     NodeRareData* rareData() const;
     NodeRareData* ensureRareData();
@@ -793,7 +870,8 @@ private:
     virtual void refEventTarget();
     virtual void derefEventTarget();
 
-    virtual OwnPtr<NodeRareData> createRareData();
+    bool hasUncommonNodeData() const { return getFlag(HasUncommonNodeData); }
+    virtual PassOwnPtr<NodeRareData> createRareData();
     bool rareDataFocused() const;
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }
@@ -829,7 +907,7 @@ private:
     union DataUnion {
         DataUnion() : m_renderer(0) { }
         RenderObject* m_renderer;
-        NodeRareDataBase* m_rareData;
+        UncommonNodeData* m_rareData;
     } m_data;
 
 protected:

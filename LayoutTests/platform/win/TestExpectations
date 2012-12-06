@@ -254,6 +254,9 @@ svg/zoom/text/zoom-coords-viewattr-01-b.svg
 # https://bugs.webkit.org/show_bug.cgi?id=35013 (Impossible to test text-only-zoom from DRT on Windows)
 svg/zoom/text
 
+# https://bugs.webkit.org/show_bug.cgi?id=104054
+svg/custom/use-href-update-crash.svg
+
 # Crashes due to debug assert until we fix issues with style elements in SVG
 svg/custom/use-referencing-style-crash.svg
 
@@ -1563,13 +1566,10 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/addCue.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/cues.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/endTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
@@ -1577,7 +1577,6 @@ webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Ski
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/startTime.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
@@ -1861,10 +1860,6 @@ ietestcenter/css3/valuesandunits/units-000.htm
 
 # Network Information is not supported yet.
 networkinformation
-
-# UndoManager is not yet enabled.
-# https://bugs.webkit.org/show_bug.cgi?id=87908
-editing/undomanager
 
 # Asserts/crashes in PluginView::didFinishLoading
 fast/loader/reload-zero-byte-plugin.html
@@ -2500,3 +2495,10 @@ accessibility/file-upload-button-with-axpress.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=102603
 fast/text/international/combining-marks-position.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=103968
+fast/loader/non-deferred-substitute-load.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=103043
+fast/events/frame-scroll-fake-mouse-move.html
+fast/events/overflow-scroll-fake-mouse-move.html
