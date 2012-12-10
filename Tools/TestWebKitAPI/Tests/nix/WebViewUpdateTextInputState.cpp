@@ -46,13 +46,13 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
 
     loaderClient.version = 0;
     loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
-    WKPageSetPageLoaderClient(NIXViewPageRef(view.get()), &loaderClient);
+    WKPageSetPageLoaderClient(NIXViewGetPage(view.get()), &loaderClient);
 
     const WKSize size = WKSizeMake(100, 100);
     NIXViewSetSize(view.get(), size);
 
     WKRetainPtr<WKURLRef> editableContentUrl = adoptWK(Util::createURLForResource("../nix/single-tap-on-editable-content", "html"));
-    WKPageLoadURL(NIXViewPageRef(view.get()), editableContentUrl.get());
+    WKPageLoadURL(NIXViewGetPage(view.get()), editableContentUrl.get());
     Util::run(&didFinishLoad);
 
     NIXGestureEvent tapEvent;

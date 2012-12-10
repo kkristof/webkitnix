@@ -44,13 +44,13 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
 
     loaderClient.version = 0;
     loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
-    WKPageSetPageLoaderClient(NIXViewPageRef(view.get()), &loaderClient);
+    WKPageSetPageLoaderClient(NIXViewGetPage(view.get()), &loaderClient);
 
     const WKSize size = WKSizeMake(100, 100);
     NIXViewSetSize(view.get(), size);
 
     WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
-    WKPageLoadURL(NIXViewPageRef(view.get()), redUrl.get());
+    WKPageLoadURL(NIXViewGetPage(view.get()), redUrl.get());
     Util::run(&didFinishLoad);
     didFinishLoad = false;
 
@@ -58,7 +58,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     Util::run(&didWebProcessCrash);
 
     WKRetainPtr<WKURLRef> greenUrl = adoptWK(Util::createURLForResource("../nix/green-background", "html"));
-    WKPageLoadURL(NIXViewPageRef(view.get()), greenUrl.get());
+    WKPageLoadURL(NIXViewGetPage(view.get()), greenUrl.get());
     Util::run(&didFinishLoad);
 
     ASSERT_TRUE(didWebProcessCrash);

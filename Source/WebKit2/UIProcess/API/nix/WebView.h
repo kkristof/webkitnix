@@ -132,7 +132,7 @@ WK_EXPORT void NIXViewFindZoomableAreaForPoint(NIXView view, WKPoint point, int 
 WK_EXPORT uint32_t NIXViewAddCustomLayer(NIXView view, WKStringRef elementID);
 WK_EXPORT void NIXViewRemoveCustomLayer(NIXView view, uint32_t id);
 
-WK_EXPORT WKPageRef NIXViewPageRef(NIXView view);
+WK_EXPORT WKPageRef NIXViewGetPage(NIXView view);
 
 WK_EXPORT void NIXViewSendMouseEvent(NIXView view, const NIXMouseEvent* event);
 WK_EXPORT void NIXViewSendWheelEvent(NIXView view, const NIXWheelEvent* event);

@@ -39,7 +39,7 @@ public:
     MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, int viewportHorizontalDisplacement, int viewportVerticalDisplacement);
     virtual ~MiniBrowser();
 
-    WKPageRef pageRef() const { return NIXViewPageRef(m_view); }
+    WKPageRef pageRef() const { return NIXViewGetPage(m_view); }
 
     // LinuxWindowClient.
     virtual void handleExposeEvent() { scheduleUpdateDisplay(); }

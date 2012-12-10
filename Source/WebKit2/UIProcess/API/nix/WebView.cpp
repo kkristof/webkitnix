@@ -866,7 +866,7 @@ void NIXViewRemoveCustomLayer(NIXView view, uint32_t id)
     toImpl(view)->removeCustomLayer(id);
 }
 
-WKPageRef NIXViewPageRef(NIXView view)
+WKPageRef NIXViewGetPage(NIXView view)
 {
     return toImpl(view)->pageRef();
 }

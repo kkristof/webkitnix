@@ -45,7 +45,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
     m_view = NIXViewCreate(context, pageGroup, m_viewClient);
     NIXViewInitialize(m_view);
 
-    WKPageSetUseFixedLayout(NIXViewPageRef(m_view), true);
+    WKPageSetUseFixedLayout(NIXViewGetPage(m_view), true);
     m_window = 0;
 }
 
@@ -61,7 +61,7 @@ void PlatformWebView::resizeTo(unsigned width, unsigned height)
 
 WKPageRef PlatformWebView::page() const
 {
-    return NIXViewPageRef(m_view);
+    return NIXViewGetPage(m_view);
 }
 
 } // namespace TestWebKitAPI

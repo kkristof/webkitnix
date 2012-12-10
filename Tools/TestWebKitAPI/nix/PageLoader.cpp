@@ -21,7 +21,7 @@ PageLoader::PageLoader(NIXView view)
 
     m_loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
     m_loaderClient.clientInfo = this;
-    WKPageSetPageLoaderClient(NIXViewPageRef(m_view), &m_loaderClient);
+    WKPageSetPageLoaderClient(NIXViewGetPage(m_view), &m_loaderClient);
 }
 
 void PageLoader::didForceRepaint(WKErrorRef, void* context)
@@ -37,14 +37,14 @@ void PageLoader::didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, co
 void PageLoader::waitForLoadURLAndRepaint(const char* resource)
 {
     WKRetainPtr<WKURLRef> urlRef = adoptWK(createURLForResource(resource, "html"));
-    WKPageLoadURL(NIXViewPageRef(m_view), urlRef.get());
+    WKPageLoadURL(NIXViewGetPage(m_view), urlRef.get());
     Util::run(&m_didFinishLoadAndRepaint);
     m_didFinishLoadAndRepaint = false;
 }
 
 void PageLoader::forceRepaint()
 {
-    WKPageForceRepaint(NIXViewPageRef(m_view), this, &PageLoader::didForceRepaint);
+    WKPageForceRepaint(NIXViewGetPage(m_view), this, &PageLoader::didForceRepaint);
     Util::run(&m_didFinishLoadAndRepaint);
     m_didFinishLoadAndRepaint = false;
 }

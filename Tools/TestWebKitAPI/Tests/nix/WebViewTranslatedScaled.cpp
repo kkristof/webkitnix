@@ -39,7 +39,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     NIXViewSetUserViewportTransformation(view.get(), &transform);
 
     NIXViewInitialize(view.get());
-    WKPageSetUseFixedLayout(NIXViewPageRef(view.get()), true);
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
     NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);

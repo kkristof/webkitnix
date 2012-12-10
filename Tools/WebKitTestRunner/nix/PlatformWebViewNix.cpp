@@ -61,7 +61,7 @@ void PlatformWebView::resizeTo(unsigned width, unsigned height)
 
 WKPageRef PlatformWebView::page()
 {
-    return NIXViewPageRef(m_view);
+    return NIXViewGetPage(m_view);
 }
 
 void PlatformWebView::focus()

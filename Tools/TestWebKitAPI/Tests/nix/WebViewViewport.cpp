@@ -27,7 +27,7 @@ TEST(WebKitNix, WebViewViewport)
     client.setClearColor(0, 0, 1, 1);
 
     NIXViewInitialize(view.get());
-    WKPageSetUseFixedLayout(NIXViewPageRef(view.get()), true);
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
     NIXViewSetSize(view.get(), size);
 
     Util::PageLoader loader(view.get());

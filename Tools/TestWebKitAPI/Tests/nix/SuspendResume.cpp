@@ -36,41 +36,41 @@ TEST(WebKitNix, SuspendResumeAPI)
     Util::PageLoader loader(view.get());
     loader.waitForLoadURLAndRepaint("../nix/SuspendResume");
 
-    size_t bufferSize = WKStringGetMaximumUTF8CStringSize(WKPageCopyTitle(NIXViewPageRef(view.get())));
+    size_t bufferSize = WKStringGetMaximumUTF8CStringSize(WKPageCopyTitle(NIXViewGetPage(view.get())));
     char firstSampleBeforeSuspend[bufferSize];
     char secondSampleBeforeSuspend[bufferSize];
     char firstSampleAfterSuspend[bufferSize];
     char secondSampleAfterSuspend[bufferSize];
     char firstSampleAfterResume[bufferSize];
 
-    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewPageRef(view.get())), firstSampleBeforeSuspend, bufferSize);
+    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleBeforeSuspend, bufferSize);
 
     // After collecting the first sample we wait 0.1s to collect the next sample.
     // A repaint is needed to get viewport updated accordingly. This proccess is
     // repeated for each collected sample.
     Util::sleep(0.1);
     loader.forceRepaint();
-    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewPageRef(view.get())), secondSampleBeforeSuspend, bufferSize);
+    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), secondSampleBeforeSuspend, bufferSize);
     // The timmer is ticking - two different samples.
     EXPECT_STRNE(firstSampleBeforeSuspend, secondSampleBeforeSuspend);
 
     Util::sleep(0.1);
     NIXViewSuspendActiveDOMObjectsAndAnimations(view.get());
     loader.forceRepaint();
-    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewPageRef(view.get())), firstSampleAfterSuspend, bufferSize);
+    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleAfterSuspend, bufferSize);
     // The timmer is paused - still two different samples.
     EXPECT_STRNE(secondSampleBeforeSuspend, firstSampleAfterSuspend);
 
     Util::sleep(0.1);
     loader.forceRepaint();
-    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewPageRef(view.get())), secondSampleAfterSuspend, bufferSize);
+    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), secondSampleAfterSuspend, bufferSize);
     // The timmer is paused - two samples collected while paused so they are equal.
     EXPECT_STREQ(firstSampleAfterSuspend, secondSampleAfterSuspend);
 
     NIXViewResumeActiveDOMObjectsAndAnimations(view.get());
     Util::sleep(0.1);
     loader.forceRepaint();
-    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewPageRef(view.get())), firstSampleAfterResume, bufferSize);
+    WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleAfterResume, bufferSize);
     // The timmer is ticking again - two different samples.
     EXPECT_STRNE(secondSampleAfterSuspend, firstSampleAfterResume);
 }
