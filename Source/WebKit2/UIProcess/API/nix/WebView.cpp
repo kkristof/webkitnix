@@ -59,200 +59,6 @@
 using namespace WebCore;
 using namespace WebKit;
 
-NIXView* NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient)
-{
-    Nix::WebViewClient* client = new Nix::WebViewClient(viewClient);
-    return Nix::WebView::create(context, pageGroup, client);
-}
-
-void NIXViewRelease(NIXView* view)
-{
-    delete view;
-}
-
-void NIXViewInitialize(NIXView* view)
-{
-    view->initialize();
-}
-
-WKSize NIXViewSize(NIXView* view)
-{
-    return view->size();
-}
-
-void NIXViewSetSize(NIXView* view, WKSize size)
-{
-    view->setSize(size);
-}
-
-WKPoint NIXViewScrollPosition(NIXView* view)
-{
-    return view->scrollPosition();
-}
-
-void NIXViewSetScrollPosition(NIXView* view, WKPoint position)
-{
-    view->setScrollPosition(position);
-}
-
-void NIXViewSetUserViewportTransformation(NIXView* view, const NIXMatrix* userViewportTransformation)
-{
-    cairo_matrix_t transform;
-    transform.xx = userViewportTransformation->xx;
-    transform.yx = userViewportTransformation->yx;
-    transform.xy = userViewportTransformation->xy;
-    transform.yy = userViewportTransformation->yy;
-    transform.x0 = userViewportTransformation->x0;
-    transform.y0 = userViewportTransformation->y0;
-    view->setUserViewportTransformation(transform);
-}
-
-WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point)
-{
-    return view->userViewportToContents(point);
-}
-
-bool NIXViewIsFocused(NIXView* view)
-{
-    return view->isFocused();
-}
-
-void NIXViewSetFocused(NIXView* view, bool focused)
-{
-    view->setFocused(focused);
-}
-
-bool NIXViewIsVisible(NIXView* view)
-{
-    return view->isVisible();
-}
-
-void NIXViewSetVisible(NIXView* view, bool visible)
-{
-    view->setVisible(visible);
-}
-
-bool NIXViewIsActive(NIXView* view)
-{
-    return view->isActive();
-}
-
-void NIXViewSetActive(NIXView* view, bool active)
-{
-    view->setActive(active);
-}
-
-bool NIXViewTransparentBackground(NIXView* view)
-{
-    return view->transparentBackground();
-}
-
-void NIXViewSetTransparentBackground(NIXView* view, bool transparent)
-{
-    view->setTransparentBackground(transparent);
-}
-
-bool NIXViewDrawBackground(NIXView* view)
-{
-    return view->drawBackground();
-}
-
-void NIXViewSetDrawBackground(NIXView* view, bool drawBackground)
-{
-    view->setDrawBackground(drawBackground);
-}
-
-float NIXViewScale(NIXView* view)
-{
-    return view->scale();
-}
-
-void NIXViewSetScale(NIXView* view, float scale)
-{
-    view->setScale(scale);
-}
-
-void NIXViewSetOpacity(NIXView* view, float opacity)
-{
-    view->setOpacity(opacity);
-}
-
-float NIXViewOpacity(NIXView* view)
-{
-    return view->opacity();
-}
-
-WKSize NIXViewVisibleContentsSize(NIXView* view)
-{
-    return view->visibleContentsSize();
-}
-
-void NIXViewPaintToCurrentGLContext(NIXView* view)
-{
-    view->paintToCurrentGLContext();
-}
-
-void NIXViewFindZoomableAreaForPoint(NIXView* view, WKPoint point, int horizontalRadius, int verticalRadius)
-{
-    view->findZoomableAreaForPoint(point, horizontalRadius, verticalRadius);
-}
-
-uint32_t NIXViewAddCustomLayer(NIXView* view, WKStringRef elementID)
-{
-    return view->addCustomLayer(elementID);
-}
-
-void NIXViewRemoveCustomLayer(NIXView* view, uint32_t id)
-{
-    view->removeCustomLayer(id);
-}
-
-WKPageRef NIXViewPageRef(NIXView* view)
-{
-    return view->pageRef();
-}
-
-void NIXViewSendMouseEvent(NIXView* view, const NIXMouseEvent* event)
-{
-    view->sendMouseEvent(*event);
-}
-
-void NIXViewSendWheelEvent(NIXView* view, const NIXWheelEvent* event)
-{
-    view->sendWheelEvent(*event);
-}
-
-void NIXViewSendKeyEvent(NIXView* view, const NIXKeyEvent* event)
-{
-    view->sendKeyEvent(*event);
-}
-
-void NIXViewSendTouchEvent(NIXView* view, const NIXTouchEvent* event)
-{
-    view->sendTouchEvent(*event);
-}
-
-void NIXViewSendGestureEvent(NIXView* view, const NIXGestureEvent* event)
-{
-    view->sendGestureEvent(*event);
-}
-
-void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view)
-{
-    view->suspendActiveDOMObjectsAndAnimations();
-}
-
-void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView* view)
-{
-    view->resumeActiveDOMObjectsAndAnimations();
-}
-
-bool NIXViewIsSuspended(NIXView* view)
-{
-    return view->isSuspended();
-}
-
-
 namespace Nix {
 
 WebViewClient::WebViewClient(NIXViewClient* viewClient)
@@ -318,10 +124,10 @@ void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect r
 }
 
 
-WebView::~WebView() {}
-
-class WebViewImpl : public WebView, public PageClient {
+class WebViewImpl : public PageClient {
 public:
+    static WebViewImpl* create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client);
+
     WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
         : m_client(client)
         , m_webPageProxy(context->createWebPage(this, pageGroup))
@@ -341,55 +147,58 @@ public:
     virtual ~WebViewImpl() { }
 
     // WebView.
-    virtual void initialize();
+    void initialize();
 
-    virtual WKSize size() const { return WKSizeMake(m_size.width(), m_size.height()); }
-    virtual void setSize(const WKSize& size);
+    WKSize size() const { return WKSizeMake(m_size.width(), m_size.height()); }
+    void setSize(const WKSize& size);
 
-    virtual WKPoint scrollPosition() const { return WKPointMake(m_scrollPosition.x(), m_scrollPosition.y()); }
-    virtual void setScrollPosition(const WKPoint& position);
+    WKPoint scrollPosition() const { return WKPointMake(m_scrollPosition.x(), m_scrollPosition.y()); }
+    void setScrollPosition(const WKPoint& position);
 
-    virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
-    virtual WKPoint userViewportToContents(WKPoint point);
+    void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
+    WKPoint userViewportToContents(WKPoint point);
 
-    virtual bool isFocused() const;
-    virtual void setFocused(bool);
+    bool isFocused() const;
+    void setFocused(bool);
 
-    virtual bool isVisible() const;
-    virtual void setVisible(bool);
+    bool isVisible() const;
+    void setVisible(bool);
 
-    virtual bool isActive() const;
-    virtual void setActive(bool);
+    bool isActive() const;
+    void setActive(bool);
 
-    virtual void setTransparentBackground(bool);
-    virtual bool transparentBackground() const;
+    void setTransparentBackground(bool);
+    bool transparentBackground() const;
 
-    virtual void setDrawBackground(bool);
-    virtual bool drawBackground() const;
+    void setDrawBackground(bool);
+    bool drawBackground() const;
 
-    virtual void setScale(float);
-    virtual float scale() const { return m_scale; }
+    void setScale(float);
+    float scale() const { return m_scale; }
 
-    virtual WKSize visibleContentsSize() const { return WKSizeMake(m_size.width() / m_scale, m_size.height() / m_scale); }
+    WKSize visibleContentsSize() const { return WKSizeMake(m_size.width() / m_scale, m_size.height() / m_scale); }
 
-    virtual void setOpacity(float opacity) { m_opacity = clampTo(opacity, 0.f, 1.f); }
-    virtual float opacity() const { return m_opacity; }
+    void setOpacity(float opacity) { m_opacity = clampTo(opacity, 0.f, 1.f); }
+    float opacity() const { return m_opacity; }
 
-    virtual void paintToCurrentGLContext();
+    void paintToCurrentGLContext();
 
-    virtual void commitViewportChanges();
+    void commitViewportChanges();
 
-    virtual void findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius);
+    void findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius);
 
-    virtual WKPageRef pageRef();
+    WKPageRef pageRef();
 
-    virtual void sendEvent(const Nix::InputEvent&);
+    void sendEvent(const Nix::InputEvent&);
 
-    virtual void sendMouseEvent(const NIXMouseEvent&);
-    virtual void sendWheelEvent(const NIXWheelEvent&);
-    virtual void sendKeyEvent(const NIXKeyEvent&);
-    virtual void sendTouchEvent(const NIXTouchEvent&);
-    virtual void sendGestureEvent(const NIXGestureEvent&);
+    void sendMouseEvent(const NIXMouseEvent&);
+    void sendWheelEvent(const NIXWheelEvent&);
+    void sendKeyEvent(const NIXKeyEvent&);
+    void sendTouchEvent(const NIXTouchEvent&);
+    void sendGestureEvent(const NIXGestureEvent&);
+
+    uint32_t addCustomLayer(WKStringRef elementID);
+    void removeCustomLayer(uint32_t);
 
     // PageClient.
     virtual PassOwnPtr<DrawingAreaProxy> createDrawingAreaProxy();
@@ -480,8 +289,6 @@ private:
     cairo_matrix_t userViewportToContentTransformation() const;
     cairo_matrix_t contentToUserViewportTransformation() const;
 
-    uint32_t addCustomLayer(WKStringRef elementID);
-    void removeCustomLayer(uint32_t);
 
     FloatRect visibleRect() const;
 
@@ -527,7 +334,7 @@ private:
     HashMap<uint32_t, OwnPtr<CustomRenderer> > m_customRenderers;
 };
 
-WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
+WebViewImpl* WebViewImpl::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
 {
     g_type_init();
     return new WebViewImpl(toImpl(contextRef), toImpl(pageGroupRef), client);
@@ -900,3 +707,207 @@ bool WebViewImpl::isSuspended()
 }
 
 } // namespace Nix
+
+static Nix::WebViewImpl* toImpl(NIXView* view)
+{
+    return reinterpret_cast<Nix::WebViewImpl*>(view);
+}
+
+static NIXView* toAPI(Nix::WebViewImpl* view)
+{
+    return reinterpret_cast<NIXView*>(view);
+}
+
+NIXView* NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient)
+{
+    Nix::WebViewClient* client = new Nix::WebViewClient(viewClient);
+    return toAPI(Nix::WebViewImpl::create(context, pageGroup, client));
+}
+
+void NIXViewRelease(NIXView* view)
+{
+    delete toImpl(view);
+}
+
+void NIXViewInitialize(NIXView* view)
+{
+    toImpl(view)->initialize();
+}
+
+WKSize NIXViewSize(NIXView* view)
+{
+    return toImpl(view)->size();
+}
+
+void NIXViewSetSize(NIXView* view, WKSize size)
+{
+    toImpl(view)->setSize(size);
+}
+
+WKPoint NIXViewScrollPosition(NIXView* view)
+{
+    return toImpl(view)->scrollPosition();
+}
+
+void NIXViewSetScrollPosition(NIXView* view, WKPoint position)
+{
+    toImpl(view)->setScrollPosition(position);
+}
+
+void NIXViewSetUserViewportTransformation(NIXView* view, const NIXMatrix* userViewportTransformation)
+{
+    cairo_matrix_t transform;
+    transform.xx = userViewportTransformation->xx;
+    transform.yx = userViewportTransformation->yx;
+    transform.xy = userViewportTransformation->xy;
+    transform.yy = userViewportTransformation->yy;
+    transform.x0 = userViewportTransformation->x0;
+    transform.y0 = userViewportTransformation->y0;
+    toImpl(view)->setUserViewportTransformation(transform);
+}
+
+WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point)
+{
+    return toImpl(view)->userViewportToContents(point);
+}
+
+bool NIXViewIsFocused(NIXView* view)
+{
+    return toImpl(view)->isFocused();
+}
+
+void NIXViewSetFocused(NIXView* view, bool focused)
+{
+    toImpl(view)->setFocused(focused);
+}
+
+bool NIXViewIsVisible(NIXView* view)
+{
+    return toImpl(view)->isVisible();
+}
+
+void NIXViewSetVisible(NIXView* view, bool visible)
+{
+    toImpl(view)->setVisible(visible);
+}
+
+bool NIXViewIsActive(NIXView* view)
+{
+    return toImpl(view)->isActive();
+}
+
+void NIXViewSetActive(NIXView* view, bool active)
+{
+    toImpl(view)->setActive(active);
+}
+
+bool NIXViewTransparentBackground(NIXView* view)
+{
+    return toImpl(view)->transparentBackground();
+}
+
+void NIXViewSetTransparentBackground(NIXView* view, bool transparent)
+{
+    toImpl(view)->setTransparentBackground(transparent);
+}
+
+bool NIXViewDrawBackground(NIXView* view)
+{
+    return toImpl(view)->drawBackground();
+}
+
+void NIXViewSetDrawBackground(NIXView* view, bool drawBackground)
+{
+    toImpl(view)->setDrawBackground(drawBackground);
+}
+
+float NIXViewScale(NIXView* view)
+{
+    return toImpl(view)->scale();
+}
+
+void NIXViewSetScale(NIXView* view, float scale)
+{
+    toImpl(view)->setScale(scale);
+}
+
+void NIXViewSetOpacity(NIXView* view, float opacity)
+{
+    toImpl(view)->setOpacity(opacity);
+}
+
+float NIXViewOpacity(NIXView* view)
+{
+    return toImpl(view)->opacity();
+}
+
+WKSize NIXViewVisibleContentsSize(NIXView* view)
+{
+    return toImpl(view)->visibleContentsSize();
+}
+
+void NIXViewPaintToCurrentGLContext(NIXView* view)
+{
+    toImpl(view)->paintToCurrentGLContext();
+}
+
+void NIXViewFindZoomableAreaForPoint(NIXView* view, WKPoint point, int horizontalRadius, int verticalRadius)
+{
+    toImpl(view)->findZoomableAreaForPoint(point, horizontalRadius, verticalRadius);
+}
+
+uint32_t NIXViewAddCustomLayer(NIXView* view, WKStringRef elementID)
+{
+    return toImpl(view)->addCustomLayer(elementID);
+}
+
+void NIXViewRemoveCustomLayer(NIXView* view, uint32_t id)
+{
+    toImpl(view)->removeCustomLayer(id);
+}
+
+WKPageRef NIXViewPageRef(NIXView* view)
+{
+    return toImpl(view)->pageRef();
+}
+
+void NIXViewSendMouseEvent(NIXView* view, const NIXMouseEvent* event)
+{
+    toImpl(view)->sendMouseEvent(*event);
+}
+
+void NIXViewSendWheelEvent(NIXView* view, const NIXWheelEvent* event)
+{
+    toImpl(view)->sendWheelEvent(*event);
+}
+
+void NIXViewSendKeyEvent(NIXView* view, const NIXKeyEvent* event)
+{
+    toImpl(view)->sendKeyEvent(*event);
+}
+
+void NIXViewSendTouchEvent(NIXView* view, const NIXTouchEvent* event)
+{
+    toImpl(view)->sendTouchEvent(*event);
+}
+
+void NIXViewSendGestureEvent(NIXView* view, const NIXGestureEvent* event)
+{
+    toImpl(view)->sendGestureEvent(*event);
+}
+
+void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view)
+{
+    toImpl(view)->suspendActiveDOMObjectsAndAnimations();
+}
+
+void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView* view)
+{
+    toImpl(view)->resumeActiveDOMObjectsAndAnimations();
+}
+
+bool NIXViewIsSuspended(NIXView* view)
+{
+    return toImpl(view)->isSuspended();
+}
+

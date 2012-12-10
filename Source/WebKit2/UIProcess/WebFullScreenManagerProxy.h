@@ -67,7 +67,7 @@ typedef WebKitWebViewBase PlatformWebView;
 #elif PLATFORM(EFL)
 typedef Evas_Object PlatformWebView;
 #elif PLATFORM(NIX)
-typedef Nix::WebView PlatformWebView;
+typedef NIXView* PlatformWebView;
 #endif
 
 class WebPageProxy;

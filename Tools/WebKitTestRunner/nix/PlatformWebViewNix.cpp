@@ -56,17 +56,17 @@ PlatformWebView::~PlatformWebView()
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(WKSizeMake(width, height));
+    NIXViewSetSize(m_view, WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page()
 {
-    return m_view->pageRef();
+    return NIXViewPageRef(m_view);
 }
 
 void PlatformWebView::focus()
 {
-    m_view->setFocused(true);
+    NIXViewSetFocused(m_view, true);
 }
 
 WKRect PlatformWebView::windowFrame()

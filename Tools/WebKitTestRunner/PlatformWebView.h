@@ -54,11 +54,9 @@ typedef struct _GtkWidget GtkWidget;
 typedef WKViewRef PlatformWKView;
 typedef GtkWidget* PlatformWindow;
 #elif PLATFORM(NIX)
-namespace Nix {
-    class WebView;
-}
+typedef struct OpaqueNIXView NIXView;
 struct NIXViewClient;
-typedef Nix::WebView* PlatformWKView;
+typedef NIXView* PlatformWKView;
 typedef int PlatformWindow;
 #elif PLATFORM(EFL)
 typedef struct _Evas_Object Evas_Object;

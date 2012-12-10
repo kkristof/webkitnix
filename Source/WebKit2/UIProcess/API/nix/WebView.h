@@ -41,74 +41,13 @@ private:
     NIXViewClient* m_viewClient;
 };
 
-class WK_EXPORT WebView {
-public:
-    static WebView* create(WKContextRef, WKPageGroupRef, WebViewClient*);
-    virtual ~WebView();
-
-    virtual void initialize() = 0;
-
-    virtual WKSize size() const = 0;
-    virtual void setSize(const WKSize& size) = 0;
-
-    virtual WKPoint scrollPosition() const = 0;
-    virtual void setScrollPosition(const WKPoint& position) = 0;
-
-    virtual void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) = 0;
-    virtual WKPoint userViewportToContents(WKPoint point) = 0;
-
-    virtual bool isFocused() const = 0;
-    virtual void setFocused(bool) = 0;
-
-    virtual bool isVisible() const = 0;
-    virtual void setVisible(bool) = 0;
-
-    virtual bool isActive() const = 0;
-    virtual void setActive(bool) = 0;
-
-    virtual void setTransparentBackground(bool) = 0;
-    virtual bool transparentBackground() const = 0;
-
-    virtual void setDrawBackground(bool) = 0;
-    virtual bool drawBackground() const = 0;
-
-    virtual void setScale(float) = 0;
-    virtual float scale() const = 0;
-
-    virtual WKSize visibleContentsSize() const = 0;
-
-    virtual void setOpacity(float) = 0;
-    virtual float opacity() const = 0;
-
-    virtual void paintToCurrentGLContext() = 0;
-
-    virtual void findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius) = 0;
-
-    virtual WKPageRef pageRef() = 0;
-
-    virtual void sendEvent(const Nix::InputEvent&) = 0;
-
-    virtual void sendMouseEvent(const NIXMouseEvent&) = 0;
-    virtual void sendWheelEvent(const NIXWheelEvent&) = 0;
-    virtual void sendKeyEvent(const NIXKeyEvent&) = 0;
-    virtual void sendTouchEvent(const NIXTouchEvent&) = 0;
-    virtual void sendGestureEvent(const NIXGestureEvent&) = 0;
-
-    virtual uint32_t addCustomLayer(WKStringRef elementID) = 0;
-    virtual void removeCustomLayer(uint32_t id) = 0;
-
-    virtual void suspendActiveDOMObjectsAndAnimations() = 0;
-    virtual void resumeActiveDOMObjectsAndAnimations() = 0;
-    virtual bool isSuspended() = 0;
-};
-
 } // namespace Nix
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef Nix::WebView NIXView;
+typedef struct OpaqueNIXView NIXView;
 
 // NIXViewClient -----------------------------------------------------------
 typedef void (*NIXViewCallback)(const void* clientInfo);
