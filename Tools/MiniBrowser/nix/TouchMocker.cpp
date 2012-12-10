@@ -23,7 +23,7 @@ static inline bool isSingleTouch(const NIXMouseEvent& event)
     return !(event.modifiers & kNIXInputEventModifiersControlKey);
 }
 
-TouchMocker::TouchMocker(NIXView* view)
+TouchMocker::TouchMocker(NIXView view)
     : m_view(view)
 {
     loadTouchPointTexture();

@@ -13,7 +13,7 @@
 
 using namespace TestWebKitAPI::Util;
 
-PageLoader::PageLoader(NIXView* view)
+PageLoader::PageLoader(NIXView view)
     : m_view(view)
     , m_didFinishLoadAndRepaint(false)
 {

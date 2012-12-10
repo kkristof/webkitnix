@@ -5,7 +5,6 @@
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKRetainPtr.h>
 #include <WebView.h>
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -39,7 +38,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     viewClient.version = kNIXViewCurrentVersion;
     viewClient.updateTextInputState = updateTextInputState;
     viewClient.doneWithGestureEvent = doneWithGestureEvent;
-    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, &viewClient));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, &viewClient));
     NIXViewInitialize(view.get());
 
     WKPageLoaderClient loaderClient;

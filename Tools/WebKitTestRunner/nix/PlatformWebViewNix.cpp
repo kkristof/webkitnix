@@ -27,7 +27,7 @@ static void pageDidRequestScroll(WKPoint position, const void* clientInfo)
 {
     if (!clientInfo)
         return;
-    NIXView* view = static_cast<NIXView*>(const_cast<void*>(clientInfo));
+    NIXView view = static_cast<NIXView>(const_cast<void*>(clientInfo));
     NIXViewSetScrollPosition(view, position);
 }
 

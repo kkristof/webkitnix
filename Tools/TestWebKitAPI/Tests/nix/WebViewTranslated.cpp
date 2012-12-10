@@ -5,7 +5,6 @@
 #include "WebView.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -19,7 +18,7 @@ TEST(WebKitNix, WebViewTranslated)
 
     const int translationDelta = 20;
     Util::ForceRepaintClient client;
-    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, client.viewClient()));
     client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
 

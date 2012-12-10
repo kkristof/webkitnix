@@ -12,10 +12,10 @@ public:
     ForceRepaintClient();
     static void viewNeedsDisplay(WKRect, const void*);
     void setClearColor(int r, int g, int b, int a);
-    void setView(NIXView* view) { m_view = view; }
+    void setView(NIXView view) { m_view = view; }
     NIXViewClient* viewClient() { return &m_viewClient; }
 private:
-    NIXView* m_view;
+    NIXView m_view;
     NIXViewClient m_viewClient;
     int m_clearR;
     int m_clearG;
@@ -27,13 +27,13 @@ private:
 class PageLoader
 {
 public:
-    PageLoader(NIXView*);
+    PageLoader(NIXView);
 
     void waitForLoadURLAndRepaint(const char* resource);
     void forceRepaint();
 
 private:
-    NIXView* m_view;
+    NIXView m_view;
     bool m_didFinishLoadAndRepaint;
     WKPageLoaderClient m_loaderClient;
 

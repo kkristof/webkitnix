@@ -5,7 +5,6 @@
 #include "WebView.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -23,7 +22,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     Util::ForceRepaintClient client;
-    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, client.viewClient()));
     client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
 
@@ -85,10 +84,6 @@ TEST(WebKitNix, WebViewTranslatedScaled)
         EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
     }
-
-    // FIXME: Leaking memory to avoid bug on WebView destructor or on test
-    //        infrastructure destruction that should be fixed ASAP.
-    view.release();
 }
 
 } // TestWebKitAPI

@@ -47,7 +47,7 @@ private:
 extern "C" {
 #endif
 
-typedef struct OpaqueNIXView NIXView;
+typedef struct OpaqueNIXView* NIXView;
 
 // NIXViewClient -----------------------------------------------------------
 typedef void (*NIXViewCallback)(const void* clientInfo);
@@ -82,16 +82,16 @@ typedef struct NIXViewClient NIXViewClient;
 enum { kNIXViewCurrentVersion = 0 };
 
 // NIXView -----------------------------------------------------------------
-WK_EXPORT NIXView* NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient);
-WK_EXPORT void NIXViewRelease(NIXView* view);
+WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient);
+WK_EXPORT void NIXViewRelease(NIXView view);
 
-WK_EXPORT void NIXViewInitialize(NIXView* view);
+WK_EXPORT void NIXViewInitialize(NIXView view);
 
-WK_EXPORT WKSize NIXViewSize(NIXView* view);
-WK_EXPORT void NIXViewSetSize(NIXView* view, WKSize size);
+WK_EXPORT WKSize NIXViewSize(NIXView view);
+WK_EXPORT void NIXViewSetSize(NIXView view, WKSize size);
 
-WK_EXPORT WKPoint NIXViewScrollPosition(NIXView* view);
-WK_EXPORT void NIXViewSetScrollPosition(NIXView* view, WKPoint position);
+WK_EXPORT WKPoint NIXViewScrollPosition(NIXView view);
+WK_EXPORT void NIXViewSetScrollPosition(NIXView view, WKPoint position);
 
 typedef struct {
     double xx; double yx;
@@ -99,53 +99,83 @@ typedef struct {
     double x0; double y0;
 } NIXMatrix;
 
-WK_EXPORT void NIXViewSetUserViewportTransformation(NIXView* view, const NIXMatrix* userViewportTransformation);
-WK_EXPORT WKPoint NIXViewUserViewportToContents(NIXView* view, WKPoint point);
+WK_EXPORT void NIXViewSetUserViewportTransformation(NIXView view, const NIXMatrix* userViewportTransformation);
+WK_EXPORT WKPoint NIXViewUserViewportToContents(NIXView view, WKPoint point);
 
-WK_EXPORT bool NIXViewIsFocused(NIXView* view);
-WK_EXPORT void NIXViewSetFocused(NIXView* view, bool focused);
+WK_EXPORT bool NIXViewIsFocused(NIXView view);
+WK_EXPORT void NIXViewSetFocused(NIXView view, bool focused);
 
-WK_EXPORT bool NIXViewIsVisible(NIXView* view);
-WK_EXPORT void NIXViewSetVisible(NIXView* view, bool visible);
+WK_EXPORT bool NIXViewIsVisible(NIXView view);
+WK_EXPORT void NIXViewSetVisible(NIXView view, bool visible);
 
-WK_EXPORT bool NIXViewIsActive(NIXView* view);
-WK_EXPORT void NIXViewSetActive(NIXView* view, bool active);
+WK_EXPORT bool NIXViewIsActive(NIXView view);
+WK_EXPORT void NIXViewSetActive(NIXView view, bool active);
 
-WK_EXPORT bool NIXViewTransparentBackground(NIXView* view);
-WK_EXPORT void NIXViewSetTransparentBackground(NIXView* view, bool transparent);
+WK_EXPORT bool NIXViewTransparentBackground(NIXView view);
+WK_EXPORT void NIXViewSetTransparentBackground(NIXView view, bool transparent);
 
-WK_EXPORT bool NIXViewDrawBackground(NIXView* view);
-WK_EXPORT void NIXViewSetDrawBackground(NIXView* view, bool drawBackground);
+WK_EXPORT bool NIXViewDrawBackground(NIXView view);
+WK_EXPORT void NIXViewSetDrawBackground(NIXView view, bool drawBackground);
 
-WK_EXPORT float NIXViewScale(NIXView* view);
-WK_EXPORT void NIXViewSetScale(NIXView* view, float scale);
+WK_EXPORT float NIXViewScale(NIXView view);
+WK_EXPORT void NIXViewSetScale(NIXView view, float scale);
 
-WK_EXPORT void NIXViewSetOpacity(NIXView* view, float opacity);
-WK_EXPORT float NIXViewOpacity(NIXView* view);
+WK_EXPORT void NIXViewSetOpacity(NIXView view, float opacity);
+WK_EXPORT float NIXViewOpacity(NIXView view);
 
-WK_EXPORT WKSize NIXViewVisibleContentsSize(NIXView* view);
+WK_EXPORT WKSize NIXViewVisibleContentsSize(NIXView view);
 
-WK_EXPORT void NIXViewPaintToCurrentGLContext(NIXView* view);
+WK_EXPORT void NIXViewPaintToCurrentGLContext(NIXView view);
 
-WK_EXPORT void NIXViewFindZoomableAreaForPoint(NIXView* view, WKPoint point, int horizontalRadius, int verticalRadius);
+WK_EXPORT void NIXViewFindZoomableAreaForPoint(NIXView view, WKPoint point, int horizontalRadius, int verticalRadius);
 
-WK_EXPORT uint32_t NIXViewAddCustomLayer(NIXView* view, WKStringRef elementID);
-WK_EXPORT void NIXViewRemoveCustomLayer(NIXView* view, uint32_t id);
+WK_EXPORT uint32_t NIXViewAddCustomLayer(NIXView view, WKStringRef elementID);
+WK_EXPORT void NIXViewRemoveCustomLayer(NIXView view, uint32_t id);
 
-WK_EXPORT WKPageRef NIXViewPageRef(NIXView* view);
+WK_EXPORT WKPageRef NIXViewPageRef(NIXView view);
 
-WK_EXPORT void NIXViewSendMouseEvent(NIXView* view, const NIXMouseEvent* event);
-WK_EXPORT void NIXViewSendWheelEvent(NIXView* view, const NIXWheelEvent* event);
-WK_EXPORT void NIXViewSendKeyEvent(NIXView* view, const NIXKeyEvent* event);
-WK_EXPORT void NIXViewSendTouchEvent(NIXView* view, const NIXTouchEvent* event);
-WK_EXPORT void NIXViewSendGestureEvent(NIXView* view, const NIXGestureEvent* event);
+WK_EXPORT void NIXViewSendMouseEvent(NIXView view, const NIXMouseEvent* event);
+WK_EXPORT void NIXViewSendWheelEvent(NIXView view, const NIXWheelEvent* event);
+WK_EXPORT void NIXViewSendKeyEvent(NIXView view, const NIXKeyEvent* event);
+WK_EXPORT void NIXViewSendTouchEvent(NIXView view, const NIXTouchEvent* event);
+WK_EXPORT void NIXViewSendGestureEvent(NIXView view, const NIXGestureEvent* event);
 
-WK_EXPORT void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView* view);
-WK_EXPORT void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView* view);
-WK_EXPORT bool NIXViewIsSuspended(NIXView* view);
+WK_EXPORT void NIXViewSuspendActiveDOMObjectsAndAnimations(NIXView view);
+WK_EXPORT void NIXViewResumeActiveDOMObjectsAndAnimations(NIXView view);
+WK_EXPORT bool NIXViewIsSuspended(NIXView view);
 
 #ifdef __cplusplus
 }
-#endif
+
+class NIXViewAutoPtr {
+public:
+    explicit NIXViewAutoPtr(NIXView view = 0) : m_view(view) { }
+    ~NIXViewAutoPtr() { NIXViewRelease(m_view); }
+
+    NIXView get() const { return m_view; }
+    bool operator!() const { return !m_view; }
+
+    // This conversion operator allows implicit conversion to bool but not to other integer types.
+    typedef NIXView NIXViewAutoPtr::*UnspecifiedBoolType;
+    operator UnspecifiedBoolType() const { return m_view ? &NIXViewAutoPtr::m_view : 0; }
+
+    NIXViewAutoPtr& operator=(NIXView view) {
+        NIXView old = m_view;
+        m_view = view;
+        if (old)
+            NIXViewRelease(old);
+        return *this;
+    }
+
+private:
+    // Disable copy.
+    NIXViewAutoPtr(NIXViewAutoPtr&);
+    NIXViewAutoPtr& operator=(const NIXViewAutoPtr&);
+
+    NIXView m_view;
+};
+
+#endif // __cplusplus
+
 
 #endif // WebView_h

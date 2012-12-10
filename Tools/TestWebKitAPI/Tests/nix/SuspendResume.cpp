@@ -6,7 +6,6 @@
 #include "WebView.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -24,7 +23,7 @@ TEST(WebKitNix, SuspendResumeAPI)
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
     Util::ForceRepaintClient client;
-    std::auto_ptr<NIXView> view(NIXViewCreate(context.get(), 0, client.viewClient()));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, client.viewClient()));
     client.setView(view.get());
     client.setClearColor(0, 0, 1, 1);
     NIXViewInitialize(view.get());

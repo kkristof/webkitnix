@@ -94,12 +94,12 @@ private:
 
     void scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior = AdjustToBoundaries);
 
-    NIXView* webViewAtX11Position(const WKPoint& poisition);
+    NIXView webViewAtX11Position(const WKPoint& poisition);
 
     WKRetainPtr<WKContextRef> m_context;
     WKRetainPtr<WKPageGroupRef> m_pageGroup;
     LinuxWindow* m_window;
-    NIXView* m_view;
+    NIXView m_view;
     WKRect m_viewRect;
     GMainLoop* m_mainLoop;
     double m_lastClickTime;
@@ -281,7 +281,7 @@ static NIXKeyEvent convertXKeyEventToNixKeyEvent(const XKeyEvent& event, const K
     return nixEvent;
 }
 
-static NIXMouseEvent convertXButtonEventToNixButtonEvent(NIXView* view, const XButtonEvent& event, NIXInputEventType type, unsigned clickCount)
+static NIXMouseEvent convertXButtonEventToNixButtonEvent(NIXView view, const XButtonEvent& event, NIXInputEventType type, unsigned clickCount)
 {
     NIXMouseEvent nixEvent;
     nixEvent.type = type;
@@ -386,7 +386,7 @@ void MiniBrowser::updateClickCount(const XButtonPressedEvent& event)
 
 void MiniBrowser::handleButtonPressEvent(const XButtonPressedEvent& event)
 {
-    NIXView* view = webViewAtX11Position(WKPointMake(event.x, event.y));
+    NIXView view = webViewAtX11Position(WKPointMake(event.x, event.y));
     if (!view)
         return;
 
@@ -418,7 +418,7 @@ void MiniBrowser::handleButtonReleaseEvent(const XButtonReleasedEvent& event)
 
     // The mouse release event was allowed to be sent to the TouchMocker because it
     // may be tracking a button press that happened in a valid position.
-    NIXView* view = webViewAtX11Position(WKPointMake(event.x, event.y));
+    NIXView view = webViewAtX11Position(WKPointMake(event.x, event.y));
     if (!view)
         return;
     NIXViewSendMouseEvent(view, &nixEvent);
@@ -444,7 +444,7 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
 
     // The mouse move event was allowed to be sent to the TouchMocker because it
     // may be tracking a button press that happened in a valid position.
-    NIXView* view = webViewAtX11Position(WKPointMake(event.x, event.y));
+    NIXView view = webViewAtX11Position(WKPointMake(event.x, event.y));
     if (!view)
         return;
     NIXViewSendMouseEvent(view, &nixEvent);
@@ -718,7 +718,7 @@ static inline bool areaContainsPoint(const WKRect& area, const WKPoint& point)
     return !(point.x < area.origin.x || point.y < area.origin.y || point.x >= (area.origin.x + area.size.width) || point.y >= (area.origin.y + area.size.height));
 }
 
-NIXView* MiniBrowser::webViewAtX11Position(const WKPoint& position)
+NIXView MiniBrowser::webViewAtX11Position(const WKPoint& position)
 {
     if (areaContainsPoint(m_viewRect, position))
         return m_view;
