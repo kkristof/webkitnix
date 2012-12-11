@@ -70,7 +70,6 @@ void WebViewClient::pageDidRequestScroll(WKPoint) {}
 void WebViewClient::didChangeContentsSize(WKSize) {}
 void WebViewClient::didFindZoomableArea(WKPoint, WKRect) {}
 void WebViewClient::updateTextInputState(bool, WKRect, WKRect) {}
-void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* /* matrix */, float /*opacity*/) { }
 
 WebView::~WebView() {}
 
@@ -251,33 +250,6 @@ private:
     float m_scale;
     float m_opacity;
     cairo_matrix_t m_userViewportTransformation;
-
-    class CustomRenderer : public TextureMapperPlatformLayer {
-    public:
-        static PassOwnPtr<CustomRenderer> create(WebViewClient* client)
-        {
-            return adoptPtr(new CustomRenderer(client));
-        }
-
-        void setID(uint32_t id) { m_id = id; }
-        void invalidate() { m_valid = false; }
-
-    protected:
-        virtual void paintToTextureMapper(TextureMapper*, const FloatRect&, const TransformationMatrix& modelViewMatrix = TransformationMatrix(), float opacity = 1.0, BitmapTexture* mask = 0);
-
-    private:
-        CustomRenderer(WebViewClient* client)
-            : m_client(client)
-            , m_valid(true)
-        {
-        }
-
-        uint32_t m_id;
-        bool m_valid;
-        WebViewClient* m_client;
-    };
-
-    HashMap<uint32_t, OwnPtr<CustomRenderer> > m_customRenderers;
 };
 
 WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
@@ -285,48 +257,6 @@ WebView* WebView::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, W
     g_type_init();
     return new WebViewImpl(toImpl(contextRef), toImpl(pageGroupRef), client);
 }
-
-void WebViewImpl::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, const FloatRect& rect, const TransformationMatrix& matrix, float opacity, BitmapTexture*)
-{
-    ASSERT(texmap->accelerationMode() == TextureMapper::OpenGLMode);
-    static_cast<TextureMapperGL*>(texmap)->graphicsContext3D()->makeContextCurrent();
-    WKRect wkRect = WKRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-    const float m4[] = {
-        matrix.m11(), matrix.m12(), matrix.m13(), matrix.m14(),
-        matrix.m21(), matrix.m22(), matrix.m23(), matrix.m24(),
-        matrix.m31(), matrix.m32(), matrix.m33(), matrix.m34(),
-        matrix.m41(), matrix.m42(), matrix.m43(), matrix.m44()
-    };
-    m_client->compositeCustomLayerToCurrentGLContext(m_id, wkRect, m4, opacity);
-}
-
-void WebViewImpl::removeCustomLayer(uint32_t id)
-{
-    HashMap<uint32_t, OwnPtr<CustomRenderer> >::iterator it = m_customRenderers.find(id);
-    if (it == m_customRenderers.end())
-        return;
-
-    it->value->invalidate();
-}
-
-
-uint32_t WebViewImpl::addCustomLayer(WKStringRef elementID)
-{
-    DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
-    if (!drawingArea)
-        return 0;
-
-    LayerTreeCoordinatorProxy* coordinator = drawingArea->layerTreeCoordinatorProxy();
-    String str = toImpl(elementID)->string();
-
-    OwnPtr<CustomRenderer> renderer = CustomRenderer::create(m_client);
-
-    uint32_t id = coordinator->addCustomPlatformLayer(str, renderer.get());
-    renderer->setID(id);
-    m_customRenderers.add(id, renderer.release());
-    return id;
-}
-
 
 void WebViewImpl::initialize()
 {

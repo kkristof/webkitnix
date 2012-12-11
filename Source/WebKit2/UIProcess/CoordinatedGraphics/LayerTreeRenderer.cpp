@@ -732,16 +732,6 @@ void LayerTreeRenderer::setActive(bool active)
         dispatchOnMainThread(bind(&LayerTreeRenderer::renderNextFrame, this));
 }
 
-#if PLATFORM(NIX)
-void LayerTreeRenderer::addCustomPlatformLayer(uint32_t rendererID, CoordinatedLayerID layerID, TextureMapperPlatformLayer* customMedia)
-{
-    m_customPlatformLayers.add(rendererID, customMedia);
-    ensureLayer(layerID);
-    GraphicsLayer* layer = layerByID(layerID);
-    layer->setContentsToMedia(customMedia);
-}
-#endif
-
 void LayerTreeRenderer::setBackgroundColor(const WebCore::Color& color)
 {
     m_backgroundColor = color;

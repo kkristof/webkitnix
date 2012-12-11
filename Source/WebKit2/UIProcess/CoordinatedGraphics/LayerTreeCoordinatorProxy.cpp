@@ -194,24 +194,6 @@ void LayerTreeCoordinatorProxy::renderNextFrame()
     m_drawingAreaProxy->page()->process()->send(Messages::LayerTreeCoordinator::RenderNextFrame(), m_drawingAreaProxy->page()->pageID());
 }
 
-uint32_t LayerTreeCoordinatorProxy::addCustomPlatformLayer(const String& elementID, TextureMapperPlatformLayer* customLayer)
-{
-    static uint32_t nextID = 0;
-    uint32_t id = ++nextID;
-    m_customPlatformLayers.add(id, customLayer);
-    m_drawingAreaProxy->page()->process()->send(Messages::LayerTreeCoordinator::GetLayerIDForElementID(id, elementID), m_drawingAreaProxy->page()->pageID());
-    return id;
-}
-
-
-void LayerTreeCoordinatorProxy::didFindLayerIDForElement(uint32_t requestID, uint32_t layerID)
-{
-    CustomPlatformLayerMap::iterator it = m_customPlatformLayers.find(requestID);
-    TextureMapperPlatformLayer* layer = it->value;
-    m_customPlatformLayers.remove(it);
-    dispatchUpdate(bind(&LayerTreeRenderer::addCustomPlatformLayer, m_renderer.get(), requestID, layerID, layer));
-}
-
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
 void LayerTreeCoordinatorProxy::requestAnimationFrame()

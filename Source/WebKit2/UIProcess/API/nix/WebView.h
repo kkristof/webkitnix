@@ -22,7 +22,6 @@ public:
     virtual void didChangeContentsSize(WKSize size);
     virtual void didFindZoomableArea(WKPoint target, WKRect area);
     virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
-    virtual void compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* /* matrix */, float /*opacity*/);
 };
 
 class WK_EXPORT WebView {
@@ -71,9 +70,6 @@ public:
     virtual WKPageRef pageRef() = 0;
 
     virtual void sendEvent(const Nix::InputEvent&) = 0;
-
-    virtual uint32_t addCustomLayer(WKStringRef elementID) = 0;
-    virtual void removeCustomLayer(uint32_t id) = 0;
 
     virtual void suspendActiveDOMObjectsAndAnimations() = 0;
     virtual void resumeActiveDOMObjectsAndAnimations() = 0;

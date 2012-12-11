@@ -526,7 +526,6 @@ void LayerTreeCoordinator::syncDisplayState()
 
 void LayerTreeCoordinator::didPerformScheduledLayerFlush()
 {
-    processPendingLayerRequests();
     if (m_notifyAfterScheduledLayerFlush) {
         static_cast<DrawingAreaImpl*>(m_webPage->drawingArea())->layerHostDidFlushLayers();
         m_notifyAfterScheduledLayerFlush = false;
@@ -847,39 +846,6 @@ static GraphicsLayer* getGraphicsLayer(Element* element)
         return 0;
 
     return layer->backing()->graphicsLayer();
-}
-
-static bool processLayerIDRequest(WebPage* webPage, uint32_t requestID, const String& id)
-{
-    Page* page = webPage->corePage();
-    Document* doc = page->mainFrame()->document();
-    Element* element = doc->getElementById(id);
-    if (!element)
-        return false;
-
-    GraphicsLayer* layer = getGraphicsLayer(element);
-    if (!layer)
-        return false;
-
-    webPage->send(Messages::LayerTreeCoordinatorProxy::DidFindLayerIDForElement(requestID, toCoordinatedGraphicsLayer(layer)->id()));
-    return true;
-}
-
-void LayerTreeCoordinator::processPendingLayerRequests()
-{
-    HashMap<uint32_t, String>::iterator end = m_pendingLayerRequests.end();
-    for (HashMap<uint32_t, String>::iterator it = m_pendingLayerRequests.begin(); it != end; ++it) {
-        if (processLayerIDRequest(m_webPage, it->key, it->value))
-            m_pendingLayerRequests.remove(it);
-    }
-}
-
-void LayerTreeCoordinator::getLayerIDForElementID(uint32_t requestID, const String& id)
-{
-    if (processLayerIDRequest(m_webPage, requestID, id))
-        return;
-
-    m_pendingLayerRequests.add(requestID, id);
 }
 
 void LayerTreeCoordinator::setBackgroundColor(const WebCore::Color& color)

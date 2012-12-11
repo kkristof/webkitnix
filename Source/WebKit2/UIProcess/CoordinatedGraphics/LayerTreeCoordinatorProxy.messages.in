@@ -43,7 +43,6 @@ messages -> LayerTreeCoordinatorProxy {
     DidChangeScrollPosition(WebCore::FloatPoint position)
     SetLayerAnimations(uint32_t id, WebCore::GraphicsLayerAnimations animations)
     SetAnimationsLocked(bool locked)
-    DidFindLayerIDForElement(uint32_t requestID, uint32_t layerID);
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     RequestAnimationFrame()

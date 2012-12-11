@@ -112,9 +112,6 @@ public:
     void setAnimationsLocked(bool);
     void setBackgroundColor(const WebCore::Color&);
     void setDrawsBackground(bool enable) { m_setDrawsBackground = enable; }
-#if PLATFORM(NIX)
-    void addCustomPlatformLayer(uint32_t rendererID, CoordinatedLayerID, WebCore::TextureMapperPlatformLayer*);
-#endif
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     void requestAnimationFrame();
@@ -200,9 +197,6 @@ private:
 #if ENABLE(CSS_SHADERS)
     typedef HashMap<int, RefPtr<WebCore::CustomFilterProgram> > CustomFilterProgramMap;
     CustomFilterProgramMap m_customFilterPrograms;
-#endif
-#if PLATFORM(NIX)
-    HashMap<uint32_t, WebCore::TextureMapperPlatformLayer*> m_customPlatformLayers;
 #endif
 };
 

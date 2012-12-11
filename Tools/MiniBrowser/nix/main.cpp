@@ -59,7 +59,6 @@ public:
     virtual void doneWithTouchEvent(const Nix::TouchEvent&, bool wasEventHandled);
     virtual void doneWithGestureEvent(const Nix::GestureEvent&, bool wasEventHandled);
     virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
-    virtual void compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* matrix, float opacity);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&);
@@ -73,7 +72,6 @@ public:
 
     void setTouchEmulationMode(bool enabled);
     Mode mode() const { return m_mode; }
-    void setCustomLayerTestElement(const char* element);
 private:
 
     enum ScaleBehavior {
@@ -176,12 +174,6 @@ MiniBrowser::~MiniBrowser()
     delete m_webView;
     delete m_window;
     delete m_touchMocker;
-}
-
-void MiniBrowser::setCustomLayerTestElement(const char* element)
-{
-    WKRetainPtr<WKStringRef> str = adoptWK(WKStringCreateWithUTF8CString(element));
-    m_customRendererID = m_webView->addCustomLayer(str.get());
 }
 
 void MiniBrowser::setTouchEmulationMode(bool enabled)
@@ -730,35 +722,6 @@ void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect
     }
 }
 
-
-void MiniBrowser::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity)
-{
-    if (id != m_customRendererID)
-        return;
-
-    glUseProgram(0);
-
-    const float p[] = { rect.origin.x, rect.origin.y, rect.origin.x + rect.size.width, rect.origin.y + rect.size.width };
-    const GLfloat vertexData[] = { p[0], p[1], p[2], p[1], p[2], p[3], p[0], p[3] };
-
-    WKSize size = m_window->size();
-    glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, size.width, size.height, 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glLoadMatrixf(matrix);
-    glEnable(GL_BLEND);
-    glEnable(GL_COLOR);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glColor4f(1, 0, 0, 1);
-    glVertexPointer(2, GL_FLOAT, 0, vertexData);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glPopMatrix();
-}
-
 struct Device {
     enum Type {
         Default,
@@ -826,8 +789,6 @@ int main(int argc, char* argv[])
             device = Device::IPhone;
         else if (!strcmp(argv[i], "--android"))
             device = Device::Android;
-        else if (!strcmp(argv[i], "--custom-layer-id"))
-            customLayerTestElement = argv[++i];
         else
             url = argv[i];
     }
@@ -859,8 +820,6 @@ int main(int argc, char* argv[])
         printf("Use Control + mouse wheel to zoom in and out.\n");
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
-    if (customLayerTestElement)
-        browser.setCustomLayerTestElement(customLayerTestElement);
 
     g_main_loop_run(mainLoop);
     g_main_loop_unref(mainLoop);

@@ -115,8 +115,6 @@ public:
 #endif
     virtual void setBackgroundColor(const WebCore::Color&) OVERRIDE;
 
-    void getLayerIDForElementID(uint32_t, const String&);
-
 protected:
     explicit LayerTreeCoordinator(WebPage*);
 
@@ -203,9 +201,6 @@ private:
     bool m_layerFlushSchedulingEnabled;
     uint64_t m_forceRepaintAsyncCallbackID;
     bool m_animationsLocked;
-
-    void processPendingLayerRequests();
-    HashMap<uint32_t, String> m_pendingLayerRequests;
 };
 
 }

@@ -97,7 +97,6 @@ public:
     // It's the caller's responsibility to remove the renderer before it's deleted.
     uint32_t addCustomPlatformLayer(const String& elementID, WebCore::TextureMapperPlatformLayer*);
     void removeCustomPlatformLayer(uint32_t);
-    void didFindLayerIDForElement(uint32_t requestID, uint32_t layerID);
 
 protected:
     void dispatchUpdate(const Function<void()>&);
