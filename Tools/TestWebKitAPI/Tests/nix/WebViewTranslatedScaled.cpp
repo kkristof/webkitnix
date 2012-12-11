@@ -25,16 +25,8 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
 
-    cairo_matrix_t cairoTransform;
     const int translationDelta = 10;
-    cairo_matrix_init_translate(&cairoTransform, translationDelta, translationDelta);
-    NIXMatrix transform;
-    transform.xx = cairoTransform.xx;
-    transform.yx = cairoTransform.yx;
-    transform.xy = cairoTransform.xy;
-    transform.yy = cairoTransform.yy;
-    transform.x0 = cairoTransform.x0;
-    transform.y0 = cairoTransform.y0;
+    NIXMatrix transform = NIXMatrixMakeTranslation(translationDelta, translationDelta);
     NIXViewSetUserViewportTransformation(view.get(), &transform);
 
     NIXViewInitialize(view.get());

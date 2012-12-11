@@ -178,15 +178,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     NIXViewSetSize(m_view, m_viewRect.size);
 
     if (viewportHorizontalDisplacement || viewportVerticalDisplacement) {
-        cairo_matrix_t userTransform;
-        cairo_matrix_init_translate(&userTransform, viewportHorizontalDisplacement, viewportVerticalDisplacement);
-        NIXMatrix transform;
-        transform.xx = userTransform.xx;
-        transform.yx = userTransform.yx;
-        transform.xy = userTransform.xy;
-        transform.yy = userTransform.yy;
-        transform.x0 = userTransform.x0;
-        transform.y0 = userTransform.y0;
+        NIXMatrix transform = NIXMatrixMakeTranslation(viewportHorizontalDisplacement, viewportVerticalDisplacement);
         NIXViewSetUserViewportTransformation(m_view, &transform);
     }
 

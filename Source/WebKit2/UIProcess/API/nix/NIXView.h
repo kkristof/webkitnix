@@ -6,16 +6,27 @@
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
 
-// TODO: Remove this include together with the C++ API.
-#include <cairo.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct {
+    double xx; double yx;
+    double xy; double yy;
+    double x0; double y0;
+} NIXMatrix;
+
+WK_INLINE NIXMatrix NIXMatrixMakeTranslation(double x0, double y0)
+{
+    NIXMatrix m;
+    m.xx = 1; m.xy = 0; m.x0 = x0;
+    m.yx = 0; m.yy = 1; m.y0 = y0;
+    return m;
+}
+
 typedef struct OpaqueNIXView* NIXView;
 
-// NIXViewClient -----------------------------------------------------------
+// NIXViewClient.
 typedef void (*NIXViewCallback)(NIXView view, const void* clientInfo);
 typedef void (*NIXViewViewNeedsDisplayCallback)(NIXView view, WKRect area, const void* clientInfo);
 typedef void (*NIXViewWebProcessCrashedCallback)(NIXView view, WKStringRef url, const void* clientInfo);
@@ -47,7 +58,6 @@ typedef struct NIXViewClient NIXViewClient;
 
 enum { kNIXViewClientCurrentVersion = 0 };
 
-// NIXView -----------------------------------------------------------------
 WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup);
 WK_EXPORT void NIXViewRelease(NIXView view);
 
@@ -60,12 +70,6 @@ WK_EXPORT void NIXViewSetSize(NIXView view, WKSize size);
 
 WK_EXPORT WKPoint NIXViewScrollPosition(NIXView view);
 WK_EXPORT void NIXViewSetScrollPosition(NIXView view, WKPoint position);
-
-typedef struct {
-    double xx; double yx;
-    double xy; double yy;
-    double x0; double y0;
-} NIXMatrix;
 
 WK_EXPORT void NIXViewSetUserViewportTransformation(NIXView view, const NIXMatrix* userViewportTransformation);
 WK_EXPORT WKPoint NIXViewUserViewportToContents(NIXView view, WKPoint point);
