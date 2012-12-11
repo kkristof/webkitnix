@@ -35,6 +35,7 @@ LIST(APPEND WebKit2_SOURCES
 
     UIProcess/cairo/BackingStoreCairo.cpp
 
+    UIProcess/nix/WebViewClient.cpp
     UIProcess/nix/TextCheckerNix.cpp
     UIProcess/nix/WebContextNix.cpp
     UIProcess/nix/WebFullScreenManagerProxyNix.cpp
@@ -96,6 +97,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/Shared/nix"
     "${WEBKIT2_DIR}/UIProcess/API/C/soup"
     "${WEBKIT2_DIR}/UIProcess/soup"
+    "${WEBKIT2_DIR}/UIProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
     "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
