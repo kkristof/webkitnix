@@ -20,7 +20,7 @@ public:
 
     void viewNeedsDisplay(WKRect area);
     void webProcessCrashed(WKStringRef url);
-    void webProcessRelaunched() { }
+    void webProcessRelaunched();
     void doneWithTouchEvent(const NIXTouchEvent&, bool wasEventHandled);
     void doneWithGestureEvent(const NIXGestureEvent&, bool wasEventHandled);
     void pageDidRequestScroll(WKPoint position);

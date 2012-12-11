@@ -30,6 +30,13 @@ void WebViewClient::webProcessCrashed(WKStringRef url)
     m_client.webProcessCrashed(url, m_client.clientInfo);
 }
 
+void WebViewClient::webProcessRelaunched()
+{
+    if (!m_client.webProcessRelaunched)
+        return;
+    m_client.webProcessRelaunched(m_client.clientInfo);
+}
+
 void WebViewClient::doneWithTouchEvent(const NIXTouchEvent& event, bool wasEventHandled)
 {
     if (!m_client.doneWithTouchEvent)
