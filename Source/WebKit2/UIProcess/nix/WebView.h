@@ -2,7 +2,7 @@
 #define WebView_h
 
 #include "NIXView.h"
-#include "NixEvents.h"
+#include "NIXEvents.h"
 #include "NotImplemented.h"
 #include "PageClient.h"
 #include "TextureMapperPlatformLayer.h"

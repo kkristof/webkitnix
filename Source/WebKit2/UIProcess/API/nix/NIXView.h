@@ -1,7 +1,7 @@
 #ifndef NIXView_h
 #define NIXView_h
 
-#include "NixEvents.h"
+#include "NIXEvents.h"
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>

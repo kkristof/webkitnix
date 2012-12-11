@@ -29,7 +29,7 @@
 #include "WebEvent.h"
 
 #if PLATFORM(NIX)
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #endif
 
 #if PLATFORM(QT)

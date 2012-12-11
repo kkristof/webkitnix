@@ -1,7 +1,7 @@
 #ifndef GestureRecognizer_h
 #define GestureRecognizer_h
 
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #include <WebKit2/WKGeometry.h>
 #include <glib.h>
 

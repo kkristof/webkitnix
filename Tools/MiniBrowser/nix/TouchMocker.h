@@ -1,7 +1,7 @@
 #ifndef TouchMocker_h
 #define TouchMocker_h
 
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #include <NIXView.h>
 #include <map>
 

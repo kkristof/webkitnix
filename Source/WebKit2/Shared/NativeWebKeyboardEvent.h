@@ -41,7 +41,7 @@ typedef union _GdkEvent GdkEvent;
 #elif PLATFORM(EFL)
 #include <Evas.h>
 #elif PLATFORM(NIX)
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #endif
 
 namespace WebKit {

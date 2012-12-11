@@ -40,7 +40,7 @@ typedef union _GdkEvent GdkEvent;
 #include <Evas.h>
 #include <WebCore/AffineTransform.h>
 #elif PLATFORM(NIX)
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #endif
 
 namespace WebKit {

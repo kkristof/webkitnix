@@ -1,5 +1,5 @@
-#ifndef NixEvents_h
-#define NixEvents_h
+#ifndef NIXEvents_h
+#define NIXEvents_h
 
 #include <WebKit2/WKBase.h>
 #include <WebKit2/WKEvent.h>
@@ -576,4 +576,4 @@ typedef struct NIXGestureEvent NIXGestureEvent;
 }
 #endif
 
-#endif // NixEvents_h
+#endif // NIXEvents_h
