@@ -39,7 +39,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
 {
     m_viewClient = new NIXViewClient;
     memset(m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient->version = kNIXViewCurrentVersion;
+    m_viewClient->version = kNIXViewClientCurrentVersion;
     m_viewClient->pageDidRequestScroll = pageDidRequestScroll;
     m_view = NIXViewCreate(context, pageGroup, m_viewClient);
     m_viewClient->clientInfo = m_view;

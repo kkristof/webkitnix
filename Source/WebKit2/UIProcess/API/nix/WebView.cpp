@@ -46,6 +46,7 @@
 #include "WebPopupMenuProxy.h"
 #include "WebPreferences.h"
 #include "WindowsKeyboardCodes.h"
+#include "APIClient.h"
 #include <JavaScriptCore/WebKitAvailability.h>
 #include <WebCore/Scrollbar.h>
 #include <WebCore/TextureMapperGL.h>
@@ -61,76 +62,111 @@ using namespace WebKit;
 
 namespace Nix {
 
-WebViewClient::WebViewClient(NIXViewClient* viewClient)
-    : m_viewClient(viewClient)
-{
-}
+// TODO: Once versions start to matter, change this to inherit from APIClient and set
+// the appropriate traits in APIClientTraits.
+class WebViewClient {
+public:
+    WebViewClient()
+    {
+        initialize(0);
+    }
 
-WebViewClient::~WebViewClient()
-{
-}
+    void initialize(const NIXViewClient* client)
+    {
+        if (!client) {
+            memset(&m_client, 0, sizeof(m_client));
+            return;
+        }
+
+        ASSERT(client->version == kNIXViewClientCurrentVersion);
+        m_client = *client;
+    }
+
+    const NIXViewClient& client() const { return m_client; }
+
+    void viewNeedsDisplay(WKRect area);
+    void webProcessCrashed(WKStringRef url);
+    void webProcessRelaunched() { }
+    void doneWithTouchEvent(const NIXTouchEvent&, bool wasEventHandled);
+    void doneWithGestureEvent(const NIXGestureEvent&, bool wasEventHandled);
+    void pageDidRequestScroll(WKPoint position);
+    void didChangeContentsSize(WKSize size);
+    void didFindZoomableArea(WKPoint target, WKRect area);
+    void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
+    void compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity);
+
+private:
+    NIXViewClient m_client;
+};
+
 
 void WebViewClient::viewNeedsDisplay(WKRect rect)
 {
-    if (m_viewClient && m_viewClient->viewNeedsDisplay)
-        m_viewClient->viewNeedsDisplay(rect, m_viewClient->clientInfo);
+    if (!m_client.viewNeedsDisplay)
+        return;
+    m_client.viewNeedsDisplay(rect, m_client.clientInfo);
 }
 
 void WebViewClient::webProcessCrashed(WKStringRef url)
 {
-    if (m_viewClient && m_viewClient->webProcessCrashed)
-        m_viewClient->webProcessCrashed(url, m_viewClient->clientInfo);
+    if (!m_client.webProcessCrashed)
+        return;
+    m_client.webProcessCrashed(url, m_client.clientInfo);
 }
 
 void WebViewClient::doneWithTouchEvent(const NIXTouchEvent& event, bool wasEventHandled)
 {
-    if (m_viewClient && m_viewClient->doneWithTouchEvent)
-        m_viewClient->doneWithTouchEvent(&event, wasEventHandled, m_viewClient->clientInfo);
+    if (!m_client.doneWithTouchEvent)
+        return;
+    m_client.doneWithTouchEvent(&event, wasEventHandled, m_client.clientInfo);
 }
 
 void WebViewClient::doneWithGestureEvent(const NIXGestureEvent& event, bool wasEventHandled)
 {
-    if (m_viewClient && m_viewClient->doneWithGestureEvent)
-        m_viewClient->doneWithGestureEvent(&event, wasEventHandled, m_viewClient->clientInfo);
+    if (!m_client.doneWithGestureEvent)
+        return;
+    m_client.doneWithGestureEvent(&event, wasEventHandled, m_client.clientInfo);
 }
 
 void WebViewClient::pageDidRequestScroll(WKPoint point)
 {
-    if (m_viewClient && m_viewClient->pageDidRequestScroll)
-        m_viewClient->pageDidRequestScroll(point, m_viewClient->clientInfo);
+    if (!m_client.pageDidRequestScroll)
+        return;
+    m_client.pageDidRequestScroll(point, m_client.clientInfo);
 }
 void WebViewClient::didChangeContentsSize(WKSize size)
 {
-    if (m_viewClient && m_viewClient->didChangeContentsSize)
-        m_viewClient->didChangeContentsSize(size, m_viewClient->clientInfo);
+    if (!m_client.didChangeContentsSize)
+        return;
+    m_client.didChangeContentsSize(size, m_client.clientInfo);
 }
 
 void WebViewClient::didFindZoomableArea(WKPoint target, WKRect area)
 {
-    if (m_viewClient && m_viewClient->didFindZoomableArea)
-        m_viewClient->didFindZoomableArea(target, area, m_viewClient->clientInfo);
+    if (!m_client.didFindZoomableArea)
+        return;
+    m_client.didFindZoomableArea(target, area, m_client.clientInfo);
 }
 
 void WebViewClient::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
 {
-    if (m_viewClient && m_viewClient->updateTextInputState)
-        m_viewClient->updateTextInputState(isContentEditable, cursorRect, editorRect, m_viewClient->clientInfo);
+    if (!m_client.updateTextInputState)
+        return;
+    m_client.updateTextInputState(isContentEditable, cursorRect, editorRect, m_client.clientInfo);
 }
 
 void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity)
 {
-    if (m_viewClient && m_viewClient->compositeCustomLayerToCurrentGLContext)
-        m_viewClient->compositeCustomLayerToCurrentGLContext(id, rect, matrix, opacity, m_viewClient->clientInfo);
+    if (!m_client.compositeCustomLayerToCurrentGLContext)
+        return;
+    m_client.compositeCustomLayerToCurrentGLContext(id, rect, matrix, opacity, m_client.clientInfo);
 }
 
 
 class WebViewImpl : public PageClient {
 public:
-    static WebViewImpl* create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client);
-
-    WebViewImpl(WebContext* context, WebPageGroup* pageGroup, WebViewClient* client)
-        : m_client(client)
-        , m_webPageProxy(context->createWebPage(this, pageGroup))
+    WebViewImpl(WebContext* context, WebPageGroup* pageGroup, const NIXViewClient* viewClient)
+        : m_webPageProxy(context->createWebPage(this, pageGroup))
         , m_focused(true)
         , m_visible(true)
         , m_active(true)
@@ -138,6 +174,7 @@ public:
         , m_opacity(1.f)
         , m_isSuspended(false)
     {
+        m_viewClient.initialize(viewClient);
         m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
         cairo_matrix_t identityTransform;
         cairo_matrix_init_identity(&identityTransform);
@@ -210,7 +247,7 @@ public:
     virtual bool isViewInWindow() { return true; } // FIXME
     virtual IntSize viewSize() { return m_size; }
     virtual void processDidCrash();
-    virtual void didRelaunchProcess() { m_client->webProcessRelaunched(); }
+    virtual void didRelaunchProcess() { m_viewClient.webProcessRelaunched(); }
 
     virtual void pageDidRequestScroll(const IntPoint& point);
     virtual void didChangeContentsSize(const IntSize& size);
@@ -292,7 +329,7 @@ private:
 
     FloatRect visibleRect() const;
 
-    WebViewClient* m_client;
+    WebViewClient m_viewClient;
     WTF::RefPtr<WebPageProxy> m_webPageProxy;
     bool m_focused;
     bool m_visible;
@@ -334,12 +371,6 @@ private:
     HashMap<uint32_t, OwnPtr<CustomRenderer> > m_customRenderers;
 };
 
-WebViewImpl* WebViewImpl::create(WKContextRef contextRef, WKPageGroupRef pageGroupRef, WebViewClient* client)
-{
-    g_type_init();
-    return new WebViewImpl(toImpl(contextRef), toImpl(pageGroupRef), client);
-}
-
 void WebViewImpl::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, const FloatRect& rect, const TransformationMatrix& matrix, float opacity, BitmapTexture*)
 {
     ASSERT(texmap->accelerationMode() == TextureMapper::OpenGLMode);
@@ -373,7 +404,7 @@ uint32_t WebViewImpl::addCustomLayer(WKStringRef elementID)
     LayerTreeCoordinatorProxy* coordinator = drawingArea->layerTreeCoordinatorProxy();
     String str = toImpl(elementID)->string();
 
-    OwnPtr<CustomRenderer> renderer = CustomRenderer::create(m_client);
+    OwnPtr<CustomRenderer> renderer = CustomRenderer::create(&m_viewClient);
 
     uint32_t id = coordinator->addCustomPlatformLayer(str, renderer.get());
     renderer->setID(id);
@@ -498,7 +529,7 @@ PassOwnPtr<DrawingAreaProxy> WebViewImpl::createDrawingAreaProxy()
 
 void WebViewImpl::setViewNeedsDisplay(const IntRect& rect)
 {
-    m_client->viewNeedsDisplay(WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
+    m_viewClient.viewNeedsDisplay(WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
 }
 
 WKPageRef WebViewImpl::pageRef()
@@ -630,12 +661,12 @@ void WebViewImpl::findZoomableAreaForPoint(const WKPoint& point, int horizontalR
 
 void WebViewImpl::processDidCrash()
 {
-    m_client->webProcessCrashed(toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
+    m_viewClient.webProcessCrashed(toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
 }
 
 void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 {
-    m_client->pageDidRequestScroll(WKPointMake(point.x(), point.y()));
+    m_viewClient.pageDidRequestScroll(WKPointMake(point.x(), point.y()));
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
@@ -644,13 +675,13 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
 void WebViewImpl::didChangeContentsSize(const IntSize& size)
 {
     m_contentsSize = size;
-    m_client->didChangeContentsSize(WKSizeMake(size.width(), size.height()));
+    m_viewClient.didChangeContentsSize(WKSizeMake(size.width(), size.height()));
     commitViewportChanges();
 }
 
 void WebViewImpl::didFindZoomableArea(const IntPoint& target, const IntRect& area)
 {
-    m_client->didFindZoomableArea(WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
+    m_viewClient.didFindZoomableArea(WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
 }
 
 void WebViewImpl::pageTransitionViewportReady()
@@ -668,14 +699,14 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation() const
 #if ENABLE(TOUCH_EVENTS)
 void WebViewImpl::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
 {
-    m_client->doneWithTouchEvent(*event.nativeEvent(), wasEventHandled);
+    m_viewClient.doneWithTouchEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
 #if ENABLE(GESTURE_EVENTS)
 void WebViewImpl::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
 {
-    m_client->doneWithGestureEvent(*event.nativeEvent(), wasEventHandled);
+    m_viewClient.doneWithGestureEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
@@ -685,7 +716,7 @@ void WebViewImpl::updateTextInputState()
     bool isContentEditable = editor.isContentEditable;
     const IntRect& cursorRect = editor.cursorRect;
     const IntRect& editorRect = editor.editorRect;
-    m_client->updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
+    m_viewClient.updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
 }
 
 void WebViewImpl::suspendActiveDOMObjectsAndAnimations()
@@ -718,10 +749,10 @@ static NIXView toAPI(Nix::WebViewImpl* view)
     return reinterpret_cast<NIXView>(view);
 }
 
-NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient)
+NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, const NIXViewClient* viewClient)
 {
-    Nix::WebViewClient* client = new Nix::WebViewClient(viewClient);
-    return toAPI(Nix::WebViewImpl::create(context, pageGroup, client));
+    g_type_init();
+    return toAPI(new Nix::WebViewImpl(toImpl(context), toImpl(pageGroup), viewClient));
 }
 
 void NIXViewRelease(NIXView view)

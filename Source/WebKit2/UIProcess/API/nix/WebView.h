@@ -13,40 +13,6 @@
 extern "C" {
 #endif
 
-struct NIXViewClient;
-
-#ifdef __cplusplus
-}
-#endif
-
-namespace Nix {
-
-class WK_EXPORT WebViewClient {
-public:
-    WebViewClient(NIXViewClient* viewClient = 0);
-    virtual ~WebViewClient();
-
-    virtual void viewNeedsDisplay(WKRect area);
-    virtual void webProcessCrashed(WKStringRef url);
-    virtual void webProcessRelaunched() { }
-    virtual void doneWithTouchEvent(const NIXTouchEvent&, bool wasEventHandled);
-    virtual void doneWithGestureEvent(const NIXGestureEvent&, bool wasEventHandled);
-    virtual void pageDidRequestScroll(WKPoint position);
-    virtual void didChangeContentsSize(WKSize size);
-    virtual void didFindZoomableArea(WKPoint target, WKRect area);
-    virtual void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect);
-    virtual void compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity);
-
-private:
-    NIXViewClient* m_viewClient;
-};
-
-} // namespace Nix
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct OpaqueNIXView* NIXView;
 
 // NIXViewClient -----------------------------------------------------------
@@ -79,10 +45,10 @@ struct NIXViewClient {
 };
 typedef struct NIXViewClient NIXViewClient;
 
-enum { kNIXViewCurrentVersion = 0 };
+enum { kNIXViewClientCurrentVersion = 0 };
 
 // NIXView -----------------------------------------------------------------
-WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, NIXViewClient* viewClient);
+WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, const NIXViewClient* viewClient);
 WK_EXPORT void NIXViewRelease(NIXView view);
 
 WK_EXPORT void NIXViewInitialize(NIXView view);

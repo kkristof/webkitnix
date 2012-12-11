@@ -56,7 +56,7 @@ ForceRepaintClient::ForceRepaintClient()
     , m_clearA(0)
 {
     memset(&m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient.version = kNIXViewCurrentVersion;
+    m_viewClient.version = kNIXViewClientCurrentVersion;
     m_viewClient.clientInfo = this;
     m_viewClient.viewNeedsDisplay = viewNeedsDisplay;
 }

@@ -153,7 +153,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
 
     m_viewClient = {
-        kNIXViewCurrentVersion,
+        kNIXViewClientCurrentVersion,
         static_cast<const void*>(this),
         MiniBrowser::viewNeedsDisplay,
         MiniBrowser::webProcessCrashed,

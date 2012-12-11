@@ -33,7 +33,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
 
     NIXViewClient viewClient;
     memset(&viewClient, 0, sizeof(NIXViewClient));
-    viewClient.version = kNIXViewCurrentVersion;
+    viewClient.version = kNIXViewClientCurrentVersion;
     viewClient.webProcessCrashed = webProcessCrashed;
     viewClient.webProcessRelaunched = webProcessRelaunched;
     NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, &viewClient));

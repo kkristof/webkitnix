@@ -38,7 +38,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
     m_viewClient = new NIXViewClient;
     memset(m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient->version = kNIXViewCurrentVersion;
+    m_viewClient->version = kNIXViewClientCurrentVersion;
     m_viewClient->viewNeedsDisplay = viewNeedsDisplay;
     m_viewClient->webProcessCrashed = webProcessCrashed;
     m_viewClient->webProcessRelaunched = webProcessRelaunched;

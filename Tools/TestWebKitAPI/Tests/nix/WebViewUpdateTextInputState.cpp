@@ -35,7 +35,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
 
     NIXViewClient viewClient;
     memset(&viewClient, 0, sizeof(NIXViewClient));
-    viewClient.version = kNIXViewCurrentVersion;
+    viewClient.version = kNIXViewClientCurrentVersion;
     viewClient.updateTextInputState = updateTextInputState;
     viewClient.doneWithGestureEvent = doneWithGestureEvent;
     NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, &viewClient));
