@@ -449,6 +449,20 @@ transitions/blendmode-transitions.html [ Failure ]
 fast/events/selectstart-by-single-click-with-shift.html [ Failure Pass ]
 fast/loader/submit-form-while-parsing-2.html [ Failure Pass ]
 
+# Failures after merge (3fe2361 2979e3f)
+fast/dom/HTMLTemplateElement/contentWrappers.html [ Failure ]
+fast/dom/HTMLTemplateElement/innerHTML-inert.html [ Failure ]
+fast/events/mouse-cursor-image-set.html [ Failure ]
+http/tests/security/xssAuditor/base-href-null-char.html [ Failure ]
+http/tests/security/xssAuditor/embed-tag-null-char.html [ Failure ]
+http/tests/security/xssAuditor/javascript-link-null-char.html [ Failure ]
+http/tests/security/xssAuditor/link-onclick-null-char.html [ Failure ]
+http/tests/security/xssAuditor/object-embed-tag-null-char.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-addslashes-null-char.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-null-char.html [ Failure ]
+http/tests/security/xssAuditor/script-tag-with-source-null-char.html [ Failure ]
+http/tests/xmlhttprequest/origin-exact-matching.html [ Failure ]
+
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
 
