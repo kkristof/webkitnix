@@ -28,21 +28,11 @@
 
 #include "NIXView.h"
 
-static void viewNeedsDisplay(WKRect, const void*) {}
-static void webProcessCrashed(WKStringRef, const void*) {}
-static void webProcessRelaunched(const void*) {}
-
 namespace TestWebKitAPI {
 
 PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
-    m_viewClient = new NIXViewClient;
-    memset(m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient->version = kNIXViewClientCurrentVersion;
-    m_viewClient->viewNeedsDisplay = viewNeedsDisplay;
-    m_viewClient->webProcessCrashed = webProcessCrashed;
-    m_viewClient->webProcessRelaunched = webProcessRelaunched;
-    m_view = NIXViewCreate(context, pageGroup, m_viewClient);
+    m_view = NIXViewCreate(context, pageGroup);
     NIXViewInitialize(m_view);
 
     WKPageSetUseFixedLayout(NIXViewGetPage(m_view), true);
@@ -51,7 +41,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 
 PlatformWebView::~PlatformWebView()
 {
-    delete m_viewClient;
+    NIXViewRelease(m_view);
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)

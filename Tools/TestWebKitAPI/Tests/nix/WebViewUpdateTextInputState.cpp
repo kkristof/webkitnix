@@ -33,12 +33,15 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
+
     NIXViewClient viewClient;
     memset(&viewClient, 0, sizeof(NIXViewClient));
     viewClient.version = kNIXViewClientCurrentVersion;
     viewClient.updateTextInputState = updateTextInputState;
     viewClient.doneWithGestureEvent = doneWithGestureEvent;
-    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, &viewClient));
+    NIXViewSetViewClient(view.get(), &viewClient);
+
     NIXViewInitialize(view.get());
 
     WKPageLoaderClient loaderClient;

@@ -51,7 +51,7 @@ public:
     virtual void handleSizeChanged(int, int);
     virtual void handleClosed();
 
-    // Nix::WebViewClient.
+    // NIXViewClient.
     static void viewNeedsDisplay(WKRect area, const void* clientInfo);
     static void webProcessCrashed(WKStringRef url, const void* clientInfo);
     static void webProcessRelaunched(const void* clientInfo);
@@ -121,8 +121,6 @@ private:
     WKPoint m_scrollPositionBeforeFocus;
     uint32_t m_customRendererID;
 
-    NIXViewClient m_viewClient;
-
     friend gboolean callUpdateDisplay(gpointer);
 };
 
@@ -152,21 +150,24 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     WKPreferencesSetFrameFlatteningEnabled(preferences, true);
     WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
 
-    m_viewClient = {
-        kNIXViewClientCurrentVersion,
-        static_cast<const void*>(this),
-        MiniBrowser::viewNeedsDisplay,
-        MiniBrowser::webProcessCrashed,
-        MiniBrowser::webProcessRelaunched,
-        MiniBrowser::doneWithTouchEvent,
-        MiniBrowser::doneWithGestureEvent,
-        MiniBrowser::pageDidRequestScroll,
-        MiniBrowser::didChangeContentsSize,
-        MiniBrowser::didFindZoomableArea,
-        MiniBrowser::updateTextInputState,
-        MiniBrowser::compositeCustomLayerToCurrentGLContext
-    };
-    m_view = NIXViewCreate(m_context.get(), m_pageGroup.get(), &m_viewClient);
+    m_view = NIXViewCreate(m_context.get(), m_pageGroup.get());
+
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.clientInfo = this;
+    viewClient.viewNeedsDisplay = MiniBrowser::viewNeedsDisplay;
+    viewClient.webProcessCrashed = MiniBrowser::webProcessCrashed;
+    viewClient.webProcessRelaunched = MiniBrowser::webProcessRelaunched;
+    viewClient.doneWithTouchEvent = MiniBrowser::doneWithTouchEvent;
+    viewClient.doneWithGestureEvent = MiniBrowser::doneWithGestureEvent;
+    viewClient.pageDidRequestScroll = MiniBrowser::pageDidRequestScroll;
+    viewClient.didChangeContentsSize = MiniBrowser::didChangeContentsSize;
+    viewClient.didFindZoomableArea = MiniBrowser::didFindZoomableArea;
+    viewClient.updateTextInputState = MiniBrowser::updateTextInputState;
+    viewClient.compositeCustomLayerToCurrentGLContext = MiniBrowser::compositeCustomLayerToCurrentGLContext;
+    NIXViewSetViewClient(m_view, &viewClient);
+
     NIXViewInitialize(m_view);
 
     if (m_mode == MobileMode)

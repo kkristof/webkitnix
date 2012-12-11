@@ -49,16 +49,19 @@ void PageLoader::forceRepaint()
     m_didFinishLoadAndRepaint = false;
 }
 
-ForceRepaintClient::ForceRepaintClient()
-    : m_clearR(0)
+ForceRepaintClient::ForceRepaintClient(NIXView view)
+    : m_view(view)
+    , m_clearR(0)
     , m_clearG(0)
     , m_clearB(0)
     , m_clearA(0)
 {
-    memset(&m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient.version = kNIXViewClientCurrentVersion;
-    m_viewClient.clientInfo = this;
-    m_viewClient.viewNeedsDisplay = viewNeedsDisplay;
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.clientInfo = this;
+    viewClient.viewNeedsDisplay = viewNeedsDisplay;
+    NIXViewSetViewClient(m_view, &viewClient);
 }
 
 void ForceRepaintClient::setClearColor(int r, int g, int b, int a)

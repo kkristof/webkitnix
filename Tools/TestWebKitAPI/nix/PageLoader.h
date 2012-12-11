@@ -9,14 +9,13 @@ namespace Util {
 
 class ForceRepaintClient {
 public:
-    ForceRepaintClient();
-    static void viewNeedsDisplay(WKRect, const void*);
+    ForceRepaintClient(NIXView);
     void setClearColor(int r, int g, int b, int a);
-    void setView(NIXView view) { m_view = view; }
-    NIXViewClient* viewClient() { return &m_viewClient; }
+
 private:
+    static void viewNeedsDisplay(WKRect, const void*);
+
     NIXView m_view;
-    NIXViewClient m_viewClient;
     int m_clearR;
     int m_clearG;
     int m_clearB;

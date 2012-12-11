@@ -53,7 +53,6 @@ typedef Evas_Object* PlatformWKView;
 typedef Ecore_Evas* PlatformWindow;
 #elif PLATFORM(NIX)
 typedef struct OpaqueNIXView* NIXView;
-struct NIXViewClient;
 typedef NIXView PlatformWKView;
 typedef int PlatformWindow;
 #endif
@@ -95,8 +94,6 @@ private:
 
 #if PLATFORM(WIN)
     WindowMessageObserver* m_parentWindowMessageObserver;
-#elif PLATFORM(NIX)
-    NIXViewClient* m_viewClient;
 #endif
 };
 

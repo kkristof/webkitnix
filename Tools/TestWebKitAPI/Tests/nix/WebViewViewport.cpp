@@ -21,9 +21,8 @@ TEST(WebKitNix, WebViewViewport)
     glViewport(0, 0, size.width, size.height);
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
-    Util::ForceRepaintClient client;
-    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, client.viewClient()));
-    client.setView(view.get());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
+    Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
 
     NIXViewInitialize(view.get());

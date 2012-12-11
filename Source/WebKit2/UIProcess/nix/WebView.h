@@ -15,8 +15,10 @@ class LayerTreeRenderer;
 
 class WebView : public PageClient {
 public:
-    WebView(WebContext* context, WebPageGroup* pageGroup, const NIXViewClient* viewClient);
+    WebView(WebContext* context, WebPageGroup* pageGroup);
     virtual ~WebView() { }
+
+    void setViewClient(const NIXViewClient* viewClient);
 
     void initialize();
 

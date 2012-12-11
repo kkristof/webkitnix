@@ -30,13 +30,15 @@ static void webProcessRelaunched(const void*)
 TEST(WebKitNix, WebViewWebProcessCrashed)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(Util::createContextForInjectedBundleTest("WebViewWebProcessCrashedTest"));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
 
     NIXViewClient viewClient;
     memset(&viewClient, 0, sizeof(NIXViewClient));
     viewClient.version = kNIXViewClientCurrentVersion;
     viewClient.webProcessCrashed = webProcessCrashed;
     viewClient.webProcessRelaunched = webProcessRelaunched;
-    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, &viewClient));
+    NIXViewSetViewClient(view.get(), &viewClient);
+
     NIXViewInitialize(view.get());
 
     WKPageLoaderClient loaderClient;

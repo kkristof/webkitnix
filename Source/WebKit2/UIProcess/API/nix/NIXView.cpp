@@ -49,15 +49,20 @@ static NIXView toAPI(WebKit::WebView* view)
     return reinterpret_cast<NIXView>(view);
 }
 
-NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, const NIXViewClient* viewClient)
+NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup)
 {
     g_type_init();
-    return toAPI(new WebKit::WebView(toImpl(context), toImpl(pageGroup), viewClient));
+    return toAPI(new WebKit::WebView(toImpl(context), toImpl(pageGroup)));
 }
 
 void NIXViewRelease(NIXView view)
 {
     delete toImpl(view);
+}
+
+void NIXViewSetViewClient(NIXView view, const NIXViewClient* viewClient)
+{
+    toImpl(view)->setViewClient(viewClient);
 }
 
 void NIXViewInitialize(NIXView view)

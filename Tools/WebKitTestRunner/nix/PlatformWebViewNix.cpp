@@ -37,21 +37,23 @@ namespace WTR {
 
 PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup, WKDictionaryRef options)
 {
-    m_viewClient = new NIXViewClient;
-    memset(m_viewClient, 0, sizeof(NIXViewClient));
-    m_viewClient->version = kNIXViewClientCurrentVersion;
-    m_viewClient->pageDidRequestScroll = pageDidRequestScroll;
-    m_view = NIXViewCreate(context, pageGroup, m_viewClient);
-    m_viewClient->clientInfo = m_view;
+    m_view = NIXViewCreate(context, pageGroup);
+    m_window = 0;
+
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.pageDidRequestScroll = pageDidRequestScroll;
+    viewClient.clientInfo = m_view;
+    NIXViewSetViewClient(m_view, &viewClient);
+
     NIXViewInitialize(m_view);
     NIXViewSetSize(m_view, WKSizeMake(800, 600));
-
-    m_window = 0;
 }
 
 PlatformWebView::~PlatformWebView()
 {
-    delete m_viewClient;
+    NIXViewRelease(m_view);
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)

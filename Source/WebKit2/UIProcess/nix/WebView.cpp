@@ -45,7 +45,7 @@ using namespace WebCore;
 
 namespace WebKit {
 
-WebView::WebView(WebContext* context, WebPageGroup* pageGroup, const NIXViewClient* viewClient)
+WebView::WebView(WebContext* context, WebPageGroup* pageGroup)
     : m_webPageProxy(context->createWebPage(this, pageGroup))
     , m_focused(true)
     , m_visible(true)
@@ -54,7 +54,6 @@ WebView::WebView(WebContext* context, WebPageGroup* pageGroup, const NIXViewClie
     , m_scale(1.f)
     , m_opacity(1.f)
 {
-    m_viewClient.initialize(viewClient);
     m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
     cairo_matrix_t identityTransform;
     cairo_matrix_init_identity(&identityTransform);
@@ -102,6 +101,10 @@ uint32_t WebView::addCustomLayer(WKStringRef elementID)
     return id;
 }
 
+void WebView::setViewClient(const NIXViewClient* viewClient)
+{
+    m_viewClient.initialize(viewClient);
+}
 
 void WebView::initialize()
 {

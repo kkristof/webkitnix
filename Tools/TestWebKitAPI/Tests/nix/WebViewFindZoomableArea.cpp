@@ -12,6 +12,19 @@ namespace TestWebKitAPI {
 static bool s_didFindZoomableArea;
 const WKPoint touchPoint = {13, 18};
 
+static void clear()
+{
+    glClearColor(0, 0, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+static void viewNeedsDisplay(WKRect, const void* clientInfo)
+{
+    NIXView view = reinterpret_cast<NIXView>(const_cast<void*>(clientInfo));
+    clear();
+    NIXViewPaintToCurrentGLContext(view);
+}
+
 static void didFindZoomableArea(WKPoint target, WKRect area, const void*)
 {
     EXPECT_EQ(target.x, touchPoint.x);
@@ -35,22 +48,24 @@ TEST(WebKitNix, WebViewFindZoomableArea)
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
 
-    Util::ForceRepaintClient client;
-    client.viewClient()->didFindZoomableArea = didFindZoomableArea;
-    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0, client.viewClient()));
-    client.setView(view.get());
-    client.setClearColor(0, 0, 1, 1);
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.clientInfo = view.get();
+    viewClient.viewNeedsDisplay = viewNeedsDisplay;
+    viewClient.didFindZoomableArea = didFindZoomableArea;
+    NIXViewSetViewClient(view.get(), &viewClient);
+
     NIXViewInitialize(view.get());
     WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
     NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);
-    glClearColor(0, 0, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    clear();
 
     Util::PageLoader loader(view.get());
-
     loader.waitForLoadURLAndRepaint("../nix/red-rectangle");
 
     // Using same touch radius as MockedTouchPoint::MockedTouchPoint()

@@ -48,8 +48,10 @@ typedef struct NIXViewClient NIXViewClient;
 enum { kNIXViewClientCurrentVersion = 0 };
 
 // NIXView -----------------------------------------------------------------
-WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, const NIXViewClient* viewClient);
+WK_EXPORT NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup);
 WK_EXPORT void NIXViewRelease(NIXView view);
+
+WK_EXPORT void NIXViewSetViewClient(NIXView view, const NIXViewClient* viewClient);
 
 WK_EXPORT void NIXViewInitialize(NIXView view);
 

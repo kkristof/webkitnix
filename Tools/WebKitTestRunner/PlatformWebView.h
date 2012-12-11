@@ -55,7 +55,6 @@ typedef WKViewRef PlatformWKView;
 typedef GtkWidget* PlatformWindow;
 #elif PLATFORM(NIX)
 typedef struct OpaqueNIXView* NIXView;
-struct NIXViewClient;
 typedef NIXView PlatformWKView;
 typedef int PlatformWindow;
 #elif PLATFORM(EFL)
@@ -111,8 +110,6 @@ private:
 #endif
 #if PLATFORM(QT)
     QEventLoop* m_modalEventLoop;
-#elif PLATFORM(NIX)
-    NIXViewClient* m_viewClient;
 #endif
 };
 
