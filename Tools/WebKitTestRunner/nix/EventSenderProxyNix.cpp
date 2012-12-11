@@ -42,7 +42,7 @@
 #include <wtf/PassOwnArrayPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
-#include <API/nix/WebView.h>
+#include <API/nix/NIXView.h>
 #include <API/C/WKAPICast.h>
 
 namespace WTR {

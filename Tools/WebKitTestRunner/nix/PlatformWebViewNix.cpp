@@ -21,7 +21,7 @@
 #include "PlatformWebView.h"
 
 #include "WebKit2/WKAPICast.h"
-#include "WebView.h"
+#include "NIXView.h"
 
 static void pageDidRequestScroll(WKPoint position, const void* clientInfo)
 {

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "PlatformWebView.h"
 
-#include "WebView.h"
+#include "NIXView.h"
 
 static void viewNeedsDisplay(WKRect, const void*) {}
 static void webProcessCrashed(WKStringRef, const void*) {}

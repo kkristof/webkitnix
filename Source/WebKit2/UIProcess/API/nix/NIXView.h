@@ -1,5 +1,5 @@
-#ifndef WebView_h
-#define WebView_h
+#ifndef NIXView_h
+#define NIXView_h
 
 #include "NixEvents.h"
 #include <WebKit2/WKContext.h>
@@ -144,4 +144,4 @@ private:
 #endif // __cplusplus
 
 
-#endif // WebView_h
+#endif // NIXView_h

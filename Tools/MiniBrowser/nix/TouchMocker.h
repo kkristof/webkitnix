@@ -2,7 +2,7 @@
 #define TouchMocker_h
 
 #include <NixEvents.h>
-#include <WebView.h>
+#include <NIXView.h>
 #include <map>
 
 struct MockedTouchPoint : public NIXTouchPoint {

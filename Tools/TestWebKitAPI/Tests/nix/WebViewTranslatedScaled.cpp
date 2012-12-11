@@ -2,7 +2,7 @@
 
 #include "PageLoader.h"
 #include "GLUtilities.h"
-#include "WebView.h"
+#include "NIXView.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
 

@@ -1,7 +1,7 @@
 #include "config.h"
 #include "PageLoader.h"
 #include "PlatformUtilities.h"
-#include "WebView.h"
+#include "NIXView.h"
 #include "WebKit2/WKRetainPtr.h"
 #include <cstring>
 

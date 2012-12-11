@@ -2,7 +2,7 @@
 #define PageLoader_h
 
 #include "WebKit2/WKPage.h"
-#include "WebView.h"
+#include "NIXView.h"
 
 namespace TestWebKitAPI {
 namespace Util {

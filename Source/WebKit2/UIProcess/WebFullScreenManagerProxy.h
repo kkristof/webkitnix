@@ -32,7 +32,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #if PLATFORM(NIX)
-#include <nix/WebView.h>
+#include <nix/NIXView.h>
 #endif
 
 namespace CoreIPC {

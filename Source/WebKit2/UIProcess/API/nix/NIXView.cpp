@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "WebView.h"
+#include "NIXView.h"
 
 #include "Cursor.h"
 #include "DrawingAreaProxyImpl.h"
@@ -52,7 +52,6 @@
 #include <WebCore/TextureMapperGL.h>
 #include <WebKit2/NixEvents.h>
 #include <WebKit2/WKBundle.h>
-#include <WebKit2/WebView.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/MathExtras.h>
 #include <cairo.h>

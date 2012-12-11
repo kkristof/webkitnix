@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "WebView.h"
+#include "NIXView.h"
 #include "PageLoader.h"
 #include "GLUtilities.h"
 #include "WebKit2/WKRetainPtr.h"

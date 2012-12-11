@@ -7,7 +7,7 @@
 #include <WebKit2/WKPreferencesPrivate.h>
 #include <WebKit2/WKString.h>
 #include <WebKit2/WKURL.h>
-#include <WebView.h>
+#include <NIXView.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <cassert>
