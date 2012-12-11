@@ -10,11 +10,12 @@
 extern "C" {
 #endif
 
-typedef struct {
+struct NIXMatrix {
     double xx; double yx;
     double xy; double yy;
     double x0; double y0;
-} NIXMatrix;
+};
+typedef struct NIXMatrix NIXMatrix;
 
 WK_INLINE NIXMatrix NIXMatrixMakeTranslation(double x0, double y0)
 {

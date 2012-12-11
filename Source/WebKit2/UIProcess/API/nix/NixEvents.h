@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 // On Nix we use the same key mapping as Qt
-typedef enum {
+enum NIXKeyEventKey {
     kNIXKeyEventKey_Escape = 0x01000000,                // misc keys
     kNIXKeyEventKey_Tab = 0x01000001,
     kNIXKeyEventKey_Backtab = 0x01000002,
@@ -458,9 +458,10 @@ typedef enum {
     kNIXKeyEventKey_CameraFocus = 0x01100021,
 
     kNIXKeyEventKey_unknown = 0x01ffffff
-} NIXKeyEventKey;
+};
+typedef enum NIXKeyEventKey NIXKeyEventKey;
 
-typedef enum {
+enum NIXInputEventType {
     kNIXInputEventTypeMouseDown,
     kNIXInputEventTypeMouseUp,
     kNIXInputEventTypeMouseMove,
@@ -472,7 +473,8 @@ typedef enum {
     kNIXInputEventTypeTouchEnd,
     kNIXInputEventTypeTouchCancel,
     kNIXInputEventTypeGestureSingleTap
-} NIXInputEventType;
+};
+typedef enum NIXInputEventType NIXInputEventType;
 
 enum {
     kNIXInputEventModifiersShiftKey    = 1 << 0,
@@ -493,11 +495,12 @@ typedef uint32_t NIXInputEventModifiers;
     int globalX; \
     int globalY;
 
-typedef struct {
+struct NIXInputEvent {
     NIX_INPUT_EVENT_BASE
-} NIXInputEvent;
+};
+typedef struct NIXInputEvent NIXInputEvent;
 
-typedef struct {
+struct NIXKeyEvent {
     NIX_INPUT_EVENT_BASE
     // If a symbol has both lower and upper cases available, pass upper case as "key".
     NIXKeyEventKey key;
@@ -505,34 +508,39 @@ typedef struct {
     bool shouldUseUpperCase;
     // isKeypad is needed to distinguish on WebKit some keys (e.g. KEY_9 becomes VK_NUMPAD9).
     bool isKeypad;
-} NIXKeyEvent;
+};
+typedef struct NIXKeyEvent NIXKeyEvent;
 
-typedef struct {
+struct NIXMouseEvent {
     NIX_INPUT_EVENT_BASE
     WKEventMouseButton button;
     int clickCount;
-} NIXMouseEvent;
+};
+typedef struct NIXMouseEvent NIXMouseEvent;
 
-typedef enum {
+enum NIXWheelEventOrientation {
     kNIXWheelEventOrientationVertical,
     kNIXWheelEventOrientationHorizontal
-} NIXWheelEventOrientation;
+};
+typedef enum NIXWheelEventOrientation NIXWheelEventOrientation;
 
-typedef struct {
+struct NIXWheelEvent {
     NIX_INPUT_EVENT_BASE
     float delta;
     NIXWheelEventOrientation orientation;
-} NIXWheelEvent;
+};
+typedef struct NIXWheelEvent NIXWheelEvent;
 
-typedef enum {
+enum NIXTouchPointState {
     kNIXTouchPointStateTouchReleased,
     kNIXTouchPointStateTouchPressed,
     kNIXTouchPointStateTouchMoved,
     kNIXTouchPointStateTouchStationary,
     kNIXTouchPointStateTouchCancelled
-} NIXTouchPointState;
+};
+typedef enum NIXTouchPointState NIXTouchPointState;
 
-typedef struct {
+struct NIXTouchPoint {
     NIXTouchPointState state;
     int x;
     int y;
@@ -543,22 +551,26 @@ typedef struct {
     float rotationAngle;
     float pressure;
     unsigned id;
-} NIXTouchPoint;
+};
+typedef struct NIXTouchPoint NIXTouchPoint;
 
-#define NIX_TOUCH_EVENT_MAX_TOUCH_POINTS 10
-typedef struct {
+enum { kNIXMaximumTouchPointsPerTouchEvent = 10 };
+
+struct NIXTouchEvent {
     NIX_INPUT_EVENT_BASE
     unsigned numTouchPoints;
-    NIXTouchPoint touchPoints[NIX_TOUCH_EVENT_MAX_TOUCH_POINTS];
-} NIXTouchEvent;
+    NIXTouchPoint touchPoints[kNIXMaximumTouchPointsPerTouchEvent];
+};
+typedef struct NIXTouchEvent NIXTouchEvent;
 
-typedef struct {
+struct NIXGestureEvent {
     NIX_INPUT_EVENT_BASE
     int width;
     int height;
     float deltaX;
     float deltaY;
-} NIXGestureEvent;
+};
+typedef struct NIXGestureEvent NIXGestureEvent;
 
 #ifdef __cplusplus
 }
