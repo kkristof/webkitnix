@@ -34,8 +34,6 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
     m_view = NIXViewCreate(context, pageGroup);
     NIXViewInitialize(m_view);
-
-    WKPageSetUseFixedLayout(NIXViewGetPage(m_view), true);
     m_window = 0;
 }
 
