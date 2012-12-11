@@ -9,8 +9,6 @@
 
 static NIXKeyEventKey convertXKeySymToNativeKeycode(unsigned int keysym)
 {
-    using namespace Nix;
-
     for (int i = 0; XKeySymMappingTable[i]; i += 2) {
         if (XKeySymMappingTable[i] == keysym)
             return static_cast<NIXKeyEventKey>(XKeySymMappingTable[i+1]);

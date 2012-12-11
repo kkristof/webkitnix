@@ -1,4 +1,6 @@
 #include "GestureRecognizer.h"
+
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
