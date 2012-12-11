@@ -13,6 +13,9 @@ void WebViewClient::initialize(const NIXViewClient* client)
         return;
     }
 
+    // TODO: Once struct versions start to matter, change WebViewClient to inherit from
+    // APIClient and set the appropriate traits in APIClientTraits. We'll get the right
+    // implementation of initialize() for free.
     ASSERT(client->version == kNIXViewClientCurrentVersion);
     m_client = *client;
 }

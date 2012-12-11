@@ -7,8 +7,6 @@ namespace WebKit {
 
 class WebView;
 
-// TODO: Once versions start to matter, change this to inherit from APIClient and set
-// the appropriate traits in APIClientTraits.
 class WebViewClient {
 public:
     WebViewClient()
