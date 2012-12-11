@@ -35,6 +35,7 @@ LIST(APPEND WebKit2_SOURCES
 
     UIProcess/cairo/BackingStoreCairo.cpp
 
+    UIProcess/nix/WebView.cpp
     UIProcess/nix/WebViewClient.cpp
     UIProcess/nix/TextCheckerNix.cpp
     UIProcess/nix/WebContextNix.cpp
