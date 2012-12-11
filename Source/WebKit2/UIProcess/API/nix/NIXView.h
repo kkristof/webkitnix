@@ -125,12 +125,11 @@ public:
     typedef NIXView NIXViewAutoPtr::*UnspecifiedBoolType;
     operator UnspecifiedBoolType() const { return m_view ? &NIXViewAutoPtr::m_view : 0; }
 
-    NIXViewAutoPtr& operator=(NIXView view) {
+    void reset(NIXView view = 0) {
         NIXView old = m_view;
         m_view = view;
         if (old)
             NIXViewRelease(old);
-        return *this;
     }
 
 private:
