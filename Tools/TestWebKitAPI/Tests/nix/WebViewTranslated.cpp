@@ -3,6 +3,7 @@
 #include "PageLoader.h"
 #include "GLUtilities.h"
 #include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
 

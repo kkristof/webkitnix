@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "PageLoader.h"
 #include "GLUtilities.h"
 #include "WebKit2/WKRetainPtr.h"
