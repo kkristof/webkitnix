@@ -62,9 +62,9 @@ using namespace WebKit;
 
 namespace Nix {
 
-class WebViewImpl : public PageClient {
+class WebView : public PageClient {
 public:
-    WebViewImpl(WebContext* context, WebPageGroup* pageGroup, const NIXViewClient* viewClient)
+    WebView(WebContext* context, WebPageGroup* pageGroup, const NIXViewClient* viewClient)
         : m_webPageProxy(context->createWebPage(this, pageGroup))
         , m_focused(true)
         , m_visible(true)
@@ -80,7 +80,7 @@ public:
         setUserViewportTransformation(identityTransform);
     }
 
-    virtual ~WebViewImpl() { }
+    virtual ~WebView() { }
 
     // WebView.
     void initialize();
@@ -270,7 +270,7 @@ private:
     HashMap<uint32_t, OwnPtr<CustomRenderer> > m_customRenderers;
 };
 
-void WebViewImpl::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, const FloatRect& rect, const TransformationMatrix& matrix, float opacity, BitmapTexture*)
+void WebView::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, const FloatRect& rect, const TransformationMatrix& matrix, float opacity, BitmapTexture*)
 {
     ASSERT(texmap->accelerationMode() == TextureMapper::OpenGLMode);
     static_cast<TextureMapperGL*>(texmap)->graphicsContext3D()->makeContextCurrent();
@@ -284,7 +284,7 @@ void WebViewImpl::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, co
     m_client->compositeCustomLayerToCurrentGLContext(m_id, wkRect, m4, opacity);
 }
 
-void WebViewImpl::removeCustomLayer(uint32_t id)
+void WebView::removeCustomLayer(uint32_t id)
 {
     HashMap<uint32_t, OwnPtr<CustomRenderer> >::iterator it = m_customRenderers.find(id);
     if (it == m_customRenderers.end())
@@ -294,7 +294,7 @@ void WebViewImpl::removeCustomLayer(uint32_t id)
 }
 
 
-uint32_t WebViewImpl::addCustomLayer(WKStringRef elementID)
+uint32_t WebView::addCustomLayer(WKStringRef elementID)
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
@@ -312,33 +312,33 @@ uint32_t WebViewImpl::addCustomLayer(WKStringRef elementID)
 }
 
 
-void WebViewImpl::initialize()
+void WebView::initialize()
 {
     m_webPageProxy->initializeWebPage();
     layerTreeRenderer()->setActive(true);
 }
 
-void WebViewImpl::setTransparentBackground(bool value)
+void WebView::setTransparentBackground(bool value)
 {
     m_webPageProxy->setDrawsTransparentBackground(value);
 }
 
-bool WebViewImpl::transparentBackground() const
+bool WebView::transparentBackground() const
 {
     return m_webPageProxy->drawsTransparentBackground();
 }
 
-void WebViewImpl::setDrawBackground(bool value)
+void WebView::setDrawBackground(bool value)
 {
     m_webPageProxy->setDrawsBackground(value);
 }
 
-bool WebViewImpl::drawBackground() const
+bool WebView::drawBackground() const
 {
     return m_webPageProxy->drawsBackground();
 }
 
-void WebViewImpl::setScale(float scale)
+void WebView::setScale(float scale)
 {
     if (m_scale == scale)
         return;
@@ -348,7 +348,7 @@ void WebViewImpl::setScale(float scale)
         commitViewportChanges();
 }
 
-void WebViewImpl::setSize(const WKSize& size)
+void WebView::setSize(const WKSize& size)
 {
     IntSize newSize(size.width, size.height);
 
@@ -360,12 +360,12 @@ void WebViewImpl::setSize(const WKSize& size)
 }
 
 
-IntPoint WebViewImpl::roundedViewportPosition() const
+IntPoint WebView::roundedViewportPosition() const
 {
     return IntPoint(round(m_scrollPosition.x() * m_scale), round(m_scrollPosition.y() * m_scale));
 }
 
-void WebViewImpl::setScrollPosition(const WKPoint& position)
+void WebView::setScrollPosition(const WKPoint& position)
 {
     if (m_scrollPosition.x() == position.x && m_scrollPosition.y() == position.y)
         return;
@@ -381,87 +381,87 @@ void WebViewImpl::setScrollPosition(const WKPoint& position)
         drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
 }
 
-WKPoint WebViewImpl::userViewportToContents(WKPoint point)
+WKPoint WebView::userViewportToContents(WKPoint point)
 {
     cairo_matrix_t transformMatrix = userViewportToContentTransformation();
     cairo_matrix_transform_point(&transformMatrix, &point.x, &point.y);
     return point;
 }
 
-bool WebViewImpl::isFocused() const
+bool WebView::isFocused() const
 {
     return m_focused;
 }
 
-void WebViewImpl::setFocused(bool focused)
+void WebView::setFocused(bool focused)
 {
     m_focused = focused;
     m_webPageProxy->viewStateDidChange(WebPageProxy::ViewIsFocused);
 }
 
-bool WebViewImpl::isVisible() const
+bool WebView::isVisible() const
 {
     return m_visible;
 }
 
-void WebViewImpl::setVisible(bool visible)
+void WebView::setVisible(bool visible)
 {
     m_visible = visible;
     m_webPageProxy->viewStateDidChange(WebPageProxy::ViewIsVisible);
 }
 
-bool WebViewImpl::isActive() const
+bool WebView::isActive() const
 {
     return m_active;
 }
 
-void WebViewImpl::setActive(bool active)
+void WebView::setActive(bool active)
 {
     m_active = active;
     m_webPageProxy->viewStateDidChange(WebPageProxy::ViewWindowIsActive);
 }
 
-PassOwnPtr<DrawingAreaProxy> WebViewImpl::createDrawingAreaProxy()
+PassOwnPtr<DrawingAreaProxy> WebView::createDrawingAreaProxy()
 {
     return DrawingAreaProxyImpl::create(m_webPageProxy.get());
 }
 
-void WebViewImpl::setViewNeedsDisplay(const IntRect& rect)
+void WebView::setViewNeedsDisplay(const IntRect& rect)
 {
     m_viewClient.viewNeedsDisplay(WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
 }
 
-WKPageRef WebViewImpl::pageRef()
+WKPageRef WebView::pageRef()
 {
     return toAPI(m_webPageProxy.get());
 }
 
-void WebViewImpl::sendEvent(const Nix::InputEvent&)
+void WebView::sendEvent(const Nix::InputEvent&)
 {
     notImplemented();
 }
 
-void WebViewImpl::sendMouseEvent(const NIXMouseEvent& event)
+void WebView::sendMouseEvent(const NIXMouseEvent& event)
 {
     m_webPageProxy->handleMouseEvent(NativeWebMouseEvent(event, &m_lastCursorPosition));
 }
 
-void WebViewImpl::sendTouchEvent(const NIXTouchEvent& event)
+void WebView::sendTouchEvent(const NIXTouchEvent& event)
 {
     m_webPageProxy->handleTouchEvent(NativeWebTouchEvent(event));
 }
 
-void WebViewImpl::sendWheelEvent(const NIXWheelEvent& event)
+void WebView::sendWheelEvent(const NIXWheelEvent& event)
 {
     m_webPageProxy->handleWheelEvent(NativeWebWheelEvent(event));
 }
 
-void WebViewImpl::sendKeyEvent(const NIXKeyEvent& event)
+void WebView::sendKeyEvent(const NIXKeyEvent& event)
 {
     m_webPageProxy->handleKeyboardEvent(NativeWebKeyboardEvent(event));
 }
 
-void WebViewImpl::sendGestureEvent(const NIXGestureEvent& event)
+void WebView::sendGestureEvent(const NIXGestureEvent& event)
 {
     m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
 }
@@ -472,7 +472,7 @@ static TransformationMatrix toTransformationMatrix(const cairo_matrix_t& matrix)
     return TransformationMatrix(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
 }
 
-LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
+LayerTreeRenderer* WebView::layerTreeRenderer()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
@@ -489,7 +489,7 @@ LayerTreeRenderer* WebViewImpl::layerTreeRenderer()
     return renderer;
 }
 
-FloatRect WebViewImpl::visibleRect() const
+FloatRect WebView::visibleRect() const
 {
     WKSize vcSize = visibleContentsSize();
     FloatRect viewport(m_scrollPosition, FloatSize(vcSize.width, vcSize.height));
@@ -498,7 +498,7 @@ FloatRect WebViewImpl::visibleRect() const
     return visibleRect;
 }
 
-cairo_matrix_t WebViewImpl::contentToUserViewportTransformation() const
+cairo_matrix_t WebView::contentToUserViewportTransformation() const
 {
     cairo_matrix_t transform;
     if (m_webPageProxy->useFixedLayout()) {
@@ -519,7 +519,7 @@ cairo_matrix_t WebViewImpl::contentToUserViewportTransformation() const
     return transform;
 }
 
-void WebViewImpl::paintToCurrentGLContext()
+void WebView::paintToCurrentGLContext()
 {
     LayerTreeRenderer* renderer = layerTreeRenderer();
     if (!renderer)
@@ -536,7 +536,7 @@ void WebViewImpl::paintToCurrentGLContext()
     renderer->paintToCurrentGLContext(toTransformationMatrix(contentToUserViewportTransformation()), m_opacity, rect);
 }
 
-void WebViewImpl::commitViewportChanges()
+void WebView::commitViewportChanges()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
 
@@ -551,19 +551,19 @@ void WebViewImpl::commitViewportChanges()
     drawingArea->setVisibleContentsRect(visibleRect(), m_scale, FloatPoint());
 }
 
-void WebViewImpl::findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius)
+void WebView::findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius)
 {
     IntPoint contentsPoint(point.x, point.y);
     IntSize touchSize(horizontalRadius * 2, verticalRadius * 2);
     m_webPageProxy->findZoomableAreaForPoint(contentsPoint, touchSize);
 }
 
-void WebViewImpl::processDidCrash()
+void WebView::processDidCrash()
 {
     m_viewClient.webProcessCrashed(toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
 }
 
-void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
+void WebView::pageDidRequestScroll(const IntPoint& point)
 {
     m_viewClient.pageDidRequestScroll(WKPointMake(point.x(), point.y()));
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
@@ -571,24 +571,24 @@ void WebViewImpl::pageDidRequestScroll(const IntPoint& point)
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
 }
 
-void WebViewImpl::didChangeContentsSize(const IntSize& size)
+void WebView::didChangeContentsSize(const IntSize& size)
 {
     m_contentsSize = size;
     m_viewClient.didChangeContentsSize(WKSizeMake(size.width(), size.height()));
     commitViewportChanges();
 }
 
-void WebViewImpl::didFindZoomableArea(const IntPoint& target, const IntRect& area)
+void WebView::didFindZoomableArea(const IntPoint& target, const IntRect& area)
 {
     m_viewClient.didFindZoomableArea(WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
 }
 
-void WebViewImpl::pageTransitionViewportReady()
+void WebView::pageTransitionViewportReady()
 {
     m_webPageProxy->commitPageTransitionViewport();
 }
 
-cairo_matrix_t WebViewImpl::userViewportToContentTransformation() const
+cairo_matrix_t WebView::userViewportToContentTransformation() const
 {
     cairo_matrix_t transform = contentToUserViewportTransformation();
     cairo_matrix_invert(&transform);
@@ -596,20 +596,20 @@ cairo_matrix_t WebViewImpl::userViewportToContentTransformation() const
 }
 
 #if ENABLE(TOUCH_EVENTS)
-void WebViewImpl::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
+void WebView::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
 {
     m_viewClient.doneWithTouchEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
 #if ENABLE(GESTURE_EVENTS)
-void WebViewImpl::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
+void WebView::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
 {
     m_viewClient.doneWithGestureEvent(*event.nativeEvent(), wasEventHandled);
 }
 #endif
 
-void WebViewImpl::updateTextInputState()
+void WebView::updateTextInputState()
 {
     const EditorState& editor = m_webPageProxy->editorState();
     bool isContentEditable = editor.isContentEditable;
@@ -618,32 +618,32 @@ void WebViewImpl::updateTextInputState()
     m_viewClient.updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
 }
 
-void WebViewImpl::suspendActiveDOMObjectsAndAnimations()
+void WebView::suspendActiveDOMObjectsAndAnimations()
 {
     m_webPageProxy->suspendActiveDOMObjectsAndAnimations();
     m_isSuspended = true;
 }
 
-void WebViewImpl::resumeActiveDOMObjectsAndAnimations()
+void WebView::resumeActiveDOMObjectsAndAnimations()
 {
     m_webPageProxy->resumeActiveDOMObjectsAndAnimations();
     m_isSuspended = false;
     commitViewportChanges();
 }
 
-bool WebViewImpl::isSuspended()
+bool WebView::isSuspended()
 {
     return m_isSuspended;
 }
 
 } // namespace Nix
 
-static Nix::WebViewImpl* toImpl(NIXView view)
+static Nix::WebView* toImpl(NIXView view)
 {
-    return reinterpret_cast<Nix::WebViewImpl*>(view);
+    return reinterpret_cast<Nix::WebView*>(view);
 }
 
-static NIXView toAPI(Nix::WebViewImpl* view)
+static NIXView toAPI(Nix::WebView* view)
 {
     return reinterpret_cast<NIXView>(view);
 }
@@ -651,7 +651,7 @@ static NIXView toAPI(Nix::WebViewImpl* view)
 NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup, const NIXViewClient* viewClient)
 {
     g_type_init();
-    return toAPI(new Nix::WebViewImpl(toImpl(context), toImpl(pageGroup), viewClient));
+    return toAPI(new Nix::WebView(toImpl(context), toImpl(pageGroup), viewClient));
 }
 
 void NIXViewRelease(NIXView view)
