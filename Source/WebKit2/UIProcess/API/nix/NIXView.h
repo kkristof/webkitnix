@@ -16,16 +16,16 @@ extern "C" {
 typedef struct OpaqueNIXView* NIXView;
 
 // NIXViewClient -----------------------------------------------------------
-typedef void (*NIXViewCallback)(const void* clientInfo);
-typedef void (*NIXViewViewNeedsDisplayCallback)(WKRect area, const void* clientInfo);
-typedef void (*NIXViewWebProcessCrashedCallback)(WKStringRef url, const void* clientInfo);
-typedef void (*NIXViewDoneWithTouchEventCallback)(const NIXTouchEvent* touchEvent, bool wasEventHandled, const void* clientInfo);
-typedef void (*NIXViewDoneWithGestureEventCallback)(const NIXGestureEvent* gestureEvent, bool wasEventHandled, const void* clientInfo);
-typedef void (*NIXViewPageDidRequestScrollCallback)(WKPoint position, const void* clientInfo);
-typedef void (*NIXViewPageDidChangeContentsSizeCallback)(WKSize size, const void* clientInfo);
-typedef void (*NIXViewPageDidFindZoomableAreaCallback)(WKPoint target, WKRect area, const void* clientInfo);
-typedef void (*NIXViewPageUpdateTextInputStateCallback)(bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
-typedef void (*NIXViewCompositeCustomLayerToCurrentGLContext)(uint32_t id, WKRect rect, const float* matrix, float opacity, const void* clientInfo);
+typedef void (*NIXViewCallback)(NIXView view, const void* clientInfo);
+typedef void (*NIXViewViewNeedsDisplayCallback)(NIXView view, WKRect area, const void* clientInfo);
+typedef void (*NIXViewWebProcessCrashedCallback)(NIXView view, WKStringRef url, const void* clientInfo);
+typedef void (*NIXViewDoneWithTouchEventCallback)(NIXView view, const NIXTouchEvent* touchEvent, bool wasEventHandled, const void* clientInfo);
+typedef void (*NIXViewDoneWithGestureEventCallback)(NIXView view, const NIXGestureEvent* gestureEvent, bool wasEventHandled, const void* clientInfo);
+typedef void (*NIXViewPageDidRequestScrollCallback)(NIXView view, WKPoint position, const void* clientInfo);
+typedef void (*NIXViewPageDidChangeContentsSizeCallback)(NIXView view, WKSize size, const void* clientInfo);
+typedef void (*NIXViewPageDidFindZoomableAreaCallback)(NIXView view, WKPoint target, WKRect area, const void* clientInfo);
+typedef void (*NIXViewPageUpdateTextInputStateCallback)(NIXView view, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
+typedef void (*NIXViewCompositeCustomLayerToCurrentGLContext)(NIXView view, uint32_t id, WKRect rect, const float* matrix, float opacity, const void* clientInfo);
 
 struct NIXViewClient {
     int                                              version;

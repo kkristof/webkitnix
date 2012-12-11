@@ -52,16 +52,16 @@ public:
     virtual void handleClosed();
 
     // NIXViewClient.
-    static void viewNeedsDisplay(WKRect area, const void* clientInfo);
-    static void webProcessCrashed(WKStringRef url, const void* clientInfo);
-    static void webProcessRelaunched(const void* clientInfo);
-    static void pageDidRequestScroll(WKPoint position, const void* clientInfo);
-    static void didChangeContentsSize(WKSize size, const void* clientInfo);
-    static void didFindZoomableArea(WKPoint target, WKRect area, const void* clientInfo);
-    static void doneWithTouchEvent(const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo);
-    static void doneWithGestureEvent(const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo);
-    static void updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
-    static void compositeCustomLayerToCurrentGLContext(uint32_t, WKRect, const float* matrix, float opacity, const void* clientInfo);
+    static void viewNeedsDisplay(NIXView, WKRect area, const void* clientInfo);
+    static void webProcessCrashed(NIXView, WKStringRef url, const void* clientInfo);
+    static void webProcessRelaunched(NIXView, const void* clientInfo);
+    static void pageDidRequestScroll(NIXView, WKPoint position, const void* clientInfo);
+    static void didChangeContentsSize(NIXView, WKSize size, const void* clientInfo);
+    static void didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void* clientInfo);
+    static void doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo);
+    static void doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo);
+    static void updateTextInputState(NIXView, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
+    static void compositeCustomLayerToCurrentGLContext(NIXView, uint32_t, WKRect, const float* matrix, float opacity, const void* clientInfo);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const NIXTouchPoint&);
@@ -539,14 +539,14 @@ void MiniBrowser::adjustScrollPosition()
     NIXViewSetScrollPosition(m_view, position);
 }
 
-void MiniBrowser::viewNeedsDisplay(WKRect area, const void* clientInfo)
+void MiniBrowser::viewNeedsDisplay(NIXView, WKRect area, const void* clientInfo)
 {
     UNUSED_PARAM(area);
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     mb->scheduleUpdateDisplay();
 }
 
-void MiniBrowser::webProcessCrashed(WKStringRef url, const void* clientInfo)
+void MiniBrowser::webProcessCrashed(NIXView, WKStringRef url, const void* clientInfo)
 {
     UNUSED_PARAM(clientInfo);
     size_t urlStringSize =  WKStringGetMaximumUTF8CStringSize(url);
@@ -556,20 +556,20 @@ void MiniBrowser::webProcessCrashed(WKStringRef url, const void* clientInfo)
     delete urlString;
 }
 
-void MiniBrowser::webProcessRelaunched(const void* clientInfo)
+void MiniBrowser::webProcessRelaunched(NIXView, const void* clientInfo)
 {
     UNUSED_PARAM(clientInfo);
     fprintf(stdout, "The web process has been restarted.\n");
 }
 
-void MiniBrowser::pageDidRequestScroll(WKPoint position, const void* clientInfo)
+void MiniBrowser::pageDidRequestScroll(NIXView, WKPoint position, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     if (!NIXViewIsSuspended(mb->m_view))
         NIXViewSetScrollPosition(mb->m_view, mb->adjustScrollPositionToBoundaries(position));
 }
 
-void MiniBrowser::didChangeContentsSize(WKSize size, const void* clientInfo)
+void MiniBrowser::didChangeContentsSize(NIXView, WKSize size, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     mb->m_contentsSize = size;
@@ -580,7 +580,7 @@ void MiniBrowser::didChangeContentsSize(WKSize size, const void* clientInfo)
     }
 }
 
-void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area, const void* clientInfo)
+void MiniBrowser::didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
 
@@ -604,7 +604,7 @@ void MiniBrowser::didFindZoomableArea(WKPoint target, WKRect area, const void* c
     mb->scaleAtPoint(target, scale);
 }
 
-void MiniBrowser::doneWithTouchEvent(const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo)
+void MiniBrowser::doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo)
 {
     if (wasEventHandled)
         return;
@@ -612,7 +612,7 @@ void MiniBrowser::doneWithTouchEvent(const NIXTouchEvent* event, bool wasEventHa
     mb->m_gestureRecognizer.handleTouchEvent(*event);
 }
 
-void MiniBrowser::doneWithGestureEvent(const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo)
+void MiniBrowser::doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo)
 {
     if (!wasEventHandled)
         return;
@@ -748,7 +748,7 @@ static inline bool WKRectIsEqual(const WKRect& a, const WKRect& b)
     return a.origin == b.origin && a.size.width == b.size.width && a.size.height == b.size.height;
 }
 
-void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo)
+void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
 
@@ -774,7 +774,7 @@ void MiniBrowser::updateTextInputState(bool isContentEditable, WKRect cursorRect
     }
 }
 
-void MiniBrowser::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity, const void* clientInfo)
+void MiniBrowser::compositeCustomLayerToCurrentGLContext(NIXView, uint32_t id, WKRect rect, const float* matrix, float opacity, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
 

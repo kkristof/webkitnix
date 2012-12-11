@@ -81,7 +81,7 @@ public:
     virtual bool isViewInWindow() { return true; } // FIXME
     virtual WebCore::IntSize viewSize() { return m_size; }
     virtual void processDidCrash();
-    virtual void didRelaunchProcess() { m_viewClient.webProcessRelaunched(); }
+    virtual void didRelaunchProcess() { m_viewClient.webProcessRelaunched(this); }
 
     virtual void pageDidRequestScroll(const WebCore::IntPoint& point);
     virtual void didChangeContentsSize(const WebCore::IntSize& size);
@@ -179,9 +179,9 @@ private:
 
     class CustomRenderer : public WebCore::TextureMapperPlatformLayer {
     public:
-        static PassOwnPtr<CustomRenderer> create(WebViewClient* client)
+        static PassOwnPtr<CustomRenderer> create(WebView* view)
         {
-            return adoptPtr(new CustomRenderer(client));
+            return adoptPtr(new CustomRenderer(view));
         }
 
         void setID(uint32_t id) { m_id = id; }
@@ -191,19 +191,29 @@ private:
         virtual void paintToTextureMapper(WebCore::TextureMapper*, const WebCore::FloatRect&, const WebCore::TransformationMatrix& modelViewMatrix = WebCore::TransformationMatrix(), float opacity = 1.0, WebCore::BitmapTexture* mask = 0);
 
     private:
-        CustomRenderer(WebViewClient* client)
-            : m_client(client)
+        CustomRenderer(WebView* view)
+            : m_view(view)
             , m_valid(true)
         {
         }
 
         uint32_t m_id;
-        WebViewClient* m_client;
+        WebView* m_view;
         bool m_valid;
     };
 
     HashMap<uint32_t, OwnPtr<CustomRenderer> > m_customRenderers;
 };
+
+inline WebKit::WebView* toImpl(NIXView view)
+{
+    return reinterpret_cast<WebKit::WebView*>(view);
+}
+
+inline NIXView toAPI(WebKit::WebView* view)
+{
+    return reinterpret_cast<NIXView>(view);
+}
 
 } // namespace WebKit
 

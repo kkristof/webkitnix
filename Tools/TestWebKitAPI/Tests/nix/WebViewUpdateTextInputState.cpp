@@ -18,13 +18,13 @@ static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const v
     didFinishLoad = true;
 }
 
-static void updateTextInputState(bool isContentEditable, WKRect, WKRect, const void*)
+static void updateTextInputState(NIXView, bool isContentEditable, WKRect, WKRect, const void*)
 {
     didUpdateTextInputState = true;
     didChangeToContentEditable = isContentEditable;
 }
 
-static void doneWithGestureEvent(const NIXGestureEvent* event, bool, const void*)
+static void doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool, const void*)
 {
     isDoneWithSingleTapEvent = event->type == kNIXInputEventTypeGestureSingleTap;
 }

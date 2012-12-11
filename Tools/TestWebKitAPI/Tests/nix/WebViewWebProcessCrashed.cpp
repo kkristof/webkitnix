@@ -17,12 +17,12 @@ static void didFinishLoadForFrame(WKPageRef, WKFrameRef, WKTypeRef, const void*)
     didFinishLoad = true;
 }
 
-static void webProcessCrashed(WKStringRef, const void*)
+static void webProcessCrashed(NIXView, WKStringRef, const void*)
 {
     didWebProcessCrash = true;
 }
 
-static void webProcessRelaunched(const void*)
+static void webProcessRelaunched(NIXView, const void*)
 {
     didWebProcessRelaunch = true;
 }

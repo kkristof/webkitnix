@@ -18,14 +18,13 @@ static void clear()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-static void viewNeedsDisplay(WKRect, const void* clientInfo)
+static void viewNeedsDisplay(NIXView view, WKRect, const void*)
 {
-    NIXView view = reinterpret_cast<NIXView>(const_cast<void*>(clientInfo));
     clear();
     NIXViewPaintToCurrentGLContext(view);
 }
 
-static void didFindZoomableArea(WKPoint target, WKRect area, const void*)
+static void didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void*)
 {
     EXPECT_EQ(target.x, touchPoint.x);
     EXPECT_EQ(target.y, touchPoint.y);
@@ -53,7 +52,6 @@ TEST(WebKitNix, WebViewFindZoomableArea)
     NIXViewClient viewClient;
     memset(&viewClient, 0, sizeof(NIXViewClient));
     viewClient.version = kNIXViewClientCurrentVersion;
-    viewClient.clientInfo = view.get();
     viewClient.viewNeedsDisplay = viewNeedsDisplay;
     viewClient.didFindZoomableArea = didFindZoomableArea;
     NIXViewSetViewClient(view.get(), &viewClient);

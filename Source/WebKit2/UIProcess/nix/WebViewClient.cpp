@@ -1,6 +1,7 @@
 #include "config.h"
 #include "WebViewClient.h"
 
+#include "WebView.h"
 #include <cstring>
 
 namespace WebKit {
@@ -16,73 +17,73 @@ void WebViewClient::initialize(const NIXViewClient* client)
     m_client = *client;
 }
 
-void WebViewClient::viewNeedsDisplay(WKRect rect)
+void WebViewClient::viewNeedsDisplay(WebView* view, WKRect rect)
 {
     if (!m_client.viewNeedsDisplay)
         return;
-    m_client.viewNeedsDisplay(rect, m_client.clientInfo);
+    m_client.viewNeedsDisplay(toAPI(view), rect, m_client.clientInfo);
 }
 
-void WebViewClient::webProcessCrashed(WKStringRef url)
+void WebViewClient::webProcessCrashed(WebView* view, WKStringRef url)
 {
     if (!m_client.webProcessCrashed)
         return;
-    m_client.webProcessCrashed(url, m_client.clientInfo);
+    m_client.webProcessCrashed(toAPI(view), url, m_client.clientInfo);
 }
 
-void WebViewClient::webProcessRelaunched()
+void WebViewClient::webProcessRelaunched(WebView* view)
 {
     if (!m_client.webProcessRelaunched)
         return;
-    m_client.webProcessRelaunched(m_client.clientInfo);
+    m_client.webProcessRelaunched(toAPI(view), m_client.clientInfo);
 }
 
-void WebViewClient::doneWithTouchEvent(const NIXTouchEvent& event, bool wasEventHandled)
+void WebViewClient::doneWithTouchEvent(WebView* view, const NIXTouchEvent& event, bool wasEventHandled)
 {
     if (!m_client.doneWithTouchEvent)
         return;
-    m_client.doneWithTouchEvent(&event, wasEventHandled, m_client.clientInfo);
+    m_client.doneWithTouchEvent(toAPI(view), &event, wasEventHandled, m_client.clientInfo);
 }
 
-void WebViewClient::doneWithGestureEvent(const NIXGestureEvent& event, bool wasEventHandled)
+void WebViewClient::doneWithGestureEvent(WebView* view, const NIXGestureEvent& event, bool wasEventHandled)
 {
     if (!m_client.doneWithGestureEvent)
         return;
-    m_client.doneWithGestureEvent(&event, wasEventHandled, m_client.clientInfo);
+    m_client.doneWithGestureEvent(toAPI(view), &event, wasEventHandled, m_client.clientInfo);
 }
 
-void WebViewClient::pageDidRequestScroll(WKPoint point)
+void WebViewClient::pageDidRequestScroll(WebView* view, WKPoint point)
 {
     if (!m_client.pageDidRequestScroll)
         return;
-    m_client.pageDidRequestScroll(point, m_client.clientInfo);
+    m_client.pageDidRequestScroll(toAPI(view), point, m_client.clientInfo);
 }
-void WebViewClient::didChangeContentsSize(WKSize size)
+void WebViewClient::didChangeContentsSize(WebView* view, WKSize size)
 {
     if (!m_client.didChangeContentsSize)
         return;
-    m_client.didChangeContentsSize(size, m_client.clientInfo);
+    m_client.didChangeContentsSize(toAPI(view), size, m_client.clientInfo);
 }
 
-void WebViewClient::didFindZoomableArea(WKPoint target, WKRect area)
+void WebViewClient::didFindZoomableArea(WebView* view, WKPoint target, WKRect area)
 {
     if (!m_client.didFindZoomableArea)
         return;
-    m_client.didFindZoomableArea(target, area, m_client.clientInfo);
+    m_client.didFindZoomableArea(toAPI(view), target, area, m_client.clientInfo);
 }
 
-void WebViewClient::updateTextInputState(bool isContentEditable, WKRect cursorRect, WKRect editorRect)
+void WebViewClient::updateTextInputState(WebView* view, bool isContentEditable, WKRect cursorRect, WKRect editorRect)
 {
     if (!m_client.updateTextInputState)
         return;
-    m_client.updateTextInputState(isContentEditable, cursorRect, editorRect, m_client.clientInfo);
+    m_client.updateTextInputState(toAPI(view), isContentEditable, cursorRect, editorRect, m_client.clientInfo);
 }
 
-void WebViewClient::compositeCustomLayerToCurrentGLContext(uint32_t id, WKRect rect, const float* matrix, float opacity)
+void WebViewClient::compositeCustomLayerToCurrentGLContext(WebView* view, uint32_t id, WKRect rect, const float* matrix, float opacity)
 {
     if (!m_client.compositeCustomLayerToCurrentGLContext)
         return;
-    m_client.compositeCustomLayerToCurrentGLContext(id, rect, matrix, opacity, m_client.clientInfo);
+    m_client.compositeCustomLayerToCurrentGLContext(toAPI(view), id, rect, matrix, opacity, m_client.clientInfo);
 }
 
 } // namespace WebKit

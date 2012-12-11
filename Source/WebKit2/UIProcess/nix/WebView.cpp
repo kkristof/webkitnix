@@ -71,7 +71,7 @@ void WebView::CustomRenderer::paintToTextureMapper(TextureMapper* texmap, const 
         matrix.m31(), matrix.m32(), matrix.m33(), matrix.m34(),
         matrix.m41(), matrix.m42(), matrix.m43(), matrix.m44()
     };
-    m_client->compositeCustomLayerToCurrentGLContext(m_id, wkRect, m4, opacity);
+    m_view->m_viewClient.compositeCustomLayerToCurrentGLContext(m_view, m_id, wkRect, m4, opacity);
 }
 
 void WebView::removeCustomLayer(uint32_t id)
@@ -93,7 +93,7 @@ uint32_t WebView::addCustomLayer(WKStringRef elementID)
     LayerTreeCoordinatorProxy* coordinator = drawingArea->layerTreeCoordinatorProxy();
     String str = toImpl(elementID)->string();
 
-    OwnPtr<CustomRenderer> renderer = CustomRenderer::create(&m_viewClient);
+    OwnPtr<CustomRenderer> renderer = CustomRenderer::create(this);
 
     uint32_t id = coordinator->addCustomPlatformLayer(str, renderer.get());
     renderer->setID(id);
@@ -222,7 +222,7 @@ PassOwnPtr<DrawingAreaProxy> WebView::createDrawingAreaProxy()
 
 void WebView::setViewNeedsDisplay(const IntRect& rect)
 {
-    m_viewClient.viewNeedsDisplay(WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
+    m_viewClient.viewNeedsDisplay(this, WKRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
 }
 
 WKPageRef WebView::pageRef()
@@ -349,12 +349,12 @@ void WebView::findZoomableAreaForPoint(const WKPoint& point, int horizontalRadiu
 
 void WebView::processDidCrash()
 {
-    m_viewClient.webProcessCrashed(toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
+    m_viewClient.webProcessCrashed(this, toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
 }
 
 void WebView::pageDidRequestScroll(const IntPoint& point)
 {
-    m_viewClient.pageDidRequestScroll(WKPointMake(point.x(), point.y()));
+    m_viewClient.pageDidRequestScroll(this, WKPointMake(point.x(), point.y()));
     // FIXME: It's not clear to me yet whether we should ask for display here or this is
     // at the wrong level and we should simply notify the client about this.
     setViewNeedsDisplay(IntRect(IntPoint(), m_size));
@@ -363,13 +363,13 @@ void WebView::pageDidRequestScroll(const IntPoint& point)
 void WebView::didChangeContentsSize(const IntSize& size)
 {
     m_contentsSize = size;
-    m_viewClient.didChangeContentsSize(WKSizeMake(size.width(), size.height()));
+    m_viewClient.didChangeContentsSize(this, WKSizeMake(size.width(), size.height()));
     commitViewportChanges();
 }
 
 void WebView::didFindZoomableArea(const IntPoint& target, const IntRect& area)
 {
-    m_viewClient.didFindZoomableArea(WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
+    m_viewClient.didFindZoomableArea(this, WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
 }
 
 void WebView::pageTransitionViewportReady()
@@ -387,14 +387,14 @@ cairo_matrix_t WebView::userViewportToContentTransformation() const
 #if ENABLE(TOUCH_EVENTS)
 void WebView::doneWithTouchEvent(const NativeWebTouchEvent& event, bool wasEventHandled)
 {
-    m_viewClient.doneWithTouchEvent(*event.nativeEvent(), wasEventHandled);
+    m_viewClient.doneWithTouchEvent(this, *event.nativeEvent(), wasEventHandled);
 }
 #endif
 
 #if ENABLE(GESTURE_EVENTS)
 void WebView::doneWithGestureEvent(const NativeWebGestureEvent& event, bool wasEventHandled)
 {
-    m_viewClient.doneWithGestureEvent(*event.nativeEvent(), wasEventHandled);
+    m_viewClient.doneWithGestureEvent(this, *event.nativeEvent(), wasEventHandled);
 }
 #endif
 
@@ -404,7 +404,7 @@ void WebView::updateTextInputState()
     bool isContentEditable = editor.isContentEditable;
     const IntRect& cursorRect = editor.cursorRect;
     const IntRect& editorRect = editor.editorRect;
-    m_viewClient.updateTextInputState(isContentEditable, toAPI(cursorRect), toAPI(editorRect));
+    m_viewClient.updateTextInputState(this, isContentEditable, toAPI(cursorRect), toAPI(editorRect));
 }
 
 void WebView::suspendActiveDOMObjectsAndAnimations()

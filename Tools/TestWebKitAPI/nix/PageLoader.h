@@ -13,7 +13,7 @@ public:
     void setClearColor(int r, int g, int b, int a);
 
 private:
-    static void viewNeedsDisplay(WKRect, const void*);
+    static void viewNeedsDisplay(NIXView, WKRect, const void*);
 
     NIXView m_view;
     int m_clearR;

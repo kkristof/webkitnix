@@ -72,7 +72,7 @@ void ForceRepaintClient::setClearColor(int r, int g, int b, int a)
     m_clearA = a;
 }
 
-void ForceRepaintClient::viewNeedsDisplay(WKRect, const void* clientInfo)
+void ForceRepaintClient::viewNeedsDisplay(NIXView, WKRect, const void* clientInfo)
 {
     ForceRepaintClient* client = static_cast<ForceRepaintClient*>(const_cast<void*>(clientInfo));
     assert(client);

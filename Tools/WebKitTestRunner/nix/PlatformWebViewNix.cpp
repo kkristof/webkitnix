@@ -23,11 +23,8 @@
 #include "WebKit2/WKAPICast.h"
 #include "NIXView.h"
 
-static void pageDidRequestScroll(WKPoint position, const void* clientInfo)
+static void pageDidRequestScroll(NIXView view, WKPoint position, const void* clientInfo)
 {
-    if (!clientInfo)
-        return;
-    NIXView view = static_cast<NIXView>(const_cast<void*>(clientInfo));
     NIXViewSetScrollPosition(view, position);
 }
 
@@ -44,7 +41,6 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
     memset(&viewClient, 0, sizeof(NIXViewClient));
     viewClient.version = kNIXViewClientCurrentVersion;
     viewClient.pageDidRequestScroll = pageDidRequestScroll;
-    viewClient.clientInfo = m_view;
     NIXViewSetViewClient(m_view, &viewClient);
 
     NIXViewInitialize(m_view);

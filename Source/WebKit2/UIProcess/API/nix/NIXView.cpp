@@ -39,16 +39,6 @@
 
 using namespace WebKit;
 
-static WebKit::WebView* toImpl(NIXView view)
-{
-    return reinterpret_cast<WebKit::WebView*>(view);
-}
-
-static NIXView toAPI(WebKit::WebView* view)
-{
-    return reinterpret_cast<NIXView>(view);
-}
-
 NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup)
 {
     g_type_init();
