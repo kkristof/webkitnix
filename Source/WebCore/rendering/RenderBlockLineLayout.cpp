@@ -102,7 +102,7 @@ public:
     float committedWidth() const { return m_committedWidth; }
     float availableWidth() const { return m_availableWidth; }
 
-    void updateAvailableWidth();
+    void updateAvailableWidth(LayoutUnit minimumHeight = 0);
     void shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::FloatingObject*);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit()
@@ -133,24 +133,21 @@ private:
     bool m_isFirstLine;
 };
 
-static LayoutUnit logicalHeightForLine(RenderBlock* block)
+static LayoutUnit logicalHeightForLine(RenderBlock* block, bool isFirstLine, LayoutUnit replacedHeight = 0)
 {
-    InlineFlowBox* lineBox = block->firstRootBox();
-    LayoutUnit logicalHeight = 0;
-    if (!lineBox)
-        return logicalHeight;
+    if (!block->document()->inNoQuirksMode() && replacedHeight)
+        return replacedHeight;
 
-    if (lineBox->firstChild() && lineBox->firstChild()->renderer() && lineBox->firstChild()->renderer()->isRenderBlock())
-        logicalHeight = toRenderBlock(lineBox->firstChild()->renderer())->logicalHeight();
-    else
-        logicalHeight = lineBox->height();
-    return logicalHeight;
+    if (!(block->style(isFirstLine)->lineBoxContain() & LineBoxContainBlock))
+        return 0;
+
+    return max<LayoutUnit>(replacedHeight, block->lineHeight(isFirstLine, block->isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
 }
 
-inline void LineWidth::updateAvailableWidth()
+inline void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block->logicalHeight();
-    LayoutUnit logicalHeight = logicalHeightForLine(m_block);
+    LayoutUnit logicalHeight = logicalHeightForLine(m_block, m_isFirstLine, replacedHeight);
     m_left = m_block->logicalLeftOffsetForLine(height, m_isFirstLine, logicalHeight);
     m_right = m_block->logicalRightOffsetForLine(height, m_isFirstLine, logicalHeight);
 
@@ -885,18 +882,26 @@ void RenderBlock::updateLogicalWidthForAlignment(const ETextAlign& textAlign, Bi
     }
 }
 
+static void updateLogicalInlinePositions(RenderBlock* block, float& lineLogicalLeft, float& lineLogicalRight, float& availableLogicalWidth, bool firstLine, LayoutUnit boxLogicalHeight)
+{
+    LayoutUnit lineLogicalHeight = logicalHeightForLine(block, firstLine, boxLogicalHeight);
+    lineLogicalLeft = block->pixelSnappedLogicalLeftOffsetForLine(block->logicalHeight(), firstLine, lineLogicalHeight);
+    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), firstLine, lineLogicalHeight);
+    availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
+}
+
 void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox, const LineInfo& lineInfo, BidiRun* firstRun, BidiRun* trailingSpaceRun, bool reachedEnd,
                                                          GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache, WordMeasurements& wordMeasurements)
 {
     ETextAlign textAlign = textAlignmentForLine(!reachedEnd && !lineBox->endsWithBreak());
     
-    LayoutUnit lineLogicalHeight = logicalHeightForLine(this);
     // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted line of an element. For example, the first line of an anonymous block 
     // box is only affected if it is the first child of its parent element."
     bool firstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->firstChild() != this);
-    float lineLogicalLeft = pixelSnappedLogicalLeftOffsetForLine(logicalHeight(), firstLine, lineLogicalHeight);
-    float lineLogicalRight = pixelSnappedLogicalRightOffsetForLine(logicalHeight(), firstLine, lineLogicalHeight);
+    float lineLogicalLeft;
+    float lineLogicalRight;
     float availableLogicalWidth;
+    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, firstLine, 0);
     bool needsWordSpacing;
 #if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = layoutExclusionShapeInsideInfo(this);
@@ -929,15 +934,20 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
         return;
     }
 #endif
-    availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
-    computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun,  trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
+
+    if (firstRun && firstRun->m_object->isReplaced()) {
+        RenderBox* renderBox = toRenderBox(firstRun->m_object);
+        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, firstLine, renderBox->logicalHeight());
+    }
+
+    computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
     // The widths of all runs are now known. We can now place every inline box (and
     // compute accurate widths for the inline flow boxes).
     needsWordSpacing = false;
     lineBox->placeBoxesInInlineDirection(lineLogicalLeft, needsWordSpacing, textBoxDataMap);
 }
 
-BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* lineBox, const LineInfo& lineInfo, ETextAlign textAlign, float& logicalLeft,
+BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* lineBox, const LineInfo& lineInfo, ETextAlign textAlign, float& logicalLeft, 
     float& availableLogicalWidth, BidiRun* firstRun, BidiRun* trailingSpaceRun, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache,
     WordMeasurements& wordMeasurements)
 {
@@ -1642,6 +1652,63 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         lineMidpointState.reset();
         resolver.setPosition(end, numberOfIsolateAncestors(end));
     }
+
+    if (paginated && !style()->hasAutoWidows()) {
+        // Check the line boxes to make sure we didn't create unacceptable widows.
+        // However, we'll prioritize orphans - so nothing we do here should create
+        // a new orphan.
+
+        RootInlineBox* lineBox = lastRootBox();
+
+        // Count from the end of the block backwards, to see how many hanging
+        // lines we have.
+        RootInlineBox* firstLineInBlock = firstRootBox();
+        int numLinesHanging = 1;
+        while (lineBox && lineBox != firstLineInBlock && !lineBox->isFirstAfterPageBreak()) {
+            ++numLinesHanging;
+            lineBox = lineBox->prevRootBox();
+        }
+
+        // If there were no breaks in the block, we didn't create any widows.
+        if (!lineBox->isFirstAfterPageBreak() || lineBox == firstLineInBlock)
+            return;
+
+        if (numLinesHanging < style()->widows()) {
+            // We have detected a widow. Now we need to work out how many
+            // lines there are on the previous page, and how many we need
+            // to steal.
+            int numLinesNeeded = style()->widows() - numLinesHanging;
+            RootInlineBox* currentFirstLineOfNewPage = lineBox;
+
+            // Count the number of lines in the previous page.
+            lineBox = lineBox->prevRootBox();
+            int numLinesInPreviousPage = 1;
+            while (lineBox && lineBox != firstLineInBlock && !lineBox->isFirstAfterPageBreak()) {
+                ++numLinesInPreviousPage;
+                lineBox = lineBox->prevRootBox();
+            }
+
+            // If there was an explicit value for orphans, respect that. If not, we still
+            // shouldn't create a situation where we make an orphan bigger than the initial value.
+            // This means that setting widows implies we also care about orphans, but given
+            // the specification says the initial orphan value is non-zero, this is ok. The
+            // author is always free to set orphans explicitly as well.
+            int orphans = style()->hasAutoOrphans() ? style()->initialOrphans() : style()->orphans();
+            int numLinesAvailable = numLinesInPreviousPage - orphans;
+            if (numLinesAvailable <= 0)
+                return;
+
+            int numLinesToTake = min(numLinesAvailable, numLinesNeeded);
+            // Wind back from our first widowed line.
+            lineBox = currentFirstLineOfNewPage;
+            for (int i = 0; i < numLinesToTake; ++i)
+                lineBox = lineBox->prevRootBox();
+
+            // We now want to break at this line. Remember for next layout and trigger relayout.
+            setBreakAtLineToAvoidWidow(lineBox);
+            markLinesDirtyInBlockRange(lastRootBox()->lineBottomWithLeading(), lineBox->lineBottomWithLeading(), lineBox);
+        }
+    }
 }
 
 void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
@@ -1744,9 +1811,11 @@ void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repain
     if (view()->layoutState() && view()->layoutState()->lineGrid() == this)
         layoutLineGridBox();
 
+    bool clearLinesForPagination = firstLineBox() && inRenderFlowThread() && !enclosingRenderFlowThread()->hasRegions();
+
     // Figure out if we should clear out our line boxes.
     // FIXME: Handle resize eventually!
-    bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren;
+    bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren || clearLinesForPagination;
     LineLayoutState layoutState(isFullLayout, repaintLogicalTop, repaintLogicalBottom);
 
     if (isFullLayout)
@@ -2211,9 +2280,15 @@ void RenderBlock::LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolve
                 resolver.runs().addRun(createRun(0, 1, object, resolver));
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
-        } else if (object->isFloating())
+        } else if (object->isFloating()) {
+            // The top margin edge of a self-collapsing block that clears a float intrudes up into it by the height of the margin,
+            // so in order to place this child float at the top content edge of the self-collapsing block add the margin back in before placement.
+            LayoutUnit marginOffset = (m_block->isSelfCollapsingBlock() && m_block->getClearDelta(m_block, LayoutUnit())) ? m_block->collapsedMarginBeforeForChild(m_block) : LayoutUnit();
+            LayoutUnit oldLogicalHeight = m_block->logicalHeight();
+            m_block->setLogicalHeight(oldLogicalHeight + marginOffset);
             m_block->positionNewFloatOnLine(m_block->insertFloatingObject(toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
-        else if (object->isText() && object->style()->hasTextCombine() && object->isCombineText() && !toRenderCombineText(object)->isCombined()) {
+            m_block->setLogicalHeight(oldLogicalHeight);
+        } else if (object->isText() && object->style()->hasTextCombine() && object->isCombineText() && !toRenderCombineText(object)->isCombined()) {
             toRenderCombineText(object)->combineText();
             if (toRenderCombineText(object)->isCombined())
                 continue;
@@ -2631,6 +2706,9 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             width.addUncommittedWidth(borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox));
         } else if (current.m_obj->isReplaced()) {
             RenderBox* replacedBox = toRenderBox(current.m_obj);
+
+            if (atStart)
+                width.updateAvailableWidth(replacedBox->logicalHeight());
 
             // Break on replaced elements if either has normal white-space.
             if ((autoWrap || RenderStyle::autoWrap(lastWS)) && (!current.m_obj->isImage() || allowImagesToBreak)) {

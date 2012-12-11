@@ -62,6 +62,7 @@
 #include "LazyOperandValueProfile.h"
 #include "LineInfo.h"
 #include "Nodes.h"
+#include "ProfilerCompilation.h"
 #include "RegExpObject.h"
 #include "ResolveOperation.h"
 #include "StructureStubInfo.h"
@@ -130,8 +131,11 @@ namespace JSC {
         JS_EXPORT_PRIVATE virtual ~CodeBlock();
         
         UnlinkedCodeBlock* unlinkedCodeBlock() const { return m_unlinkedCode.get(); }
-
+        
+        String inferredName() const;
         CodeBlockHash hash() const;
+        String sourceCodeForTools() const; // Not quite the actual source we parsed; this will do things like prefix the source for a function with a reified signature.
+        String sourceCodeOnOneLine() const; // As sourceCodeForTools(), but replaces all whitespace runs with a single space.
         void dumpAssumingJITType(PrintStream&, JITCode::JITType) const;
         void dump(PrintStream&) const;
         
@@ -320,6 +324,19 @@ namespace JSC {
                 return;
             
             m_dfgData = adoptPtr(new DFGData);
+        }
+        
+        void saveCompilation(PassRefPtr<Profiler::Compilation> compilation)
+        {
+            createDFGDataIfNecessary();
+            m_dfgData->compilation = compilation;
+        }
+        
+        Profiler::Compilation* compilation()
+        {
+            if (!m_dfgData)
+                return 0;
+            return m_dfgData->compilation.get();
         }
         
         DFG::OSREntryData* appendDFGOSREntryData(unsigned bytecodeIndex, unsigned machineCodeOffset)
@@ -528,7 +545,7 @@ namespace JSC {
             return result;
         }
 #else
-        JITCode::JITType getJITType() { return JITCode::BaselineJIT; }
+        JITCode::JITType getJITType() const { return JITCode::BaselineJIT; }
 #endif
 
         ScriptExecutable* ownerExecutable() const { return m_ownerExecutable.get(); }
@@ -1009,28 +1026,12 @@ namespace JSC {
         // When we observe a lot of speculation failures, we trigger a
         // reoptimization. But each time, we increase the optimization trigger
         // to avoid thrashing.
-        unsigned reoptimizationRetryCounter() const
-        {
-            ASSERT(m_reoptimizationRetryCounter <= Options::reoptimizationRetryCounterMax());
-            return m_reoptimizationRetryCounter;
-        }
+        unsigned reoptimizationRetryCounter() const;
+        void countReoptimization();
         
-        void countReoptimization()
-        {
-            m_reoptimizationRetryCounter++;
-            if (m_reoptimizationRetryCounter > Options::reoptimizationRetryCounterMax())
-                m_reoptimizationRetryCounter = Options::reoptimizationRetryCounterMax();
-        }
-        
-        int32_t counterValueForOptimizeAfterWarmUp()
-        {
-            return Options::thresholdForOptimizeAfterWarmUp() << reoptimizationRetryCounter();
-        }
-        
-        int32_t counterValueForOptimizeAfterLongWarmUp()
-        {
-            return Options::thresholdForOptimizeAfterLongWarmUp() << reoptimizationRetryCounter();
-        }
+        int32_t counterValueForOptimizeAfterWarmUp();
+        int32_t counterValueForOptimizeAfterLongWarmUp();
+        int32_t counterValueForOptimizeSoon();
         
         int32_t* addressOfJITExecuteCounter()
         {
@@ -1048,28 +1049,19 @@ namespace JSC {
         // Check if the optimization threshold has been reached, and if not,
         // adjust the heuristics accordingly. Returns true if the threshold has
         // been reached.
-        bool checkIfOptimizationThresholdReached()
-        {
-            return m_jitExecuteCounter.checkIfThresholdCrossedAndSet(this);
-        }
+        bool checkIfOptimizationThresholdReached();
         
         // Call this to force the next optimization trigger to fire. This is
         // rarely wise, since optimization triggers are typically more
         // expensive than executing baseline code.
-        void optimizeNextInvocation()
-        {
-            m_jitExecuteCounter.setNewThreshold(0, this);
-        }
+        void optimizeNextInvocation();
         
         // Call this to prevent optimization from happening again. Note that
         // optimization will still happen after roughly 2^29 invocations,
         // so this is really meant to delay that as much as possible. This
         // is called if optimization failed, and we expect it to fail in
         // the future as well.
-        void dontOptimizeAnytimeSoon()
-        {
-            m_jitExecuteCounter.deferIndefinitely();
-        }
+        void dontOptimizeAnytimeSoon();
         
         // Call this to reinitialize the counter to its starting state,
         // forcing a warm-up to happen before the next optimization trigger
@@ -1077,17 +1069,11 @@ namespace JSC {
         // makes sense to call this if an OSR exit occurred. Note that
         // OSR exit code is code generated, so the value of the execute
         // counter that this corresponds to is also available directly.
-        void optimizeAfterWarmUp()
-        {
-            m_jitExecuteCounter.setNewThreshold(counterValueForOptimizeAfterWarmUp(), this);
-        }
+        void optimizeAfterWarmUp();
         
         // Call this to force an optimization trigger to fire only after
         // a lot of warm-up.
-        void optimizeAfterLongWarmUp()
-        {
-            m_jitExecuteCounter.setNewThreshold(counterValueForOptimizeAfterLongWarmUp(), this);
-        }
+        void optimizeAfterLongWarmUp();
         
         // Call this to cause an optimization trigger to fire soon, but
         // not necessarily the next one. This makes sense if optimization
@@ -1107,10 +1093,7 @@ namespace JSC {
         // each return, as that would be superfluous. It only makes sense
         // to trigger optimization if one of those functions becomes hot
         // in the baseline code.
-        void optimizeSoon()
-        {
-            m_jitExecuteCounter.setNewThreshold(Options::thresholdForOptimizeSoon() << reoptimizationRetryCounter(), this);
-        }
+        void optimizeSoon();
         
         uint32_t osrExitCounter() const { return m_osrExitCounter; }
         
@@ -1121,40 +1104,11 @@ namespace JSC {
         static ptrdiff_t offsetOfOSRExitCounter() { return OBJECT_OFFSETOF(CodeBlock, m_osrExitCounter); }
 
 #if ENABLE(JIT)
-        uint32_t adjustedExitCountThreshold(uint32_t desiredThreshold)
-        {
-            ASSERT(getJITType() == JITCode::DFGJIT);
-            // Compute this the lame way so we don't saturate. This is called infrequently
-            // enough that this loop won't hurt us.
-            unsigned result = desiredThreshold;
-            for (unsigned n = baselineVersion()->reoptimizationRetryCounter(); n--;) {
-                unsigned newResult = result << 1;
-                if (newResult < result)
-                    return std::numeric_limits<uint32_t>::max();
-                result = newResult;
-            }
-            return result;
-        }
-        
-        uint32_t exitCountThresholdForReoptimization()
-        {
-            return adjustedExitCountThreshold(Options::osrExitCountForReoptimization());
-        }
-        
-        uint32_t exitCountThresholdForReoptimizationFromLoop()
-        {
-            return adjustedExitCountThreshold(Options::osrExitCountForReoptimizationFromLoop());
-        }
-
-        bool shouldReoptimizeNow()
-        {
-            return osrExitCounter() >= exitCountThresholdForReoptimization();
-        }
-        
-        bool shouldReoptimizeFromLoopNow()
-        {
-            return osrExitCounter() >= exitCountThresholdForReoptimizationFromLoop();
-        }
+        uint32_t adjustedExitCountThreshold(uint32_t desiredThreshold);
+        uint32_t exitCountThresholdForReoptimization();
+        uint32_t exitCountThresholdForReoptimizationFromLoop();
+        bool shouldReoptimizeNow();
+        bool shouldReoptimizeFromLoopNow();
 #endif
 
 #if ENABLE(VALUE_PROFILER)
@@ -1192,6 +1146,8 @@ namespace JSC {
 
     private:
         friend class DFGCodeBlocks;
+        
+        double optimizationThresholdScalingFactor();
 
 #if ENABLE(JIT)
         ClosureCallStubRoutine* findClosureCallForReturnPC(ReturnAddressPtr);
@@ -1334,6 +1290,7 @@ namespace JSC {
             Vector<WriteBarrier<JSCell> > weakReferences;
             DFG::VariableEventStream variableEventStream;
             DFG::MinifiedGraph minifiedDFG;
+            RefPtr<Profiler::Compilation> compilation;
             bool mayBeExecuting;
             bool isJettisoned;
             bool livenessHasBeenProved; // Initialized and used on every GC.

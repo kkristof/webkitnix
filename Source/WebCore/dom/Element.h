@@ -46,7 +46,6 @@ class Locale;
 class PseudoElement;
 class RenderRegion;
 class ShadowRoot;
-class WebKitAnimationList;
 
 enum SpellcheckAttributeState {
     SpellcheckAttributeTrue,
@@ -277,6 +276,7 @@ public:
     ElementShadow* shadow() const;
     ElementShadow* ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionCode&);
+    ShadowRoot* shadowRoot() const;
 
     virtual void willAddAuthorShadowRoot() { }
     virtual bool areAuthorShadowsAllowed() const { return true; }
@@ -376,8 +376,8 @@ public:
     Element* nextElementSibling() const;
     unsigned childElementCount() const;
 
-    virtual bool shouldMatchReadOnlySelector() const;
-    virtual bool shouldMatchReadWriteSelector() const;
+    virtual bool matchesReadOnlyPseudoClass() const;
+    virtual bool matchesReadWritePseudoClass() const;
     bool webkitMatchesSelector(const String& selectors, ExceptionCode&);
 
     DOMTokenList* classList();
@@ -426,6 +426,10 @@ public:
 
 #if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+    bool hasPendingResources() const;
+    void setHasPendingResources();
+    void clearHasPendingResources();
+    virtual void buildPendingResource() { };
 #endif
     
 #if ENABLE(FULLSCREEN_API)
@@ -453,8 +457,6 @@ public:
 #endif
 
     virtual bool isSpellCheckingEnabled() const;
-
-    PassRefPtr<WebKitAnimationList> webkitGetAnimations() const;
 
     PassRefPtr<RenderStyle> styleForRenderer();
 
@@ -546,7 +548,7 @@ private:
     
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    virtual PassRefPtr<Node> cloneNode(bool deep);
+    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;

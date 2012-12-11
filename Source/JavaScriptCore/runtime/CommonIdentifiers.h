@@ -43,6 +43,7 @@
     macro(compile) \
     macro(configurable) \
     macro(constructor) \
+    macro(count) \
     macro(counters) \
     macro(description) \
     macro(descriptions) \
@@ -50,16 +51,20 @@
     macro(eval) \
     macro(exec) \
     macro(executionCount) \
+    macro(exitKind) \
     macro(fromCharCode) \
     macro(global) \
     macro(get) \
     macro(hasOwnProperty) \
     macro(hash) \
+    macro(id) \
     macro(ignoreCase) \
     macro(index) \
+    macro(inferredName) \
     macro(input) \
     macro(isArray) \
     macro(isPrototypeOf) \
+    macro(isWatchpoint) \
     macro(lastIndex) \
     macro(length) \
     macro(message) \
@@ -69,6 +74,8 @@
     macro(Object) \
     macro(opcode) \
     macro(origin) \
+    macro(osrExitSites) \
+    macro(osrExits) \
     macro(parse) \
     macro(propertyIsEnumerable) \
     macro(prototype) \

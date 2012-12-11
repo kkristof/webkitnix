@@ -54,8 +54,11 @@ INTERRUPTED_EXIT_STATUS = signal.SIGINT + 128
 EXCEPTIONAL_EXIT_STATUS = 254
 
 
-def lint(port, options):
+def lint(port, options, logging_stream):
     host = port.host
+    logging.getLogger().setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
+    printer = printing.Printer(port, options, logging_stream, logger=logging.getLogger())
+
     if options.platform:
         ports_to_lint = [port]
     else:
@@ -66,6 +69,8 @@ def lint(port, options):
 
     for port_to_lint in ports_to_lint:
         expectations_dict = port_to_lint.expectations_dict()
+
+        # FIXME: This won't work if multiple ports share a TestExpectations file but support different modifiers in the file.
         for expectations_file in expectations_dict.keys():
             if expectations_file in files_linted:
                 continue
@@ -82,8 +87,10 @@ def lint(port, options):
 
     if lint_failed:
         _log.error('Lint failed.')
+        printer.cleanup()
         return -1
     _log.info('Lint succeeded.')
+    printer.cleanup()
     return 0
 
 
@@ -416,14 +423,15 @@ def main(argv=None, stdout=sys.stdout, stderr=sys.stderr):
         return EXCEPTIONAL_EXIT_STATUS
 
     logging.getLogger().setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
+
+    if options.lint_test_files:
+        return lint(port, options, stderr)
+
     try:
-        if options.lint_test_files:
-            return lint(port, options)
-
         run_details = run(port, options, args, stderr)
-
-        bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
-        bot_printer.print_results(run_details)
+        if run_details.exit_code != -1:
+            bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
+            bot_printer.print_results(run_details)
 
         return run_details.exit_code
     except Exception, e:

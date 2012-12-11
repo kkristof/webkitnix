@@ -1594,6 +1594,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\profiler\ProfilerOSRExit.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\profiler\ProfilerOSRExit.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\profiler\ProfilerOSRExitSite.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\profiler\ProfilerOSRExitSite.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\profiler\Profile.cpp"
 				>
 			</File>
@@ -1750,6 +1766,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\bytecode\ExitKind.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\bytecode\ExitKind.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\bytecode\GetByIdStatus.cpp"
 				>
 			</File>
@@ -1807,6 +1831,14 @@
 			</File>
 			<File
 				RelativePath="..\..\bytecode\PolymorphicPutByIdList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\bytecode\ReduceWhitespace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\bytecode\ReduceWhitespace.h"
 				>
 			</File>
 			<File

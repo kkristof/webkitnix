@@ -60,6 +60,7 @@ SOURCES += \
     bytecode/CodeType.cpp \
     bytecode/DFGExitProfile.cpp \
     bytecode/ExecutionCounter.cpp \
+    bytecode/ExitKind.cpp \
     bytecode/GetByIdStatus.cpp \
     bytecode/JumpTable.cpp \
     bytecode/LazyOperandValueProfile.cpp \
@@ -67,6 +68,7 @@ SOURCES += \
     bytecode/Opcode.cpp \
     bytecode/PolymorphicPutByIdList.cpp \
     bytecode/PutByIdStatus.cpp \
+    bytecode/ReduceWhitespace.cpp \
     bytecode/ResolveGlobalStatus.cpp \
     bytecode/SamplingTool.cpp \
     bytecode/SpecialPointer.cpp \
@@ -199,6 +201,8 @@ SOURCES += \
     profiler/ProfilerOrigin.h \
     profiler/ProfilerOriginStack.cpp \
     profiler/ProfilerOriginStack.h \
+    profiler/ProfilerOSRExit.cpp \
+    profiler/ProfilerOSRExitSite.cpp \
     profiler/Profile.cpp \
     profiler/ProfileGenerator.cpp \
     profiler/ProfileNode.cpp \

@@ -293,6 +293,7 @@ Usage: $programName [options] [testdir|testpath ...]
   -i|--ignore-tests               Comma-separated list of directories or tests to ignore
   --iterations n                  Number of times to run the set of tests (e.g. ABCABCABC)
   --[no-]launch-safari            Launch (or do not launch) Safari to display test results (default: $launchSafariDefault)
+  --[no-]show-results             Same as --[no-]launch-safari
   -l|--leaks                      Enable leaks checking
   --[no-]new-test-results         Generate results for new tests
   --nthly n                       Restart DumpRenderTree every n tests (default: $testsPerDumpTool)
@@ -358,6 +359,7 @@ my $getOptionsResult = GetOptions(
     'reverse' => \$reverseTests,
     'root=s' => \$root,
     'sample-on-timeout!' => \$runSample,
+    'show-results!' => \$launchSafari,
     'singly|1' => sub { $testsPerDumpTool = 1; },
     'skipped=s' => \&validateSkippedArg,
     'slowest' => \$report10Slowest,

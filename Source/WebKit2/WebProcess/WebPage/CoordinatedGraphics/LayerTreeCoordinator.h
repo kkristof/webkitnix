@@ -28,6 +28,7 @@
 #include "LayerTreeHost.h"
 #include "Timer.h"
 #include "UpdateAtlas.h"
+#include "WebCoordinatedSurface.h"
 #include <WebCore/GraphicsLayerClient.h>
 #include <WebCore/GraphicsLayerFactory.h>
 #include <wtf/OwnPtr.h>
@@ -78,36 +79,36 @@ public:
     virtual void deviceScaleFactorDidChange() { }
     virtual PassRefPtr<CoordinatedImageBacking> createImageBackingIfNeeded(WebCore::Image*) OVERRIDE;
 
-    virtual void createTile(WebLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
-    virtual void updateTile(WebLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
-    virtual void removeTile(WebLayerID, uint32_t tileID);
-    virtual WebCore::IntRect visibleContentsRect() const;
+    virtual void createTile(CoordinatedLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
+    virtual void updateTile(CoordinatedLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
+    virtual void removeTile(CoordinatedLayerID, uint32_t tileID);
+    virtual WebCore::FloatRect visibleContentsRect() const;
     virtual void renderNextFrame();
     virtual void purgeBackingStores();
     virtual bool layerTreeTileUpdatesAllowed() const;
-    virtual void setVisibleContentsRect(const WebCore::IntRect&, float scale, const WebCore::FloatPoint&);
+    virtual void setVisibleContentsRect(const WebCore::FloatRect&, float scale, const WebCore::FloatPoint&);
     virtual void didReceiveLayerTreeCoordinatorMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&);
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() OVERRIDE;
 
-    virtual void syncLayerState(WebLayerID, const WebLayerInfo&);
-    virtual void syncLayerChildren(WebLayerID, const Vector<WebLayerID>&);
-    virtual void setLayerAnimations(WebLayerID, const WebCore::GraphicsLayerAnimations&);
+    virtual void syncLayerState(CoordinatedLayerID, const CoordinatedLayerInfo&);
+    virtual void syncLayerChildren(CoordinatedLayerID, const Vector<CoordinatedLayerID>&);
+    virtual void setLayerAnimations(CoordinatedLayerID, const WebCore::GraphicsLayerAnimations&);
 #if ENABLE(CSS_FILTERS)
-    virtual void syncLayerFilters(WebLayerID, const WebCore::FilterOperations&);
+    virtual void syncLayerFilters(CoordinatedLayerID, const WebCore::FilterOperations&);
 #endif
 #if USE(GRAPHICS_SURFACE)
-    virtual void createCanvas(WebLayerID, WebCore::PlatformLayer*) OVERRIDE;
-    virtual void syncCanvas(WebLayerID, WebCore::PlatformLayer*) OVERRIDE;
-    virtual void destroyCanvas(WebLayerID) OVERRIDE;
+    virtual void createCanvas(CoordinatedLayerID, WebCore::PlatformLayer*) OVERRIDE;
+    virtual void syncCanvas(CoordinatedLayerID, WebCore::PlatformLayer*) OVERRIDE;
+    virtual void destroyCanvas(CoordinatedLayerID) OVERRIDE;
 #endif
     virtual void detachLayer(WebCore::CoordinatedGraphicsLayer*);
     virtual void syncFixedLayers();
 
-    virtual PassOwnPtr<WebCore::GraphicsContext> beginContentUpdate(const WebCore::IntSize&, ShareableBitmap::Flags, int& atlasID, WebCore::IntPoint&);
+    virtual PassOwnPtr<WebCore::GraphicsContext> beginContentUpdate(const WebCore::IntSize&, CoordinatedSurface::Flags, uint32_t& atlasID, WebCore::IntPoint&);
 
     // UpdateAtlasClient
-    virtual void createUpdateAtlas(int atlasID, const ShareableSurface::Handle&);
-    virtual void removeUpdateAtlas(int atlasID);
+    virtual void createUpdateAtlas(uint32_t atlasID, const WebCoordinatedSurface::Handle&);
+    virtual void removeUpdateAtlas(uint32_t atlasID);
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     virtual void scheduleAnimation() OVERRIDE;
@@ -127,7 +128,7 @@ private:
 
     // CoordinatedImageBacking::Coordinator
     virtual void createImageBacking(CoordinatedImageBackingID) OVERRIDE;
-    virtual void updateImageBacking(CoordinatedImageBackingID, const ShareableSurface::Handle&) OVERRIDE;
+    virtual void updateImageBacking(CoordinatedImageBackingID, const WebCoordinatedSurface::Handle&) OVERRIDE;
     virtual void clearImageBackingContents(CoordinatedImageBackingID) OVERRIDE;
     virtual void removeImageBacking(CoordinatedImageBackingID) OVERRIDE;
 
@@ -137,6 +138,7 @@ private:
     virtual PassOwnPtr<WebCore::GraphicsLayer> createGraphicsLayer(WebCore::GraphicsLayerClient*) OVERRIDE;
 
     // LayerTreeCoordinator
+    void initializeRootCompositingLayerIfNeeded();
     void createPageOverlayLayer();
     void destroyPageOverlayLayer();
     bool flushPendingLayerChanges();
@@ -173,7 +175,7 @@ private:
     OwnPtr<WebCore::GraphicsLayer> m_pageOverlayLayer;
 
     HashSet<WebCore::CoordinatedGraphicsLayer*> m_registeredLayers;
-    Vector<WebLayerID> m_detachedLayers;
+    Vector<CoordinatedLayerID> m_detachedLayers;
     typedef HashMap<CoordinatedImageBackingID, RefPtr<CoordinatedImageBacking> > ImageBackingMap;
     ImageBackingMap m_imageBackings;
     Vector<OwnPtr<UpdateAtlas> > m_updateAtlases;
@@ -189,13 +191,13 @@ private:
 
     bool m_waitingForUIProcess;
     bool m_isSuspended;
-    WebCore::IntRect m_visibleContentsRect;
+    WebCore::FloatRect m_visibleContentsRect;
     float m_contentsScale;
     bool m_shouldSendScrollPositionUpdate;
 
     LayerTreeContext m_layerTreeContext;
     bool m_shouldSyncFrame;
-    bool m_shouldSyncRootLayer;
+    bool m_didInitializeRootCompositingLayer;
     WebCore::Timer<LayerTreeCoordinator> m_layerFlushTimer;
     WebCore::Timer<LayerTreeCoordinator> m_releaseInactiveAtlasesTimer;
     bool m_layerFlushSchedulingEnabled;

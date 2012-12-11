@@ -1,3 +1,186 @@
+2012-12-11  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Install GObject DOM bindings headers in its own directory
+        https://bugs.webkit.org/show_bug.cgi?id=104663
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Add GENSOURCES_WEBKITDOM and
+        webkitgtk_gdom_built_h_api variables.
+
+2012-12-11  Stephen Kelly  <stephen.kelly@kdab.com>
+
+        WebKit tests for the Qt API should include tests of CMake config files
+        https://bugs.webkit.org/show_bug.cgi?id=104003
+
+        Reviewed by Simon Hausmann.
+
+        The Qt WebKit CI system is not going to run this test, but it can
+        be run locally and to test packages.
+
+        * Source/tests.pri:
+
+2012-12-11  Xabier Rodriguez Calvar <calvaris@igalia.com>
+
+        [GTK][jhbuild] Switch to GStreamer 1.0 build
+        https://bugs.webkit.org/show_bug.cgi?id=91727
+
+        Reviewed by Philippe Normand.
+
+        Switch build-webkit --gtk to GStreamer 1.0 support and build the
+        necessary GStreamer git modules from JHBuild.
+
+        * configure.ac: Removed GStreamer unstable API flag, made
+        GStreamer 1.0 default instead of 0.10 and made required version
+        1.0.3. In case no GStreamer version is specified, it falls back to
+        0.10. In case no video or web-audio are requested, GStreamer
+        and Farstream checks are not performed.
+
+2012-12-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Feature enabling/disabling should be possible through build-webkit
+        https://bugs.webkit.org/show_bug.cgi?id=99271
+
+        Reviewed by Gustavo Noronha Silva.
+
+        The autogen.sh script now calls the Tools/gtk/override-feature-defines script
+        before calling autoreconf. This ensures that Source/WebCore/GNUmakefile.features.am
+        is present and properly modified if the build-webkit script intends to override
+        any feature.
+
+        The Source/WebCore/GNUmakefile.features.am file is added to the ignored files list
+        so it doesn't pop out as a new, untracked file.
+
+        * .gitignore:
+        * autogen.sh:
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Remove the Pango backend
+        https://bugs.webkit.org/show_bug.cgi?id=104569
+
+        Reviewed by Daniel Bates.
+
+        Always look for Freetype and Harfbuzz. We still depend on Pango for a few
+        things, so we cannot yet eliminate our dependency on Pango.
+
+        * configure.ac: Always look for FreeType/Harfbuzz.
+
+2012-12-10  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Change the minimum required EFL version to 1.6
+        https://bugs.webkit.org/show_bug.cgi?id=104431
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Change the minimum required EFL version to 1.6 from 1.7 to enable
+        building on Tizen.
+
+        The elementary EFL package is only required to build MiniBrowser,
+        so I moved the required only to the Minibrowser CMake file.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2012-12-10  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Remove CSS3_BACKGROUND feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=104539
+
+        Reviewed by Antonio Gomes.
+
+        As discussed on webkit-dev it is not needed to keep this feature flag
+        as support for <position> type is a small feature that is already
+        implemented by three other UAs. It was useful while landing this
+        feature as partial bits were landed one after one.
+
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+        * configure.ac:
+
+2012-12-10  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Remove the support for building a debug WebKit with a release Qt
+        https://bugs.webkit.org/show_bug.cgi?id=104560
+
+        Reviewed by Tor Arne Vestbø.
+
+        This creates issues with non-framework builds of Qt (necessary for debug-only
+        builds) since a Qt5 prefix is now added to the base target name.
+
+        * Source/api.pri:
+
+2012-12-09  Gustavo Noronha Silva  <gustavo.noronha@collabora.com>
+
+        [Soup] utilize multipart/x-mixed-replace support recently added to libsoup
+        https://bugs.webkit.org/show_bug.cgi?id=94515
+
+        Reviewed by Martin Robinson.
+
+        * configure.ac: require soup 2.40.0, which adds the new support.
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bring Harfbuzz-ng support to Gtk
+        https://bugs.webkit.org/show_bug.cgi?id=92098
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add support for detecting HarfBuzz during configuration phase. Add these
+        flags to the FreeType ones since HarfBuzz support is part of the FreeType
+        backend.
+
+        * configure.ac: Detect HarfBuzz.
+
+2012-12-08  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [EFL][WK2] Add Remote Web Inspector
+        https://bugs.webkit.org/show_bug.cgi?id=98705
+
+        Reviewed by Gyuyoung Kim.
+
+        Prepare inspectorPageIndex.html for remote web inspector.
+
+        * Source/PlatformEfl.cmake:
+
+2012-12-06  Rick Byers  <rbyers@chromium.org>
+
+        CSS cursor property should support webkit-image-set
+        https://bugs.webkit.org/show_bug.cgi?id=99493
+
+        Reviewed by Beth Dakin.
+
+        Add ENABLE_MOUSE_CURSOR_SCALE (disabled by default)
+
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Remove ENABLE_GLIB_SUPPORT CMake variable
+        https://bugs.webkit.org/show_bug.cgi?id=104278
+
+        Reviewed by Brent Fulgham.
+
+        The variable is unnecessary as glib is a required dependency
+        for the EFL port and glib is not used by other ports building
+        with CMake.
+
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2012-12-06  Tony Chang  <tony@chromium.org>
+
+        REGRESSION(r135082): Restore the ability to insert author level style sheets from script
+        https://bugs.webkit.org/show_bug.cgi?id=104042
+
+        Reviewed by Antti Koivisto.
+
+        Update exports for Internals.cpp.
+
+        * Source/autotools/symbols.filter:
+
 2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
 
         [EFL] Optimize binary size by removing dead sections on unix/gcc

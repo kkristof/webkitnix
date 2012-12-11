@@ -47,6 +47,7 @@
 #include "HTMLNames.h"
 #include "MIMETypeRegistry.h"
 #include "NodeRenderingContext.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "RenderTextControl.h"
 #include "ScriptEventListener.h"
@@ -259,7 +260,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
                 continue;
             String message("An invalid form control with name='%name' is not focusable.");
             message.replace("%name", unhandledAssociatedElement->name());
-            document()->addConsoleMessage(HTMLMessageSource, LogMessageType, ErrorMessageLevel, message);
+            document()->addConsoleMessage(HTMLMessageSource, ErrorMessageLevel, message);
         }
     }
     return false;
@@ -522,9 +523,9 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement* associatedElem
     // the form's tree of children; we don't want to walk the entire tree in that
     // common case that occurs during parsing; instead we'll just return a value
     // that says "add this form element to the end of the array".
-    if (element->traverseNextNode(this)) {
+    if (NodeTraversal::next(element, this)) {
         unsigned i = m_associatedElementsBeforeIndex;
-        for (Node* node = this; node; node = node->traverseNextNode(this)) {
+        for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
             if (node == element) {
                 ++m_associatedElementsAfterIndex;
                 return i;

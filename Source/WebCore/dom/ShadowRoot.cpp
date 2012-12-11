@@ -283,7 +283,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
     if (m_registeredWithParentShadowRoot)
         return InsertionDone;
 
-    if (ShadowRoot* root = host()->shadowRoot()) {
+    if (ShadowRoot* root = host()->containingShadowRoot()) {
         root->registerElementShadow();
         m_registeredWithParentShadowRoot = true;
     }
@@ -294,9 +294,9 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
 void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 {
     if (insertionPoint->inDocument() && m_registeredWithParentShadowRoot) {
-        ShadowRoot* root = host()->shadowRoot();
+        ShadowRoot* root = host()->containingShadowRoot();
         if (!root)
-            root = insertionPoint->shadowRoot();
+            root = insertionPoint->containingShadowRoot();
 
         if (root)
             root->unregisterElementShadow();
@@ -358,14 +358,14 @@ inline ShadowRootContentDistributionData* ShadowRoot::ensureDistributionData()
     return m_distributionData.get();
 }   
 
-void ShadowRoot::registerShadowElement()
+void ShadowRoot::registerInsertionPoint(InsertionPoint* point)
 {
-    ensureDistributionData()->incrementNumberOfShadowElementChildren();
+    ensureDistributionData()->regiterInsertionPoint(this, point);
 }
 
-void ShadowRoot::unregisterShadowElement()
+void ShadowRoot::unregisterInsertionPoint(InsertionPoint* point)
 {
-    distributionData()->decrementNumberOfShadowElementChildren();
+    ensureDistributionData()->unregisterInsertionPoint(this, point);
 }
 
 bool ShadowRoot::hasShadowInsertionPoint() const
@@ -374,16 +374,6 @@ bool ShadowRoot::hasShadowInsertionPoint() const
         return false;
 
     return distributionData()->hasShadowElementChildren();
-}
-
-void ShadowRoot::registerContentElement()
-{
-    ensureDistributionData()->incrementNumberOfContentElementChildren();
-}
-
-void ShadowRoot::unregisterContentElement()
-{
-    distributionData()->decrementNumberOfContentElementChildren();
 }
 
 bool ShadowRoot::hasContentElement() const

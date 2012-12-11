@@ -50,6 +50,7 @@ set(JavaScriptCore_SOURCES
     bytecode/CodeType.cpp
     bytecode/DFGExitProfile.cpp
     bytecode/ExecutionCounter.cpp
+    bytecode/ExitKind.cpp
     bytecode/GetByIdStatus.cpp
     bytecode/JumpTable.cpp
     bytecode/LazyOperandValueProfile.cpp
@@ -58,6 +59,7 @@ set(JavaScriptCore_SOURCES
     bytecode/PolymorphicPutByIdList.cpp
     bytecode/SpeculatedType.cpp
     bytecode/PutByIdStatus.cpp
+    bytecode/ReduceWhitespace.cpp
     bytecode/ResolveGlobalStatus.cpp
     bytecode/SamplingTool.cpp
     bytecode/SpecialPointer.cpp
@@ -189,6 +191,8 @@ set(JavaScriptCore_SOURCES
     profiler/ProfilerOrigin.h
     profiler/ProfilerOriginStack.cpp
     profiler/ProfilerOriginStack.h
+    profiler/ProfilerOSRExit.cpp
+    profiler/ProfilerOSRExitSite.cpp
     profiler/Profile.cpp
     profiler/ProfileGenerator.cpp
     profiler/ProfileNode.cpp
@@ -254,6 +258,7 @@ set(JavaScriptCore_SOURCES
     runtime/LiteralParser.cpp
     runtime/Lookup.cpp
     runtime/MathObject.cpp
+    runtime/MemoryStatistics.cpp
     runtime/NameConstructor.cpp
     runtime/NameConstructor.h
     runtime/NameInstance.cpp

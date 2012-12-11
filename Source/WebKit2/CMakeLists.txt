@@ -18,6 +18,7 @@ set(WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/UIProcess/Authentication"
     "${WEBKIT2_DIR}/UIProcess/CoordinatedGraphics"
     "${WEBKIT2_DIR}/UIProcess/Downloads"
+    "${WEBKIT2_DIR}/UIProcess/InspectorServer"
     "${WEBKIT2_DIR}/UIProcess/Launcher"
     "${WEBKIT2_DIR}/UIProcess/Notifications"
     "${WEBKIT2_DIR}/UIProcess/Plugins"
@@ -155,7 +156,6 @@ set(WebKit2_SOURCES
     Shared/SecurityOriginData.cpp
     Shared/SessionState.cpp
     Shared/ShareableBitmap.cpp
-    Shared/ShareableSurface.cpp
     Shared/StatisticsData.cpp
     Shared/SurfaceUpdateInfo.cpp
     Shared/UpdateInfo.cpp
@@ -177,7 +177,6 @@ set(WebKit2_SOURCES
     Shared/WebImage.cpp
     Shared/WebIntentServiceInfo.cpp
     Shared/WebKeyboardEvent.cpp
-    Shared/WebLayerTreeInfo.cpp
     Shared/WebMemorySampler.cpp
     Shared/WebMouseEvent.cpp
     Shared/WebNetworkInfo.cpp
@@ -220,6 +219,8 @@ set(WebKit2_SOURCES
     Shared/API/c/WKUserContentURLPattern.cpp
 
     Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp
+    Shared/CoordinatedGraphics/CoordinatedLayerInfo.cpp
+    Shared/CoordinatedGraphics/WebCoordinatedSurface.cpp
     Shared/CoordinatedGraphics/WebCustomFilterProgramProxy.cpp
 
     Shared/Plugins/NPIdentifierData.cpp
@@ -363,6 +364,7 @@ set(WebKit2_SOURCES
     UIProcess/Notifications/WebNotificationManagerProxy.cpp
     UIProcess/Notifications/WebNotificationProvider.cpp
 
+    UIProcess/Plugins/PlugInAutoStartProvider.cpp
     UIProcess/Plugins/PluginInfoStore.cpp
     UIProcess/Plugins/PluginProcessManager.cpp
     UIProcess/Plugins/PluginProcessProxy.cpp
@@ -471,6 +473,7 @@ set(WebKit2_SOURCES
     WebProcess/WebCoreSupport/WebNetworkInfoClient.cpp
     WebProcess/WebCoreSupport/WebNotificationClient.cpp
     WebProcess/WebCoreSupport/WebPlatformStrategies.cpp
+    WebProcess/WebCoreSupport/WebPlugInClient.cpp
     WebProcess/WebCoreSupport/WebPopupMenu.cpp
     WebProcess/WebCoreSupport/WebSearchPopupMenu.cpp
     WebProcess/WebCoreSupport/WebVibrationClient.cpp

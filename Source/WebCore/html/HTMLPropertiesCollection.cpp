@@ -39,6 +39,7 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "Node.h"
+#include "NodeTraversal.h"
 #include "PropertyNodeList.h"
 
 namespace WebCore {
@@ -76,7 +77,8 @@ static Node* nextNodeWithProperty(Node* rootNode, Node* previous, Node* ownerNod
     // that declares the property. If the property has an itemscope attribute specified then we need
     // to traverse the next sibling.
     return previous == ownerNode || (previous->isHTMLElement() && !toHTMLElement(previous)->fastHasAttribute(itemscopeAttr))
-            ? previous->traverseNextNode(rootNode) : previous->traverseNextSibling(rootNode);
+        ? NodeTraversal::next(previous, rootNode)
+        : NodeTraversal::nextSkippingChildren(previous, rootNode);
 }
 
 Element* HTMLPropertiesCollection::virtualItemAfter(unsigned& offsetInArray, Element* previousItem) const
@@ -135,7 +137,7 @@ PassRefPtr<DOMStringList> HTMLPropertiesCollection::names() const
     return m_propertyNames;
 }
 
-PassRefPtr<PropertyNodeList> HTMLPropertiesCollection::namedItem(const String& name) const
+PassRefPtr<PropertyNodeList> HTMLPropertiesCollection::propertyNodeList(const String& name) const
 {
     return ownerNode()->propertyNodeList(name);
 }

@@ -76,7 +76,6 @@
 #include "TextIterator.h"
 #include "VoidCallback.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include "WebKitAnimationList.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "htmlediting.h"
@@ -217,7 +216,7 @@ inline ElementRareData* Element::ensureElementRareData()
 
 PassOwnPtr<NodeRareData> Element::createRareData()
 {
-    return adoptPtr(new ElementRareData());
+    return adoptPtr(new ElementRareData(documentInternal()));
 }
 
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, blur);
@@ -799,6 +798,9 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
     invalidateNodeListCachesInAncestors(&name, this);
 
+    // If there is currently no StyleResolver, we can't be sure that this attribute change won't affect style.
+    shouldInvalidateStyle |= !styleResolver;
+
     if (shouldInvalidateStyle)
         setNeedsStyleRecalc();
 
@@ -1305,7 +1307,7 @@ void Element::recalcStyle(StyleChange change)
         // If "rem" units are used anywhere in the document, and if the document element's font size changes, then go ahead and force font updating
         // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
         if (document()->styleSheetCollection()->usesRemUnits() && document()->documentElement() == this && ch != NoChange && currentStyle && newStyle && currentStyle->fontSize() != newStyle->fontSize()) {
-            // Cached RenderStyles may depend on the rem units.
+            // Cached RenderStyles may depend on the re units.
             document()->styleResolver()->invalidateMatchedPropertiesCache();
             change = Force;
         }
@@ -1379,6 +1381,17 @@ ElementShadow* Element::ensureShadow()
 PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionCode& ec)
 {
     return ShadowRoot::create(this, ec);
+}
+
+ShadowRoot* Element::shadowRoot() const
+{
+    ElementShadow* elementShadow = shadow();
+    if (!elementShadow)
+        return 0;
+    ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
+    if (!shadowRoot->isAccessible())
+        return 0;
+    return shadowRoot;
 }
 
 ShadowRoot* Element::userAgentShadowRoot() const
@@ -2145,12 +2158,12 @@ unsigned Element::childElementCount() const
     return count;
 }
 
-bool Element::shouldMatchReadOnlySelector() const
+bool Element::matchesReadOnlyPseudoClass() const
 {
     return false;
 }
 
-bool Element::shouldMatchReadWriteSelector() const
+bool Element::matchesReadWritePseudoClass() const
 {
     return false;
 }
@@ -2333,19 +2346,6 @@ bool Element::isSpellCheckingEnabled() const
     }
 
     return true;
-}
-
-PassRefPtr<WebKitAnimationList> Element::webkitGetAnimations() const
-{
-    if (!renderer())
-        return 0;
-
-    AnimationController* animController = renderer()->animation();
-
-    if (!animController)
-        return 0;
-    
-    return animController->animationsForRenderer(renderer());
 }
 
 RenderRegion* Element::renderRegion() const
@@ -2678,5 +2678,22 @@ void Element::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_tagName);
     info.addMember(m_attributeData);
 }
+
+#if ENABLE(SVG)
+bool Element::hasPendingResources() const
+{
+    return hasRareData() && elementRareData()->hasPendingResources();
+}
+
+void Element::setHasPendingResources()
+{
+    ensureElementRareData()->setHasPendingResources(true);
+}
+
+void Element::clearHasPendingResources()
+{
+    ensureElementRareData()->setHasPendingResources(false);
+}
+#endif
 
 } // namespace WebCore

@@ -41,9 +41,10 @@ Database::~Database()
 {
 }
 
-Bytecodes* Database::addBytecodes(CodeBlockHash hash, const String& sourceCode)
+Bytecodes* Database::addBytecodes(
+    CodeBlockHash hash, const String& inferredName, const String& sourceCode)
 {
-    m_bytecodes.append(Bytecodes(m_bytecodes.size(), sourceCode, hash));
+    m_bytecodes.append(Bytecodes(m_bytecodes.size(), inferredName, sourceCode, hash));
     return &m_bytecodes.last();
 }
 
@@ -57,25 +58,8 @@ Bytecodes* Database::ensureBytecodesFor(CodeBlock* codeBlock)
     if (iter != m_bytecodesMap.end())
         return iter->value;
     
-    String sourceCode;
-    
-    if (codeBlock->codeType() == FunctionCode) {
-        SourceProvider* provider = codeBlock->source();
-        FunctionExecutable* executable = jsCast<FunctionExecutable*>(codeBlock->ownerExecutable());
-        UnlinkedFunctionExecutable* unlinked = executable->unlinkedExecutable();
-        unsigned unlinkedStartOffset = unlinked->startOffset();
-        unsigned linkedStartOffset = executable->source().startOffset();
-        int delta = linkedStartOffset - unlinkedStartOffset;
-        StringBuilder builder;
-        builder.append("function ");
-        builder.append(provider->getRange(
-            delta + unlinked->functionStartOffset(),
-            delta + unlinked->startOffset() + unlinked->sourceLength()));
-        sourceCode = builder.toString();
-    } else
-        sourceCode = codeBlock->ownerExecutable()->source().toString();
-    
-    Bytecodes* result = addBytecodes(codeBlock->hash(), sourceCode);
+    Bytecodes* result = addBytecodes(
+        codeBlock->hash(), codeBlock->inferredName(), codeBlock->sourceCodeForTools());
     
     for (unsigned bytecodeIndex = 0; bytecodeIndex < codeBlock->instructions().size();) {
         out.reset();
@@ -97,15 +81,14 @@ void Database::notifyDestruction(CodeBlock* codeBlock)
     m_bytecodesMap.remove(codeBlock);
 }
 
-Compilation* Database::newCompilation(Bytecodes* bytecodes, CompilationKind kind)
+PassRefPtr<Compilation> Database::newCompilation(Bytecodes* bytecodes, CompilationKind kind)
 {
-    OwnPtr<Compilation> compilation = adoptPtr(new Compilation(bytecodes, kind));
-    Compilation* result = compilation.get();
-    m_compilations.append(compilation.release());
-    return result;
+    RefPtr<Compilation> compilation = adoptRef(new Compilation(bytecodes, kind));
+    m_compilations.append(compilation);
+    return compilation.release();
 }
 
-Compilation* Database::newCompilation(CodeBlock* codeBlock, CompilationKind kind)
+PassRefPtr<Compilation> Database::newCompilation(CodeBlock* codeBlock, CompilationKind kind)
 {
     return newCompilation(ensureBytecodesFor(codeBlock), kind);
 }

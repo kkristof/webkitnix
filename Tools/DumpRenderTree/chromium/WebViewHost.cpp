@@ -38,7 +38,6 @@
 #include "Task.h"
 #include "TestNavigationController.h"
 #include "TestShell.h"
-#include "TestWebPlugin.h"
 #include "WebCachedURLRequest.h"
 #include "WebConsoleMessage.h"
 #include "WebContextMenuData.h"
@@ -62,12 +61,11 @@
 #include "WebRange.h"
 #include "WebScreenInfo.h"
 #include "WebStorageNamespace.h"
+#include "WebTestPlugin.h"
 #include "WebTextCheckingCompletion.h"
 #include "WebTextCheckingResult.h"
 #include "WebUserMediaClientMock.h"
 #include "WebView.h"
-#include "WebViewHostOutputSurface.h"
-#include "WebViewHostSoftwareOutputDevice.h"
 #include "WebWindowFeatures.h"
 #include "platform/WebSerializedScriptValue.h"
 #include "skia/ext/platform_canvas.h"
@@ -288,18 +286,11 @@ WebCompositorOutputSurface* WebViewHost::createOutputSurface()
     if (!webView())
         return 0;
 
-    if (m_shell->softwareCompositingEnabled()) {
-        WebCompositorOutputSurface* surface = WebKit::Platform::current()->compositorSupport()->createOutputSurfaceForSoftware();
-        if (!surface)
-            surface = WebViewHostOutputSurface::createSoftware(adoptPtr(new WebViewHostSoftwareOutputDevice)).leakPtr();
-        return surface;
-    }
+    if (m_shell->softwareCompositingEnabled())
+        return WebKit::Platform::current()->compositorSupport()->createOutputSurfaceForSoftware();
 
     WebGraphicsContext3D* context = webkit_support::CreateGraphicsContext3D(WebGraphicsContext3D::Attributes(), webView());
-    WebCompositorOutputSurface* surface = WebKit::Platform::current()->compositorSupport()->createOutputSurfaceFor3D(context);
-    if (!surface)
-        surface = WebViewHostOutputSurface::create3d(adoptPtr(context)).leakPtr();
-    return surface;
+    return WebKit::Platform::current()->compositorSupport()->createOutputSurfaceFor3D(context);
 }
 
 void WebViewHost::didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine)
@@ -876,8 +867,8 @@ void WebViewHost::exitFullScreen()
 
 WebPlugin* WebViewHost::createPlugin(WebFrame* frame, const WebPluginParams& params)
 {
-    if (params.mimeType == TestWebPlugin::mimeType())
-        return new TestWebPlugin(frame, params);
+    if (params.mimeType == WebTestPlugin::mimeType())
+        return WebTestPlugin::create(frame, params, this);
 
     return webkit_support::CreateWebPlugin(frame, params);
 }

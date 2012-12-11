@@ -96,6 +96,7 @@ list(APPEND WebCore_SOURCES
     bindings/js/JSHTMLOutputElementCustom.cpp
     bindings/js/JSHTMLSelectElementCustom.cpp
     bindings/js/JSHTMLStyleElementCustom.cpp
+    bindings/js/JSHTMLTemplateElementCustom.cpp
     bindings/js/JSHistoryCustom.cpp
     bindings/js/JSImageConstructor.cpp
     bindings/js/JSImageDataCustom.cpp
@@ -131,8 +132,6 @@ list(APPEND WebCore_SOURCES
     bindings/js/JSTouchCustom.cpp
     bindings/js/JSTouchListCustom.cpp
     bindings/js/JSTreeWalkerCustom.cpp
-    bindings/js/JSWebKitAnimationCustom.cpp
-    bindings/js/JSWebKitAnimationListCustom.cpp
     bindings/js/JSWebKitCSSKeyframeRuleCustom.cpp
     bindings/js/JSWebKitCSSKeyframesRuleCustom.cpp
     bindings/js/JSWebKitPointCustom.cpp

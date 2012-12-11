@@ -1487,7 +1487,7 @@ KURL CSSParser::completeURL(const String& url) const
     return completeURL(m_context, url);
 }
 
-bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags)
+bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
 {
     bool mustBeNonNegative = unitflags & FNonNeg;
 
@@ -1525,7 +1525,7 @@ bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags)
     case CalcOther:
         break;
     }
-    if (!b)
+    if (!b || releaseCalc == ReleaseParsedCalcValue)
         m_parsedCalculation.release();
     return b;    
 }
@@ -1536,10 +1536,10 @@ inline bool CSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units u
     return (unitflags & (FLength | FAngle | FTime)) && (!value->fValue || cssParserMode == CSSQuirksMode || cssParserMode == SVGAttributeMode);
 }
 
-bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
+bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode, ReleaseParsedCalcValueCondition releaseCalc)
 {
     if (isCalculation(value))
-        return validCalculationUnit(value, unitflags);
+        return validCalculationUnit(value, unitflags, releaseCalc);
         
     bool b = false;
     switch (value->unit) {
@@ -1904,16 +1904,29 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyCursor: {
-        // [<uri>,]*  [ auto | crosshair | default | pointer | progress | move | e-resize | ne-resize |
+        // Grammar defined by CSS3 UI and modified by CSS4 images:
+        // [ [<image> [<x> <y>]?,]*
+        // [ auto | crosshair | default | pointer | progress | move | e-resize | ne-resize |
         // nw-resize | n-resize | se-resize | sw-resize | s-resize | w-resize | ew-resize |
         // ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | text | wait | help |
         // vertical-text | cell | context-menu | alias | copy | no-drop | not-allowed | -webkit-zoom-in
         // -webkit-zoom-out | all-scroll | -webkit-grab | -webkit-grabbing ] ] | inherit
         RefPtr<CSSValueList> list;
-        while (value && value->unit == CSSPrimitiveValue::CSS_URI) {
-            if (!list)
-                list = CSSValueList::createCommaSeparated();
-            String uri = value->string;
+        while (value) {
+            RefPtr<CSSValue> image = 0;
+            if (value->unit == CSSPrimitiveValue::CSS_URI) {
+                String uri = value->string;
+                if (!uri.isNull())
+                    image = CSSImageValue::create(completeURL(uri));
+#if ENABLE(CSS_IMAGE_SET)
+            } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
+                image = parseImageSet(m_valueList.get());
+                if (!image)
+                    break;
+#endif
+            } else
+                break;
+
             Vector<int> coords;
             value = m_valueList->next();
             while (value && value->unit == CSSPrimitiveValue::CSS_NUMBER) {
@@ -1930,8 +1943,11 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
                 hotSpot = IntPoint(coords[0], coords[1]);
             }
 
-            if (!uri.isNull())
-                list->append(CSSCursorImageValue::create(completeURL(uri), hasHotSpot, hotSpot));
+            if (!list)
+                list = CSSValueList::createCommaSeparated();
+
+            if (image)
+                list->append(CSSCursorImageValue::create(image, hasHotSpot, hotSpot));
 
             if ((inStrictMode() && !value) || (value && !(value->unit == CSSParserValue::Operator && value->iValue == ',')))
                 return false;
@@ -2137,10 +2153,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             break;
         }
         /* nobreak */
-    case CSSPropertyOrphans:              // <integer> | inherit
-    case CSSPropertyWidows:               // <integer> | inherit
-        // ### not supported later on
-        validPrimitive = (!id && validUnit(value, FInteger, CSSQuirksMode));
+    case CSSPropertyOrphans: // <integer> | inherit | auto (We've added support for auto for backwards compatibility)
+    case CSSPropertyWidows: // <integer> | inherit | auto (Ditto)
+        if (id == CSSValueAuto)
+            validPrimitive = true;
+        else
+            validPrimitive = (!id && validUnit(value, FInteger, CSSQuirksMode));
         break;
 
     case CSSPropertyLineHeight:
@@ -3701,7 +3719,6 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseFillPositionComponent(CSSParserVal
     return 0;
 }
 
-#if ENABLE(CSS3_BACKGROUND)
 static bool isValueConflictingWithCurrentEdge(int value1, int value2)
 {
     if ((value1 == CSSValueLeft || value1 == CSSValueRight) && (value2 == CSSValueLeft || value2 == CSSValueRight))
@@ -3713,16 +3730,16 @@ static bool isValueConflictingWithCurrentEdge(int value1, int value2)
     return false;
 }
 
-static bool isBackgroundPositionKeyword(int value)
+static bool isFillPositionKeyword(int value)
 {
     return value == CSSValueLeft || value == CSSValueTop || value == CSSValueBottom || value == CSSValueRight || value == CSSValueCenter;
 }
 
-void CSSParser::parse4ValuesBackgroundPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
+void CSSParser::parse4ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
 {
     // [ left | right ] [ <percentage] | <length> ] && [ top | bottom ] [ <percentage> | <length> ]
     // In the case of 4 values <position> requires the second value to be a length or a percentage.
-    if (isBackgroundPositionKeyword(parsedValue2->getIdent()))
+    if (isFillPositionKeyword(parsedValue2->getIdent()))
         return;
 
     unsigned cumulativeFlags = 0;
@@ -3737,7 +3754,7 @@ void CSSParser::parse4ValuesBackgroundPosition(CSSParserValueList* valueList, Re
     if (ident1 == CSSValueCenter)
         return;
 
-    if (!isBackgroundPositionKeyword(ident3) || ident3 == CSSValueCenter)
+    if (!isFillPositionKeyword(ident3) || ident3 == CSSValueCenter)
         return;
 
     // We need to check if the values are not conflicting, e.g. they are not on the same edge. It is
@@ -3755,7 +3772,7 @@ void CSSParser::parse4ValuesBackgroundPosition(CSSParserValueList* valueList, Re
         return;
 
     // 4th value must be a length or a percentage.
-    if (isBackgroundPositionKeyword(value4->getIdent()))
+    if (isFillPositionKeyword(value4->getIdent()))
         return;
 
     value1 = createPrimitiveValuePair(parsedValue1, parsedValue2);
@@ -3766,7 +3783,7 @@ void CSSParser::parse4ValuesBackgroundPosition(CSSParserValueList* valueList, Re
 
     valueList->next();
 }
-void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
+void CSSParser::parse3ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, PassRefPtr<CSSPrimitiveValue> parsedValue1, PassRefPtr<CSSPrimitiveValue> parsedValue2)
 {
     unsigned cumulativeFlags = 0;
     FillPositionFlag value3Flag = InvalidFillPosition;
@@ -3788,11 +3805,11 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
 
     if (ident1 == CSSValueCenter) {
         // <position> requires the first 'center' to be followed by a keyword.
-        if (!isBackgroundPositionKeyword(ident2))
+        if (!isFillPositionKeyword(ident2))
             return;
 
         // If 'center' is the first keyword then the last one needs to be a length.
-        if (isBackgroundPositionKeyword(ident3))
+        if (isFillPositionKeyword(ident3))
             return;
 
         firstPositionKeyword = CSSValueLeft;
@@ -3803,7 +3820,7 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
         value1 = createPrimitiveValuePair(cssValuePool().createIdentifierValue(firstPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::CSS_PERCENTAGE));
         value2 = createPrimitiveValuePair(parsedValue2, value3);
     } else if (ident3 == CSSValueCenter) {
-        if (isBackgroundPositionKeyword(ident2))
+        if (isFillPositionKeyword(ident2))
             return;
 
         secondPositionKeyword = CSSValueTop;
@@ -3817,11 +3834,11 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
         RefPtr<CSSPrimitiveValue> firstPositionValue;
         RefPtr<CSSPrimitiveValue> secondPositionValue;
 
-        if (isBackgroundPositionKeyword(ident2)) {
+        if (isFillPositionKeyword(ident2)) {
             // To match CSS grammar, we should only accept: [ center | left | right | bottom | top ] [ left | right | top | bottom ] [ <percentage> | <length> ].
             ASSERT(ident2 != CSSValueCenter);
 
-            if (isBackgroundPositionKeyword(ident3))
+            if (isFillPositionKeyword(ident3))
                 return;
 
             secondPositionValue = value3;
@@ -3829,7 +3846,7 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
             firstPositionValue = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PERCENTAGE);
         } else {
             // Per CSS, we should only accept: [ right | left | top | bottom ] [ <percentage> | <length> ] [ center | left | right | bottom | top ].
-            if (!isBackgroundPositionKeyword(ident3))
+            if (!isFillPositionKeyword(ident3))
                 return;
 
             firstPositionValue = parsedValue2;
@@ -3859,10 +3876,10 @@ void CSSParser::parse3ValuesBackgroundPosition(CSSParserValueList* valueList, Re
 
 inline bool CSSParser::isPotentialPositionValue(CSSParserValue* value)
 {
-    return !value->id || isBackgroundPositionKeyword(value->id);
+    return isFillPositionKeyword(value->id) || validUnit(value, FPercent | FLength, ReleaseParsedCalcValue);
 }
 
-void CSSParser::parseFillBackgroundPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
+void CSSParser::parseFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
 {
     unsigned numberOfValues = 0;
     for (unsigned i = valueList->currentIndex(); i < valueList->size(); ++i, ++numberOfValues) {
@@ -3876,7 +3893,7 @@ void CSSParser::parseFillBackgroundPosition(CSSParserValueList* valueList, RefPt
 
     // If we are parsing two values, we can safely call the CSS 2.1 parsing function and return.
     if (numberOfValues <= 2) {
-        parseFillPosition(valueList, value1, value2);
+        parse2ValuesFillPosition(valueList, value1, value2);
         return;
     }
 
@@ -3885,7 +3902,7 @@ void CSSParser::parseFillBackgroundPosition(CSSParserValueList* valueList, RefPt
     CSSParserValue* value = valueList->current();
 
     // <position> requires the first value to be a background keyword.
-    if (!isBackgroundPositionKeyword(value->id))
+    if (!isFillPositionKeyword(value->id))
         return;
 
     // Parse the first value. We're just making sure that it is one of the valid keywords or a percentage/length.
@@ -3920,13 +3937,12 @@ void CSSParser::parseFillBackgroundPosition(CSSParserValueList* valueList, RefPt
         return;
 
     if (numberOfValues == 3)
-        parse3ValuesBackgroundPosition(valueList, value1, value2, parsedValue1.release(), parsedValue2.release());
+        parse3ValuesFillPosition(valueList, value1, value2, parsedValue1.release(), parsedValue2.release());
     else
-        parse4ValuesBackgroundPosition(valueList, value1, value2, parsedValue1.release(), parsedValue2.release());
+        parse4ValuesFillPosition(valueList, value1, value2, parsedValue1.release(), parsedValue2.release());
 }
-#endif
 
-void CSSParser::parseFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
+void CSSParser::parse2ValuesFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2)
 {
     CSSParserValue* value = valueList->current();
 
@@ -4135,12 +4151,6 @@ bool CSSParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, 
                     }
                     break;
                 case CSSPropertyBackgroundPosition:
-#if ENABLE(CSS3_BACKGROUND)
-                    parseFillBackgroundPosition(m_valueList.get(), currValue, currValue2);
-                    // parseFillBackgroundPosition advances the m_valueList pointer.
-                    break;
-                    // Fall through to CSS 2.1 parsing.
-#endif
                 case CSSPropertyWebkitMaskPosition:
                     parseFillPosition(m_valueList.get(), currValue, currValue2);
                     // parseFillPosition advances the m_valueList pointer.
@@ -4307,7 +4317,7 @@ PassRefPtr<CSSValue> CSSParser::parseAnimationProperty()
 
 bool CSSParser::parseTransformOriginShorthand(RefPtr<CSSValue>& value1, RefPtr<CSSValue>& value2, RefPtr<CSSValue>& value3)
 {
-    parseFillPosition(m_valueList.get(), value1, value2);
+    parse2ValuesFillPosition(m_valueList.get(), value1, value2);
 
     // now get z
     if (m_valueList->current()) {
@@ -7110,7 +7120,7 @@ static PassRefPtr<CSSPrimitiveValue> parseGradientColorOrKeyword(CSSParser* p, C
     return p->parseColor(value);
 }
 
-bool CSSParser::parseLinearGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
+bool CSSParser::parseDeprecatedLinearGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
     RefPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating);
 
@@ -7178,7 +7188,7 @@ bool CSSParser::parseLinearGradient(CSSParserValueList* valueList, RefPtr<CSSVal
     return true;
 }
 
-bool CSSParser::parseRadialGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
+bool CSSParser::parseDeprecatedRadialGradient(CSSParserValueList* valueList, RefPtr<CSSValue>& gradient, CSSGradientRepeat repeating)
 {
     RefPtr<CSSRadialGradientValue> result = CSSRadialGradientValue::create(repeating);
 
@@ -7196,8 +7206,8 @@ bool CSSParser::parseRadialGradient(CSSParserValueList* valueList, RefPtr<CSSVal
     // Optional background-position
     RefPtr<CSSValue> centerX;
     RefPtr<CSSValue> centerY;
-    // parseFillPosition advances the args next pointer.
-    parseFillPosition(args, centerX, centerY);
+    // parse2ValuesFillPosition advances the args next pointer.
+    parse2ValuesFillPosition(args, centerX, centerY);
     a = args->current();
     if (!a)
         return false;
@@ -7360,16 +7370,16 @@ bool CSSParser::parseGeneratedImage(CSSParserValueList* valueList, RefPtr<CSSVal
         return parseDeprecatedGradient(valueList, value);
 
     if (equalIgnoringCase(val->function->name, "-webkit-linear-gradient("))
-        return parseLinearGradient(valueList, value, NonRepeating);
+        return parseDeprecatedLinearGradient(valueList, value, NonRepeating);
 
     if (equalIgnoringCase(val->function->name, "-webkit-repeating-linear-gradient("))
-        return parseLinearGradient(valueList, value, Repeating);
+        return parseDeprecatedLinearGradient(valueList, value, Repeating);
 
     if (equalIgnoringCase(val->function->name, "-webkit-radial-gradient("))
-        return parseRadialGradient(valueList, value, NonRepeating);
+        return parseDeprecatedRadialGradient(valueList, value, NonRepeating);
 
     if (equalIgnoringCase(val->function->name, "-webkit-repeating-radial-gradient("))
-        return parseRadialGradient(valueList, value, Repeating);
+        return parseDeprecatedRadialGradient(valueList, value, Repeating);
 
     if (equalIgnoringCase(val->function->name, "-webkit-canvas("))
         return parseCanvas(valueList, value);
@@ -8512,7 +8522,7 @@ bool CSSParser::parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& prop
         case CSSPropertyWebkitPerspectiveOrigin:
             if (m_valueList->size() > 2)
                 return false;
-            parseFillPosition(m_valueList.get(), value, value2);
+            parse2ValuesFillPosition(m_valueList.get(), value, value2);
             break;
         case CSSPropertyWebkitPerspectiveOriginX: {
             value = parseFillPositionX(m_valueList.get());

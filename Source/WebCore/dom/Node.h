@@ -98,7 +98,7 @@ class PropertyNodeList;
 
 typedef int ExceptionCode;
 
-const int nodeStyleChangeShift = 17;
+const int nodeStyleChangeShift = 15;
 
 // SyntheticStyleChange means that we need to go through the entire style change logic even though
 // no style property has actually changed. It is used to restructure the tree when, for instance,
@@ -110,85 +110,23 @@ enum StyleChangeType {
     SyntheticStyleChange = 3 << nodeStyleChangeShift
 };
 
-class UncommonNodeData {
+class NodeRareDataBase {
 public:
-    static UncommonNodeData* create(TreeScope* scope, RenderObject* renderer)
-    {
-        return new UncommonNodeData(scope, renderer);
-    }
-
     RenderObject* renderer() const { return m_renderer; }
     void setRenderer(RenderObject* renderer) { m_renderer = renderer; }
 
     TreeScope* treeScope() const { return m_treeScope; }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
-    virtual ~UncommonNodeData() { }
-
-    bool isNodeRareData() const { return m_isNodeRareData; }
-
+    virtual ~NodeRareDataBase() { }
 protected:
-    UncommonNodeData()
-        : m_tabIndex(0)
-        , m_childIndex(0)
-        , m_isNodeRareData(true)
-        , m_tabIndexWasSetExplicitly(false)
-        , m_isFocused(false)
-        , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
-        , m_styleAffectedByEmpty(false)
-        , m_isInCanvasSubtree(false)
-#if ENABLE(FULLSCREEN_API)
-        , m_containsFullScreenElement(false)
-#endif
-#if ENABLE(DIALOG_ELEMENT)
-        , m_isInTopLayer(false)
-#endif
-        , m_childrenAffectedByHover(false)
-        , m_childrenAffectedByActive(false)
-        , m_childrenAffectedByDrag(false)
-        , m_childrenAffectedByFirstChildRules(false)
-        , m_childrenAffectedByLastChildRules(false)
-        , m_childrenAffectedByDirectAdjacentRules(false)
-        , m_childrenAffectedByForwardPositionalRules(false)
-        , m_childrenAffectedByBackwardPositionalRules(false)
+    NodeRareDataBase(TreeScope* scope)
+        : m_treeScope(scope)
     {
     }
 private:
-    UncommonNodeData(TreeScope* scope, RenderObject* renderer)
-        : m_renderer(renderer)
-        , m_treeScope(scope)
-        , m_isNodeRareData(false)
-    {
-    }
-
     RenderObject* m_renderer;
     TreeScope* m_treeScope;
-protected:
-    short m_tabIndex;
-    unsigned short m_childIndex;
-    bool m_isNodeRareData : 1;
-    bool m_tabIndexWasSetExplicitly : 1;
-    bool m_isFocused : 1;
-    bool m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
-    bool m_styleAffectedByEmpty : 1;
-    bool m_isInCanvasSubtree : 1;
-#if ENABLE(FULLSCREEN_API)
-    bool m_containsFullScreenElement : 1;
-#endif
-#if ENABLE(DIALOG_ELEMENT)
-    bool m_isInTopLayer : 1;
-#endif
-    bool m_childrenAffectedByHover : 1;
-    bool m_childrenAffectedByActive : 1;
-    bool m_childrenAffectedByDrag : 1;
-    // Bits for dynamic child matching.
-    // We optimize for :first-child and :last-child. The other positional child selectors like nth-child or
-    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
-    bool m_childrenAffectedByFirstChildRules : 1;
-    bool m_childrenAffectedByLastChildRules : 1;
-    bool m_childrenAffectedByDirectAdjacentRules : 1;
-    bool m_childrenAffectedByForwardPositionalRules : 1;
-    bool m_childrenAffectedByBackwardPositionalRules : 1;
 };
 
 class Node : public EventTarget, public ScriptWrappable, public TreeShared<Node, ContainerNode> {
@@ -327,7 +265,7 @@ public:
     // If this node is in a shadow tree, returns its shadow host. Otherwise, returns this.
     // Deprecated. Should use shadowHost() and check the return value.
     Node* shadowAncestorNode() const;
-    ShadowRoot* shadowRoot() const;
+    ShadowRoot* containingShadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;
 
     // Returns 0, a child of ShadowRoot, or a legacy shadow root.
@@ -401,10 +339,14 @@ public:
     bool hasID() const;
     bool hasClass() const;
 
-    bool active() const { return getFlag(IsActiveFlag); }
-    bool inActiveChain() const { return getFlag(InActiveChainFlag); }
-    bool hovered() const { return getFlag(IsHoveredFlag); }
-    bool focused() const { return hasRareData() ? rareDataFocused() : false; }
+    bool isUserActionElement() const { return getFlag(IsUserActionElement); }
+    void setUserActionElement(bool flag) { setFlag(flag, IsUserActionElement); }
+
+    bool active() const { return isUserActionElement() && isUserActionElementActive(); }
+    bool inActiveChain() const { return isUserActionElement() && isUserActionElementInActiveChain(); }
+    bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
+    bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
+
     bool attached() const { return getFlag(IsAttachedFlag); }
     void setAttached() { setFlag(IsAttachedFlag); }
     bool needsStyleRecalc() const { return styleChangeType() != NoStyleChange; }
@@ -416,9 +358,6 @@ public:
     void setHasName(bool f) { ASSERT(!isTextNode()); setFlag(f, HasNameOrIsEditingTextFlag); }
     void setChildNeedsStyleRecalc() { setFlag(ChildNeedsStyleRecalcFlag); }
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
-
-    void setInActiveChain() { setFlag(InActiveChainFlag); }
-    void clearInActiveChain() { clearFlag(InActiveChainFlag); }
 
     void setNeedsStyleRecalc(StyleChangeType changeType = FullStyleChange);
     void clearNeedsStyleRecalc() { m_nodeFlags &= ~StyleChangeMask; }
@@ -447,9 +386,9 @@ public:
     void lazyAttach(ShouldSetAttached = SetAttached);
     void lazyReattach(ShouldSetAttached = SetAttached);
 
-    virtual void setFocus(bool = true);
-    virtual void setActive(bool f = true, bool /*pause*/ = false) { setFlag(f, IsActiveFlag); }
-    virtual void setHovered(bool f = true) { setFlag(f, IsHoveredFlag); }
+    virtual void setFocus(bool flag = true);
+    virtual void setActive(bool flag = true, bool pause = false);
+    virtual void setHovered(bool flag = true);
 
     virtual short tabIndex() const;
 
@@ -539,30 +478,6 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
-    // Does a pre-order traversal of the tree to find the next node after this one.
-    // This uses the same order that tags appear in the source file. If the stayWithin
-    // argument is non-null, the traversal will stop once the specified node is reached.
-    // This can be used to restrict traversal to a particular sub-tree.
-    Node* traverseNextNode() const;
-    Node* traverseNextNode(const Node* stayWithin) const;
-
-    // Like traverseNextNode, but skips children and starts with the next sibling.
-    Node* traverseNextSibling() const;
-    Node* traverseNextSibling(const Node* stayWithin) const;
-
-    // Does a reverse pre-order traversal to find the node that comes before the current one in document order
-    Node* traversePreviousNode(const Node* stayWithin = 0) const;
-
-    // Like traversePreviousNode, but skips children and starts with the next sibling.
-    Node* traversePreviousSibling(const Node* stayWithin = 0) const;
-
-    // Like traverseNextNode, but visits parents after their children.
-    Node* traverseNextNodePostOrder() const;
-
-    // Like traversePreviousNode, but visits parents before their children.
-    Node* traversePreviousNodePostOrder(const Node* stayWithin = 0) const;
-    Node* traversePreviousSiblingPostOrder(const Node* stayWithin = 0) const;
-
     void checkSetPrefix(const AtomicString& prefix, ExceptionCode&);
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
@@ -585,10 +500,10 @@ public:
     // Integration with rendering tree
 
     // As renderer() includes a branch you should avoid calling it repeatedly in hot code paths.
-    RenderObject* renderer() const { return hasUncommonNodeData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
+    RenderObject* renderer() const { return hasRareData() ? m_data.m_rareData->renderer() : m_data.m_renderer; };
     void setRenderer(RenderObject* renderer)
     {
-        if (hasUncommonNodeData())
+        if (hasRareData())
             m_data.m_rareData->setRenderer(renderer);
         else
             m_data.m_renderer = renderer;
@@ -663,7 +578,6 @@ public:
 
     void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = 0, Element* attributeOwnerElement = 0);
     NodeListsNodeData* nodeLists();
-    void removeCachedChildNodeList();
 
     PassRefPtr<NodeList> getElementsByTagName(const AtomicString&);
     PassRefPtr<NodeList> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
@@ -769,37 +683,35 @@ private:
         ChildNeedsStyleRecalcFlag = 1 << 7,
         InDocumentFlag = 1 << 8,
         IsLinkFlag = 1 << 9,
-        IsActiveFlag = 1 << 10,
-        IsHoveredFlag = 1 << 11,
-        InActiveChainFlag = 1 << 12,
-        HasUncommonNodeData = 1 << 13,
-        IsDocumentFragmentFlag = 1 << 14,
+        IsUserActionElement = 1 << 10,
+        HasRareDataFlag = 1 << 11,
+        IsDocumentFragmentFlag = 1 << 12,
 
         // These bits are used by derived classes, pulled up here so they can
         // be stored in the same memory word as the Node bits above.
-        IsParsingChildrenFinishedFlag = 1 << 15, // Element
+        IsParsingChildrenFinishedFlag = 1 << 13, // Element
 #if ENABLE(SVG)
-        HasSVGRareDataFlag = 1 << 16, // SVGElement
+        HasSVGRareDataFlag = 1 << 14, // SVGElement
 #endif
 
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        SelfOrAncestorHasDirAutoFlag = 1 << 19,
+        SelfOrAncestorHasDirAutoFlag = 1 << 17,
 
-        HasNameOrIsEditingTextFlag = 1 << 20,
+        HasNameOrIsEditingTextFlag = 1 << 18,
 
-        InNamedFlowFlag = 1 << 21,
-        HasSyntheticAttrChildNodesFlag = 1 << 22,
-        HasCustomCallbacksFlag = 1 << 23,
-        HasScopedHTMLStyleChildFlag = 1 << 24,
-        HasEventTargetDataFlag = 1 << 25,
-        V8CollectableDuringMinorGCFlag = 1 << 26,
-        IsInsertionPointFlag = 1 << 27,
+        InNamedFlowFlag = 1 << 19,
+        HasSyntheticAttrChildNodesFlag = 1 << 20,
+        HasCustomCallbacksFlag = 1 << 21,
+        HasScopedHTMLStyleChildFlag = 1 << 22,
+        HasEventTargetDataFlag = 1 << 23,
+        V8CollectableDuringMinorGCFlag = 1 << 24,
+        IsInsertionPointFlag = 1 << 25,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 4 bits remaining
+    // 6 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
@@ -836,8 +748,8 @@ protected:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
     void setTabIndexExplicitly(short);
     void clearTabIndexExplicitly();
-
-    bool hasRareData() const { return hasUncommonNodeData() && m_data.m_rareData->isNodeRareData(); }
+    
+    bool hasRareData() const { return getFlag(HasRareDataFlag); }
 
     NodeRareData* rareData() const;
     NodeRareData* ensureRareData();
@@ -862,6 +774,11 @@ private:
     bool rendererIsEditable(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;
     bool isEditableToAccessibility(EditableLevel) const;
 
+    bool isUserActionElementActive() const;
+    bool isUserActionElementInActiveChain() const;
+    bool isUserActionElementHovered() const;
+    bool isUserActionElementFocused() const;
+
     void setStyleChange(StyleChangeType);
 
     // Used to share code between lazyAttach and setNeedsStyleRecalc.
@@ -870,9 +787,7 @@ private:
     virtual void refEventTarget();
     virtual void derefEventTarget();
 
-    bool hasUncommonNodeData() const { return getFlag(HasUncommonNodeData); }
     virtual PassOwnPtr<NodeRareData> createRareData();
-    bool rareDataFocused() const;
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }
 
@@ -882,9 +797,6 @@ private:
     virtual RenderStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
 
     Element* ancestorElement() const;
-
-    Node* traverseNextAncestorSibling() const;
-    Node* traverseNextAncestorSibling(const Node* stayWithin) const;
 
     // Use Node::parentNode as the consistent way of querying a parent node.
     // This method is made private to ensure a compiler error on call sites that
@@ -907,7 +819,7 @@ private:
     union DataUnion {
         DataUnion() : m_renderer(0) { }
         RenderObject* m_renderer;
-        UncommonNodeData* m_rareData;
+        NodeRareDataBase* m_rareData;
     } m_data;
 
 protected:

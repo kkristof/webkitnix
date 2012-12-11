@@ -22,11 +22,10 @@
 #if USE(COORDINATED_GRAPHICS)
 #include "LayerTreeCoordinatorProxy.h"
 
+#include "CoordinatedLayerInfo.h"
 #include "LayerTreeCoordinatorMessages.h"
 #include "LayerTreeRenderer.h"
-#include "UpdateInfo.h"
 #include "WebCoreArgumentCoders.h"
-#include "WebLayerTreeInfo.h"
 #include "WebPageProxy.h"
 #include "WebProcessProxy.h"
 #include <WebCore/GraphicsSurface.h>
@@ -61,58 +60,58 @@ void LayerTreeCoordinatorProxy::dispatchUpdate(const Function<void()>& function)
     m_renderer->appendUpdate(function);
 }
 
-void LayerTreeCoordinatorProxy::createTileForLayer(WebLayerID layerID, uint32_t tileID, const WebCore::IntRect& tileRect, const WebKit::SurfaceUpdateInfo& updateInfo)
+void LayerTreeCoordinatorProxy::createTileForLayer(CoordinatedLayerID layerID, uint32_t tileID, const WebCore::IntRect& tileRect, const WebKit::SurfaceUpdateInfo& updateInfo)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::createTile, m_renderer.get(), layerID, tileID, updateInfo.scaleFactor));
     updateTileForLayer(layerID, tileID, tileRect, updateInfo);
 }
 
-void LayerTreeCoordinatorProxy::updateTileForLayer(WebLayerID layerID, uint32_t tileID, const IntRect& tileRect, const WebKit::SurfaceUpdateInfo& updateInfo)
+void LayerTreeCoordinatorProxy::updateTileForLayer(CoordinatedLayerID layerID, uint32_t tileID, const IntRect& tileRect, const WebKit::SurfaceUpdateInfo& updateInfo)
 {
     SurfaceMap::iterator it = m_surfaces.find(updateInfo.atlasID);
     ASSERT(it != m_surfaces.end());
     dispatchUpdate(bind(&LayerTreeRenderer::updateTile, m_renderer.get(), layerID, tileID, LayerTreeRenderer::TileUpdate(updateInfo.updateRect, tileRect, it->value, updateInfo.surfaceOffset)));
 }
 
-void LayerTreeCoordinatorProxy::removeTileForLayer(WebLayerID layerID, uint32_t tileID)
+void LayerTreeCoordinatorProxy::removeTileForLayer(CoordinatedLayerID layerID, uint32_t tileID)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::removeTile, m_renderer.get(), layerID, tileID));
 }
 
-void LayerTreeCoordinatorProxy::createUpdateAtlas(int atlasID, const ShareableSurface::Handle& handle)
+void LayerTreeCoordinatorProxy::createUpdateAtlas(uint32_t atlasID, const WebCoordinatedSurface::Handle& handle)
 {
     ASSERT(!m_surfaces.contains(atlasID));
-    m_surfaces.add(atlasID, ShareableSurface::create(handle));
+    m_surfaces.add(atlasID, WebCoordinatedSurface::create(handle));
 }
 
-void LayerTreeCoordinatorProxy::removeUpdateAtlas(int atlasID)
+void LayerTreeCoordinatorProxy::removeUpdateAtlas(uint32_t atlasID)
 {
     ASSERT(m_surfaces.contains(atlasID));
     m_surfaces.remove(atlasID);
 }
 
-void LayerTreeCoordinatorProxy::deleteCompositingLayer(WebLayerID id)
+void LayerTreeCoordinatorProxy::deleteCompositingLayer(CoordinatedLayerID id)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::deleteLayer, m_renderer.get(), id));
 }
 
-void LayerTreeCoordinatorProxy::setRootCompositingLayer(WebLayerID id)
+void LayerTreeCoordinatorProxy::setRootCompositingLayer(CoordinatedLayerID id)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setRootLayerID, m_renderer.get(), id));
 }
 
-void LayerTreeCoordinatorProxy::setCompositingLayerState(WebLayerID id, const WebLayerInfo& info)
+void LayerTreeCoordinatorProxy::setCompositingLayerState(CoordinatedLayerID id, const CoordinatedLayerInfo& info)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setLayerState, m_renderer.get(), id, info));
 }
 
-void LayerTreeCoordinatorProxy::setCompositingLayerChildren(WebLayerID id, const Vector<WebLayerID>& children)
+void LayerTreeCoordinatorProxy::setCompositingLayerChildren(CoordinatedLayerID id, const Vector<CoordinatedLayerID>& children)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setLayerChildren, m_renderer.get(), id, children));
 }
 
 #if ENABLE(CSS_FILTERS)
-void LayerTreeCoordinatorProxy::setCompositingLayerFilters(WebLayerID id, const FilterOperations& filters)
+void LayerTreeCoordinatorProxy::setCompositingLayerFilters(CoordinatedLayerID id, const FilterOperations& filters)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setLayerFilters, m_renderer.get(), id, filters));
 }
@@ -146,9 +145,9 @@ void LayerTreeCoordinatorProxy::createImageBacking(CoordinatedImageBackingID ima
     dispatchUpdate(bind(&LayerTreeRenderer::createImageBacking, m_renderer.get(), imageID));
 }
 
-void LayerTreeCoordinatorProxy::updateImageBacking(CoordinatedImageBackingID imageID, const ShareableSurface::Handle& handle)
+void LayerTreeCoordinatorProxy::updateImageBacking(CoordinatedImageBackingID imageID, const WebCoordinatedSurface::Handle& handle)
 {
-    dispatchUpdate(bind(&LayerTreeRenderer::updateImageBacking, m_renderer.get(), imageID, ShareableSurface::create(handle)));
+    dispatchUpdate(bind(&LayerTreeRenderer::updateImageBacking, m_renderer.get(), imageID, WebCoordinatedSurface::create(handle)));
 }
 
 void LayerTreeCoordinatorProxy::clearImageBackingContents(CoordinatedImageBackingID imageID)
@@ -166,7 +165,7 @@ void LayerTreeCoordinatorProxy::setContentsSize(const FloatSize& contentsSize)
     dispatchUpdate(bind(&LayerTreeRenderer::setContentsSize, m_renderer.get(), contentsSize));
 }
 
-void LayerTreeCoordinatorProxy::setLayerAnimations(WebLayerID id, const GraphicsLayerAnimations& animations)
+void LayerTreeCoordinatorProxy::setLayerAnimations(CoordinatedLayerID id, const GraphicsLayerAnimations& animations)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::setLayerAnimations, m_renderer.get(), id, animations));
 }
@@ -181,13 +180,11 @@ void LayerTreeCoordinatorProxy::setVisibleContentsRect(const FloatRect& rect, fl
     // Inform the renderer to adjust viewport-fixed layers.
     dispatchUpdate(bind(&LayerTreeRenderer::setVisibleContentsRect, m_renderer.get(), rect));
 
-    // Round the rect instead of enclosing it to make sure that its size stays the same while panning. This can have nasty effects on layout.
-    IntRect roundedRect = roundedIntRect(rect);
-    if (roundedRect == m_lastSentVisibleRect && scale == m_lastSentScale && trajectoryVector == m_lastSentTrajectoryVector)
+    if (rect == m_lastSentVisibleRect && scale == m_lastSentScale && trajectoryVector == m_lastSentTrajectoryVector)
         return;
 
-    m_drawingAreaProxy->page()->process()->send(Messages::LayerTreeCoordinator::SetVisibleContentsRect(roundedRect, scale, trajectoryVector), m_drawingAreaProxy->page()->pageID());
-    m_lastSentVisibleRect = roundedRect;
+    m_drawingAreaProxy->page()->process()->send(Messages::LayerTreeCoordinator::SetVisibleContentsRect(rect, scale, trajectoryVector), m_drawingAreaProxy->page()->pageID());
+    m_lastSentVisibleRect = rect;
     m_lastSentScale = scale;
     m_lastSentTrajectoryVector = trajectoryVector;
 }
@@ -229,24 +226,24 @@ void LayerTreeCoordinatorProxy::animationFrameReady()
 }
 #endif
 
-void LayerTreeCoordinatorProxy::didChangeScrollPosition(const IntPoint& position)
+void LayerTreeCoordinatorProxy::didChangeScrollPosition(const FloatPoint& position)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::didChangeScrollPosition, m_renderer.get(), position));
 }
 
 #if USE(GRAPHICS_SURFACE)
-void LayerTreeCoordinatorProxy::createCanvas(WebLayerID id, const IntSize& canvasSize, const GraphicsSurfaceToken& token)
+void LayerTreeCoordinatorProxy::createCanvas(CoordinatedLayerID id, const IntSize& canvasSize, const GraphicsSurfaceToken& token)
 {
     GraphicsSurface::Flags surfaceFlags = GraphicsSurface::SupportsTextureTarget | GraphicsSurface::SupportsSharing;
     dispatchUpdate(bind(&LayerTreeRenderer::createCanvas, m_renderer.get(), id, canvasSize, GraphicsSurface::create(canvasSize, surfaceFlags, token)));
 }
 
-void LayerTreeCoordinatorProxy::syncCanvas(WebLayerID id, uint32_t frontBuffer)
+void LayerTreeCoordinatorProxy::syncCanvas(CoordinatedLayerID id, uint32_t frontBuffer)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::syncCanvas, m_renderer.get(), id, frontBuffer));
 }
 
-void LayerTreeCoordinatorProxy::destroyCanvas(WebLayerID id)
+void LayerTreeCoordinatorProxy::destroyCanvas(CoordinatedLayerID id)
 {
     dispatchUpdate(bind(&LayerTreeRenderer::destroyCanvas, m_renderer.get(), id));
 }

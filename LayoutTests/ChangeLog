@@ -1,3 +1,2609 @@
+2012-12-11  Aaron Colwell  <acolwell@chromium.org>
+
+        Update MediaSource to allow append() calls in "ended" state.
+        https://bugs.webkit.org/show_bug.cgi?id=104581
+
+        Reviewed by Eric Carlson.
+
+        - Removed old test case that verified appending in "ended" state failed.
+        - Added 3 new test cases that verify append behavior in the "ended" state.
+
+        * http/tests/media/media-source/video-media-source-add-and-remove-buffers-expected.txt:
+        * http/tests/media/media-source/video-media-source-add-and-remove-buffers.html:
+        * http/tests/media/media-source/video-media-source-append-in-ended-state-expected.txt: Added.
+        * http/tests/media/media-source/video-media-source-append-in-ended-state.html: Added.
+        * http/tests/media/media-source/video-media-source-append-with-offset-in-ended-state-expected.txt: Added.
+        * http/tests/media/media-source/video-media-source-append-with-offset-in-ended-state.html: Added.
+        * http/tests/media/media-source/video-media-source-zero-byte-append-in-ended-state-expected.txt: Added.
+        * http/tests/media/media-source/video-media-source-zero-byte-append-in-ended-state.html: Added.
+
+2012-12-11  Robert Hogan  <robert@webkit.org>
+
+        REGRESSION(r121789): Text not wrapping in presence of floating objects
+        https://bugs.webkit.org/show_bug.cgi?id=101803
+
+        Reviewed by David Hyatt.
+
+        * fast/block/float/floats-offset-image-quirk-expected.html: Added.
+        * fast/block/float/floats-offset-image-quirk-lineheight-expected.html: Added.
+        * fast/block/float/floats-offset-image-quirk-lineheight.html: Added.
+        * fast/block/float/floats-offset-image-quirk.html: Added.
+        * fast/block/float/floats-offset-image-strict-expected.html: Added.
+        * fast/block/float/floats-offset-image-strict-lineheight-expected.html: Added.
+        * fast/block/float/floats-offset-image-strict-lineheight.html: Added.
+        * fast/block/float/floats-offset-image-strict.html: Added.
+        * fast/block/float/floats-offset-inline-block-quirk-lineheight-expected.html: Added.
+        * fast/block/float/floats-offset-inline-block-quirk-lineheight.html: Added.
+        * fast/block/float/floats-offset-inline-block-strict-lineheight-expected.html: Added.
+        * fast/block/float/floats-offset-inline-block-strict-lineheight.html: Added.
+        * fast/block/float/floats-offset-linebox-contain-block-expected.html: Added.
+        * fast/block/float/floats-offset-linebox-contain-block.html: Added.
+        * fast/block/float/floats-offset-linebox-contain-inline-expected.html: Added.
+        * fast/block/float/floats-offset-linebox-contain-inline.html: Added.
+        * fast/block/float/floats-wrap-inside-inline-006-expected.html: Added.
+        * fast/block/float/floats-wrap-inside-inline-006.html: Added.
+        * fast/block/float/floats-wrap-inside-inline-007-expected.html: Added.
+        * fast/block/float/floats-wrap-inside-inline-007.html: Added.
+
+2012-12-11  Adam Klein  <adamk@chromium.org>
+
+        Attempt to rebaseline move-by-line-001, which has become less flaky.
+
+        Unreviewed gardening.
+
+        * platform/chromium-mac-lion/editing/selection/move-by-line-001-expected.png:
+        * platform/chromium-mac-snowleopard/editing/selection/move-by-line-001-expected.png: Removed.
+        * platform/chromium/TestExpectations:
+
+2012-12-11  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        [EFL] Update http/tests/multipart results now that we have soup multipart support
+        https://bugs.webkit.org/show_bug.cgi?id=104671
+
+        Unreviewed gardening: r137150 added soup multipart support and updated 
+        soup. This makes a few tests green. Also, multipart-wait-before-boundary.html
+        is a duplicate result with wk2 TestExpectations.
+
+        * platform/efl/TestExpectations:
+        * platform/efl/http/tests/multipart/invalid-image-data-standalone-expected.png: Added.
+        * platform/efl/http/tests/multipart/invalid-image-data-standalone-expected.txt: Added.
+        * platform/efl-wk1/TestExpectations:
+
+2012-12-11  Xabier Rodriguez Calvar  <calvaris@igalia.com>
+
+        [GTK] Fixing tests after removing default media stream sport
+        https://bugs.webkit.org/show_bug.cgi?id=104658
+
+        Reviewed by Philippe Normand.
+
+        Updated test expections for fast/js/global-constructors.
+
+        * platform/gtk/fast/js/global-constructors-expected.txt: Updated
+        expectations.
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Implement some missing FrameLoaderClient message in DRT
+        https://bugs.webkit.org/show_bug.cgi?id=104444
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Unskip a test which is now passing.
+
+        * platform/gtk/TestExpectations: Unskip a newly passing test.
+
+2012-12-11  Alexander Pavlov  <apavlov@chromium.org>
+
+        REGRESSION(r136948): inspector/styles/import-pseudoclass-crash.html hits an assertion
+        https://bugs.webkit.org/show_bug.cgi?id=104473
+
+        Reviewed by Vsevolod Vlasov.
+
+        * platform/chromium/TestExpectations:
+        * platform/efl-wk2/TestExpectations:
+        * platform/qt/TestExpectations:
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        Unskip some tests that are now passing with the switch to the Harfbuzz backend.
+
+        * platform/gtk/TestExpectations: Unskip some recently passing tests.
+
+2012-12-11  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Support third-party cookie policy for Qt clients
+        https://bugs.webkit.org/show_bug.cgi?id=45455
+
+        Unreviewed fixup.
+
+        window.location is not set for http tests in platform, so use a reset function
+        that doesn't rely on it.
+
+        * platform/qt/http/tests/cookies/strict-third-party-cookie-blocking.html:
+
+2012-12-11  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: Duplicate emulated touch events in iframe
+        https://bugs.webkit.org/show_bug.cgi?id=104653
+
+        Reviewed by Vsevolod Vlasov.
+
+        The test incorrectly expected two synthetic touchend events from an iframe,
+        while only one touchstart and one touchend should be dispatched.
+
+        * fast/events/touch/emulated-touch-iframe-expected.txt:
+        * fast/events/touch/emulated-touch-iframe.html:
+        * fast/events/touch/resources/emulated-touch-iframe2.html:
+
+2012-12-11  Ken Kania  <kkania@chromium.org>
+
+        [Inspector] Add command for dispatching mouse events.
+        https://bugs.webkit.org/show_bug.cgi?id=104074
+
+        Reviewed by Yury Semikhatsky.
+
+        Platform mouse event coordinates are relative to the containing window,
+        but the inspector command assumes they follow standard web coordinates,
+        where the origin is at the top left of the page and y increases as you
+        go down. We convert the coordinates to the window before constructing
+        the event. This also fixes the fact that some platforms have flipped
+        coordinate systems.
+        Also, update dispatchKeyEvent test to follow simpler dispatchMouseEvent
+        test.
+
+        * inspector-protocol/input/dispatchKeyEvent.html:
+        * inspector-protocol/input/dispatchMouseEvent-expected.txt: Added.
+        * inspector-protocol/input/dispatchMouseEvent.html: Added.
+
+2012-12-11  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed gardening, skip new failing tests.
+
+        * platform/qt/TestExpectations:
+
+2012-12-11  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening
+
+        fast/repaint/body-background-image.html
+        fast/text/font-initial.html
+
+        * platform/chromium/TestExpectations: These tests are passing on WIN.
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bump the jhbuild libsoup version to fix an authentication issue
+        https://bugs.webkit.org/show_bug.cgi?id=104448
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * platform/gtk/TestExpectations: Unskip some tests which are now passing.
+
+2012-12-11  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] Unreviewed gardening.
+
+        Added more shadow tests to the list of flaky tests.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-11  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Support third-party cookie policy for Qt clients
+        https://bugs.webkit.org/show_bug.cgi?id=45455
+
+        Reviewed by Csaba Osztrogonác.
+
+        Fix regressed test. The test is now run from it own dir, not the platform independent dir.
+
+        * platform/qt/TestExpectations:
+        * platform/qt/http/tests/cookies/strict-third-party-cookie-blocking.html:
+
+2012-12-11  Andrey Kosyakov  <caseq@chromium.org>
+
+        Unreviewed, rolling out r137266.
+        http://trac.webkit.org/changeset/137266
+        https://bugs.webkit.org/show_bug.cgi?id=104071
+
+        New test fails on WebKit Win7 and chromium mac
+
+        * inspector/profiler/cpu-profiler-profiling-without-inspector-expected.txt:
+        * inspector/profiler/cpu-profiler-profiling-without-inspector.html:
+
+2012-12-11  Kent Tamura  <tkent@chromium.org>
+
+        INPUT_MULTIPLE_FIELDS_UI: Disable focus navigation by right/left keys in RTL locales
+        https://bugs.webkit.org/show_bug.cgi?id=104644
+
+        Reviewed by Hajime Morita.
+
+        * fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html:
+        * fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html:
+        * fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events.html:
+        * fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events.html:
+
+2012-12-11  Pavel Podivilov  <podivilov@google.com>
+
+        [Chromium] Unreviewed, remove "platform/blackberry [ WontFix ]" from test expectations
+        to make lint happy.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Unskip a few test, adding expectations that (should) reflect the actual failure of each test.
+        Also remove the expectations for the Animation API test. Support for that feature, along with
+        the test, was removed just recently.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening
+
+        Adding failure expectations for tests that regressed in r137198 and in r137159-r137161 range.
+        Removing failure expectations for the SVG viewspec tests that now pass.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-11  Mike West  <mkwst@chromium.org>
+
+        Web Inspector: Evaluate private browsing mode's effect on console messages.
+        https://bugs.webkit.org/show_bug.cgi?id=104383
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/console/clients-ignored-in-privatebrowsing-expected.txt: Added.
+        * inspector/console/clients-ignored-in-privatebrowsing.html: Added.
+        * platform/chromium/TestExpectations:
+            Skip this test on Chromium, as that port doesn't use PrivateBrowsing
+
+2012-12-11  Andrey Kosyakov  <caseq@chromium.org>
+
+        Web Inspector: better coverage for inspector/profiler/cpu-profiler-profiling-without-inspector.html
+        https://bugs.webkit.org/show_bug.cgi?id=104071
+
+        Reviewed by Pavel Feldman.
+
+        Extended test by spinning several function for a total of 400ms to provide coverage for sampling profiler.
+
+        * inspector/profiler/cpu-profiler-profiling-without-inspector-expected.txt:
+        * inspector/profiler/cpu-profiler-profiling-without-inspector.html:
+
+2012-12-10  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSSRegions] Clean-up style for 2 regions expected results files
+        https://bugs.webkit.org/show_bug.cgi?id=104572
+
+        Reviewed by Tony Chang.
+
+        Remove Win line endings, remove unnecessary spaces and close all html tags.
+
+        * fast/regions/positioned-objects-block-static-spanning-regions-expected.html:
+        * fast/regions/positioned-objects-block-static-spanning-regions-rtl-expected.html:
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening
+        https://bugs.webkit.org/show_bug.cgi?id=84432
+
+        fast/filesystem/op-restricted-names.html
+        fast/filesystem/op-restricted-unicode.html
+        fast/filesystem/read-directory.html
+        fast/filesystem/simple-readonly-file-object.html
+
+        * platform/chromium/TestExpectations: These have been passing on WIN for over a month.
+
+2012-12-10  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark new compositing/repaint/resize-repaint.html test introduced in
+        r137215 as failing on EFL WK2.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-10  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline fast/js/global-constructors.html after r137243.
+
+        * platform/efl/fast/js/global-constructors-expected.txt:
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening
+
+        Mark platform/chromium/virtual/deferred/fast/images/pdf-as-image-landscape.html WontFix.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening: rebase fast/repaint/body-background-image.html on linux
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening: rebase fast/text/font-initial.html on linux
+
+        * platform/chromium-linux/fast/text/font-initial-expected.png: Added.
+        * platform/chromium/TestExpectations:
+
+2012-12-10  No'am Rosenthal  <noam@webkit.org>
+
+        REGRESSION (r137006): CSS clip on solid color composited div broken
+        https://bugs.webkit.org/show_bug.cgi?id=104604
+
+        Reviewed by Simon Fraser.
+
+        Added a new test (by Simon Fraser) to make sure background color doesn't break clipping.
+
+        * compositing/geometry/clip-inside-expected.txt: Added.
+        * compositing/geometry/clip-inside.html: Added.
+        * compositing/geometry/clip-expected:
+                New result.
+
+        * platform/chromium/compositing/geometry/clip-inside-expected.txt
+                Adjust Chromium expected result for new test.
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] Unreviewed gardening after http://trac.webkit.org/changeset/137243
+
+        * platform/chromium/TestExpectations: Remove animations test.
+
+2012-12-10  Simon Fraser  <simon.fraser@apple.com>
+
+        REGRESSION(r137215): WebKit stretches and shrinks a part of screen on scroll
+        https://bugs.webkit.org/show_bug.cgi?id=104626
+
+        Reviewed by Beth Dakin.
+
+        Testcase that scrolls an overflow area containing a compositing layer.
+
+        * compositing/repaint/clipped-layer-size-change-expected.html: Added.
+        * compositing/repaint/clipped-layer-size-change.html: Added.
+
+2012-12-10  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] fast/dom/HTMLMeterElement/meter-boundary-values.html is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=104625
+
+        Unreviewed HTMLMeterElement/meter-boundary-values.html rebaselines.
+
+        * platform/chromium-mac-lion/fast/dom/HTMLMeterElement/meter-boundary-values-expected.png:
+        * platform/chromium-mac-snowleopard/fast/dom/HTMLMeterElement/meter-boundary-values-expected.png:
+        * platform/chromium-mac/fast/dom/HTMLMeterElement/meter-boundary-values-expected.png:
+        * platform/efl-wk1/fast/dom/HTMLMeterElement/meter-boundary-values-expected.png: Renamed from LayoutTests/platform/efl/fast/dom/HTMLMeterElement/meter-boundary-values-expected.png.
+
+2012-12-10  Dean Jackson  <dino@apple.com>
+
+        Remove old WebKit Animation API code
+        https://bugs.webkit.org/show_bug.cgi?id=104611
+
+        Reviewed by Simon Fraser.
+
+        Remove the existing, unused animation API code. We'll look into
+        implementing the W3C Animation API if/when it is stable.
+
+        * animations/animation-api-1-expected.txt: Removed.
+        * animations/animation-api-1.html: Removed.
+        * fast/js/global-constructors-expected.txt:
+
+2012-12-10  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL] Rebaseline expected results for "visibility:hidden; position: absolute;" cases
+        https://bugs.webkit.org/show_bug.cgi?id=104620
+
+        Unreviewed, EFL gardening.
+
+        This is a following rebaseline of BUG 104195.
+        This patch sets AC ON as a default expected result of EFL.
+
+        * platform/efl-wk1/editing/input/caret-at-the-edge-of-contenteditable-expected.txt: Copied from LayoutTests/platform/efl/editing/input/caret-at-the-edge-of-contenteditable-expected.txt.
+        * platform/efl-wk1/editing/input/reveal-caret-of-multiline-contenteditable-expected.txt: Copied from LayoutTests/platform/efl/editing/input/reveal-caret-of-multiline-contenteditable-expected.txt.
+        * platform/efl-wk1/fast/block/basic/020-expected.txt: Copied from LayoutTests/platform/efl/fast/block/basic/020-expected.txt.
+        * platform/efl-wk2/fast/block/basic/020-expected.txt: Removed.
+        * platform/efl/TestExpectations:
+        * platform/efl/editing/input/caret-at-the-edge-of-contenteditable-expected.txt:
+        * platform/efl/editing/input/reveal-caret-of-multiline-contenteditable-expected.txt:
+        * platform/efl/fast/block/basic/020-expected.txt:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Fix expectations lint errors in r137231
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Rewrite last occurrences of "Image" in TestExpectations to "ImageOnlyFailure".
+        Unreviewed test expectations update.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Expand flakiness of move-by-line-001.html.
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Aaron Colwell  <acolwell@chromium.org>
+
+        Temporarily disable video-media-source-seek.html & video-media-source-state-changes.html
+        https://bugs.webkit.org/show_bug.cgi?id=104584
+
+        Reviewed by Dirk Pranke.
+
+        Changes in Chromium needed for Bug 104581 and Bug 104583 will break these tests so they are
+        being temporarily disabled until the Chromium & WebKit changes are both landed.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Mark an encrypted media test as failing after http://crrev.com/172175
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Min Qin  <qinmin@chromium.org>
+
+        Sending multi-touch events to the same Iframe
+        https://bugs.webkit.org/show_bug.cgi?id=97973
+
+        Reviewed by Dimitri Glazkov.
+
+        Check that all multi-touch events are sent to the same iframe.
+
+        * fast/events/touch/multi-touch-inside-iframes-expected.txt: Added.
+        * fast/events/touch/multi-touch-inside-iframes.html: Added.
+        * fast/events/touch/resources/multi-touch-inside-iframes2.html: Added.
+        * fast/events/touch/multi-touch-inside-nested-iframes-expected.txt: Added.
+        * fast/events/touch/multi-touch-inside-nested-iframes.html: Added.
+        * fast/events/touch/resources/multi-touch-inside-nested-iframes2.html: Added.
+        * fast/events/touch/resources/multi-touch-inside-nested-iframes3.html: Added.
+
+2012-12-10  Simon Fraser  <simon.fraser@apple.com>
+
+        When converting a layer into a tiled layer, ensure that we update the visible rect
+        https://bugs.webkit.org/show_bug.cgi?id=104467
+
+        Reviewed by Darin Adler.
+
+        Test that resizes a layer over the tiled layer threshold, then dumps layer data.
+        
+        Mac-specific results added because only Mac dumps tile cache info.
+
+        * compositing/tiling/tiled-layer-resize-expected.txt: Added.
+        * compositing/tiling/tiled-layer-resize.html: Added.
+        * platform/mac/compositing/tiling/tiled-layer-resize-expected.txt: Added.
+
+2012-12-10  Simon Fraser  <simon.fraser@apple.com>
+
+        Don't unconditionally repaint compositing layers when their size changes
+        https://bugs.webkit.org/show_bug.cgi?id=104461
+
+        Reviewed by Sam Weinig.
+
+        Test that dumps repaint rects after adding content to a compositing layer.
+
+        * compositing/repaint/resize-repaint-expected.txt: Added.
+        * compositing/repaint/resize-repaint.html: Added.
+
+2012-12-10  Ojan Vafai  <ojan@chromium.org>
+
+        Unreviewed, rolling out r134150.
+        http://trac.webkit.org/changeset/134150
+        https://bugs.webkit.org/show_bug.cgi?id=99940
+
+        Caused JS-based tooltips to remain during scroll on Facebook
+        and Gmail. Rollout until I have time to experiment with less
+        aggresive approaches.
+
+        * fast/scrolling/fake-mouse-event-throttling-expected.txt: Removed.
+        * fast/scrolling/fake-mouse-event-throttling.html: Removed.
+        * platform/mac/TestExpectations:
+
+2012-12-10  Yi Shen  <max.hong.shen@gmail.com>
+
+        Keyboard caret movement in textarea with RTL Override Character can make tab unresponsive
+        https://bugs.webkit.org/show_bug.cgi?id=103067
+
+        Reviewed by Ryosuke Niwa.
+
+        New test for moving caret in textarea with RTL override character causes crash.
+
+        * editing/selection/move-by-character-crash-test-textarea-expected.txt: Added.
+        * editing/selection/move-by-character-crash-test-textarea.html: Added.
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: use the default logic for skipping platform-specific tests for chromium
+        https://bugs.webkit.org/show_bug.cgi?id=104403
+
+        Reviewed by Stephen White.
+
+        Remove a bunch of WONTFIX lines that will now be handled programmatically.
+
+        * platform/chromium-android/TestExpectations:
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Dean Jackson  <dino@apple.com>
+
+        Unreviewed update to test results after http://trac.webkit.org/changeset/137200.
+        The 'widows' and 'orphans' properties have an initial value of 'auto'.
+
+        * editing/pasteboard/onpaste-text-html-expected.txt:
+        * fast/events/ondrop-text-html-expected.txt:
+
+2012-12-10  Dean Jackson  <dino@apple.com>
+
+        Support for CSS widows and orphans
+        https://bugs.webkit.org/show_bug.cgi?id=9410
+
+        Reviewed by Darin Adler.
+
+        A new, slightly more comprehensive, test for widows and orphans. We also
+        now pass the existing widows and orphans tests from printing. And
+        since the default value of the properties changed, update the
+        computed style test as well.
+
+        * fast/css/getComputedStyle/computed-style-expected.txt: New auto value.
+        * fast/css/getComputedStyle/computed-style-without-renderer-expected.txt: New auto value.
+        * fast/multicol/widows-and-orphans-expected.txt: Added.
+        * fast/multicol/widows-and-orphans.html: Added.
+        * printing/page-break-orphans-and-widows-expected.txt:
+        * printing/page-break-orphans-expected.txt:
+        * printing/page-break-widows-expected.txt:
+        * svg/css/getComputedStyle-basic-expected.txt: New auto value.
+
+2012-12-10  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL] Massive rebaseline after r137146
+        https://bugs.webkit.org/show_bug.cgi?id=104576
+
+        Unreviewed EFL gardening.
+
+        Rebaseline several test cases after r137146.
+
+        * platform/efl/fast/text/atsui-spacing-features-expected.png:
+        * platform/efl/fast/text/atsui-spacing-features-expected.txt:
+        * platform/efl/fast/text/complex-text-opacity-expected.png:
+        * platform/efl/fast/text/complex-text-opacity-expected.txt:
+        * platform/efl/fast/text/international/bidi-AN-after-empty-run-expected.png:
+        * platform/efl/fast/text/international/bidi-AN-after-empty-run-expected.txt:
+        * platform/efl/fast/text/international/bidi-CS-after-AN-expected.png:
+        * platform/efl/fast/text/international/bidi-CS-after-AN-expected.txt:
+        * platform/efl/fast/text/international/bidi-neutral-run-expected.txt:
+        * platform/efl/svg/W3C-I18N/g-dirLTR-ubNone-expected.png:
+        * platform/efl/svg/W3C-I18N/g-dirLTR-ubNone-expected.txt:
+        * platform/efl/svg/W3C-I18N/g-dirLTR-ubOverride-expected.png:
+        * platform/efl/svg/W3C-I18N/g-dirLTR-ubOverride-expected.txt:
+        * platform/efl/svg/W3C-I18N/g-dirRTL-ubNone-expected.png:
+        * platform/efl/svg/W3C-I18N/g-dirRTL-ubNone-expected.txt:
+        * platform/efl/svg/W3C-I18N/g-dirRTL-ubOverride-expected.png:
+        * platform/efl/svg/W3C-I18N/g-dirRTL-ubOverride-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorEnd-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorEnd-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorMiddle-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorStart-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirLTR-anchorStart-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorEnd-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorEnd-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorMiddle-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorMiddle-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorStart-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirNone-anchorStart-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorEnd-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorEnd-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorMiddle-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorStart-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-dirRTL-anchorStart-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorEnd-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorMiddle-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirLTR-anchorStart-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorEnd-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-anchor-no-markup-expected.png:
+        * platform/efl/svg/W3C-I18N/text-anchor-no-markup-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-dirLTR-ubNone-expected.png:
+        * platform/efl/svg/W3C-I18N/text-dirLTR-ubNone-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-dirLTR-ubOverride-expected.png:
+        * platform/efl/svg/W3C-I18N/text-dirLTR-ubOverride-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-dirRTL-ubNone-expected.png:
+        * platform/efl/svg/W3C-I18N/text-dirRTL-ubNone-expected.txt:
+        * platform/efl/svg/W3C-I18N/text-dirRTL-ubOverride-expected.png:
+        * platform/efl/svg/W3C-I18N/text-dirRTL-ubOverride-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubEmbed-in-rtl-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubEmbed-in-rtl-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubNone-in-rtl-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubNone-in-rtl-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-default-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-default-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-ltr-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-ltr-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-rtl-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirLTR-ubOverride-in-rtl-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-default-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-default-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-ltr-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-ltr-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-rtl-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirNone-ubOverride-in-rtl-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-default-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-ltr-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubEmbed-in-ltr-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubNone-in-default-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubNone-in-default-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubNone-in-ltr-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-default-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-default-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-ltr-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-ltr-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-rtl-context-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-dirRTL-ubOverride-in-rtl-context-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-direction-ltr-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-direction-ltr-expected.txt:
+        * platform/efl/svg/W3C-I18N/tspan-direction-rtl-expected.png:
+        * platform/efl/svg/W3C-I18N/tspan-direction-rtl-expected.txt:
+        * platform/efl/svg/W3C-SVG-1.1-SE/text-intro-05-t-expected.png:
+        * platform/efl/svg/W3C-SVG-1.1-SE/text-intro-05-t-expected.txt:
+        * platform/efl/svg/W3C-SVG-1.1/text-intro-05-t-expected.png:
+        * platform/efl/svg/W3C-SVG-1.1/text-intro-05-t-expected.txt:
+        * platform/efl/svg/text/bidi-text-query-expected.png:
+        * platform/efl/svg/text/bidi-text-query-expected.txt:
+        * platform/efl/svg/text/bidi-tspans-expected.png:
+        * platform/efl/svg/text/bidi-tspans-expected.txt:
+        * platform/efl/svg/text/text-intro-05-t-expected.png:
+        * platform/efl/svg/text/text-intro-05-t-expected.txt:
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed gardening.
+
+        Adding failure expectations for failing http tests that started
+        failing on EFL and GTK after the Jhbuild libsoup was bumped to 2.40.0.
+
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Mike West  <mkwst@chromium.org>
+
+        Log to console when script is blocked by sandbox attributes.
+        https://bugs.webkit.org/show_bug.cgi?id=104365
+
+        Reviewed by Ojan Vafai.
+
+        * fast/frames/sandboxed-iframe-attribute-parsing-expected.txt:
+        * fast/frames/sandboxed-iframe-autofocus-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-parsing-space-characters-expected.txt:
+        * fast/frames/sandboxed-iframe-scripting-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-subframe-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-control-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-invalid-header-expected.txt:
+        * http/tests/security/isolatedWorld/sandboxed-iframe-expected.txt:
+        * http/tests/security/sandbox-inherit-to-initial-document-2-expected.txt:
+        * media/video-controls-no-scripting-expected.txt:
+            Rebaselining tests with new expectations.
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Fixing most of the expectations added in r137153, the baselines are missing so the expectations
+        are changed according to that. The a11y gurus will have a look at them and determine what the
+        baselines should look like and whether the tests can be fixed.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        inspector/styles/styles-computed-trace still times out after r137156.
+
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Removed failing test expectations for GTK+ port after r137107.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Chromium test expectations update after r137152.
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Alejandro Piñeiro  <apinheiro@igalia.com>
+
+        AX: wrong Enabled states on a ListBox
+        https://bugs.webkit.org/show_bug.cgi?id=104483
+
+        Reviewed by Chris Fleizach.
+
+        * accessibility/listbox-enabled-states-expected.txt: Added.
+        * accessibility/listbox-enabled-states.html: Added.
+
+2012-12-10  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Remove CSS3_BACKGROUND feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=104539
+
+        Reviewed by Antonio Gomes.
+
+        Unskip the related CSS3 <position> type tests for background-position
+        as now the feature is enabled by default.
+
+        * platform/win/TestExpectations:
+        * platform/wincairo/TestExpectations:
+
+2012-12-10  Adam Klein  <adamk@chromium.org>
+
+        Remove expectation of previously failing test.
+        It passes after r137152.
+
+        Unreviewed gardening.
+
+        * platform/chromium-win-xp/fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events-expected.txt: Removed.
+
+2012-12-10  Eric Carlson  <eric.carlson@apple.com>
+
+        Add support for in-band text tracks to Mac port
+        https://bugs.webkit.org/show_bug.cgi?id=103663
+
+        Reviewed by Sam Weinig.
+
+        Test for initial support for in-band text tracks. New test skipped on all ports that don't 
+        have support in the media engine.
+
+        * media/content/counting-subtitled.m4v: Added.
+        * media/track/track-in-band-expected.txt: Added.
+        * media/track/track-in-band.html: Added.
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+
+2012-12-10  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed: Web Inspector: update test expectation for inspector/styles/styles-computed-trace.html.
+        it is slow in debug version. ~20 sec on linux.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Unskipping 8 failing accessibility tests, adding expected failures for them.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Kent Tamura  <tkent@chromium.org>
+
+        Visual order of empty value placeholder in INPUT_MULTIPLE_FIELDS_UI is wrong in RTL
+        https://bugs.webkit.org/show_bug.cgi?id=104438
+
+        Reviewed by Hajime Morita.
+
+        * platform/chromium-mac/fast/forms/datetimelocal/datetimelocal-appearance-l10n-expected.png:
+        * platform/chromium/TestExpectations:
+        Update bug numbers and add time-multiple-fields-localization.html.
+        * fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html:
+        Adjust test scenario for the new behavior.
+        * fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html:
+        * fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events.html:
+        * fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events.html:
+
+2012-12-09  Gustavo Noronha Silva  <gustavo.noronha@collabora.com>
+
+        [Soup] utilize multipart/x-mixed-replace support recently added to libsoup
+        https://bugs.webkit.org/show_bug.cgi?id=94515
+
+        Reviewed by Martin Robinson.
+
+        * platform/efl/TestExpectations: adjust expectations for tests that now pass.
+        * platform/gtk/TestExpectations: ditto.
+        * platform/gtk-wk2/TestExpectations: add missing multipart tests expectations.
+        * platform/gtk/http/tests/multipart/invalid-image-data-expected.png: new baseline
+        * platform/gtk/http/tests/multipart/invalid-image-data-expected.txt: ditto.
+
+2012-12-10  Zoltan Nyul  <zoltan.nyul@intel.com>
+
+        Implement testRunner.setViewModeMediaFeature() in WebKitTestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=103886
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Unskipping the following tests for EFL WebKit2:
+        fast/media/media-query-list-02.html
+        fast/media/media-query-list-03.html
+        fast/media/media-query-list-04.html
+        fast/media/media-query-list-05.html
+        fast/media/media-query-list-06.html
+        fast/media/media-query-list-07.html
+        fast/media/view-mode-media-feature.html
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bring Harfbuzz-ng support to Gtk
+        https://bugs.webkit.org/show_bug.cgi?id=92098
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Update tests results that have changed due to the switch to HarfBuzz.
+        In general, these are progressions or harmless metrics differences.
+
+        * platform/gtk: Update test results that have changed.
+
+2012-12-10  Kent Tamura  <tkent@chromium.org>
+
+        [Chromium] Test expectation update
+        https://bugs.webkit.org/show_bug.cgi?id=104548
+
+        * platform/chromium/TestExpectations:
+        Hyphenation tests failure on WebKit-only checkout Linux
+
+2012-12-10  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed: update expectation for inspector/styles/svg-style.xhtml
+
+        * inspector/styles/svg-style-expected.txt:
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Managing current failures on the 64-bit debug builder to get it green.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        [EFL] Remove duplicate expectations
+        https://bugs.webkit.org/show_bug.cgi?id=104526
+
+        Unreviewed gardening: collect all WebAudio-related skips
+        to one place.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/TestExpectations:
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Removing failure expectations for the MicroData tests that were fixed in r137107.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-10  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: console broken? - console.dirxml behaves like console.log
+        https://bugs.webkit.org/show_bug.cgi?id=104245
+
+        Reviewed by Vsevolod Vlasov.
+
+        * inspector/console/console-dirxml-expected.txt:
+        * inspector/console/console-dirxml.html:
+        * platform/chromium/TestExpectations:
+
+2012-12-10  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip 5 MicroData test cases that were fixed in r137107.
+
+        * platform/efl/TestExpectations:
+
+2012-12-10  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Add fast/canvas/webgl tests to TestExpectations since they
+        sometimes crash on the bots.
+
+        * platform/efl/TestExpectations:
+
+2012-12-10  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/language-attribute.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98369
+
+        Reviewed by Chris Fleizach.
+
+        The test is failing for two reasons: Not exposing the language
+        for accessible objects and AccessibilityUIElement::language() not
+        being implemented.
+
+        * accessibility/language-attribute.html: Modified the test to work with
+        both Mac and Atk platforms. (The former exposes static text objects as
+        accessibles; the latter folds the text into the parent element.)
+        * platform/gtk/TestExpectations: Unskipped the previously-failing test.
+
+2012-12-10  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/editable-webarea-context-menu-point.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98364
+
+        Reviewed by Chris Fleizach.
+
+        This test seems to be Mac-specific. Therefore, move the test to that
+        platform and remove the skips from the other platforms.
+
+        * platform/chromium/TestExpectations: Remove editable-webarea-context-menu-point.html
+        * platform/efl-wk2/TestExpectations: Remove editable-webarea-context-menu-point.html
+        * platform/gtk-wk2/TestExpectations: Remove editable-webarea-context-menu-point.html
+        * platform/gtk/TestExpectations: Remove editable-webarea-context-menu-point.html
+        * platform/mac/accessibility/editable-webarea-context-menu-point-expected.txt: Renamed from LayoutTests/accessibility/editable-webarea-context-menu-point-expected.txt.
+        * platform/mac/accessibility/editable-webarea-context-menu-point.html: Renamed from LayoutTests/accessibility/editable-webarea-context-menu-point.html.
+        * platform/win/TestExpectations: Remove editable-webarea-context-menu-point.html
+        * platform/wincairo/TestExpectations: Remove editable-webarea-context-menu-point.html
+
+2012-12-09  Takashi Sakamoto  <tasak@google.com>
+
+        [Shadow DOM]: reset-style-inheritance doesn't work for insertion point
+        https://bugs.webkit.org/show_bug.cgi?id=103711
+
+        Reviewed by Hajime Morita.
+
+        * fast/dom/shadow/insertion-point-resetStyleInheritance-expected.txt:
+        * fast/dom/shadow/insertion-point-resetStyleInheritance.html:
+        Added two more basic tests to cover <content reset-style-inheritance>
+        and <shadow reset-style-inheritance>.
+
+2012-12-09  Huang Dongsung  <luxtella@company100.net>
+
+        [Qt] Gardening after r137006.
+        https://bugs.webkit.org/show_bug.cgi?id=104432
+
+        Reviewed by Kentaro Hara.
+
+        Update existing tests that are affected by r137006.
+
+        * compositing/rtl/rtl-iframe-absolute-expected.txt:
+        * compositing/rtl/rtl-iframe-fixed-expected.txt:
+        * compositing/rtl/rtl-iframe-relative-expected.txt:
+        * platform/qt-5.0-wk2/compositing/columns/composited-in-paginated-expected.txt:
+        * platform/qt-5.0-wk2/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/become-composited-nested-iframes-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/become-overlapped-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/composited-parent-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/connect-compositing-iframe-delayed-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/connect-compositing-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/connect-compositing-iframe2-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/connect-compositing-iframe3-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/enter-compositing-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/iframe-resize-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/invisible-nested-iframe-show-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/overlapped-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/overlapped-nested-iframes-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/resizer-expected.txt:
+        * platform/qt-5.0-wk2/compositing/iframes/scrolling-iframe-expected.txt:
+        * platform/qt-5.0-wk2/compositing/layer-creation/fixed-position-and-transform-expected.txt:
+        * platform/qt-5.0-wk2/compositing/layer-creation/fixed-position-under-transform-expected.txt:
+        * platform/qt-5.0-wk2/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt:
+        * platform/qt-5.0-wk2/compositing/overflow/content-gains-scrollbars-expected.txt:
+        * platform/qt-5.0-wk2/compositing/overflow/overflow-scrollbar-layers-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-absolute-overflow-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-fixed-overflow-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-fixed-overflow-scrolled-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-iframe-absolute-overflow-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-iframe-absolute-overflow-scrolled-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-iframe-fixed-overflow-expected.txt:
+        * platform/qt-5.0-wk2/compositing/rtl/rtl-iframe-fixed-overflow-scrolled-expected.txt:
+        * platform/qt-5.0-wk2/compositing/tiled-layers-hidpi-expected.txt:
+        * platform/qt-5.0-wk2/compositing/tiling/crash-reparent-tiled-layer-expected.txt:
+        * platform/qt-5.0-wk2/compositing/tiling/huge-layer-add-remove-child-expected.txt:
+        * platform/qt-5.0-wk2/compositing/tiling/huge-layer-with-layer-children-expected.txt:
+        * platform/qt-5.0-wk2/compositing/tiling/huge-layer-with-layer-children-resize-expected.txt:
+        * platform/qt/compositing/backing/no-backing-for-clip-expected.txt:
+        * platform/qt/compositing/backing/no-backing-for-clip-overlap-expected.txt:
+        * platform/qt/compositing/backing/no-backing-for-perspective-expected.txt:
+        * platform/qt/compositing/geometry/preserve-3d-switching-expected.txt:
+
+2012-12-09  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL][WK1] Gardening for Accelerated Compositing
+        https://bugs.webkit.org/show_bug.cgi?id=104466
+
+        Unreviewed, EFL gardening.
+
+        As EFL WK1 does not support Accelerated Compositing, related cases should be skipped from layout tests.
+
+        * platform/efl-wk1/TestExpectations:
+
+2012-12-09  Noel Gordon  <noel.gordon@gmail.com>
+
+        [Chromium] Unreviewed gardening: broken or flakey hardness perftests
+
+        fast/harness/perftests/runs-per-second-iterations.html
+        fast/harness/perftests/perf-runner-compute-statistics.html
+        fast/harness/perftests/runs-per-second-log.html
+
+        * platform/chromium/TestExpectations:
+
+2012-12-09  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/placeholder.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98373
+
+        Reviewed by Martin Robinson.
+
+        The test was failing because the placeholder text was not supported and
+        AccessibilityUIElement::stringAttributeValue() was not implemented.
+
+        * platform/gtk/TestExpectations: Unskip the failing test
+
+2012-12-09  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding failure expectations for 15 layout tests that started failing after libxml2
+        version used in Jhbuild was bumped in r137090.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-09  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-09  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: do not treat object as equal to itself when logging to console
+        https://bugs.webkit.org/show_bug.cgi?id=104487
+
+        Reviewed by Alexander Pavlov.
+
+        * inspector/console/console-object-preview-expected.txt: Added.
+        * inspector/console/console-object-preview.html: Added.
+
+2012-12-09  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/canvas-fallback-content.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98362
+
+        Reviewed by Martin Robinson.
+
+        The failure was due to platform-specific expectations of the accessible
+        role reported for comboboxes. The solution was conditionalizing the test.
+
+        * accessibility/canvas-fallback-content.html: Base expected role on platform.
+        * platform/gtk/TestExpectations: Unskipped the test.
+        * platform/gtk/accessibility/canvas-fallback-content-expected.txt: Added.
+
+2012-12-09  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-09  Stephen White  <senorblanco@chromium.org>
+
+        Try to fix a finnicky reftest.
+        https://bugs.webkit.org/show_bug.cgi?id=104486
+
+        Reviewed by Simon Fraser.
+
+        This reftest fails on Chromium Mac since the leftmost pixel of the 'T'
+        of 'Text' is clipped in composited mode, and non-clipped in software
+        painting.  Not sure exactly why, but a lowercase 't' doesn't seem to
+        have this problem.
+
+        * compositing/background-color/background-color-change-to-text-expected.html:
+        * compositing/background-color/background-color-change-to-text.html:
+        * platform/chromium-mac/compositing/background-color/background-color-change-to-text-expected.png: Removed.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/background-color/background-color-change-to-text-expected.png: Removed.
+        * platform/chromium/TestExpectations:
+
+2012-12-09  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-linux-x86/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-linux-x86/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-linux-x86/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-linux-x86/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-linux/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium-mac/compositing/tiling/huge-layer-add-remove-child-expected.txt: Added.
+        * platform/chromium-mac/compositing/tiling/huge-layer-with-layer-children-expected.txt: Added.
+        * platform/chromium-mac/compositing/tiling/huge-layer-with-layer-children-resize-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/tiling/huge-layer-add-remove-child-expected.txt: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/tiling/huge-layer-with-layer-children-expected.txt: Added.
+        * platform/chromium-win-xp/platform/chromium/virtual/softwarecompositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium-win-xp/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium-win-xp/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium-win-xp/platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-relative-expected.txt: Added.
+        * platform/chromium/TestExpectations:
+        * platform/chromium/compositing/rtl/rtl-fixed-overflow-scrolled-expected.txt: Added.
+        * platform/chromium/compositing/rtl/rtl-iframe-absolute-expected.txt: Added.
+        * platform/chromium/compositing/rtl/rtl-iframe-fixed-expected.txt: Added.
+        * platform/chromium/compositing/rtl/rtl-iframe-relative-expected.txt: Added.
+
+2012-12-09  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        Unreviewed. Unskip a skipped test for which i have added expectation in http://trac.webkit.org/changeset/135851.
+
+        * platform/gtk-wk2/TestExpectations:
+
+2012-12-09  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/label-for-control-hittest.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98368
+
+        Reviewed by Martin Robinson.
+
+        Unskip the test having implemented AccessibilityUIElement::elementAtPoint.
+
+        * platform/gtk/TestExpectations: unskip accessibility/label-for-control-hittest.html
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark 2 compositing/background-color ref tests introduced
+        in r137006 as failing for WK2 EFL.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline 2 media/track test cases after r136991.
+
+        * platform/efl/media/track/track-cue-rendering-horizontal-expected.txt:
+        * platform/efl/media/track/track-cue-rendering-vertical-expected.txt:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark inspector/styles/import-pseudoclass-crash.html as crashing
+        since it is hitting m_childRuleCSSOMWrappers.size() == ruleCount
+        assertion after r136948.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Skip fast/text/hyphenate-locale.html since the EFL port does
+        not support hyphenation. Also remove wrong expected results
+        for WK1 EFL.
+
+        * platform/efl-wk1/fast/text/hyphenate-locale-expected.png: Removed.
+        * platform/efl-wk1/fast/text/hyphenate-locale-expected.txt: Removed.
+        * platform/efl/TestExpectations:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewing gardening.
+
+        Rebaseline several compositing test cases after r137051.
+
+        * compositing/iframes/overlapped-nested-iframes-expected.txt:
+        * compositing/rtl/rtl-fixed-overflow-scrolled-expected.txt:
+        * compositing/rtl/rtl-iframe-absolute-expected.txt:
+        * compositing/rtl/rtl-iframe-fixed-expected.txt:
+        * compositing/rtl/rtl-iframe-relative-expected.txt:
+        * compositing/tiling/crash-reparent-tiled-layer-expected.txt:
+        * compositing/tiling/huge-layer-add-remove-child-expected.txt:
+        * compositing/tiling/huge-layer-with-layer-children-expected.txt:
+        * compositing/tiling/huge-layer-with-layer-children-resize-expected.txt:
+
+2012-12-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r137053.
+        http://trac.webkit.org/changeset/137053
+        https://bugs.webkit.org/show_bug.cgi?id=104471
+
+        Broke PerformanceTests/Parser/html-parser.html (Requested by
+        mkwst_ on #webkit).
+
+        * fast/frames/sandboxed-iframe-attribute-parsing-expected.txt:
+        * fast/frames/sandboxed-iframe-autofocus-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-parsing-space-characters-expected.txt:
+        * fast/frames/sandboxed-iframe-scripting-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-subframe-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-control-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-invalid-header-expected.txt:
+        * http/tests/security/isolatedWorld/sandboxed-iframe-expected.txt:
+        * http/tests/security/sandbox-inherit-to-initial-document-2-expected.txt:
+        * media/video-controls-no-scripting-expected.txt:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline fast/js/global-constructors.html after WebGL
+        was enabled for EFL port in r137050.
+
+        * platform/efl/fast/js/global-constructors-expected.txt:
+
+2012-12-09  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Adding failure expectation for several MicroData test cases
+        that started failing after r137003.
+
+        * platform/efl/TestExpectations:
+
+2012-12-09  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding a failure expectation for an accelerated compositing layout test introduced in r136959.
+        Adding failure expectations for MicroData layout tests that regressed in r137003.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-08  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL][WK1] Gardening for WebGL
+        https://bugs.webkit.org/show_bug.cgi?id=104464
+
+        Unreviewed, EFL gardening.
+
+        As EFL WK1 does not support WebGL, it should be skipped from layout tests.
+
+        * platform/efl-wk1/TestExpectations:
+
+2012-12-08  Mike West  <mkwst@chromium.org>
+
+        Log to console when script is blocked by sandbox attributes.
+        https://bugs.webkit.org/show_bug.cgi?id=104365
+
+        Reviewed by Ojan Vafai.
+
+        * fast/frames/sandboxed-iframe-attribute-parsing-expected.txt:
+        * fast/frames/sandboxed-iframe-autofocus-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-parsing-space-characters-expected.txt:
+        * fast/frames/sandboxed-iframe-scripting-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-empty-subframe-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-control-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-in-http-header-expected.txt:
+        * http/tests/security/contentSecurityPolicy/sandbox-invalid-header-expected.txt:
+        * http/tests/security/isolatedWorld/sandboxed-iframe-expected.txt:
+        * http/tests/security/sandbox-inherit-to-initial-document-2-expected.txt:
+        * media/video-controls-no-scripting-expected.txt:
+            Rebaselining tests with new expectations.
+
+2012-12-08  Kent Tamura  <tkent@chromium.org>
+
+        Add appearance tests for input[type=datetime-local]
+        https://bugs.webkit.org/show_bug.cgi?id=104439
+
+        Reviewed by Kentaro Hara.
+
+        * fast/forms/datetimelocal/datetimelocal-appearance-basic-expected.txt: Added.
+        * fast/forms/datetimelocal/datetimelocal-appearance-basic.html: Added.
+        * fast/forms/datetimelocal/datetimelocal-appearance-l10n-expected.txt: Added.
+        * fast/forms/datetimelocal/datetimelocal-appearance-l10n.html: Added.
+        * platform/chromium-mac/fast/forms/datetimelocal/datetimelocal-appearance-basic-expected.png: Added.
+        * platform/chromium-mac/fast/forms/datetimelocal/datetimelocal-appearance-l10n-expected.png:
+        Added.
+        The placeholder strings "yyyy" "mm" "dd" are expected to be
+        non-localized because they don't support
+        setLangAttributeAwareFormControlUIEnabled(true).
+        Note that sub-fields order of filled-outs input and empty inputs
+        in ar-eg and he-il locales are mismatched. It will be addressed in
+        webkit.org/b/104438.
+        * platform/chromium/TestExpectations:
+
+2012-12-08  No'am Rosenthal  <noam@webkit.org>
+
+        Use background color for GraphicsLayers when applicable
+        https://bugs.webkit.org/show_bug.cgi?id=103786
+
+        Created new tests for composited background colors, update existing tests that are affected by the change,
+        and created platform-specific overrides for Chromium, since it does not yet support composited background
+        colors.
+
+        Reviewed by Simon Fraser.
+
+        * compositing/background-color/background-color-alpha-expected.html: Added.
+        * compositing/background-color/background-color-alpha.html: Added.
+        * compositing/background-color/background-color-change-to-text-expected.html: Added.
+        * compositing/background-color/background-color-change-to-text.html: Added.
+        * compositing/background-color/background-color-composite-expected.html: Added.
+        * compositing/background-color/background-color-composite.html: Added.
+        * compositing/background-color/background-color-container-expected.html: Added.
+        * compositing/background-color/background-color-container.html: Added.
+        * compositing/background-color/background-color-content-clip-expected.html: Added.
+        * compositing/background-color/background-color-content-clip.html: Added.
+        * compositing/background-color/background-color-padding-change-expected.html: Added.
+        * compositing/background-color/background-color-padding-change.html: Added.
+        * compositing/background-color/background-color-padding-clip-expected.html: Added.
+        * compositing/background-color/background-color-padding-clip.html: Added.
+        * compositing/background-color/background-color-simple-expected.html: Added.
+        * compositing/background-color/background-color-simple.html: Added.
+        * compositing/background-color/background-color-text-change-expected.html: Added.
+        * compositing/background-color/background-color-text-change.html: Added.
+        * compositing/background-color/background-color-text-clip-expected.html: Added.
+        * compositing/background-color/background-color-text-clip.html: Added.
+                Added new tests for the specific functionality added, with the edge cases regarding composited
+                backgrounds.
+
+        * compositing/backing/no-backing-for-clip-expected.txt:
+        * compositing/backing/no-backing-for-clip-overlap-expected.txt:
+        * compositing/backing/no-backing-for-perspective-expected.txt:
+        * compositing/columns/composited-in-paginated-expected.txt:
+        * compositing/geometry/ancestor-overflow-change-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt:
+        * compositing/geometry/clip-expected.txt:
+        * compositing/geometry/composited-in-columns-expected.txt:
+        * compositing/geometry/flipped-writing-mode-expected.txt:
+        * compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt:
+        * compositing/geometry/limit-layer-bounds-fixed-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-overflow-root-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-overflow-expected.txt:
+        * compositing/geometry/preserve-3d-switching-expected.txt:
+        * compositing/iframes/become-composited-nested-iframes-expected.txt:
+        * compositing/iframes/become-overlapped-iframe-expected.txt:
+        * compositing/iframes/composited-parent-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-delayed-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe2-expected.txt:
+        * compositing/iframes/connect-compositing-iframe3-expected.txt:
+        * compositing/iframes/enter-compositing-iframe-expected.txt:
+        * compositing/iframes/iframe-resize-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-hide-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-show-expected.txt:
+        * compositing/iframes/overlapped-iframe-expected.txt:
+        * compositing/iframes/overlapped-iframe-iframe-expected.txt:
+        * compositing/iframes/page-cache-layer-tree-expected.txt:
+        * compositing/iframes/scrolling-iframe-expected.txt:
+        * compositing/layer-creation/animation-overlap-with-children-expected.txt:
+        * compositing/layer-creation/fixed-position-and-transform-expected.txt:
+        * compositing/layer-creation/fixed-position-under-transform-expected.txt:
+        * compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt:
+        * compositing/layer-creation/overflow-scroll-overlap-expected.txt:
+        * compositing/layer-creation/overlap-animation-expected.txt:
+        * compositing/layer-creation/overlap-child-layer-expected.txt:
+        * compositing/layer-creation/overlap-clipping-expected.txt:
+        * compositing/layer-creation/overlap-transformed-and-clipped-expected.txt:
+        * compositing/layer-creation/overlap-transformed-layer-expected.txt:
+        * compositing/layer-creation/overlap-transforms-expected.txt:
+        * compositing/layer-creation/scroll-partial-update-expected.txt:
+        * compositing/layer-creation/spanOverlapsCanvas-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-nested-expected.txt:
+        * compositing/layer-creation/translatez-overlap-expected.txt:
+        * compositing/overflow-trumps-transform-style-expected.txt:
+        * compositing/overflow/clip-descendents-expected.txt:
+        * compositing/plugins/no-backing-store-expected.txt:
+        * compositing/rtl/rtl-absolute-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt:
+        * compositing/rtl/rtl-fixed-expected.txt:
+        * compositing/rtl/rtl-fixed-overflow-expected.txt:
+        * compositing/rtl/rtl-relative-expected.txt:
+        * compositing/tiled-layers-hidpi-expected.txt:
+        * compositing/visible-rect/2d-transformed-expected.txt:
+        * compositing/visible-rect/3d-transform-style-expected.txt:
+        * compositing/visible-rect/3d-transformed-expected.txt:
+        * compositing/visible-rect/animated-expected.txt:
+        * compositing/visible-rect/animated-from-none-expected.txt:
+        * compositing/visible-rect/clipped-by-viewport-expected.txt:
+        * compositing/visible-rect/clipped-visible-rect-expected.txt:
+        * compositing/visible-rect/iframe-and-layers-expected.txt:
+        * compositing/visible-rect/nested-transform-expected.txt:
+        * compositing/visible-rect/scrolled-expected.txt:
+        * css3/filters/filtered-compositing-descendant-expected.txt:
+                Updated existing tests that now print different layer-tree results.
+
+        * platform/chromium/compositing/backing/no-backing-for-clip-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-clip-expected.txt.
+        * platform/chromium/compositing/backing/no-backing-for-clip-overlap-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-clip-overlap-expected.txt.
+        * platform/chromium/compositing/backing/no-backing-for-perspective-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-perspective-expected.txt.
+        * platform/chromium/compositing/columns/composited-in-paginated-expected.txt: Copied from LayoutTests/compositing/columns/composited-in-paginated-expected.txt.
+        * platform/chromium/compositing/geometry/ancestor-overflow-change-expected.txt: Copied from LayoutTests/compositing/geometry/ancestor-overflow-change-expected.txt.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt: Copied from LayoutTests/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt: Copied from LayoutTests/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt.
+        * platform/chromium/compositing/geometry/clip-expected.txt: Copied from LayoutTests/compositing/geometry/clip-expected.txt.
+        * platform/chromium/compositing/geometry/composited-in-columns-expected.txt: Copied from LayoutTests/compositing/geometry/composited-in-columns-expected.txt.
+        * platform/chromium/compositing/geometry/flipped-writing-mode-expected.txt: Copied from LayoutTests/compositing/geometry/flipped-writing-mode-expected.txt.
+        * platform/chromium/compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt: Copied from LayoutTests/compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-overflow-root-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-overflow-root-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-positioned-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-transformed-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-transformed-expected.txt.
+        * platform/chromium/compositing/geometry/preserve-3d-switching-expected.txt: Copied from LayoutTests/compositing/geometry/preserve-3d-switching-expected.txt.
+        * platform/chromium/compositing/iframes/invisible-nested-iframe-hide-expected.txt: Copied from LayoutTests/compositing/iframes/invisible-nested-iframe-hide-expected.txt.
+        * platform/chromium/compositing/layer-creation/fixed-position-and-transform-expected.txt: Copied from LayoutTests/compositing/layer-creation/fixed-position-and-transform-expected.txt.
+        * platform/chromium/compositing/layer-creation/fixed-position-under-transform-expected.txt: Copied from LayoutTests/compositing/layer-creation/fixed-position-under-transform-expected.txt.
+        * platform/chromium/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt: Copied from LayoutTests/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-animation-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-animation-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-child-layer-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-child-layer-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-clipping-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-clipping-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-and-clipped-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transformed-and-clipped-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-layer-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transformed-layer-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transforms-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transforms-expected.txt.
+        * platform/chromium/compositing/layer-creation/scroll-partial-update-expected.txt: Copied from LayoutTests/compositing/layer-creation/scroll-partial-update-expected.txt.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-expected.txt: Copied from LayoutTests/compositing/layer-creation/stacking-context-overlap-expected.txt.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-nested-expected.txt: Copied from LayoutTests/compositing/layer-creation/stacking-context-overlap-nested-expected.txt.
+        * platform/chromium/compositing/layer-creation/translatez-overlap-expected.txt: Copied from LayoutTests/compositing/layer-creation/translatez-overlap-expected.txt.
+        * platform/chromium/compositing/overflow-trumps-transform-style-expected.txt: Copied from LayoutTests/compositing/overflow-trumps-transform-style-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-overflow-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-fixed-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-fixed-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-fixed-overflow-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-fixed-overflow-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-relative-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-relative-expected.txt.
+        * platform/chromium/css3/filters/filtered-compositing-descendant-expected.txt: Copied from LayoutTests/css3/filters/filtered-compositing-descendant-expected.txt.
+                Create chromium-specific results since chromium does not yet support setContentsToBackgroundColor.
+
+2012-12-08  Kondapally Kalyan  <kalyan.kondapally@intel.com>
+
+        [EFL] Enable WebGL by default.
+        https://bugs.webkit.org/show_bug.cgi?id=102991.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Update TestExpectations file to enable WebGL tests.
+
+        * platform/efl/TestExpectations:
+
+2012-12-08  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r137006.
+        http://trac.webkit.org/changeset/137006
+        https://bugs.webkit.org/show_bug.cgi?id=104446
+
+        Broke plugin painting on Mac (youtube, etc.) (Requested by
+        thorton_ on #webkit).
+
+        * compositing/background-color/background-color-alpha-expected.html: Removed.
+        * compositing/background-color/background-color-alpha.html: Removed.
+        * compositing/background-color/background-color-change-to-text-expected.html: Removed.
+        * compositing/background-color/background-color-change-to-text.html: Removed.
+        * compositing/background-color/background-color-composite-expected.html: Removed.
+        * compositing/background-color/background-color-composite.html: Removed.
+        * compositing/background-color/background-color-container-expected.html: Removed.
+        * compositing/background-color/background-color-container.html: Removed.
+        * compositing/background-color/background-color-content-clip-expected.html: Removed.
+        * compositing/background-color/background-color-content-clip.html: Removed.
+        * compositing/background-color/background-color-padding-change-expected.html: Removed.
+        * compositing/background-color/background-color-padding-change.html: Removed.
+        * compositing/background-color/background-color-padding-clip-expected.html: Removed.
+        * compositing/background-color/background-color-padding-clip.html: Removed.
+        * compositing/background-color/background-color-simple-expected.html: Removed.
+        * compositing/background-color/background-color-simple.html: Removed.
+        * compositing/background-color/background-color-text-change-expected.html: Removed.
+        * compositing/background-color/background-color-text-change.html: Removed.
+        * compositing/background-color/background-color-text-clip-expected.html: Removed.
+        * compositing/background-color/background-color-text-clip.html: Removed.
+        * compositing/backing/no-backing-for-clip-expected.txt:
+        * compositing/backing/no-backing-for-clip-overlap-expected.txt:
+        * compositing/backing/no-backing-for-perspective-expected.txt:
+        * compositing/columns/composited-in-paginated-expected.txt:
+        * compositing/geometry/ancestor-overflow-change-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt:
+        * compositing/geometry/clip-expected.txt:
+        * compositing/geometry/composited-in-columns-expected.txt:
+        * compositing/geometry/flipped-writing-mode-expected.txt:
+        * compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt:
+        * compositing/geometry/limit-layer-bounds-fixed-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-overflow-root-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-overflow-expected.txt:
+        * compositing/geometry/preserve-3d-switching-expected.txt:
+        * compositing/iframes/become-composited-nested-iframes-expected.txt:
+        * compositing/iframes/become-overlapped-iframe-expected.txt:
+        * compositing/iframes/composited-parent-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-delayed-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe2-expected.txt:
+        * compositing/iframes/connect-compositing-iframe3-expected.txt:
+        * compositing/iframes/enter-compositing-iframe-expected.txt:
+        * compositing/iframes/iframe-resize-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-hide-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-show-expected.txt:
+        * compositing/iframes/overlapped-iframe-expected.txt:
+        * compositing/iframes/overlapped-iframe-iframe-expected.txt:
+        * compositing/iframes/page-cache-layer-tree-expected.txt:
+        * compositing/iframes/scrolling-iframe-expected.txt:
+        * compositing/layer-creation/animation-overlap-with-children-expected.txt:
+        * compositing/layer-creation/fixed-position-and-transform-expected.txt:
+        * compositing/layer-creation/fixed-position-under-transform-expected.txt:
+        * compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt:
+        * compositing/layer-creation/overflow-scroll-overlap-expected.txt:
+        * compositing/layer-creation/overlap-animation-expected.txt:
+        * compositing/layer-creation/overlap-child-layer-expected.txt:
+        * compositing/layer-creation/overlap-clipping-expected.txt:
+        * compositing/layer-creation/overlap-transformed-and-clipped-expected.txt:
+        * compositing/layer-creation/overlap-transformed-layer-expected.txt:
+        * compositing/layer-creation/overlap-transforms-expected.txt:
+        * compositing/layer-creation/scroll-partial-update-expected.txt:
+        * compositing/layer-creation/spanOverlapsCanvas-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-nested-expected.txt:
+        * compositing/layer-creation/translatez-overlap-expected.txt:
+        * compositing/overflow-trumps-transform-style-expected.txt:
+        * compositing/overflow/clip-descendents-expected.txt:
+        * compositing/overflow/content-gains-scrollbars-expected.txt:
+        * compositing/overflow/overflow-scrollbar-layers-expected.txt:
+        * compositing/overflow/resize-painting-expected.txt:
+        * compositing/plugins/no-backing-store-expected.txt:
+        * compositing/rtl/rtl-absolute-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt:
+        * compositing/rtl/rtl-fixed-expected.txt:
+        * compositing/rtl/rtl-fixed-overflow-expected.txt:
+        * compositing/rtl/rtl-relative-expected.txt:
+        * compositing/tiled-layers-hidpi-expected.txt:
+        * compositing/visible-rect/2d-transformed-expected.txt:
+        * compositing/visible-rect/3d-transform-style-expected.txt:
+        * compositing/visible-rect/3d-transformed-expected.txt:
+        * compositing/visible-rect/animated-expected.txt:
+        * compositing/visible-rect/animated-from-none-expected.txt:
+        * compositing/visible-rect/clipped-by-viewport-expected.txt:
+        * compositing/visible-rect/clipped-visible-rect-expected.txt:
+        * compositing/visible-rect/iframe-and-layers-expected.txt:
+        * compositing/visible-rect/nested-transform-expected.txt:
+        * compositing/visible-rect/scrolled-expected.txt:
+        * css3/filters/filtered-compositing-descendant-expected.txt:
+        * platform/chromium/compositing/backing/no-backing-for-clip-expected.txt: Removed.
+        * platform/chromium/compositing/backing/no-backing-for-clip-overlap-expected.txt: Removed.
+        * platform/chromium/compositing/backing/no-backing-for-perspective-expected.txt: Removed.
+        * platform/chromium/compositing/columns/composited-in-paginated-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/ancestor-overflow-change-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/clip-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/composited-in-columns-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/flipped-writing-mode-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-overflow-root-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-transformed-expected.txt: Removed.
+        * platform/chromium/compositing/geometry/preserve-3d-switching-expected.txt: Removed.
+        * platform/chromium/compositing/iframes/invisible-nested-iframe-hide-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/fixed-position-and-transform-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/fixed-position-under-transform-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-animation-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-child-layer-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-clipping-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-and-clipped-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-layer-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/overlap-transforms-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/scroll-partial-update-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-nested-expected.txt: Removed.
+        * platform/chromium/compositing/layer-creation/translatez-overlap-expected.txt: Removed.
+        * platform/chromium/compositing/overflow-trumps-transform-style-expected.txt: Removed.
+        * platform/chromium/compositing/overflow/content-gains-scrollbars-expected.txt:
+        * platform/chromium/compositing/overflow/overflow-scrollbar-layers-expected.txt:
+        * platform/chromium/compositing/overflow/resize-painting-expected.txt:
+        * platform/chromium/compositing/rtl/rtl-absolute-expected.txt: Removed.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-expected.txt: Removed.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt: Removed.
+        * platform/chromium/compositing/rtl/rtl-fixed-expected.txt: Removed.
+        * platform/chromium/compositing/rtl/rtl-fixed-overflow-expected.txt: Removed.
+        * platform/chromium/compositing/rtl/rtl-relative-expected.txt: Removed.
+        * platform/chromium/css3/filters/filtered-compositing-descendant-expected.txt: Removed.
+        * platform/mac/compositing/geometry/fixed-position-composited-switch-expected.txt:
+        * platform/mac/compositing/iframes/resizer-expected.txt:
+        * platform/mac/compositing/repaint/invalidations-on-composited-layers-expected.txt:
+        * platform/mac/compositing/tiling/crash-reparent-tiled-layer-expected.txt:
+        * platform/mac/compositing/tiling/huge-layer-add-remove-child-expected.txt:
+        * platform/mac/compositing/tiling/huge-layer-with-layer-children-expected.txt:
+        * platform/mac/compositing/tiling/huge-layer-with-layer-children-resize-expected.txt:
+        * platform/mac/compositing/tiling/tile-cache-zoomed-expected.txt:
+
+2012-12-08  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-08  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-08  Adam Klein  <adamk@chromium.org>
+
+        HTMLTemplateElement.innerHTML should be parsed into the template contents owner document
+        https://bugs.webkit.org/show_bug.cgi?id=104407
+
+        Reviewed by Eric Seidel.
+
+        * fast/dom/HTMLTemplateElement/innerHTML-inert-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/innerHTML-inert.html: Added.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-win-xp/fast/text/hyphenate-character-expected.txt: Added.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-mac-lion/css3/flexbox/repaint-column-reverse-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/css3/flexbox/repaint-column-reverse-expected.png: Removed.
+        * platform/chromium-win-xp/css3/flexbox/repaint-column-reverse-expected.png: Removed.
+        * platform/chromium-win/css3/flexbox/repaint-column-reverse-expected.png: Renamed from LayoutTests/platform/chromium-linux/css3/flexbox/repaint-column-reverse-expected.png.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-mac/compositing/background-color/background-color-change-to-text-expected.png: Added.
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/background-color/background-color-change-to-text-expected.png: Added.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.  Remove some incorrect baselines.
+
+        * platform/chromium-linux/compositing/backface-visibility/backface-visibility-webgl-expected.png: Removed.
+        * platform/chromium-mac/compositing/backface-visibility/backface-visibility-webgl-expected.png: Removed.
+        * platform/chromium/TestExpectations:
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-mac-lion/css3/flexbox/repaint-column-reverse-expected.png: Added.
+        * platform/chromium-mac-snowleopard/css3/flexbox/repaint-column-reverse-expected.png: Added.
+        * platform/chromium-mac/css3/flexbox/repaint-column-reverse-expected.png: Added.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-linux/fast/text/hyphenate-character-expected.png: Added.
+        * platform/chromium-linux/fast/text/hyphenate-character-expected.txt: Added.
+        * platform/chromium-linux/fast/text/hyphenate-first-word-expected.png: Added.
+        * platform/chromium-linux/fast/text/hyphenate-limit-before-after-expected.png: Added.
+        * platform/chromium-linux/fast/text/hyphenate-limit-lines-expected.png: Added.
+        * platform/chromium-linux/fast/text/hyphenate-locale-expected.png: Added.
+        * platform/chromium-linux/fast/text/hyphens-expected.png: Added.
+        * platform/chromium-linux/fast/text/international/hindi-whitespace-expected.png: Added.
+        * platform/chromium-linux/fast/text/international/hindi-whitespace-expected.txt: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-limit-before-after-expected.png: Added.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-linux/svg/custom/transform-with-shadow-and-gradient-expected.png: Removed.
+        * platform/chromium-mac-lion/fast/text/hyphenate-character-expected.png: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-character-expected.txt: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-first-word-expected.png: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-first-word-expected.txt: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-limit-before-after-expected.txt: Copied from LayoutTests/platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-before-after-expected.txt.
+        * platform/chromium-mac-lion/fast/text/hyphenate-limit-lines-expected.png: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-limit-lines-expected.txt: Added.
+        * platform/chromium-mac-lion/fast/text/hyphenate-locale-expected.png: Added.
+        * platform/chromium-mac-lion/fast/text/hyphens-expected.png: Added.
+        * platform/chromium-mac-lion/fast/text/hyphens-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-character-expected.png:
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-character-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-first-word-expected.txt: Added.
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-before-after-expected.png: Added.
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-before-after-expected.txt:
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-lines-expected.png:
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-lines-expected.txt:
+        * platform/chromium-mac-snowleopard/fast/text/hyphenate-locale-expected.png: Added.
+        * platform/chromium-mac-snowleopard/fast/text/hyphens-expected.png:
+        * platform/chromium-mac-snowleopard/fast/text/hyphens-expected.txt: Added.
+        * platform/chromium-mac/fast/text/hyphenate-character-expected.png:
+        * platform/chromium-mac/fast/text/hyphenate-character-expected.txt: Added.
+        * platform/chromium-mac/fast/text/hyphenate-first-word-expected.png: Added.
+        * platform/chromium-mac/fast/text/hyphenate-first-word-expected.txt: Added.
+        * platform/chromium-mac/fast/text/hyphenate-limit-before-after-expected.png:
+        * platform/chromium-mac/fast/text/hyphenate-limit-before-after-expected.txt: Copied from LayoutTests/platform/chromium-mac-snowleopard/fast/text/hyphenate-limit-before-after-expected.txt.
+        * platform/chromium-mac/fast/text/hyphenate-limit-lines-expected.png: Added.
+        * platform/chromium-mac/fast/text/hyphenate-limit-lines-expected.txt: Added.
+        * platform/chromium-mac/fast/text/hyphenate-locale-expected.png: Added.
+        * platform/chromium-mac/fast/text/hyphenate-locale-expected.txt: Renamed from LayoutTests/platform/chromium-mac-snowleopard/fast/text/hyphenate-locale-expected.txt.
+        * platform/chromium-mac/fast/text/hyphens-expected.png:
+        * platform/chromium-mac/fast/text/hyphens-expected.txt: Added.
+        * platform/chromium-mac/svg/custom/transform-with-shadow-and-gradient-expected.png: Removed.
+        * platform/chromium-win-xp/fast/text/hyphenate-character-expected.png: Added.
+        * platform/chromium-win-xp/fast/text/hyphens-expected.png: Added.
+        * platform/chromium-win-xp/fast/text/international/hindi-whitespace-expected.png: Added.
+        * platform/chromium-win-xp/fast/text/international/hindi-whitespace-expected.txt: Copied from LayoutTests/platform/chromium-win/fast/text/international/hindi-whitespace-expected.txt.
+        * platform/chromium-win/fast/text/hyphenate-character-expected.png: Added.
+        * platform/chromium-win/fast/text/hyphenate-character-expected.txt: Added.
+        * platform/chromium-win/fast/text/hyphenate-first-word-expected.png: Added.
+        * platform/chromium-win/fast/text/hyphenate-limit-before-after-expected.png: Added.
+        * platform/chromium-win/fast/text/hyphenate-limit-lines-expected.png: Added.
+        * platform/chromium-win/fast/text/hyphenate-locale-expected.png: Added.
+        * platform/chromium-win/fast/text/hyphenate-locale-expected.txt: Renamed from LayoutTests/platform/chromium/fast/text/hyphenate-locale-expected.txt.
+        * platform/chromium-win/fast/text/hyphens-expected.png: Added.
+        * platform/chromium-win/fast/text/international/hindi-whitespace-expected.png:
+        * platform/chromium-win/fast/text/international/hindi-whitespace-expected.txt:
+        * platform/chromium-win/svg/custom/transform-with-shadow-and-gradient-expected.png: Removed.
+        * platform/chromium/TestExpectations:
+        * platform/chromium/fast/text/hyphenate-character-expected.png: Removed.
+        * platform/chromium/fast/text/hyphenate-first-word-expected.png: Removed.
+        * platform/chromium/fast/text/hyphenate-limit-before-after-expected.png: Removed.
+        * platform/chromium/fast/text/hyphenate-limit-lines-expected.png: Removed.
+        * platform/chromium/fast/text/hyphenate-locale-expected.png: Removed.
+        * platform/chromium/fast/text/hyphens-expected.png: Removed.
+        * platform/chromium/svg/custom/transform-with-shadow-and-gradient-expected.png: Added.
+        * platform/efl-wk1/fast/text/hyphenate-character-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-character-expected.png.
+        * platform/efl-wk1/fast/text/hyphenate-first-word-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-first-word-expected.png.
+        * platform/efl-wk1/fast/text/hyphenate-limit-before-after-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-limit-before-after-expected.png.
+        * platform/efl-wk1/fast/text/hyphenate-limit-lines-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-limit-lines-expected.png.
+        * platform/efl-wk1/fast/text/hyphenate-locale-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-locale-expected.png.
+        * platform/efl-wk1/fast/text/hyphenate-locale-expected.txt: Renamed from LayoutTests/platform/efl/fast/text/hyphenate-locale-expected.txt.
+        * platform/efl-wk1/fast/text/hyphens-expected.png: Renamed from LayoutTests/platform/efl/fast/text/hyphens-expected.png.
+
+2012-12-07  Alexis Menard  <alexis@webkit.org>
+
+        Enable CSS3 position offset for CSS Masking.
+        https://bugs.webkit.org/show_bug.cgi?id=104252
+
+        Reviewed by Dirk Schulze.
+
+        Add coverage for the new cases. Both when setting the position with the
+        longhand or with the shorthand.
+
+        * fast/masking/parsing-mask-expected.txt:
+        * fast/masking/parsing-mask.html:
+
+2012-12-07  No'am Rosenthal  <noam@webkit.org>
+
+        Use background color for GraphicsLayers when applicable
+        https://bugs.webkit.org/show_bug.cgi?id=103786
+
+        Created new tests for composited background colors, update existing tests that are affected by the change,
+        and created platform-specific overrides for Chromium, since it does not yet support composited background
+        colors.
+
+        Reviewed by Simon Fraser.
+
+        * compositing/background-color/background-color-alpha-expected.html: Added.
+        * compositing/background-color/background-color-alpha.html: Added.
+        * compositing/background-color/background-color-change-to-text-expected.html: Added.
+        * compositing/background-color/background-color-change-to-text.html: Added.
+        * compositing/background-color/background-color-composite-expected.html: Added.
+        * compositing/background-color/background-color-composite.html: Added.
+        * compositing/background-color/background-color-container-expected.html: Added.
+        * compositing/background-color/background-color-container.html: Added.
+        * compositing/background-color/background-color-content-clip-expected.html: Added.
+        * compositing/background-color/background-color-content-clip.html: Added.
+        * compositing/background-color/background-color-padding-change-expected.html: Added.
+        * compositing/background-color/background-color-padding-change.html: Added.
+        * compositing/background-color/background-color-padding-clip-expected.html: Added.
+        * compositing/background-color/background-color-padding-clip.html: Added.
+        * compositing/background-color/background-color-simple-expected.html: Added.
+        * compositing/background-color/background-color-simple.html: Added.
+        * compositing/background-color/background-color-text-change-expected.html: Added.
+        * compositing/background-color/background-color-text-change.html: Added.
+        * compositing/background-color/background-color-text-clip-expected.html: Added.
+        * compositing/background-color/background-color-text-clip.html: Added.
+                Added new tests for the specific functionality added, with the edge cases regarding composited
+                backgrounds.
+
+        * compositing/backing/no-backing-for-clip-expected.txt:
+        * compositing/backing/no-backing-for-clip-overlap-expected.txt:
+        * compositing/backing/no-backing-for-perspective-expected.txt:
+        * compositing/columns/composited-in-paginated-expected.txt:
+        * compositing/geometry/ancestor-overflow-change-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt:
+        * compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt:
+        * compositing/geometry/clip-expected.txt:
+        * compositing/geometry/composited-in-columns-expected.txt:
+        * compositing/geometry/flipped-writing-mode-expected.txt:
+        * compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt:
+        * compositing/geometry/limit-layer-bounds-fixed-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-overflow-root-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-expected.txt:
+        * compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-expected.txt:
+        * compositing/geometry/limit-layer-bounds-transformed-overflow-expected.txt:
+        * compositing/geometry/preserve-3d-switching-expected.txt:
+        * compositing/iframes/become-composited-nested-iframes-expected.txt:
+        * compositing/iframes/become-overlapped-iframe-expected.txt:
+        * compositing/iframes/composited-parent-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-delayed-expected.txt:
+        * compositing/iframes/connect-compositing-iframe-expected.txt:
+        * compositing/iframes/connect-compositing-iframe2-expected.txt:
+        * compositing/iframes/connect-compositing-iframe3-expected.txt:
+        * compositing/iframes/enter-compositing-iframe-expected.txt:
+        * compositing/iframes/iframe-resize-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-hide-expected.txt:
+        * compositing/iframes/invisible-nested-iframe-show-expected.txt:
+        * compositing/iframes/overlapped-iframe-expected.txt:
+        * compositing/iframes/overlapped-iframe-iframe-expected.txt:
+        * compositing/iframes/page-cache-layer-tree-expected.txt:
+        * compositing/iframes/scrolling-iframe-expected.txt:
+        * compositing/layer-creation/animation-overlap-with-children-expected.txt:
+        * compositing/layer-creation/fixed-position-and-transform-expected.txt:
+        * compositing/layer-creation/fixed-position-under-transform-expected.txt:
+        * compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt:
+        * compositing/layer-creation/overflow-scroll-overlap-expected.txt:
+        * compositing/layer-creation/overlap-animation-expected.txt:
+        * compositing/layer-creation/overlap-child-layer-expected.txt:
+        * compositing/layer-creation/overlap-clipping-expected.txt:
+        * compositing/layer-creation/overlap-transformed-and-clipped-expected.txt:
+        * compositing/layer-creation/overlap-transformed-layer-expected.txt:
+        * compositing/layer-creation/overlap-transforms-expected.txt:
+        * compositing/layer-creation/scroll-partial-update-expected.txt:
+        * compositing/layer-creation/spanOverlapsCanvas-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-expected.txt:
+        * compositing/layer-creation/stacking-context-overlap-nested-expected.txt:
+        * compositing/layer-creation/translatez-overlap-expected.txt:
+        * compositing/overflow-trumps-transform-style-expected.txt:
+        * compositing/overflow/clip-descendents-expected.txt:
+        * compositing/plugins/no-backing-store-expected.txt:
+        * compositing/rtl/rtl-absolute-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-expected.txt:
+        * compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt:
+        * compositing/rtl/rtl-fixed-expected.txt:
+        * compositing/rtl/rtl-fixed-overflow-expected.txt:
+        * compositing/rtl/rtl-relative-expected.txt:
+        * compositing/tiled-layers-hidpi-expected.txt:
+        * compositing/visible-rect/2d-transformed-expected.txt:
+        * compositing/visible-rect/3d-transform-style-expected.txt:
+        * compositing/visible-rect/3d-transformed-expected.txt:
+        * compositing/visible-rect/animated-expected.txt:
+        * compositing/visible-rect/animated-from-none-expected.txt:
+        * compositing/visible-rect/clipped-by-viewport-expected.txt:
+        * compositing/visible-rect/clipped-visible-rect-expected.txt:
+        * compositing/visible-rect/iframe-and-layers-expected.txt:
+        * compositing/visible-rect/nested-transform-expected.txt:
+        * compositing/visible-rect/scrolled-expected.txt:
+        * css3/filters/filtered-compositing-descendant-expected.txt:
+                Updated existing tests that now print different layer-tree results.
+
+        * platform/chromium/compositing/backing/no-backing-for-clip-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-clip-expected.txt.
+        * platform/chromium/compositing/backing/no-backing-for-clip-overlap-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-clip-overlap-expected.txt.
+        * platform/chromium/compositing/backing/no-backing-for-perspective-expected.txt: Copied from LayoutTests/compositing/backing/no-backing-for-perspective-expected.txt.
+        * platform/chromium/compositing/columns/composited-in-paginated-expected.txt: Copied from LayoutTests/compositing/columns/composited-in-paginated-expected.txt.
+        * platform/chromium/compositing/geometry/ancestor-overflow-change-expected.txt: Copied from LayoutTests/compositing/geometry/ancestor-overflow-change-expected.txt.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt: Copied from LayoutTests/compositing/geometry/bounds-ignores-hidden-composited-descendant-expected.txt.
+        * platform/chromium/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt: Copied from LayoutTests/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex-expected.txt.
+        * platform/chromium/compositing/geometry/clip-expected.txt: Copied from LayoutTests/compositing/geometry/clip-expected.txt.
+        * platform/chromium/compositing/geometry/composited-in-columns-expected.txt: Copied from LayoutTests/compositing/geometry/composited-in-columns-expected.txt.
+        * platform/chromium/compositing/geometry/flipped-writing-mode-expected.txt: Copied from LayoutTests/compositing/geometry/flipped-writing-mode-expected.txt.
+        * platform/chromium/compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt: Copied from LayoutTests/compositing/geometry/layer-due-to-layer-children-deep-switch-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-overflow-root-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-overflow-root-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-positioned-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-positioned-transition-expected.txt.
+        * platform/chromium/compositing/geometry/limit-layer-bounds-transformed-expected.txt: Copied from LayoutTests/compositing/geometry/limit-layer-bounds-transformed-expected.txt.
+        * platform/chromium/compositing/geometry/preserve-3d-switching-expected.txt: Copied from LayoutTests/compositing/geometry/preserve-3d-switching-expected.txt.
+        * platform/chromium/compositing/iframes/invisible-nested-iframe-hide-expected.txt: Copied from LayoutTests/compositing/iframes/invisible-nested-iframe-hide-expected.txt.
+        * platform/chromium/compositing/layer-creation/fixed-position-and-transform-expected.txt: Copied from LayoutTests/compositing/layer-creation/fixed-position-and-transform-expected.txt.
+        * platform/chromium/compositing/layer-creation/fixed-position-under-transform-expected.txt: Copied from LayoutTests/compositing/layer-creation/fixed-position-under-transform-expected.txt.
+        * platform/chromium/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt: Copied from LayoutTests/compositing/layer-creation/no-compositing-for-preserve-3d-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-animation-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-animation-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-child-layer-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-child-layer-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-clipping-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-clipping-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-and-clipped-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transformed-and-clipped-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transformed-layer-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transformed-layer-expected.txt.
+        * platform/chromium/compositing/layer-creation/overlap-transforms-expected.txt: Copied from LayoutTests/compositing/layer-creation/overlap-transforms-expected.txt.
+        * platform/chromium/compositing/layer-creation/scroll-partial-update-expected.txt: Copied from LayoutTests/compositing/layer-creation/scroll-partial-update-expected.txt.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-expected.txt: Copied from LayoutTests/compositing/layer-creation/stacking-context-overlap-expected.txt.
+        * platform/chromium/compositing/layer-creation/stacking-context-overlap-nested-expected.txt: Copied from LayoutTests/compositing/layer-creation/stacking-context-overlap-nested-expected.txt.
+        * platform/chromium/compositing/layer-creation/translatez-overlap-expected.txt: Copied from LayoutTests/compositing/layer-creation/translatez-overlap-expected.txt.
+        * platform/chromium/compositing/overflow-trumps-transform-style-expected.txt: Copied from LayoutTests/compositing/overflow-trumps-transform-style-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-overflow-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-absolute-overflow-scrolled-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-fixed-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-fixed-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-fixed-overflow-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-fixed-overflow-expected.txt.
+        * platform/chromium/compositing/rtl/rtl-relative-expected.txt: Copied from LayoutTests/compositing/rtl/rtl-relative-expected.txt.
+        * platform/chromium/css3/filters/filtered-compositing-descendant-expected.txt: Copied from LayoutTests/css3/filters/filtered-compositing-descendant-expected.txt.
+                Create chromium-specific results since chromium does not yet support setContentsToBackgroundColor.
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.  New baselines for new tests.
+
+        * platform/chromium-mac/css3/filters/effect-reference-after-expected.png: Added.
+        * platform/chromium-mac/css3/filters/effect-reference-delete-expected.png: Added.
+        * platform/chromium-mac/css3/filters/effect-reference-rename-expected.png: Added.
+        * platform/chromium-win/css3/filters/effect-reference-after-expected.png: Renamed from LayoutTests/platform/chromium-linux/css3/filters/effect-reference-after-expected.png.
+        * platform/chromium-win/css3/filters/effect-reference-delete-expected.png: Renamed from LayoutTests/platform/chromium-linux/css3/filters/effect-reference-delete-expected.png.
+        * platform/chromium-win/css3/filters/effect-reference-rename-expected.png: Renamed from LayoutTests/platform/chromium-linux/css3/filters/effect-reference-rename-expected.png.
+
+2012-12-07  Adam Klein  <adamk@chromium.org>
+
+        MutationRecord addedNodes/removedNodes should never be null
+        https://bugs.webkit.org/show_bug.cgi?id=98921
+
+        Reviewed by Ryosuke Niwa.
+
+        Updated nullity test to check for empty nodelists.
+
+        * fast/mutation/mutation-record-nullity-expected.txt:
+        * fast/mutation/mutation-record-nullity.html:
+
+2012-12-07  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium-win rebaselines.
+
+        * platform/chromium-win-xp/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png: Removed.
+        * platform/chromium-win/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+
+2012-12-07  Dima Gorbik  <dgorbik@apple.com>
+
+        Implement general ::cue pseudo element for the <video>
+        https://bugs.webkit.org/show_bug.cgi?id=104043
+
+        Reviewed by Eric Carlson.
+
+        * media/track/captions-webvtt/styling.vtt: Added.
+        * media/track/track-css-all-cues-expected.txt: Added.
+        * media/track/track-css-all-cues.html: Added.
+
+2012-12-07  Kondapally Kalyan  <kalyan.kondapally@intel.com>
+
+        Fix webgl-depth-texture.html to match the test expectation.
+        https://bugs.webkit.org/show_bug.cgi?id=104259.
+
+        Reviewed by Kenneth Russell.
+
+        The text expectation of this testcase expects to check for FrameBuffer status and compare the value
+        using ShouldBe after creating the framebuffer.
+        Currently, we do it only in case of adding a color buffer. This patch ensures that the Framebuffer
+        Status check using ShouldBe is done in all cases.
+
+        * fast/canvas/webgl/webgl-depth-texture.html:
+
+2012-12-06  Filip Pizlo  <fpizlo@apple.com>
+
+        Strange results calculating a square root in a loop
+        https://bugs.webkit.org/show_bug.cgi?id=104247
+        <rdar://problem/12826880>
+
+        Reviewed by Oliver Hunt.
+
+        * fast/js/dfg-cfg-simplify-redundant-dead-get-local-expected.txt: Added.
+        * fast/js/dfg-cfg-simplify-redundant-dead-get-local.html: Added.
+        * fast/js/jsc-test-list:
+        * fast/js/script-tests/dfg-cfg-simplify-redundant-dead-get-local.js: Added.
+        (getDist):
+        (calcError):
+
+2012-12-07  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaselines.
+
+        * platform/chromium-linux-x86/ietestcenter: Removed.
+        * platform/chromium-linux/compositing/backface-visibility: Added.
+        * platform/chromium-linux/compositing/backface-visibility/backface-visibility-webgl-expected.png: Added.
+        * platform/chromium-mac/compositing/backface-visibility: Added.
+        * platform/chromium-mac/compositing/backface-visibility/backface-visibility-webgl-expected.png: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission/Intel/user-timing: Removed.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark-expected.txt: Removed.
+        * platform/chromium-win-xp/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png: Added.
+
+2012-12-07  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaselines.
+
+        * platform/chromium-linux-x86/ietestcenter/css3: Removed.
+        * platform/chromium-linux/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+        * platform/chromium-mac-lion/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+        * platform/chromium-mac-snowleopard/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+        * platform/chromium-mac/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+        * platform/efl-wk1/ietestcenter/css3/bordersbackgrounds: Added.
+        * platform/efl-wk1/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png: Added.
+        * platform/efl/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png: Removed.
+
+2012-12-07  Stephen Chenney  <schenney@chromium.org>
+
+        XMLSerializer is too aggressive in adding prefixes
+        https://bugs.webkit.org/show_bug.cgi?id=104387
+
+        Reviewed by Ryosuke Niwa.
+
+        Add a test case for a prefix that is already set, but to a different name than the default.
+
+        * svg/custom/xlink-prefix-in-attributes.html:
+        * svg/custom/xlink-prefix-in-attributes-expected.txt:
+
+2012-12-07  Eric Carlson  <eric.carlson@apple.com>
+
+        Captions menu doesn't update to track changes
+        https://bugs.webkit.org/show_bug.cgi?id=104393
+
+        Reviewed by Dean Jackson.
+
+        Test to ensure that the captions menu is updated as tracks added and removed.
+
+        * media/video-controls-captions-trackmenu-expected.txt:
+        * media/video-controls-captions-trackmenu.html:
+
+2012-12-07  Stephen White  <senorblanco@chromium.org>
+
+        CSS url() filters with forward references don't work
+        https://bugs.webkit.org/show_bug.cgi?id=90405
+
+        Based on a patch by Keyar Hood.
+
+        Reviewed by Dirk Schulze.
+
+        * css3/filters/effect-reference-after-expected.txt: Added.
+        * css3/filters/effect-reference-after.html: Added.
+        * css3/filters/effect-reference-delete-crash-expected.txt: Added.
+        * css3/filters/effect-reference-delete-crash.html: Added.
+        * css3/filters/effect-reference-delete-expected.txt: Added.
+        * css3/filters/effect-reference-delete.html: Added.
+        * css3/filters/effect-reference-rename-expected.txt: Added.
+        * css3/filters/effect-reference-rename.html: Added.
+        * css3/filters/effect-reference-reset-style-delete-crash-expected.txt: Added.
+        * css3/filters/effect-reference-reset-style-delete-crash.html: Added.
+        * css3/filters/script-tests/effect-reference-delete-crash.js: Added.
+        * css3/filters/script-tests/effect-reference-reset-style-delete-crash.js: Added.
+        * svg/filters/filter-cycle.html: Added.
+        * svg/filters/filter-cycle-expected.html: Added.
+        * platform/chromium-linux/css3/filters/effect-reference-after-expected: Added.
+        * platform/chromium-linux/css3/filters/effect-reference-delete-expected.png: Added.
+        * platform/chromium-linux/css3/filters/effect-reference-rename-expected.png: Added.
+        * platform/chromium/TestExpectations:
+
+2012-12-07  Alexis Menard  <alexis@webkit.org>
+
+        Unreviewed EFL gardening.
+
+        css3/calc/background-position-parsing.html is now working as
+        webkit.org/b/104131 has been fixed. I also rebased
+        background_position_three_four_values-expected.png which was incorrect and
+        now with the CSS3 background-position offsets it renders correctly.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/ietestcenter/css3/bordersbackgrounds/background_position_three_four_values-expected.png:
+
+2012-12-07  Alexis Menard  <alexis@webkit.org>
+
+        [Chromium] Enable CSS3 background-position offset by default.
+        https://bugs.webkit.org/show_bug.cgi?id=104253
+
+        Reviewed by Tony Chang.
+
+        Enable by default the new CSS3 background position offsets therefore we
+        can unskip the tests.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-07  James Simonsen  <simonjam@chromium.org>
+
+        [Chromium] Enable Intel's Resource Timing tests
+        https://bugs.webkit.org/show_bug.cgi?id=104330
+
+        Reviewed by Tony Gentilcore.
+
+        * platform/chromium/TestExpectations: 2 fail because they rely on iframes.
+
+2012-12-07  Robert Hogan  <robert@webkit.org>
+
+        REGRESSION(r127163): Content is offset to the right at rea.ru
+        https://bugs.webkit.org/show_bug.cgi?id=103116
+
+        Reviewed by David Hyatt.
+
+        * fast/block/margin-collapse/self-collapsing-block-with-float-child-collapsed-margins-expected.html: Added.
+        * fast/block/margin-collapse/self-collapsing-block-with-float-child-collapsed-margins.html: Added.
+        * fast/block/margin-collapse/self-collapsing-block-with-float-child-expected.html: Added.
+        * fast/block/margin-collapse/self-collapsing-block-with-float-child.html: Added.
+
+2012-12-07  Mike West  <mkwst@chromium.org>
+
+        fast/frames/sandboxed-iframe-scripting.html contains very misleading comments.
+        https://bugs.webkit.org/show_bug.cgi?id=104363
+
+        Reviewed by Darin Adler.
+
+        The comments in this test describe a state that is in fact the opposite
+        of what's being tested. That confused me. This patch corrects the
+        comments to make it clear that adding a sandbox attribute at runtime has
+        no effect on the frame; the sandboxing flags are set when the nested
+        browsing context is _navigated_, not when the attribute changes value.
+
+        Spec: http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox
+
+        * fast/frames/resources/sandboxed-iframe-script-dynamic.html:
+        * fast/frames/sandboxed-iframe-scripting-expected.txt:
+        * fast/frames/sandboxed-iframe-scripting.html:
+
+2012-12-07  Antoine Quint  <graouts@apple.com>
+
+        Provide the backend for exposing the layer tree to the Web Inspector
+        https://bugs.webkit.org/show_bug.cgi?id=103513
+
+        Reviewed by Pavel Feldman.
+
+        Adding a LayoutTest that exercises the various APIs and event exposed by the LayerTreeAgent.
+        This test is skipped on EFL where ACCELERATED_COMPOSITING is not available.
+
+        * inspector-protocol/layer-tree-expected.txt: Added.
+        * inspector-protocol/layer-tree.html: Added.
+        * platform/efl/TestExpectations:
+
+2012-12-07  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding an image mismatch expectation for fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-07  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [TexMap] Can not do multiple accelerated animations
+        https://bugs.webkit.org/show_bug.cgi?id=104364
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Unskip test animating multiple accelerated properties.
+
+        * platform/qt/TestExpectations:
+
+2012-10-03   Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: provide a way to reload page with given script preprocessor.
+        https://bugs.webkit.org/show_bug.cgi?id=80992
+
+        Reviewed by Yury Semikhatsky.
+
+        * http/tests/inspector/inspector-test.js:
+        (initialize_InspectorTest.InspectorTest.hardReloadPage):
+        (initialize_InspectorTest.InspectorTest.reloadPage):
+        (initialize_InspectorTest.InspectorTest._innerReloadPage):
+        * inspector/debugger/debugger-script-preprocessor-expected.txt: Added.
+        * inspector/debugger/debugger-script-preprocessor.html: Added.
+        * platform/chromium/inspector/debugger/debugger-script-preprocessor-expected.txt: Added.
+
+2012-12-07  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: the "Sources" column is always empty in CSS selector profiles
+        https://bugs.webkit.org/show_bug.cgi?id=104225
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/profiler/selector-profiler-url-expected.txt: Added.
+        * inspector/profiler/selector-profiler-url.html: Added.
+
+2012-12-07  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: enable inspector tests on chromium-mac.
+        https://bugs.webkit.org/show_bug.cgi?id=104357
+
+        Reviewed by Pavel Feldman.
+
+        After chromium r171707 patch we can enable inspector tests on chromium-mac.
+        Two expectation files were moved from chromium-win to chromium because chromium-mac doesn't inherit expectations from chromium-win.
+	Expectations in chromium-mac were removed because they were added by mistake.
+	[ Win Linux ] filter was removed because I need to add Mac but [ Mac Win Linux ] is equivalent to nothing.
+
+        * platform/chromium-mac/inspector/console/command-line-api-getEventListeners-expected.txt: Removed.
+        * platform/chromium-mac/inspector/cookie-parser-expected.txt: Removed.
+        * platform/chromium-mac/inspector/debugger/debugger-activation-crash2-expected.txt: Removed.
+        * platform/chromium-mac/inspector/debugger/event-listener-breakpoints-expected.txt: Removed.
+        * platform/chromium/TestExpectations:
+        * platform/chromium/inspector/console/command-line-api-getEventListeners-expected.txt: Renamed from LayoutTests/platform/chromium-win/inspector/console/command-line-api-getEventListeners-expected.txt.
+        * platform/chromium/inspector/debugger/debugger-scripts-expected.txt: Renamed from LayoutTests/platform/chromium-win/inspector/debugger/debugger-scripts-expected.txt.
+
+2012-12-07  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Remove platform-specific baselines for viewsource-attribute.html
+        and viewsource-on-image-file.html as the current results matches
+        base expectations. Also, add missing platform-specific baselines
+        for fast/text/decorations-with-text-combine.html.
+
+        * platform/efl-wk2/fast/frames/viewsource-attribute-expected.png: Removed.
+        * platform/efl-wk2/fast/frames/viewsource-attribute-expected.txt: Removed.
+        * platform/efl-wk2/fast/frames/viewsource-on-image-file-expected.png: Removed.
+        * platform/efl-wk2/fast/frames/viewsource-on-image-file-expected.txt: Removed.
+        * platform/efl/fast/text/decorations-with-text-combine-expected.png: Added.
+        * platform/efl/fast/text/decorations-with-text-combine-expected.txt: Added.
+
+2012-12-07  János Badics  <jbadics@inf.u-szeged.hu>
+
+        [Qt] Gardening after r136857, r136893 and 136919.
+        https://bugs.webkit.org/show_bug.cgi?id=104351
+
+        Reviewed by Csaba Osztrogonác.
+
+        r136857: skipped a newly added failing reftest.
+        r136893: skipped two newly added xmlhttprequest tests
+        r136919: skipped a test because layoutTestController.setBackingScaleFactor() is unimplemented
+
+        * platform/qt/TestExpectations:
+
+2012-12-06  Filip Pizlo  <fpizlo@apple.com>
+
+        Incorrect inequality for checking whether a statement is within bounds of a handler
+        https://bugs.webkit.org/show_bug.cgi?id=104313
+        <rdar://problem/12808934>
+
+        Reviewed by Geoffrey Garen.
+
+        * fast/js/jsc-test-list:
+        * fast/js/script-tests/try-catch-try-try-catch-try-finally-return-catch-finally.js: Added.
+        (foo):
+        * fast/js/try-catch-try-try-catch-try-finally-return-catch-finally-expected.txt: Added.
+        * fast/js/try-catch-try-try-catch-try-finally-return-catch-finally.html: Added.
+
+2012-12-06  Noel Gordon  <noel.gordon@gmail.com>
+
+        Unreviewed Gardening. More http://trac.webkit.org/changeset/136910. Add Chromium Linux results. 
+
+        * platform/chromium-linux/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks-expected.txt: Added.
+        * platform/chromium-linux/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark-expected.txt: Added.
+
+2012-12-06  James Simonsen  <simonjam@chromium.org>
+
+        [Resource Timing] Allow detailed timing on same origin sites
+        https://bugs.webkit.org/show_bug.cgi?id=104328
+
+        Reviewed by Tony Gentilcore.
+
+        * platform/chromium/TestExpectations: This was mismarked as an iframe failure.
+
+2012-12-06  Rick Byers  <rbyers@chromium.org>
+
+        CSS cursor property should support webkit-image-set
+        https://bugs.webkit.org/show_bug.cgi?id=99493
+
+        Reviewed by Beth Dakin.
+
+        Add tests for parser round-tripping of cursor rules with -webkit-image-set,
+        and also end-to-end mouse cursor tests that validate the cursor details
+        ultimately used at different device scales.
+
+        Tests are disabled on ports other than chromium (require ENABLE(MOUSE_CURSOR_SCALE))
+
+        * fast/css/cursor-parsing-image-set-expected.txt: Added.
+        * fast/css/cursor-parsing-image-set.html: Added.
+        * fast/events/mouse-cursor-image-set-expected.txt: Added.
+        * fast/events/mouse-cursor-image-set.html: Added.
+        * fast/events/resources/greenbox200.png: Added.
+        * fast/events/resources/greenbox30-hotspot28-3.cur: Added.
+        * fast/events/resources/greenbox30.png: Added.
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/win/TestExpectations:
+
+2012-12-06  Hayato Ito  <hayato@chromium.org>
+
+        Event's relatedTarget re-targeting does not occur for manually fired mouse events created by event.initMouseEvent().
+        https://bugs.webkit.org/show_bug.cgi?id=102681
+
+        Reviewed by Dimitri Glazkov.
+
+        * fast/dom/shadow/shadow-dom-event-dispatching-expected.txt:
+        * fast/dom/shadow/shadow-dom-event-dispatching.html:
+        * fast/events/dispatch-synthetic-mouseevent-expected.txt: Added.
+        * fast/events/dispatch-synthetic-mouseevent.html: Added.
+
+2012-12-06  Kunihiko Sakamoto  <ksakamoto@chromium.org>
+
+        Disabled file input box stops a certain other div from being rendered
+        https://bugs.webkit.org/show_bug.cgi?id=104226
+
+        Reviewed by Dimitri Glazkov.
+
+        Add a test to ensure that sibling of disabled file input is correctly rendered.
+
+        * fast/forms/file/sibling-of-disabled-file-input-expected.txt: Added.
+        * fast/forms/file/sibling-of-disabled-file-input.html: Added.
+
+2012-12-06  Dominic Cooney  <dominicc@chromium.org>
+
+        Element.pseudo property should be prefixed
+        https://bugs.webkit.org/show_bug.cgi?id=104060
+
+        Reviewed by Hajime Morita.
+
+        Updated tests.
+
+        * fast/dom/shadow/pseudo-attribute-dynamic.html:
+        * fast/dom/shadow/pseudo-attribute-expected.txt:
+        * fast/dom/shadow/pseudo-attribute-rendering.html:
+        * fast/dom/shadow/pseudo-attribute.html:
+        * fast/dom/shadow/shadow-pseudo-id.html:
+
+2012-12-06  Li Yin  <li.yin@intel.com>
+
+        [Chromium] Unreviewed, webaudio/audioparam-connect-audioratesignal.html is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=87273
+
+        Remove audioparam-connect-audioratesignal.html from chromium/TestExpectations,
+        since it no longer appears on the flakiness dashboard.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-06  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaseline for r136909.
+
+        * platform/chromium-win-xp/http/tests/w3c: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission/Intel: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission/Intel/user-timing: Added.
+        * platform/chromium-win-xp/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark-expected.txt: Added.
+        * platform/chromium-win/http/tests/w3c: Added.
+        * platform/chromium-win/http/tests/w3c/webperf: Added.
+        * platform/chromium-win/http/tests/w3c/webperf/submission: Added.
+        * platform/chromium-win/http/tests/w3c/webperf/submission/Intel: Added.
+        * platform/chromium-win/http/tests/w3c/webperf/submission/Intel/user-timing: Added.
+        * platform/chromium-win/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks-expected.txt: Added.
+        * platform/chromium-win/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_mark-expected.txt: Added.
+
+2012-12-06  Philip Rogers  <pdr@google.com>
+
+        Unify SVG's animation and target tracking systems.
+        https://bugs.webkit.org/show_bug.cgi?id=102655
+
+        Reviewed by Dirk Schulze.
+
+        * svg/animations/svg-animation-order-expected.html: Added.
+        * svg/animations/svg-animation-order.html: Added.
+        * svg/custom/svg-pending-twice-expected.html: Added.
+        * svg/custom/svg-pending-twice.html: Added.
+
+2012-12-06  James Simonsen  <simonjam@chromium.org>
+
+        [Chromium] Enable Resource Timing and User Timing
+        https://bugs.webkit.org/show_bug.cgi?id=103788
+
+        Reviewed by Tony Gentilcore.
+
+        * http/tests/w3c/webperf/submission/resource-timing/html/test_resource_iframe_navigation.html: Removed. Incomplete, shouldn't have been submitted.
+        * platform/chromium/TestExpectations: Remove 'Skip' expectations and add expected failures for iframes.
+        * platform/chromium/fast/dom/Window/window-properties-performance-expected.txt: Added. Now includes User Timing and Resource Timing properties.
+
+2012-12-06  Adam Klein  <adamk@chromium.org>
+
+        [HTMLTemplateElement] make content readonly and cloneNode(deep) clone content
+        https://bugs.webkit.org/show_bug.cgi?id=104181
+
+        Reviewed by Adam Barth.
+
+        * fast/dom/HTMLTemplateElement/cloneNode-expected.txt:
+        * fast/dom/HTMLTemplateElement/cloneNode.html:
+        * fast/dom/HTMLTemplateElement/contentWrappers-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/contentWrappers.html: Added.
+        * fast/dom/HTMLTemplateElement/ownerDocument-expected.txt:
+        * fast/dom/HTMLTemplateElement/ownerDocument.html:
+
+2012-12-06  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed chromium rebaseline for r136885.
+
+        * platform/chromium-mac-lion/compositing/geometry/fixed-position-composited-page-scale-down-expected.png:
+        * platform/chromium-mac-lion/platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down-expected.png: Added.
+        * platform/chromium-mac-snowleopard/compositing/geometry/fixed-position-composited-page-scale-down-expected.png:
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down-expected.png: Added.
+        * platform/chromium-mac/compositing/geometry/fixed-position-composited-page-scale-down-expected.png:
+        * platform/chromium-mac/platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down-expected.png: Added.
+        * platform/efl-wk1/compositing/geometry/fixed-position-composited-page-scale-down-expected.png: Added.
+        * platform/efl/compositing/geometry/fixed-position-composited-page-scale-down-expected.png: Removed.
+
+2012-12-06  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] when forwarding events through the WebPluginContainer, create a UserGestureIndicator if processing a user gesture
+        https://bugs.webkit.org/show_bug.cgi?id=104306
+
+        Reviewed by Dimitri Glazkov.
+
+        * platform/chromium/plugins/user-gesture-expected.txt: Added.
+        * platform/chromium/plugins/user-gesture.html: Added.
+
+2012-12-06  David Grogan  <dgrogan@chromium.org>
+
+        IndexedDB: Add webkitErrorMessage to IDBTransaction
+        https://bugs.webkit.org/show_bug.cgi?id=104199
+
+        Reviewed by Tony Chang.
+
+        Test for webkitErrorMessage in the three circumstances that can
+        generate one:
+        1) Bubble from operation error
+        2) Uncaught exception in operation event handler
+        3) Asynchronous abort from the backend
+
+        And fix a FIXME in the test.
+
+        * storage/indexeddb/resources/transaction-error.js:
+        (testErrorFromRequest.trans.onabort):
+        (testErrorFromRequest):
+        (testErrorFromException.trans.onabort):
+        (testErrorFromException):
+        (testErrorFromCommit.trans.oncomplete.request.onupgradeneeded.trans.onabort):
+        (testErrorFromCommit.trans.oncomplete.request.onupgradeneeded):
+        (testErrorFromCommit.trans.oncomplete):
+        (testErrorFromCommit):
+        * storage/indexeddb/transaction-error-expected.txt:
+
+2012-12-06  Alexander Shalamov  <alexander.shalamov@intel.com>
+
+        XMLHttpRequest Content-Type should be taken from Blob type
+        https://bugs.webkit.org/show_bug.cgi?id=99983
+
+        Reviewed by Alexey Proskuryakov.
+
+        Added tests that check if content type is set correctly when blob object is sent.
+
+        * http/tests/xmlhttprequest/post-blob-content-type-expected.txt: Added.
+        * http/tests/xmlhttprequest/post-blob-content-type.html: Added.
+
+2012-12-06  Joshua Bell  <jsbell@chromium.org>
+
+        [Chromium] IndexedDB: storage/indexeddb/resources/cursor-advance.html flaky in content_shell after WK136782
+        https://bugs.webkit.org/show_bug.cgi?id=104292
+
+        Reviewed by Tony Chang.
+
+        Test had a read-only transaction depending on the completion of a prior read-write transaction,
+        which is not guaranteed by the spec. Switch from triggering the second transaction into the
+        oncomplete of the first.
+
+        * storage/indexeddb/resources/cursor-advance.js:
+        (populateObjectStore):
+
+2012-12-06  Andrew Scherkus  <scherkus@chromium.org>
+
+        [Chromium] Unreviewed, rebaselining http/tests/media/video-buffered-range-contains-currentTime.html
+        https://bugs.webkit.org/show_bug.cgi?id=104300
+
+        * platform/chromium-linux/http/tests/media/video-buffered-range-contains-currentTime-expected.png:
+        * platform/chromium-mac-lion/http/tests/media/video-buffered-range-contains-currentTime-expected.png:
+        * platform/chromium-mac-snowleopard/http/tests/media/video-buffered-range-contains-currentTime-expected.png:
+        * platform/chromium-mac/http/tests/media/video-buffered-range-contains-currentTime-expected.png:
+        * platform/chromium-win/http/tests/media/video-buffered-range-contains-currentTime-expected.png:
+        * platform/chromium/TestExpectations:
+
+2012-12-06  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        internals.settings.setEnableCompositingForFixedPosition() should be called before onload
+        https://bugs.webkit.org/show_bug.cgi?id=104277
+
+        Fixed some tests that set enableCompositingForFixedPosition in onload handler which may not take effect because it is too late.
+        Leave the image mismatches to bug 96839.
+
+        Reviewed by Simon Fraser.
+
+        * compositing/geometry/fixed-position-composited-page-scale-down.html:
+        * compositing/geometry/fixed-position-composited-page-scale-scroll.html:
+        * compositing/geometry/fixed-position-composited-page-scale.html:
+        * compositing/geometry/fixed-position-iframe-composited-page-scale-down.html:
+        * compositing/geometry/fixed-position-iframe-composited-page-scale.html:
+        * compositing/geometry/fixed-position-transform-composited-page-scale-down.html:
+        * compositing/geometry/fixed-position-transform-composited-page-scale.html:
+        * compositing/layer-creation/fixed-position-out-of-view.html:
+        * platform/chromium/TestExpectations: Mark the original flaky image mismatch as constantly failure. Add one image mismatch caused by this change but because of incorrect baseline.
+
+2012-12-06  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-06  Tony Chang  <tony@chromium.org>
+
+        REGRESSION(r135082): Restore the ability to insert author level style sheets from script
+        https://bugs.webkit.org/show_bug.cgi?id=104042
+
+        Reviewed by Antti Koivisto.
+
+        Add a test that makes sure that an author level style is set.
+
+        * userscripts/insert-stylesheets-expected.txt: Added.
+        * userscripts/insert-stylesheets.html: Added.
+
+2012-12-06  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        effect-reference-hw.html is failing (lighting has a Y-flip), but people
+        seem tempted to rebaseline it.  Put the software result in its place
+        for now, and mark it failing, so people aren't tempted to rebaseline it.
+
+        * platform/chromium-linux/css3/filters/effect-reference-hw-expected.png: Removed.
+        * platform/chromium-mac/css3/filters/effect-reference-hw-expected.png:
+        * platform/chromium-win/css3/filters/effect-reference-hw-expected.png:
+        * platform/chromium/TestExpectations:
+
+2012-12-06  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed gardening, skip a new test because of missing test font.
+
+        * platform/qt/TestExpectations:
+
+2012-12-06  Stephen White  <senorblanco@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        * platform/chromium-linux/fast/borders/border-radius-constraints-expected.png:
+        * platform/chromium-linux/fast/borders/mixed-border-styles-radius-expected.png:
+        * platform/chromium-linux/fast/css/background-clip-radius-values-expected.png:
+        * platform/chromium-mac-lion/fast/borders/border-radius-constraints-expected.png:
+        * platform/chromium-mac-lion/fast/css/background-clip-radius-values-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/borders/border-radius-constraints-expected.png:
+        * platform/chromium-mac/fast/borders/border-radius-constraints-expected.png:
+        * platform/chromium-mac/fast/borders/mixed-border-styles-radius-expected.png:
+        * platform/chromium-mac/fast/css/background-clip-radius-values-expected.png:
+        * platform/chromium-win/fast/borders/border-radius-constraints-expected.png:
+        * platform/chromium-win/fast/borders/mixed-border-styles-radius-expected.png:
+        * platform/chromium-win/fast/css/background-clip-radius-values-expected.png: Added.
+        * platform/chromium/TestExpectations:
+
 2012-12-06  Stephen White  <senorblanco@chromium.org>
 
         [Chromium] Unreviewed gardening.
@@ -6156,12 +8762,12 @@
         * platform/chromium-mac-snowleopard/fast/forms/date/date-appearance-pseudo-classes-expected.png: Removed.
         * platform/chromium-mac/fast/forms/date/date-appearance-pseudo-classes-expected.png: Removed.
         * platform/chromium-win/fast/forms/date/date-appearance-pseudo-classes-expected.png: Removed.
+
         * platform/efl/TestExpectations:
         * platform/gtk/TestExpectations:
         * platform/mac/TestExpectations:
         * platform/qt/TestExpectations:
         * platform/win/TestExpectations:
-
 2012-11-28  Tommy Widenflycht  <tommyw@google.com>
 
         Add basic implementation for MediaStreamAudioDestinationNode

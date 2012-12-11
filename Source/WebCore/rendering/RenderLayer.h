@@ -709,6 +709,8 @@ public:
     bool isInTopLayerSubtree() const;
 #endif
 
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+
 private:
     void updateZOrderLists();
     void rebuildZOrderLists();
@@ -825,6 +827,8 @@ private:
     void computeScrollDimensions();
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
+    bool hasScrollableHorizontalOverflow() const;
+    bool hasScrollableVerticalOverflow() const;
 
     bool shouldBeNormalFlowOnly() const;
 

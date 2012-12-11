@@ -40,6 +40,7 @@
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
+#include "InspectorInstrumentation.h"
 #include "NodeList.h"
 #include "Page.h"
 #include "RenderApplet.h"
@@ -57,6 +58,7 @@
 #include "Settings.h"
 #include "TiledBacking.h"
 #include "TransformState.h"
+#include "WebCoreMemoryInstrumentation.h"
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 #include "HTMLMediaElement.h"
@@ -508,6 +510,18 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 
     if (!hasAcceleratedCompositing())
         enableCompositingMode(false);
+
+    // Inform the inspector that the layer tree has changed.
+    InspectorInstrumentation::layerTreeDidChange(page());
+}
+
+void RenderLayerCompositor::layerBecameNonComposited(const RenderLayer* renderLayer)
+{
+    // Inform the inspector that the given RenderLayer was destroyed.
+    InspectorInstrumentation::renderLayerDestroyed(page(), renderLayer);
+
+    ASSERT(m_compositedLayerCount > 0);
+    --m_compositedLayerCount;
 }
 
 #if !LOG_DISABLED
@@ -2762,6 +2776,27 @@ Page* RenderLayerCompositor::page() const
         return frame->page();
     
     return 0;
+}
+
+void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
+    info.addWeakPointer(m_renderView);
+    info.addMember(m_rootContentLayer);
+    info.addMember(m_updateCompositingLayersTimer);
+    info.addMember(m_clipLayer);
+    info.addMember(m_scrollLayer);
+    info.addMember(m_viewportConstrainedLayers);
+    info.addMember(m_viewportConstrainedLayersNeedingUpdate);
+    info.addMember(m_overflowControlsHostLayer);
+    info.addMember(m_layerForHorizontalScrollbar);
+    info.addMember(m_layerForVerticalScrollbar);
+    info.addMember(m_layerForScrollCorner);
+#if ENABLE(RUBBER_BANDING)
+    info.addMember(m_layerForOverhangAreas);
+    info.addMember(m_contentShadowLayer);
+#endif
+    info.addMember(m_layerUpdater);
 }
 
 } // namespace WebCore

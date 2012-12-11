@@ -243,8 +243,7 @@ static void initializeFonts(const char* testURL = 0)
     if (fontsPath.isNull())
         g_error("Could not locate test fonts at %s. Is WEBKIT_TOP_LEVEL set?", fontsPath.data());
 
-    GOwnPtr<GError> error;
-    GOwnPtr<GDir> fontsDirectory(g_dir_open(fontsPath.data(), 0, &error.outPtr()));
+    GOwnPtr<GDir> fontsDirectory(g_dir_open(fontsPath.data(), 0, 0));
     while (const char* directoryEntry = g_dir_read_name(fontsDirectory.get())) {
         if (!g_str_has_suffix(directoryEntry, ".ttf") && !g_str_has_suffix(directoryEntry, ".otf"))
             continue;
@@ -1232,8 +1231,7 @@ static CString descriptionSuitableForTestResult(WebKitNetworkRequest* request)
     CString mainDocumentURIString(descriptionSuitableForTestResult(mainDocumentURI));
     CString path(convertNetworkRequestToURLPath(request));
     GOwnPtr<char> description(g_strdup_printf("<NSURLRequest URL %s, main document URL %s, http method %s>",
-                                              path.data(), mainDocumentURIString.data(),
-                                              soupMessage ? soupMessage->method : "(none)"));
+        path.data(), mainDocumentURIString.data(), soupMessage->method));
     return CString(description.get());
 }
 
@@ -1259,11 +1257,9 @@ static CString descriptionSuitableForTestResult(WebKitNetworkResponse* response)
 
 static void willSendRequestCallback(WebKitWebView* webView, WebKitWebFrame* webFrame, WebKitWebResource* resource, WebKitNetworkRequest* request, WebKitNetworkResponse* response)
 {
-
-
     if (!done && gTestRunner->willSendRequestReturnsNull()) {
         // As requested by the TestRunner, don't perform the request.
-        webkit_network_request_set_uri(request, "about:blank");
+        soup_message_set_status(webkit_network_request_get_message(request), SOUP_STATUS_CANCELLED);
         return;
     }
 
@@ -1338,11 +1334,41 @@ static gboolean webViewRunFileChooser(WebKitWebView*, WebKitFileChooserRequest*)
     return TRUE;
 }
 
+static void frameLoadEventCallback(WebKitWebFrame* frame, DumpRenderTreeSupportGtk::FrameLoadEvent event, const char* url)
+{
+    if (done || !gTestRunner->dumpFrameLoadCallbacks())
+        return;
+
+    GOwnPtr<char> frameName(getFrameNameSuitableForTestResult(webkit_web_frame_get_web_view(frame), frame));
+    switch (event) {
+    case DumpRenderTreeSupportGtk::WillPerformClientRedirectToURL:
+        ASSERT(url);
+        printf("%s - willPerformClientRedirectToURL: %s \n", frameName.get(), url);
+        break;
+    case DumpRenderTreeSupportGtk::DidCancelClientRedirect:
+        printf("%s - didCancelClientRedirectForFrame\n", frameName.get());
+        break;
+    case DumpRenderTreeSupportGtk::DidReceiveServerRedirectForProvisionalLoad:
+        printf("%s - didReceiveServerRedirectForProvisionalLoadForFrame\n", frameName.get());
+        break;
+    case DumpRenderTreeSupportGtk::DidDisplayInsecureContent:
+        printf ("didDisplayInsecureContent\n");
+        break;
+    case DumpRenderTreeSupportGtk::DidDetectXSS:
+        printf ("didDetectXSS\n");
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
+
 static WebKitWebView* createWebView()
 {
     // It is important to declare DRT is running early so when creating
     // web view mock clients are used instead of proper ones.
     DumpRenderTreeSupportGtk::setDumpRenderTreeModeEnabled(true);
+
+    DumpRenderTreeSupportGtk::setFrameLoadEventCallback(frameLoadEventCallback);
 
     WebKitWebView* view = WEBKIT_WEB_VIEW(self_scrolling_webkit_web_view_new());
 

@@ -19,7 +19,7 @@
 
 #if USE(COORDINATED_GRAPHICS)
 messages -> LayerTreeCoordinatorProxy {
-    SetCompositingLayerState(uint32_t id, WebKit::WebLayerInfo layerInfo)
+    SetCompositingLayerState(uint32_t id, WebKit::CoordinatedLayerInfo layerInfo)
     SetCompositingLayerChildren(uint32_t id, Vector<uint32_t> children)
 #if ENABLE(CSS_FILTERS)
     SetCompositingLayerFilters(uint32_t id, WebCore::FilterOperations filters)
@@ -33,14 +33,14 @@ messages -> LayerTreeCoordinatorProxy {
     CreateTileForLayer(uint32_t layerID, uint32_t tileID, WebCore::IntRect tileRect, WebKit::SurfaceUpdateInfo updateInfo)
     UpdateTileForLayer(uint32_t layerID, uint32_t tileID, WebCore::IntRect tileRect, WebKit::SurfaceUpdateInfo updateInfo)
     RemoveTileForLayer(uint32_t layerID, uint32_t tileID)
-    CreateUpdateAtlas(int atlasID, WebKit::ShareableSurface::Handle handle)
-    RemoveUpdateAtlas(int atlasID)
+    CreateUpdateAtlas(uint32_t atlasID, WebKit::WebCoordinatedSurface::Handle handle)
+    RemoveUpdateAtlas(uint32_t atlasID)
     CreateImageBacking(uint64_t imageID)
-    UpdateImageBacking(uint64_t imageID, WebKit::ShareableSurface::Handle handle)
+    UpdateImageBacking(uint64_t imageID, WebKit::WebCoordinatedSurface::Handle handle)
     ClearImageBackingContents(uint64_t imageID)
     RemoveImageBacking(uint64_t imageID)
     DidRenderFrame(WebCore::IntSize contentsSize, WebCore::IntRect coveredRect)
-    DidChangeScrollPosition(WebCore::IntPoint position)
+    DidChangeScrollPosition(WebCore::FloatPoint position)
     SetLayerAnimations(uint32_t id, WebCore::GraphicsLayerAnimations animations)
     SetAnimationsLocked(bool locked)
     DidFindLayerIDForElement(uint32_t requestID, uint32_t layerID);

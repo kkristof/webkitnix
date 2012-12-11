@@ -1,5 +1,6 @@
 /*
  Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
+ Copyright (C) 2012 Company 100, Inc.
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -30,19 +31,19 @@ using namespace WebCore;
 
 namespace WebKit {
 
-UpdateAtlas::UpdateAtlas(UpdateAtlasClient* client, int dimension, ShareableBitmap::Flags flags)
+UpdateAtlas::UpdateAtlas(UpdateAtlasClient* client, int dimension, CoordinatedSurface::Flags flags)
     : m_client(client)
     , m_flags(flags)
     , m_inactivityInSeconds(0)
-    , m_isVaild(true)
+    , m_isValid(true)
 {
-    static int nextID = 0;
+    static uint32_t nextID = 0;
     m_ID = ++nextID;
     IntSize size = nextPowerOfTwo(IntSize(dimension, dimension));
-    m_surface = ShareableSurface::create(size, flags, ShareableSurface::SupportsGraphicsSurface);
+    m_surface = CoordinatedSurface::create(size, flags);
 
-    if (!m_surface->createHandle(m_handle)) {
-        m_isVaild = false;
+    if (!static_cast<WebCoordinatedSurface*>(m_surface.get())->createHandle(m_handle)) {
+        m_isValid = false;
         return;
     }
     m_client->createUpdateAtlas(m_ID, m_handle);
@@ -50,7 +51,7 @@ UpdateAtlas::UpdateAtlas(UpdateAtlasClient* client, int dimension, ShareableBitm
 
 UpdateAtlas::~UpdateAtlas()
 {
-    if (m_isVaild)
+    if (m_isValid)
         m_client->removeUpdateAtlas(m_ID);
 }
 
@@ -67,7 +68,7 @@ void UpdateAtlas::didSwapBuffers()
     m_areaAllocator.clear();
 }
 
-PassOwnPtr<GraphicsContext> UpdateAtlas::beginPaintingOnAvailableBuffer(int& atlasID, const WebCore::IntSize& size, IntPoint& offset)
+PassOwnPtr<GraphicsContext> UpdateAtlas::beginPaintingOnAvailableBuffer(uint32_t& atlasID, const WebCore::IntSize& size, IntPoint& offset)
 {
     m_inactivityInSeconds = 0;
     buildLayoutIfNeeded();
@@ -77,7 +78,7 @@ PassOwnPtr<GraphicsContext> UpdateAtlas::beginPaintingOnAvailableBuffer(int& atl
     if (rect.isEmpty())
         return PassOwnPtr<GraphicsContext>();
 
-    if (!m_isVaild)
+    if (!m_isValid)
         return PassOwnPtr<GraphicsContext>();
 
     atlasID = m_ID;
@@ -86,7 +87,11 @@ PassOwnPtr<GraphicsContext> UpdateAtlas::beginPaintingOnAvailableBuffer(int& atl
     offset = rect.location();
     OwnPtr<GraphicsContext> graphicsContext = m_surface->createGraphicsContext(rect);
 
-    graphicsContext->clearRect(FloatRect(FloatPoint::zero(), size));
+    if (supportsAlpha()) {
+        graphicsContext->setCompositeOperation(CompositeCopy);
+        graphicsContext->fillRect(IntRect(IntPoint::zero(), size), Color::transparent, ColorSpaceDeviceRGB);
+        graphicsContext->setCompositeOperation(CompositeSourceOver);
+    }
 
     return graphicsContext.release();
 }

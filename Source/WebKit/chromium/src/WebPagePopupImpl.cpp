@@ -85,7 +85,7 @@ private:
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
     }
 
-    virtual void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, unsigned int lineNumber, const String&) OVERRIDE
+    virtual void addMessageToConsole(MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String&) OVERRIDE
     {
 #ifndef NDEBUG
         fprintf(stderr, "CONSOLE MESSSAGE:%u: %s\n", lineNumber, message.utf8().data());
@@ -172,7 +172,7 @@ WebPagePopupImpl::~WebPagePopupImpl()
     ASSERT(!m_page);
 }
 
-bool WebPagePopupImpl::init(WebViewImpl* webView, PagePopupClient* popupClient, const IntRect&)
+bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupClient, const IntRect&)
 {
     ASSERT(webView);
     ASSERT(popupClient);
@@ -181,7 +181,7 @@ bool WebPagePopupImpl::init(WebViewImpl* webView, PagePopupClient* popupClient, 
 
     resize(m_popupClient->contentSize());
 
-    if (!initPage())
+    if (!initializePage())
         return false;
     m_widgetClient->show(WebNavigationPolicy());
     setFocus(true);
@@ -189,7 +189,7 @@ bool WebPagePopupImpl::init(WebViewImpl* webView, PagePopupClient* popupClient, 
     return true;
 }
 
-bool WebPagePopupImpl::initPage()
+bool WebPagePopupImpl::initializePage()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
@@ -261,7 +261,8 @@ void WebPagePopupImpl::layout()
 
 void WebPagePopupImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions)
 {
-    PageWidgetDelegate::paint(m_page.get(), 0, canvas, rect, PageWidgetDelegate::Opaque, m_webView->settingsImpl()->applyDeviceScaleFactorInCompositor());
+    if (!m_closing)
+        PageWidgetDelegate::paint(m_page.get(), 0, canvas, rect, PageWidgetDelegate::Opaque, m_webView->settingsImpl()->applyDeviceScaleFactorInCompositor());
 }
 
 void WebPagePopupImpl::resize(const WebSize& newSize)

@@ -44,6 +44,7 @@
 #include "HTMLStyleElement.h"
 #include "InspectorInstrumentation.h"
 #include "NodeRenderStyle.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "PageGroup.h"
 #include "RenderObject.h"
@@ -448,7 +449,7 @@ SelectorChecker::SelectorMatch SelectorChecker::checkSelector(const SelectorChec
 
     if (context.selector->m_match == CSSSelector::PseudoElement) {
         if (context.selector->isCustomPseudoElement()) {
-            if (ShadowRoot* root = context.element->shadowRoot()) {
+            if (ShadowRoot* root = context.element->containingShadowRoot()) {
                 if (context.element->shadowPseudoId() != context.selector->value())
                     return SelectorFailsLocally;
 
@@ -1031,9 +1032,9 @@ bool SelectorChecker::checkOneSelector(const SelectorCheckingContext& context, c
                 return !element->isEnabledFormControl();
             break;
         case CSSSelector::PseudoReadOnly:
-            return element && element->shouldMatchReadOnlySelector();
+            return element && element->matchesReadOnlyPseudoClass();
         case CSSSelector::PseudoReadWrite:
-            return element && element->shouldMatchReadWriteSelector();
+            return element && element->matchesReadWritePseudoClass();
         case CSSSelector::PseudoOptional:
             return element && element->isOptionalFormControl();
         case CSSSelector::PseudoRequired:
@@ -1224,7 +1225,7 @@ void SelectorChecker::allVisitedStateChanged()
 {
     if (m_linksCheckedForVisitedState.isEmpty())
         return;
-    for (Node* node = m_document; node; node = node->traverseNextNode()) {
+    for (Node* node = m_document; node; node = NodeTraversal::next(node)) {
         if (node->isLink())
             node->setNeedsStyleRecalc();
     }
@@ -1234,7 +1235,7 @@ void SelectorChecker::visitedStateChanged(LinkHash visitedHash)
 {
     if (!m_linksCheckedForVisitedState.contains(visitedHash))
         return;
-    for (Node* node = m_document; node; node = node->traverseNextNode()) {
+    for (Node* node = m_document; node; node = NodeTraversal::next(node)) {
         LinkHash hash = 0;
         if (node->hasTagName(aTag))
             hash = static_cast<HTMLAnchorElement*>(node)->visitedLinkHash();

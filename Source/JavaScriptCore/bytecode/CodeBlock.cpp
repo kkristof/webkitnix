@@ -44,6 +44,7 @@
 #include "JSNameScope.h"
 #include "JSValue.h"
 #include "LowLevelInterpreter.h"
+#include "ReduceWhitespace.h"
 #include "RepatchBuffer.h"
 #include "SlotVisitorInlines.h"
 #include <stdio.h>
@@ -63,14 +64,53 @@ namespace JSC {
 using namespace DFG;
 #endif
 
+String CodeBlock::inferredName() const
+{
+    switch (codeType()) {
+    case GlobalCode:
+        return "<global>";
+    case EvalCode:
+        return "<eval>";
+    case FunctionCode:
+        return jsCast<FunctionExecutable*>(ownerExecutable())->unlinkedExecutable()->inferredName().string();
+    default:
+        CRASH();
+        return String();
+    }
+}
+
 CodeBlockHash CodeBlock::hash() const
 {
     return CodeBlockHash(ownerExecutable()->source(), specializationKind());
 }
 
+String CodeBlock::sourceCodeForTools() const
+{
+    if (codeType() != FunctionCode)
+        return ownerExecutable()->source().toString();
+    
+    SourceProvider* provider = source();
+    FunctionExecutable* executable = jsCast<FunctionExecutable*>(ownerExecutable());
+    UnlinkedFunctionExecutable* unlinked = executable->unlinkedExecutable();
+    unsigned unlinkedStartOffset = unlinked->startOffset();
+    unsigned linkedStartOffset = executable->source().startOffset();
+    int delta = linkedStartOffset - unlinkedStartOffset;
+    StringBuilder builder;
+    builder.append("function ");
+    builder.append(provider->getRange(
+        delta + unlinked->functionStartOffset(),
+        delta + unlinked->startOffset() + unlinked->sourceLength()));
+    return builder.toString();
+}
+
+String CodeBlock::sourceCodeOnOneLine() const
+{
+    return reduceWhitespace(sourceCodeForTools());
+}
+
 void CodeBlock::dumpAssumingJITType(PrintStream& out, JITCode::JITType jitType) const
 {
-    out.print("#", hash(), ":[", RawPointer(this), "->", RawPointer(ownerExecutable()), ", ", jitType, codeType());
+    out.print(inferredName(), "#", hash(), ":[", RawPointer(this), "->", RawPointer(ownerExecutable()), ", ", jitType, codeType());
     if (codeType() == FunctionCode)
         out.print(specializationKind());
     out.print("]");
@@ -527,7 +567,7 @@ void CodeBlock::dumpBytecode(PrintStream& out)
     }
     if (needsFullScopeChain() && codeType() == FunctionCode)
         out.printf("; activation in r%d", activationRegister());
-    out.printf("\n\n");
+    out.print("\n\nSource: ", sourceCodeOnOneLine(), "\n\n");
 
     const Instruction* begin = instructions().begin();
     const Instruction* end = instructions().end();
@@ -570,7 +610,7 @@ void CodeBlock::dumpBytecode(PrintStream& out)
         out.printf("\nException Handlers:\n");
         unsigned i = 0;
         do {
-            out.printf("\t %d: { start: [%4d] end: [%4d] target: [%4d] }\n", i + 1, m_rareData->m_exceptionHandlers[i].start, m_rareData->m_exceptionHandlers[i].end, m_rareData->m_exceptionHandlers[i].target);
+            out.printf("\t %d: { start: [%4d] end: [%4d] target: [%4d] depth: [%4d] }\n", i + 1, m_rareData->m_exceptionHandlers[i].start, m_rareData->m_exceptionHandlers[i].end, m_rareData->m_exceptionHandlers[i].target, m_rareData->m_exceptionHandlers[i].scopeDepth);
             ++i;
         } while (i < m_rareData->m_exceptionHandlers.size());
     }
@@ -1690,9 +1730,6 @@ CodeBlock::CodeBlock(ScriptExecutable* ownerExecutable, UnlinkedCodeBlock* unlin
     ASSERT(m_source);
     setNumParameters(unlinkedCodeBlock->numParameters());
 
-    optimizeAfterWarmUp();
-    jitAfterWarmUp();
-
 #if DUMP_CODE_BLOCK_STATISTICS
     liveCodeBlockSet.add(this);
 #endif
@@ -1910,6 +1947,12 @@ CodeBlock::CodeBlock(ScriptExecutable* ownerExecutable, UnlinkedCodeBlock* unlin
         i += opLength;
     }
     m_instructions = WTF::RefCountedArray<Instruction>(instructions);
+
+    // Set optimization thresholds only after m_instructions is initialized, since these
+    // rely on the instruction count (and are in theory permitted to also inspect the
+    // instruction stream to more accurate assess the cost of tier-up).
+    optimizeAfterWarmUp();
+    jitAfterWarmUp();
 
     if (Options::dumpGeneratedBytecodes())
         dumpBytecode();
@@ -2476,7 +2519,7 @@ HandlerInfo* CodeBlock::handlerForBytecodeOffset(unsigned bytecodeOffset)
     for (size_t i = 0; i < exceptionHandlers.size(); ++i) {
         // Handlers are ordered innermost first, so the first handler we encounter
         // that contains the source address is the correct handler to use.
-        if (exceptionHandlers[i].start <= bytecodeOffset && exceptionHandlers[i].end >= bytecodeOffset)
+        if (exceptionHandlers[i].start <= bytecodeOffset && exceptionHandlers[i].end > bytecodeOffset)
             return &exceptionHandlers[i];
     }
 
@@ -2908,6 +2951,196 @@ bool FunctionCodeBlock::jitCompileImpl(ExecState* exec)
     ASSERT(getJITType() == JITCode::InterpreterThunk);
     ASSERT(this == replacement());
     return static_cast<FunctionExecutable*>(ownerExecutable())->jitCompileFor(exec, m_isConstructor ? CodeForConstruct : CodeForCall);
+}
+#endif
+
+unsigned CodeBlock::reoptimizationRetryCounter() const
+{
+    ASSERT(m_reoptimizationRetryCounter <= Options::reoptimizationRetryCounterMax());
+    return m_reoptimizationRetryCounter;
+}
+
+void CodeBlock::countReoptimization()
+{
+    m_reoptimizationRetryCounter++;
+    if (m_reoptimizationRetryCounter > Options::reoptimizationRetryCounterMax())
+        m_reoptimizationRetryCounter = Options::reoptimizationRetryCounterMax();
+}
+
+double CodeBlock::optimizationThresholdScalingFactor()
+{
+    // This expression arises from doing a least-squares fit of
+    //
+    // F[x_] =: a * Sqrt[x + b] + Abs[c * x] + d
+    //
+    // against the data points:
+    //
+    //    x       F[x_]
+    //    10       0.9          (smallest reasonable code block)
+    //   200       1.0          (typical small-ish code block)
+    //   320       1.2          (something I saw in 3d-cube that I wanted to optimize)
+    //  1268       5.0          (something I saw in 3d-cube that I didn't want to optimize)
+    //  4000       5.5          (random large size, used to cause the function to converge to a shallow curve of some sort)
+    // 10000       6.0          (similar to above)
+    //
+    // I achieve the minimization using the following Mathematica code:
+    //
+    // MyFunctionTemplate[x_, a_, b_, c_, d_] := a*Sqrt[x + b] + Abs[c*x] + d
+    //
+    // samples = {{10, 0.9}, {200, 1}, {320, 1.2}, {1268, 5}, {4000, 5.5}, {10000, 6}}
+    //
+    // solution = 
+    //     Minimize[Plus @@ ((MyFunctionTemplate[#[[1]], a, b, c, d] - #[[2]])^2 & /@ samples),
+    //         {a, b, c, d}][[2]]
+    //
+    // And the code below (to initialize a, b, c, d) is generated by:
+    //
+    // Print["const double " <> ToString[#[[1]]] <> " = " <>
+    //     If[#[[2]] < 0.00001, "0.0", ToString[#[[2]]]] <> ";"] & /@ solution
+    //
+    // We've long known the following to be true:
+    // - Small code blocks are cheap to optimize and so we should do it sooner rather
+    //   than later.
+    // - Large code blocks are expensive to optimize and so we should postpone doing so,
+    //   and sometimes have a large enough threshold that we never optimize them.
+    // - The difference in cost is not totally linear because (a) just invoking the
+    //   DFG incurs some base cost and (b) for large code blocks there is enough slop
+    //   in the correlation between instruction count and the actual compilation cost
+    //   that for those large blocks, the instruction count should not have a strong
+    //   influence on our threshold.
+    //
+    // I knew the goals but I didn't know how to achieve them; so I picked an interesting
+    // example where the heuristics were right (code block in 3d-cube with instruction
+    // count 320, which got compiled early as it should have been) and one where they were
+    // totally wrong (code block in 3d-cube with instruction count 1268, which was expensive
+    // to compile and didn't run often enough to warrant compilation in my opinion), and
+    // then threw in additional data points that represented my own guess of what our
+    // heuristics should do for some round-numbered examples.
+    //
+    // The expression to which I decided to fit the data arose because I started with an
+    // affine function, and then did two things: put the linear part in an Abs to ensure
+    // that the fit didn't end up choosing a negative value of c (which would result in
+    // the function turning over and going negative for large x) and I threw in a Sqrt
+    // term because Sqrt represents my intution that the function should be more sensitive
+    // to small changes in small values of x, but less sensitive when x gets large.
+    
+    // Note that the current fit essentially eliminates the linear portion of the
+    // expression (c == 0.0).
+    const double a = 0.061504;
+    const double b = 1.02406;
+    const double c = 0.0;
+    const double d = 0.825914;
+    
+    double instructionCount = this->instructionCount();
+    
+    ASSERT(instructionCount); // Make sure this is called only after we have an instruction stream; otherwise it'll just return the value of d, which makes no sense.
+    
+    double result = d + a * sqrt(instructionCount + b) + c * instructionCount;
+#if ENABLE(JIT_VERBOSE_OSR)
+    dataLog(*this, ": instruction count is ", instructionCount, ", scaling execution counter by ", result, "\n");
+#endif
+    return result;
+}
+
+static int32_t clipThreshold(double threshold)
+{
+    if (threshold < 1.0)
+        return 1;
+    
+    if (threshold > static_cast<double>(std::numeric_limits<int32_t>::max()))
+        return std::numeric_limits<int32_t>::max();
+    
+    return static_cast<int32_t>(threshold);
+}
+
+int32_t CodeBlock::counterValueForOptimizeAfterWarmUp()
+{
+    return clipThreshold(
+        Options::thresholdForOptimizeAfterWarmUp() *
+        optimizationThresholdScalingFactor() *
+        (1 << reoptimizationRetryCounter()));
+}
+
+int32_t CodeBlock::counterValueForOptimizeAfterLongWarmUp()
+{
+    return clipThreshold(
+        Options::thresholdForOptimizeAfterLongWarmUp() *
+        optimizationThresholdScalingFactor() *
+        (1 << reoptimizationRetryCounter()));
+}
+
+int32_t CodeBlock::counterValueForOptimizeSoon()
+{
+    return clipThreshold(
+        Options::thresholdForOptimizeSoon() *
+        optimizationThresholdScalingFactor() *
+        (1 << reoptimizationRetryCounter()));
+}
+
+bool CodeBlock::checkIfOptimizationThresholdReached()
+{
+    return m_jitExecuteCounter.checkIfThresholdCrossedAndSet(this);
+}
+
+void CodeBlock::optimizeNextInvocation()
+{
+    m_jitExecuteCounter.setNewThreshold(0, this);
+}
+
+void CodeBlock::dontOptimizeAnytimeSoon()
+{
+    m_jitExecuteCounter.deferIndefinitely();
+}
+
+void CodeBlock::optimizeAfterWarmUp()
+{
+    m_jitExecuteCounter.setNewThreshold(counterValueForOptimizeAfterWarmUp(), this);
+}
+
+void CodeBlock::optimizeAfterLongWarmUp()
+{
+    m_jitExecuteCounter.setNewThreshold(counterValueForOptimizeAfterLongWarmUp(), this);
+}
+
+void CodeBlock::optimizeSoon()
+{
+    m_jitExecuteCounter.setNewThreshold(counterValueForOptimizeSoon(), this);
+}
+
+#if ENABLE(JIT)
+uint32_t CodeBlock::adjustedExitCountThreshold(uint32_t desiredThreshold)
+{
+    ASSERT(getJITType() == JITCode::DFGJIT);
+    // Compute this the lame way so we don't saturate. This is called infrequently
+    // enough that this loop won't hurt us.
+    unsigned result = desiredThreshold;
+    for (unsigned n = baselineVersion()->reoptimizationRetryCounter(); n--;) {
+        unsigned newResult = result << 1;
+        if (newResult < result)
+            return std::numeric_limits<uint32_t>::max();
+        result = newResult;
+    }
+    return result;
+}
+
+uint32_t CodeBlock::exitCountThresholdForReoptimization()
+{
+    return adjustedExitCountThreshold(Options::osrExitCountForReoptimization());
+}
+
+uint32_t CodeBlock::exitCountThresholdForReoptimizationFromLoop()
+{
+    return adjustedExitCountThreshold(Options::osrExitCountForReoptimizationFromLoop());
+}
+
+bool CodeBlock::shouldReoptimizeNow()
+{
+    return osrExitCounter() >= exitCountThresholdForReoptimization();
+}
+
+bool CodeBlock::shouldReoptimizeFromLoopNow()
+{
+    return osrExitCounter() >= exitCountThresholdForReoptimizationFromLoop();
 }
 #endif
 

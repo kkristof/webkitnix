@@ -392,7 +392,6 @@ void ChromeClientImpl::setResizable(bool value)
 }
 
 void ChromeClientImpl::addMessageToConsole(MessageSource source,
-                                           MessageType type,
                                            MessageLevel level,
                                            const String& message,
                                            unsigned lineNumber,
@@ -805,7 +804,7 @@ void ChromeClientImpl::popupOpened(PopupContainer* popupContainer,
         // transparent to the WebView.
         m_webView->popupOpened(popupContainer);
     }
-    static_cast<WebPopupMenuImpl*>(webwidget)->init(popupContainer, bounds);
+    static_cast<WebPopupMenuImpl*>(webwidget)->initialize(popupContainer, bounds);
 }
 
 void ChromeClientImpl::popupClosed(WebCore::PopupContainer* popupContainer)

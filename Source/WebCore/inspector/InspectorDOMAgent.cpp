@@ -76,6 +76,7 @@
 #include "MutationEvent.h"
 #include "Node.h"
 #include "NodeList.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "Pasteboard.h"
 #include "RenderStyle.h"
@@ -564,6 +565,11 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
     return map->get(nodeToPush);
 }
 
+int InspectorDOMAgent::pushNodePathForRenderLayerToFrontend(const RenderLayer* renderLayer)
+{
+    return pushNodePathToFrontend(renderLayer->renderer()->node());
+}
+
 int InspectorDOMAgent::boundNodeId(Node* node)
 {
     return m_documentNodeToIdMap.get(node);
@@ -836,7 +842,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             continue;
 
         // Manual plain text search.
-        while ((node = node->traverseNextNode(document->documentElement()))) {
+        while ((node = NodeTraversal::next(node, document->documentElement()))) {
             switch (node->nodeType()) {
             case Node::TEXT_NODE:
             case Node::COMMENT_NODE:
@@ -1067,7 +1073,7 @@ void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int
     m_overlay->highlightRect(adoptPtr(new IntRect(x, y, width, height)), *highlightConfig);
 }
 
-void InspectorDOMAgent::highlightNode(ErrorString* errorString, const int* nodeId, const String* objectId, const RefPtr<InspectorObject>& highlightInspectorObject)
+void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<InspectorObject>& highlightInspectorObject, const int* nodeId, const String* objectId)
 {
     Node* node = 0;
     if (nodeId) {

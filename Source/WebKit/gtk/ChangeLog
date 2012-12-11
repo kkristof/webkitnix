@@ -1,3 +1,81 @@
+2012-12-11  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Install GObject DOM bindings headers in its own directory
+        https://bugs.webkit.org/show_bug.cgi?id=104663
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Add webkitdom.h.
+        * webkit/webkitdom.h: Compatibility header just including the new
+        one.
+        * webkit/webkitwebframe.cpp: Update includes.
+        * webkit/webkitwebframe.h: Ditto.
+        * webkit/webkitwebinspector.cpp: Ditto.
+        * webkit/webkitwebinspector.h: Ditto.
+        * webkit/webkitwebview.cpp: Ditto.
+        * webkit/webkitwebview.h: Ditto.
+
+2012-12-11  Mike West  <mkwst@chromium.org>
+
+        Web Inspector: ConsoleTypes should not expose MessageType - it should be private to inspector.
+        https://bugs.webkit.org/show_bug.cgi?id=66371
+
+        Reviewed by Pavel Feldman.
+
+        Drops WebCore::MessageType from the addMessageToConsole method.
+
+        * WebCoreSupport/ChromeClientGtk.cpp:
+        (WebKit::ChromeClient::addMessageToConsole):
+        * WebCoreSupport/ChromeClientGtk.h:
+        (ChromeClient):
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Implement some missing FrameLoaderClient message in DRT
+        https://bugs.webkit.org/show_bug.cgi?id=104444
+
+        Reviewed by Gustavo Noronha Silva.
+
+        When in DumpRenderTree mode allow the DRT to install a FrameLoaderEvent callback
+        for events that we do not expose in the API. This will allow us to share more
+        results with WebKit2.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        (DumpRenderTreeSupportGtk::setFrameLoadEventCallback): Added.
+        * WebCoreSupport/DumpRenderTreeSupportGtk.h:
+        * WebCoreSupport/FrameLoaderClientGtk.cpp: Use the new callback to deliver
+        events to DRT.
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [Coverity] [GTK] Remove some redundant null checks in DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=104570
+
+        Reviewed by Daniel Bates.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        (DumpRenderTreeSupportGtk::elementDoesAutoCompleteForElementWithId): Remove a redundant null check.
+
+2012-12-10  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Build GObject DOM bindings as a separate library
+        https://bugs.webkit.org/show_bug.cgi?id=104527
+
+        Reviewed by Xan Lopez.
+
+        * GNUmakefile.am: Link to libWebCoreDOM.la.
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bring Harfbuzz-ng support to Gtk
+        https://bugs.webkit.org/show_bug.cgi?id=92098
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add HarfBuzz dependency.
+
+        * GNUmakefile.am: Add FreeType/HarfBuzz CFLAGS to the library.
+
 2012-12-05  Arnaud Renevier  <a.renevier@sisa.samsung.com>
 
         [Gtk] navigator.plugins contains too many plugin entries. First one are garbages

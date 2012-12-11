@@ -111,6 +111,10 @@
 #include "TouchList.h"
 #endif
 
+#if ENABLE(CSS_IMAGE_SET)
+#include "StyleCachedImageSet.h"
+#endif
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -136,17 +140,19 @@ using namespace SVGNames;
 // When the autoscroll or the panScroll is triggered when do the scroll every 0.05s to make it smooth
 const double autoscrollInterval = 0.05;
 
-// The amount of time to wait before sending a fake mouse event, triggered during a scroll.
-const double fakeMouseMoveMinimumInterval = 0.1;
-// Amount to increase the fake mouse event throttling when the running average exceeds the delay.
-// Picked fairly arbitrarily.
-const double fakeMouseMoveIntervalIncrease = 0.05;
-const double fakeMouseMoveRunningAverageCount = 10;
-// Decrease the fakeMouseMoveInterval when the current delay is >2x the running average,
-// but only decrease to 3/4 the current delay to avoid too much thrashing.
-// Not sure this distinction really matters in practice.
-const double fakeMouseMoveIntervalReductionLimit = 0.5;
-const double fakeMouseMoveIntervalReductionFraction = 0.75;
+// The amount of time to wait before sending a fake mouse event, triggered
+// during a scroll. The short interval is used if the content responds to the mouse events quickly enough,
+// otherwise the long interval is used.
+const double fakeMouseMoveShortInterval = 0.1;
+const double fakeMouseMoveLongInterval = 0.250;
+
+const int maximumCursorSize = 128;
+#if ENABLE(MOUSE_CURSOR_SCALE)
+// It's pretty unlikely that a scale of less than one would ever be used. But all we really
+// need to ensure here is that the scale isn't so small that integer overflow can occur when
+// dividing cursor sizes (limited above) by the scale.
+const double minimumCursorScale = 0.001;
+#endif
 
 enum NoCursorChangeType { NoCursorChange };
 
@@ -163,28 +169,21 @@ private:
     Cursor m_cursor;
 };
 
-class RunningAverageDurationTracker {
+class MaximumDurationTracker {
 public:
-    RunningAverageDurationTracker(double* average, unsigned numberOfRunsToTrack)
-        : m_average(average)
-        , m_numberOfRunsToTrack(numberOfRunsToTrack)
+    explicit MaximumDurationTracker(double *maxDuration)
+        : m_maxDuration(maxDuration)
         , m_start(monotonicallyIncreasingTime())
     {
     }
 
-    ~RunningAverageDurationTracker()
+    ~MaximumDurationTracker()
     {
-        double duration = monotonicallyIncreasingTime() - m_start;
-        if (!*m_average) {
-            *m_average = duration;
-            return;
-        }
-        *m_average = (*m_average * (m_numberOfRunsToTrack - 1) + (duration)) / m_numberOfRunsToTrack;
+        *m_maxDuration = max(*m_maxDuration, monotonicallyIncreasingTime() - m_start);
     }
 
 private:
-    double* m_average;
-    unsigned m_numberOfRunsToTrack;
+    double* m_maxDuration;
     double m_start;
 };
 
@@ -341,7 +340,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_autoscrollInProgress(false)
     , m_mouseDownMayStartAutoscroll(false)
     , m_mouseDownWasInSubframe(false)
-    , m_fakeMouseMoveEventTimer(this, &EventHandler::fakeMouseMoveEventTimerFired, fakeMouseMoveMinimumInterval)
+    , m_fakeMouseMoveEventTimer(this, &EventHandler::fakeMouseMoveEventTimerFired)
 #if ENABLE(SVG)
     , m_svgPan(false)
 #endif
@@ -356,9 +355,10 @@ EventHandler::EventHandler(Frame* frame)
     , m_activationEventNumber(-1)
 #endif
 #if ENABLE(TOUCH_EVENTS)
+    , m_originatingTouchPointTargetKey(0)
     , m_touchPressed(false)
 #endif
-    , m_mouseMovedDurationRunningAverage(0)
+    , m_maxMouseMovedDuration(0)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
     , m_didLongPressInvokeContextMenu(false)
@@ -408,12 +408,14 @@ void EventHandler::clear()
     m_previousWheelScrolledNode = 0;
 #if ENABLE(TOUCH_EVENTS)
     m_originatingTouchPointTargets.clear();
+    m_originatingTouchPointDocument.clear();
+    m_originatingTouchPointTargetKey = 0;
 #endif
 #if ENABLE(GESTURE_EVENTS)
     m_scrollGestureHandlingNode = 0;
     m_scrollbarHandlingScrollGesture = 0;
 #endif
-    m_mouseMovedDurationRunningAverage = 0;
+    m_maxMouseMovedDuration = 0;
     m_baseEventType = PlatformEvent::NoType;
     m_didStartDrag = false;
     m_didLongPressInvokeContextMenu = false;
@@ -1450,19 +1452,35 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     if (style && style->cursors()) {
         const CursorList* cursors = style->cursors();
         for (unsigned i = 0; i < cursors->size(); ++i) {
-            CachedImage* cimage = 0;
-            StyleImage* image = (*cursors)[i].image();
-            if (image && image->isCachedImage())
-                cimage = static_cast<StyleCachedImage*>(image)->cachedImage();
-            if (!cimage)
+            StyleImage* styleImage = (*cursors)[i].image();
+            if (!styleImage)
                 continue;
+            CachedImage* cachedImage = styleImage->cachedImage();
+            if (!cachedImage)
+                continue;
+            float scale = styleImage->imageScaleFactor();
+            // Get hotspot and convert from logical pixels to physical pixels.
             IntPoint hotSpot = (*cursors)[i].hotSpot();
-            // Limit the size of cursors so that they cannot be used to cover UI elements in chrome.
-            IntSize size = cimage->imageForRenderer(renderer)->size();
-            if (size.width() > 128 || size.height() > 128)
+            hotSpot.scale(scale, scale);
+            IntSize size = cachedImage->imageForRenderer(renderer)->size();
+            if (cachedImage->errorOccurred())
                 continue;
-            if (!cimage->errorOccurred())
-                return Cursor(cimage->imageForRenderer(renderer), hotSpot);
+            // Limit the size of cursors (in UI pixels) so that they cannot be
+            // used to cover UI elements in chrome.
+            size.scale(1 / scale);
+            if (size.width() > maximumCursorSize || size.height() > maximumCursorSize)
+                continue;
+
+            Image* image = cachedImage->imageForRenderer(renderer);
+#if ENABLE(MOUSE_CURSOR_SCALE)
+            // Ensure no overflow possible in calculations above.
+            if (scale < minimumCursorScale)
+                continue;
+            return Cursor(image, hotSpot, scale);
+#else
+            ASSERT(scale == 1);
+            return Cursor(image, hotSpot);
+#endif // ENABLE(MOUSE_CURSOR_SCALE)
         }
     }
 
@@ -1763,7 +1781,7 @@ static RenderLayer* layerForNode(Node* node)
 bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
 {
     RefPtr<FrameView> protector(m_frame->view());
-    RunningAverageDurationTracker durationTracker(&m_mouseMovedDurationRunningAverage, fakeMouseMoveRunningAverageCount);
+    MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
 
 #if ENABLE(TOUCH_EVENTS)
@@ -2224,7 +2242,7 @@ static inline SVGElementInstance* instanceAssociatedWithShadowTreeElement(Node* 
     if (!referenceNode || !referenceNode->isSVGElement())
         return 0;
 
-    ShadowRoot* shadowRoot = referenceNode->shadowRoot();
+    ShadowRoot* shadowRoot = referenceNode->containingShadowRoot();
     if (!shadowRoot)
         return 0;
 
@@ -2979,15 +2997,18 @@ void EventHandler::dispatchFakeMouseMoveEventSoon()
     if (settings && !settings->deviceSupportsMouse())
         return;
 
-    // Adjust the mouse move throttling so that it's roughly around our running average of the duration of mousemove events.
-    // This will cause the content to receive these moves only after the user is done scrolling, reducing pauses during the scroll.
-    // This will only measure the duration of the mousemove event though (not for example layouts),
-    // so maintain at least a minimum interval.
-    if (m_mouseMovedDurationRunningAverage > m_fakeMouseMoveEventTimer.delay())
-        m_fakeMouseMoveEventTimer.setDelay(m_mouseMovedDurationRunningAverage + fakeMouseMoveIntervalIncrease);
-    else if (m_mouseMovedDurationRunningAverage < fakeMouseMoveIntervalReductionLimit * m_fakeMouseMoveEventTimer.delay())
-        m_fakeMouseMoveEventTimer.setDelay(max(fakeMouseMoveMinimumInterval, fakeMouseMoveIntervalReductionFraction * m_fakeMouseMoveEventTimer.delay()));
-    m_fakeMouseMoveEventTimer.restart();
+    // If the content has ever taken longer than fakeMouseMoveShortInterval we
+    // reschedule the timer and use a longer time. This will cause the content
+    // to receive these moves only after the user is done scrolling, reducing
+    // pauses during the scroll.
+    if (m_maxMouseMovedDuration > fakeMouseMoveShortInterval) {
+        if (m_fakeMouseMoveEventTimer.isActive())
+            m_fakeMouseMoveEventTimer.stop();
+        m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveLongInterval);
+    } else {
+        if (!m_fakeMouseMoveEventTimer.isActive())
+            m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveShortInterval);
+    }
 }
 
 void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)
@@ -3007,7 +3028,7 @@ void EventHandler::cancelFakeMouseMoveEvent()
     m_fakeMouseMoveEventTimer.stop();
 }
 
-void EventHandler::fakeMouseMoveEventTimerFired(DeferrableOneShotTimer<EventHandler>* timer)
+void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_fakeMouseMoveEventTimer);
     ASSERT(!m_mousePressed);
@@ -3796,6 +3817,22 @@ static const AtomicString& eventNameForTouchPointState(PlatformTouchPoint::State
     }
 }
 
+HitTestResult EventHandler::hitTestResultInFrame(Frame* frame, const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType)
+{
+    HitTestResult result(point);
+
+    if (!frame || !frame->contentRenderer())
+        return result;
+    if (frame->view()) {
+        IntRect rect = frame->view()->visibleContentRect();
+        if (!rect.contains(roundedIntPoint(point)))
+            return result;
+    }
+    frame->contentRenderer()->hitTest(HitTestRequest(hitType), result);
+    result.setToNonShadowAncestor();
+    return result;
+}
+
 bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 {
     // First build up the lists to use for the 'touches', 'targetTouches' and 'changedTouches' attributes
@@ -3823,7 +3860,18 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
-    for (unsigned i = 0; i < points.size(); ++i) {
+    unsigned i;
+    bool freshTouchEvents = true;
+    bool allTouchReleased = true;
+    for (i = 0; i < points.size(); ++i) {
+        const PlatformTouchPoint& point = points[i];
+        if (point.state() != PlatformTouchPoint::TouchPressed)
+            freshTouchEvents = false;
+        if (point.state() != PlatformTouchPoint::TouchReleased && point.state() != PlatformTouchPoint::TouchCancelled)
+            allTouchReleased = false;
+    }
+
+    for (i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
         PlatformTouchPoint::State pointState = point.state();
         LayoutPoint pagePoint = documentPointForWindowPoint(m_frame, point.pos());
@@ -3862,7 +3910,17 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         unsigned touchPointTargetKey = point.id() + 1;
         RefPtr<EventTarget> touchTarget;
         if (pointState == PlatformTouchPoint::TouchPressed) {
-            HitTestResult result = hitTestResultAtPoint(pagePoint, /*allowShadowContent*/ false, false, DontHitTestScrollbars, hitType);
+            HitTestResult result;
+            if (freshTouchEvents) {
+                result = hitTestResultAtPoint(pagePoint, /*allowShadowContent*/ false, false, DontHitTestScrollbars, hitType);
+                m_originatingTouchPointTargetKey = touchPointTargetKey;
+            } else if (m_originatingTouchPointDocument.get() && m_originatingTouchPointDocument->frame()) {
+                LayoutPoint pagePointInOriginatingDocument = documentPointForWindowPoint(m_originatingTouchPointDocument->frame(), point.pos());
+                result = hitTestResultInFrame(m_originatingTouchPointDocument->frame(), pagePointInOriginatingDocument, hitType);
+                if (!result.innerNode())
+                    continue;
+            } else
+                continue;
             Node* node = result.innerNode();
             ASSERT(node);
 
@@ -3874,16 +3932,26 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 return true;
 
             Document* doc = node->document();
+            // Record the originating touch document even if it does not have a touch listener.
+            if (freshTouchEvents) {
+                m_originatingTouchPointDocument = doc;
+                freshTouchEvents = false;
+            }
             if (!doc)
                 continue;
             if (!doc->touchEventHandlerCount())
                 continue;
-
             m_originatingTouchPointTargets.set(touchPointTargetKey, node);
             touchTarget = node;
         } else if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {
             // We only perform a hittest on release or cancel to unset :active or :hover state.
-            hitTestResultAtPoint(pagePoint, /*allowShadowContent*/ false, false, DontHitTestScrollbars, hitType);
+            if (touchPointTargetKey == m_originatingTouchPointTargetKey) {
+                hitTestResultAtPoint(pagePoint, /*allowShadowContent*/ false, false, DontHitTestScrollbars, hitType);
+                m_originatingTouchPointTargetKey = 0;
+            } else if (m_originatingTouchPointDocument.get() && m_originatingTouchPointDocument->frame()) {
+                LayoutPoint pagePointInOriginatingDocument = documentPointForWindowPoint(m_originatingTouchPointDocument->frame(), point.pos());
+                hitTestResultInFrame(m_originatingTouchPointDocument->frame(), pagePointInOriginatingDocument, hitType);
+            }
             // The target should be the original target for this touch, so get it from the hashmap. As it's a release or cancel
             // we also remove it from the map.
             touchTarget = m_originatingTouchPointTargets.take(touchPointTargetKey);
@@ -3944,6 +4012,8 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         }
     }
     m_touchPressed = touches->length() > 0;
+    if (allTouchReleased)
+        m_originatingTouchPointDocument.clear();
 
     // Now iterate the changedTouches list and m_targets within it, sending events to the targets as required.
     bool swallowedEvent = false;
@@ -3986,6 +4056,12 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
         return false;
 
     if (eventType == PlatformEvent::MouseMoved && !m_touchPressed)
+        return false;
+
+    HitTestRequest request(HitTestRequest::Active);
+    MouseEventWithHitTestResults mev = prepareMouseEvent(request, event);
+
+    if (mev.scrollbar() || subframeForHitTestResult(mev))
         return false;
 
     SyntheticSingleTouchEvent touchEvent(event);

@@ -30,6 +30,7 @@
 #include "GenericCallback.h"
 #include "MessageReceiver.h"
 #include "MessageReceiverMap.h"
+#include "PlugInAutoStartProvider.h"
 #include "PluginInfoStore.h"
 #include "ProcessModel.h"
 #include "VisitedLinkProvider.h"
@@ -219,7 +220,7 @@ public:
     void setCookieStorageDirectory(const String& dir) { m_overrideCookieStorageDirectory = dir; }
 
     WebProcessProxy* ensureSharedWebProcess();
-    PassRefPtr<WebProcessProxy> createNewWebProcess();
+    WebProcessProxy* createNewWebProcessRespectingProcessCountLimit(); // Will return an existing one if limit is met.
     void warmInitialProcess();
 
     bool shouldTerminate(WebProcessProxy*);
@@ -244,6 +245,7 @@ public:
     void textCheckerStateChanged();
 
     void setUsesNetworkProcess(bool);
+    bool usesNetworkProcess() const;
 
 #if PLATFORM(MAC)
     static bool applicationIsOccluded() { return s_applicationIsOccluded; }
@@ -254,11 +256,14 @@ public:
 
 private:
     WebContext(ProcessModel, const String& injectedBundlePath);
+    void platformInitialize();
 
     virtual Type type() const { return APIType; }
 
     void platformInitializeWebProcess(WebProcessCreationParameters&);
     void platformInvalidateContext();
+
+    WebProcessProxy* createNewWebProcess();
 
 #if PLATFORM(MAC)
     void getPasteboardTypes(const String& pasteboardName, Vector<String>& pasteboardTypes);
@@ -313,7 +318,10 @@ private:
     static void registerOcclusionNotificationHandlers();
 #endif
 
+    void addPlugInAutoStartOriginHash(const String& pageOrigin, unsigned plugInOriginHash);
+
     ProcessModel m_processModel;
+    unsigned m_webProcessCountLimit; // The limit has no effect when process model is ProcessModelSharedSecondaryProcess.
     
     Vector<RefPtr<WebProcessProxy> > m_processes;
     bool m_haveInitialEmptyProcess;
@@ -332,6 +340,7 @@ private:
     PluginInfoStore m_pluginInfoStore;
 #endif
     VisitedLinkProvider m_visitedLinkProvider;
+    PlugInAutoStartProvider m_plugInAutoStartProvider;
         
     HashSet<String> m_schemesToRegisterAsEmptyDocument;
     HashSet<String> m_schemesToRegisterAsSecure;

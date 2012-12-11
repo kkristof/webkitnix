@@ -179,10 +179,6 @@
 #include "RenderThemeChromiumWin.h"
 #endif
 #else
-#if OS(UNIX) && !OS(DARWIN) && !ENABLE(DEFAULT_RENDER_THEME)
-#include "PlatformThemeChromiumLinux.h"
-#include "RenderThemeChromiumLinux.h"
-#endif
 #include "RenderTheme.h"
 #endif
 
@@ -1466,7 +1462,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& or
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypePage);
     ASSERT(popupWidget);
     m_pagePopup = static_cast<WebPagePopupImpl*>(popupWidget);
-    if (!m_pagePopup->init(this, client, originBoundsInRootView)) {
+    if (!m_pagePopup->initialize(this, client, originBoundsInRootView)) {
         m_pagePopup->closePopup();
         m_pagePopup = 0;
     }
@@ -1499,7 +1495,7 @@ WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType)
     ASSERT(popupWidget);
     WebHelperPluginImpl* helperPlugin = static_cast<WebHelperPluginImpl*>(popupWidget);
 
-    if (!helperPlugin->init(this, pluginType)) {
+    if (!helperPlugin->initialize(this, pluginType)) {
         helperPlugin->closeHelperPlugin();
         helperPlugin = 0;
     }
@@ -2275,7 +2271,7 @@ WebTextInputType WebViewImpl::textInputType()
     if (node->hasTagName(HTMLNames::inputTag)) {
         HTMLInputElement* input = static_cast<HTMLInputElement*>(node);
 
-        if (input->readOnly() || input->disabled())
+        if (input->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
 
         if (input->isPasswordField())
@@ -2309,11 +2305,8 @@ WebTextInputType WebViewImpl::textInputType()
     }
 
     if (node->hasTagName(HTMLNames::textareaTag)) {
-        HTMLTextAreaElement* textarea = static_cast<HTMLTextAreaElement*>(node);
-
-        if (textarea->readOnly() || textarea->disabled())
+        if (static_cast<HTMLTextAreaElement*>(node)->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
-
         return WebTextInputTypeTextArea;
     }
 
@@ -3572,8 +3565,6 @@ void WebViewImpl::setScrollbarColors(unsigned inactiveColor,
                                      unsigned trackColor) {
 #if ENABLE(DEFAULT_RENDER_THEME)
     PlatformThemeChromiumDefault::setScrollbarColors(inactiveColor, activeColor, trackColor);
-#elif OS(UNIX) && !OS(DARWIN) && !OS(ANDROID)
-    PlatformThemeChromiumLinux::setScrollbarColors(inactiveColor, activeColor, trackColor);
 #endif
 }
 
@@ -3583,9 +3574,6 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned inactiveForegroundColor) {
 #if ENABLE(DEFAULT_RENDER_THEME)
     RenderThemeChromiumDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
-    theme()->platformColorsDidChange();
-#elif OS(UNIX) && !OS(DARWIN) && !OS(ANDROID)
-    RenderThemeChromiumLinux::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
     theme()->platformColorsDidChange();
 #endif
 }
@@ -4003,6 +3991,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
         WebLayerTreeView::Settings layerTreeViewSettings;
         layerTreeViewSettings.acceleratePainting = page()->settings()->acceleratedDrawingEnabled();
+        layerTreeViewSettings.lowLatencyRenderingEnabled = settingsImpl()->lowLatencyRenderingEnabled();
         layerTreeViewSettings.showDebugBorders = page()->settings()->showDebugBorders();
         layerTreeViewSettings.showFPSCounter = settingsImpl()->showFPSCounter();
         layerTreeViewSettings.showPlatformLayerTree = settingsImpl()->showPlatformLayerTree();
@@ -4054,49 +4043,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 }
 
 #endif
-
-namespace {
-
-// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface until
-// downstream code can be updated to produce output surfaces directly.
-class WebGraphicsContextToOutputSurfaceAdapter : public WebCompositorOutputSurface {
-public:
-    explicit WebGraphicsContextToOutputSurfaceAdapter(PassOwnPtr<WebGraphicsContext3D> context)
-        : m_context3D(context)
-        , m_client(0)
-    {
-    }
-
-    virtual bool bindToClient(WebCompositorOutputSurfaceClient* client) OVERRIDE
-    {
-        ASSERT(client);
-        if (!m_context3D->makeContextCurrent())
-            return false;
-        m_client = client;
-        return true;
-    }
-
-    virtual const Capabilities& capabilities() const OVERRIDE
-    {
-        return m_capabilities;
-    }
-
-    virtual WebGraphicsContext3D* context3D() const OVERRIDE
-    {
-        return m_context3D.get();
-    }
-
-    virtual void sendFrameToParentCompositor(const WebCompositorFrame&) OVERRIDE
-    {
-    }
-
-private:
-    OwnPtr<WebGraphicsContext3D> m_context3D;
-    Capabilities m_capabilities;
-    WebCompositorOutputSurfaceClient* m_client;
-};
-
-} // namespace
 
 WebCompositorOutputSurface* WebViewImpl::createOutputSurface()
 {

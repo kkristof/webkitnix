@@ -118,6 +118,7 @@
 #include "NodeFilter.h"
 #include "NodeIterator.h"
 #include "NodeRareData.h"
+#include "NodeTraversal.h"
 #include "NodeWithIndex.h"
 #include "Page.h"
 #include "PageGroup.h"
@@ -158,6 +159,7 @@
 #include "Timer.h"
 #include "TransformSource.h"
 #include "TreeWalker.h"
+#include "UserActionElementSet.h"
 #include "UserContentURLPattern.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitNamedFlow.h"
@@ -437,6 +439,8 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
     , m_guardRefCount(0)
+    , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
+    , m_lastStyleResolverAccessTime(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
@@ -689,6 +693,7 @@ void Document::removedLastRef()
         m_titleElement = 0;
         m_documentElement = 0;
         m_contextFeatures = ContextFeatures::defaultSwitch();
+        m_userActionElements.documentDidRemoveLastRef();
 #if ENABLE(FULLSCREEN_API)
         m_fullScreenElement = 0;
         m_fullScreenElementStack.clear();
@@ -745,7 +750,7 @@ void Document::buildAccessKeyMap(TreeScope* scope)
 {
     ASSERT(scope);
     Node* rootNode = scope->rootNode();
-    for (Node* node = rootNode; node; node = node->traverseNextNode(rootNode)) {
+    for (Node* node = rootNode; node; node = NodeTraversal::next(node, rootNode)) {
         if (!node->isElementNode())
             continue;
         Element* element = static_cast<Element*>(node);
@@ -2153,7 +2158,7 @@ void Document::removeAllEventListeners()
 
     if (DOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
-    for (Node* node = firstChild(); node; node = node->traverseNextNode())
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(node))
         node->removeAllEventListeners();
 }
 
@@ -2614,7 +2619,7 @@ EventTarget* Document::errorEventTarget()
 
 void Document::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack> callStack)
 {
-    addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack);
+    addMessage(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack);
 }
 
 void Document::setURL(const KURL& url)
@@ -2662,7 +2667,7 @@ void Document::updateBaseURL()
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
-        for (Node* node = firstChild(); node; node = node->traverseNextNode()) {
+        for (Node* node = firstChild(); node; node = NodeTraversal::next(node)) {
             if (node->hasTagName(aTag))
                 static_cast<HTMLAnchorElement*>(node)->invalidateCachedVisitedLinkHash();
         }
@@ -2680,7 +2685,7 @@ void Document::processBaseElement()
     // Find the first href attribute in a base element and the first target attribute in a base element.
     const AtomicString* href = 0;
     const AtomicString* target = 0;
-    for (Node* node = document()->firstChild(); node && (!href || !target); node = node->traverseNextNode()) {
+    for (Node* node = document()->firstChild(); node && (!href || !target); node = NodeTraversal::next(node)) {
         if (node->hasTagName(baseTag)) {
             if (!href) {
                 const AtomicString& value = static_cast<Element*>(node)->fastGetAttribute(hrefAttr);
@@ -2824,7 +2829,7 @@ int Document::nodeAbsIndex(Node *node)
     ASSERT(node->document() == this);
 
     int absIndex = 0;
-    for (Node* n = node; n && n != this; n = n->traversePreviousNode())
+    for (Node* n = node; n && n != this; n = NodeTraversal::previous(n))
         absIndex++;
     return absIndex;
 }
@@ -2833,7 +2838,7 @@ Node* Document::nodeWithAbsIndex(int absIndex)
 {
     Node* n = this;
     for (int i = 0; n && (i < absIndex); i++)
-        n = n->traverseNextNode();
+        n = NodeTraversal::next(n);
     return n;
 }
 
@@ -2883,7 +2888,7 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
                 String message = "Refused to display '" + url().string() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
                 frameLoader->stopAllLoaders();
                 frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), blankURL(), String());
-                addConsoleMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, message, requestIdentifier);
+                addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, requestIdentifier);
             }
         }
     } else if (equalIgnoringCase(equiv, "content-security-policy"))
@@ -3439,7 +3444,7 @@ void Document::getFocusableNodes(Vector<RefPtr<Node> >& nodes)
 {
     updateLayout();
 
-    for (Node* node = firstChild(); node; node = node->traverseNextNode()) {
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(node)) {
         if (node->isFocusable())
             nodes.append(node);
     }
@@ -4433,6 +4438,24 @@ void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
     m_sharedObjectPool.clear();
 }
 
+void Document::didAccessStyleResolver()
+{
+    static const int timeBeforeThrowingAwayStyleResolverAfterLastUseInSeconds = 60;
+    static const int holdOffTimeBeforeReschedulingTimerInSeconds = 5;
+
+    double currentTime = WTF::currentTime();
+
+    if (currentTime > m_lastStyleResolverAccessTime + holdOffTimeBeforeReschedulingTimerInSeconds) {
+        m_styleResolverThrowawayTimer.startOneShot(timeBeforeThrowingAwayStyleResolverAfterLastUseInSeconds);
+        m_lastStyleResolverAccessTime = currentTime;
+    }
+}
+
+void Document::styleResolverThrowawayTimerFired(Timer<Document>*)
+{
+    clearStyleResolver();
+}
+
 PassRefPtr<XPathExpression> Document::createExpression(const String& expression,
                                                        XPathNSResolver* resolver,
                                                        ExceptionCode& ec)
@@ -4743,29 +4766,29 @@ void Document::parseDNSPrefetchControlHeader(const String& dnsPrefetchControl)
     m_haveExplicitlyDisabledDNSPrefetch = true;
 }
 
-void Document::addConsoleMessage(MessageSource source, MessageType type, MessageLevel level, const String& message, unsigned long requestIdentifier)
+void Document::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
 {
     if (!isContextThread()) {
-        postTask(AddConsoleMessageTask::create(source, type, level, message));
+        postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
 
     if (DOMWindow* window = domWindow()) {
         if (Console* console = window->console())
-            console->addMessage(source, type, level, message, requestIdentifier, this);
+            console->addMessage(source, level, message, requestIdentifier, this);
     }
 }
 
-void Document::addMessage(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
+void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
 {
     if (!isContextThread()) {
-        postTask(AddConsoleMessageTask::create(source, type, level, message));
+        postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
 
     if (DOMWindow* window = domWindow()) {
         if (Console* console = window->console())
-            console->addMessage(source, type, level, message, sourceURL, lineNumber, callStack, state, requestIdentifier);
+            console->addMessage(source, level, message, sourceURL, lineNumber, callStack, state, requestIdentifier);
     }
 }
 
@@ -5758,7 +5781,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResu
         for (RenderObject* curr = oldActiveNode->renderer(); curr; curr = curr->parent()) {
             if (curr->node() && !curr->isText()) {
                 curr->node()->setActive(false);
-                curr->node()->clearInActiveChain();
+                m_userActionElements.setInActiveChain(curr->node(), false);
             }
         }
         setActiveNode(0);
@@ -5769,7 +5792,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResu
             // will need to reference this chain.
             for (RenderObject* curr = newActiveNode->renderer(); curr; curr = curr->parent()) {
                 if (curr->node() && !curr->isText())
-                    curr->node()->setInActiveChain();
+                    m_userActionElements.setInActiveChain(curr->node(), true);
             }
             setActiveNode(newActiveNode);
         }

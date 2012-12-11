@@ -585,8 +585,6 @@ set(WebCore_IDL_FILES
     page/SpeechInputEvent.idl
     page/SpeechInputResult.idl
     page/SpeechInputResultList.idl
-    page/WebKitAnimation.idl
-    page/WebKitAnimationList.idl
     page/WebKitPoint.idl
     page/WorkerNavigator.idl
 
@@ -1194,6 +1192,7 @@ set(WebCore_SOURCES
     dom/NodeIterator.cpp
     dom/NodeRareData.cpp
     dom/NodeRenderingContext.cpp
+    dom/NodeTraversal.cpp
     dom/Notation.cpp
     dom/OverflowEvent.cpp
     dom/PageTransitionEvent.cpp
@@ -1237,6 +1236,7 @@ set(WebCore_SOURCES
     dom/TreeWalker.cpp
     dom/UIEvent.cpp
     dom/UIEventWithKeyState.cpp
+    dom/UserActionElementSet.cpp
     dom/UserGestureIndicator.cpp
     dom/UserTypingGestureIndicator.cpp
     dom/ViewportArguments.cpp
@@ -1603,6 +1603,7 @@ set(WebCore_SOURCES
     inspector/InspectorIndexedDBAgent.cpp
     inspector/InspectorInputAgent.cpp
     inspector/InspectorInstrumentation.cpp
+    inspector/InspectorLayerTreeAgent.cpp
     inspector/InspectorMemoryAgent.cpp
     inspector/InspectorOverlay.cpp
     inspector/InspectorProfilerAgent.cpp
@@ -1768,8 +1769,6 @@ set(WebCore_SOURCES
     page/SuspendableTimer.cpp
     page/TouchAdjustment.cpp
     page/UserContentURLPattern.cpp
-    page/WebKitAnimation.cpp
-    page/WebKitAnimationList.cpp
     page/WindowFeatures.cpp
     page/WindowFocusAllowedIndicator.cpp
     page/WorkerNavigator.cpp
@@ -2067,6 +2066,7 @@ set(WebCore_SOURCES
     plugins/DOMMimeType.cpp
     plugins/DOMPluginArray.cpp
     plugins/DOMPlugin.cpp
+    plugins/PlugInOriginHash.cpp
     plugins/PluginData.cpp
     plugins/PluginMainThreadScheduler.cpp
 

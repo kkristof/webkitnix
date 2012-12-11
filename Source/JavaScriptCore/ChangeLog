@@ -1,3 +1,451 @@
+2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] delete dead include paths
+
+        Reviewed by Simon Hausmann.
+
+        followup to https://bugs.webkit.org/show_bug.cgi?id=93446
+
+        * JavaScriptCore.pri:
+
+2012-12-11  Julien BRIANCEAU   <jbrianceau@nds.com>
+
+        Implement add64 for SH4 assembler to fix build after r136601
+        https://bugs.webkit.org/show_bug.cgi?id=104377
+
+        Reviewed by Zoltan Herczeg.
+
+        * assembler/MacroAssemblerSH4.h:
+        (JSC::MacroAssemblerSH4::add64):
+        (MacroAssemblerSH4):
+
+2012-12-10  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: make sure each edge is reported only once
+        https://bugs.webkit.org/show_bug.cgi?id=104630
+
+        Reviewed by Pavel Feldman.
+
+        Changed exported symbols for MemoryInstrumentation.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+
+2012-12-10  Filip Pizlo  <fpizlo@apple.com>
+
+        Don't OSR exit just because a string is a rope
+        https://bugs.webkit.org/show_bug.cgi?id=104621
+
+        Reviewed by Michael Saboff.
+
+        Slight SunSpider speed-up at around the 0.7% level. This patch does the obvious
+        thing of calling a slow path to resolve ropes rather than OSR exiting if the
+        string is a rope.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGArrayMode.h:
+        (JSC::DFG::ArrayMode::getIndexedPropertyStorageMayTriggerGC):
+        (ArrayMode):
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::putStructureStoreElimination):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileGetIndexedPropertyStorage):
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+
+2012-12-10  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Unreviewed distcheck fix.
+
+        * GNUmakefile.list.am:
+
+2012-12-10  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC profiling and debug dump code should use inferred names when possible
+        https://bugs.webkit.org/show_bug.cgi?id=104519
+
+        Reviewed by Oliver Hunt.
+
+        This does as advertised: the profiler now knows the inferred name of all code blocks,
+        and all uses of CodeBlock::dump() dump it along with the hash.
+        
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::inferredName):
+        (JSC::CodeBlock::dumpAssumingJITType):
+        * bytecode/CodeBlock.h:
+        * profiler/ProfilerBytecodes.cpp:
+        (JSC::Profiler::Bytecodes::Bytecodes):
+        (JSC::Profiler::Bytecodes::toJS):
+        * profiler/ProfilerBytecodes.h:
+        (JSC::Profiler::Bytecodes::inferredName):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::addBytecodes):
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        * profiler/ProfilerDatabase.h:
+        * runtime/CommonIdentifiers.h:
+
+2012-12-09  Filip Pizlo  <fpizlo@apple.com>
+
+        Profiler should say things about OSR exits
+        https://bugs.webkit.org/show_bug.cgi?id=104497
+
+        Reviewed by Oliver Hunt.
+
+        This adds support for profiling OSR exits. For each exit that is taken, the profiler
+        records the machine code address that the exit occurred on, the exit kind, the origin
+        stack, and the number of times that it happened.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * assembler/AbstractMacroAssembler.h:
+        (Jump):
+        (JSC::AbstractMacroAssembler::Jump::label):
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::saveCompilation):
+        (CodeBlock):
+        (JSC::CodeBlock::compilation):
+        (DFGData):
+        * bytecode/DFGExitProfile.h:
+        (DFG):
+        * bytecode/ExitKind.cpp: Added.
+        (JSC):
+        (JSC::exitKindToString):
+        (JSC::exitKindIsCountable):
+        (WTF):
+        (WTF::printInternal):
+        * bytecode/ExitKind.h: Added.
+        (JSC):
+        (WTF):
+        * dfg/DFGGraph.h:
+        (Graph):
+        * dfg/DFGJITCompiler.cpp:
+        (JSC::DFG::JITCompiler::linkOSRExits):
+        (JSC::DFG::JITCompiler::link):
+        (JSC::DFG::JITCompiler::compile):
+        (JSC::DFG::JITCompiler::compileFunction):
+        * dfg/DFGJITCompiler.h:
+        (JITCompiler):
+        * dfg/DFGOSRExitCompiler.cpp:
+        * jit/JIT.cpp:
+        (JSC::JIT::JIT):
+        (JSC::JIT::privateCompile):
+        * jit/JIT.h:
+        (JIT):
+        * jit/JumpReplacementWatchpoint.h:
+        (JSC::JumpReplacementWatchpoint::sourceLabel):
+        (JumpReplacementWatchpoint):
+        * profiler/ProfilerCompilation.cpp:
+        (JSC::Profiler::Compilation::addOSRExitSite):
+        (Profiler):
+        (JSC::Profiler::Compilation::addOSRExit):
+        (JSC::Profiler::Compilation::toJS):
+        * profiler/ProfilerCompilation.h:
+        (Compilation):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::newCompilation):
+        * profiler/ProfilerDatabase.h:
+        (Database):
+        * profiler/ProfilerOSRExit.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::OSRExit::OSRExit):
+        (JSC::Profiler::OSRExit::~OSRExit):
+        (JSC::Profiler::OSRExit::toJS):
+        * profiler/ProfilerOSRExit.h: Added.
+        (Profiler):
+        (OSRExit):
+        (JSC::Profiler::OSRExit::id):
+        (JSC::Profiler::OSRExit::origin):
+        (JSC::Profiler::OSRExit::exitKind):
+        (JSC::Profiler::OSRExit::isWatchpoint):
+        (JSC::Profiler::OSRExit::counterAddress):
+        (JSC::Profiler::OSRExit::count):
+        * profiler/ProfilerOSRExitSite.cpp: Added.
+        (Profiler):
+        (JSC::Profiler::OSRExitSite::toJS):
+        * profiler/ProfilerOSRExitSite.h: Added.
+        (Profiler):
+        (OSRExitSite):
+        (JSC::Profiler::OSRExitSite::OSRExitSite):
+        (JSC::Profiler::OSRExitSite::codeAddress):
+        * runtime/CommonIdentifiers.h:
+
+2012-12-10  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Remove CSS3_BACKGROUND feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=104539
+
+        Reviewed by Antonio Gomes.
+
+        As discussed on webkit-dev it is not needed to keep this feature flag 
+        as support for <position> type is a small feature that is already 
+        implemented by three other UAs. It was useful while landing this 
+        feature as partial bits were landed one after one.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-12-09  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG ArrayPush/Pop should not pass their second child as the index for blessArrayOperation()
+        https://bugs.webkit.org/show_bug.cgi?id=104500
+
+        Reviewed by Oliver Hunt.
+
+        Slight across-the-board speed-up.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+
+2012-12-08  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC should scale the optimization threshold for a code block according to the cost of compiling it
+        https://bugs.webkit.org/show_bug.cgi?id=104406
+
+        Reviewed by Oliver Hunt.
+
+        We've long known that we want to scale the execution count threshold needed for the DFG
+        to kick in to scale according to some estimate of the cost of compiling that code block.
+        This institutes a relationship like this:
+        
+        threshold = thresholdSetting * (a * sqrt(instructionCount + b) + abs(c * instructionCount) + d
+        
+        Where a, b, c, d are coefficients derived from fitting the above expression to various
+        data points, which I chose based on looking at one benchmark (3d-cube) and from my
+        own intuitions.
+        
+        Making this work well also required changing the thresholdForOptimizeAfterLongWarmUp
+        from 5000 to 1000.
+        
+        This is a >1% speed-up on SunSpider, a >3% speed-up on V8Spider, ~1% speed-up on V8v7,
+        neutral on Octane, and neutral on Kraken.
+        
+        I also out-of-lined a bunch of methods related to these heuristics, because I couldn't
+        stand having them defined in the header anymore. I also made improvements to debugging
+        code because I needed it for tuning this change.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::sourceCodeForTools):
+        (JSC::CodeBlock::sourceCodeOnOneLine):
+        (JSC::CodeBlock::dumpBytecode):
+        (JSC::CodeBlock::CodeBlock):
+        (JSC::CodeBlock::reoptimizationRetryCounter):
+        (JSC::CodeBlock::countReoptimization):
+        (JSC::CodeBlock::optimizationThresholdScalingFactor):
+        (JSC::clipThreshold):
+        (JSC::CodeBlock::counterValueForOptimizeAfterWarmUp):
+        (JSC::CodeBlock::counterValueForOptimizeAfterLongWarmUp):
+        (JSC::CodeBlock::counterValueForOptimizeSoon):
+        (JSC::CodeBlock::checkIfOptimizationThresholdReached):
+        (JSC::CodeBlock::optimizeNextInvocation):
+        (JSC::CodeBlock::dontOptimizeAnytimeSoon):
+        (JSC::CodeBlock::optimizeAfterWarmUp):
+        (JSC::CodeBlock::optimizeAfterLongWarmUp):
+        (JSC::CodeBlock::optimizeSoon):
+        (JSC::CodeBlock::adjustedExitCountThreshold):
+        (JSC::CodeBlock::exitCountThresholdForReoptimization):
+        (JSC::CodeBlock::exitCountThresholdForReoptimizationFromLoop):
+        (JSC::CodeBlock::shouldReoptimizeNow):
+        (JSC::CodeBlock::shouldReoptimizeFromLoopNow):
+        * bytecode/CodeBlock.h:
+        * bytecode/ExecutionCounter.cpp:
+        (JSC::ExecutionCounter::hasCrossedThreshold):
+        * bytecode/ReduceWhitespace.cpp: Added.
+        (JSC::reduceWhitespace):
+        * bytecode/ReduceWhitespace.h: Added.
+        * dfg/DFGCapabilities.cpp:
+        (JSC::DFG::mightCompileEval):
+        (JSC::DFG::mightCompileProgram):
+        (JSC::DFG::mightCompileFunctionForCall):
+        (JSC::DFG::mightCompileFunctionForConstruct):
+        (JSC::DFG::mightInlineFunctionForCall):
+        (JSC::DFG::mightInlineFunctionForConstruct):
+        * dfg/DFGCapabilities.h:
+        * dfg/DFGDisassembler.cpp:
+        (JSC::DFG::Disassembler::dumpHeader):
+        * dfg/DFGOSREntry.cpp:
+        (JSC::DFG::prepareOSREntry):
+        * jit/JITDisassembler.cpp:
+        (JSC::JITDisassembler::dumpHeader):
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::entryOSR):
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        * runtime/Options.h:
+
+2012-12-07  Jonathan Liu  <net147@gmail.com>
+
+        Add missing forward declaration for JSC::ArrayAllocationProfile
+        https://bugs.webkit.org/show_bug.cgi?id=104425
+
+        Reviewed by Kentaro Hara.
+
+        The header for the JSC::ArrayConstructor class is missing a forward
+        declaration for the JSC::ArrayAllocationProfile class which causes
+        compilation to fail when compiling with MinGW-w64.
+
+        * runtime/ArrayConstructor.h:
+        (JSC):
+
+2012-12-07  Jonathan Liu  <net147@gmail.com>
+
+        Add missing const qualifier to JSC::CodeBlock::getJITType()
+        https://bugs.webkit.org/show_bug.cgi?id=104424
+
+        Reviewed by Laszlo Gombos.
+
+        JSC::CodeBlock::getJITType() has the const qualifier when JIT is
+        enabled but is missing the const qualifier when JIT is disabled.
+
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::getJITType):
+
+2012-12-07  Oliver Hunt  <oliver@apple.com>
+
+        Make function code cache proportional to main codeblock cache
+        https://bugs.webkit.org/show_bug.cgi?id=104420
+
+        Reviewed by Geoffrey Garen.
+
+        Makes the constants determining the recently used function cache proportional
+        to the number of root codeblocks in the cache.  Also renames the constants to
+        make them more clear.
+     
+        * runtime/CodeCache.h:
+
+2012-12-06  Filip Pizlo  <fpizlo@apple.com>
+
+        Strange results calculating a square root in a loop
+        https://bugs.webkit.org/show_bug.cgi?id=104247
+        <rdar://problem/12826880>
+
+        Reviewed by Oliver Hunt.
+
+        Fixed the CFG simplification phase to ignore dead GetLocals in the first of the blocks
+        under the merge. This fixes the assertion, and is also cleaner: our general rule is
+        to not "revive" things that we've already proved to be dead.
+        
+        Also fixed some rotted debug code.
+
+        * dfg/DFGCFGSimplificationPhase.cpp:
+        (JSC::DFG::CFGSimplificationPhase::fixPossibleGetLocal):
+        * dfg/DFGStructureCheckHoistingPhase.cpp:
+        (JSC::DFG::StructureCheckHoistingPhase::run):
+
+2012-12-07  Geoffrey Garen  <ggaren@apple.com>
+
+        Crash in JSC::Bindings::RootObject::globalObject() sync'ing notes in Evernote
+        https://bugs.webkit.org/show_bug.cgi?id=104321
+        <rdar://problem/12770497>
+
+        Reviewed by Sam Weinig.
+
+        Work around a JSValueUnprotect(NULL) in Evernote.
+
+        * API/JSValueRef.cpp:
+        (evernoteHackNeeded):
+        (JSValueUnprotect):
+
+2012-12-06  Filip Pizlo  <fpizlo@apple.com>
+
+        Incorrect inequality for checking whether a statement is within bounds of a handler
+        https://bugs.webkit.org/show_bug.cgi?id=104313
+        <rdar://problem/12808934>
+
+        Reviewed by Geoffrey Garen.
+
+        The most relevant change is in handlerForBytecodeOffset(), which fixes the inequality
+        used for checking whether a handler is pertinent to the current instruction. '<' is
+        correct, but '<=' isn't, since the 'end' is not inclusive.
+        
+        Also found, and addressed, a benign goof in how the finally inliner works: sometimes
+        we will have end > start. This falls out naturally from how the inliner works and how
+        we pop scopes in the bytecompiler, but it's sufficiently surprising that, to avoid any
+        future confusion, I added a comment and some code to prune those handlers out. Because
+        of how the handler resolution works, these handlers would have been skipped anyway.
+        
+        Also made various fixes to debugging code, which was necessary for tracking this down.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dumpBytecode):
+        (JSC::CodeBlock::handlerForBytecodeOffset):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::generate):
+        * bytecompiler/Label.h:
+        (JSC::Label::bind):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::throwException):
+        * llint/LLIntExceptions.cpp:
+        (JSC::LLInt::interpreterThrowInCaller):
+        (JSC::LLInt::returnToThrow):
+        (JSC::LLInt::callToThrow):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+        (JSC::LLInt::handleHostCall):
+
+2012-12-06  Rick Byers  <rbyers@chromium.org>
+
+        CSS cursor property should support webkit-image-set
+        https://bugs.webkit.org/show_bug.cgi?id=99493
+
+        Reviewed by Beth Dakin.
+
+        Add ENABLE_MOUSE_CURSOR_SCALE (disabled by default)
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [CMake] Consolidate list of files to build for JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=104287
+
+        Reviewed by Gyuyoung Kim.
+
+        Add MemoryStatistics.cpp and ExecutableAllocator.cpp to the common
+        list of files and remove them from the port specific lists.
+
+        * CMakeLists.txt:
+        * PlatformBlackBerry.cmake:
+        * PlatformEfl.cmake:
+        * PlatformWinCE.cmake:
+
+2012-12-06  Oliver Hunt  <oliver@apple.com>
+
+        Tell heap that we've released all the compiled code.
+
+        Reviewed by Geoff Garen.
+
+        When we discard compiled code, inform the heap that we've
+        released an entire object graph.  This informs the heap that
+        it might want to perform a GC soon.
+
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::discardAllCode):
+
+2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Remove ENABLE_GLIB_SUPPORT CMake variable
+        https://bugs.webkit.org/show_bug.cgi?id=104278
+
+        Reviewed by Brent Fulgham.
+
+        The conditional is not required as it is always set for EFL.
+
+        * PlatformEfl.cmake:
+
 2012-12-06  Oliver Hunt  <oliver@apple.com>
 
         Build fix, last patch rolled out logic that is now needed on ToT.

@@ -31,10 +31,8 @@
 #include "wince/FontPlatformData.h"
 #elif PLATFORM(WX)
 #include "wx/FontPlatformData.h"
-#elif (PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)) && USE(FREETYPE)
+#elif PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)
 #include "freetype/FontPlatformData.h"
-#elif (PLATFORM(EFL) || PLATFORM(GTK)) && USE(PANGO)
-#include "pango/FontPlatformData.h"
 #else
 
 #ifndef FontPlatformData_h

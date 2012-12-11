@@ -1,6 +1,7 @@
-    /*
+/*
  * Copyright (C) 2011 Apple Inc. All rights reserved.
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ * Copyright (C) 2012 Company 100, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -91,7 +92,7 @@ LayerTreeCoordinator::LayerTreeCoordinator(WebPage* webPage)
     , m_contentsScale(1)
     , m_shouldSendScrollPositionUpdate(true)
     , m_shouldSyncFrame(false)
-    , m_shouldSyncRootLayer(true)
+    , m_didInitializeRootCompositingLayer(false)
     , m_layerFlushTimer(this, &LayerTreeCoordinator::layerFlushTimerFired)
     , m_releaseInactiveAtlasesTimer(this, &LayerTreeCoordinator::releaseInactiveAtlasesTimerFired)
     , m_layerFlushSchedulingEnabled(true)
@@ -100,14 +101,14 @@ LayerTreeCoordinator::LayerTreeCoordinator(WebPage* webPage)
 {
     // Create a root layer.
     m_rootLayer = GraphicsLayer::create(this, this);
-    CoordinatedGraphicsLayer* webRootLayer = toCoordinatedGraphicsLayer(m_rootLayer.get());
-    webRootLayer->setRootLayer(true);
+    CoordinatedGraphicsLayer* coordinatedRootLayer = toCoordinatedGraphicsLayer(m_rootLayer.get());
+    coordinatedRootLayer->setRootLayer(true);
 #ifndef NDEBUG
     m_rootLayer->setName("LayerTreeCoordinator root layer");
 #endif
     m_rootLayer->setDrawsContent(false);
     m_rootLayer->setSize(m_webPage->size());
-    m_layerTreeContext.webLayerID = toCoordinatedGraphicsLayer(webRootLayer)->id();
+    m_layerTreeContext.coordinatedLayerID = toCoordinatedGraphicsLayer(coordinatedRootLayer)->id();
 
     m_nonCompositedContentLayer = GraphicsLayer::create(this, this);
 #ifndef NDEBUG
@@ -269,6 +270,8 @@ bool LayerTreeCoordinator::flushPendingLayerChanges()
     if (m_waitingForUIProcess)
         return false;
 
+    initializeRootCompositingLayerIfNeeded();
+
     m_rootLayer->flushCompositingStateForThisLayerOnly();
     m_nonCompositedContentLayer->flushCompositingStateForThisLayerOnly();
     if (m_pageOverlayLayer)
@@ -277,12 +280,6 @@ bool LayerTreeCoordinator::flushPendingLayerChanges()
     bool didSync = m_webPage->corePage()->mainFrame()->view()->flushCompositingStateIncludingSubframes();
 
     flushPendingImageBackingChanges();
-
-    if (m_shouldSyncRootLayer) {
-        m_webPage->send(Messages::LayerTreeCoordinatorProxy::SetRootCompositingLayer(toCoordinatedGraphicsLayer(m_rootLayer.get())->id()));
-        m_shouldSyncRootLayer = false;
-        m_shouldSyncFrame = true;
-    }
 
     for (size_t i = 0; i < m_detachedLayers.size(); ++i)
         m_webPage->send(Messages::LayerTreeCoordinatorProxy::DeleteCompositingLayer(m_detachedLayers[i]));
@@ -307,7 +304,17 @@ bool LayerTreeCoordinator::flushPendingLayerChanges()
     return didSync;
 }
 
-void LayerTreeCoordinator::syncLayerState(WebLayerID id, const WebLayerInfo& info)
+void LayerTreeCoordinator::initializeRootCompositingLayerIfNeeded()
+{
+    if (m_didInitializeRootCompositingLayer)
+        return;
+
+    m_webPage->send(Messages::LayerTreeCoordinatorProxy::SetRootCompositingLayer(toCoordinatedGraphicsLayer(m_rootLayer.get())->id()));
+    m_didInitializeRootCompositingLayer = true;
+    m_shouldSyncFrame = true;
+}
+
+void LayerTreeCoordinator::syncLayerState(CoordinatedLayerID id, const CoordinatedLayerInfo& info)
 {
     if (m_shouldSendScrollPositionUpdate) {
         m_webPage->send(Messages::LayerTreeCoordinatorProxy::DidChangeScrollPosition(m_visibleContentsRect.location()));
@@ -318,14 +325,14 @@ void LayerTreeCoordinator::syncLayerState(WebLayerID id, const WebLayerInfo& inf
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::SetCompositingLayerState(id, info));
 }
 
-void LayerTreeCoordinator::syncLayerChildren(WebLayerID id, const Vector<WebLayerID>& children)
+void LayerTreeCoordinator::syncLayerChildren(CoordinatedLayerID id, const Vector<CoordinatedLayerID>& children)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::SetCompositingLayerChildren(id, children));
 }
 
 #if USE(GRAPHICS_SURFACE)
-void LayerTreeCoordinator::createCanvas(WebLayerID id, PlatformLayer* canvasPlatformLayer)
+void LayerTreeCoordinator::createCanvas(CoordinatedLayerID id, PlatformLayer* canvasPlatformLayer)
 {
     m_shouldSyncFrame = true;
     GraphicsSurfaceToken token = canvasPlatformLayer->graphicsSurfaceToken();
@@ -333,14 +340,14 @@ void LayerTreeCoordinator::createCanvas(WebLayerID id, PlatformLayer* canvasPlat
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::CreateCanvas(id, canvasSize, token));
 }
 
-void LayerTreeCoordinator::syncCanvas(WebLayerID id, PlatformLayer* canvasPlatformLayer)
+void LayerTreeCoordinator::syncCanvas(CoordinatedLayerID id, PlatformLayer* canvasPlatformLayer)
 {
     m_shouldSyncFrame = true;
     uint32_t frontBuffer = canvasPlatformLayer->copyToGraphicsSurface();
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::SyncCanvas(id, frontBuffer));
 }
 
-void LayerTreeCoordinator::destroyCanvas(WebLayerID id)
+void LayerTreeCoordinator::destroyCanvas(CoordinatedLayerID id)
 {
     if (m_isPurging)
         return;
@@ -351,7 +358,7 @@ void LayerTreeCoordinator::destroyCanvas(WebLayerID id)
 #endif
 
 #if ENABLE(CSS_FILTERS)
-void LayerTreeCoordinator::syncLayerFilters(WebLayerID id, const FilterOperations& filters)
+void LayerTreeCoordinator::syncLayerFilters(CoordinatedLayerID id, const FilterOperations& filters)
 {
     m_shouldSyncFrame = true;
 #if ENABLE(CSS_SHADERS)
@@ -573,7 +580,7 @@ void LayerTreeCoordinator::createImageBacking(CoordinatedImageBackingID imageID)
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::CreateImageBacking(imageID));
 }
 
-void LayerTreeCoordinator::updateImageBacking(CoordinatedImageBackingID imageID, const ShareableSurface::Handle& handle)
+void LayerTreeCoordinator::updateImageBacking(CoordinatedImageBackingID imageID, const WebCoordinatedSurface::Handle& handle)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::UpdateImageBacking(imageID, handle));
@@ -641,19 +648,19 @@ bool LayerTreeHost::supportsAcceleratedCompositing()
     return true;
 }
 
-void LayerTreeCoordinator::createTile(WebLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
+void LayerTreeCoordinator::createTile(CoordinatedLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::CreateTileForLayer(layerID, tileID, tileRect, updateInfo));
 }
 
-void LayerTreeCoordinator::updateTile(WebLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
+void LayerTreeCoordinator::updateTile(CoordinatedLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::UpdateTileForLayer(layerID, tileID, tileRect, updateInfo));
 }
 
-void LayerTreeCoordinator::removeTile(WebLayerID layerID, uint32_t tileID)
+void LayerTreeCoordinator::removeTile(CoordinatedLayerID layerID, uint32_t tileID)
 {
     if (m_isPurging)
         return;
@@ -661,25 +668,25 @@ void LayerTreeCoordinator::removeTile(WebLayerID layerID, uint32_t tileID)
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::RemoveTileForLayer(layerID, tileID));
 }
 
-void LayerTreeCoordinator::createUpdateAtlas(int atlasID, const ShareableSurface::Handle& handle)
+void LayerTreeCoordinator::createUpdateAtlas(uint32_t atlasID, const WebCoordinatedSurface::Handle& handle)
 {
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::CreateUpdateAtlas(atlasID, handle));
 }
 
-void LayerTreeCoordinator::removeUpdateAtlas(int atlasID)
+void LayerTreeCoordinator::removeUpdateAtlas(uint32_t atlasID)
 {
     if (m_isPurging)
         return;
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::RemoveUpdateAtlas(atlasID));
 }
 
-WebCore::IntRect LayerTreeCoordinator::visibleContentsRect() const
+WebCore::FloatRect LayerTreeCoordinator::visibleContentsRect() const
 {
     return m_visibleContentsRect;
 }
 
 
-void LayerTreeCoordinator::setLayerAnimations(WebLayerID layerID, const GraphicsLayerAnimations& animations)
+void LayerTreeCoordinator::setLayerAnimations(CoordinatedLayerID layerID, const GraphicsLayerAnimations& animations)
 {
     m_shouldSyncFrame = true;
     GraphicsLayerAnimations activeAnimations = animations.getActiveAnimations();
@@ -697,7 +704,7 @@ void LayerTreeCoordinator::setLayerAnimations(WebLayerID layerID, const Graphics
     m_webPage->send(Messages::LayerTreeCoordinatorProxy::SetLayerAnimations(layerID, activeAnimations));
 }
 
-void LayerTreeCoordinator::setVisibleContentsRect(const IntRect& rect, float scale, const FloatPoint& trajectoryVector)
+void LayerTreeCoordinator::setVisibleContentsRect(const FloatRect& rect, float scale, const FloatPoint& trajectoryVector)
 {
     bool contentsRectDidChange = rect != m_visibleContentsRect;
     bool contentsScaleDidChange = scale != m_contentsScale;
@@ -719,8 +726,12 @@ void LayerTreeCoordinator::setVisibleContentsRect(const IntRect& rect, float sca
     }
 
     scheduleLayerFlush();
-    if (m_webPage->useFixedLayout())
-        m_webPage->setFixedVisibleContentRect(rect);
+    if (m_webPage->useFixedLayout()) {
+        // Round the rect instead of enclosing it to make sure that its size stays
+        // the same while panning. This can have nasty effects on layout.
+        m_webPage->setFixedVisibleContentRect(roundedIntRect(rect));
+    }
+
     if (contentsRectDidChange)
         m_shouldSendScrollPositionUpdate = true;
 }
@@ -767,12 +778,12 @@ void LayerTreeCoordinator::purgeBackingStores()
     m_updateAtlases.clear();
 }
 
-PassOwnPtr<WebCore::GraphicsContext> LayerTreeCoordinator::beginContentUpdate(const WebCore::IntSize& size, ShareableBitmap::Flags flags, int& atlasID, WebCore::IntPoint& offset)
+PassOwnPtr<GraphicsContext> LayerTreeCoordinator::beginContentUpdate(const IntSize& size, CoordinatedSurface::Flags flags, uint32_t& atlasID, IntPoint& offset)
 {
-    OwnPtr<WebCore::GraphicsContext> graphicsContext;
+    OwnPtr<GraphicsContext> graphicsContext;
     for (unsigned i = 0; i < m_updateAtlases.size(); ++i) {
         UpdateAtlas* atlas = m_updateAtlases[i].get();
-        if (atlas->flags() == flags) {
+        if (atlas->supportsAlpha() == (flags & CoordinatedSurface::SupportsAlpha)) {
             // This will return null if there is no available buffer space.
             graphicsContext = atlas->beginPaintingOnAvailableBuffer(atlasID, size, offset);
             if (graphicsContext)
@@ -803,7 +814,7 @@ void LayerTreeCoordinator::releaseInactiveAtlasesTimerFired(Timer<LayerTreeCoord
         UpdateAtlas* atlas = m_updateAtlases[i].get();
         if (!atlas->isInUse())
             atlas->addTimeInactive(ReleaseInactiveAtlasesTimerInterval);
-        bool usableForNonCompositedContent = atlas->flags() == ShareableBitmap::NoFlags;
+        bool usableForNonCompositedContent = !atlas->supportsAlpha();
         if (atlas->isInactive()) {
             if (!foundActiveAtlasForNonCompositedContent && !atlasToKeepAnyway && usableForNonCompositedContent)
                 atlasToKeepAnyway = m_updateAtlases[i].release();

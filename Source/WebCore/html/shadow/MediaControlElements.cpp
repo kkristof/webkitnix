@@ -727,6 +727,7 @@ const AtomicString& MediaControlClosedCaptionsContainerElement::shadowPseudoId()
 MediaControlClosedCaptionsTrackListElement::MediaControlClosedCaptionsTrackListElement(Document* document, MediaControls* controls)
     : MediaControlDivElement(document, MediaClosedCaptionsTrackList)
     , m_controls(controls)
+    , m_trackListHasChanged(true)
 {
 }
 
@@ -795,6 +796,9 @@ void MediaControlClosedCaptionsTrackListElement::updateDisplay()
     if (!trackList || !trackList->length())
         return;
 
+    if (m_trackListHasChanged)
+        rebuildTrackListMenu();
+    
     bool captionsVisible = mediaElement->closedCaptionsVisible();
     for (unsigned i = 0, length = menuItems.size(); i < length; ++i) {
         RefPtr<Element> trackItem = menuItems[i];
@@ -819,12 +823,14 @@ void MediaControlClosedCaptionsTrackListElement::updateDisplay()
 #endif
 }
 
-void MediaControlClosedCaptionsTrackListElement::resetTrackListMenu()
+void MediaControlClosedCaptionsTrackListElement::rebuildTrackListMenu()
 {
 #if ENABLE(VIDEO_TRACK)
     // Remove any existing content.
     removeChildren();
     menuItems.clear();
+
+    m_trackListHasChanged = false;
 
     if (!mediaController()->hasClosedCaptions())
         return;
@@ -1186,6 +1192,14 @@ MediaControlTextTrackContainerElement::MediaControlTextTrackContainerElement(Doc
     , m_fontSize(0)
 {
 }
+    
+void MediaControlTextTrackContainerElement::createSubtrees(Document* document)
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, cue, ("cue", AtomicString::ConstructFromLiteral));
+    m_cueContainer = HTMLElement::create(spanTag, document);
+    m_cueContainer->setPseudo(cue);
+    appendChild(m_cueContainer, ASSERT_NO_EXCEPTION, false);
+}
 
 PassRefPtr<MediaControlTextTrackContainerElement> MediaControlTextTrackContainerElement::create(Document* document)
 {
@@ -1264,7 +1278,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 
         if (displayBox->hasChildNodes() && !contains(static_cast<Node*>(displayBox.get())))
             // Note: the display tree of a cue is removed when the active flag of the cue is unset.
-            appendChild(displayBox, ASSERT_NO_EXCEPTION, false);
+            m_cueContainer->appendChild(displayBox, ASSERT_NO_EXCEPTION, false);
     }
 
     // 11. Return output.

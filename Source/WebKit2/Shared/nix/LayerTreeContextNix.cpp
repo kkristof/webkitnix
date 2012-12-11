@@ -33,7 +33,7 @@
 namespace WebKit {
 
 LayerTreeContext::LayerTreeContext()
-    : webLayerID(0)
+    : coordinatedLayerID(0)
 {
 }
 
@@ -43,22 +43,22 @@ LayerTreeContext::~LayerTreeContext()
 
 void LayerTreeContext::encode(CoreIPC::ArgumentEncoder& encoder) const
 {
-    encoder.encode(webLayerID);
+    encoder.encode(coordinatedLayerID);
 }
 
 bool LayerTreeContext::decode(CoreIPC::ArgumentDecoder* decoder, LayerTreeContext& context)
 {
-    return decoder->decode(context.webLayerID);
+    return decoder->decode(context.coordinatedLayerID);
 }
 
 bool LayerTreeContext::isEmpty() const
 {
-    return !webLayerID;
+    return !coordinatedLayerID;
 }
 
 bool operator==(const LayerTreeContext& a, const LayerTreeContext& b)
 {
-    return a.webLayerID == b.webLayerID;
+    return a.coordinatedLayerID == b.coordinatedLayerID;
 }
 
 }

@@ -1,5 +1,8 @@
 set(MiniBrowser_DIR "${TOOLS_DIR}/MiniBrowser/efl")
 
+# Elementary is needed to build MiniBrowser
+find_package(Elementary 1.6)
+
 set(MiniBrowser_SOURCES
     ${TOOLS_DIR}/EWebLauncher/url_utils.c
     ${MiniBrowser_DIR}/main.c
@@ -37,6 +40,8 @@ set(MiniBrowser_LIBRARIES
     ${ELEMENTARY_LIBRARIES}
     ${EVAS_LIBRARIES}
     ${FONTCONFIG_LIBRARIES}
+    ${GLIB_LIBRARIES}
+    ${GLIB_GTHREAD_LIBRARIES}
     ${LIBSOUP_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${LIBXSLT_LIBRARIES}
@@ -44,17 +49,11 @@ set(MiniBrowser_LIBRARIES
     ${SQLITE_LIBRARIES}
 )
 
-if (ENABLE_GLIB_SUPPORT)
-    list(APPEND MiniBrowser_LIBRARIES
-        ${GLIB_LIBRARIES}
-        ${GLIB_GTHREAD_LIBRARIES}
-    )
-endif ()
-
 add_definitions(-DTHEME_DIR=\"${THEME_BINARY_DIR}\")
 
-include_directories(${MiniBrowser_INCLUDE_DIRECTORIES})
-
-add_executable(MiniBrowser ${MiniBrowser_SOURCES})
-target_link_libraries(MiniBrowser ${MiniBrowser_LIBRARIES})
-set_target_properties(MiniBrowser PROPERTIES FOLDER "Tools")
+if (ELEMENTARY_FOUND)
+    include_directories(${MiniBrowser_INCLUDE_DIRECTORIES})
+    add_executable(MiniBrowser ${MiniBrowser_SOURCES})
+    target_link_libraries(MiniBrowser ${MiniBrowser_LIBRARIES})
+    set_target_properties(MiniBrowser PROPERTIES FOLDER "Tools")
+endif ()

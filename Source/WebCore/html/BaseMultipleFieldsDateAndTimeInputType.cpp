@@ -86,12 +86,12 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasCustomFocusLogic() const
 
 bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerDisabled() const
 {
-    return element()->readOnly();
+    return element()->disabled();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerReadOnly() const
 {
-    return element()->disabled();
+    return element()->readOnly();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectSpinButtonOwner()
@@ -102,7 +102,7 @@ void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectSpinButtonOwner()
 
 bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToMouseEvents()
 {
-    return !element()->disabled() && !element()->readOnly();
+    return !element()->isDisabledOrReadOnly();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToWheelEvents()
@@ -126,7 +126,7 @@ void BaseMultipleFieldsDateAndTimeInputType::spinButtonStepUp()
 
 bool BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrReadOnly() const
 {
-    return element()->disabled() || element()->readOnly();
+    return element()->isDisabledOrReadOnly();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const String& value)

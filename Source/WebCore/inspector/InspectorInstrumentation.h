@@ -32,6 +32,7 @@
 #define InspectorInstrumentation_h
 
 #include "CSSSelector.h"
+#include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "Element.h"
 #include "Frame.h"
@@ -60,6 +61,7 @@ class InspectorTimelineAgent;
 class InstrumentingAgents;
 class KURL;
 class Node;
+class RenderLayer;
 class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
@@ -71,6 +73,7 @@ class ScriptProfile;
 class SecurityOrigin;
 class ShadowRoot;
 class StorageArea;
+class StyleResolver;
 class StyleRule;
 class ThreadableLoaderClient;
 class WorkerContext;
@@ -150,9 +153,9 @@ public:
     static InspectorInstrumentationCookie willRecalculateStyle(Document*);
     static void didRecalculateStyle(const InspectorInstrumentationCookie&);
     static void didScheduleStyleRecalculation(Document*);
-    static InspectorInstrumentationCookie willMatchRule(Document*, const StyleRule*);
+    static InspectorInstrumentationCookie willMatchRule(Document*, StyleRule*, StyleResolver*);
     static void didMatchRule(const InspectorInstrumentationCookie&, bool matched);
-    static InspectorInstrumentationCookie willProcessRule(Document*, const StyleRule*);
+    static InspectorInstrumentationCookie willProcessRule(Document*, StyleRule*, StyleResolver*);
     static void didProcessRule(const InspectorInstrumentationCookie&);
 
     static void applyUserAgentOverride(Frame*, String*);
@@ -279,6 +282,11 @@ public:
 
     static DeviceOrientationData* overrideDeviceOrientation(Page*, DeviceOrientationData*);
 
+#if USE(ACCELERATED_COMPOSITING)
+    static void layerTreeDidChange(Page*);
+    static void renderLayerDestroyed(Page*, const RenderLayer*);
+#endif
+
 private:
 #if ENABLE(INSPECTOR)
     static void didClearWindowObjectInWorldImpl(InstrumentingAgents*, Frame*, DOMWrapperWorld*);
@@ -343,9 +351,9 @@ private:
     static InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents*, Frame*);
     static void didRecalculateStyleImpl(const InspectorInstrumentationCookie&);
     static void didScheduleStyleRecalculationImpl(InstrumentingAgents*, Document*);
-    static InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents*, const StyleRule*);
+    static InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
     static void didMatchRuleImpl(const InspectorInstrumentationCookie&, bool matched);
-    static InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, const StyleRule*);
+    static InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
     static void didProcessRuleImpl(const InspectorInstrumentationCookie&);
 
     static void applyUserAgentOverrideImpl(InstrumentingAgents*, String*);
@@ -457,6 +465,12 @@ private:
 #endif
 
     static DeviceOrientationData* overrideDeviceOrientationImpl(InstrumentingAgents*, DeviceOrientationData*);
+
+#if USE(ACCELERATED_COMPOSITING)
+    static void layerTreeDidChangeImpl(InstrumentingAgents*);
+    static void renderLayerDestroyedImpl(InstrumentingAgents*, const RenderLayer*);
+#endif
+
     static int s_frontendCounter;
 #endif
 };
@@ -990,12 +1004,12 @@ inline void InspectorInstrumentation::didScheduleStyleRecalculation(Document* do
 #endif
 }
 
-inline InspectorInstrumentationCookie InspectorInstrumentation::willMatchRule(Document* document, const StyleRule* rule)
+inline InspectorInstrumentationCookie InspectorInstrumentation::willMatchRule(Document* document, StyleRule* rule, StyleResolver* styleResolver)
 {
 #if ENABLE(INSPECTOR)
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willMatchRuleImpl(instrumentingAgents, rule);
+        return willMatchRuleImpl(instrumentingAgents, rule, styleResolver);
 #endif
     return InspectorInstrumentationCookie();
 }
@@ -1009,14 +1023,14 @@ inline void InspectorInstrumentation::didMatchRule(const InspectorInstrumentatio
 #endif
 }
 
-inline InspectorInstrumentationCookie InspectorInstrumentation::willProcessRule(Document* document, const StyleRule* rule)
+inline InspectorInstrumentationCookie InspectorInstrumentation::willProcessRule(Document* document, StyleRule* rule, StyleResolver* styleResolver)
 {
 #if ENABLE(INSPECTOR)
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (!rule)
         return InspectorInstrumentationCookie();
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willProcessRuleImpl(instrumentingAgents, rule);
+        return willProcessRuleImpl(instrumentingAgents, rule, styleResolver);
 #endif
     return InspectorInstrumentationCookie();
 }
@@ -1530,6 +1544,29 @@ inline DeviceOrientationData* InspectorInstrumentation::overrideDeviceOrientatio
 #endif
     return deviceOrientation;
 }
+
+#if USE(ACCELERATED_COMPOSITING)
+inline void InspectorInstrumentation::layerTreeDidChange(Page* page)
+{
+#if ENABLE(INSPECTOR)
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        layerTreeDidChangeImpl(instrumentingAgents);
+#else
+    UNUSED_PARAM(page);
+#endif
+}
+
+inline void InspectorInstrumentation::renderLayerDestroyed(Page* page, const RenderLayer* renderLayer)
+{
+#if ENABLE(INSPECTOR)
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        renderLayerDestroyedImpl(instrumentingAgents, renderLayer);
+#else
+    UNUSED_PARAM(page);
+    UNUSED_PARAM(renderLayer);
+#endif
+}
+#endif
 
 #if ENABLE(INSPECTOR)
 inline bool InspectorInstrumentation::collectingHTMLParseErrors(Page* page)

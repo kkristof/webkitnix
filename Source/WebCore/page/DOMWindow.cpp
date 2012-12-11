@@ -887,7 +887,7 @@ void DOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTarg
         if (!intendedTargetOrigin->isSameSchemeHostPort(document()->securityOrigin())) {
             String message = "Unable to post message to " + intendedTargetOrigin->toString() +
                              ". Recipient has origin " + document()->securityOrigin()->toString() + ".\n";
-            console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, message, stackTrace);
+            console()->addMessage(JSMessageSource, ErrorMessageLevel, message, stackTrace);
             return;
         }
     }
@@ -1756,13 +1756,7 @@ void DOMWindow::printErrorMessage(const String& message)
     if (message.isEmpty())
         return;
 
-    Settings* settings = m_frame->settings();
-    if (!settings)
-        return;
-    if (settings->privateBrowsingEnabled())
-        return;
-
-    console()->addMessage(JSMessageSource, LogMessageType, ErrorMessageLevel, message);
+    console()->addMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
 String DOMWindow::crossDomainAccessErrorMessage(DOMWindow* activeWindow)

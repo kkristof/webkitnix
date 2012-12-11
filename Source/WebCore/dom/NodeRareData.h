@@ -49,6 +49,27 @@ class TreeScope;
 class NodeListsNodeData {
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData); WTF_MAKE_FAST_ALLOCATED;
 public:
+    void clearChildNodeListCache()
+    {
+        if (m_childNodeList)
+            m_childNodeList->invalidateCache();
+    }
+
+    PassRefPtr<ChildNodeList> ensureChildNodeList(Node* node)
+    {
+        if (m_childNodeList)
+            return m_childNodeList;
+        RefPtr<ChildNodeList> list = ChildNodeList::create(node);
+        m_childNodeList = list.get();
+        return list.release();
+    }
+
+    void removeChildNodeList(ChildNodeList* list)
+    {
+        ASSERT_UNUSED(list, m_childNodeList = list);
+        m_childNodeList = 0;
+    }
+
     template <typename StringType>
     struct NodeListCacheMapEntryHash {
         static unsigned hash(const std::pair<unsigned char, StringType>& entry)
@@ -75,6 +96,7 @@ public:
         return list.release();
     }
 
+    // FIXME: This function should be renamed since it doesn't have an atomic name.
     template<typename T>
     PassRefPtr<T> addCacheWithAtomicName(Node* node, CollectionType collectionType)
     {
@@ -179,7 +201,9 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    NodeListsNodeData() { }
+    NodeListsNodeData()
+        : m_childNodeList(0)
+    { }
 
     std::pair<unsigned char, AtomicString> namedNodeListKey(CollectionType type, const AtomicString& name)
     {
@@ -191,16 +215,59 @@ private:
         return std::pair<unsigned char, String>(type, name);
     }
 
+    // FIXME: m_childNodeList should be merged into m_atomicNameCaches or at least be shared with HTMLCollection returned by Element::children
+    // but it's tricky because invalidateCaches shouldn't invalidate this cache and adoptTreeScope shouldn't call registerNodeList or unregisterNodeList.
+    ChildNodeList* m_childNodeList;
     NodeListAtomicNameCacheMap m_atomicNameCaches;
     NodeListNameCacheMap m_nameCaches;
     TagNodeListCacheNS m_tagNodeListCacheNS;
 };
 
-class NodeRareData : public UncommonNodeData {
+class NodeRareData : public NodeRareDataBase {
     WTF_MAKE_NONCOPYABLE(NodeRareData); WTF_MAKE_FAST_ALLOCATED;
+
+#if ENABLE(MUTATION_OBSERVERS)
+    struct NodeMutationObserverData {
+        Vector<OwnPtr<MutationObserverRegistration> > m_registry;
+        HashSet<MutationObserverRegistration*> m_transientRegistry;
+
+        static PassOwnPtr<NodeMutationObserverData> create() { return adoptPtr(new NodeMutationObserverData); }
+    };
+#endif
+
+#if ENABLE(MICRODATA)
+    struct NodeMicroDataTokenLists {
+        RefPtr<DOMSettableTokenList> m_itemProp;
+        RefPtr<DOMSettableTokenList> m_itemRef;
+        RefPtr<DOMSettableTokenList> m_itemType;
+
+        static PassOwnPtr<NodeMicroDataTokenLists> create() { return adoptPtr(new NodeMicroDataTokenLists); }
+    };
+#endif
+
 public:    
-    NodeRareData()
-        : m_childNodeList(0)
+    NodeRareData(Document* document)
+        : NodeRareDataBase(document)
+        , m_tabIndex(0)
+        , m_childIndex(0)
+        , m_tabIndexWasSetExplicitly(false)
+        , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
+        , m_styleAffectedByEmpty(false)
+        , m_isInCanvasSubtree(false)
+#if ENABLE(FULLSCREEN_API)
+        , m_containsFullScreenElement(false)
+#endif
+#if ENABLE(DIALOG_ELEMENT)
+        , m_isInTopLayer(false)
+#endif
+        , m_childrenAffectedByHover(false)
+        , m_childrenAffectedByActive(false)
+        , m_childrenAffectedByDrag(false)
+        , m_childrenAffectedByFirstChildRules(false)
+        , m_childrenAffectedByLastChildRules(false)
+        , m_childrenAffectedByDirectAdjacentRules(false)
+        , m_childrenAffectedByForwardPositionalRules(false)
+        , m_childrenAffectedByBackwardPositionalRules(false)
     {
     }
 
@@ -209,22 +276,13 @@ public:
     }
 
     void clearNodeLists() { m_nodeLists.clear(); }
-    void setNodeLists(PassOwnPtr<NodeListsNodeData> lists) { m_nodeLists = lists; }
     NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
     NodeListsNodeData* ensureNodeLists()
     {
         if (!m_nodeLists)
-            setNodeLists(NodeListsNodeData::create());
+            m_nodeLists = NodeListsNodeData::create();
         return m_nodeLists.get();
     }
-    void clearChildNodeListCache()
-    {
-        if (m_childNodeList)
-            m_childNodeList->invalidateCache();
-    }
-
-    ChildNodeList* childNodeList() const { return m_childNodeList; }
-    void setChildNodeList(ChildNodeList* list) { m_childNodeList = list; }
 
     short tabIndex() const { return m_tabIndex; }
     void setTabIndexExplicitly(short index) { m_tabIndex = index; m_tabIndexWasSetExplicitly = true; }
@@ -232,91 +290,116 @@ public:
     void clearTabIndexExplicitly() { m_tabIndex = 0; m_tabIndexWasSetExplicitly = false; }
 
 #if ENABLE(MUTATION_OBSERVERS)
-    Vector<OwnPtr<MutationObserverRegistration> >* mutationObserverRegistry() { return m_mutationObserverRegistry.get(); }
+    Vector<OwnPtr<MutationObserverRegistration> >* mutationObserverRegistry() { return m_mutationObserverData ? &m_mutationObserverData->m_registry : 0; }
     Vector<OwnPtr<MutationObserverRegistration> >* ensureMutationObserverRegistry()
     {
-        if (!m_mutationObserverRegistry)
-            m_mutationObserverRegistry = adoptPtr(new Vector<OwnPtr<MutationObserverRegistration> >);
-        return m_mutationObserverRegistry.get();
+        if (!m_mutationObserverData)
+            m_mutationObserverData = NodeMutationObserverData::create();
+        return &m_mutationObserverData->m_registry;
     }
 
-    HashSet<MutationObserverRegistration*>* transientMutationObserverRegistry() { return m_transientMutationObserverRegistry.get(); }
+    HashSet<MutationObserverRegistration*>* transientMutationObserverRegistry() { return m_mutationObserverData ? &m_mutationObserverData->m_transientRegistry : 0; }
     HashSet<MutationObserverRegistration*>* ensureTransientMutationObserverRegistry()
     {
-        if (!m_transientMutationObserverRegistry)
-            m_transientMutationObserverRegistry = adoptPtr(new HashSet<MutationObserverRegistration*>);
-        return m_transientMutationObserverRegistry.get();
+        if (!m_mutationObserverData)
+            m_mutationObserverData = NodeMutationObserverData::create();
+        return &m_mutationObserverData->m_transientRegistry;
     }
 #endif
 
 #if ENABLE(MICRODATA)
+    NodeMicroDataTokenLists* ensureMicroDataTokenLists() const
+    {
+        if (!m_microDataTokenLists)
+            m_microDataTokenLists = NodeMicroDataTokenLists::create();
+        return m_microDataTokenLists.get();
+    }
+
     DOMSettableTokenList* itemProp() const
     {
-        if (!m_itemProp)
-            m_itemProp = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemProp)
+            m_microDataTokenLists->m_itemProp = DOMSettableTokenList::create();
 
-        return m_itemProp.get();
+        return m_microDataTokenLists->m_itemProp.get();
     }
 
     void setItemProp(const String& value)
     {
-        if (!m_itemProp)
-            m_itemProp = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemProp)
+            m_microDataTokenLists->m_itemProp = DOMSettableTokenList::create();
 
-        m_itemProp->setValue(value);
+        m_microDataTokenLists->m_itemProp->setValue(value);
     }
 
     DOMSettableTokenList* itemRef() const
     {
-        if (!m_itemRef)
-            m_itemRef = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemRef)
+            m_microDataTokenLists->m_itemRef = DOMSettableTokenList::create();
 
-        return m_itemRef.get();
+        return m_microDataTokenLists->m_itemRef.get();
     }
 
     void setItemRef(const String& value)
     {
-        if (!m_itemRef)
-            m_itemRef = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemRef)
+            m_microDataTokenLists->m_itemRef = DOMSettableTokenList::create();
 
-        m_itemRef->setValue(value);
+        m_microDataTokenLists->m_itemRef->setValue(value);
     }
 
     DOMSettableTokenList* itemType() const
     {
-        if (!m_itemType)
-            m_itemType = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemType)
+            m_microDataTokenLists->m_itemType = DOMSettableTokenList::create();
 
-        return m_itemType.get();
+        return m_microDataTokenLists->m_itemType.get();
     }
 
     void setItemType(const String& value)
     {
-        if (!m_itemType)
-            m_itemType = DOMSettableTokenList::create();
+        if (!ensureMicroDataTokenLists()->m_itemType)
+            m_microDataTokenLists->m_itemType = DOMSettableTokenList::create();
 
-        m_itemType->setValue(value);
+        m_microDataTokenLists->m_itemType->setValue(value);
     }
 #endif
 
-    bool isFocused() const { return m_isFocused; }
-    void setFocused(bool focused) { m_isFocused = focused; }
-
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
+
+protected:
+    short m_tabIndex;
+    unsigned short m_childIndex;
+    bool m_tabIndexWasSetExplicitly : 1;
+    bool m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
+    bool m_styleAffectedByEmpty : 1;
+    bool m_isInCanvasSubtree : 1;
+#if ENABLE(FULLSCREEN_API)
+    bool m_containsFullScreenElement : 1;
+#endif
+#if ENABLE(DIALOG_ELEMENT)
+    bool m_isInTopLayer : 1;
+#endif
+    bool m_childrenAffectedByHover : 1;
+    bool m_childrenAffectedByActive : 1;
+    bool m_childrenAffectedByDrag : 1;
+    // Bits for dynamic child matching.
+    // We optimize for :first-child and :last-child. The other positional child selectors like nth-child or
+    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
+    bool m_childrenAffectedByFirstChildRules : 1;
+    bool m_childrenAffectedByLastChildRules : 1;
+    bool m_childrenAffectedByDirectAdjacentRules : 1;
+    bool m_childrenAffectedByForwardPositionalRules : 1;
+    bool m_childrenAffectedByBackwardPositionalRules : 1;
 
 private:
     OwnPtr<NodeListsNodeData> m_nodeLists;
-    ChildNodeList* m_childNodeList;
 
 #if ENABLE(MUTATION_OBSERVERS)
-    OwnPtr<Vector<OwnPtr<MutationObserverRegistration> > > m_mutationObserverRegistry;
-    OwnPtr<HashSet<MutationObserverRegistration*> > m_transientMutationObserverRegistry;
+    OwnPtr<NodeMutationObserverData> m_mutationObserverData;
 #endif
 
 #if ENABLE(MICRODATA)
-    mutable RefPtr<DOMSettableTokenList> m_itemProp;
-    mutable RefPtr<DOMSettableTokenList> m_itemRef;
-    mutable RefPtr<DOMSettableTokenList> m_itemType;
+    mutable OwnPtr<NodeMicroDataTokenLists> m_microDataTokenLists;
 #endif
 };
 

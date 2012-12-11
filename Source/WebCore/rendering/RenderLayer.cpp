@@ -99,6 +99,8 @@
 #include "TextStream.h"
 #include "TransformationMatrix.h"
 #include "TranslateTransformOperation.h"
+#include "WebCoreMemoryInstrumentation.h"
+#include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
@@ -2636,6 +2638,16 @@ void RenderLayer::computeScrollDimensions()
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }
 
+bool RenderLayer::hasScrollableHorizontalOverflow() const
+{
+    return hasHorizontalOverflow() && renderBox()->scrollsOverflowX();
+}
+
+bool RenderLayer::hasScrollableVerticalOverflow() const
+{
+    return hasVerticalOverflow() && renderBox()->scrollsOverflowY();
+}
+
 bool RenderLayer::hasHorizontalOverflow() const
 {
     ASSERT(!m_scrollDimensionsDirty);
@@ -2718,7 +2730,7 @@ void RenderLayer::updateScrollbarsAfterLayout()
         m_vBar->setProportion(clientHeight, m_scrollSize.height());
     }
 
-    updateScrollableAreaSet((hasHorizontalOverflow || hasVerticalOverflow) && scrollsOverflow() && allowsScrolling());
+    updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 }
 
 void RenderLayer::updateScrollInfoAfterLayout()
@@ -5098,7 +5110,7 @@ void RenderLayer::updateScrollbarsAfterStyleChange(const RenderStyle* oldStyle)
     }
 
     if (!m_scrollDimensionsDirty)
-        updateScrollableAreaSet((hasHorizontalOverflow() || hasVerticalOverflow()) && scrollsOverflow() && allowsScrolling());
+        updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 }
 
 void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
@@ -5396,7 +5408,7 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
     // go through regular processing (e.g. compositing), but never apply anything.
-    if (!filterInfo->renderer()->build(renderer()->document(), computeFilterOperations(renderer()->style())))
+    if (!filterInfo->renderer()->build(renderer(), computeFilterOperations(renderer()->style())))
         filterInfo->setRenderer(0);
 }
 
@@ -5407,6 +5419,32 @@ void RenderLayer::filterNeedsRepaint()
         renderer()->repaint();
 }
 #endif
+
+void RenderLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Rendering);
+    ScrollableArea::reportMemoryUsage(memoryObjectInfo);
+    info.addWeakPointer(m_renderer);
+    info.addWeakPointer(m_parent);
+    info.addWeakPointer(m_previous);
+    info.addWeakPointer(m_next);
+    info.addWeakPointer(m_first);
+    info.addWeakPointer(m_last);
+    info.addMember(m_hBar);
+    info.addMember(m_vBar);
+    info.addMember(m_posZOrderList);
+    info.addMember(m_negZOrderList);
+    info.addMember(m_normalFlowList);
+    info.addMember(m_clipRectsCache);
+    info.addMember(m_marquee);
+    info.addMember(m_transform);
+    info.addWeakPointer(m_reflection);
+    info.addWeakPointer(m_scrollCorner);
+    info.addWeakPointer(m_resizer);
+#if USE(ACCELERATED_COMPOSITING)
+    info.addMember(m_backing);
+#endif
+}
 
 } // namespace WebCore
 

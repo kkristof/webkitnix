@@ -1119,6 +1119,7 @@ bool BackingStorePrivate::render(const Platform::IntRect& rect)
         backBuffer->clearRenderedRegion();
 
         BlackBerry::Platform::Graphics::Buffer* nativeBuffer = backBuffer->nativeBuffer();
+        BlackBerry::Platform::Graphics::setBufferOpaqueHint(nativeBuffer, !Color(m_webPage->settings()->backgroundColor()).hasAlpha());
 
         // TODO: This code is only needed for EGLImage code path, but preferrably BackingStore
         // should not know that, and the synchronization should be in BlackBerry::Platform::Graphics
@@ -1284,6 +1285,8 @@ void BackingStorePrivate::blitVisibleContents(bool force)
     m_hasBlitJobs = false;
 
     Platform::ViewportAccessor* viewportAccessor = m_webPage->client()->userInterfaceViewportAccessor();
+    if (!viewportAccessor)
+        return;
     const Platform::IntRect dstRect = viewportAccessor->destinationSurfaceRect();
 
     const Platform::IntRect pixelViewportRect = viewportAccessor->pixelViewportRect();
@@ -2283,9 +2286,10 @@ void BackingStorePrivate::setWebPageBackgroundColor(const WebCore::Color& color)
 void BackingStorePrivate::invalidateWindow()
 {
     // Grab a rect appropriate for the current thread.
-    if (BlackBerry::Platform::userInterfaceThreadMessageClient()->isCurrentThread())
-        invalidateWindow(m_webPage->client()->userInterfaceViewportAccessor()->destinationSurfaceRect());
-    else
+    if (BlackBerry::Platform::userInterfaceThreadMessageClient()->isCurrentThread()) {
+        if (m_webPage->client()->userInterfaceViewportAccessor())
+            invalidateWindow(m_webPage->client()->userInterfaceViewportAccessor()->destinationSurfaceRect());
+    } else
         invalidateWindow(Platform::IntRect(Platform::IntPoint(0, 0), m_client->transformedViewportSize()));
 }
 

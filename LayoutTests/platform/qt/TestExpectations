@@ -1095,6 +1095,7 @@ fast/canvas/2d.backingStorePixelRatio.html
 fast/canvas/2d.imageDataHD.html
 fast/canvas/canvas-as-image-hidpi.html
 fast/canvas/canvas-resize-reset-pixelRatio.html
+fast/events/mouse-cursor-image-set.html
 svg/as-image/svg-as-image-canvas.html
 
 # This requires didClearWindowObjectForFrameInIsolatedWorld foo in FrameLoaderClient
@@ -1692,6 +1693,7 @@ fast/text/international/wrap-CJK-001.html
 fast/repaint/japanese-rl-selection-clear.html
 fast/repaint/japanese-rl-selection-repaint.html
 fast/repaint/japanese-rl-selection-repaint-in-regions.html
+fast/text/decorations-with-text-combine.html
 fast/text/international/bdi-neutral-wrapped.html
 fast/text/international/bidi-mirror-he-ar.html
 fast/text/international/bold-bengali.html
@@ -2385,7 +2387,6 @@ webkit.org/b/99306 animations/additive-transform-animations.html [ ImageOnlyFail
 webkit.org/b/99306 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 webkit.org/b/99306 animations/missing-values-first-keyframe.html [ ImageOnlyFailure ]
 webkit.org/b/99306 animations/missing-values-last-keyframe.html [ ImageOnlyFailure ]
-webkit.org/b/99306 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 webkit.org/b/99306 css3/filters/effect-blur-hw.html [ ImageOnlyFailure ] # Blur effect radius is too small on WebKit1, the effect not applied at all on WebKit2.
 
 # REGRESSION(r132143): It made fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html flakey
@@ -2436,4 +2437,15 @@ webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
 # [Qt] A new compositing bug uncovered by r135859
 webkit.org/b/103424 fast/backgrounds/background-opaque-images-over-color.html
 
+# No support for exposing in-band text tracks
+webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
+
 webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
+
+# [Qt] new fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html fails since introduced in r136857
+webkit.org/b/104351 fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html
+
+# [Qt] new http/tests/xmlhttprequest/post-blob-content-type-sync.html and ~async.html fail since introduced in r136893
+# https://bugs.webkit.org/show_bug.cgi?id=104352
+http/tests/xmlhttprequest/post-blob-content-type-async.html
+http/tests/xmlhttprequest/post-blob-content-type-sync.html

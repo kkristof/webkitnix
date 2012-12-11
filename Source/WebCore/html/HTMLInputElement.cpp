@@ -1051,16 +1051,6 @@ void HTMLInputElement::setValueAsNumber(double newValue, ExceptionCode& ec, Text
     m_inputType->setValueAsDouble(newValue, eventBehavior, ec);
 }
 
-String HTMLInputElement::placeholder() const
-{
-    return fastGetAttribute(placeholderAttr).string();
-}
-
-void HTMLInputElement::setPlaceholder(const String& value)
-{
-    setAttribute(placeholderAttr, value);
-}
-
 void HTMLInputElement::setValueFromRenderer(const String& value)
 {
     // File upload controls will never use this.
@@ -1433,15 +1423,15 @@ void HTMLInputElement::unregisterForSuspensionCallbackIfNeeded()
 
 bool HTMLInputElement::isRequiredFormControl() const
 {
-    return m_inputType->supportsRequired() && required();
+    return m_inputType->supportsRequired() && isRequired();
 }
 
-bool HTMLInputElement::shouldMatchReadOnlySelector() const
+bool HTMLInputElement::matchesReadOnlyPseudoClass() const
 {
     return m_inputType->supportsReadOnly() && readOnly();
 }
 
-bool HTMLInputElement::shouldMatchReadWriteSelector() const
+bool HTMLInputElement::matchesReadWritePseudoClass() const
 {
     return m_inputType->supportsReadOnly() && !readOnly();
 }
@@ -1888,7 +1878,7 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
     parameters.type = type();
     parameters.minimum = minimum();
     parameters.maximum = maximum();
-    parameters.required = required();
+    parameters.required = isRequired();
     if (!RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
         parameters.locale = defaultLanguage();
     else {

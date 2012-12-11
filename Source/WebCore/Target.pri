@@ -144,6 +144,7 @@ SOURCES += \
      bindings/js/JSHTMLOutputElementCustom.cpp \
      bindings/js/JSHTMLSelectElementCustom.cpp \
      bindings/js/JSHTMLStyleElementCustom.cpp \
+     bindings/js/JSHTMLTemplateElementCustom.cpp \
      bindings/js/JSHistoryCustom.cpp \
      bindings/js/JSImageConstructor.cpp \
      bindings/js/JSImageDataCustom.cpp \
@@ -180,8 +181,6 @@ SOURCES += \
      bindings/js/JSTouchCustom.cpp \
      bindings/js/JSTouchListCustom.cpp \
      bindings/js/JSTreeWalkerCustom.cpp \
-     bindings/js/JSWebKitAnimationCustom.cpp \
-     bindings/js/JSWebKitAnimationListCustom.cpp \
      bindings/js/JSWebKitCSSKeyframeRuleCustom.cpp \
      bindings/js/JSWebKitCSSKeyframesRuleCustom.cpp \
      bindings/js/JSWebKitPointCustom.cpp \
@@ -430,6 +429,7 @@ SOURCES += \
     dom/NodeIterator.cpp \
     dom/NodeRareData.cpp \
     dom/NodeRenderingContext.cpp \
+    dom/NodeTraversal.cpp \
     dom/Notation.cpp \
     dom/StaticHashSetNodeList.cpp \
     dom/OverflowEvent.cpp \
@@ -472,6 +472,7 @@ SOURCES += \
     dom/TreeWalker.cpp \
     dom/UIEvent.cpp \
     dom/UIEventWithKeyState.cpp \
+    dom/UserActionElementSet.cpp \
     dom/UserGestureIndicator.cpp \
     dom/UserTypingGestureIndicator.cpp \
     dom/ViewportArguments.cpp \
@@ -775,6 +776,7 @@ SOURCES += \
     inspector/InspectorHistory.cpp \
     inspector/InspectorInputAgent.cpp \
     inspector/InspectorInstrumentation.cpp \
+    inspector/InspectorLayerTreeAgent.cpp \
     inspector/InspectorMemoryAgent.cpp \
     inspector/InspectorOverlay.cpp \
     inspector/InspectorPageAgent.cpp \
@@ -875,8 +877,6 @@ SOURCES += \
     page/animation/CSSPropertyAnimation.cpp \
     page/animation/ImplicitAnimation.cpp \
     page/animation/KeyframeAnimation.cpp \
-    page/WebKitAnimation.cpp \
-    page/WebKitAnimationList.cpp \
     page/BarInfo.cpp \
     page/Chrome.cpp \
     page/Console.cpp \
@@ -938,6 +938,7 @@ SOURCES += \
     plugins/PluginMainThreadScheduler.cpp \
     plugins/DOMMimeType.cpp \
     plugins/DOMMimeTypeArray.cpp \
+    plugins/PlugInOriginHash.cpp \
     platform/animation/Animation.cpp \
     platform/animation/AnimationList.cpp \
     platform/Arena.cpp \
@@ -1610,6 +1611,7 @@ HEADERS += \
     dom/NodeIterator.h \
     dom/NodeRareData.h \
     dom/NodeRenderingContext.h \
+    dom/NodeTraversal.h \
     dom/Notation.h \
     dom/StaticHashSetNodeList.h \
     dom/OverflowEvent.h \
@@ -1624,6 +1626,7 @@ HEADERS += \
     dom/Range.h \
     dom/RegisteredEventListener.h \
     dom/RenderedDocumentMarker.h \
+    dom/UserActionElementSet.h \
     dom/ScriptedAnimationController.h \
     dom/ScriptElement.h \
     dom/ScriptExecutionContext.h \
@@ -1881,7 +1884,6 @@ HEADERS += \
     html/shadow/MediaControlsApple.h \
     html/shadow/DetailsMarkerControl.h \
     html/track/InbandTextTrack.h \
-    html/track/InbandTextTrackPrivate.h \
     html/track/LoadableTextTrack.h \
     html/track/TextTrack.h \
     html/track/TextTrackCue.h \
@@ -1893,6 +1895,7 @@ HEADERS += \
     html/track/WebVTTToken.h \
     html/track/WebVTTTokenizer.h \
     inspector/BindingVisitors.h \
+    inspector/ConsoleAPITypes.h \
     inspector/ConsoleMessage.h \
     inspector/ContentSearchUtils.h \
     inspector/DOMEditor.h \
@@ -1927,6 +1930,7 @@ HEADERS += \
     inspector/InspectorFrontendHost.h \
     inspector/InspectorHistory.h \
     inspector/InspectorInstrumentation.h \
+    inspector/InspectorLayerTreeAgent.h \
     inspector/InspectorMemoryAgent.h \
     inspector/InspectorOverlay.h \
     inspector/InspectorPageAgent.h \
@@ -2052,6 +2056,7 @@ HEADERS += \
     page/PageGroupLoadDeferrer.h \
     page/Page.h \
     page/PageVisibilityState.h \
+    page/PlugInClient.h \
     page/PopupOpeningObserver.h \
     page/PrintContext.h \
     page/Screen.h \
@@ -2066,8 +2071,6 @@ HEADERS += \
     page/SpeechInputResultList.h \
     page/TouchAdjustment.h \
     page/ValidationMessageClient.h \
-    page/WebKitAnimation.h \
-    page/WebKitAnimationList.h \
     page/WindowFeatures.h \
     page/WindowFocusAllowedIndicator.h \
     page/WorkerNavigator.h \
@@ -2170,6 +2173,8 @@ HEADERS += \
     platform/graphics/Image.h \
     platform/graphics/ImageOrientation.h \
     platform/graphics/ImageSource.h \
+    platform/graphics/InbandTextTrackPrivate.h \
+    platform/graphics/InbandTextTrackPrivateClient.h \
     platform/graphics/IntPoint.h \
     platform/graphics/IntPointHash.h \
     platform/graphics/IntRect.h \
@@ -2331,6 +2336,7 @@ HEADERS += \
     platform/Timer.h \
     platform/Widget.h \
     platform/PlatformStrategies.h \
+    platform/PrerenderClient.h \
     platform/PrerenderHandle.h \
     platform/LocalizedStrings.h \
     plugins/DOMMimeTypeArray.h \
@@ -2341,6 +2347,7 @@ HEADERS += \
     plugins/PluginDebug.h \
     plugins/DOMPlugin.h \
     plugins/IFrameShimSupport.h \
+    plugins/PlugInOriginHash.h \
     plugins/PluginMainThreadScheduler.h \
     plugins/PluginPackage.h \
     plugins/PluginStream.h \
@@ -4119,7 +4126,7 @@ use?(GRAPHICS_SURFACE) {
         SOURCES += platform/graphics/surfaces/win/GraphicsSurfaceWin.cpp
     }
     have?(XCOMPOSITE) {
-        SOURCES += platform/graphics/surfaces/qt/GraphicsSurfaceGLX.cpp
+        SOURCES += platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
     }
 }
 

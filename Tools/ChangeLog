@@ -1,3 +1,1102 @@
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Spurious stderr output from the event sender
+        https://bugs.webkit.org/show_bug.cgi?id=104678
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Eliminate some spurious stderr output from the EventSender by using an early return
+        instead of an assertion that prints a warning to the console.
+
+        * DumpRenderTree/gtk/EventSender.cpp:
+        (continuousMouseScrollByCallback): We don't support continuous scroll events that
+        move by page, but we should just fail silently instead of printing an error.
+
+2012-12-11  Joone Hur  <joone.hur@intel.com>
+
+        [GTK] Add GraphicsLayerActor
+        https://bugs.webkit.org/show_bug.cgi?id=91940
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add GraphicsLayerActor to the list of classes that contain GObjects
+        in the style checker script so that it does not complain about GObject
+        coding style.
+
+        * Scripts/webkitpy/style/checker.py:
+
+2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] remove hack which avoids unused .obj directories all over the place
+
+        Reviewed by Simon Hausmann.
+
+        The feature is subject to upstreaming in Qt itself in
+        https://codereview.qt-project.org/#change,42011
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] move SQLITE3SRCDIR assignment to only use site
+
+        Reviewed by Simon Hausmann.
+
+        Target.pri includes WebCore.pri the almost first thing, so that is
+        covered as well.
+
+        * qmake/mkspecs/features/default_pre.prf:
+
+2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] delete dead include paths
+
+        Reviewed by Simon Hausmann.
+
+        followup to https://bugs.webkit.org/show_bug.cgi?id=93446
+
+        * DumpRenderTree/qt/DumpRenderTree.pro:
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Implement some missing FrameLoaderClient message in DRT
+        https://bugs.webkit.org/show_bug.cgi?id=104444
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Install a FrameLoadEvent callback that prints the necessary output for some
+        missing FrameLoader events.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (frameLoadEventCallback): Added.
+        (createWebView): Install the FrameLoader event callback.
+
+2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] change setup of QMAKE_MOC
+
+        Reviewed by Simon Hausmann.
+
+        don't load(moc) explicitly - turns out that this breaks
+        debug_and_release builds (the feature does not like being loaded before
+        default_post has been loaded).
+        so instead just do a minimal call to find the moc executable.
+
+        as it's in fact only two files which need it, so de-centralize this call
+        for the sake of saving some cpu cycles spent in qmake.
+
+        * WebKitTestRunner/InjectedBundle/DerivedSources.pri:
+        * qmake/mkspecs/features/default_pre.prf:
+
+2012-12-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Fix the linking of debug builds on Mac with force_static_libs_as_shared
+        https://bugs.webkit.org/show_bug.cgi?id=104559
+
+        Reviewed by Tor Arne Vestbø.
+
+        "contains(libraries, $$TARGET): return(true)" fails for intermediate libraries since
+        at this point TARGET may contain the "_debug" suffix.
+
+        Fix it by moving the TARGET adjustment later in the file.
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [Coverity] [GTK] Remove some redundant null checks in DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=104570
+
+        Reviewed by Daniel Bates.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (descriptionSuitableForTestResult): Remove a redundant null check.
+
+2012-12-11  Alberto Garcia  <agarcia@igalia.com>
+
+        Remove unused GErrors
+        https://bugs.webkit.org/show_bug.cgi?id=104657
+
+        Reviewed by Martin Robinson.
+
+        Replace unused GErrors with null pointers.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (initializeFonts):
+        * DumpRenderTree/gtk/EditingCallbacks.cpp:
+        (dumpRange):
+        * WebKitTestRunner/InjectedBundle/gtk/ActivateFontsGtk.cpp:
+        (WTR::inititializeFontConfigSetting):
+
+2012-12-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bump the jhbuild libsoup version to fix an authentication issue
+        https://bugs.webkit.org/show_bug.cgi?id=104448
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Bump the libsoup version to one from the git repository. This requires updating
+        GLib as well which in turn requires adjusting the CFLAGS we pass when compiling
+        the scanobj step of the gtkdoc generation.
+
+        * gtk/generate-gtkdoc:
+        * gtk/jhbuild.modules:
+
+2012-12-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed functionality fix for the GTK port.
+
+        Enable the MicroData feature support for the GTK port in the FeatureList module.
+        This feature listing now again affects which features are enabled and which disabled
+        on the development builds of the GTK port.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-12-11  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] MiniBrowser is not built
+        https://bugs.webkit.org/show_bug.cgi?id=104629
+
+        Reviewed by Gyuyoung Kim.
+
+        As we are finding an elementary package in Tools/MiniBrowser/efl/CMakeList.txt since r137203,
+        we need to check if the package is found in the same place not in the Tools/CMakeList.txt.
+
+        * CMakeLists.txt:
+        * MiniBrowser/efl/CMakeLists.txt:
+
+2012-12-11  Xabier Rodriguez Calvar  <calvaris@igalia.com>
+
+        [GTK][jhbuild] Switch to GStreamer 1.0 build
+        https://bugs.webkit.org/show_bug.cgi?id=91727
+
+        Reviewed by Philippe Normand.
+
+        Switch build-webkit --gtk to GStreamer 1.0 support and build the
+        necessary GStreamer git modules from JHBuild.
+
+        * gtk/jhbuild.modules: Added GStreamer 1.0.3 build support.
+
+2012-12-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Feature enabling/disabling should be possible through build-webkit
+        https://bugs.webkit.org/show_bug.cgi?id=99271
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Refactor the code in webkitdirs.pm that builds an autotools project to generate
+        autogen.sh arguments, make arguments and installation prefix from the passed-in
+        parameters rather than generating all of that in build-webkit. The autogen.sh
+        arguments now contain only enable/disable flags for options that are actually
+        configurable in configure.ac, the flag value actually reflecting whether the feature
+        is enabled or disabled in the feature list.
+
+        Other features are overridable through modifying the GNUmakefile.features.am file.
+        All these features are now stored in the build directory and upon change trigger
+        a rerun of the autogen.sh script, pretty much like the autogen.sh arguments do.
+
+        The override-feature-defines script is called by autogen.sh, before GNUmakefile.in is
+        generated when calling autoreconf. Its task is to copy the GNUmakefile.features.am.in
+        into GNUmakefile.features.am and modify it if there's a text file in the build directory
+        that contains all the feature defines the build-webkit script has written. If the build
+        is not done through build-webkit (and there's no file in build directory listing all the
+        feature defines) the script does not advance further from copying.
+
+        This approach is taken to overcome the rigidness of the automake system as it's impossible
+        to effectively generate and use GNUmakefile.features.am or even GNUmakefile.features file
+        after the autoreconf command execution in autogen.sh.
+
+        * Scripts/build-jsc:
+        (buildMyProject):
+        * Scripts/build-webkit:
+        * Scripts/webkitdirs.pm:
+        (runAutogenForAutotoolsProjectIfNecessary):
+        (mustReRunAutogen):
+        (buildAutotoolsProject):
+        (buildGtkProject):
+        * Scripts/webkitperl/FeatureList.pm: Update the features that are currently enabled in
+        Source/WebCore/GNUmakefile.features.am.in but aren't in the feature list.
+        * Scripts/webkitpy/style/checker.py: Source/WebCore/GNUmakefile.features.am.in is recognized
+        as a text file and tabulation errors are reported. Skip the file to suppress them.
+        * gtk/override-feature-defines: Added.
+        (copy_feature_defines_makefile):
+        (adjust_feature_defines_makefile):
+        (adjust_feature_defines_makefile.override_feature_define):
+        (override_feature_defines):
+
+2012-12-10  Yury Semikhatsky  <yurys@chromium.org>
+
+        Memory instrumentation: make sure each edge is reported only once
+        https://bugs.webkit.org/show_bug.cgi?id=104630
+
+        Reviewed by Pavel Feldman.
+
+        Test that outgoing edges are reported only once if we come to the same
+        object twice: first by an address of a base class and then by a real address
+        of the object.
+
+        * TestWebKitAPI/Tests/WTF/MemoryInstrumentationTest.cpp:
+
+2012-12-10  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove WebCompositorOutputSurface implementations from DRT
+        https://bugs.webkit.org/show_bug.cgi?id=104046
+
+        Reviewed by Darin Fisher.
+
+        The classes are now provided through WebCompositorSupport.
+
+        * DumpRenderTree/DumpRenderTree.gypi:
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::createOutputSurface):
+        * DumpRenderTree/chromium/WebViewHostOutputSurface.cpp: Removed.
+        * DumpRenderTree/chromium/WebViewHostOutputSurface.h: Removed.
+        * DumpRenderTree/chromium/WebViewHostSoftwareOutputDevice.cpp: Removed.
+        * DumpRenderTree/chromium/WebViewHostSoftwareOutputDevice.h: Removed.
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        change --no-launch-safari to --no-show-results in scripts
+        https://bugs.webkit.org/show_bug.cgi?id=104298
+
+        Reviewed by Eric Seidel.
+
+        Since Safari only exists on the Apple ports, NRWT calls the
+        command line flag --[no-]show-results instead. This updates
+        the scripts to use the new flag (but not the buildbot config yet).
+
+        * Scripts/generate-coverage-data:
+        * Scripts/webkit-tools-completion.sh:
+        * Scripts/webkitpy/tool/steps/runtests.py:
+        (RunTests.run):
+        * Scripts/webkitpy/tool/steps/runtests_unittest.py:
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: fix mapping of AUDIO onto FAIL when printing unexpected results
+        https://bugs.webkit.org/show_bug.cgi?id=104597
+
+        Reviewed by Ojan Vafai.
+
+        This was broken in the recent printer refactoring.
+
+        * Scripts/webkitpy/layout_tests/views/buildbot_results.py:
+        (BuildBotPrinter.print_unexpected_results.add_result.is_expected):
+        * Scripts/webkitpy/layout_tests/views/buildbot_results_unittest.py:
+        (BuildBotPrinterTests.get_result):
+        (BuildBotPrinterTests.test_print_unexpected_results):
+        (BuildBotPrinterTests.test_print_unexpected_results.get_unexpected_results):
+        (BuildBotPrinterTests):
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        old-run-webkit-tests: add --show-results properly
+        https://bugs.webkit.org/show_bug.cgi?id=104608
+
+        Reviewed by Eric Seidel.
+
+        Rework r137219 / bug 104601 to use the correct perl idiom.
+
+        * Scripts/old-run-webkit-tests:
+
+2012-12-10  Aaron Colwell  <acolwell@chromium.org>
+
+        Unreviewed. Adding Aaron Colwell to the contributor list.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-10  Anders Carlsson  <andersca@apple.com>
+
+        Remove WebKit2 tests on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=104607
+
+        Reviewed by Tim Horton.
+
+        Stop building WebKit2 tests and remove associated files.
+
+        * TestWebKitAPI/win/InjectedBundleControllerWin.cpp: Removed.
+        * TestWebKitAPI/win/PlatformUtilitiesWin.cpp: Removed.
+        * TestWebKitAPI/win/PlatformWebViewWin.cpp: Removed.
+        * TestWebKitAPI/win/TestWebKitAPI.sln: Removed.
+        * TestWebKitAPI/win/TestWebKitAPI.vcproj:
+        * TestWebKitAPI/win/TestWebKitAPIGenerated.vcproj: Removed.
+        * TestWebKitAPI/win/TestWebKitAPIGeneratedCommon.vsprops: Removed.
+        * TestWebKitAPI/win/TestWebKitAPIInjectedBundle.vcproj: Removed.
+        * TestWebKitAPI/win/WindowMessageObserver.h: Removed.
+        * TestWebKitAPI/win/copy-resources.cmd: Removed.
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        old-run-webkit-tests: support --no-show-results for compatibility w/ NRWT
+        https://bugs.webkit.org/show_bug.cgi?id=104601
+
+        Reviewed by Eric Siedel.
+
+        This flag is being added so we can move all of the calling scripts
+        over to using --no-show-results instead of --no-launch-safari.
+
+        * Scripts/old-run-webkit-tests:
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: use the default logic for skipping platform-specific tests for chromium
+        https://bugs.webkit.org/show_bug.cgi?id=104403
+
+        Reviewed by Stephen White.
+
+        I thought I had fixed this a while ago, but the chromium port was
+        using custom logic to figure out which platform/* tests to run (or
+        skip) and as a result we were getting some odd behavior (like running
+        tests in chromium-linux on chromium-mac, but only when there was
+        an expectation listed for the test).
+
+        Ports are supposed to only run the tests found under their
+        baseline_search_path() by default.
+
+        Not writing a test for this; theoretically there shouldn't been a
+        test checking that the behavior for Chromium was *different* than
+        the other ports before.
+
+        * Scripts/webkitpy/layout_tests/port/chromium.py:
+        (ChromiumPort._missing_symbol_to_skipped_tests):
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        fix regression in test-webkitpy after r137189
+        https://bugs.webkit.org/show_bug.cgi?id=104589
+
+        Reviewed by Eric Seidel.
+
+        Need to specify full port names.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (MainTest.test_build_check):
+
+2012-12-10  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Change the minimum required EFL version to 1.6
+        https://bugs.webkit.org/show_bug.cgi?id=104431
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Change the minimum required EFL version to 1.6 from 1.7.
+        The elementary EFL package is only required to build MiniBrowser,
+        so I moved the required only to the Minibrowser CMake file.
+
+        * MiniBrowser/efl/CMakeLists.txt: In addition removed
+        ENABLE_GLIB_SUPPORT as it is obsolete and it was always set to be on.
+
+2012-12-10  Dean Jackson  <dino@apple.com>
+
+        Unreviewed. Adding Antoine to the contributor list so his name autocompletes in bugzilla.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        REGRESSION (r118735): svg/dom/complex-svgView-specification.html, svg/dom/SVGViewSpec.html, svg/dom/viewspec-parser.html failing on GTK Linux 64-bit Release
+        https://bugs.webkit.org/show_bug.cgi?id=87734
+
+        Reviewed by Martin Robinson.
+
+        When willSendRequest should return null in testing, cancel the SoupMessage
+        instead of setting the request's URI to about:blank.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (willSendRequestCallback):
+
+2012-12-10  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] Move the test implementation of WebKit::WebPlugin to the TestRunner library
+        https://bugs.webkit.org/show_bug.cgi?id=104537
+
+        Reviewed by Tony Chang.
+
+        In order to hide implementation details from the public TestRunner API,
+        I moved the plugin to WebTestPluginImpl and added a static create
+        method to WebTestPlugin. Also, I renamed the plugin from TestWebPlugin
+        to WebTestPlugin to be more in line with other classes in the
+        TestRunner API.
+
+        * DumpRenderTree/DumpRenderTree.gypi:
+        * DumpRenderTree/chromium/TestRunner/public/WebTestPlugin.h: Added.
+        (WebTestRunner):
+        (WebTestPlugin):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestPlugin.cpp: Renamed from Tools/DumpRenderTree/chromium/TestWebPlugin.cpp.
+        (WebTestRunner::WebTestPlugin::create):
+        (WebTestRunner):
+        (WebTestRunner::WebTestPlugin::WebTestPlugin):
+        (WebTestRunner::WebTestPlugin::~WebTestPlugin):
+        (WebTestRunner::WebTestPlugin::mimeType):
+        * DumpRenderTree/chromium/TestWebPlugin.h: Removed.
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::createPlugin):
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        run_webkit_tests throws exception when DRT is not present
+        https://bugs.webkit.org/show_bug.cgi?id=104565
+
+        Reviewed by Jochen Eisinger.
+
+        Don't actually try to print the bot results if there aren't
+        any because we exited before running any tests.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (main):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (MainTest.test_build_check):
+
+2012-12-10  Benjamin Poulain  <benjamin@webkit.org>
+
+        Add convenience methods to use ListHashSet for a LRU cache
+        https://bugs.webkit.org/show_bug.cgi?id=104499
+
+        Reviewed by Sam Weinig.
+
+        Test the new methods added to ListHashSet.
+
+        * TestWebKitAPI/CMakeLists.txt:
+        * TestWebKitAPI/GNUmakefile.am:
+        * TestWebKitAPI/TestWebKitAPI.gypi:
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/WTF/ListHashSet.cpp: Added.
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST):
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        webkit-patch print-expectations doesn't work right for platforms w/ shared expectations
+        https://bugs.webkit.org/show_bug.cgi?id=104405
+
+        Reviewed by Eric Seidel.
+
+        If multiple ports shared a TestExpectations file, webkit-patch
+        print-expectations would use the expectation for the first port
+        using that file and print the result for all ports, rather than
+        re-parse and print each port separately (e.g., we might print
+        the chromium-linux expectation for a file for both chromium-linux
+        and chromium-mac). Discovered while testing/debugging the fix
+        for bug 104403.
+
+        * Scripts/webkitpy/layout_tests/port/test.py:
+        (TestPort._skipped_tests_for_unsupported_features):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (lint):
+        * Scripts/webkitpy/tool/commands/queries.py:
+        (PrintExpectations._model):
+        * Scripts/webkitpy/tool/commands/queries_unittest.py:
+        (PrintExpectationsTest.test_platform):
+
+2012-12-10  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: fix total number of tests computed in the result summary
+        https://bugs.webkit.org/show_bug.cgi?id=104061
+
+        Reviewed by Jochen Eisinger.
+
+        Good thing I left this open, because I actually broke it again
+        the same way in a merge. Fix the computation of the one_line_summary
+        again, and add tests for it (also clean up some redundant tests).
+
+        Also, add constants into the test port code so that the knowledge
+        of how many tests should fail and how is next to the list of tests,
+        rather than a totally different place.
+
+        * Scripts/webkitpy/layout_tests/controllers/layout_test_runner.py:
+        (LayoutTestRunner.run_tests):
+        * Scripts/webkitpy/layout_tests/port/test.py:
+        (TestList.__getitem__):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (get_test_results):
+        (MainTest.setUp):
+        (MainTest.test_basic):
+        (MainTest.test_run_singly_actually_runs_tests):
+        (MainTest.test_test_list_with_prefix):
+        (MainTest.test_missing_and_unexpected_results_with_custom_exit_code.CustomExitCodePort):
+        (MainTest.test_tolerance.ImageDiffTestPort):
+        (EndToEndTest.parse_full_results):
+
+2012-12-10  Mike West  <mkwst@chromium.org>
+
+        Log to console when script is blocked by sandbox attributes.
+        https://bugs.webkit.org/show_bug.cgi?id=104365
+
+        Reviewed by Ojan Vafai.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest):
+            Ignoring the new console message in perftests, as it broke parsing
+            for the Parser/html-parser.html microbenchmark.
+
+2012-12-10  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC profiling and debug dump code should use inferred names when possible
+        https://bugs.webkit.org/show_bug.cgi?id=104519
+
+        Reviewed by Oliver Hunt.
+
+        The format I'm using for referring to a code block is now name#hash. For example,
+        v8-crypto has something called bnpSquareTo#B5QFbU. The profiler allows you to use
+        either the hash, the inferred name, or the combined hash and full name when referring
+        to blocks.
+
+        * Scripts/display-profiler-output:
+
+2012-12-09  Filip Pizlo  <fpizlo@apple.com>
+
+        Profiler should say things about OSR exits
+        https://bugs.webkit.org/show_bug.cgi?id=104497
+
+        Reviewed by Oliver Hunt.
+
+        Adds support for displaying OSR exit information for full summary (just displays the
+        counts and the number of recompilations), bytecode display (says which bytecodes
+        exited), and DFG display (annotates disassembly with taken OSR exits and their
+        counts).
+
+        * Scripts/display-profiler-output:
+
+2012-12-10  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Remove CSS3_BACKGROUND feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=104539
+
+        Reviewed by Antonio Gomes.
+
+        As discussed on webkit-dev it is not needed to keep this feature flag 
+        as support for <position> type is a small feature that is already 
+        implemented by three other UAs. It was useful while landing this 
+        feature as partial bits were landed one after one.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        Build fix.
+
+        Add a patchfile missing from my previous commit.
+
+        * gtk/patches/harfbuzz-icu-detection-fix.patch: Added.
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        REGRESSION(137127): Causes assertion failures on the debug bots
+        https://bugs.webkit.org/show_bug.cgi?id=104549
+
+        Reviewed by Alejandro G. Castro.
+
+        After handling the new TextOutput message we should return the method
+        handling messages received.
+
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle): Fix a missing early return.
+
+2012-12-09  Gustavo Noronha Silva  <gustavo.noronha@collabora.com>
+
+        [Soup] utilize multipart/x-mixed-replace support recently added to libsoup
+        https://bugs.webkit.org/show_bug.cgi?id=94515
+
+        Reviewed by Martin Robinson.
+
+        This change requires a very recent libsoup, so update our jhbuild
+        requirements.
+
+        * gtk/jhbuild.modules: depend on soup version that adds the multipart/x-mixed-replace
+        support
+        * efl/jhbuild.modules: ditto
+
+2012-12-10  Zoltan Nyul  <zoltan.nyul@intel.com>
+
+        Implement testRunner.setViewModeMediaFeature() in WebKitTestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=103886
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Implement testRunner.setViewModeMediaFeature() in WebKitTestRunner.
+        This API is required by layout tests.
+
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::setViewModeMediaFeature):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bring Harfbuzz-ng support to Gtk
+        https://bugs.webkit.org/show_bug.cgi?id=92098
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add HarfBuzz dependency.
+
+        * GNUmakefile.am: Add FreeType/HarfBuzz CFLAGS to the WebCore Internals library.
+        * gtk/jhbuild.modules: Add HarfBuzz to the JHbuild and remove Pango, since it
+        should no longer affect layout test results.
+
+2012-12-10  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Use QLibraryInfo::LibraryExecutablesPath unconditionally
+        https://bugs.webkit.org/show_bug.cgi?id=104541
+
+        Reviewed by Jocelyn Turcotte.
+
+        We now depend on a Qt 5 version that is guaranteed to have this API, so we
+        can remove the configure checks for it.
+
+        * qmake/config.tests/libexecdir/libexecdir.cpp: Removed.
+        * qmake/config.tests/libexecdir/libexecdir.pro: Removed.
+        * qmake/mkspecs/features/features.prf:
+
+2012-12-10  Víctor Manuel Jáquez Leal  <vjaquez@igalia.com>
+
+        REGRESSION(r135863): GtkLauncher --help no longer displays all help options
+        https://bugs.webkit.org/show_bug.cgi?id=104382
+
+        Reviewed by Philippe Normand.
+
+        Remove gst_init() because it steals the GOptionContext.
+        gst_init_get_option_group() already does the initialization job.
+
+        * GtkLauncher/main.c:
+        (main):
+
+2012-12-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK][WTR] Implement AccessibilityUIElement::titleUIElement
+        https://bugs.webkit.org/show_bug.cgi?id=102953
+
+        Reviewed by Martin Robinson.
+
+        Implement AccessibilityUIElement::titleUIElement in the ATK backend
+        in the same manner it is implemented in DumpRenderTree. Both implementations
+        are updated to unref the relation set before the final function return
+        rather than at the end of each loop through the relations held in the said
+        relation set.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (AccessibilityUIElement::titleUIElement):
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::AccessibilityUIElement::titleUIElement):
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        Fix the WebKit2 debug build
+
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle): Fix a typo of WKStringGetTypeID().
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [WTR] Move text output accumulation to the UIProcess
+        https://bugs.webkit.org/show_bug.cgi?id=104214
+
+        Reviewed by Darin Adler.
+
+        Instead of accumulating text output in the InjectedBundle and then sending it to the UIProcess 
+        once a test is finished, immediately send any text output to the UIProcess. This will allow
+        WebKitTestRunner to output text from the UIProcess as well.
+
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp: Remove the handling of the text output
+        StringBuilder. Add a method to send output to the UIProcess.
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp: Change code that appends to the StringBuilder
+        to use the new outputText method.
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.h:
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp: Ditto.
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityControllerAtk.cpp: Ditto.
+        * WebKitTestRunner/TestInvocation.cpp:
+        (WTR::TestInvocation::TestInvocation): Intialize the StringBuilder.
+        (WTR::TestInvocation::invoke): Clear the StringBuilder when a new tests starts.
+        (WTR::TestInvocation::dumpResults): m_textOutput is a StringBuilder now so the
+        method of printing the text is slightly different.
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle): Handle the new TextOutput
+        message by appending the results to the StringBuilder.
+        * WebKitTestRunner/TestInvocation.h:
+        (TestInvocation): Switch the type of m_textOutput.
+
+2012-12-10  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        Unreviewed. Adding Mihai Maerean to the list of contributors, working on CSSRegions.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-10  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/language-attribute.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98369
+
+        Reviewed by Chris Fleizach.
+
+        The test is failing for two reasons: Not exposing the language
+        for accessible objects and AccessibilityUIElement::language() not
+        being implemented.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (AccessibilityUIElement::language): Implemented.
+
+2012-12-10  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/editable-webarea-context-menu-point.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98364
+
+        Reviewed by Chris Fleizach.
+
+        The test is failing because the clickPoint values remain unchanged. The
+        values remain unchanged because ATK lacks a means to keep track of this
+        information.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (AccessibilityUIElement::clickPointX): Added comment that ATK doesn't have clickPoint details
+        (AccessibilityUIElement::clickPointY): Added comment that ATK doesn't have clickPoint details
+
+2012-12-09  Alejandro Piñeiro  <apinheiro@igalia.com>
+
+        [GTK] lack of implemention of AccessibilityUIElementGtk::isSelectable and AccessibilityUIElementGtk::isMultiSelectable
+        https://bugs.webkit.org/show_bug.cgi?id=104481
+
+        Reviewed by Martin Robinson.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (AccessibilityUIElement::isSelectable): Implement this by checking
+        the current state of the AtkObject.
+        (AccessibilityUIElement::isMultiSelectable): Implement this by
+        checking the current state of the AtkObject.
+
+2012-12-09  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/placeholder.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98373
+
+        Reviewed by Martin Robinson.
+
+        The test was failing because the placeholder text was not supported and
+        AccessibilityUIElement::stringAttributeValue() was not implemented.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (coreAttributeToAtkAttribute): New convenience method to convert WebCore attribute
+        names into AtkObject attribute names
+        (AccessibilityUIElement::stringAttributeValue): implemented
+
+2012-12-09  Dan Winship  <danw@gnome.org>
+
+        [GTK] Bump libxml2 requirement in jhbuild.modules
+        https://bugs.webkit.org/show_bug.cgi?id=104477
+
+        Reviewed by Martin Robinson.
+
+        Fedora 18's Apache depends on symbols in libxml2 2.9.0, so the
+        tests won't run if we only have libxml2 2.8.0 installed in the
+        jhbuild root.
+
+        * gtk/jhbuild.modules:
+
+2012-12-09  Zan Dobersek  <zandobersek@gmail.com>
+
+        Remove testRunner.disableImageLoading()
+        https://bugs.webkit.org/show_bug.cgi?id=98083
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Remove the disableImageLoading methods and callback.
+        No tests use the method anymore and all ports except Wx
+        now support this behavior through overriding the
+        WebKitDisplayImagesKey preference.
+
+        * DumpRenderTree/TestRunner.cpp:
+        (TestRunner::staticFunctions):
+        * DumpRenderTree/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        (TestRunner::overridePreference): Add support for overriding the
+        WebKitDisplayImagesKey preference which is now the preferred way
+        of disabling image loading.
+        * DumpRenderTree/efl/TestRunnerEfl.cpp:
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunner):
+        * DumpRenderTree/win/TestRunnerWin.cpp:
+        * DumpRenderTree/wx/TestRunnerWx.cpp:
+
+2012-12-09  Joanmarie Diggs  <jdiggs@igalia.com>
+
+        [GTK] accessibility/label-for-control-hittest.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=98368
+
+        Reviewed by Martin Robinson.
+
+        The test was failing because AccessibilityUIElement::elementAtPoint was
+        not implemented.
+
+        * DumpRenderTree/gtk/AccessibilityUIElementGtk.cpp:
+        (AccessibilityUIElement::elementAtPoint): implemented
+
+2012-12-09  Jon Lee  <jonlee@apple.com>
+
+        [WK2] Move button image to injected bundle
+        https://bugs.webkit.org/show_bug.cgi?id=104107
+        <rdar://problem/12813842>
+
+        Reviewed by Simon Fraser.
+
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::InjectedBundlePage): Update the bundle page UI client.
+
+2012-12-08  Halton Huo  <halton.huo@intel.com>
+
+        [CMake] Add CMake style checker
+        https://bugs.webkit.org/show_bug.cgi?id=104240
+
+        Reviewed by Eric Seidel.
+
+        The CMake style checker is followed by existing style checkers like cpp, python.
+        Unit test is added as well.
+
+        * Scripts/webkitpy/style/checker.py: Use CMakeChecker CMAKE type files(.cmake or CMakeLists.txt)
+        (FileType):
+        (CheckerDispatcher._file_type):
+        (CheckerDispatcher._create_checker):
+        * Scripts/webkitpy/style/checkers/cmake.py: Added.
+        (CMakeChecker):
+        (CMakeChecker.__init__): 
+        (CMakeChecker.check):
+        (CMakeChecker._process_line):
+        (CMakeChecker._check_trailing_whitespace):
+        (CMakeChecker._check_no_space_cmds):
+        (CMakeChecker._check_one_space_cmds):
+        (CMakeChecker._check_non_lowercase_cmd):
+        (CMakeChecker._check_indent):
+        * Scripts/webkitpy/style/checkers/cmake_unittest.py: Added.
+        (CMakeCheckerTest):
+        (CMakeCheckerTest.test_init):
+        (CMakeCheckerTest.test_init._mock_handle_style_error):
+        (CMakeCheckerTest.test_check):
+        (CMakeCheckerTest.test_check._mock_handle_style_error):
+
+2012-12-08  Kondapally Kalyan  <kalyan.kondapally@intel.com>
+
+        [EFL] Enable WebGL by default.
+        https://bugs.webkit.org/show_bug.cgi?id=102991.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Enable WebGL by default.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-12-07  Scott Violet  <sky@chromium.org>
+
+        [chromium] Remove linux theme related files and switch to default
+        https://bugs.webkit.org/show_bug.cgi?id=103897
+
+        Reviewed by Dimitri Glazkov.
+
+        * Scripts/webkitpy/common/config/build_unittest.py:
+        (ShouldBuildTest): linux->default
+
+2012-12-07  Mike Lattanzio  <mlattanzio@rim.com>
+
+        [BlackBerry] Update BlackBerry Port to use new Graphics::createBuffer BufferType enum values.
+        https://bugs.webkit.org/show_bug.cgi?id=104121
+
+        Reviewed by Rob Buis.
+
+        Update createBuffer call to reflect new BufferType enum.
+        Internal PR 254649
+        Internal Review: Jakob Petsovits
+
+        DRT is always backed for maximum compatibility.
+
+        * DumpRenderTree/blackberry/PixelDumpSupportBlackBerry.cpp:
+        (createBitmapContextFromWebView):
+
+2012-12-07  Jochen Eisinger  <jochen@chromium.org>
+
+        Add 'CHROMIUM_DEVEL_SANDBOX' to the environment variables to copy for layout test drivers
+        https://bugs.webkit.org/show_bug.cgi?id=104355
+
+        Reviewed by Dirk Pranke.
+
+        This enables chromium's content_shell driver to run with the full SUID
+        sandbox.
+
+        * Scripts/webkitpy/layout_tests/port/base.py:
+        (Port.to.setup_environ_for_server):
+
+2012-12-07  KyungTae Kim  <ktf.kim@samsung.com>
+
+        [EFL] Fix tools for WebKit2-only builds
+        https://bugs.webkit.org/show_bug.cgi?id=103904
+
+        Reviewed by Laszlo Gombos.
+
+        The libewebkit2.so should be used for library path for EFL WebKit2.
+
+        * Scripts/webkitdirs.pm:
+        (builtDylibPathForName):
+
+2012-12-07  Xiaobo Wang  <xbwang@torchmobile.com.cn>
+
+        [BlackBerry] DRT - Update implementation of TestRunner.setCustomPolicyDelegate()
+        https://bugs.webkit.org/show_bug.cgi?id=104243
+
+        RIM PR 259337
+
+        Reviewed by Rob Buis.
+
+        1. Implement calculation of navigation originating in
+        didDecidePolicyForNavigationAction().
+        2. Implement policy delegate for resource response.
+        3. Enable customPolicyDelegate if waitForPolicyDelegate() is called.
+        4. Minor optional updates in dump() and dumpFrameLoadCallbacks().
+
+        The patch fixed the following tests:
+        - http/tests/download
+        - fast/forms/mailto/formenctype-attribute-button-html.html
+        - fast/forms/mailto/formenctype-attribute-input-html.html
+        - fast/encoding/mailto-always-utf-8.html
+
+        * DumpRenderTree/blackberry/DumpRenderTree.cpp:
+        (BlackBerry::WebKit::DumpRenderTree::DumpRenderTree):
+        (BlackBerry::WebKit::DumpRenderTree::resetToConsistentStateBeforeTesting):
+        (BlackBerry::WebKit::DumpRenderTree::dump):
+        (BlackBerry::WebKit::DumpRenderTree::didFinishLoadForFrame):
+        (BlackBerry::WebKit::DumpRenderTree::didDecidePolicyForNavigationAction):
+        (BlackBerry::WebKit::DumpRenderTree::didDecidePolicyForResponse):
+        (BlackBerry::WebKit::DumpRenderTree::setCustomPolicyDelegate):
+        * DumpRenderTree/blackberry/DumpRenderTreeBlackBerry.h:
+        (DumpRenderTree):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        (TestRunner::setCustomPolicyDelegate):
+        (TestRunner::waitForPolicyDelegate):
+        (TestRunner::overridePreference):
+
+2012-12-07  Gwang Yoon Hwang  <ryumiel@company100.net>
+
+        [Qt] Adjust library name in layout_tests/port/qt.py after Qt5-r40
+        https://bugs.webkit.org/show_bug.cgi?id=104348
+
+        Reviewed by Csaba Osztrogonác.
+
+        After Qt-5.0.0-r40, the library was renamed from QtWebKitWidgets to
+        Qt5WebKitWidgets. run-webkit-tests were still looking for QtWebKitWidgets
+
+        * Scripts/webkitpy/layout_tests/port/qt.py:
+        (QtPort._path_to_webcore_library):
+
+2012-12-07  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed fix, unbreak run-launcher after library renaming.
+
+        * Scripts/webkitdirs.pm:
+        (builtDylibPathForName):
+
+2012-12-06  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed fix after r136896, unbreak --debug-rwt to make bots result verbose again.
+        https://bugs.webkit.org/show_bug.cgi?id=104296
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (main):
+
+2012-12-06  Rick Byers  <rbyers@chromium.org>
+
+        CSS cursor property should support webkit-image-set
+        https://bugs.webkit.org/show_bug.cgi?id=99493
+
+        Reviewed by Beth Dakin.
+
+        Add ENABLE_MOUSE_CURSOR_SCALE - disabled by default
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2012-12-06  Vivek Galatage  <vivek.vg@samsung.com>
+
+        Unreviewed. Fixing the email address order to work correctly with bugzilla.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-06  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] when forwarding events through the WebPluginContainer, create a UserGestureIndicator if processing a user gesture
+        https://bugs.webkit.org/show_bug.cgi?id=104306
+
+        Reviewed by Dimitri Glazkov.
+
+        * DumpRenderTree/chromium/TestWebPlugin.cpp:
+        (TestWebPlugin::TestWebPlugin):
+        (TestWebPlugin::handleInputEvent): add support for printing the user gesture status
+        * DumpRenderTree/chromium/TestWebPlugin.h:
+        (TestWebPlugin):
+
+2012-12-06  Dirk Pranke  <dpranke@chromium.org>
+
+        new-run-webkit-tests --lint-test-files seems to be broken
+        https://bugs.webkit.org/show_bug.cgi?id=104296
+
+        Unreviewed, build fix.
+
+        My recent refactoring caused me to not initialize the printer
+        before calling lint(); this patch restructures the code to make
+        the lint routine self-contained and do all the work necessary.
+        This will also make it easier to move this code out into a standalone
+        file.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (lint):
+        (main):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (LintTest.test_all_configurations):
+        (LintTest.test_lint_test_files):
+        (LintTest.test_lint_test_files__errors):
+
+2012-12-05  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG profiler should be helpful about gem installation
+        https://bugs.webkit.org/show_bug.cgi?id=104217
+
+        Reviewed by Oliver Hunt.
+        
+        'json' and 'highline' are not installed by default on the ruby distributions with
+        which I am familiar, and the default error messages don't make me happy. This makes
+        display-profiler-output print a helpful message if those gems are not found.
+
+        * Scripts/display-profiler-output:
+
+2012-12-05  Filip Pizlo  <fpizlo@apple.com>
+
+        Profiler should print a helpful message if you pass the wrong arguments
+        https://bugs.webkit.org/show_bug.cgi?id=104222
+
+        Reviewed by Oliver Hunt.
+
+        * Scripts/display-profiler-output:
+
+2012-12-06  Ojan Vafai  <ojan@chromium.org>
+
+        Allow for CCing a secondary email address from watchlists
+        https://bugs.webkit.org/show_bug.cgi?id=104286
+
+        Reviewed by Dirk Pranke.
+
+        Change my watchlist CC address so I can filter these separately from
+        when people explicitly CC me and update the watchlist parser to allow that.
+
+        * Scripts/webkitpy/common/config/committers.py:
+        * Scripts/webkitpy/common/config/watchlist:
+        * Scripts/webkitpy/common/watchlist/watchlistparser.py:
+        (WatchListParser._validate):
+        * Scripts/webkitpy/common/watchlist/watchlistparser_unittest.py:
+        (WatchListParserTest.test_cc_rule_with_invalid_email):
+        (WatchListParserTest.test_cc_rule_with_secondary_email):
+
 2012-12-06  Max Vujovic  <mvujovic@adobe.com>
 
         Unreviewed. Add myself to committers.py.

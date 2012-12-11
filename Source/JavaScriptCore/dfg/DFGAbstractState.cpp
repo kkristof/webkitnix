@@ -1590,22 +1590,15 @@ bool AbstractState::execute(unsigned indexInBlock)
             || value.m_currentKnownStructure.isSubsetOf(set))
             m_foundConstants = true;
         node.setCanExit(true);
+        if (node.child2())
+            forNode(node.child2()).filter(SpecInt32);
         clobberStructures(indexInBlock);
         value.filter(set);
         m_haveStructures = true;
         break;
     }
     case GetIndexedPropertyStorage: {
-        switch (node.arrayMode().type()) {
-        case Array::String:
-            // Strings are weird - we may spec fail if the string was a rope. That is of course
-            // stupid, and we should fix that, but for now let's at least be honest about it.
-            node.setCanExit(true);
-            break;
-        default:
-            node.setCanExit(false);
-            break;
-        }
+        node.setCanExit(false);
         forNode(nodeIndex).clear();
         break; 
     }

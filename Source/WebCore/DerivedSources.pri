@@ -447,8 +447,6 @@ IDL_BINDINGS += \
     $$PWD/page/SpeechInputEvent.idl \
     $$PWD/page/SpeechInputResult.idl \
     $$PWD/page/SpeechInputResultList.idl \
-    $$PWD/page/WebKitAnimation.idl \
-    $$PWD/page/WebKitAnimationList.idl \
     $$PWD/page/WebKitPoint.idl \
     $$PWD/page/WorkerNavigator.idl \
     $$PWD/plugins/DOMPlugin.idl \
@@ -649,6 +647,8 @@ enable?(MEDIA_SOURCE) {
     $$PWD/Modules/mediasource/SourceBuffer.idl \
     $$PWD/Modules/mediasource/SourceBufferList.idl
 }
+
+qtPrepareTool(QMAKE_MOC, moc)
 
 mathmlnames.output = MathMLNames.cpp
 mathmlnames.input = MATHML_NAMES

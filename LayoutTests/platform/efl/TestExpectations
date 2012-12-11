@@ -57,6 +57,10 @@ http/tests/cache/subresource-fragment-identifier.html
 fast/dom/Window/slow-unload-handler.html
 fast/dom/Window/slow-unload-handler-only-frame-is-stopped.html
 
+# Need ENABLE(MOUSE_CURSOR_SCALE)
+fast/css/cursor-parsing-image-set.html
+fast/events/mouse-cursor-image-set.html
+
 # ----------------------------------------
 # Tests which also fail in other platforms
 # ----------------------------------------
@@ -79,15 +83,8 @@ canvas/philip/tests/2d.text.draw.baseline.middle.html
 canvas/philip/tests/2d.text.draw.baseline.top.html
 canvas/philip/tests/type.prototype.html
 
-# Rendering of multipart images is broken: this test times out
-# https://bugs.webkit.org/show_bug.cgi?id=54251
-http/tests/multipart/invalid-image-data-standalone.html
-
-# http/tests/multipart/stop-crash.html fails on GTK and Qt missing multipart/x-mixed-replace support in libsoup
-# https://bugs.webkit.org/show_bug.cgi?id=47060
-http/tests/multipart/stop-crash.html
-http/tests/multipart/load-last-non-html-frame.php
-http/tests/multipart/policy-ignore-crash.php
+# invalid-image-data-standalone.html passes, this does not
+webkit.org/b/104669 http/tests/multipart/invalid-image-data.html [ Skip ]
 
 # Failing on non-Chromium bots
 # https://bugs.webkit.org/show_bug.cgi?id=68278
@@ -109,9 +106,6 @@ http/tests/navigation/post-307-response.html
 
 # BUG: eyes not being rendered correctly
 http/tests/misc/acid2-pixel.html
-
-# BUG: no green in the rectangle
-http/tests/multipart/invalid-image-data.html
 
 # BUG: new windows do not have scrollbars
 fast/dom/Window/new-window-opener.html
@@ -346,8 +340,10 @@ inspector/timeline/timeline-receive-response-event.html
 # ENABLE(DRAGGABLE_REGION) is disabled
 fast/css/draggable-region-parser.html
 
-# http://webkit.org/b/96828
-fast/canvas/webgl/oes-vertex-array-object.html
+webkit.org/b/99096 fast/canvas/webgl/arraybuffer-transfer-of-control.html [ Failure Pass ]
+
+# Expected to fail until support for extension is implemented
+webkit.org/b/96828 fast/canvas/webgl/oes-vertex-array-object.html [ Failure Pass ]
 
 # Expected to fail until OES_element_index_uint extension is implemented
 webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass ]
@@ -355,9 +351,6 @@ webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass 
 #////////////////////////////////////////////////////////////////////////////////////////
 # TESTS EXPECTED TO FAIL
 #////////////////////////////////////////////////////////////////////////////////////////
-
-# Missing support for multipart/x-mixed-replace in libsoup.
-webkit.org/b/94515 http/tests/multipart/multipart-html.php [ Failure ]
 
 # These tests require DASHBOARD_SUPPORT but this feature is specific to Mac port.
 Bug(EFL) fast/canvas/canvas-gradient-addStop-error.html
@@ -586,9 +579,6 @@ Bug(EFL) fast/forms/textarea/textarea-placeholder-paint-order.html [ Missing ]
 # Implementing copy{En,De}codedHostName only to test them does not make sense
 webkit.org/b/86080 fast/encoding/idn-security.html [ Skip ]
 
-# Disable webaudio codec tests, including proprietary codecs.
-webkit.org/b/88794 webaudio/codec-tests
-
 # Text Autosizing is not yet enabled.
 webkit.org/b/84186 fast/text-autosizing
 
@@ -653,10 +643,6 @@ webkit.org/b/100519 fast/images/png-with-color-profile.html [ Skip ]
 webkit.org/b/100519 fast/images/paletted-png-with-color-profile.html [ Skip ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
-# CRASHES
-#////////////////////////////////////////////////////////////////////////////////////////
-
-#////////////////////////////////////////////////////////////////////////////////////////
 # FLAKY TESTS
 #////////////////////////////////////////////////////////////////////////////////////////
 
@@ -679,6 +665,9 @@ webkit.org/b/103439 fast/loader/submit-form-while-parsing-2.html [ Failure Pass 
 webkit.org/b/103443 fast/parser/parser-yield-timing.html [ Failure Pass ]
 webkit.org/b/103444 http/tests/css/shared-stylesheet-mutation.html [ Failure Pass ]
 webkit.org/b/103445 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Failure Pass ]
+
+# WebGL tests randomly crash since WebGL was enabled.
+webkit.org/b/104506 fast/canvas/webgl [ Crash Pass ]
 
 # Flaky inspector tests
 webkit.org/b/78869 http/tests/inspector/inspect-element.html [ Failure Pass ]
@@ -1115,6 +1104,7 @@ webkit.org/b/79766 compositing/tiling/tile-cache-zoomed.html [ Failure ]
 webkit.org/b/79766 compositing/video/video-poster.html [ Failure ]
 webkit.org/b/79766 compositing/geometry/fixed-position-composited-switch.html [ Failure ]
 webkit.org/b/79766 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
+webkit.org/b/104372 inspector-protocol/layer-tree.html [ Skip ]
 
 # LAYER_TREE_INCLUDES_VISIBLE_RECTS option to layerTreeAsText is only applicable to Mac.
 compositing/visible-rect [ Skip ]
@@ -1124,23 +1114,6 @@ webkit.org/b/86727 compositing/plugins/invalidate_rect.html [ Failure ]
 
 # EFL's LayoutTestController does not implement display
 webkit.org/b/86730 compositing/layer-creation/fixed-position-scroll.html [ Missing ]
-
-# EFL does not support WebGL
-webkit.org/b/77219 compositing/backface-visibility/backface-visibility-webgl.html [ Failure ]
-webkit.org/b/77219 compositing/visibility/visibility-simple-webgl-layer.html [ Failure ]
-webkit.org/b/77219 compositing/webgl/webgl-background-color.html [ Skip ]
-webkit.org/b/77219 compositing/webgl/webgl-no-alpha.html [ Skip ]
-webkit.org/b/77219 compositing/webgl/webgl-nonpremultiplied-blend.html [ Skip ]
-webkit.org/b/77219 compositing/webgl/webgl-reflection.html [ Skip ]
-webkit.org/b/77219 fast/canvas/webgl [ Skip ]
-webkit.org/b/77219 fast/dom/constructed-objects-prototypes.html [ Failure ]
-webkit.org/b/77219 fast/events/constructors/webgl-context-event-constructor.html [ Skip ]
-webkit.org/b/77219 fast/images/webgl-teximage2d.html [ Skip ]
-webkit.org/b/77219 http/tests/canvas/webgl/origin-clean-conformance.html [ Skip ]
-webkit.org/b/77219 http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Skip ]
-webkit.org/b/77219 http/tests/security/webgl-remote-read-remote-image-allowed.html [ Skip ]
-webkit.org/b/77219 http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Skip ]
-webkit.org/b/77219 inspector/profiler/webgl [ Skip ]
 
 webkit.org/b/84759 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 webkit.org/b/84760 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
@@ -1176,9 +1149,8 @@ webkit.org/b/88080 http/tests/pointer-lock [ Skip ]
 
 # Requires WEB_AUDIO support.
 webkit.org/b/91738 webaudio [ Skip ]
-inspector-protocol/nmi-webaudio.html
-inspector-protocol/nmi-webaudio-leak-test.html
-
+webkit.org/b/91738 inspector-protocol/nmi-webaudio.html [ Skip ]
+webkit.org/b/91738 inspector-protocol/nmi-webaudio-leak-test.html [ Skip ]
 
 # Requires MEDIA_STREAM support.
 webkit.org/b/87662 fast/mediastream [ Skip ]
@@ -1352,6 +1324,7 @@ webkit.org/b/88961 http/tests/misc/redirect-to-about-blank.html [ Failure ]
 
 # EFL port does not support hyphenation
 webkit.org/b/89830 fast/text/hyphen-min-preferred-width.html [ ImageOnlyFailure ]
+webkit.org/b/89830 fast/text/hyphenate-locale.html [ Skip ]
 
 # EFL's LayoutTestController does not implement setAsynchronousSpellCheckingEnabled
 webkit.org/b/86637 editing/spelling/spellcheck-async.html [ Failure ]
@@ -1394,9 +1367,6 @@ webkit.org/b/91339 css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailu
 webkit.org/b/89845 fast/forms/input-set-composition-scroll.html [ Failure ]
 
 webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
-
-# Looks like missing multipart/x-mixed-replace support in libsoup. Failing on both GTK and EFL.
-webkit.org/b/68979 http/tests/multipart/multipart-replace-non-html-content.php [ Failure ]
 
 # These tests are failing after r122528.
 webkit.org/b/91210 http/tests/w3c/webperf/approved/navigation-timing/html/test_performance_attributes_exist_in_object.html [ Failure ]
@@ -1598,8 +1568,6 @@ Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
 Bug(EFL) compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
 Bug(EFL) compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
 Bug(EFL) compositing/visibility/visibility-composited.html [ Failure ]
-Bug(EFL) editing/input/caret-at-the-edge-of-contenteditable.html [ Failure ]
-Bug(EFL) editing/input/reveal-caret-of-multiline-contenteditable.html [ Failure ]
 Bug(EFL) editing/selection/caret-rtl.html [ Failure Pass ]
 Bug(EFL) editing/selection/caret-at-bidi-boundary.html [ Crash Pass ]
 Bug(EFL) editing/selection/caret-ltr.html [ Failure Pass ]
@@ -1679,6 +1647,9 @@ webkit.org/b/103109 fast/dom/shadow/host-wrapper-reclaimed.html [ Failure ]
 # No spellcheck suggestions in context menu
 Bug(EFL) editing/spelling/context-menu-suggestions.html [ Failure ]
 
+# No support for exposing in-band text tracks
+Bug(EFL) media/track/track-in-band.html [ Skip ]
+
 # Newly added test in r136225 fails on GTK bot too.
 webkit.org/b/103740 editing/selection/caret-alignment-for-vertical-text.html [ Failure ]
 
@@ -1687,3 +1658,15 @@ webkit.org/b/56496 [ Debug ] fast/js/array-sort-modifying-tostring.html [ Crash 
 
 # volume is reset when mediaelement.src is modified
 webkit.org/b/103893 media/video-volume.html [ Failure ]
+
+# Caused by bumping the libsoup in Jhbuild to 2.40.0
+webkit.org/b/104571 http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/base-href-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/embed-tag-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/javascript-link-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/link-onclick-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/object-embed-tag-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/script-tag-addslashes-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/script-tag-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/security/xssAuditor/script-tag-with-source-null-char.html [ Failure ]
+webkit.org/b/104571 http/tests/xmlhttprequest/origin-exact-matching.html [ Failure ]

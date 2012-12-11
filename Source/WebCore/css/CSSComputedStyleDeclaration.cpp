@@ -600,12 +600,12 @@ static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propert
 {
     RefPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
     if (layer->isBackgroundOriginSet()) {
-        ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition);
+        ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
         positionList->append(cssValuePool().createValue(layer->backgroundXOrigin()));
     }
     positionList->append(zoomAdjustedPixelValueForLength(layer->xPosition(), style));
     if (layer->isBackgroundOriginSet()) {
-        ASSERT(propertyID == CSSPropertyBackgroundPosition);
+        ASSERT(propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
         positionList->append(cssValuePool().createValue(layer->backgroundYOrigin()));
     }
     positionList->append(zoomAdjustedPixelValueForLength(layer->yPosition(), style));
@@ -2000,6 +2000,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyOpacity:
             return cssValuePool().createValue(style->opacity(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyOrphans:
+            if (style->hasAutoOrphans())
+                return cssValuePool().createIdentifierValue(CSSValueAuto);
             return cssValuePool().createValue(style->orphans(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyOutlineColor:
             return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(style.get(), style->outlineColor());
@@ -2148,6 +2150,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWhiteSpace:
             return cssValuePool().createValue(style->whiteSpace());
         case CSSPropertyWidows:
+            if (style->hasAutoWidows())
+                return cssValuePool().createIdentifierValue(CSSValueAuto);
             return cssValuePool().createValue(style->widows(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyWidth:
             if (renderer) {

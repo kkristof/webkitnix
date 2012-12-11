@@ -71,7 +71,6 @@ HEADERS += \
     Shared/API/c/qt/WKImageQt.h \
     Shared/APIClientTraits.h \
     Shared/ShareableBitmap.h \
-    Shared/ShareableSurface.h \
     Shared/CacheModel.h \
     Shared/ChildProcess.h \
     Shared/ChildProcessProxy.h \
@@ -121,7 +120,6 @@ HEADERS += \
     Shared/WebHitTestResult.h \
     Shared/WebImage.h \
     Shared/WebIntentServiceInfo.h \
-    Shared/WebLayerTreeInfo.h \
     Shared/WebNavigationDataStore.h \
     Shared/WebNumber.h \
     Shared/WebOpenPanelParameters.h \
@@ -136,6 +134,9 @@ HEADERS += \
     Shared/WebURLResponse.h \
     Shared/WebUserContentURLPattern.h \
     Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.h \
+    Shared/CoordinatedGraphics/CoordinatedLayerInfo.h \
+    Shared/CoordinatedGraphics/CoordinatedSurface.h \
+    Shared/CoordinatedGraphics/WebCoordinatedSurface.h \
     Shared/CoordinatedGraphics/WebCustomFilterProgram.h \
     Shared/Plugins/Netscape/NetscapePluginModule.h \
     Shared/Plugins/NPRemoteObjectMap.h \
@@ -228,6 +229,7 @@ HEADERS += \
     UIProcess/PageClient.h \
     UIProcess/PageViewportController.h \
     UIProcess/PageViewportControllerClient.h \
+    UIProcess/Plugins/PlugInAutoStartProvider.h \
     UIProcess/Plugins/PluginInfoStore.h \
     UIProcess/Plugins/PluginProcessProxy.h \
     UIProcess/Plugins/PluginProcessManager.h \
@@ -360,6 +362,7 @@ HEADERS += \
     WebProcess/WebCoreSupport/WebNetworkInfoClient.h \
     WebProcess/WebCoreSupport/WebNotificationClient.h \
     WebProcess/WebCoreSupport/WebPlatformStrategies.h \
+    WebProcess/WebCoreSupport/WebPlugInClient.h \
     WebProcess/WebCoreSupport/WebPopupMenu.h \
     WebProcess/WebCoreSupport/WebSearchPopupMenu.h \
     WebProcess/WebCoreSupport/WebVibrationClient.h \
@@ -442,7 +445,6 @@ SOURCES += \
     Shared/Plugins/Netscape/NetscapePluginModuleNone.cpp \
     Shared/Plugins/Netscape/x11/NetscapePluginModuleX11.cpp \
     Shared/ShareableBitmap.cpp \
-    Shared/ShareableSurface.cpp \
     Shared/Plugins/NPRemoteObjectMap.cpp \
     Shared/Plugins/NPIdentifierData.cpp \
     Shared/Plugins/NPObjectMessageReceiver.cpp \
@@ -488,7 +490,6 @@ SOURCES += \
     Shared/WebKeyboardEvent.cpp \
     Shared/WebImage.cpp \
     Shared/WebIntentServiceInfo.cpp \
-    Shared/WebLayerTreeInfo.cpp \
     Shared/WebMouseEvent.cpp \
     Shared/WebNetworkInfo.cpp \
     Shared/WebOpenPanelParameters.cpp \
@@ -505,6 +506,8 @@ SOURCES += \
     Shared/WebURLResponse.cpp \
     Shared/WebWheelEvent.cpp \
     Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp \
+    Shared/CoordinatedGraphics/CoordinatedLayerInfo.cpp \
+    Shared/CoordinatedGraphics/WebCoordinatedSurface.cpp \
     Shared/CoordinatedGraphics/WebCustomFilterProgramProxy.cpp \
     Shared/qt/ArgumentCodersQt.cpp \
     Shared/qt/LayerTreeContextQt.cpp \
@@ -585,6 +588,7 @@ SOURCES += \
     UIProcess/Notifications/WebNotificationManagerProxy.cpp \
     UIProcess/Notifications/WebNotificationProvider.cpp \
     UIProcess/PageViewportController.cpp \
+    UIProcess/Plugins/PlugInAutoStartProvider.cpp \
     UIProcess/Plugins/PluginInfoStore.cpp \
     UIProcess/Plugins/PluginProcessProxy.cpp \
     UIProcess/Plugins/PluginProcessManager.cpp \
@@ -738,6 +742,7 @@ SOURCES += \
     WebProcess/WebCoreSupport/WebNetworkInfoClient.cpp \
     WebProcess/WebCoreSupport/WebNotificationClient.cpp \
     WebProcess/WebCoreSupport/WebPlatformStrategies.cpp \
+    WebProcess/WebCoreSupport/WebPlugInClient.cpp \
     WebProcess/WebCoreSupport/WebPopupMenu.cpp \
     WebProcess/WebCoreSupport/WebSearchPopupMenu.cpp \
     WebProcess/WebCoreSupport/WebVibrationClient.cpp \

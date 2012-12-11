@@ -847,7 +847,7 @@ void StyleResolver::collectMatchingRulesForList(const Vector<RuleData>* rules, i
             continue;
 
         StyleRule* rule = ruleData.rule();
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willMatchRule(document(), rule);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willMatchRule(document(), rule, this);
         if (checkSelector(ruleData, options.scope)) {
             // If the rule has no properties to apply, then ignore it in the non-debug mode.
             const StylePropertySet* properties = rule->properties();
@@ -1092,7 +1092,7 @@ bool StyleResolver::canShareStyleWithControl(StyledElement* element) const
         return false;
     if (thisInputElement->isIndeterminate() != otherInputElement->isIndeterminate())
         return false;
-    if (thisInputElement->required() != otherInputElement->required())
+    if (thisInputElement->isRequired() != otherInputElement->isRequired())
         return false;
 
     if (element->isEnabledFormControl() != m_element->isEnabledFormControl())
@@ -1420,6 +1420,11 @@ static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation
         fontOrientation = Horizontal;
         glyphOrientation = NonCJKGlyphOrientationVerticalRight;
         return;
+    default:
+        ASSERT_NOT_REACHED();
+        fontOrientation = Horizontal;
+        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+        return;
     }
 }
 
@@ -1596,6 +1601,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     if (cloneForParent)
         m_parentStyle = 0;
 
+    document()->didAccessStyleResolver();
+
     // Now return the style.
     return m_style.release();
 }
@@ -1648,6 +1655,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(const RenderStyle* eleme
                 keyframeValue.addProperty(property);
         }
     }
+
+    document()->didAccessStyleResolver();
 
     return m_style.release();
 }
@@ -1752,6 +1761,8 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(PseudoId pseudo, El
     // Start loading resources referenced by this style.
     loadPendingResources();
 
+    document()->didAccessStyleResolver();
+
     // Now return the style.
     return m_style.release();
 }
@@ -1790,6 +1801,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // Start loading resources referenced by this style.
     loadPendingResources();
+
+    document()->didAccessStyleResolver();
 
     // Now return the style.
     return m_style.release();
@@ -2274,7 +2287,7 @@ template <StyleResolver::StyleApplicationPass pass>
 void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, bool filterRegionProperties)
 {
     ASSERT(!filterRegionProperties || m_regionForStyling);
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willProcessRule(document(), rule);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willProcessRule(document(), rule, this);
 
     unsigned propertyCount = properties->propertyCount();
     for (unsigned i = 0; i < propertyCount; ++i) {
@@ -3985,6 +3998,9 @@ PassRefPtr<StyleImage> StyleResolver::styleImage(CSSPropertyID property, CSSValu
         return setOrPendingFromValue(property, static_cast<CSSImageSetValue*>(value));
 #endif
 
+    if (value->isCursorImageValue())
+        return cursorOrPendingFromValue(property, static_cast<CSSCursorImageValue*>(value));
+
     return 0;
 }
 
@@ -4014,6 +4030,14 @@ PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID proper
     return image.release();
 }
 #endif
+
+PassRefPtr<StyleImage> StyleResolver::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
+{
+    RefPtr<StyleImage> image = value->cachedOrPendingImage(document());
+    if (image && image->isPendingImage())
+        m_pendingImageProperties.set(property, value);
+    return image.release();
+}
 
 void StyleResolver::checkForTextSizeAdjust()
 {
@@ -5121,6 +5145,11 @@ PassRefPtr<StyleImage> StyleResolver::loadPendingImage(StylePendingImage* pendin
         CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue();
         imageGeneratorValue->loadSubimages(cachedResourceLoader);
         return StyleGeneratedImage::create(imageGeneratorValue);
+    }
+
+    if (pendingImage->cssCursorImageValue()) {
+        CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue();
+        return cursorImageValue->cachedImage(cachedResourceLoader);
     }
 
 #if ENABLE(CSS_IMAGE_SET)

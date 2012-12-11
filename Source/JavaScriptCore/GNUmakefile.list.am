@@ -110,6 +110,8 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/bytecode/EvalCodeCache.h \
 	Source/JavaScriptCore/bytecode/ExecutionCounter.cpp \
 	Source/JavaScriptCore/bytecode/ExecutionCounter.h \
+	Source/JavaScriptCore/bytecode/ExitKind.cpp \
+	Source/JavaScriptCore/bytecode/ExitKind.h \
 	Source/JavaScriptCore/bytecode/ExpressionRangeInfo.h \
 	Source/JavaScriptCore/bytecode/GetByIdStatus.cpp \
 	Source/JavaScriptCore/bytecode/GetByIdStatus.h \
@@ -133,6 +135,8 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/bytecode/PutByIdStatus.cpp \
 	Source/JavaScriptCore/bytecode/PutByIdStatus.h \
 	Source/JavaScriptCore/bytecode/PutKind.h \
+	Source/JavaScriptCore/bytecode/ReduceWhitespace.cpp \
+	Source/JavaScriptCore/bytecode/ReduceWhitespace.h \
 	Source/JavaScriptCore/bytecode/ResolveGlobalStatus.cpp \
 	Source/JavaScriptCore/bytecode/ResolveGlobalStatus.h \
 	Source/JavaScriptCore/bytecode/ResolveOperation.h \
@@ -263,12 +267,14 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/disassembler/Disassembler.h \
 	Source/JavaScriptCore/heap/CopiedAllocator.h \
 	Source/JavaScriptCore/heap/CopiedBlock.h \
+	Source/JavaScriptCore/heap/CopiedBlockInlines.h \
 	Source/JavaScriptCore/heap/CopiedSpace.cpp \
 	Source/JavaScriptCore/heap/CopiedSpace.h \
 	Source/JavaScriptCore/heap/CopiedSpaceInlines.h \
-    Source/JavaScriptCore/heap/CopyVisitor.h \
-    Source/JavaScriptCore/heap/CopyVisitorInlines.h \
-    Source/JavaScriptCore/heap/CopyVisitor.cpp \
+	Source/JavaScriptCore/heap/CopyVisitor.h \
+	Source/JavaScriptCore/heap/CopyVisitorInlines.h \
+	Source/JavaScriptCore/heap/CopyVisitor.cpp \
+	Source/JavaScriptCore/heap/CopyWorkList.h \
 	Source/JavaScriptCore/heap/CardSet.h \
 	Source/JavaScriptCore/heap/ConservativeRoots.cpp \
 	Source/JavaScriptCore/heap/ConservativeRoots.h \
@@ -488,6 +494,10 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/profiler/ProfilerOrigin.h \
 	Source/JavaScriptCore/profiler/ProfilerOriginStack.cpp \
 	Source/JavaScriptCore/profiler/ProfilerOriginStack.h \
+	Source/JavaScriptCore/profiler/ProfilerOSRExit.cpp \
+	Source/JavaScriptCore/profiler/ProfilerOSRExit.h \
+	Source/JavaScriptCore/profiler/ProfilerOSRExitSite.cpp \
+	Source/JavaScriptCore/profiler/ProfilerOSRExitSite.h \
 	Source/JavaScriptCore/profiler/Profile.cpp \
 	Source/JavaScriptCore/profiler/ProfileGenerator.cpp \
 	Source/JavaScriptCore/profiler/ProfileGenerator.h \

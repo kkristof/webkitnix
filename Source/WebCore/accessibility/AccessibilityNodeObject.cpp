@@ -63,6 +63,7 @@
 #include "LocalizedStrings.h"
 #include "MathMLNames.h"
 #include "NodeList.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "ProgressTracker.h"
 #include "Text.h"
@@ -686,7 +687,7 @@ bool AccessibilityNodeObject::isRequired() const
 
     Node* n = this->node();
     if (n && (n->isElementNode() && toElement(n)->isFormControlElement()))
-        return static_cast<HTMLFormControlElement*>(n)->required();
+        return static_cast<HTMLFormControlElement*>(n)->isRequired();
 
     return false;
 }
@@ -1586,7 +1587,7 @@ String AccessibilityNodeObject::accessibilityDescriptionForElements(Vector<Eleme
         Element* idElement = elements[i];
 
         builder.append(accessibleNameForNode(idElement));
-        for (Node* n = idElement->firstChild(); n; n = n->traverseNextNode(idElement))
+        for (Node* n = idElement->firstChild(); n; n = NodeTraversal::next(n, idElement))
             builder.append(accessibleNameForNode(n));
 
         if (i != size - 1)

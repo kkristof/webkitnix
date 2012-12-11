@@ -84,6 +84,7 @@ using namespace WebKit;
 bool DumpRenderTreeSupportGtk::s_drtRun = false;
 bool DumpRenderTreeSupportGtk::s_linksIncludedInTabChain = true;
 bool DumpRenderTreeSupportGtk::s_selectTrailingWhitespaceEnabled = false;
+DumpRenderTreeSupportGtk::FrameLoadEventCallback DumpRenderTreeSupportGtk::s_frameLoadEventCallback = 0;
 
 DumpRenderTreeSupportGtk::DumpRenderTreeSupportGtk()
 {
@@ -738,9 +739,6 @@ bool DumpRenderTreeSupportGtk::elementDoesAutoCompleteForElementWithId(WebKitWeb
         return false;
 
     HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(coreNode);
-    if (!inputElement)
-        return false;
-
     return inputElement->isTextField() && !inputElement->isPasswordField() && inputElement->shouldAutocomplete();
 }
 
@@ -837,4 +835,9 @@ void DumpRenderTreeSupportGtk::clearApplicationCache()
 {
     cacheStorage().empty();
     cacheStorage().vacuumDatabaseFile();
+}
+
+void DumpRenderTreeSupportGtk::setFrameLoadEventCallback(FrameLoadEventCallback frameLoadEventCallback)
+{
+    s_frameLoadEventCallback = frameLoadEventCallback;
 }

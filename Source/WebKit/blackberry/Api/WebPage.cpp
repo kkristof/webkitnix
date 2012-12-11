@@ -90,6 +90,7 @@
 #endif
 #include "NetworkManager.h"
 #include "NodeRenderStyle.h"
+#include "NodeTraversal.h"
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 #include "NavigatorContentUtilsClientBlackBerry.h"
 #endif
@@ -1184,10 +1185,8 @@ bool WebPagePrivate::shouldZoomAboutPoint(double scale, const FloatPoint&, bool 
     ASSERT(clampedScale);
     *clampedScale = scale;
 
-    if (currentScale() == scale) {
-        m_client->scaleChanged();
+    if (currentScale() == scale)
         return false;
-    }
 
     return true;
 }
@@ -1554,6 +1553,17 @@ void WebPagePrivate::contentsSizeChanged(const IntSize& contentsSize)
 #if DEBUG_WEBPAGE_LOAD
     BBLOG(Platform::LogLevelInfo, "WebPagePrivate::contentsSizeChanged %dx%d", contentsSize.width(), contentsSize.height());
 #endif
+}
+
+void WebPagePrivate::overflowExceedsContentsSize()
+{
+    m_overflowExceedsContentsSize = true;
+    if (absoluteVisibleOverflowSize().width() < DEFAULT_MAX_LAYOUT_WIDTH && !hasVirtualViewport()) {
+        if (setViewMode(viewMode())) {
+            setNeedsLayout();
+            requestLayoutIfNeeded();
+        }
+    }
 }
 
 void WebPagePrivate::layoutFinished()
@@ -4095,7 +4105,6 @@ void WebPage::touchPointAsMouseEvent(const Platform::TouchPoint& point)
 
     Platform::TouchPoint tPoint = point;
     tPoint.m_pos = d->mapFromTransformed(tPoint.m_pos);
-    tPoint.m_screenPos = tPoint.m_screenPos;
 
     d->m_touchEventHandler->handleTouchPoint(tPoint);
 }
@@ -5704,7 +5713,7 @@ void WebPagePrivate::exitFullscreenForNode(Node* node)
 // TODO: We should remove this helper class when we decide to support all elements.
 static bool containsVideoTags(Element* element)
 {
-    for (Node* node = element->firstChild(); node; node = node->traverseNextNode(element)) {
+    for (Node* node = element->firstChild(); node; node = NodeTraversal::next(node, element)) {
         if (node->hasTagName(HTMLNames::videoTag))
             return true;
     }

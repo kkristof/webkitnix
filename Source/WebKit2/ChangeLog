@@ -1,3 +1,1162 @@
+2012-12-11  Andreas Kling  <akling@apple.com>
+
+        CoreIPC: ArgumentEncoder should have an inline buffer.
+        <http://webkit.org/b/104622>
+
+        Reviewed by Anders Carlsson.
+
+        Add a 4K inline buffer to CoreIPC::ArgumentEncoder to avoid malloc/free churn.
+        It was dominating the transient allocations graph in Instruments.
+
+        * Platform/CoreIPC/ArgumentEncoder.cpp:
+        (CoreIPC::ArgumentEncoder::ArgumentEncoder):
+        (CoreIPC::ArgumentEncoder::grow):
+        * Platform/CoreIPC/ArgumentEncoder.h:
+        (CoreIPC::ArgumentEncoder::buffer):
+        (ArgumentEncoder):
+        (CoreIPC::ArgumentEncoder::usesInlineBuffer):
+
+2012-12-11  Mike West  <mkwst@chromium.org>
+
+        Web Inspector: ConsoleTypes should not expose MessageType - it should be private to inspector.
+        https://bugs.webkit.org/show_bug.cgi?id=66371
+
+        Reviewed by Pavel Feldman.
+
+        Drops WebCore::MessageLevel from the addMessageToConsole method.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::addMessageToConsole):
+        * WebProcess/WebCoreSupport/WebChromeClient.h:
+        (WebChromeClient):
+
+2012-12-11  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] Increase the timeout of the API unit tests
+        https://bugs.webkit.org/show_bug.cgi?id=104666
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Palliative fix until we find out why the tests are taking so long.
+
+        * PlatformEfl.cmake:
+
+2012-12-11  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [Qt][EFL][WK2] Resizing the window doesn't always result in right content position
+        https://bugs.webkit.org/show_bug.cgi?id=104416
+
+        Reviewed by Simon Hausmann.
+
+        Make sure the client is notified about position and scale changed done by us.
+        Rename the m_*IsLocked to m_pending*Change as that makes the code more obvious.
+
+        Patch verified with both Qt and EFL.
+
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::PageViewportController):
+        (WebKit::PageViewportController::didRenderFrame): Notify client and pixel align.
+        (WebKit::PageViewportController::didChangeContentsVisibility):
+        (WebKit::PageViewportController::didChangeViewportAttributes):
+        (WebKit::PageViewportController::applyScaleAfterRenderingContents):
+        (WebKit::PageViewportController::applyPositionAfterRenderingContents):
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+
+2012-12-11  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [CoordinatedGraphics] Use unsigned integers for UpdateAtlas IDs
+        https://bugs.webkit.org/show_bug.cgi?id=104654
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        UpdateAtlas currently uses *signed* integer type for its identifier.
+        Due to the way we generate those IDs, it is safer to use *unsigned*
+        integers. This is because the generated ID will overflow at some
+        point and the C and C++ language standards say that overflow of a
+        signed value is undefined behaviour.
+
+        This patch switches to unsigned integer type for UpdateAtlas IDs
+        since unsigned integers are guaranteed to wrap around on overflow.
+
+        * Shared/SurfaceUpdateInfo.h:
+        (SurfaceUpdateInfo):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createUpdateAtlas):
+        (WebKit::LayerTreeCoordinatorProxy::removeUpdateAtlas):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::beginContentUpdate):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedTile.h:
+        (CoordinatedTileClient):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::createUpdateAtlas):
+        (WebKit::LayerTreeCoordinator::removeUpdateAtlas):
+        (WebKit::LayerTreeCoordinator::beginContentUpdate):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.cpp:
+        (WebKit::UpdateAtlas::UpdateAtlas):
+        (WebKit::UpdateAtlas::~UpdateAtlas):
+        (WebKit::UpdateAtlas::beginPaintingOnAvailableBuffer):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.h:
+        (UpdateAtlasClient):
+        (UpdateAtlas):
+
+2012-12-11  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Create a ewk view object with new context for API tests
+        https://bugs.webkit.org/show_bug.cgi?id=103692
+
+        Reviewed by Gyuyoung Kim. 
+
+        Bug 103229 fixes the issue which PageGroupID increased even though
+        the EwkView was created with default context. If the Bug 103229 is
+        resolved, the EwkViews with same context will have same setting preferences.
+
+        Currently, WebKit2/EFL API test is creating the ewk view object
+        with the default context so the setting values set previously may
+        influence the following tests. So this patch created a ewk view object
+        with a new context instead of default one.
+
+        * UIProcess/API/efl/tests/UnitTestUtils/EWK2UnitTestBase.cpp:
+        (EWK2UnitTest::EWK2UnitTestBase::SetUp):
+
+2012-12-10  Dan Winship  <danw@gnome.org>
+
+        [Soup] Fix spelling of "initiating" in API.
+
+        Reviewed by Martin Robinson.
+
+        * WebProcess/soup/WebSoupRequestManager.cpp:
+        (WebKit::WebSoupRequestManager::send):
+
+2012-12-10  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Add a user default to limit the number of web processes
+        https://bugs.webkit.org/show_bug.cgi?id=104606
+
+        Reviewed by Sam Weinig.
+
+        When the limit is reached, we'll reuse an existing process with fewest pages.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext): Initialize m_webProcessCountLimit.
+        (WebKit::WebContext::platformInitialize): Added a hook for reading the preference,
+        empty implementation on most platforms.
+        (WebKit::WebContext::createNewWebProcess): Changed to return a raw pointer. The new
+        process is put into a vector anyway, so there is no ownership transfer.
+        (WebKit::WebContext::warmInitialProcess): Don't create a new process if that would
+        exceed the limit.
+        (WebKit::WebContext::createNewWebProcessRespectingProcessCountLimit): Added a new
+        function that wither creates a new process, or picks an existing one.
+        (WebKit::WebContext::createWebPage): Call the above new function instead of
+        unconditionally creating a process.
+
+        * UIProcess/WebContext.h: createNewWebProcess is no private. All clients should
+        respect the process count limit.
+
+        * UIProcess/WebPageProxy.cpp: (WebKit::WebPageProxy::reattachToWebProcess):
+        Respect the process count limit.
+
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::registerUserDefaultsIfNeeded): Register the new default.
+        (WebKit::WebContext::platformInitialize): Read the default into a WebContext
+        member variable.
+        (WebKit::WebContext::platformInitializeWebProcess): Moved registerUserDefaultsIfNeeded()
+        from here to platformInitialize(), as that's a better place for it. Also added a
+        FIXME for an unrelated issue.
+
+2012-12-10  Jon Lee  <jonlee@apple.com>
+
+        Build fix.
+
+        * WebProcess/WebCoreSupport/WebPlugInClient.cpp:
+        (WebKit::WebPlugInClient::WebPlugInClient): Remove unneeded m_page variable.
+        * WebProcess/WebCoreSupport/WebPlugInClient.h:
+        (WebPlugInClient):
+
+2012-12-10  Jon Lee  <jonlee@apple.com>
+
+        Keep track of plug-in snapshots clicked by user
+        https://bugs.webkit.org/show_bug.cgi?id=103206
+        <rdar://problem/12746483>
+
+        Reviewed by Anders Carlsson.
+
+        Create a new provider class for the web context that maintains a mapping of the plug-in origins
+        allowed to auto-start for a specific page origin.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage): Create and set WebPlugInClient.
+
+        Implement WebCore::PlugInClient.
+        * WebProcess/WebCoreSupport/WebPlugInClient.cpp: Added.
+        (WebKit::WebPlugInClient::WebPlugInClient):
+        (WebKit::WebPlugInClient::~WebPlugInClient):
+        (WebKit::WebPlugInClient::pageDestroyed):
+        (WebKit::WebPlugInClient::isAutoStartOrigin): Forward to WebProcess.
+        (WebKit::WebPlugInClient::addAutoStartOrigin): Forward to WebProcess.
+        * WebProcess/WebCoreSupport/WebPlugInClient.h: Added.
+
+        * WebProcess/WebProcess.cpp: Maintains a copy of the hash set.
+        (WebKit::WebProcess::isPlugInAutoStartOrigin): Look for the hash in the set.
+        (WebKit::WebProcess::addPlugInAutoStartOrigin): Tell the UI process to add the hash for the page.
+        (WebKit::WebProcess::didAddPlugInAutoStartOrigin): Add the hash to the cached set.
+        * WebProcess/WebProcess.h:
+        * WebProcess/WebProcess.messages.in: Add DidAddPlugInAutoStartOrigin.
+
+        Add the auto-start provider.
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext): Initialize the provider.
+        (WebKit::WebContext::addPlugInAutoStartOriginHash): Forward to the provider.
+        * UIProcess/WebContext.h:
+        * UIProcess/WebContext.messages.in: Add AddPlugInAutoStartOriginHash.
+
+        The provider class maintains a map of page domains to hashes, and a set of all the hashes.
+        The latter will be used to initialize new web processes without having to crawl through the
+        whole map.
+        * UIProcess/Plugins/PlugInAutoStartProvider.cpp: Added.
+        (WebKit::PlugInAutoStartProvider::PlugInAutoStartProvider):
+        (WebKit::PlugInAutoStartProvider::addAutoStartOrigin): Add the origin to the map and set. Tell
+        all processes to add the origin to their local copies.
+        * UIProcess/Plugins/PlugInAutoStartProvider.h: Added.
+
+        Add PlugInAutoStartProvider and WebPlugInClient.
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * win/WebKit2.vcproj:
+
+2012-12-10  Anders Carlsson  <andersca@apple.com>
+
+        Add WKPageSetInvalidMessageFunction stub
+        https://bugs.webkit.org/show_bug.cgi?id=104614
+        <rdar://problem/12841671>
+
+        Reviewed by Mark Rowe.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageSetInvalidMessageFunction):
+        * UIProcess/API/C/WKPagePrivate.h:
+
+2012-12-09  Antti Koivisto  <antti@apple.com>
+
+        Factor node traversal into standalone functions
+        https://bugs.webkit.org/show_bug.cgi?id=104507
+
+        Reviewed by Eric Seidel.
+
+        * WebProcess/WebPage/WebFrame.cpp:
+        (WebKit::WebFrame::containsAnyFormElements):
+
+2012-12-10  Eduardo Lima Mitev  <elima@igalia.com>
+
+        [GTK] Expose HitTestResult::scrollbar() condition in API
+        https://bugs.webkit.org/show_bug.cgi?id=104369
+
+        Reviewed by Carlos Garcia Campos.
+
+        This patch populates WebCore::HitTestResult::scrollbar() condition
+        in WebKitHitTestResult public API, and includes a corresponding unit
+        test.
+
+        * Shared/WebHitTestResult.cpp: Adds new isScrollbar member to
+        encoding and decoding methods to carry the scrollbar condition
+        from Web process to UI process.
+        (WebKit::WebHitTestResult::Data::encode):
+        (WebKit::WebHitTestResult::Data::decode):
+        * Shared/WebHitTestResult.h:
+        (Data): Adds new bool member isScrollbar.
+        (WebKit::WebHitTestResult::Data::Data): Initializes isScrollbar from
+        WebCore::HitTestResult::scrollbar().
+        (WebKit::WebHitTestResult::isScrollbar): Method that returns value
+        of isScrollbar member.
+        (WebHitTestResult):
+        * UIProcess/API/gtk/WebKitHitTestResult.cpp:
+        (webkitHitTestResultCreate): Adds scrollbar condition to context upon
+        initialization.
+        (webkitHitTestResultCompare): Adds comparison of scrollbar condition.
+        (webkit_hit_test_result_context_is_scrollbar): Public accessor for
+        scrollbar presence in context.
+        * UIProcess/API/gtk/WebKitHitTestResult.h: Adds new flag
+        WEBKIT_HIT_TEST_RESULT_CONTEXT_SCROLLBAR to
+        WebKitHitTestResultContext enum.
+        * UIProcess/API/gtk/docs/webkit2gtk-sections.txt: Adds new API symbol
+        to the corresponding documentation sections.
+        * UIProcess/API/gtk/tests/TestWebKitWebView.cpp:
+        (testWebViewMouseTarget): Updates mouse-target
+        test to include assertions for hitting scrollbar condition, and
+        an new HTML to privide a positive case.
+
+2012-12-10  Alexis Menard  <alexis@webkit.org>
+
+        [CSS3 Backgrounds and Borders] Remove CSS3_BACKGROUND feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=104539
+
+        Reviewed by Antonio Gomes.
+
+        As discussed on webkit-dev it is not needed to keep this feature flag 
+        as support for <position> type is a small feature that is already 
+        implemented by three other UAs. It was useful while landing this 
+        feature as partial bits were landed one after one.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-12-10  Alberto Garcia  <agarcia@igalia.com>
+
+        WebKitWebViewBase produces a warning if compiled with gcc
+        https://bugs.webkit.org/show_bug.cgi?id=104561
+
+        Reviewed by Carlos Garcia Campos.
+
+        * UIProcess/API/gtk/WebKitWebViewBase.h:
+        since this file can be included from C code, use void to
+        explicitly specify that webkit_web_view_base_get_type() doesn't
+        have parameters. Otherwise we get "warning: function declaration
+        isn't a prototype" with -Wstrict-prototypes.
+
+2012-12-10  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2] TiledBackingStore: remove unneeded 'treatAsInitialValue' parameter from PageViewportControllerClient::setContentsScale
+        https://bugs.webkit.org/show_bug.cgi?id=104544
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Removed 'treatAsInitialValue' parameter from PageViewportControllerClient::setContentsScale()
+        as it was not used by anyone.
+
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didRenderFrame):
+        * UIProcess/PageViewportControllerClient.h:
+        (PageViewportControllerClient):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::setContentsScale):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (PageViewportControllerClientEfl):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::setContentsScale):
+        * UIProcess/qt/PageViewportControllerClientQt.h:
+        (PageViewportControllerClientQt):
+
+2012-12-10  Zoltan Nyul  <zoltan.nyul@intel.com>
+
+        Implement testRunner.setViewModeMediaFeature() in WebKitTestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=103886
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add support for TestRunner::setViewModeMediaFeature().
+        This functionality is needed by the following LayoutTests:
+        fast/media/media-query-list-02.html
+        fast/media/media-query-list-03.html
+        fast/media/media-query-list-04.html
+        fast/media/media-query-list-05.html
+        fast/media/media-query-list-06.html
+        fast/media/media-query-list-07.html
+        fast/media/view-mode-media-feature.html
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageSetViewMode):
+        * WebProcess/InjectedBundle/API/c/WKBundlePagePrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setViewMode):
+        (WebKit):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+
+2012-12-10  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Fix QtWebProcess discovery on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=104552
+
+        Reviewed by Jocelyn Turcotte.
+
+        Make sure to look for QtWebProcess.exe on Windows instead of QtWebProcess.
+
+        * Shared/qt/ProcessExecutablePathQt.cpp:
+        (WebKit::executablePath):
+
+2012-12-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bring Harfbuzz-ng support to Gtk
+        https://bugs.webkit.org/show_bug.cgi?id=92098
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add a HarfBuzz dependency.
+
+        * GNUmakefile.am: Add FreeType/HarfBuzz CFLAGS/LIBS to the libraries.
+
+2012-12-10  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Use QLibraryInfo::LibraryExecutablesPath unconditionally
+        https://bugs.webkit.org/show_bug.cgi?id=104541
+
+        Reviewed by Jocelyn Turcotte.
+
+        We now depend on a Qt 5 version that is guaranteed to have this API, so we
+        can remove the configure checks for it.
+
+        * PluginProcess.pro:
+        * Shared/qt/ProcessExecutablePathQt.cpp:
+        (WebKit::executablePath):
+        * WebProcess.pro:
+
+2012-12-10  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Fix build without QtQuick 2
+
+        Unreviewed trivial build fix.
+
+        This function is defined in QtWebContext, which is only used when QtQuick2 is available.
+
+        * UIProcess/qt/WebContextQt.cpp:
+        (WebKit::WebContext::platformInvalidateContext):
+
+2012-12-10  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Remove the dependency of ShareableSurface from Coordinated Graphics.
+        https://bugs.webkit.org/show_bug.cgi?id=100819
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        It is a follow-up patch of r137117.
+
+        There are two changes
+        1. Add a const qualifier to supportsAlpha().
+        2. Use << instead of encode() when using ArgumentEncoder.
+
+        * Shared/CoordinatedGraphics/CoordinatedSurface.h:
+        (WebKit::CoordinatedSurface::supportsAlpha):
+        * Shared/CoordinatedGraphics/WebCoordinatedSurface.cpp:
+        (WebKit::WebCoordinatedSurface::Handle::encode):
+        (WebKit::WebCoordinatedSurface::copyToTexture):
+
+2012-12-10  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Remove the dependency of ShareableSurface from Coordinated Graphics.
+        https://bugs.webkit.org/show_bug.cgi?id=100819
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        WebCoordinatedSurface::copyToTexture should return early if the backend
+        is GraphicsSurface.
+
+        * Shared/CoordinatedGraphics/WebCoordinatedSurface.cpp:
+        (WebKit::WebCoordinatedSurface::copyToTexture):
+
+2012-12-10  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Add CoordinatedSurface to remove the dependency of ShareableSurface from Coordinated Graphics.
+        https://bugs.webkit.org/show_bug.cgi?id=100819
+
+        Reviewed by Noam Rosenthal.
+
+        Internal Review by Gwang Yoon Hwang and Jae Hyun Park.
+
+        It is a preparation patch for Threaded Coordinated Graphics on WK1.
+
+        Create a CoordinatedSurface class that can be the base class both for
+        the current IPC-based ShareableSurface, renamed here to
+        WebCoordinatedSurface, and to a future thread-based surface
+        implementation.
+
+        * CMakeLists.txt:
+        * Shared/CoordinatedGraphics/CoordinatedSurface.h: Added.
+        (WebCore):
+        (WebKit):
+        (CoordinatedSurface):
+        (WebKit::CoordinatedSurface::~CoordinatedSurface):
+        (WebKit::CoordinatedSurface::supportsAlpha):
+        * Shared/CoordinatedGraphics/WebCoordinatedSurface.cpp: Renamed from Source/WebKit2/Shared/ShareableSurface.cpp.
+          Extends CoordinatedSurface.
+        (WebKit):
+        (WebKit::WebCoordinatedSurface::Handle::Handle):
+        (WebKit::WebCoordinatedSurface::Handle::encode):
+        (WebKit::WebCoordinatedSurface::Handle::decode):
+        (WebKit::CoordinatedSurface::create):
+        (WebKit::WebCoordinatedSurface::create):
+        (WebKit::WebCoordinatedSurface::createWithSurface):
+        (WebKit::WebCoordinatedSurface::createGraphicsContext):
+        (WebKit::WebCoordinatedSurface::WebCoordinatedSurface):
+        (WebKit::WebCoordinatedSurface::~WebCoordinatedSurface):
+        (WebKit::WebCoordinatedSurface::createHandle):
+        (WebKit::WebCoordinatedSurface::copyToTexture):
+        * Shared/CoordinatedGraphics/WebCoordinatedSurface.h: Renamed from Source/WebKit2/Shared/ShareableSurface.h.
+        (WebCore):
+        (WebKit):
+        (WebCoordinatedSurface):
+        (Handle):
+        (WebKit::WebCoordinatedSurface::Handle::graphicsSurfaceToken):
+        (WebKit::WebCoordinatedSurface::isBackedByGraphicsSurface):
+        * Target.pri:
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.cpp:
+        (WebKit::CoordinatedBackingStoreTile::swapBuffers):
+        (WebKit::CoordinatedBackingStoreTile::setBackBuffer):
+        (WebKit::CoordinatedBackingStore::updateTile):
+        * UIProcess/CoordinatedGraphics/CoordinatedBackingStore.h:
+        (WebKit):
+        (CoordinatedBackingStoreTile):
+        (CoordinatedBackingStore):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createUpdateAtlas):
+        (WebKit::LayerTreeCoordinatorProxy::updateImageBacking):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::updateImageBacking):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (TileUpdate):
+        (WebKit::LayerTreeRenderer::TileUpdate::TileUpdate):
+        (LayerTreeRenderer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::beginContentUpdate):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.cpp:
+        (WebKit::CoordinatedImageBacking::update):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.h:
+        (Coordinator):
+        (CoordinatedImageBacking):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::updateImageBacking):
+        (WebKit::LayerTreeCoordinator::createUpdateAtlas):
+        (WebKit::LayerTreeCoordinator::beginContentUpdate):
+        (WebKit::LayerTreeCoordinator::releaseInactiveAtlasesTimerFired):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.cpp:
+        (WebKit::UpdateAtlas::UpdateAtlas):
+        (WebKit::UpdateAtlas::beginPaintingOnAvailableBuffer):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.h:
+        (UpdateAtlasClient):
+        (UpdateAtlas):
+        (WebKit::UpdateAtlas::supportsAlpha):
+
+2012-12-09  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Reorder messages to LayerTreeCoordinatorProxy
+        https://bugs.webkit.org/show_bug.cgi?id=103843
+
+        Reviewed by Noam Rosenthal.
+
+        Send SetRootCompositingLayer message to the UI process before
+        flushing compositing states of layer tree.
+
+        This is in preparation for refactoring TextureMapper to work in an actor
+        model (http://webkit.org/b/103854).
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::setLayerState):
+        (WebKit::LayerTreeRenderer::setRootLayerID):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::LayerTreeCoordinator):
+        (WebKit::LayerTreeCoordinator::flushPendingLayerChanges):
+        (WebKit::LayerTreeCoordinator::initializeRootCompositingLayerIfNeeded):
+        (WebKit):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+
+2012-12-09  Jon Lee  <jonlee@apple.com>
+
+        [WK2] Move button image to injected bundle
+        https://bugs.webkit.org/show_bug.cgi?id=104107
+        <rdar://problem/12813842>
+
+        Reviewed by Simon Fraser.
+
+        Rely on the injected bundle to create the image used for the button in snapshotted plug-ins.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::plugInStartLabelImage): Forward the call to the injected bundle UI client.
+        * WebProcess/WebCoreSupport/WebChromeClient.h: Implement plugInStartLabelImage().
+
+        * WebProcess/InjectedBundle/InjectedBundlePageUIClient.cpp:
+        (WebKit::InjectedBundlePageUIClient::plugInStartLabelImage): Convert the WebCore enums to WK API enums.
+        * WebProcess/InjectedBundle/InjectedBundlePageUIClient.h:
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.h: Expose a new callback to generate the button image.
+
+        * Shared/API/c/cg/WKImageCG.cpp:
+        (WKImageCreateFromCGImage): Refactor to use GraphicsContext methods so that the image is flipped appropriately.
+
+2012-12-09  Kangil Han  <kangil.han@samsung.com>
+
+        Fix unused parameter compile warnings
+        https://bugs.webkit.org/show_bug.cgi?id=104463
+
+        Reviewed by Kentaro Hara.
+
+        Remove compile warning messages by omitting parameter name.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::createCanvas):
+
+2012-12-08  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [EFL][WK2] Add Remote Web Inspector
+        https://bugs.webkit.org/show_bug.cgi?id=98705
+
+        Reviewed by Gyuyoung Kim.
+
+        Add Remote Web Inspector to EFL port.
+        The WebInspectorSever will be started during WebKit context initialization.
+        The IP address and port number for the server can be set in WEBKIT_INSPECTOR_SERVER.
+
+        * CMakeLists.txt:
+        * PlatformEfl.cmake:
+        * UIProcess/InspectorServer/WebInspectorServer.h:
+        (WebInspectorServer):
+        * UIProcess/InspectorServer/WebSocketServer.h:
+        (WebSocketServer):
+        * UIProcess/InspectorServer/efl/WebInspectorServerEfl.cpp: Added.
+        (WebKit):
+        (WebKit::inspectorResourcePath):
+        (WebKit::WebInspectorServer::platformResourceForPath):
+        (WebKit::WebInspectorServer::buildPageList):
+        * UIProcess/InspectorServer/soup/WebSocketServerSoup.cpp:
+        (WebKit::connectionCallback):
+        * UIProcess/efl/WebContextEfl.cpp:
+        (WebKit::initializeInspectorServer):
+        (WebKit):
+        (WebKit::WebContext::platformInitializeWebProcess):
+        * config.h:
+
+2012-12-08  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Unreviewed. Make building the WebKit2 GIR file conditional on building the WebKit2 library.
+
+        * GNUmakefile.am:
+
+2012-12-08  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        Remove unused headers
+        https://bugs.webkit.org/show_bug.cgi?id=104428
+
+        Reviewed by Kentaro Hara.
+
+        Header inclusion cleanup.
+        Remove <WebCore/NotImplement.h>.
+
+        * Platform/qt/WorkQueueQt.cpp:
+        * Platform/win/WorkQueueWin.cpp:
+        * Shared/qt/ShareableBitmapQt.cpp:
+        * UIProcess/Launcher/qt/ProcessLauncherQt.cpp:
+        * UIProcess/win/TextCheckerWin.cpp:
+        * UIProcess/win/WebContextMenuProxyWin.cpp:
+        * WebProcess/WebCoreSupport/efl/WebEditorClientEfl.cpp:
+
+2012-12-07  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Remove unused source file from PlatformEfl.cmake
+        https://bugs.webkit.org/show_bug.cgi?id=104430
+
+        Reviewed by Kentaro Hara.
+
+        Shared/API/c/gtk/WKGraphicsContextGtk.cpp is not used for building WebKit2/EFL.
+
+        * PlatformEfl.cmake:
+
+2012-12-07  Jer Noble  <jer.noble@apple.com>
+
+        Allow the WebProcess access to the CoreMedia preferences file.
+        https://bugs.webkit.org/show_bug.cgi?id=104320
+        <rdar://problem/10904519>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Allow read access to ~/Library/Preferences/com.apple.coremedia.plist and com.apple.avfoundation.plist
+        by the WebProcess. The QuickTime.plugin uses CoreMedia for playback, so allow PluginProcess
+        to access those preferences as well.
+
+        * PluginProcess/mac/com.apple.WebKit.PluginProcess.sb.in:
+        * WebProcess/com.apple.WebProcess.sb.in:
+
+2012-12-07  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] WebProcessServiceForWebKitDevelopment should forward stdout and stderr to the UIProcess
+        https://bugs.webkit.org/show_bug.cgi?id=104418
+
+        Reviewed by Simon Fraser.
+
+        * UIProcess/Launcher/mac/ProcessLauncherMac.mm:
+        (WebKit::connectToWebProcessServiceForWebKitDevelopment): Send stdout and stderr file descriptors to the WebProcess.
+        * WebProcessServiceForWebKitDevelopment/WebProcessServiceForWebKitDevelopmentMain.mm:
+        (WebProcessServiceForWebKitDevelopmentEventHandler): Replace the WebProcess' stdout and stderr with those from the UIProcess.
+
+2012-12-07  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136993.
+        http://trac.webkit.org/changeset/136993
+        https://bugs.webkit.org/show_bug.cgi?id=104415
+
+        This patch breaks the mac build (Requested by cabanier on
+        #webkit).
+
+        * win/WebKit2.def.in:
+
+2012-12-07  Alexey Proskuryakov  <ap@apple.com>
+
+        There is no need to change cached resource storage policy through ResourceHandleClient
+        https://bugs.webkit.org/show_bug.cgi?id=104413
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        * NetworkProcess/NetworkResourceLoader.h:
+        Deleted overrides of the removed willCacheResponse.
+
+2012-12-07  Alexey Proskuryakov  <ap@apple.com>
+
+        Network process should use a correct storage session in private browsing mode
+        <rdar://problem/12838490>
+        https://bugs.webkit.org/show_bug.cgi?id=104401
+
+        Reviewed by Brady Eidson.
+
+        Notify NetworkProcess when it needs to create or destroy a private browsing session,
+        and add a NetworkResourceLoadParameters member telling if the particular resource
+        should be requested using it.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::cookiesForDOM):
+        (WebKit::NetworkConnectionToWebProcess::setCookiesFromDOM):
+        (WebKit::NetworkConnectionToWebProcess::cookiesEnabled):
+        (WebKit::NetworkConnectionToWebProcess::getRawCookies):
+        (WebKit::NetworkConnectionToWebProcess::deleteCookie):
+        (WebKit::NetworkConnectionToWebProcess::getHostnamesWithCookies):
+        (WebKit::NetworkConnectionToWebProcess::deleteCookiesForHostname):
+        (WebKit::NetworkConnectionToWebProcess::deleteAllCookies):
+        Added another dummy argument to dummy networking context.
+
+        * NetworkProcess/NetworkProcess.cpp: (WebKit::NetworkProcess::initializeNetworkProcess):
+        Ensure private browsing session if it's needed due to a persistent preference, not
+        an API call at runtime (which is handled below as ensure/destroy).
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::start): Pass private browsing state to RemoteNetworkingContext
+        used for loading.
+        (WebKit::NetworkResourceLoader::willCacheResponse): Added an implemntation that
+        matches WebCore, but may be not needed.
+
+        * NetworkProcess/mac/RemoteNetworkingContext.h: (WebKit::RemoteNetworkingContext::create):
+        Store privateBrowsingEnabled flag.
+
+        * NetworkProcess/mac/RemoteNetworkingContext.mm: (WebKit::RemoteNetworkingContext::storageSession):
+        Return a private session when it's in use.
+
+        * Shared/Network/NetworkProcessCreationParameters.cpp:
+        (WebKit::NetworkProcessCreationParameters::encode):
+        (WebKit::NetworkProcessCreationParameters::decode):
+        * Shared/Network/NetworkProcessCreationParameters.h:
+        Pass privateBrowsingEnabled flag to the new process.
+
+        * Shared/Network/NetworkResourceLoadParameters.cpp:
+        (WebKit::NetworkResourceLoadParameters::NetworkResourceLoadParameters):
+        (WebKit::NetworkResourceLoadParameters::encode):
+        (WebKit::NetworkResourceLoadParameters::decode):
+        * Shared/Network/NetworkResourceLoadParameters.h:
+        (WebKit::NetworkResourceLoadParameters::inPrivateBrowsingMode):
+        Pass inPrivateBrowsingMode flag for the request.
+
+        * UIProcess/Network/NetworkProcessManager.h: (WebKit::NetworkProcessManager::process):
+        Exposed, so that we can send messages without going through NetworkProcessManager.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::usesNetworkProcess):
+        (WebKit::anyContextUsesNetworkProcess):
+        (WebKit::WebContext::willStartUsingPrivateBrowsing):
+        (WebKit::WebContext::willStopUsingPrivateBrowsing):
+        Notify NetworkProcess when entering or exiting private browsing.
+
+        * UIProcess/WebContext.h: Exposed usesNetworkProcess() for the new static function
+        anyContextUsesNetworkProcess to use.
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp: (WebKit::WebResourceLoadScheduler::scheduleLoad):
+        Put current private browsing state over in NetworkResourceLoadParameters.
+
+2012-12-07  Helder Correia  <helder.correia@nokia.com>
+
+        [CoordGfx] Variable name starts with upper case character
+        https://bugs.webkit.org/show_bug.cgi?id=104327
+
+        Reviewed by Noam Rosenthal.
+
+        Just fixing a typo.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::setMaskLayer):
+
+2012-12-07  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [WK2][EFL][Qt] Pixel alignment is wrong in some cases involving a non-integral content scale
+        https://webkit.org/b/103519
+
+        Reviewed by Noam Rosenthal.
+
+        This patch removes the blurriness by pixel aligning the layers. It
+        does not fully remove the shaking, only minimizes it.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::transformFromScene):
+        (EwkViewImpl::displayTimerFired):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl::pagePosition):
+
+            As the pixel alignment of the main layer is moved to the
+            PageViewportController, rename discretePagePosition to just
+            pagePosition. It now returns a FloatPoint but the positions
+            should still be discrete.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::setVisibleContentsRect):
+        (WebKit::LayerTreeCoordinatorProxy::didChangeScrollPosition):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::didChangeScrollPosition):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (LayerTreeRenderer):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::visibleContentsRect):
+        (WebKit::LayerTreeCoordinator::setVisibleContentsRect):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.messages.in:
+        * WebProcess/WebPage/LayerTreeHost.h:
+        (WebCore):
+        (WebKit::LayerTreeHost::setVisibleContentsRect):
+
+            Change the internal scroll position/visible contents rect
+            to be represented as float positions. The rounding to integer
+            values not happens just before setFixesVisibleContentsRect.
+            This makes it possible to know our exact positions and
+            calculate proper scroll deltas.
+
+        (WebKit::LayerTreeRenderer::setLayerState):
+
+            Group anchor point, position and size together.
+
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::PageViewportController):
+        (WebKit::PageViewportController::boundContentsPosition):
+        (WebKit::PageViewportController::boundContentsPositionAtScale):
+        (WebKit::PageViewportController::didRenderFrame):
+        (WebKit::PageViewportController::pageDidRequestScroll):
+        (WebKit::PageViewportController::didChangeContentsVisibility):
+        (WebKit::PageViewportController::syncVisibleContents):
+        (WebKit::PageViewportController::visibleContentsSize):
+        (WebKit::PageViewportController::applyPositionAfterRenderingContents):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::focusEditableArea):
+        (WebKit::PageViewportControllerClientQt::zoomToAreaGestureEnded):
+        (WebKit::PageViewportControllerClientQt::nearestValidVisibleContentsRect):
+
+            Some renaming as what was called viewportPos was actually the
+            contents position. Rename clampViewportToContents to
+            boundContentsPosition and remove scale argument which is has
+            direct access to.
+
+            Make the boundContentsPosition allow one extra pixel in each
+            orientation to allow for pixel alignment of fixed position layers
+
+        (WebKit::isIntegral):
+        (WebKit):
+        (WebKit::PageViewportController::pixelAlignedFloatPoint):
+
+            Introduce way to pixel align the main contents layer. Only in
+            use for EFL so far.
+
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::updateViewportSize):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::setViewportPosition):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (WebKit::PageViewportControllerClientEfl::contentPosition):
+        (PageViewportControllerClientEfl):
+
+            Store the contents position as a FloatPoint.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        (WebCore::CoordinatedGraphicsLayer::setMaskLayer):
+        (WebCore::CoordinatedGraphicsLayer::syncLayerState):
+        (WebCore::CoordinatedGraphicsLayer::tiledBackingStoreVisibleRect):
+        (WebCore::isIntegral):
+        (WebCore):
+        (WebCore::CoordinatedGraphicsLayer::computePositionRelativeToBase):
+        (WebCore::CoordinatedGraphicsLayer::computePixelAlignment):
+        (WebCore::CoordinatedGraphicsLayer::computeTransformedVisibleRect):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+
+            Pixel align layers when the effective scale is not an integer
+            value. This code is based on code from GraphicsLayerCA.
+
+2012-12-07  Alexey Proskuryakov  <ap@apple.com>
+
+        REGRESSION (r136770): Assertion failure in sendMessage() whenever WebProcess crashes
+        https://bugs.webkit.org/show_bug.cgi?id=104392
+
+        Reviewed by Anders Carlsson.
+
+        * Shared/ChildProcessProxy.cpp: (WebKit::ChildProcessProxy::sendMessage): Changed
+        back to using m_conection where it can be null.
+
+2012-12-07  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [EFL][WK2] Add ewk_settings APIs for text autosizing
+        https://bugs.webkit.org/show_bug.cgi?id=103342
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add ewk_settings_text_autosizing_enabled_get / set() functions.
+        Text autosizing is disabled by default.
+
+        * UIProcess/API/efl/ewk_settings.cpp:
+        (ewk_settings_text_autosizing_enabled_set):
+        (ewk_settings_text_autosizing_enabled_get):
+        * UIProcess/API/efl/ewk_settings.h:
+        * UIProcess/API/efl/tests/test_ewk2_settings.cpp:
+        (TEST_F):
+
+2012-12-06  Rick Byers  <rbyers@chromium.org>
+
+        CSS cursor property should support webkit-image-set
+        https://bugs.webkit.org/show_bug.cgi?id=99493
+
+        Reviewed by Beth Dakin.
+
+        Add ENABLE_MOUSE_CURSOR_SCALE - disabled by default.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2012-12-06  Jae Hyun Park  <jae.park@company100.net>
+
+        Coordinated Graphics: Rename WebLayerTreeInfo to CoordinatedLayerInfo
+        https://bugs.webkit.org/show_bug.cgi?id=103983
+
+        Reviewed by Noam Rosenthal.
+
+        This patch refactors WebLayerTreeInfo in 2 areas.
+
+        1. WebLayerTreeInfo is only used by Coordinated Graphics. So, the file
+        should be located in WebKit2/Shared/CoordinatedGraphics instead of
+        WebKit2/Shared.
+
+        2. The name of WebLayerTreeInfo is incorrect. Currently,
+        WebLayerTreeInfo only has WebLayerInfo struct. Also, it is hard to know
+        what WebLayer is since we don't use that name anymore. More appropriate
+        name for WebLayerInfo would be CoordinatedLayerInfo.
+
+        No new test, because no behavioral change.
+
+        * CMakeLists.txt:
+        * Scripts/webkit2/messages.py:
+        (headers_for_type):
+        * Shared/CoordinatedGraphics/CoordinatedLayerInfo.cpp: Renamed from Source/WebKit2/Shared/WebLayerTreeInfo.cpp.
+        (WebKit):
+        (WebKit::CoordinatedLayerInfo::encode):
+        (WebKit::CoordinatedLayerInfo::decode):
+        * Shared/CoordinatedGraphics/CoordinatedLayerInfo.h: Renamed from Source/WebKit2/Shared/WebLayerTreeInfo.h.
+        (WebKit):
+        (WebKit::CoordinatedLayerInfo::CoordinatedLayerInfo):
+        (CoordinatedLayerInfo):
+        * Shared/LayerTreeContext.h:
+        (LayerTreeContext):
+        * Shared/efl/LayerTreeContextEfl.cpp:
+        (WebKit::LayerTreeContext::LayerTreeContext):
+        (WebKit::LayerTreeContext::encode):
+        (WebKit::LayerTreeContext::decode):
+        (WebKit::LayerTreeContext::isEmpty):
+        (WebKit::operator==):
+        * Shared/qt/LayerTreeContextQt.cpp:
+        (WebKit::LayerTreeContext::LayerTreeContext):
+        (WebKit::LayerTreeContext::encode):
+        (WebKit::LayerTreeContext::decode):
+        (WebKit::LayerTreeContext::isEmpty):
+        (WebKit::operator==):
+        * Target.pri:
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.cpp:
+        (WebKit::LayerTreeCoordinatorProxy::createTileForLayer):
+        (WebKit::LayerTreeCoordinatorProxy::updateTileForLayer):
+        (WebKit::LayerTreeCoordinatorProxy::removeTileForLayer):
+        (WebKit::LayerTreeCoordinatorProxy::deleteCompositingLayer):
+        (WebKit::LayerTreeCoordinatorProxy::setRootCompositingLayer):
+        (WebKit::LayerTreeCoordinatorProxy::setCompositingLayerState):
+        (WebKit::LayerTreeCoordinatorProxy::setCompositingLayerChildren):
+        (WebKit::LayerTreeCoordinatorProxy::setCompositingLayerFilters):
+        (WebKit::LayerTreeCoordinatorProxy::setLayerAnimations):
+        (WebKit::LayerTreeCoordinatorProxy::createCanvas):
+        (WebKit::LayerTreeCoordinatorProxy::syncCanvas):
+        (WebKit::LayerTreeCoordinatorProxy::destroyCanvas):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.h:
+        (WebKit):
+        (LayerTreeCoordinatorProxy):
+        * UIProcess/CoordinatedGraphics/LayerTreeCoordinatorProxy.messages.in:
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::LayerTreeRenderer):
+        (WebKit::LayerTreeRenderer::createLayer):
+        (WebKit::LayerTreeRenderer::createCanvas):
+        (WebKit::LayerTreeRenderer::syncCanvas):
+        (WebKit::LayerTreeRenderer::destroyCanvas):
+        (WebKit::LayerTreeRenderer::setLayerChildren):
+        (WebKit::LayerTreeRenderer::setLayerFilters):
+        (WebKit::LayerTreeRenderer::setLayerState):
+        (WebKit::LayerTreeRenderer::deleteLayer):
+        (WebKit::LayerTreeRenderer::ensureLayer):
+        (WebKit::LayerTreeRenderer::setRootLayerID):
+        (WebKit::LayerTreeRenderer::createTile):
+        (WebKit::LayerTreeRenderer::removeTile):
+        (WebKit::LayerTreeRenderer::updateTile):
+        (WebKit::LayerTreeRenderer::ensureRootLayer):
+        (WebKit::LayerTreeRenderer::purgeGLResources):
+        (WebKit::LayerTreeRenderer::setLayerAnimations):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.h:
+        (WebKit):
+        (LayerTreeRenderer):
+        (WebKit::LayerTreeRenderer::layerByID):
+        * UIProcess/DrawingAreaProxy.h:
+        (WebKit):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::layerByIDMap):
+        (WebCore::toCoordinatedLayerID):
+        (WebCore::CoordinatedGraphicsLayer::CoordinatedGraphicsLayer):
+        (WebCore::CoordinatedGraphicsLayer::id):
+        (WebCore::CoordinatedGraphicsLayer::syncChildren):
+        (WebCore::CoordinatedGraphicsLayer::syncLayerState):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.h:
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.cpp:
+        (WebKit::LayerTreeCoordinator::LayerTreeCoordinator):
+        (WebKit::LayerTreeCoordinator::syncLayerState):
+        (WebKit::LayerTreeCoordinator::syncLayerChildren):
+        (WebKit::LayerTreeCoordinator::createCanvas):
+        (WebKit::LayerTreeCoordinator::syncCanvas):
+        (WebKit::LayerTreeCoordinator::destroyCanvas):
+        (WebKit::LayerTreeCoordinator::syncLayerFilters):
+        (WebKit::LayerTreeCoordinator::createTile):
+        (WebKit::LayerTreeCoordinator::updateTile):
+        (WebKit::LayerTreeCoordinator::removeTile):
+        (WebKit::LayerTreeCoordinator::setLayerAnimations):
+        * WebProcess/WebPage/CoordinatedGraphics/LayerTreeCoordinator.h:
+        (LayerTreeCoordinator):
+
+2012-12-06  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r136900.
+        http://trac.webkit.org/changeset/136900
+        https://bugs.webkit.org/show_bug.cgi?id=104318
+
+        Unreviewed build for Windows port. (Requested by rfong on
+        #webkit).
+
+        * win/WebKit2.def.in:
+
+2012-12-06  Jon Lee  <jonlee@apple.com>
+
+        Retry snapshots if they are too empty
+        https://bugs.webkit.org/show_bug.cgi?id=104174
+        <rdar://problem/12820146>
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/Plugins/PluginView.h: Add a new variable that keeps track of the number of times we've
+        retried to come up with a snapshot.
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::PluginView): Initialize the count to 0.
+        (WebKit::isAlmostSolidColor): Figure out if the image is almost a solid color by overlaying
+        a grid of dots, and calculate the differences among them. If the average color difference is greater than
+        a threshold, we consider it to have meaningful content. For now we expect a minimum size and a specific
+        bitmap image format, otherwise we return early.
+        (WebKit::PluginView::pluginSnapshotTimerFired): If we have a snapshot image to look at, and if it is
+        evaluated to be too empty, then try again.
+
+2012-12-06  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, Apple Win Debug build fix.
+
+        * win/WebKit2.def.in: Add 2 symbols that are needed by the debug build.
+
+2012-12-06  Alexey Proskuryakov  <ap@apple.com>
+
+        Track private browsing session in network process
+        https://bugs.webkit.org/show_bug.cgi?id=104281
+
+        Reviewed by Jessie Berlin.
+
+        Added ensure/destroy messages that match what's done in WebProcess. Also similarly,
+        ensuring a private session may happen on demand if network process has been restarted
+        after a crash, or if private browsing is enabled via a persistent preference.
+
+        Eventually, we should find a way to share code between WebFrameNetworkingContext
+        and RemoteNetworkingContext.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        (WebKit::NetworkProcess::ensurePrivateBrowsingSession):
+        (WebKit::NetworkProcess::destroyPrivateBrowsingSession):
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/NetworkProcess.messages.in:
+        * NetworkProcess/mac/RemoteNetworkingContext.h:
+        (RemoteNetworkingContext):
+        * NetworkProcess/mac/RemoteNetworkingContext.mm:
+        (WebKit::privateBrowsingStorageSessionIdentifierBase):
+        (WebKit::RemoteNetworkingContext::setPrivateBrowsingStorageSessionIdentifierBase):
+        (WebKit::RemoteNetworkingContext::ensurePrivateBrowsingSession):
+        (WebKit::RemoteNetworkingContext::destroyPrivateBrowsingSession):
+        * Shared/Network/NetworkProcessCreationParameters.cpp:
+        (WebKit::NetworkProcessCreationParameters::encode):
+        (WebKit::NetworkProcessCreationParameters::decode):
+        * Shared/Network/NetworkProcessCreationParameters.h:
+        (NetworkProcessCreationParameters):
+        * UIProcess/Network/mac/NetworkProcessProxyMac.mm:
+        (WebKit::NetworkProcessProxy::platformInitializeNetworkProcess):
+        * WebProcess/WebCoreSupport/mac/WebFrameNetworkingContext.mm:
+        (WebKit::WebFrameNetworkingContext::ensurePrivateBrowsingSession):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess):
+
+2012-12-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [EFL] Remove ENABLE_GLIB_SUPPORT CMake variable
+        https://bugs.webkit.org/show_bug.cgi?id=104278
+
+        Reviewed by Brent Fulgham.
+
+        The guards are not required as it is always set for EFL.
+
+        * PlatformEfl.cmake:
+        * UIProcess/Plugins/unix/PluginProcessProxyUnix.cpp:
+        (WebKit::PluginProcessProxy::scanPlugin):
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+
+2012-12-06  Tony Chang  <tony@chromium.org>
+
+        REGRESSION(r135082): Restore the ability to insert author level style sheets from script
+        https://bugs.webkit.org/show_bug.cgi?id=104042
+
+        Reviewed by Antti Koivisto.
+
+        Update exports for Internals.cpp.
+
+        * win/WebKit2.def.in:
+
 2012-12-06  Andras Becsi  <andras.becsi@digia.com>
 
         [Qt][WK2] Fix QWebKitTest's notification of device pixel ratio change
