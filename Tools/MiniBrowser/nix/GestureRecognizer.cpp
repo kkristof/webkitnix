@@ -1,4 +1,6 @@
 #include "GestureRecognizer.h"
+
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -13,14 +15,12 @@ static double computeDistance(WKPoint a, WKPoint b)
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
-static bool hasTouchPointPressed(const Nix::TouchEvent& event)
+static bool hasTouchPointPressed(const NIXTouchEvent& event)
 {
-    std::vector<Nix::TouchPoint>::const_iterator it = event.touchPoints.begin();
-
-    for (; it < event.touchPoints.end(); ++it)
-        if ((*it).state == Nix::TouchPoint::TouchPressed)
+    for (int i = 0; i < event.numTouchPoints; ++i) {
+        if (event.touchPoints[i].state == kNIXTouchPointStateTouchPressed)
             return true;
-
+    }
     return false;
 }
 
@@ -42,7 +42,7 @@ void GestureRecognizer::reset()
 static const int PanDistanceThreshold = 10;
 static const int MaxDoubleTapInterval = 500;
 
-static bool exceedsPanThreshold(const Nix::TouchPoint& first, const Nix::TouchPoint& last)
+static bool exceedsPanThreshold(const NIXTouchPoint& first, const NIXTouchPoint& last)
 {
     float deltaX = std::abs(first.globalX - last.globalX);
     float deltaY = std::abs(first.globalY - last.globalY);
@@ -63,26 +63,26 @@ void GestureRecognizer::fail(const char* reason)
     reset();
 }
 
-void GestureRecognizer::noGesture(const Nix::TouchEvent& event)
+void GestureRecognizer::noGesture(const NIXTouchEvent& event)
 {
-    Nix::TouchPoint touch = event.touchPoints[0];
+    NIXTouchPoint touch = event.touchPoints[0];
     switch (event.type) {
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::singleTapPressed;
         m_firstTouchPoint = touch;
         m_previousTouchPoint = touch;
         break;
-    case Nix::InputEvent::TouchMove:
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchMove:
+    case kNIXInputEventTypeTouchEnd:
         fail("received TouchMove or TouchEnd when in NoGesture state.");
         break;
     }
 }
 
-void GestureRecognizer::setupPinchData(const std::vector<Nix::TouchPoint>& points)
+void GestureRecognizer::setupPinchData(const NIXTouchEvent& event)
 {
-    Nix::TouchPoint first = points[0];
-    Nix::TouchPoint second = points[1];
+    const NIXTouchPoint& first = event.touchPoints[0];
+    const NIXTouchPoint& second = event.touchPoints[1];
 
     m_initialPinchDistance = computeDistance(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
     m_initialPinchScale = m_client->scale();
@@ -90,62 +90,61 @@ void GestureRecognizer::setupPinchData(const std::vector<Nix::TouchPoint>& point
     m_previousPinchGlobalCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
 }
 
-void GestureRecognizer::singleTapPressed(const Nix::TouchEvent& event)
+void GestureRecognizer::singleTapPressed(const NIXTouchEvent& event)
 {
-    Nix::TouchPoint touch = event.touchPoints[0];
+    const NIXTouchPoint& touchPoint = event.touchPoints[0];
     switch (event.type) {
-    case Nix::InputEvent::TouchMove:
-        if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
-            updatePanningData(event.timestamp, touch);
+    case kNIXInputEventTypeTouchMove:
+        if (exceedsPanThreshold(touchPoint, m_firstTouchPoint)) {
+            updatePanningData(event.timestamp, touchPoint);
         }
         break;
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchEnd:
         m_state = &GestureRecognizer::waitForDoubleTap;
         m_timestamp = event.timestamp;
         m_doubleTapTimerId = g_timeout_add(MaxDoubleTapInterval, doubleTapTimer, this);
         break;
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::pinchInProgress;
-        setupPinchData(event.touchPoints);
+        setupPinchData(event);
         m_client->handlePinchStarted(event.timestamp);
         break;
     }
 }
-void GestureRecognizer::waitForDoubleTap(const Nix::TouchEvent& event)
+void GestureRecognizer::waitForDoubleTap(const NIXTouchEvent& event)
 {
     g_source_remove(m_doubleTapTimerId);
     switch (event.type) {
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::doubleTapPressed;
         break;
-    case Nix::InputEvent::TouchMove:
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchMove:
+    case kNIXInputEventTypeTouchEnd:
         fail("received TouchMove or TouchEnd when in WaitForDoubleTap state.");
         break;
     }
 }
-void GestureRecognizer::doubleTapPressed(const Nix::TouchEvent& event)
+void GestureRecognizer::doubleTapPressed(const NIXTouchEvent& event)
 {
-    Nix::TouchPoint touch = event.touchPoints[0];
+    const NIXTouchPoint& touchPoint = event.touchPoints[0];
     switch (event.type) {
-    case Nix::InputEvent::TouchMove:
-        if (exceedsPanThreshold(touch, m_firstTouchPoint)) {
-            updatePanningData(event.timestamp, touch);
-        }
+    case kNIXInputEventTypeTouchMove:
+        if (exceedsPanThreshold(touchPoint, m_firstTouchPoint))
+            updatePanningData(event.timestamp, touchPoint);
         break;
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchEnd:
         m_state = &GestureRecognizer::noGesture;
-        m_client->handleDoubleTap(event.timestamp, touch);
+        m_client->handleDoubleTap(event.timestamp, touchPoint);
         break;
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::pinchInProgress;
-        setupPinchData(event.touchPoints);
+        setupPinchData(event);
         m_client->handlePinchStarted(event.timestamp);
         break;
     }
 }
 
-void GestureRecognizer::updatePanningData(double timestamp, const Nix::TouchPoint& current)
+void GestureRecognizer::updatePanningData(double timestamp, const NIXTouchPoint& current)
 {
     WKPoint delta = WKPointMake((current.globalX - m_previousTouchPoint.globalX) / m_client->scale(),
                                 (current.globalY - m_previousTouchPoint.globalY) / m_client->scale());
@@ -154,37 +153,37 @@ void GestureRecognizer::updatePanningData(double timestamp, const Nix::TouchPoin
     m_client->handlePanning(timestamp, delta);
 }
 
-void GestureRecognizer::panningInProgress(const Nix::TouchEvent& event)
+void GestureRecognizer::panningInProgress(const NIXTouchEvent& event)
 {
-    Nix::TouchPoint touch = event.touchPoints[0];
+    const NIXTouchPoint& touchPoint = event.touchPoints[0];
     switch (event.type) {
-    case Nix::InputEvent::TouchMove:
-        updatePanningData(event.timestamp, touch);
+    case kNIXInputEventTypeTouchMove:
+        updatePanningData(event.timestamp, touchPoint);
         break;
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchEnd:
         m_state = &GestureRecognizer::noGesture;
         m_client->handlePanningFinished(event.timestamp);
         break;
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::pinchInProgress;
-        setupPinchData(event.touchPoints);
+        setupPinchData(event);
         m_client->handlePinchStarted(event.timestamp);
         break;
     }
 }
 
-void GestureRecognizer::pinchInProgress(const Nix::TouchEvent& event)
+void GestureRecognizer::pinchInProgress(const NIXTouchEvent& event)
 {
-    if (event.touchPoints.size() < 2) {
+    if (event.numTouchPoints < 2) {
         fail("Received only one touch point while in PinchInProgressState.");
         return;
     }
 
     switch (event.type) {
-    case Nix::InputEvent::TouchMove:
-        updatePinchData(event.timestamp, event.touchPoints);
+    case kNIXInputEventTypeTouchMove:
+        updatePinchData(event.timestamp, event);
         break;
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchEnd:
         if (hasTouchPointPressed(event))
             m_state = &GestureRecognizer::panningInProgress;
         else {
@@ -193,18 +192,17 @@ void GestureRecognizer::pinchInProgress(const Nix::TouchEvent& event)
         }
         m_client->handlePinchFinished(event.timestamp);
         break;
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         // Ignore extra touch points.
         break;
     }
 }
 
-void GestureRecognizer::handleTouchEvent(const Nix::TouchEvent& event)
+void GestureRecognizer::handleTouchEvent(const NIXTouchEvent& event)
 {
     (this->*m_state)(event);
 
-    Nix::TouchPoint touch = event.touchPoints[0];
-    m_previousTouchPoint = touch;
+    m_previousTouchPoint = event.touchPoints[0];
 }
 
 gboolean doubleTapTimer(gpointer data)
@@ -213,12 +211,12 @@ gboolean doubleTapTimer(gpointer data)
     return FALSE;
 }
 
-void GestureRecognizer::updatePinchData(double timestamp, const std::vector<Nix::TouchPoint>& points)
+void GestureRecognizer::updatePinchData(double timestamp, const NIXTouchEvent& event)
 {
     assert(m_initialPinchScale > 0);
 
-    Nix::TouchPoint first = points[0];
-    Nix::TouchPoint second = points[1];
+    const NIXTouchPoint& first = event.touchPoints[0];
+    const NIXTouchPoint& second = event.touchPoints[1];
 
     WKPoint currentCenter = computeCenter(WKPointMake(first.globalX, first.globalY), WKPointMake(second.globalX, second.globalY));
     WKPoint delta = WKPointMake((currentCenter.x - m_previousPinchGlobalCenter.x) / m_client->scale(),

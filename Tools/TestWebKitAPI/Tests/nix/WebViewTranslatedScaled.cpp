@@ -2,10 +2,10 @@
 
 #include "PageLoader.h"
 #include "GLUtilities.h"
-#include "WebView.h"
+#include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -22,32 +22,30 @@ TEST(WebKitNix, WebViewTranslatedScaled)
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
-    Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
-
-    cairo_matrix_t transform;
-    const int translationDelta = 10;
-    cairo_matrix_init_translate(&transform, translationDelta, translationDelta);
-    webView->setUserViewportTransformation(transform);
-
-    client.setView(webView.get());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
+    Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
+
+    const int translationDelta = 10;
+    NIXMatrix transform = NIXMatrixMakeTranslation(translationDelta, translationDelta);
+    NIXViewSetUserViewportTransformation(view.get(), &transform);
+
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
+    NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    Util::PageLoader loader(webView.get());
+    Util::PageLoader loader(view.get());
 
     loader.waitForLoadURLAndRepaint("../nix/red-square");
 
     // Note that glReadPixels [0, 0] is at the bottom-left of the buffer.
     unsigned char sample[4 * int(size.width * size.height)];
     for (double scale = 1.0; scale < 3.0; scale++) {
-        webView->setScale(scale);
+        NIXViewSetScale(view.get(), scale);
         loader.forceRepaint();
         glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
 
@@ -78,10 +76,6 @@ TEST(WebKitNix, WebViewTranslatedScaled)
         EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
         EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
     }
-
-    // FIXME: Leaking memory to avoid bug on WebView destructor or on test
-    //        infrastructure destruction that should be fixed ASAP.
-    webView.release();
 }
 
 } // TestWebKitAPI

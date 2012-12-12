@@ -42,7 +42,7 @@
 #include <wtf/PassOwnArrayPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
-#include <API/nix/WebView.h>
+#include <API/nix/NIXView.h>
 #include <API/C/WKAPICast.h>
 
 namespace WTR {
@@ -64,7 +64,7 @@ enum KeyLocationCode {
 #define KEYCODE_RIGHTARROW  0xf703
 
 struct WTREvent {
-    Nix::InputEvent* event;
+    NIXInputEvent* event;
     int delay;
 };
 
@@ -72,7 +72,7 @@ static WTREvent eventQueue[1024];
 static unsigned endOfQueue;
 static bool isReplayingEvents;
 
-static std::vector<Nix::TouchPoint> touchPoints;
+static std::vector<NIXTouchPoint> touchPoints;
 static unsigned touchModifiers;
 static int touchVerticalRadius;
 static int touchHorizontalRadius;
@@ -126,24 +126,24 @@ static unsigned convertToNixModifiers(WKEventModifiers modifiersRef)
     unsigned modifiers = 0;
 
     if (modifiersRef & kWKEventModifiersControlKey)
-        modifiers |= Nix::InputEvent::ControlKey;
+        modifiers |= kNIXInputEventModifiersControlKey;
     if (modifiersRef & kWKEventModifiersShiftKey)
-        modifiers |= Nix::InputEvent::ShiftKey;
+        modifiers |= kNIXInputEventModifiersShiftKey;
     if (modifiersRef & kWKEventModifiersAltKey)
-        modifiers |= Nix::InputEvent::AltKey;
+        modifiers |= kNIXInputEventModifiersAltKey;
     if (modifiersRef & kWKEventModifiersMetaKey)
-        modifiers |= Nix::InputEvent::MetaKey;
+        modifiers |= kNIXInputEventModifiersMetaKey;
 
     return modifiers;
 }
 
-Nix::MouseEvent* EventSenderProxy::createMouseEvent(Nix::InputEvent::Type type, unsigned button, WKEventModifiers wkModifiers)
+NIXMouseEvent* EventSenderProxy::createMouseEvent(NIXInputEventType type, unsigned button, WKEventModifiers wkModifiers)
 {
-    Nix::MouseEvent* ev = new Nix::MouseEvent;
+    NIXMouseEvent* ev = new NIXMouseEvent;
     ev->type = type;
     ev->modifiers = convertToNixModifiers(wkModifiers);
     ev->timestamp = convertToNixTimestamp(m_time);
-    ev->button = (Nix::MouseEvent::Button) button;
+    ev->button = (WKEventMouseButton) button;
     ev->x = m_position.x;
     ev->y = m_position.y;
     ev->globalX = m_position.x;
@@ -156,17 +156,17 @@ void EventSenderProxy::mouseDown(unsigned button, WKEventModifiers wkModifiers)
 {
     updateClickCountForButton(button);
 
-    Nix::InputEvent* ev = createMouseEvent(Nix::InputEvent::MouseDown, button, wkModifiers);
-    sendOrQueueEvent(ev);
+    NIXMouseEvent* ev = createMouseEvent(kNIXInputEventTypeMouseDown, button, wkModifiers);
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(ev));
 }
 
 void EventSenderProxy::mouseUp(unsigned button, WKEventModifiers wkModifiers)
 {
-    Nix::InputEvent* ev = createMouseEvent(Nix::InputEvent::MouseUp, button, wkModifiers);
+    NIXMouseEvent* ev = createMouseEvent(kNIXInputEventTypeMouseUp, button, wkModifiers);
     m_clickPosition = m_position;
     m_clickTime = m_time;
 
-    sendOrQueueEvent(ev);
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(ev));
 }
 
 void EventSenderProxy::mouseMoveTo(double x, double y)
@@ -174,8 +174,8 @@ void EventSenderProxy::mouseMoveTo(double x, double y)
     m_position.x = x;
     m_position.y = y;
 
-    Nix::InputEvent* ev = createMouseEvent(Nix::InputEvent::MouseMove, 0, 0);
-    sendOrQueueEvent(ev);
+    NIXMouseEvent* ev = createMouseEvent(kNIXInputEventTypeMouseMove, 0, 0);
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(ev));
 }
 
 void EventSenderProxy::mouseScrollBy(int horizontal, int vertical)
@@ -189,11 +189,11 @@ void EventSenderProxy::leapForward(int milliseconds)
     m_time += milliseconds;
 }
 
-Nix::KeyEvent* EventSenderProxy::createKeyEvent(Nix::InputEvent::Type type, unsigned code, unsigned nixModifiers, bool shouldUseUpperCase, bool isKeypad)
+NIXKeyEvent* EventSenderProxy::createKeyEvent(NIXInputEventType type, unsigned code, unsigned nixModifiers, bool shouldUseUpperCase, bool isKeypad)
 {
-    Nix::KeyEvent* ev = new Nix::KeyEvent();
+    NIXKeyEvent* ev = new NIXKeyEvent;
     ev->type = type;
-    ev->key = static_cast<Nix::KeyEvent::Key>(code);
+    ev->key = static_cast<NIXKeyEventKey>(code);
     ev->modifiers = nixModifiers;
     ev->timestamp = convertToNixTimestamp(m_time);
     ev->shouldUseUpperCase = shouldUseUpperCase;
@@ -212,95 +212,95 @@ void EventSenderProxy::keyDown(WKStringRef keyRef, WKEventModifiers wkModifiers,
     if (key.length() == 1) {
         code = key[0];
         if (code == '\r')
-            code = Nix::KeyEvent::Key_Return;
+            code = kNIXKeyEventKey_Return;
         else if (code == '\t') {
-            code = Nix::KeyEvent::Key_Tab;
-            if (modifiers == Nix::InputEvent::ShiftKey)
-                code = Nix::KeyEvent::Key_Backtab;
+            code = kNIXKeyEventKey_Tab;
+            if (modifiers == kNIXInputEventModifiersShiftKey)
+                code = kNIXKeyEventKey_Backtab;
         } else if (code == KEYCODE_DEL || code == KEYCODE_BACKSPACE) {
-            code = Nix::KeyEvent::Key_Backspace;
-            if (modifiers == Nix::InputEvent::AltKey)
-                modifiers = Nix::InputEvent::ControlKey;
-        } else if (code == 'o' && modifiers == Nix::InputEvent::ControlKey) {
+            code = kNIXKeyEventKey_Backspace;
+            if (modifiers == kNIXInputEventModifiersAltKey)
+                modifiers = kNIXInputEventModifiersControlKey;
+        } else if (code == 'o' && modifiers == kNIXInputEventModifiersControlKey) {
             // Mimic the emacs ctrl-o binding on Mac by inserting a paragraph
             // separator and then putting the cursor back to its original
             // position. Allows us to pass emacs-ctrl-o.html
             code = '\n';
             modifiers = 0;
-            sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers));
-            sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers));
-            code = Nix::KeyEvent::Key_Left;
-        } else if (code == 'y' && modifiers == Nix::InputEvent::ControlKey)
+            sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(createKeyEvent(kNIXInputEventTypeKeyDown, code, modifiers)));
+            sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(createKeyEvent(kNIXInputEventTypeKeyUp, code, modifiers)));
+            code = kNIXKeyEventKey_Left;
+        } else if (code == 'y' && modifiers == kNIXInputEventModifiersControlKey)
             code = 'c';
-        else if (code == 'k' && modifiers == Nix::InputEvent::ControlKey)
+        else if (code == 'k' && modifiers == kNIXInputEventModifiersControlKey)
             code = 'x';
-        else if (code == 'a' && modifiers == Nix::InputEvent::ControlKey) {
-            code = Nix::KeyEvent::Key_Home;
+        else if (code == 'a' && modifiers == kNIXInputEventModifiersControlKey) {
+            code = kNIXKeyEventKey_Home;
             modifiers = 0;
         } else if (code == KEYCODE_LEFTARROW) {
-            code = Nix::KeyEvent::Key_Left;
-            if (modifiers & Nix::InputEvent::MetaKey) {
-                modifiers -= Nix::InputEvent::MetaKey;
-                code = Nix::KeyEvent::Key_Home;
+            code = kNIXKeyEventKey_Left;
+            if (modifiers & kNIXInputEventModifiersMetaKey) {
+                modifiers -= kNIXInputEventModifiersMetaKey;
+                code = kNIXKeyEventKey_Home;
             }
         } else if (code == KEYCODE_RIGHTARROW) {
-            code = Nix::KeyEvent::Key_Right;
-            if (modifiers & Nix::InputEvent::MetaKey) {
-                modifiers -= Nix::InputEvent::MetaKey;
-                code = Nix::KeyEvent::Key_End;
+            code = kNIXKeyEventKey_Right;
+            if (modifiers & kNIXInputEventModifiersMetaKey) {
+                modifiers -= kNIXInputEventModifiersMetaKey;
+                code = kNIXKeyEventKey_End;
             }
         } else if (code == KEYCODE_UPARROW) {
-            code = Nix::KeyEvent::Key_Up;
-            if (modifiers & Nix::InputEvent::MetaKey) {
-                modifiers -= Nix::InputEvent::MetaKey;
-                code = Nix::KeyEvent::Key_PageUp;
+            code = kNIXKeyEventKey_Up;
+            if (modifiers & kNIXInputEventModifiersMetaKey) {
+                modifiers -= kNIXInputEventModifiersMetaKey;
+                code = kNIXKeyEventKey_PageUp;
             }
         } else if (code == KEYCODE_DOWNARROW) {
-            code = Nix::KeyEvent::Key_Down;
-            if (modifiers & Nix::InputEvent::MetaKey) {
-                modifiers -= Nix::InputEvent::MetaKey;
-                code = Nix::KeyEvent::Key_PageDown;
+            code = kNIXKeyEventKey_Down;
+            if (modifiers & kNIXInputEventModifiersMetaKey) {
+                modifiers -= kNIXInputEventModifiersMetaKey;
+                code = kNIXKeyEventKey_PageDown;
             }
         } else {
             shouldUseUpperCase = isASCIIUpper(code);
             code = toASCIIUpper(code);
             if (shouldUseUpperCase)
-                modifiers |= Nix::InputEvent::ShiftKey;
+                modifiers |= kNIXInputEventModifiersShiftKey;
         }
     } else {
         if (key.startsWith('F') && key.length() <= 3) {
             key.remove(0, 1);
             int functionKey = key.toInt();
             ASSERT(functionKey >= 1 && functionKey <= 35);
-            code = Nix::KeyEvent::Key_F1 + (functionKey - 1);
+            code = kNIXKeyEventKey_F1 + (functionKey - 1);
         } else if (key == "leftArrow")
-            code = Nix::KeyEvent::Key_Left;
+            code = kNIXKeyEventKey_Left;
         else if (key == "rightArrow")
-            code = Nix::KeyEvent::Key_Right;
+            code = kNIXKeyEventKey_Right;
         else if (key == "upArrow")
-            code = Nix::KeyEvent::Key_Up;
+            code = kNIXKeyEventKey_Up;
         else if (key == "downArrow")
-            code = Nix::KeyEvent::Key_Down;
+            code = kNIXKeyEventKey_Down;
         else if (key == "pageUp")
-            code = Nix::KeyEvent::Key_PageUp;
+            code = kNIXKeyEventKey_PageUp;
         else if (key == "pageDown")
-            code = Nix::KeyEvent::Key_PageDown;
+            code = kNIXKeyEventKey_PageDown;
         else if (key == "home")
-            code = Nix::KeyEvent::Key_Home;
+            code = kNIXKeyEventKey_Home;
         else if (key == "end")
-            code = Nix::KeyEvent::Key_End;
+            code = kNIXKeyEventKey_End;
         else if (key == "insert")
-            code = Nix::KeyEvent::Key_Insert;
+            code = kNIXKeyEventKey_Insert;
         else if (key == "delete")
-            code = Nix::KeyEvent::Key_Delete;
+            code = kNIXKeyEventKey_Delete;
         else if (key == "printScreen")
-            code = Nix::KeyEvent::Key_Print;
+            code = kNIXKeyEventKey_Print;
         else if (key == "menu")
-            code = Nix::KeyEvent::Key_Menu;
+            code = kNIXKeyEventKey_Menu;
     }
 
-    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyDown, code, modifiers, shouldUseUpperCase, isKeypad));
-    sendOrQueueEvent(createKeyEvent(Nix::InputEvent::KeyUp, code, modifiers, shouldUseUpperCase, isKeypad));
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(createKeyEvent(kNIXInputEventTypeKeyDown, code, modifiers, shouldUseUpperCase, isKeypad)));
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(createKeyEvent(kNIXInputEventTypeKeyUp, code, modifiers, shouldUseUpperCase, isKeypad)));
 }
 
 #if ENABLE(TOUCH_EVENTS)
@@ -312,9 +312,9 @@ void EventSenderProxy::addTouchPoint(int x, int y)
             lowestId++;
     }
 
-    Nix::TouchPoint touch;
+    NIXTouchPoint touch;
     touch.id = lowestId;
-    touch.state = Nix::TouchPoint::TouchPressed;
+    touch.state = kNIXTouchPointStateTouchPressed;
     touch.x = x;
     touch.y = y;
     touch.globalX = x;
@@ -330,8 +330,8 @@ void EventSenderProxy::updateTouchPoint(int index, int x, int y)
 {
     ASSERT(index >= 0 && index < touchPoints.size());
 
-    Nix::TouchPoint& touch = touchPoints[index];
-    touch.state = Nix::TouchPoint::TouchMoved;
+    NIXTouchPoint& touch = touchPoints[index];
+    touch.state = kNIXTouchPointStateTouchMoved;
     touch.x = x;
     touch.y = y;
     touch.globalX = x;
@@ -344,16 +344,16 @@ void EventSenderProxy::releaseTouchPoint(int index)
 {
     ASSERT(index >= 0 && index < touchPoints.size());
 
-    Nix::TouchPoint& touch = touchPoints[index];
-    touch.state = Nix::TouchPoint::TouchReleased;
+    NIXTouchPoint& touch = touchPoints[index];
+    touch.state = kNIXTouchPointStateTouchReleased;
 }
 
 void EventSenderProxy::cancelTouchPoint(int index)
 {
     ASSERT(index >= 0 && index < touchPoints.size());
 
-    Nix::TouchPoint& touch = touchPoints[index];
-    touch.state = Nix::TouchPoint::TouchCancelled;
+    NIXTouchPoint& touch = touchPoints[index];
+    touch.state = kNIXTouchPointStateTouchCancelled;
 }
 
 void EventSenderProxy::setTouchModifier(WKEventModifiers wkModifier, bool enable)
@@ -365,43 +365,45 @@ void EventSenderProxy::setTouchModifier(WKEventModifiers wkModifier, bool enable
         touchModifiers &= ~modifier;
 }
 
-void EventSenderProxy::sendCurrentTouchEvent(Nix::InputEvent::Type touchType)
+void EventSenderProxy::sendCurrentTouchEvent(NIXInputEventType touchType)
 {
-    Nix::TouchEvent* ev = new Nix::TouchEvent();
+    NIXTouchEvent* ev = new NIXTouchEvent;
     ev->modifiers = touchModifiers;
     ev->timestamp = convertToNixTimestamp(m_time);
     ev->type = touchType;
-    ev->touchPoints = touchPoints;
-    sendOrQueueEvent(ev);
+    for (size_t i = 0; i < touchPoints.size(); i++)
+        ev->touchPoints[i] = touchPoints[i];
+    ev->numTouchPoints = touchPoints.size();
+    sendOrQueueEvent(reinterpret_cast<NIXInputEvent*>(ev));
 
     for (size_t i = 0; i < touchPoints.size(); ++i) {
-        Nix::TouchPoint& touchPoint = touchPoints[i];
-        if (touchPoint.state == Nix::TouchPoint::TouchReleased) {
+        NIXTouchPoint& touchPoint = touchPoints[i];
+        if (touchPoint.state == kNIXTouchPointStateTouchReleased) {
             touchPoints.erase(touchPoints.begin() + i);
             --i;
         } else
-            touchPoint.state = Nix::TouchPoint::TouchStationary;
+            touchPoint.state = kNIXTouchPointStateTouchStationary;
     }
 }
 
 void EventSenderProxy::touchStart()
 {
-    sendCurrentTouchEvent(Nix::InputEvent::TouchStart);
+    sendCurrentTouchEvent(kNIXInputEventTypeTouchStart);
 }
 
 void EventSenderProxy::touchMove()
 {
-    sendCurrentTouchEvent(Nix::InputEvent::TouchMove);
+    sendCurrentTouchEvent(kNIXInputEventTypeTouchMove);
 }
 
 void EventSenderProxy::touchEnd()
 {
-    sendCurrentTouchEvent(Nix::InputEvent::TouchEnd);
+    sendCurrentTouchEvent(kNIXInputEventTypeTouchEnd);
 }
 
 void EventSenderProxy::touchCancel()
 {
-    sendCurrentTouchEvent(Nix::InputEvent::TouchCancel);
+    sendCurrentTouchEvent(kNIXInputEventTypeTouchCancel);
 }
 
 void EventSenderProxy::clearTouchPoints()
@@ -417,14 +419,38 @@ void EventSenderProxy::setTouchPointRadius(int radiusX, int radiusY)
 
 #endif
 
-static void dispatchAndDeleteEvent(TestController* testController, Nix::InputEvent* event)
+static void dispatchAndDeleteEvent(TestController* testController, NIXInputEvent* event)
 {
-    PlatformWKView webView = testController->mainWebView()->platformView();
-    webView->sendEvent(*event);
+    PlatformWKView view = testController->mainWebView()->platformView();
+    switch (event->type) {
+        case kNIXInputEventTypeMouseDown:
+        case kNIXInputEventTypeMouseUp:
+        case kNIXInputEventTypeMouseMove:
+            NIXViewSendMouseEvent(view, reinterpret_cast<NIXMouseEvent*>(event));
+            break;
+        case kNIXInputEventTypeWheel:
+            NIXViewSendWheelEvent(view, reinterpret_cast<NIXWheelEvent*>(event));
+            break;
+        case kNIXInputEventTypeKeyDown:
+        case kNIXInputEventTypeKeyUp:
+            NIXViewSendKeyEvent(view, reinterpret_cast<NIXKeyEvent*>(event));
+            break;
+        case kNIXInputEventTypeTouchStart:
+        case kNIXInputEventTypeTouchMove:
+        case kNIXInputEventTypeTouchEnd:
+        case kNIXInputEventTypeTouchCancel:
+            NIXViewSendTouchEvent(view, reinterpret_cast<NIXTouchEvent*>(event));
+            break;
+        case kNIXInputEventTypeGestureSingleTap:
+            NIXViewSendGestureEvent(view, reinterpret_cast<NIXGestureEvent*>(event));
+            break;
+        default:
+            notImplemented();
+    }
     delete event;
 }
 
-void EventSenderProxy::sendOrQueueEvent(Nix::InputEvent* event)
+void EventSenderProxy::sendOrQueueEvent(NIXInputEvent* event)
 {
     if (!endOfQueue && !eventQueue[endOfQueue].delay) {
         dispatchAndDeleteEvent(m_testController, event);

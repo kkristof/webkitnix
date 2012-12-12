@@ -4,7 +4,8 @@
 #include <WebKit2/WKContext.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKRetainPtr.h>
-#include <WebView.h>
+#include <NIXView.h>
+#include "NIXViewAutoPtr.h"
 
 namespace TestWebKitAPI {
 
@@ -12,48 +13,47 @@ static bool didWebProcessCrash = false;
 static bool didWebProcessRelaunch = false;
 static bool didFinishLoad = false;
 
-static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const void*)
+static void didFinishLoadForFrame(WKPageRef, WKFrameRef, WKTypeRef, const void*)
 {
     didFinishLoad = true;
 }
 
-namespace {
-class TestWebViewClient : public Nix::WebViewClient {
-public:
-    void viewNeedsDisplay(WKRect) {}
+static void webProcessCrashed(NIXView, WKStringRef, const void*)
+{
+    didWebProcessCrash = true;
+}
 
-    void webProcessCrashed(WKStringRef)
-    {
-        didWebProcessCrash = true;
-    }
-
-    void webProcessRelaunched()
-    {
-        didWebProcessRelaunch = true;
-    }
-};
-} // namespace
+static void webProcessRelaunched(NIXView, const void*)
+{
+    didWebProcessRelaunch = true;
+}
 
 TEST(WebKitNix, WebViewWebProcessCrashed)
 {
     WKRetainPtr<WKContextRef> context = adoptWK(Util::createContextForInjectedBundleTest("WebViewWebProcessCrashedTest"));
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
 
-    TestWebViewClient client;
-    Nix::WebView* webView = Nix::WebView::create(context.get(), 0, &client);
-    webView->initialize();
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.webProcessCrashed = webProcessCrashed;
+    viewClient.webProcessRelaunched = webProcessRelaunched;
+    NIXViewSetViewClient(view.get(), &viewClient);
+
+    NIXViewInitialize(view.get());
 
     WKPageLoaderClient loaderClient;
     memset(&loaderClient, 0, sizeof(loaderClient));
 
     loaderClient.version = 0;
     loaderClient.didFinishLoadForFrame = didFinishLoadForFrame;
-    WKPageSetPageLoaderClient(webView->pageRef(), &loaderClient);
+    WKPageSetPageLoaderClient(NIXViewGetPage(view.get()), &loaderClient);
 
     const WKSize size = WKSizeMake(100, 100);
-    webView->setSize(size);
+    NIXViewSetSize(view.get(), size);
 
     WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
-    WKPageLoadURL(webView->pageRef(), redUrl.get());
+    WKPageLoadURL(NIXViewGetPage(view.get()), redUrl.get());
     Util::run(&didFinishLoad);
     didFinishLoad = false;
 
@@ -61,7 +61,7 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     Util::run(&didWebProcessCrash);
 
     WKRetainPtr<WKURLRef> greenUrl = adoptWK(Util::createURLForResource("../nix/green-background", "html"));
-    WKPageLoadURL(webView->pageRef(), greenUrl.get());
+    WKPageLoadURL(NIXViewGetPage(view.get()), greenUrl.get());
     Util::run(&didFinishLoad);
 
     ASSERT_TRUE(didWebProcessCrash);

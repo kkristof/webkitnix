@@ -37,30 +37,30 @@ using namespace WebCore;
 
 namespace WebKit {
 
-static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
+static WebEvent::Type convertToWebEventType(NIXInputEventType type)
 {
     switch (type) {
-    case Nix::InputEvent::MouseDown:
+    case kNIXInputEventTypeMouseDown:
         return WebEvent::MouseDown;
-    case Nix::InputEvent::MouseUp:
+    case kNIXInputEventTypeMouseUp:
         return WebEvent::MouseUp;
-    case Nix::InputEvent::MouseMove:
+    case kNIXInputEventTypeMouseMove:
         return WebEvent::MouseMove;
-    case Nix::InputEvent::Wheel:
+    case kNIXInputEventTypeWheel:
         return WebEvent::Wheel;
-    case Nix::InputEvent::KeyDown:
+    case kNIXInputEventTypeKeyDown:
         return WebEvent::KeyDown;
-    case Nix::InputEvent::KeyUp:
+    case kNIXInputEventTypeKeyUp:
         return WebEvent::KeyUp;
-    case Nix::InputEvent::TouchStart:
+    case kNIXInputEventTypeTouchStart:
         return WebEvent::TouchStart;
-    case Nix::InputEvent::TouchMove:
+    case kNIXInputEventTypeTouchMove:
         return WebEvent::TouchMove;
-    case Nix::InputEvent::TouchEnd:
+    case kNIXInputEventTypeTouchEnd:
         return WebEvent::TouchEnd;
-    case Nix::InputEvent::TouchCancel:
+    case kNIXInputEventTypeTouchCancel:
         return WebEvent::TouchCancel;
-    case Nix::InputEvent::GestureSingleTap:
+    case kNIXInputEventTypeGestureSingleTap:
         return WebEvent::GestureSingleTap;
     default:
         notImplemented();
@@ -71,31 +71,31 @@ static WebEvent::Type convertToWebEventType(Nix::InputEvent::Type type)
 static WebEvent::Modifiers convertToWebEventModifiers(unsigned modifiers)
 {
     unsigned webModifiers = 0;
-    if (modifiers & Nix::InputEvent::ShiftKey)
+    if (modifiers & kNIXInputEventModifiersShiftKey)
         webModifiers |= WebEvent::ShiftKey;
-    if (modifiers & Nix::InputEvent::ControlKey)
+    if (modifiers & kNIXInputEventModifiersControlKey)
         webModifiers |= WebEvent::ControlKey;
-    if (modifiers & Nix::InputEvent::AltKey)
+    if (modifiers & kNIXInputEventModifiersAltKey)
         webModifiers |= WebEvent::AltKey;
-    if (modifiers & Nix::InputEvent::MetaKey)
+    if (modifiers & kNIXInputEventModifiersMetaKey)
         webModifiers |= WebEvent::MetaKey;
-    if (modifiers & Nix::InputEvent::CapsLockKey)
+    if (modifiers & kNIXInputEventModifiersCapsLockKey)
         webModifiers |= WebEvent::CapsLockKey;
     return static_cast<WebEvent::Modifiers>(webModifiers);
 }
 
-static WebPlatformTouchPoint::TouchPointState convertToWebTouchState(const Nix::TouchPoint::TouchState& state)
+static WebPlatformTouchPoint::TouchPointState convertToWebTouchState(NIXTouchPointState state)
 {
     switch (state) {
-    case Nix::TouchPoint::TouchReleased:
+    case kNIXTouchPointStateTouchReleased:
         return WebPlatformTouchPoint::TouchReleased;
-    case Nix::TouchPoint::TouchPressed:
+    case kNIXTouchPointStateTouchPressed:
         return WebPlatformTouchPoint::TouchPressed;
-    case Nix::TouchPoint::TouchMoved:
+    case kNIXTouchPointStateTouchMoved:
         return WebPlatformTouchPoint::TouchMoved;
-    case Nix::TouchPoint::TouchStationary:
+    case kNIXTouchPointStateTouchStationary:
         return WebPlatformTouchPoint::TouchStationary;
-    case Nix::TouchPoint::TouchCancelled:
+    case kNIXTouchPointStateTouchCancelled:
         return WebPlatformTouchPoint::TouchCancelled;
     default:
         notImplemented();
@@ -103,17 +103,16 @@ static WebPlatformTouchPoint::TouchPointState convertToWebTouchState(const Nix::
     return WebPlatformTouchPoint::TouchCancelled;
 }
 
-static WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEvent::Button button)
+static WebMouseEvent::Button convertToWebMouseEventButton(WKEventMouseButton button)
 {
     switch (button) {
-    case Nix::MouseEvent::NoButton:
+    case kWKEventMouseButtonNoButton:
         return WebMouseEvent::NoButton;
-    case Nix::MouseEvent::LeftButton:
+    case kWKEventMouseButtonLeftButton:
         return WebMouseEvent::LeftButton;
-    case Nix::MouseEvent::FourthButton:
-    case Nix::MouseEvent::MiddleButton:
+    case kWKEventMouseButtonMiddleButton:
         return WebMouseEvent::MiddleButton;
-    case Nix::MouseEvent::RightButton:
+    case kWKEventMouseButtonRightButton:
         return WebMouseEvent::RightButton;
     default:
         notImplemented();
@@ -121,162 +120,162 @@ static WebMouseEvent::Button convertToWebMouseEventButton(Nix::MouseEvent::Butto
     return WebMouseEvent::NoButton;
 }
 
-static String keyIdentifierForNixKeyCode(Nix::KeyEvent::Key keyCode)
+static String keyIdentifierForNixKeyCode(NIXKeyEventKey keyCode)
 {
     switch (keyCode) {
-    case Nix::KeyEvent::Key_Menu:
-    case Nix::KeyEvent::Key_Alt:
+    case kNIXKeyEventKey_Menu:
+    case kNIXKeyEventKey_Alt:
         return ASCIILiteral("Alt");
-    case Nix::KeyEvent::Key_Clear:
+    case kNIXKeyEventKey_Clear:
         return ASCIILiteral("Clear");
-    case Nix::KeyEvent::Key_Down:
+    case kNIXKeyEventKey_Down:
         return ASCIILiteral("Down");
-    case Nix::KeyEvent::Key_End:
+    case kNIXKeyEventKey_End:
         return ASCIILiteral("End");
-    case Nix::KeyEvent::Key_Return:
-    case Nix::KeyEvent::Key_Enter:
+    case kNIXKeyEventKey_Return:
+    case kNIXKeyEventKey_Enter:
         return ASCIILiteral("Enter");
-    case Nix::KeyEvent::Key_Execute:
+    case kNIXKeyEventKey_Execute:
         return ASCIILiteral("Execute");
-    case Nix::KeyEvent::Key_F1:
+    case kNIXKeyEventKey_F1:
         return ASCIILiteral("F1");
-    case Nix::KeyEvent::Key_F2:
+    case kNIXKeyEventKey_F2:
         return ASCIILiteral("F2");
-    case Nix::KeyEvent::Key_F3:
+    case kNIXKeyEventKey_F3:
         return ASCIILiteral("F3");
-    case Nix::KeyEvent::Key_F4:
+    case kNIXKeyEventKey_F4:
         return ASCIILiteral("F4");
-    case Nix::KeyEvent::Key_F5:
+    case kNIXKeyEventKey_F5:
         return ASCIILiteral("F5");
-    case Nix::KeyEvent::Key_F6:
+    case kNIXKeyEventKey_F6:
         return ASCIILiteral("F6");
-    case Nix::KeyEvent::Key_F7:
+    case kNIXKeyEventKey_F7:
         return ASCIILiteral("F7");
-    case Nix::KeyEvent::Key_F8:
+    case kNIXKeyEventKey_F8:
         return ASCIILiteral("F8");
-    case Nix::KeyEvent::Key_F9:
+    case kNIXKeyEventKey_F9:
         return ASCIILiteral("F9");
-    case Nix::KeyEvent::Key_F10:
+    case kNIXKeyEventKey_F10:
         return ASCIILiteral("F10");
-    case Nix::KeyEvent::Key_F11:
+    case kNIXKeyEventKey_F11:
         return ASCIILiteral("F11");
-    case Nix::KeyEvent::Key_F12:
+    case kNIXKeyEventKey_F12:
         return ASCIILiteral("F12");
-    case Nix::KeyEvent::Key_F13:
+    case kNIXKeyEventKey_F13:
         return ASCIILiteral("F13");
-    case Nix::KeyEvent::Key_F14:
+    case kNIXKeyEventKey_F14:
         return ASCIILiteral("F14");
-    case Nix::KeyEvent::Key_F15:
+    case kNIXKeyEventKey_F15:
         return ASCIILiteral("F15");
-    case Nix::KeyEvent::Key_F16:
+    case kNIXKeyEventKey_F16:
         return ASCIILiteral("F16");
-    case Nix::KeyEvent::Key_F17:
+    case kNIXKeyEventKey_F17:
         return ASCIILiteral("F17");
-    case Nix::KeyEvent::Key_F18:
+    case kNIXKeyEventKey_F18:
         return ASCIILiteral("F18");
-    case Nix::KeyEvent::Key_F19:
+    case kNIXKeyEventKey_F19:
         return ASCIILiteral("F19");
-    case Nix::KeyEvent::Key_F20:
+    case kNIXKeyEventKey_F20:
         return ASCIILiteral("F20");
-    case Nix::KeyEvent::Key_F21:
+    case kNIXKeyEventKey_F21:
         return ASCIILiteral("F21");
-    case Nix::KeyEvent::Key_F22:
+    case kNIXKeyEventKey_F22:
         return ASCIILiteral("F22");
-    case Nix::KeyEvent::Key_F23:
+    case kNIXKeyEventKey_F23:
         return ASCIILiteral("F23");
-    case Nix::KeyEvent::Key_F24:
+    case kNIXKeyEventKey_F24:
         return ASCIILiteral("F24");
-    case Nix::KeyEvent::Key_Help:
+    case kNIXKeyEventKey_Help:
         return ASCIILiteral("Help");
-    case Nix::KeyEvent::Key_Home:
+    case kNIXKeyEventKey_Home:
         return ASCIILiteral("Home");
-    case Nix::KeyEvent::Key_Insert:
+    case kNIXKeyEventKey_Insert:
         return ASCIILiteral("Insert");
-    case Nix::KeyEvent::Key_Left:
+    case kNIXKeyEventKey_Left:
         return ASCIILiteral("Left");
-    case Nix::KeyEvent::Key_PageDown:
+    case kNIXKeyEventKey_PageDown:
         return ASCIILiteral("PageDown");
-    case Nix::KeyEvent::Key_PageUp:
+    case kNIXKeyEventKey_PageUp:
         return ASCIILiteral("PageUp");
-    case Nix::KeyEvent::Key_Pause:
+    case kNIXKeyEventKey_Pause:
         return ASCIILiteral("Pause");
-    case Nix::KeyEvent::Key_Print:
+    case kNIXKeyEventKey_Print:
         return ASCIILiteral("PrintScreen");
-    case Nix::KeyEvent::Key_Right:
+    case kNIXKeyEventKey_Right:
         return ASCIILiteral("Right");
-    case Nix::KeyEvent::Key_Select:
+    case kNIXKeyEventKey_Select:
         return ASCIILiteral("Select");
-    case Nix::KeyEvent::Key_Up:
+    case kNIXKeyEventKey_Up:
         return ASCIILiteral("Up");
-    case Nix::KeyEvent::Key_Delete:
+    case kNIXKeyEventKey_Delete:
         return ASCIILiteral("U+007F");
-    case Nix::KeyEvent::Key_Backspace:
+    case kNIXKeyEventKey_Backspace:
         return ASCIILiteral("U+0008");
-    case Nix::KeyEvent::Key_Tab:
+    case kNIXKeyEventKey_Tab:
         return ASCIILiteral("U+0009");
-    case Nix::KeyEvent::Key_Backtab:
+    case kNIXKeyEventKey_Backtab:
         return ASCIILiteral("U+0009");
     default:
         return String::format("U+%04X", toASCIIUpper((int) keyCode));
     }
 }
 
-static int windowsKeyCodeForKeyEvent(Nix::KeyEvent::Key keycode, bool isKeypad)
+static int windowsKeyCodeForKeyEvent(NIXKeyEventKey keycode, bool isKeypad)
 {
     if (isKeypad) {
         switch (keycode) {
-        case Nix::KeyEvent::Key_0:
+        case kNIXKeyEventKey_0:
             return VK_NUMPAD0;
-        case Nix::KeyEvent::Key_1:
+        case kNIXKeyEventKey_1:
             return VK_NUMPAD1;
-        case Nix::KeyEvent::Key_2:
+        case kNIXKeyEventKey_2:
             return VK_NUMPAD2;
-        case Nix::KeyEvent::Key_3:
+        case kNIXKeyEventKey_3:
             return VK_NUMPAD3;
-        case Nix::KeyEvent::Key_4:
+        case kNIXKeyEventKey_4:
             return VK_NUMPAD4;
-        case Nix::KeyEvent::Key_5:
+        case kNIXKeyEventKey_5:
             return VK_NUMPAD5;
-        case Nix::KeyEvent::Key_6:
+        case kNIXKeyEventKey_6:
             return VK_NUMPAD6;
-        case Nix::KeyEvent::Key_7:
+        case kNIXKeyEventKey_7:
             return VK_NUMPAD7;
-        case Nix::KeyEvent::Key_8:
+        case kNIXKeyEventKey_8:
             return VK_NUMPAD8;
-        case Nix::KeyEvent::Key_9:
+        case kNIXKeyEventKey_9:
             return VK_NUMPAD9;
-        case Nix::KeyEvent::Key_Asterisk:
+        case kNIXKeyEventKey_Asterisk:
             return VK_MULTIPLY;
-        case Nix::KeyEvent::Key_Plus:
+        case kNIXKeyEventKey_Plus:
             return VK_ADD;
-        case Nix::KeyEvent::Key_Minus:
+        case kNIXKeyEventKey_Minus:
             return VK_SUBTRACT;
-        case Nix::KeyEvent::Key_Period:
+        case kNIXKeyEventKey_Period:
             return VK_DECIMAL;
-        case Nix::KeyEvent::Key_Slash:
+        case kNIXKeyEventKey_Slash:
             return VK_DIVIDE;
-        case Nix::KeyEvent::Key_PageUp:
+        case kNIXKeyEventKey_PageUp:
             return VK_PRIOR;
-        case Nix::KeyEvent::Key_PageDown:
+        case kNIXKeyEventKey_PageDown:
             return VK_NEXT;
-        case Nix::KeyEvent::Key_End:
+        case kNIXKeyEventKey_End:
             return VK_END;
-        case Nix::KeyEvent::Key_Home:
+        case kNIXKeyEventKey_Home:
             return VK_HOME;
-        case Nix::KeyEvent::Key_Left:
+        case kNIXKeyEventKey_Left:
             return VK_LEFT;
-        case Nix::KeyEvent::Key_Up:
+        case kNIXKeyEventKey_Up:
             return VK_UP;
-        case Nix::KeyEvent::Key_Right:
+        case kNIXKeyEventKey_Right:
             return VK_RIGHT;
-        case Nix::KeyEvent::Key_Down:
+        case kNIXKeyEventKey_Down:
             return VK_DOWN;
-        case Nix::KeyEvent::Key_Enter:
-        case Nix::KeyEvent::Key_Return:
+        case kNIXKeyEventKey_Enter:
+        case kNIXKeyEventKey_Return:
             return VK_RETURN;
-        case Nix::KeyEvent::Key_Insert:
+        case kNIXKeyEventKey_Insert:
             return VK_INSERT;
-        case Nix::KeyEvent::Key_Delete:
+        case kNIXKeyEventKey_Delete:
             return VK_DELETE;
         default:
             return 0;
@@ -284,234 +283,234 @@ static int windowsKeyCodeForKeyEvent(Nix::KeyEvent::Key keycode, bool isKeypad)
 
     } else {
         switch (keycode) {
-        case Nix::KeyEvent::Key_Backspace:
+        case kNIXKeyEventKey_Backspace:
             return VK_BACK;
-        case Nix::KeyEvent::Key_Backtab:
-        case Nix::KeyEvent::Key_Tab:
+        case kNIXKeyEventKey_Backtab:
+        case kNIXKeyEventKey_Tab:
             return VK_TAB;
-        case Nix::KeyEvent::Key_Clear:
+        case kNIXKeyEventKey_Clear:
             return VK_CLEAR;
-        case Nix::KeyEvent::Key_Enter:
-        case Nix::KeyEvent::Key_Return:
+        case kNIXKeyEventKey_Enter:
+        case kNIXKeyEventKey_Return:
             return VK_RETURN;
-        case Nix::KeyEvent::Key_Shift:
+        case kNIXKeyEventKey_Shift:
             return VK_SHIFT;
-        case Nix::KeyEvent::Key_Control:
+        case kNIXKeyEventKey_Control:
             return VK_CONTROL;
-        case Nix::KeyEvent::Key_Menu:
-        case Nix::KeyEvent::Key_Alt:
+        case kNIXKeyEventKey_Menu:
+        case kNIXKeyEventKey_Alt:
             return VK_MENU;
-        case Nix::KeyEvent::Key_F1:
+        case kNIXKeyEventKey_F1:
             return VK_F1;
-        case Nix::KeyEvent::Key_F2:
+        case kNIXKeyEventKey_F2:
             return VK_F2;
-        case Nix::KeyEvent::Key_F3:
+        case kNIXKeyEventKey_F3:
             return VK_F3;
-        case Nix::KeyEvent::Key_F4:
+        case kNIXKeyEventKey_F4:
             return VK_F4;
-        case Nix::KeyEvent::Key_F5:
+        case kNIXKeyEventKey_F5:
             return VK_F5;
-        case Nix::KeyEvent::Key_F6:
+        case kNIXKeyEventKey_F6:
             return VK_F6;
-        case Nix::KeyEvent::Key_F7:
+        case kNIXKeyEventKey_F7:
             return VK_F7;
-        case Nix::KeyEvent::Key_F8:
+        case kNIXKeyEventKey_F8:
             return VK_F8;
-        case Nix::KeyEvent::Key_F9:
+        case kNIXKeyEventKey_F9:
             return VK_F9;
-        case Nix::KeyEvent::Key_F10:
+        case kNIXKeyEventKey_F10:
             return VK_F10;
-        case Nix::KeyEvent::Key_F11:
+        case kNIXKeyEventKey_F11:
             return VK_F11;
-        case Nix::KeyEvent::Key_F12:
+        case kNIXKeyEventKey_F12:
             return VK_F12;
-        case Nix::KeyEvent::Key_F13:
+        case kNIXKeyEventKey_F13:
             return VK_F13;
-        case Nix::KeyEvent::Key_F14:
+        case kNIXKeyEventKey_F14:
             return VK_F14;
-        case Nix::KeyEvent::Key_F15:
+        case kNIXKeyEventKey_F15:
             return VK_F15;
-        case Nix::KeyEvent::Key_F16:
+        case kNIXKeyEventKey_F16:
             return VK_F16;
-        case Nix::KeyEvent::Key_F17:
+        case kNIXKeyEventKey_F17:
             return VK_F17;
-        case Nix::KeyEvent::Key_F18:
+        case kNIXKeyEventKey_F18:
             return VK_F18;
-        case Nix::KeyEvent::Key_F19:
+        case kNIXKeyEventKey_F19:
             return VK_F19;
-        case Nix::KeyEvent::Key_F20:
+        case kNIXKeyEventKey_F20:
             return VK_F20;
-        case Nix::KeyEvent::Key_F21:
+        case kNIXKeyEventKey_F21:
             return VK_F21;
-        case Nix::KeyEvent::Key_F22:
+        case kNIXKeyEventKey_F22:
             return VK_F22;
-        case Nix::KeyEvent::Key_F23:
+        case kNIXKeyEventKey_F23:
             return VK_F23;
-        case Nix::KeyEvent::Key_F24:
+        case kNIXKeyEventKey_F24:
             return VK_F24;
-        case Nix::KeyEvent::Key_Pause:
+        case kNIXKeyEventKey_Pause:
             return VK_PAUSE;
-        case Nix::KeyEvent::Key_CapsLock:
+        case kNIXKeyEventKey_CapsLock:
             return VK_CAPITAL;
-        case Nix::KeyEvent::Key_Kana_Lock:
-        case Nix::KeyEvent::Key_Kana_Shift:
+        case kNIXKeyEventKey_Kana_Lock:
+        case kNIXKeyEventKey_Kana_Shift:
             return VK_KANA;
-        case Nix::KeyEvent::Key_Hangul:
+        case kNIXKeyEventKey_Hangul:
             return VK_HANGUL;
-        case Nix::KeyEvent::Key_Hangul_Hanja:
+        case kNIXKeyEventKey_Hangul_Hanja:
             return VK_HANJA;
-        case Nix::KeyEvent::Key_Kanji:
+        case kNIXKeyEventKey_Kanji:
             return VK_KANJI;
-        case Nix::KeyEvent::Key_Escape:
+        case kNIXKeyEventKey_Escape:
             return VK_ESCAPE;
-        case Nix::KeyEvent::Key_Space:
+        case kNIXKeyEventKey_Space:
             return VK_SPACE;
-        case Nix::KeyEvent::Key_PageUp:
+        case kNIXKeyEventKey_PageUp:
             return VK_PRIOR;
-        case Nix::KeyEvent::Key_PageDown:
+        case kNIXKeyEventKey_PageDown:
             return VK_NEXT;
-        case Nix::KeyEvent::Key_End:
+        case kNIXKeyEventKey_End:
             return VK_END;
-        case Nix::KeyEvent::Key_Home:
+        case kNIXKeyEventKey_Home:
             return VK_HOME;
-        case Nix::KeyEvent::Key_Left:
+        case kNIXKeyEventKey_Left:
             return VK_LEFT;
-        case Nix::KeyEvent::Key_Up:
+        case kNIXKeyEventKey_Up:
             return VK_UP;
-        case Nix::KeyEvent::Key_Right:
+        case kNIXKeyEventKey_Right:
             return VK_RIGHT;
-        case Nix::KeyEvent::Key_Down:
+        case kNIXKeyEventKey_Down:
             return VK_DOWN;
-        case Nix::KeyEvent::Key_Select:
+        case kNIXKeyEventKey_Select:
             return VK_SELECT;
-        case Nix::KeyEvent::Key_Print:
+        case kNIXKeyEventKey_Print:
             return VK_SNAPSHOT;
-        case Nix::KeyEvent::Key_Execute:
+        case kNIXKeyEventKey_Execute:
             return VK_EXECUTE;
-        case Nix::KeyEvent::Key_Insert:
+        case kNIXKeyEventKey_Insert:
             return VK_INSERT;
-        case Nix::KeyEvent::Key_Delete:
+        case kNIXKeyEventKey_Delete:
             return VK_DELETE;
-        case Nix::KeyEvent::Key_Help:
+        case kNIXKeyEventKey_Help:
             return VK_HELP;
-        case Nix::KeyEvent::Key_0:
-        case Nix::KeyEvent::Key_ParenLeft:
+        case kNIXKeyEventKey_0:
+        case kNIXKeyEventKey_ParenLeft:
             return VK_0;
-        case Nix::KeyEvent::Key_1:
+        case kNIXKeyEventKey_1:
             return VK_1;
-        case Nix::KeyEvent::Key_2:
-        case Nix::KeyEvent::Key_At:
+        case kNIXKeyEventKey_2:
+        case kNIXKeyEventKey_At:
             return VK_2;
-        case Nix::KeyEvent::Key_3:
-        case Nix::KeyEvent::Key_NumberSign:
+        case kNIXKeyEventKey_3:
+        case kNIXKeyEventKey_NumberSign:
             return VK_3;
-        case Nix::KeyEvent::Key_4:
-        case Nix::KeyEvent::Key_Dollar:
+        case kNIXKeyEventKey_4:
+        case kNIXKeyEventKey_Dollar:
             return VK_4;
-        case Nix::KeyEvent::Key_5:
-        case Nix::KeyEvent::Key_Percent:
+        case kNIXKeyEventKey_5:
+        case kNIXKeyEventKey_Percent:
             return VK_5;
-        case Nix::KeyEvent::Key_6:
-        case Nix::KeyEvent::Key_AsciiCircum:
+        case kNIXKeyEventKey_6:
+        case kNIXKeyEventKey_AsciiCircum:
             return VK_6;
-        case Nix::KeyEvent::Key_7:
-        case Nix::KeyEvent::Key_Ampersand:
+        case kNIXKeyEventKey_7:
+        case kNIXKeyEventKey_Ampersand:
             return VK_7;
-        case Nix::KeyEvent::Key_8:
-        case Nix::KeyEvent::Key_Asterisk:
+        case kNIXKeyEventKey_8:
+        case kNIXKeyEventKey_Asterisk:
             return VK_8;
-        case Nix::KeyEvent::Key_9:
-        case Nix::KeyEvent::Key_ParenRight:
+        case kNIXKeyEventKey_9:
+        case kNIXKeyEventKey_ParenRight:
             return VK_9;
-        case Nix::KeyEvent::Key_A:
+        case kNIXKeyEventKey_A:
             return VK_A;
-        case Nix::KeyEvent::Key_B:
+        case kNIXKeyEventKey_B:
             return VK_B;
-        case Nix::KeyEvent::Key_C:
+        case kNIXKeyEventKey_C:
             return VK_C;
-        case Nix::KeyEvent::Key_D:
+        case kNIXKeyEventKey_D:
             return VK_D;
-        case Nix::KeyEvent::Key_E:
+        case kNIXKeyEventKey_E:
             return VK_E;
-        case Nix::KeyEvent::Key_F:
+        case kNIXKeyEventKey_F:
             return VK_F;
-        case Nix::KeyEvent::Key_G:
+        case kNIXKeyEventKey_G:
             return VK_G;
-        case Nix::KeyEvent::Key_H:
+        case kNIXKeyEventKey_H:
             return VK_H;
-        case Nix::KeyEvent::Key_I:
+        case kNIXKeyEventKey_I:
             return VK_I;
-        case Nix::KeyEvent::Key_J:
+        case kNIXKeyEventKey_J:
             return VK_J;
-        case Nix::KeyEvent::Key_K:
+        case kNIXKeyEventKey_K:
             return VK_K;
-        case Nix::KeyEvent::Key_L:
+        case kNIXKeyEventKey_L:
             return VK_L;
-        case Nix::KeyEvent::Key_M:
+        case kNIXKeyEventKey_M:
             return VK_M;
-        case Nix::KeyEvent::Key_N:
+        case kNIXKeyEventKey_N:
             return VK_N;
-        case Nix::KeyEvent::Key_O:
+        case kNIXKeyEventKey_O:
             return VK_O;
-        case Nix::KeyEvent::Key_P:
+        case kNIXKeyEventKey_P:
             return VK_P;
-        case Nix::KeyEvent::Key_Q:
+        case kNIXKeyEventKey_Q:
             return VK_Q;
-        case Nix::KeyEvent::Key_R:
+        case kNIXKeyEventKey_R:
             return VK_R;
-        case Nix::KeyEvent::Key_S:
+        case kNIXKeyEventKey_S:
             return VK_S;
-        case Nix::KeyEvent::Key_T:
+        case kNIXKeyEventKey_T:
             return VK_T;
-        case Nix::KeyEvent::Key_U:
+        case kNIXKeyEventKey_U:
             return VK_U;
-        case Nix::KeyEvent::Key_V:
+        case kNIXKeyEventKey_V:
             return VK_V;
-        case Nix::KeyEvent::Key_W:
+        case kNIXKeyEventKey_W:
             return VK_W;
-        case Nix::KeyEvent::Key_X:
+        case kNIXKeyEventKey_X:
             return VK_X;
-        case Nix::KeyEvent::Key_Y:
+        case kNIXKeyEventKey_Y:
             return VK_Y;
-        case Nix::KeyEvent::Key_Z:
+        case kNIXKeyEventKey_Z:
             return VK_Z;
-        case Nix::KeyEvent::Key_Meta:
+        case kNIXKeyEventKey_Meta:
             return VK_LWIN;
-        case Nix::KeyEvent::Key_NumLock:
+        case kNIXKeyEventKey_NumLock:
             return VK_NUMLOCK;
-        case Nix::KeyEvent::Key_ScrollLock:
+        case kNIXKeyEventKey_ScrollLock:
             return VK_SCROLL;
-        case Nix::KeyEvent::Key_Semicolon:
-        case Nix::KeyEvent::Key_Colon:
+        case kNIXKeyEventKey_Semicolon:
+        case kNIXKeyEventKey_Colon:
             return VK_OEM_1;
-        case Nix::KeyEvent::Key_Plus:
-        case Nix::KeyEvent::Key_Equal:
+        case kNIXKeyEventKey_Plus:
+        case kNIXKeyEventKey_Equal:
             return VK_OEM_PLUS;
-        case Nix::KeyEvent::Key_Comma:
-        case Nix::KeyEvent::Key_Less:
+        case kNIXKeyEventKey_Comma:
+        case kNIXKeyEventKey_Less:
             return VK_OEM_COMMA;
-        case Nix::KeyEvent::Key_Minus:
-        case Nix::KeyEvent::Key_Underscore:
+        case kNIXKeyEventKey_Minus:
+        case kNIXKeyEventKey_Underscore:
             return VK_OEM_MINUS;
-        case Nix::KeyEvent::Key_Period:
-        case Nix::KeyEvent::Key_Greater:
+        case kNIXKeyEventKey_Period:
+        case kNIXKeyEventKey_Greater:
             return VK_OEM_PERIOD;
-        case Nix::KeyEvent::Key_Slash:
-        case Nix::KeyEvent::Key_Question:
+        case kNIXKeyEventKey_Slash:
+        case kNIXKeyEventKey_Question:
             return VK_OEM_2;
-        case Nix::KeyEvent::Key_AsciiTilde:
-        case Nix::KeyEvent::Key_QuoteLeft:
+        case kNIXKeyEventKey_AsciiTilde:
+        case kNIXKeyEventKey_QuoteLeft:
             return VK_OEM_3;
-        case Nix::KeyEvent::Key_BracketLeft:
-        case Nix::KeyEvent::Key_BraceLeft:
+        case kNIXKeyEventKey_BracketLeft:
+        case kNIXKeyEventKey_BraceLeft:
             return VK_OEM_4;
-        case Nix::KeyEvent::Key_Backslash:
-        case Nix::KeyEvent::Key_Bar:
+        case kNIXKeyEventKey_Backslash:
+        case kNIXKeyEventKey_Bar:
             return VK_OEM_5;
-        case Nix::KeyEvent::Key_BracketRight:
-        case Nix::KeyEvent::Key_BraceRight:
+        case kNIXKeyEventKey_BracketRight:
+        case kNIXKeyEventKey_BraceRight:
             return VK_OEM_6;
-        case Nix::KeyEvent::Key_QuoteDbl:
+        case kNIXKeyEventKey_QuoteDbl:
             return VK_OEM_7;
         default:
             return 0;
@@ -519,18 +518,18 @@ static int windowsKeyCodeForKeyEvent(Nix::KeyEvent::Key keycode, bool isKeypad)
     }
 }
 
-static String keyTextForNixKeyEvent(const Nix::KeyEvent& event)
+static String keyTextForNixKeyEvent(const NIXKeyEvent& event)
 {
     int keycode = static_cast<int>(event.key);
     if (isASCIIPrintable(keycode))
         return String::format("%c", event.shouldUseUpperCase ? toASCIIUpper(keycode) : toASCIILower(keycode));
 
     switch (event.key) {
-    case Nix::KeyEvent::Key_Tab:
-    case Nix::KeyEvent::Key_Backtab:
+    case kNIXKeyEventKey_Tab:
+    case kNIXKeyEventKey_Backtab:
         return "\t";
-    case Nix::KeyEvent::Key_Enter:
-    case Nix::KeyEvent::Key_Return:
+    case kNIXKeyEventKey_Enter:
+    case kNIXKeyEventKey_Return:
         return "\r";
     default:
         break;
@@ -539,7 +538,7 @@ static String keyTextForNixKeyEvent(const Nix::KeyEvent& event)
     return "";
 }
 
-WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event, WebCore::IntPoint* lastCursorPosition)
+WebMouseEvent WebEventFactory::createWebMouseEvent(const NIXMouseEvent& event, WebCore::IntPoint* lastCursorPosition)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     WebMouseEvent::Button button = convertToWebMouseEventButton(event.button);
@@ -551,28 +550,28 @@ WebMouseEvent WebEventFactory::createWebMouseEvent(const Nix::MouseEvent& event,
     double timestamp = event.timestamp;
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
     lastCursorPosition->setX(event.x);
-    lastCursorPosition->setY(event.x);
+    lastCursorPosition->setY(event.y);
 
     return WebMouseEvent(type, button, WebCore::IntPoint(event.x, event.y), globalPosition, deltaX, deltaY, 0.0f, clickCount, modifiers, timestamp);
 }
 
-WebWheelEvent WebEventFactory::createWebWheelEvent(const Nix::WheelEvent& event)
+WebWheelEvent WebEventFactory::createWebWheelEvent(const NIXWheelEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
 
     IntPoint position = IntPoint(event.x, event.y);
     IntPoint globalPosition = IntPoint(event.globalX, event.globalY);
-    FloatSize delta = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
+    FloatSize delta = event.orientation == kNIXWheelEventOrientationVertical ? FloatSize(0, event.delta) : FloatSize(event.delta, 0);
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
 
     const float ticks = event.delta / float(Scrollbar::pixelsPerLineStep());
-    FloatSize wheelTicks = event.orientation == Nix::WheelEvent::Vertical ? FloatSize(0, ticks) : FloatSize(ticks, 0);
+    FloatSize wheelTicks = event.orientation == kNIXWheelEventOrientationVertical ? FloatSize(0, ticks) : FloatSize(ticks, 0);
 
     return WebWheelEvent(type, position, globalPosition, delta, wheelTicks, WebWheelEvent::ScrollByPixelWheelEvent, modifiers, timestamp);
 }
 
-WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const Nix::KeyEvent& event)
+WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const NIXKeyEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     const WTF::String text = keyTextForNixKeyEvent(event);
@@ -590,7 +589,7 @@ WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(const Nix::KeyEvent& ev
     return WebKeyboardEvent(type, text, unmodifiedText, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, macCharCode, isAutoRepeat, isKeypad, isSystemKey, modifiers, timestamp);
 }
 
-WebGestureEvent WebEventFactory::createWebGestureEvent(const Nix::GestureEvent& event)
+WebGestureEvent WebEventFactory::createWebGestureEvent(const NIXGestureEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     IntPoint position = IntPoint(event.x, event.y);
@@ -604,15 +603,15 @@ WebGestureEvent WebEventFactory::createWebGestureEvent(const Nix::GestureEvent& 
 }
 
 #if ENABLE(TOUCH_EVENTS)
-WebTouchEvent WebEventFactory::createWebTouchEvent(const Nix::TouchEvent& event)
+WebTouchEvent WebEventFactory::createWebTouchEvent(const NIXTouchEvent& event)
 {
     WebEvent::Type type = convertToWebEventType(event.type);
     Vector<WebPlatformTouchPoint> touchPoints;
     WebEvent::Modifiers modifiers = convertToWebEventModifiers(event.modifiers);
     double timestamp = event.timestamp;
 
-    for (size_t i = 0; i < event.touchPoints.size(); ++i) {
-        const Nix::TouchPoint& touch = event.touchPoints[i];
+    for (unsigned i = 0; i < event.numTouchPoints; ++i) {
+        const NIXTouchPoint& touch = event.touchPoints[i];
         uint32_t id = static_cast<uint32_t>(touch.id);
         WebPlatformTouchPoint::TouchPointState state = convertToWebTouchState(touch.state);
         IntPoint position = IntPoint(touch.x, touch.y);

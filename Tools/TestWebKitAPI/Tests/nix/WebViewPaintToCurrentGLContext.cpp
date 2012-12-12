@@ -2,10 +2,10 @@
 
 #include "GLUtilities.h"
 #include "PageLoader.h"
-#include "WebView.h"
+#include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -16,14 +16,14 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
-    Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
-    client.setView(webView.get());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
+    Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
-    Util::PageLoader loader(webView.get());
+
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
+    NIXViewSetSize(view.get(), size);
+    Util::PageLoader loader(view.get());
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);

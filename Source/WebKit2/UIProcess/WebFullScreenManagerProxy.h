@@ -32,7 +32,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #if PLATFORM(NIX)
-#include <nix/WebView.h>
+#include <nix/NIXView.h>
 #endif
 
 namespace CoreIPC {
@@ -67,7 +67,7 @@ typedef WebKitWebViewBase PlatformWebView;
 #elif PLATFORM(EFL)
 typedef Evas_Object PlatformWebView;
 #elif PLATFORM(NIX)
-typedef Nix::WebView PlatformWebView;
+typedef NIXView* PlatformWebView;
 #endif
 
 class WebPageProxy;

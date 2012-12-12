@@ -1,11 +1,11 @@
 #ifndef TouchMocker_h
 #define TouchMocker_h
 
-#include <NixEvents.h>
-#include <WebView.h>
+#include <NIXEvents.h>
+#include <NIXView.h>
 #include <map>
 
-struct MockedTouchPoint : public Nix::TouchPoint {
+struct MockedTouchPoint : public NIXTouchPoint {
     // Means there is a mouse button pressed and the next mouse move
     // will update this touch point.
     bool selected;
@@ -18,28 +18,28 @@ struct MockedTouchPoint : public Nix::TouchPoint {
 
 class TouchMocker {
 public:
-    TouchMocker(Nix::WebView*);
+    TouchMocker(NIXView);
     ~TouchMocker();
 
-    bool handleMousePress(const Nix::MouseEvent&, const WKPoint& windowPos);
-    bool handleMouseRelease(const Nix::MouseEvent&);
-    bool handleMouseMove(const Nix::MouseEvent&, const WKPoint& windowPos);
-    bool handleKeyRelease(const Nix::KeyEvent&);
+    bool handleMousePress(const NIXMouseEvent&, const WKPoint& windowPos);
+    bool handleMouseRelease(const NIXMouseEvent&);
+    bool handleMouseMove(const NIXMouseEvent&, const WKPoint& windowPos);
+    bool handleKeyRelease(const NIXKeyEvent&);
 
     void paintTouchPoints(const WKSize& size);
 
 private:
-    void trackTouchPoint(Nix::MouseEvent::Button id, Nix::TouchPoint::TouchState state, const Nix::MouseEvent& event, const WKPoint& windowPos);
-    void updateTouchPointsState(Nix::TouchPoint::TouchState);
+    void trackTouchPoint(WKEventMouseButton id, NIXTouchPointState state, const NIXMouseEvent& event, const WKPoint& windowPos);
+    void updateTouchPointsState(NIXTouchPointState);
     void releaseTouchPoints(double timestamp);
 
-    void sendCurrentTouchEvent(Nix::TouchPoint::TouchState state, double timestamp);
+    void sendCurrentTouchEvent(NIXTouchPointState state, double timestamp);
 
     void loadTouchPointTexture();
 
-    Nix::WebView* m_webView;
-    Nix::InputEvent::Type m_touchType;
-    typedef std::map<Nix::MouseEvent::Button, MockedTouchPoint> TouchMap;
+    NIXView m_view;
+    NIXInputEventType m_touchType;
+    typedef std::map<WKEventMouseButton, MockedTouchPoint> TouchMap;
     TouchMap m_touchPoints;
 
     unsigned m_touchTextureId;

@@ -30,7 +30,7 @@
 
 namespace WebKit {
 
-NativeWebMouseEvent::NativeWebMouseEvent(const Nix::MouseEvent& event, WebCore::IntPoint* lastCursorPosition)
+NativeWebMouseEvent::NativeWebMouseEvent(const NIXMouseEvent& event, WebCore::IntPoint* lastCursorPosition)
     : WebMouseEvent(WebEventFactory::createWebMouseEvent(event, lastCursorPosition))
     , m_nativeEvent(event)
 {

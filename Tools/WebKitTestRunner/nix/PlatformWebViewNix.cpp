@@ -21,17 +21,12 @@
 #include "PlatformWebView.h"
 
 #include "WebKit2/WKAPICast.h"
-#include "WebView.h"
+#include "NIXView.h"
 
-class WTRWebViewClient : public Nix::WebViewClient {
-public:
-    WTRWebViewClient() : Nix::WebViewClient(), m_view(0) {}
-    void pageDidRequestScroll(WKPoint position) { if (m_view) m_view->setScrollPosition(position); }
-
-    void setView(Nix::WebView* view) { m_view = view; }
-private:
-    Nix::WebView* m_view;
-};
+static void pageDidRequestScroll(NIXView view, WKPoint position, const void* clientInfo)
+{
+    NIXViewSetScrollPosition(view, position);
+}
 
 using namespace WebKit;
 
@@ -39,32 +34,37 @@ namespace WTR {
 
 PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup, WKDictionaryRef options)
 {
-    m_webViewClient = new WTRWebViewClient;
-    m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
-    static_cast<WTRWebViewClient*>(m_webViewClient)->setView(m_view);
-    m_view->initialize();
-    m_view->setSize(WKSizeMake(800, 600));
+    m_view = NIXViewCreate(context, pageGroup);
     m_window = 0;
+
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.pageDidRequestScroll = pageDidRequestScroll;
+    NIXViewSetViewClient(m_view, &viewClient);
+
+    NIXViewInitialize(m_view);
+    NIXViewSetSize(m_view, WKSizeMake(800, 600));
 }
 
 PlatformWebView::~PlatformWebView()
 {
-    delete m_webViewClient;
+    NIXViewRelease(m_view);
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(WKSizeMake(width, height));
+    NIXViewSetSize(m_view, WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page()
 {
-    return m_view->pageRef();
+    return NIXViewGetPage(m_view);
 }
 
 void PlatformWebView::focus()
 {
-    m_view->setFocused(true);
+    NIXViewSetFocused(m_view, true);
 }
 
 WKRect PlatformWebView::windowFrame()

@@ -30,7 +30,7 @@
 
 namespace WebKit {
 
-NativeWebWheelEvent::NativeWebWheelEvent(const Nix::WheelEvent& event)
+NativeWebWheelEvent::NativeWebWheelEvent(const NIXWheelEvent& event)
     : WebWheelEvent(WebEventFactory::createWebWheelEvent(event))
     , m_nativeEvent(event)
 {

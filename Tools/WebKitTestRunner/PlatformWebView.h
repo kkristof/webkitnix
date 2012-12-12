@@ -54,11 +54,8 @@ typedef struct _GtkWidget GtkWidget;
 typedef WKViewRef PlatformWKView;
 typedef GtkWidget* PlatformWindow;
 #elif PLATFORM(NIX)
-namespace Nix {
-    class WebView;
-    class WebViewClient;
-}
-typedef Nix::WebView* PlatformWKView;
+typedef struct OpaqueNIXView* NIXView;
+typedef NIXView PlatformWKView;
 typedef int PlatformWindow;
 #elif PLATFORM(EFL)
 typedef struct _Evas_Object Evas_Object;
@@ -113,8 +110,6 @@ private:
 #endif
 #if PLATFORM(QT)
     QEventLoop* m_modalEventLoop;
-#elif PLATFORM(NIX)
-    Nix::WebViewClient* m_webViewClient;
 #endif
 };
 

@@ -2,10 +2,10 @@
 
 #include "PageLoader.h"
 #include "GLUtilities.h"
-#include "WebView.h"
+#include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
@@ -18,24 +18,22 @@ TEST(WebKitNix, WebViewTranslated)
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
 
     const int translationDelta = 20;
-    Util::ForceRepaintClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
-
-    cairo_matrix_t transform;
-    cairo_matrix_init_translate(&transform, translationDelta, translationDelta);
-    webView->setUserViewportTransformation(transform);
-
-    client.setView(webView.get());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
+    Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
+
+    NIXMatrix transform = NIXMatrixMakeTranslation(translationDelta, translationDelta);
+    NIXViewSetUserViewportTransformation(view.get(), &transform);
+
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
+    NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);
     glClearColor(0, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    Util::PageLoader loader(webView.get());
+    Util::PageLoader loader(view.get());
 
     loader.waitForLoadURLAndRepaint("../nix/red-background");
 

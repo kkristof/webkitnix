@@ -1,7 +1,7 @@
 #ifndef GestureRecognizer_h
 #define GestureRecognizer_h
 
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #include <WebKit2/WKGeometry.h>
 #include <glib.h>
 
@@ -11,9 +11,9 @@ gboolean doubleTapTimer(gpointer);
 
 class GestureRecognizerClient {
 public:
-    virtual void handleSingleTap(double timestamp, const Nix::TouchPoint&) { }
-    virtual void handleDoubleTap(double timestamp, const Nix::TouchPoint&) { }
-    virtual void handleTapAndHold(double timestamp, const Nix::TouchPoint&) { }
+    virtual void handleSingleTap(double timestamp, const NIXTouchPoint&) { }
+    virtual void handleDoubleTap(double timestamp, const NIXTouchPoint&) { }
+    virtual void handleTapAndHold(double timestamp, const NIXTouchPoint&) { }
 
     virtual void handlePanning(double timestamp, WKPoint delta) { }
     virtual void handlePanningFinished(double timestamp) { }
@@ -29,30 +29,30 @@ class GestureRecognizer {
 public:
     GestureRecognizer(GestureRecognizerClient*);
 
-    void handleTouchEvent(const Nix::TouchEvent&);
+    void handleTouchEvent(const NIXTouchEvent&);
     void reset();
 
 
 private:
     // State functions.
-    void noGesture(const Nix::TouchEvent&);
-    void singleTapPressed(const Nix::TouchEvent&);
-    void waitForDoubleTap(const Nix::TouchEvent&);
-    void doubleTapPressed(const Nix::TouchEvent&);
-    void panningInProgress(const Nix::TouchEvent&);
-    void pinchInProgress(const Nix::TouchEvent&);
+    void noGesture(const NIXTouchEvent&);
+    void singleTapPressed(const NIXTouchEvent&);
+    void waitForDoubleTap(const NIXTouchEvent&);
+    void doubleTapPressed(const NIXTouchEvent&);
+    void panningInProgress(const NIXTouchEvent&);
+    void pinchInProgress(const NIXTouchEvent&);
 
-    void updatePanningData(double, const Nix::TouchPoint&);
-    void setupPinchData(const std::vector<Nix::TouchPoint>& points);
-    void updatePinchData(double, const std::vector<Nix::TouchPoint>& points);
+    void updatePanningData(double, const NIXTouchPoint&);
+    void setupPinchData(const NIXTouchEvent&);
+    void updatePinchData(double, const NIXTouchEvent&);
 
-    typedef void (GestureRecognizer::*StateFunction)(const Nix::TouchEvent&);
+    typedef void (GestureRecognizer::*StateFunction)(const NIXTouchEvent&);
     StateFunction m_state;
 
     double m_timestamp;
-    Nix::TouchPoint m_firstTouchPoint;
+    NIXTouchPoint m_firstTouchPoint;
     guint m_doubleTapTimerId;
-    Nix::TouchPoint m_previousTouchPoint;
+    NIXTouchPoint m_previousTouchPoint;
     GestureRecognizerClient* m_client;
 
     double m_initialPinchDistance;

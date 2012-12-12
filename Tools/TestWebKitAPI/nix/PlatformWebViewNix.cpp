@@ -26,39 +26,30 @@
 #include "config.h"
 #include "PlatformWebView.h"
 
-#include "WebView.h"
+#include "NIXView.h"
 
 namespace TestWebKitAPI {
 
-class TestWebViewClient : public Nix::WebViewClient {
-public:
-    void viewNeedsDisplay(WKRect) {}
-    void webProcessCrashed(WKStringRef) {}
-    void webProcessRelaunched() {}
-};
-
 PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup)
 {
-    m_webViewClient = new TestWebViewClient;
-    m_view = Nix::WebView::create(context, pageGroup, m_webViewClient);
-    m_view->initialize();
-    WKPageSetUseFixedLayout(m_view->pageRef(), true);
+    m_view = NIXViewCreate(context, pageGroup);
+    NIXViewInitialize(m_view);
     m_window = 0;
 }
 
 PlatformWebView::~PlatformWebView()
 {
-    delete m_webViewClient;
+    NIXViewRelease(m_view);
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
 {
-    m_view->setSize(WKSizeMake(width, height));
+    NIXViewSetSize(m_view, WKSizeMake(width, height));
 }
 
 WKPageRef PlatformWebView::page() const
 {
-    return m_view->pageRef();
+    return NIXViewGetPage(m_view);
 }
 
 } // namespace TestWebKitAPI

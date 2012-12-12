@@ -3,29 +3,38 @@
 #include "GLUtilities.h"
 #include "PageLoader.h"
 #include "PlatformUtilities.h"
-#include "WebView.h"
+#include "NIXView.h"
+#include "NIXViewAutoPtr.h"
 #include "WebKit2/WKContext.h"
 #include "WebKit2/WKRetainPtr.h"
-#include <memory>
 
 namespace TestWebKitAPI {
 
 static bool s_didFindZoomableArea;
 const WKPoint touchPoint = {13, 18};
 
-class TestWebViewClient : public Util::ForceRepaintClient
+static void clear()
 {
-    void didFindZoomableArea(WKPoint target, WKRect area)
-    {
-        EXPECT_EQ(target.x, touchPoint.x);
-        EXPECT_EQ(target.y, touchPoint.y);
-        EXPECT_EQ(area.origin.x, 0);
-        EXPECT_EQ(area.origin.y, 0);
-        EXPECT_EQ(area.size.width, 57);
-        EXPECT_EQ(area.size.height, 43);
-        s_didFindZoomableArea = true;
-    }
-};
+    glClearColor(0, 0, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+static void viewNeedsDisplay(NIXView view, WKRect, const void*)
+{
+    clear();
+    NIXViewPaintToCurrentGLContext(view);
+}
+
+static void didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void*)
+{
+    EXPECT_EQ(target.x, touchPoint.x);
+    EXPECT_EQ(target.y, touchPoint.y);
+    EXPECT_EQ(area.origin.x, 0);
+    EXPECT_EQ(area.origin.y, 0);
+    EXPECT_EQ(area.size.width, 57);
+    EXPECT_EQ(area.size.height, 43);
+    s_didFindZoomableArea = true;
+}
 
 TEST(WebKitNix, WebViewFindZoomableArea)
 {
@@ -39,27 +48,28 @@ TEST(WebKitNix, WebViewFindZoomableArea)
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
+    NIXViewAutoPtr view(NIXViewCreate(context.get(), 0));
 
-    TestWebViewClient client;
-    std::auto_ptr<Nix::WebView> webView(Nix::WebView::create(context.get(), 0, &client));
+    NIXViewClient viewClient;
+    memset(&viewClient, 0, sizeof(NIXViewClient));
+    viewClient.version = kNIXViewClientCurrentVersion;
+    viewClient.viewNeedsDisplay = viewNeedsDisplay;
+    viewClient.didFindZoomableArea = didFindZoomableArea;
+    NIXViewSetViewClient(view.get(), &viewClient);
 
-    client.setView(webView.get());
-    client.setClearColor(0, 0, 1, 1);
-    webView->initialize();
-    WKPageSetUseFixedLayout(webView->pageRef(), true);
-    webView->setSize(size);
+    NIXViewInitialize(view.get());
+    WKPageSetUseFixedLayout(NIXViewGetPage(view.get()), true);
+    NIXViewSetSize(view.get(), size);
 
     glViewport(0, 0, size.width, size.height);
-    glClearColor(0, 0, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    clear();
 
-    Util::PageLoader loader(webView.get());
-
+    Util::PageLoader loader(view.get());
     loader.waitForLoadURLAndRepaint("../nix/red-rectangle");
 
     // Using same touch radius as MockedTouchPoint::MockedTouchPoint()
     WKPoint contentsPoint = WKPointMake(touchPoint.x, touchPoint.y);
-    webView->findZoomableAreaForPoint(contentsPoint, 20, 20);
+    NIXViewFindZoomableAreaForPoint(view.get(), contentsPoint, 20, 20);
 
     Util::run(&s_didFindZoomableArea);
 }

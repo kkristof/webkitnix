@@ -30,7 +30,7 @@
 
 namespace WebKit {
 
-NativeWebGestureEvent::NativeWebGestureEvent(const Nix::GestureEvent& event)
+NativeWebGestureEvent::NativeWebGestureEvent(const NIXGestureEvent& event)
     : WebGestureEvent(WebEventFactory::createWebGestureEvent(event))
     , m_nativeEvent(event)
 {

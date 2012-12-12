@@ -94,10 +94,6 @@ public:
 #endif
     void setBackgroundColor(const WebCore::Color&);
 
-    // It's the caller's responsibility to remove the renderer before it's deleted.
-    uint32_t addCustomPlatformLayer(const String& elementID, WebCore::TextureMapperPlatformLayer*);
-    void removeCustomPlatformLayer(uint32_t);
-
 protected:
     void dispatchUpdate(const Function<void()>&);
 

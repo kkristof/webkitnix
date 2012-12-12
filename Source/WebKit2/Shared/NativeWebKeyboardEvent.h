@@ -41,7 +41,7 @@ typedef union _GdkEvent GdkEvent;
 #elif PLATFORM(EFL)
 #include <Evas.h>
 #elif PLATFORM(NIX)
-#include <NixEvents.h>
+#include <NIXEvents.h>
 #endif
 
 namespace WebKit {
@@ -61,7 +61,7 @@ public:
     NativeWebKeyboardEvent(const Evas_Event_Key_Down*, bool);
     NativeWebKeyboardEvent(const Evas_Event_Key_Up*);
 #elif PLATFORM(NIX)
-    NativeWebKeyboardEvent(const Nix::KeyEvent& event);
+    NativeWebKeyboardEvent(const NIXKeyEvent& event);
 #endif
 
 #if USE(APPKIT)
@@ -76,7 +76,7 @@ public:
     const void* nativeEvent() const { return m_nativeEvent; }
     bool isFiltered() const { return m_isFiltered; }
 #elif PLATFORM(NIX)
-    const Nix::KeyEvent* nativeEvent() const { return &m_nativeEvent; }
+    const NIXKeyEvent* nativeEvent() const { return &m_nativeEvent; }
 #endif
 
 private:
@@ -92,7 +92,7 @@ private:
     const void* m_nativeEvent;
     bool m_isFiltered;
 #elif PLATFORM(NIX)
-    const Nix::KeyEvent m_nativeEvent;
+    NIXKeyEvent m_nativeEvent;
 #endif
 };
 

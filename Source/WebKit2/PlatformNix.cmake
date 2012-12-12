@@ -31,10 +31,12 @@ LIST(APPEND WebKit2_SOURCES
     UIProcess/API/C/soup/WKContextSoup.cpp
     UIProcess/API/C/soup/WKSoupRequestManager.cpp
 
-    UIProcess/API/nix/WebView.cpp
+    UIProcess/API/nix/NIXView.cpp
 
     UIProcess/cairo/BackingStoreCairo.cpp
 
+    UIProcess/nix/WebView.cpp
+    UIProcess/nix/WebViewClient.cpp
     UIProcess/nix/TextCheckerNix.cpp
     UIProcess/nix/WebContextNix.cpp
     UIProcess/nix/WebFullScreenManagerProxyNix.cpp
@@ -96,6 +98,7 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/Shared/nix"
     "${WEBKIT2_DIR}/UIProcess/API/C/soup"
     "${WEBKIT2_DIR}/UIProcess/soup"
+    "${WEBKIT2_DIR}/UIProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
     "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
@@ -178,8 +181,8 @@ SET(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
 
 CONFIGURE_FILE(nix/WebKitNix.pc.in ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc @ONLY)
 SET (WebKitNix_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NixEvents.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/WebView.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NIXEvents.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NIXView.h"
 )
 
 SET(WebKitNix_WebKit2_HEADERS

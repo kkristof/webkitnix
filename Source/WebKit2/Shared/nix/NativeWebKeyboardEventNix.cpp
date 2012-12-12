@@ -30,7 +30,7 @@
 
 namespace WebKit {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(const Nix::KeyEvent& event)
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(const NIXKeyEvent& event)
     : WebKeyboardEvent(WebEventFactory::createWebKeyboardEvent(event))
     , m_nativeEvent(event)
 {
