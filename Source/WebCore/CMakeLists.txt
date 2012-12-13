@@ -281,6 +281,7 @@ set(WebCore_IDL_FILES
     Modules/webaudio/ScriptProcessorNode.idl
     Modules/webaudio/MediaElementAudioSourceNode.idl
     Modules/webaudio/MediaStreamAudioSourceNode.idl
+    Modules/webaudio/OfflineAudioContext.idl
     Modules/webaudio/OfflineAudioCompletionEvent.idl
     Modules/webaudio/OscillatorNode.idl
     Modules/webaudio/AnalyserNode.idl
@@ -929,6 +930,7 @@ set(WebCore_SOURCES
     Modules/webaudio/ScriptProcessorNode.cpp
     Modules/webaudio/MediaElementAudioSourceNode.cpp
     Modules/webaudio/MediaStreamAudioSourceNode.cpp
+    Modules/webaudio/OfflineAudioContext.cpp
     Modules/webaudio/OfflineAudioCompletionEvent.cpp
     Modules/webaudio/OfflineAudioDestinationNode.cpp
     Modules/webaudio/OscillatorNode.cpp
@@ -945,6 +947,7 @@ set(WebCore_SOURCES
     Modules/webdatabase/Database.cpp
     Modules/webdatabase/DatabaseAuthorizer.cpp
     Modules/webdatabase/DatabaseContext.cpp
+    Modules/webdatabase/DatabaseManager.cpp
     Modules/webdatabase/DatabaseSync.cpp
     Modules/webdatabase/DatabaseTask.cpp
     Modules/webdatabase/DatabaseThread.cpp
@@ -1813,6 +1816,7 @@ set(WebCore_SOURCES
     platform/MemoryUsageSupport.cpp
     platform/MIMETypeRegistry.cpp
     platform/MemoryPressureHandler.cpp
+    platform/NotImplemented.cpp
     platform/PlatformEvent.cpp
     platform/PlatformInstrumentation.cpp
     platform/PlatformMemoryInstrumentation.cpp
@@ -1995,7 +1999,6 @@ set(WebCore_SOURCES
 
     platform/mediastream/MediaStreamCenter.cpp
     platform/mediastream/MediaStreamSource.cpp
-    platform/mediastream/RTCDataChannelDescriptor.cpp
     platform/mediastream/RTCIceCandidateDescriptor.cpp
     platform/mediastream/RTCPeerConnectionHandler.cpp
     platform/mediastream/RTCSessionDescriptionDescriptor.cpp

@@ -1,3 +1,126 @@
+2012-12-13  Stephen White  <senorblanco@chromium.org>
+
+        Added manual test for canvas setFont speed.
+        https://bugs.webkit.org/show_bug.cgi?id=104923
+
+        Reviewed by James Robinson.
+
+        * ManualTests/canvas-font-speed.html: Added.
+
+2012-12-13  Jerome Pasion  <jerome.pasion@digia.com>
+
+        [Qt] Doc: Fixing Qt WebKit reference documentation.
+
+        Reviewed by Simon Hausmann.
+
+        Fixes:
+        -added \module for C++ classes and \qmlmodule for QML types
+        -added links to the Qt WebKit Examples pages
+        -fixed the qhp settings for Qt Creator
+
+        Task-number: QTBUG-28583
+        Task-number: QTBUG-28418
+        Task-number: QTBUG-27646
+
+        * Source/qtwebkit.qdocconf:
+
+2012-12-13  Jerome Pasion <Jerome.Pasion@digia.com>
+
+        [Qt] Fix missing doc dependency to examples
+
+        Reviewed by Simon Hausmann.
+
+        * Source/qtwebkit.qdocconf:
+
+2012-12-12  John Griggs  <jgriggs@rim.com>
+
+        2012-12-12  John Griggs  <jgriggs@rim.com>
+
+        [BlackBerry] Update Media Controls for BlackBerry Platform
+        https://bugs.webkit.org/show_bug.cgi?id=104443
+        https://przilla.ott.qnx.com/bugzilla/show_bug.cgi?id=204748
+
+        Update Media Controls for BlackBerry platform to allow audio, embedded video and fullscreen video controls to be positioned and styled differently.
+
+        Reviewed by Rob Buis.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2012-12-12  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        Pre-painting should not paint out-of-view fixed position elements
+        https://bugs.webkit.org/show_bug.cgi?id=104724
+
+        Reviewed by James Robinson.
+
+        New manual test.
+
+        * ManualTests/compositing/fixed-position-out-of-view-scroll-prepaint.html: Added.
+
+2012-12-12  Krzysztof Czech  <k.czech@samsung.com>
+
+        [EFL] Possibility to turn off accessibility feature for WebKit-EFL.
+        https://bugs.webkit.org/show_bug.cgi?id=103036
+
+        Reviewed by Laszlo Gombos.
+
+        Guard dependencies for accessibility (ATK), so that they can be turned off.
+
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+
+2012-12-12  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Remove the last of unnecessary configuration options in configure.ac
+        https://bugs.webkit.org/show_bug.cgi?id=104793
+
+        Reviewed by Martin Robinson.
+
+        Remove the last of the configuration options that don't introduce any dependencies and/or
+        are enabled by default in the GNUmakefile.features.am.in file.
+
+        * configure.ac:
+
+2012-12-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Fix the inspector not showing up on Windows
+        https://bugs.webkit.org/show_bug.cgi?id=104677
+
+        Reviewed by Simon Hausmann.
+
+        Resources aren't transfered properly from a static WebCore to the final DLL
+        with MSVC since the linker only pick from the static lib symbols that
+        are referenced in the final binary.
+
+        Move the resource files directly to Qt5WebKit.dll to make sure that they are
+        available.
+
+        * Source/api.pri:
+
+2012-12-11  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        Add window.internals.mainThreadScrollReasonsAsText for testing slow scrolling
+        https://bugs.webkit.org/show_bug.cgi?id=104714
+
+        Reviewed by Eric Seidel.
+
+        Export symbol Page::mainThreadScrollingReasonsAsText().
+
+        * Source/autotools/symbols.filter:
+
+2012-12-11  Michael Pruett  <michael@68k.org>
+
+        [JSC] Add tests for explicit serialization values
+        https://bugs.webkit.org/show_bug.cgi?id=104423
+
+        Reviewed by Oliver Hunt.
+
+        Add tests for serialization and deserialization mechanisms of
+        the JSC implementation of SerializedScriptValue. Similar tests
+        already exist for the V8 implementation.
+
+        * Source/autotools/symbols.filter:
+
 2012-12-11  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Install GObject DOM bindings headers in its own directory

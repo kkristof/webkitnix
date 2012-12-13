@@ -1,3 +1,68 @@
+2012-12-12  Gavin Peters  <gavinp@chromium.org>
+
+        [chromium] Add destructor to WebPrerender
+        https://bugs.webkit.org/show_bug.cgi?id=104820
+
+        Reviewed by James Robinson.
+
+        When making WebPrerender default constructible and assignable, the destructor should have been moved out of WEBKIT_IMPLEMENTATION.
+
+        * chromium/public/WebPrerender.h:
+        (WebKit::WebPrerender::~WebPrerender):
+        (WebPrerender):
+
+2012-12-12  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: add memory used by memory allocator itself to NMI
+        https://bugs.webkit.org/show_bug.cgi?id=93372
+
+        Make native memory instrumentation report memory retained
+        for the memory allocator internal purposes.
+
+        Reviewed by Yury Semikhatsky.
+
+        * chromium/public/Platform.h:
+        (Platform):
+        (WebKit::Platform::memoryAllocatorWasteInBytes):
+
+2012-12-12  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Change the data channel descriptor pattern to a handler pattern
+        https://bugs.webkit.org/show_bug.cgi?id=104543
+
+        Reviewed by Kent Tamura.
+
+        In short the code is refactured to use the Handler/Client pattern (see RTCPeerConnectionHandler)
+        instead of the Descriptor pattern.
+        This will fix lifetime/memory/code structure issues in the chromium port.
+
+        * Platform.gypi:
+        * chromium/public/WebRTCDataChannel.h: Removed.
+        * chromium/public/WebRTCDataChannelHandler.h: Added.
+        (WebKit):
+        (WebRTCDataChannelHandler):
+        (WebKit::WebRTCDataChannelHandler::~WebRTCDataChannelHandler):
+        * chromium/public/WebRTCDataChannelHandlerClient.h: Added.
+        (WebKit):
+        (WebRTCDataChannelHandlerClient):
+        (WebKit::WebRTCDataChannelHandlerClient::~WebRTCDataChannelHandlerClient):
+        * chromium/public/WebRTCPeerConnectionHandler.h:
+        (WebKit):
+        (WebKit::WebRTCPeerConnectionHandler::createDataChannel):
+        * chromium/public/WebRTCPeerConnectionHandlerClient.h:
+        (WebKit):
+        (WebKit::WebRTCPeerConnectionHandlerClient::didAddRemoteDataChannel):
+
+2012-12-11  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Remove deprecated WebGraphicsContext3D entry points
+        https://bugs.webkit.org/show_bug.cgi?id=104603
+
+        Reviewed by Darin Fisher.
+
+        * chromium/public/WebGraphicsContext3D.h:
+        (WebGraphicsContext3D):
+
 2012-12-10  Dana Jansens  <danakj@chromium.org>
 
         [chromium] Remove WebCompositorFrame(Ack) as these classes are not needed now that they are passed through cc::OutputSurface.

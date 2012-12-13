@@ -426,10 +426,6 @@ public:
 
 #if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
-    bool hasPendingResources() const;
-    void setHasPendingResources();
-    void clearHasPendingResources();
-    virtual void buildPendingResource() { };
 #endif
     
 #if ENABLE(FULLSCREEN_API)
@@ -795,15 +791,6 @@ inline void Element::updateInvalidAttributes() const
     if (attributeData()->m_animatedSVGAttributesAreDirty)
         updateAnimatedSVGAttribute(anyQName());
 #endif
-}
-
-inline Element* firstElementChild(const ContainerNode* container)
-{
-    ASSERT_ARG(container, container);
-    Node* child = container->firstChild();
-    while (child && !child->isElementNode())
-        child = child->nextSibling();
-    return static_cast<Element*>(child);
 }
 
 inline bool Element::hasID() const

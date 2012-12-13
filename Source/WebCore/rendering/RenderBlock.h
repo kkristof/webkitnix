@@ -424,7 +424,7 @@ public:
 
     LayoutUnit computeStartPositionDeltaForChildAvoidingFloats(const RenderBox* child, LayoutUnit childMarginStart, RenderRegion* = 0, LayoutUnit offsetFromLogicalTopOfFirstPage = 0);
 
-    void placeRunInIfNeeded(RenderObject* newChild, PlaceGeneratedRunInFlag);
+    void placeRunInIfNeeded(RenderObject* newChild);
     bool runInIsPlacedIntoSiblingBlock(RenderObject* runIn);
 
 #ifndef NDEBUG
@@ -437,6 +437,7 @@ public:
 #endif
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+    static void reportStaticMembersMemoryUsage(MemoryInstrumentation*);
 
 protected:
     virtual void willBeDestroyed();
@@ -572,8 +573,6 @@ private:
 
     virtual void borderFitAdjust(LayoutRect&) const; // Shrink the box in which the border paints if border-fit is set.
 
-    virtual void updateBeforeAfterContent(PseudoId);
-    
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG and Ruby.
 
     // Called to lay out the legend for a fieldset or the ruby text of a ruby run.

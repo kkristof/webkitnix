@@ -28,6 +28,7 @@
 #include "Document.h"
 #include "EventNames.h"
 #include "HTMLNames.h"
+#include "NodeTraversal.h"
 #include "RenderObject.h"
 #include "RenderSVGResource.h"
 #include "RenderSVGResourceClipper.h"
@@ -100,8 +101,8 @@ String SVGStyledElement::title() const
 
     // If we aren't an instance in a <use> or the <use> title was not found, then find the first
     // <title> child of this element.
-    Element* titleElement = firstElementChild();
-    for (; titleElement; titleElement = titleElement->nextElementSibling()) {
+    Element* titleElement = ElementTraversal::firstWithin(this);
+    for (; titleElement; titleElement = ElementTraversal::nextSkippingChildren(titleElement, this)) {
         if (titleElement->hasTagName(SVGNames::titleTag) && titleElement->isSVGElement())
             break;
     }
@@ -367,11 +368,11 @@ void SVGStyledElement::buildPendingResourcesIfNeeded()
     extensions->markPendingResourcesForRemoval(resourceId);
 
     // Rebuild pending resources for each client of a pending resource that is being removed.
-    while (Element* clientElement = extensions->removeElementFromPendingResourcesForRemoval(resourceId)) {
+    while (SVGElement* clientElement = extensions->removeElementFromPendingResourcesForRemoval(resourceId)) {
         ASSERT(clientElement->hasPendingResources());
         if (clientElement->hasPendingResources()) {
             clientElement->buildPendingResource();
-            extensions->clearHasPendingResourcesIfPossible(clientElement);
+            clientElement->clearHasPendingResourcesIfPossible();
         }
     }
 }

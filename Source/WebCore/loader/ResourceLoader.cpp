@@ -251,6 +251,9 @@ void ResourceLoader::willSendRequest(ResourceRequest& request, const ResourceRes
 #endif
     }
     m_request = request;
+
+    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
+        frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
 }
 
 void ResourceLoader::didSendData(unsigned long long, unsigned long long)
@@ -496,8 +499,8 @@ void ResourceLoader::didReceiveAuthenticationChallenge(const AuthenticationChall
     // Only these platforms provide a way to continue without credentials.
     // If we can't continue with credentials, we need to cancel the load altogether.
 #if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL) || PLATFORM(GTK) || PLATFORM(EFL)
-    handle()->receivedRequestToContinueWithoutCredential(challenge);
-    ASSERT(!handle()->hasAuthenticationChallenge());
+    challenge.authenticationClient()->receivedRequestToContinueWithoutCredential(challenge);
+    ASSERT(!handle() || !handle()->hasAuthenticationChallenge());
 #else
     didFail(blockedError());
 #endif

@@ -67,7 +67,6 @@
 #include <JavaScriptCore/JSLock.h>
 #include <JavaScriptCore/JSValue.h>
 #include <WebCore/AXObjectCache.h>
-#include <WebCore/AbstractDatabase.h>
 #include <WebCore/ApplicationCacheStorage.h>
 #include <WebCore/BString.h>
 #include <WebCore/BackForwardListImpl.h>
@@ -76,6 +75,7 @@
 #include <WebCore/ContextMenu.h>
 #include <WebCore/ContextMenuController.h>
 #include <WebCore/Cursor.h>
+#include <WebCore/DatabaseManager.h>
 #include <WebCore/Document.h>
 #include <WebCore/DocumentMarkerController.h>
 #include <WebCore/DragController.h>
@@ -103,10 +103,10 @@
 #include <WebCore/HistoryItem.h>
 #include <WebCore/HitTestRequest.h>
 #include <WebCore/HitTestResult.h>
+#include <WebCore/InitializeLogging.h>
 #include <WebCore/IntRect.h>
 #include <WebCore/JSElement.h>
 #include <WebCore/KeyboardEvent.h>
-#include <WebCore/Logging.h>
 #include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/MemoryCache.h>
 #include <WebCore/Page.h>
@@ -4804,7 +4804,7 @@ HRESULT WebView::notifyPreferencesChanged(IWebNotification* notification)
     hr = prefsPrivate->databasesEnabled(&enabled);
     if (FAILED(hr))
         return hr;
-    AbstractDatabase::setIsAvailable(enabled);
+    DatabaseManager::manager().setIsAvailable(enabled);
 #endif
 
     hr = prefsPrivate->localStorageEnabled(&enabled);

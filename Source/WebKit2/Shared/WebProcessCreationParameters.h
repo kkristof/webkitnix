@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011, 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +36,10 @@
 
 #if PLATFORM(MAC)
 #include "MachPort.h"
+#endif
+
+#if USE(SOUP)
+#include "HTTPCookieAcceptPolicy.h"
 #endif
 
 namespace CoreIPC {
@@ -77,6 +81,9 @@ struct WebProcessCreationParameters {
 #endif
 #if USE(SOUP)
     Vector<String> urlSchemesRegistered;
+    String cookiePersistentStoragePath;
+    uint32_t cookiePersistentStorageType;
+    HTTPCookieAcceptPolicy cookieAcceptPolicy;
 #endif
 
     CacheModel cacheModel;
@@ -135,6 +142,8 @@ struct WebProcessCreationParameters {
 #if ENABLE(NETWORK_PROCESS)
     bool usesNetworkProcess;
 #endif
+
+    Vector<unsigned> plugInAutoStartOrigins;
 };
 
 } // namespace WebKit

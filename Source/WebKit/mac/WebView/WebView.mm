@@ -111,7 +111,6 @@
 #import <Foundation/NSURLConnection.h>
 #import <JavaScriptCore/APICast.h>
 #import <JavaScriptCore/JSValueRef.h>
-#import <WebCore/AbstractDatabase.h>
 #import <WebCore/AlternativeTextUIController.h>
 #import <WebCore/ApplicationCacheStorage.h>
 #import <WebCore/BackForwardListImpl.h>
@@ -119,6 +118,7 @@
 #import <WebCore/ColorMac.h>
 #import <WebCore/CSSComputedStyleDeclaration.h>
 #import <WebCore/Cursor.h>
+#import <WebCore/DatabaseManager.h>
 #import <WebCore/Document.h>
 #import <WebCore/DocumentLoader.h>
 #import <WebCore/DragController.h>
@@ -140,12 +140,12 @@
 #import <WebCore/HTMLNames.h>
 #import <WebCore/HistoryItem.h>
 #import <WebCore/IconDatabase.h>
+#import <WebCore/InitializeLogging.h>
 #import <WebCore/JSCSSStyleDeclaration.h>
 #import <WebCore/JSDocument.h>
 #import <WebCore/JSElement.h>
 #import <WebCore/JSNodeList.h>
 #import <WebCore/JSNotification.h>
-#import <WebCore/Logging.h>
 #import <WebCore/MemoryPressureHandler.h>
 #import <WebCore/MIMETypeRegistry.h>
 #import <WebCore/NodeList.h>
@@ -1468,7 +1468,7 @@ static bool needsSelfRetainWhileLoadingQuirk()
     settings->setPictographFontFamily([preferences pictographFontFamily]);
     settings->setPluginsEnabled([preferences arePlugInsEnabled]);
 #if ENABLE(SQL_DATABASE)
-    AbstractDatabase::setIsAvailable([preferences databasesEnabled]);
+    DatabaseManager::manager().setIsAvailable([preferences databasesEnabled]);
 #endif
     settings->setLocalStorageEnabled([preferences localStorageEnabled]);
     settings->setExperimentalNotificationsEnabled([preferences experimentalNotificationsEnabled]);

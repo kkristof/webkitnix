@@ -62,9 +62,9 @@
 #include <WebCore/GCController.h>
 #include <WebCore/GlyphPageTreeNode.h>
 #include <WebCore/IconDatabase.h>
+#include <WebCore/InitializeLogging.h>
 #include <WebCore/JSDOMWindow.h>
 #include <WebCore/Language.h>
-#include <WebCore/Logging.h>
 #include <WebCore/MemoryCache.h>
 #include <WebCore/MemoryPressureHandler.h>
 #include <WebCore/Page.h>
@@ -182,6 +182,7 @@ WebProcess::WebProcess()
 
 #if !LOG_DISABLED
     WebCore::initializeLoggingChannelsIfNecessary();
+    WebKit::initializeLogChannelsIfNecessary();
 #endif // !LOG_DISABLED
 }
 
@@ -216,6 +217,16 @@ void WebProcess::addMessageReceiver(CoreIPC::StringReference messageReceiverName
 void WebProcess::removeMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID)
 {
     m_messageReceiverMap.removeMessageReceiver(messageReceiverName, destinationID);
+}
+
+void WebProcess::didCreateDownload()
+{
+    disableTermination();
+}
+
+void WebProcess::didDestroyDownload()
+{
+    enableTermination();
 }
 
 void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parameters, CoreIPC::MessageDecoder& decoder)
@@ -304,6 +315,9 @@ void WebProcess::initializeWebProcess(const WebProcessCreationParameters& parame
     ensureNetworkProcessConnection();
 #endif
     setTerminationTimeout(parameters.terminationTimeout);
+
+    for (size_t i = 0; i < parameters.plugInAutoStartOrigins.size(); ++i)
+        didAddPlugInAutoStartOrigin(parameters.plugInAutoStartOrigins[i]);
 }
 
 #if ENABLE(NETWORK_PROCESS)
@@ -411,6 +425,16 @@ void WebProcess::destroyPrivateBrowsingSession()
 #if (PLATFORM(MAC) || USE(CFNETWORK)) && !PLATFORM(WIN)
     WebFrameNetworkingContext::destroyPrivateBrowsingSession();
 #endif
+}
+
+DownloadManager& WebProcess::downloadManager()
+{
+#if ENABLE(NETWORK_PROCESS)
+    ASSERT(!m_usesNetworkProcess);
+#endif
+
+    DEFINE_STATIC_LOCAL(DownloadManager, downloadManager, (this));
+    return downloadManager;
 }
 
 void WebProcess::setVisitedLinkTable(const SharedMemory::Handle& handle)
@@ -667,7 +691,7 @@ bool WebProcess::shouldTerminate()
         return false;
 
     ASSERT(m_pageMap.isEmpty());
-    ASSERT(!DownloadManager::shared().isDownloading());
+    ASSERT(!downloadManager().isDownloading());
 
     // FIXME: the ShouldTerminate message should also send termination parameters, such as any session cookies that need to be preserved.
     bool shouldTerminate = false;
@@ -1139,18 +1163,18 @@ void WebProcess::downloadRequest(uint64_t downloadID, uint64_t initiatingPageID,
     if (initiatingPage)
         initiatingPage->mainFrame()->loader()->setOriginalURLForDownloadRequest(requestWithOriginalURL);
 
-    DownloadManager::shared().startDownload(downloadID, initiatingPage, requestWithOriginalURL);
+    downloadManager().startDownload(downloadID, requestWithOriginalURL);
 }
 
 void WebProcess::cancelDownload(uint64_t downloadID)
 {
-    DownloadManager::shared().cancelDownload(downloadID);
+    downloadManager().cancelDownload(downloadID);
 }
 
 #if PLATFORM(QT)
 void WebProcess::startTransfer(uint64_t downloadID, const String& destination)
 {
-    DownloadManager::shared().startTransfer(downloadID, destination);
+    downloadManager().startTransfer(downloadID, destination);
 }
 #endif
 

@@ -85,7 +85,9 @@ class StyleKeyframe;
 class StylePendingImage;
 class StylePropertySet;
 class StyleRule;
+#if ENABLE(SHADOW_DOM)
 class StyleRuleHost;
+#endif
 class StyleRuleKeyframes;
 class StyleRulePage;
 class StyleRuleRegion;
@@ -152,6 +154,8 @@ public:
     PassRefPtr<RenderStyle> pseudoStyleForElement(PseudoId, Element*, RenderStyle* parentStyle);
 
     PassRefPtr<RenderStyle> styleForPage(int pageIndex);
+    PassRefPtr<RenderStyle> defaultStyleForElement();
+    PassRefPtr<RenderStyle> styleForText(Text*);
 
     static PassRefPtr<RenderStyle> styleForDocument(Document*, CSSFontSelector* = 0);
 

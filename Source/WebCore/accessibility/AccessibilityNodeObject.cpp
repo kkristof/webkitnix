@@ -69,6 +69,7 @@
 #include "Text.h"
 #include "TextControlInnerElements.h"
 #include "TextIterator.h"
+#include "UserGestureIndicator.h"
 #include "Widget.h"
 #include "htmlediting.h"
 #include "visible_units.h"
@@ -975,11 +976,13 @@ void AccessibilityNodeObject::alterSliderValue(bool increase)
     
 void AccessibilityNodeObject::increment()
 {
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     alterSliderValue(true);
 }
 
 void AccessibilityNodeObject::decrement()
 {
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     alterSliderValue(false);
 }
 
@@ -1031,6 +1034,11 @@ bool AccessibilityNodeObject::isGenericFocusableElement() const
     if (roleValue() == WebAreaRole)
         return false;
     if (node() && node()->hasTagName(bodyTag))
+        return false;
+
+    // An SVG root is focusable by default, but it's probably not interactive, so don't
+    // include it. It can still be made accessible by giving it an ARIA role.
+    if (roleValue() == SVGRootRole)
         return false;
 
     return true;

@@ -80,6 +80,7 @@ public:
     typedef Node ShadowRootIfShadowDOMEnabledOrNode;
 #endif
     ShadowRootIfShadowDOMEnabledOrNode* ensureShadowRoot(Element* host, ExceptionCode&);
+    ShadowRootIfShadowDOMEnabledOrNode* createShadowRoot(Element* host, ExceptionCode&);
     ShadowRootIfShadowDOMEnabledOrNode* shadowRoot(Element* host, ExceptionCode&);
     ShadowRootIfShadowDOMEnabledOrNode* youngestShadowRoot(Element* host, ExceptionCode&);
     ShadowRootIfShadowDOMEnabledOrNode* oldestShadowRoot(Element* host, ExceptionCode&);
@@ -170,6 +171,9 @@ public:
 
     unsigned wheelEventHandlerCount(Document*, ExceptionCode&);
     unsigned touchEventHandlerCount(Document*, ExceptionCode&);
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    PassRefPtr<ClientRectList> touchEventTargetClientRects(Document*, ExceptionCode&);
+#endif
 
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, ExceptionCode&) const;
@@ -207,6 +211,8 @@ public:
     String layerTreeAsText(Document*, ExceptionCode&) const;
     String repaintRectsAsText(Document*, ExceptionCode&) const;
     String scrollingStateTreeAsText(Document*, ExceptionCode&) const;
+
+    String mainThreadScrollingReasons(Document*, ExceptionCode&) const;
 
     void garbageCollectDocumentResources(Document*, ExceptionCode&) const;
 

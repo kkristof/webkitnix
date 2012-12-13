@@ -57,8 +57,15 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include <algorithm>
 #include <math.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
 
 using namespace std;
+
+namespace WTF {
+template<> struct SequenceMemoryInstrumentationTraits<WebCore::LayoutUnit> {
+    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
+};
+}
 
 namespace WebCore {
 
@@ -881,7 +888,7 @@ BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsCo
     FloatSize contextScaling(static_cast<float>(ctm.xScale()), static_cast<float>(ctm.yScale()));
     if (borderObscuresBackgroundEdge(contextScaling))
         return BackgroundBleedShrinkBackground;
-    if (!style->hasAppearance() && borderObscuresBackground() && backgroundIsSingleOpaqueLayer())
+    if (!style->hasAppearance() && borderObscuresBackground() && backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
     return BackgroundBleedUseTransparencyLayer;
@@ -954,21 +961,25 @@ void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& pa
     }
 }
 
-bool RenderBox::backgroundIsSingleOpaqueLayer() const
+bool RenderBox::backgroundHasOpaqueTopLayer() const
 {
     const FillLayer* fillLayer = style()->backgroundLayers();
-    if (!fillLayer || fillLayer->next() || fillLayer->clip() != BorderFillBox || fillLayer->composite() != CompositeSourceOver)
+    if (!fillLayer || fillLayer->clip() != BorderFillBox)
         return false;
 
     // Clipped with local scrolling
     if (hasOverflowClip() && fillLayer->attachment() == LocalBackgroundAttachment)
         return false;
 
-    Color bgColor = style()->visitedDependentColor(CSSPropertyBackgroundColor);
-    if (bgColor.isValid() && bgColor.alpha() == 255)
+    if (fillLayer->hasOpaqueImage(this) && fillLayer->hasRepeatXY() && fillLayer->image()->canRender(this, style()->effectiveZoom()))
         return true;
-    
-    // FIXME: return true if a background image is present and is opaque
+
+    // If there is only one layer and no image, check whether the background color is opaque
+    if (!fillLayer->next() && !fillLayer->hasImage()) {
+        Color bgColor = style()->visitedDependentColor(CSSPropertyBackgroundColor);
+        if (bgColor.isValid() && bgColor.alpha() == 255)
+            return true;
+    }
 
     return false;
 }
@@ -4238,6 +4249,14 @@ void RenderBox::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     RenderBoxModelObject::reportMemoryUsage(memoryObjectInfo);
     info.addWeakPointer(m_inlineBoxWrapper);
     info.addMember(m_overflow);
+}
+
+void RenderBox::reportStaticMembersMemoryUsage(MemoryInstrumentation* memoryInstrumentation)
+{
+    memoryInstrumentation->addRootObject(gOverrideHeightMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gOverrideWidthMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gOverrideContainingBlockLogicalHeightMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gOverrideContainingBlockLogicalWidthMap, WebCoreMemoryTypes::RenderingStructures);
 }
 
 } // namespace WebCore

@@ -2041,10 +2041,8 @@ sub buildAutotoolsProject($@)
     # Configurable features listed here should be kept in sync with the
     # features for which there exists a configuration option in configure.ac.
     my %configurableFeatures = (
-        "filters" => 1,
         "gamepad" => 1,
         "geolocation" => 1,
-        "indexed-database" => 1,
         "media-stream" => 1,
         "svg" => 1,
         "svg-fonts" => 1,
@@ -2566,7 +2564,7 @@ sub buildChromium($@)
     } elsif (isCygwin() || isWindows()) {
         # Windows build - builds the root visual studio solution.
         $result = buildChromiumVisualStudioProject("Source/WebKit/chromium/All.sln", $clean);
-    } elsif (isChromiumNinja() && !isChromiumAndroid()) {
+    } elsif (isChromiumNinja()) {
         $result = buildChromiumNinja("all", $clean, @options);
     } elsif (isLinux() || isChromiumAndroid() || isChromiumMacMake()) {
         # Linux build - build using make.

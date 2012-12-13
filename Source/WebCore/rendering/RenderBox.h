@@ -567,6 +567,7 @@ public:
     bool hasSameDirectionAs(const RenderBox* object) const { return style()->direction() == object->style()->direction(); }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+    static void reportStaticMembersMemoryUsage(MemoryInstrumentation*);
 
 protected:
     virtual void willBeDestroyed();
@@ -584,7 +585,7 @@ protected:
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
 
     BackgroundBleedAvoidance determineBackgroundBleedAvoidance(GraphicsContext*) const;
-    bool backgroundIsSingleOpaqueLayer() const;
+    bool backgroundHasOpaqueTopLayer() const;
 
 #if PLATFORM(MAC)
     void paintCustomHighlight(const LayoutPoint&, const AtomicString& type, bool behindText);

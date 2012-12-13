@@ -441,9 +441,6 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
     // See if we can use an existing resource from the cache.
     CachedResourceHandle<CachedResource> resource = memoryCache()->resourceForURL(url);
 
-    if (request.resourceRequest().url() != url)
-        request.mutableResourceRequest().setURL(url);
-
     const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer());
     switch (policy) {
     case Reload:
@@ -706,7 +703,8 @@ void CachedResourceLoader::loadDone(CachedResource* resource)
     RefPtr<Document> protectDocument(m_document);
 
 #if ENABLE(RESOURCE_TIMING)
-    if (resource) {
+    // FIXME: Add resource timing support for main resources.
+    if (resource && resource->type() != CachedResource::MainResource && !resource->errorOccurred() && !resource->wasCanceled()) {
         HashMap<CachedResource*, InitiatorInfo>::iterator initiatorIt = m_initiatorMap.find(resource);
         if (initiatorIt != m_initiatorMap.end()) {
             ASSERT(document());

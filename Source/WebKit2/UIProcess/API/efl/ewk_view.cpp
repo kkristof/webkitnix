@@ -507,8 +507,10 @@ static inline Evas_Object* createEwkView(Evas* canvas, Evas_Smart* smart, PassRe
     }
 
     ASSERT(!smartData->priv);
-    RefPtr<WebPageGroup> pageGroup = pageGroupRef ? toImpl(pageGroupRef) : WebPageGroup::create();
-    smartData->priv = new EwkViewImpl(ewkView, context, pageGroup, behavior);
+
+    // Default WebPageGroup is created in WebContext constructor if the pageGroupRef is 0,
+    // so we do not need to create it here.
+    smartData->priv = new EwkViewImpl(ewkView, context, toImpl(pageGroupRef), behavior);
     return ewkView;
 }
 
@@ -637,7 +639,7 @@ Eina_Bool ewk_view_device_pixel_ratio_set(Evas_Object* ewkView, float ratio)
 {
     EWK_VIEW_IMPL_GET_OR_RETURN(ewkView, impl, false);
 
-    impl->page()->setCustomDeviceScaleFactor(ratio);
+    impl->page()->setIntrinsicDeviceScaleFactor(ratio);
 
     return true;
 }

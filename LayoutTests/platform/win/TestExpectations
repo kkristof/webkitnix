@@ -279,6 +279,8 @@ fast/forms/file/recover-file-input-in-unposted-form.html
 http/tests/security/contentSecurityPolicy/blob-urls-match-self.html
 fast/workers/worker-domurl.html
 media/video-src-blob.html
+http/tests/xmlhttprequest/post-blob-content-type-async.html
+http/tests/xmlhttprequest/post-blob-content-type-sync.html
 
 # Need to add functionality to DumpRenderTree to test IDN <rdar://problem/5301954>
 fast/encoding/idn-security.html
@@ -1284,6 +1286,7 @@ inspector/profiler/heap-snapshot-summary-retainers.html
 inspector/profiler/heap-snapshot-summary-sorting-fields.html
 inspector/profiler/heap-snapshot-summary-sorting.html
 inspector/profiler/heap-snapshot-summary-sorting-instances.html
+webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
@@ -1471,9 +1474,6 @@ media/invalid-media-url-crash.html
 http/tests/xmlhttprequest/basic-auth-nopassword.html
 http/tests/xmlhttprequest/basic-auth-nouser.html
 
-# Animation API is disabled by default
-animations/animation-api-1.html
-
 # HTTP 204 (No Content) should be ignored
 # https://bugs.webkit.org/show_bug.cgi?id=60206
 http/tests/navigation/response204.html
@@ -1550,12 +1550,6 @@ css3/selectors3
 webaudio/
 inspector-protocol/nmi-webaudio.html
 inspector-protocol/nmi-webaudio-leak-test.html
-
-# The win port has no support for <track>
-# https://bugs.webkit.org/show_bug.cgi?id=43668
-media/track
-fast/events/constructors/track-event-constructor.html
-http/tests/security/text-track-crossorigin.html
 
 # Opera-submitted tests to W3C for <track>, a lot of failures still.
 webkit.org/b/103926 media/track/opera/idl/media-idl-tests.html [ Skip ]
@@ -2381,9 +2375,6 @@ webkit.org/b/98666 webkit.org/b/102993 fast/multicol/client-rects.html [ Failure
 webkit.org/b/98666 webkit.org/b/102993 fast/repaint/slider-thumb-drag-release.html [ Failure ]
 webkit.org/b/98666 webkit.org/b/102993 fast/repaint/slider-thumb-float.html [ Failure ]
 
-# Win doesn't support track menu
-webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Skip ]
-
 #https://bugs.webkit.org/show_bug.cgi?id=98079
 http/tests/security/cross-origin-local-storage-wk1.html
 
@@ -2502,3 +2493,8 @@ fast/loader/non-deferred-substitute-load.html
 # https://bugs.webkit.org/show_bug.cgi?id=103043
 fast/events/frame-scroll-fake-mouse-move.html
 fast/events/overflow-scroll-fake-mouse-move.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=97132
+media/track/track-cue-rendering-horizontal.html
+media/track/track-cue-rendering-snap-to-lines-not-set.html
+media/track/track-cue-rendering-vertical.html

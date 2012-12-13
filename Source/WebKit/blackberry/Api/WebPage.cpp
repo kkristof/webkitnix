@@ -39,8 +39,8 @@
 #include "CredentialTransformData.h"
 #include "DOMSupport.h"
 #include "Database.h"
+#include "DatabaseManager.h"
 #include "DatabaseSync.h"
-#include "DatabaseTracker.h"
 #include "DefaultTapHighlight.h"
 #include "DeviceMotionClientBlackBerry.h"
 #include "DeviceOrientationClientBlackBerry.h"
@@ -3604,6 +3604,9 @@ void WebPage::applyPendingOrientationIfNeeded()
 {
     if (d->m_pendingOrientation != -1)
         d->setScreenOrientation(d->m_pendingOrientation);
+
+    // After rotation, we should redraw the dialog box instead of just moving it since rotation dismisses all dialogs.
+    d->m_inputHandler->redrawSpellCheckDialogIfRequired(false /* shouldMoveDialog */);
 }
 
 void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize, bool ensureFocusElementVisible)
@@ -3837,6 +3840,7 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
     }
 
     m_backingStore->d->resumeScreenUpdates(screenResumeOperation);
+    m_inputHandler->redrawSpellCheckDialogIfRequired();
 }
 
 void WebPage::setViewportSize(const Platform::IntSize& viewportSize, bool ensureFocusElementVisible)
@@ -5149,6 +5153,66 @@ void WebPage::clearPluginSiteData()
         (*it)->clearSiteData(String());
 }
 
+void WebPage::setExtraPluginDirectory(const BlackBerry::Platform::String& path)
+{
+    PluginDatabase* database = PluginDatabase::installedPlugins(true /* true for loading default directories */);
+    if (!database)
+        return;
+    
+    Vector<String> pluginDirectories = database->pluginDirectories();
+    if (path.empty() || pluginDirectories.contains(path)
+        return;
+
+    pluginDirectories.append(path);
+    database->setPluginDirectories(pluginDirectories);
+    // Clear out every Page's local copy of PluginData, so it will
+    // retrieve it again when necessary. Otherwise each page will be
+    // using old data and may either direct content to a plugin that
+    // doesn't exist (causing a crash) or not direct content to a plugin
+    // that does exist. We do this even if plugins are disabled because
+    // this step is not done when plugins get enabled.
+
+    // True only needs to be passed here if we want to reload each frame
+    // in the page's frame tree. Here we are passing false for minimum disruption,
+    // and because this does exactly what we need and nothing more: refresh the plugin data.
+    d->m_page->refreshPlugins(false /* false for minimum disruption as described above */);
+
+    if (d->m_webSettings->arePluginsEnabled())
+        database->refresh();
+}
+
+void WebPage::updateDisabledPluginFiles(const BlackBerry::Platform::String& fileName, bool disabled)
+{
+    // Passing true will set plugin database with default plugin directories and refresh it.
+    PluginDatabase* database = PluginDatabase::installedPlugins(true /* true for loading default directories */);
+    if (!database)
+        return;
+
+    if (disabled) {
+        if (!database->addDisabledPluginFile(fileName))
+            return;
+    } else {
+        if (!database->removeDisabledPluginFile(fileName))
+            return;
+    }
+
+    // Clear out every Page's local copy of PluginData, so it will
+    // retrieve it again when necessary. Otherwise each page will be
+    // using old data and may either direct content to a plugin that
+    // doesn't exist (causing a crash) or not direct content to a plugin
+    // that does exist. We do this even if plugins are disabled because
+    // this step is not done when plugins get enabled.
+
+    // True only needs to be passed here if we want to reload each frame
+    // in the page's frame tree. Here we are passing false for minimum disruption,
+    // and because this does exactly what we need and nothing more: refresh the plugin data.
+    d->m_page->refreshPlugins(false /* false for minimum disruption as described above */);
+
+    // Refresh the plugin database if necessary.
+    if (d->m_webSettings->arePluginsEnabled())
+        database->refresh();
+}
+
 void WebPage::onNetworkAvailabilityChanged(bool available)
 {
     updateOnlineStatus(available);
@@ -5839,13 +5903,13 @@ void WebPagePrivate::didChangeSettings(WebSettings* webSettings)
     coreSettings->setCookieEnabled(webSettings->areCookiesEnabled());
 
 #if ENABLE(SQL_DATABASE)
-    // DatabaseTracker can only be initialized for once, so it doesn't
-    // make sense to change database path after DatabaseTracker has
+    // DatabaseManager can only be initialized for once, so it doesn't
+    // make sense to change database path after DatabaseManager has
     // already been initialized.
     static bool dbinit = false;
     if (!dbinit && !webSettings->databasePath().empty()) {
         dbinit = true;
-        DatabaseTracker::initializeTracker(webSettings->databasePath());
+        DatabaseManager::initialize(webSettings->databasePath());
     }
 
     // The directory of cacheStorage for one page group can only be initialized once.

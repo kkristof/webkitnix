@@ -890,6 +890,12 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueLogical || valueID == CSSValueVisual)
             return true;
         break;
+
+    case CSSPropertyWebkitRubyPosition:
+        if (valueID == CSSValueBefore || valueID == CSSValueAfter)
+            return true;
+        break;
+
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
         // auto | start | end | left | right | center | justify
@@ -1057,6 +1063,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitRegionOverflow:
 #endif
     case CSSPropertyWebkitRtlOrdering:
+    case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
 #endif // CSS3_TEXT
@@ -1918,7 +1925,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
                 String uri = value->string;
                 if (!uri.isNull())
                     image = CSSImageValue::create(completeURL(uri));
-#if ENABLE(CSS_IMAGE_SET)
+#if ENABLE(CSS_IMAGE_SET) && ENABLE(MOUSE_CURSOR_SCALE)
             } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
                 image = parseImageSet(m_valueList.get());
                 if (!image)
@@ -2897,6 +2904,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitRegionOverflow:
 #endif
     case CSSPropertyWebkitRtlOrdering:
+    case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
     case CSSPropertyWebkitTextAlignLast:
 #endif // CSS3_TEXT
@@ -3884,7 +3892,7 @@ void CSSParser::parseFillPosition(CSSParserValueList* valueList, RefPtr<CSSValue
     unsigned numberOfValues = 0;
     for (unsigned i = valueList->currentIndex(); i < valueList->size(); ++i, ++numberOfValues) {
         CSSParserValue* current = valueList->valueAt(i);
-        if (isComma(current) || !current || (current->unit == CSSParserValue::Operator && current->iValue == '/') || !isPotentialPositionValue(current))
+        if (isComma(current) || !current || isForwardSlashOperator(current) || !isPotentialPositionValue(current))
             break;
     }
 
@@ -4582,6 +4590,9 @@ bool CSSParser::parseGridTrackMinMax(CSSValueList* values)
 
 PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* currentValue)
 {
+    if (currentValue->id == CSSValueWebkitMinContent || currentValue->id == CSSValueWebkitMaxContent)
+        return cssValuePool().createIdentifierValue(currentValue->id);
+
     if (!validUnit(currentValue, FLength | FPercent))
         return 0;
 
@@ -6284,7 +6295,7 @@ struct BorderImageParseContext {
     , m_allowImage(true)
     , m_allowImageSlice(true)
     , m_allowRepeat(true)
-    , m_allowSlash(false)
+    , m_allowForwardSlashOperator(false)
     , m_requireWidth(false)
     , m_requireOutset(false)
     {}
@@ -6296,7 +6307,7 @@ struct BorderImageParseContext {
     bool allowImage() const { return m_allowImage; }
     bool allowImageSlice() const { return m_allowImageSlice; }
     bool allowRepeat() const { return m_allowRepeat; }
-    bool allowSlash() const { return m_allowSlash; }
+    bool allowForwardSlashOperator() const { return m_allowForwardSlashOperator; }
 
     bool requireWidth() const { return m_requireWidth; }
     bool requireOutset() const { return m_requireOutset; }
@@ -6306,7 +6317,7 @@ struct BorderImageParseContext {
         m_image = image;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowImage = m_allowSlash = m_requireWidth = m_requireOutset = false;
+        m_allowImage = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
         m_allowImageSlice = !m_imageSlice;
         m_allowRepeat = !m_repeat;
     }
@@ -6314,15 +6325,15 @@ struct BorderImageParseContext {
     {
         m_imageSlice = slice;
         m_canAdvance = true;
-        m_allowCommit = m_allowSlash = true;
+        m_allowCommit = m_allowForwardSlashOperator = true;
         m_allowImageSlice = m_requireWidth = m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
-    void commitSlash()
+    void commitForwardSlashOperator()
     {
         m_canAdvance = true;
-        m_allowCommit = m_allowImage = m_allowImageSlice = m_allowRepeat = m_allowSlash = false;
+        m_allowCommit = m_allowImage = m_allowImageSlice = m_allowRepeat = m_allowForwardSlashOperator = false;
         if (!m_borderSlice) {
             m_requireWidth = true;
             m_requireOutset = false;
@@ -6335,7 +6346,7 @@ struct BorderImageParseContext {
     {
         m_borderSlice = slice;
         m_canAdvance = true;
-        m_allowCommit = m_allowSlash = true;
+        m_allowCommit = m_allowForwardSlashOperator = true;
         m_allowImageSlice = m_requireWidth = m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
@@ -6345,7 +6356,7 @@ struct BorderImageParseContext {
         m_outset = outset;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowImageSlice = m_allowSlash = m_requireWidth = m_requireOutset = false;
+        m_allowImageSlice = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
@@ -6354,7 +6365,7 @@ struct BorderImageParseContext {
         m_repeat = repeat;
         m_canAdvance = true;
         m_allowCommit = true;
-        m_allowRepeat = m_allowSlash = m_requireWidth = m_requireOutset = false;
+        m_allowRepeat = m_allowForwardSlashOperator = m_requireWidth = m_requireOutset = false;
         m_allowImageSlice = !m_imageSlice;
         m_allowImage = !m_image;
     }
@@ -6387,7 +6398,7 @@ struct BorderImageParseContext {
     bool m_allowImage;
     bool m_allowImageSlice;
     bool m_allowRepeat;
-    bool m_allowSlash;
+    bool m_allowForwardSlashOperator;
 
     bool m_requireWidth;
     bool m_requireOutset;
@@ -6407,8 +6418,8 @@ bool CSSParser::parseBorderImage(CSSPropertyID propId, RefPtr<CSSValue>& result,
     while (CSSParserValue* val = m_valueList->current()) {
         context.setCanAdvance(false);
 
-        if (!context.canAdvance() && context.allowSlash() && isForwardSlashOperator(val))
-            context.commitSlash();
+        if (!context.canAdvance() && context.allowForwardSlashOperator() && isForwardSlashOperator(val))
+            context.commitForwardSlashOperator();
 
         if (!context.canAdvance() && context.allowImage()) {
             if (val->unit == CSSPrimitiveValue::CSS_URI)

@@ -104,6 +104,9 @@ public:
     void setProcessModel(ProcessModel); // Can only be called when there are no processes running.
     ProcessModel processModel() const { return m_processModel; }
 
+    void setMaximumNumberOfProcesses(unsigned); // Can only be called when there are no processes running.
+    unsigned maximumNumberOfProcesses() const { return m_webProcessCountLimit; }
+
     // FIXME (Multi-WebProcess): Remove. No code should assume that there is a shared process.
     WebProcessProxy* deprecatedSharedProcess();
 
@@ -166,10 +169,10 @@ public:
 
 #if PLATFORM(WIN)
     void setShouldPaintNativeControls(bool);
-
+#endif
+#if PLATFORM(WIN) || USE(SOUP)
     void setInitialHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy policy) { m_initialHTTPCookieAcceptPolicy = policy; }
 #endif
-
     void setEnhancedAccessibility(bool);
     
     // Downloads.
@@ -316,6 +319,8 @@ private:
     static void applicationBecameOccluded(uint32_t, void*, uint32_t, void*, uint32_t);
     static void initializeProcessSuppressionSupport();
     static void registerOcclusionNotificationHandlers();
+    void registerNotificationObservers();
+    void unregisterNotificationObservers();
 #endif
 
     void addPlugInAutoStartOriginHash(const String& pageOrigin, unsigned plugInOriginHash);
@@ -395,6 +400,8 @@ private:
 
 #if PLATFORM(WIN)
     bool m_shouldPaintNativeControls;
+#endif
+#if PLATFORM(WIN) || USE(SOUP)
     HTTPCookieAcceptPolicy m_initialHTTPCookieAcceptPolicy;
 #endif
 

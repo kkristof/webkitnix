@@ -66,6 +66,9 @@
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"
 #endif
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationListHashSet.h>
 
 using namespace std;
 using namespace WTF;
@@ -344,12 +347,6 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     propagateStyleToAnonymousChildren(true);    
     m_lineHeight = -1;
 
-    // Update pseudos for :before and :after now.
-    if (!isAnonymous() && document()->styleSheetCollection()->usesBeforeAfterRules() && canHaveGeneratedChildren()) {
-        updateBeforeAfterContent(BEFORE);
-        updateBeforeAfterContent(AFTER);
-    }
-
     // After our style changed, if we lose our ability to propagate floats into next sibling
     // blocks, then we need to find the top most parent containing that overhanging float and
     // then mark its descendants with floats for layout and clear all floats from its next
@@ -379,14 +376,6 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         parentBlock->markAllDescendantsWithFloatsForLayout();
         parentBlock->markSiblingsWithFloatsForLayout();
     }
-}
-
-void RenderBlock::updateBeforeAfterContent(PseudoId pseudoId)
-{
-    // If this is an anonymous wrapper, then the parent applies its own pseudo-element style to it.
-    if (parent() && parent()->createsAnonymousWrapper())
-        return;
-    children()->updateBeforeAfterContent(this, pseudoId);
 }
 
 RenderBlock* RenderBlock::continuationBefore(RenderObject* beforeChild)
@@ -603,13 +592,7 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
     RenderBoxModelObject* curr = toRenderBoxModelObject(parent());
     RenderBoxModelObject* currChild = this;
     RenderObject* currChildNextSibling = currChild->nextSibling();
-    bool documentUsesBeforeAfterRules = document()->styleSheetCollection()->usesBeforeAfterRules();
 
-    // Note: |this| can be destroyed inside this loop if it is an empty anonymous
-    // block and we try to call updateBeforeAfterContent inside which removes the
-    // generated content and additionally cleans up |this| empty anonymous block.
-    // See RenderBlock::removeChild(). DO NOT reference any local variables to |this|
-    // after this point.
     while (curr && curr != fromBlock) {
         ASSERT(curr->isRenderBlock());
         
@@ -631,16 +614,6 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
             blockCurr->setContinuation(cloneBlock);
             cloneBlock->setContinuation(oldCont);
         }
-
-        // Someone may have indirectly caused a <q> to split.  When this happens, the :after content
-        // has to move into the inline continuation.  Call updateBeforeAfterContent to ensure that the inline's :after
-        // content gets properly destroyed.
-        bool isLastChild = (currChildNextSibling == blockCurr->lastChild());
-        if (documentUsesBeforeAfterRules)
-            blockCurr->children()->updateBeforeAfterContent(blockCurr, AFTER);
-        if (isLastChild && currChildNextSibling != blockCurr->lastChild())
-            currChildNextSibling = 0; // We destroyed the last child, so now we need to update
-                                      // the value of currChildNextSibling.
 
         // Now we need to take all of the children starting from the first child
         // *after* currChild and append them all to the clone.
@@ -874,23 +847,6 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
             if (!isAnonymousBlock())
                 setContinuation(newBox);
 
-            // Someone may have put a <p> inside a <q>, causing a split.  When this happens, the :after content
-            // has to move into the inline continuation.  Call updateBeforeAfterContent to ensure that our :after
-            // content gets properly destroyed.
-            bool isFirstChild = (beforeChild == firstChild());
-            bool isLastChild = (beforeChild == lastChild());
-            if (document()->styleSheetCollection()->usesBeforeAfterRules())
-                children()->updateBeforeAfterContent(this, AFTER);
-            if (isLastChild && beforeChild != lastChild()) {
-                // We destroyed the last child, so now we need to update our insertion
-                // point to be 0. It's just a straight append now.
-                beforeChild = 0;
-            } else if (isFirstChild && beforeChild != firstChild()) {
-                // If beforeChild was the last anonymous block that collapsed,
-                // then we need to update its value.
-                beforeChild = firstChild();
-            }
-
             splitFlow(beforeChild, newBox, newChild, oldContinuation);
             return;
         }
@@ -940,7 +896,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
     RenderBox::addChild(newChild, beforeChild);
  
     // Handle placement of run-ins.
-    placeRunInIfNeeded(newChild, DoNotPlaceGeneratedRunIn);
+    placeRunInIfNeeded(newChild);
 
     if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isRenderBlock())
         toRenderBlock(parent())->removeLeftoverAnonymousBlock(this);
@@ -1333,8 +1289,8 @@ bool RenderBlock::isSelfCollapsingBlock() const
 
 void RenderBlock::startDelayUpdateScrollInfo()
 {
-    if (gDelayUpdateScrollInfo == 0) {
-        ASSERT(!gDelayedUpdateScrollInfoSet);
+    if (!gDelayedUpdateScrollInfoSet) {
+        ASSERT(!gDelayUpdateScrollInfo);
         gDelayedUpdateScrollInfoSet = new DelayedUpdateScrollInfoSet;
     }
     ASSERT(gDelayedUpdateScrollInfoSet);
@@ -1348,15 +1304,22 @@ void RenderBlock::finishDelayUpdateScrollInfo()
     if (gDelayUpdateScrollInfo == 0) {
         ASSERT(gDelayedUpdateScrollInfoSet);
 
-        OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
-        gDelayedUpdateScrollInfoSet = 0;
-
-        for (DelayedUpdateScrollInfoSet::iterator it = infoSet->begin(); it != infoSet->end(); ++it) {
-            RenderBlock* block = *it;
-            if (block->hasOverflowClip()) {
-                block->layer()->updateScrollInfoAfterLayout();
+        Vector<RenderBlock*> infoSet;
+        while (gDelayedUpdateScrollInfoSet && gDelayedUpdateScrollInfoSet->size()) {
+            copyToVector(*gDelayedUpdateScrollInfoSet, infoSet);
+            for (Vector<RenderBlock*>::iterator it = infoSet.begin(); it != infoSet.end(); ++it) {
+                RenderBlock* block = *it;
+                // |block| may have been destroyed at this point, but then it will have been removed from gDelayedUpdateScrollInfoSet.
+                if (gDelayedUpdateScrollInfoSet && gDelayedUpdateScrollInfoSet->contains(block)) {
+                    gDelayedUpdateScrollInfoSet->remove(block);
+                    if (block->hasOverflowClip())
+                        block->layer()->updateScrollInfoAfterLayout();
+                }
             }
         }
+        delete gDelayedUpdateScrollInfoSet;
+        gDelayedUpdateScrollInfoSet = 0;
+        ASSERT(!gDelayUpdateScrollInfo);
     }
 }
 
@@ -1864,12 +1827,12 @@ static void destroyRunIn(RenderBoxModelObject* runIn)
     runIn->destroy();
 }
 
-void RenderBlock::placeRunInIfNeeded(RenderObject* newChild, PlaceGeneratedRunInFlag flag)
+void RenderBlock::placeRunInIfNeeded(RenderObject* newChild)
 {
-    if (newChild->isRunIn() && (flag == PlaceGeneratedRunIn || !newChild->isBeforeOrAfterContent()))
+    if (newChild->isRunIn())
         moveRunInUnderSiblingBlockIfNeeded(newChild);
     else if (RenderObject* prevSibling = newChild->previousSibling()) {
-        if (prevSibling->isRunIn() && (flag == PlaceGeneratedRunIn || !newChild->isBeforeOrAfterContent()))
+        if (prevSibling->isRunIn())
             moveRunInUnderSiblingBlockIfNeeded(prevSibling);
     }
 }
@@ -1877,31 +1840,18 @@ void RenderBlock::placeRunInIfNeeded(RenderObject* newChild, PlaceGeneratedRunIn
 RenderBoxModelObject* RenderBlock::createReplacementRunIn(RenderBoxModelObject* runIn)
 {
     ASSERT(runIn->isRunIn());
+    ASSERT(runIn->node());
 
-    // First we destroy any :before/:after content. It will be regenerated by the new run-in.
-    // Exception is if the run-in itself is generated.
-    if (runIn->style()->styleType() != BEFORE && runIn->style()->styleType() != AFTER) {
-        RenderObject* generatedContent;
-        if (runIn->getCachedPseudoStyle(BEFORE) && (generatedContent = runIn->beforePseudoElementRenderer()))
-            generatedContent->destroy();
-        if (runIn->getCachedPseudoStyle(AFTER) && (generatedContent = runIn->afterPseudoElementRenderer()))
-            generatedContent->destroy();
-    }
-
-    bool newRunInShouldBeBlock = !runIn->isRenderBlock();
-    Node* runInNode = runIn->node();
     RenderBoxModelObject* newRunIn = 0;
-    if (newRunInShouldBeBlock)
-        newRunIn = new (renderArena()) RenderBlock(runInNode ? runInNode : document());
+    if (!runIn->isRenderBlock())
+        newRunIn = new (renderArena()) RenderBlock(runIn->node());
     else
-        newRunIn = new (renderArena()) RenderInline(runInNode ? runInNode : document());
-    newRunIn->setStyle(runIn->style());
- 
-    runIn->moveAllChildrenTo(newRunIn, true);
+        newRunIn = new (renderArena()) RenderInline(runIn->node());
 
-    // If the run-in had an element, we need to set the new renderer.
-    if (runInNode)
-        runInNode->setRenderer(newRunIn);
+    runIn->node()->setRenderer(newRunIn);
+    newRunIn->setStyle(runIn->style());
+
+    runIn->moveAllChildrenTo(newRunIn, true);
 
     return newRunIn;
 }
@@ -3236,7 +3186,7 @@ bool RenderBlock::shouldPaintSelectionGaps() const
 
 bool RenderBlock::isSelectionRoot() const
 {
-    if (!node() || isPseudoElement())
+    if (!nonPseudoNode())
         return false;
         
     // FIXME: Eventually tables should have to learn how to fill gaps between cells, at least in simple non-spanning cases.
@@ -7760,6 +7710,16 @@ void RenderBlock::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_rareData);
     info.addMember(m_children);
     info.addMember(m_lineBoxes);
+}
+
+void RenderBlock::reportStaticMembersMemoryUsage(MemoryInstrumentation* memoryInstrumentation)
+{
+    memoryInstrumentation->addRootObject(gColumnInfoMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gPositionedDescendantsMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gPercentHeightDescendantsMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gPositionedContainerMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gPercentHeightContainerMap, WebCoreMemoryTypes::RenderingStructures);
+    memoryInstrumentation->addRootObject(gDelayedUpdateScrollInfoSet, WebCoreMemoryTypes::RenderingStructures);
 }
 
 } // namespace WebCore

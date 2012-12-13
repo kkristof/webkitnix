@@ -169,6 +169,16 @@ void ElementShadow::ensureDistribution()
     m_distributor.distribute(host());
 }
 
+void ElementShadow::ensureDistributionFromDocument()
+{
+    Vector<Element*, 8> hosts;
+    for (Element* current = host(); current; current = current->shadowHost())
+        hosts.append(current);
+
+    for (size_t i = hosts.size(); i > 0; --i)
+        hosts[i - 1]->shadow()->ensureDistribution();
+}
+
 void ElementShadow::setValidityUndetermined()
 {
     m_distributor.setValidity(ContentDistributor::Undetermined);
@@ -221,8 +231,8 @@ void ElementShadow::ensureSelectFeatureSetCollected()
 void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot* root)
 {
     if (root->hasElementShadow()) {
-        for (Node* node = root->firstChild(); node; node = NodeTraversal::next(node)) {
-            if (ElementShadow* elementShadow = node->isElementNode() ? toElement(node)->shadow() : 0) {
+        for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
+            if (ElementShadow* elementShadow = element->shadow()) {
                 elementShadow->ensureSelectFeatureSetCollected();
                 m_selectFeatures.add(elementShadow->m_selectFeatures);
             }
@@ -230,9 +240,9 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot* root)
     }
 
     if (root->hasContentElement()) {
-        for (Node* node = root->firstChild(); node; node = NodeTraversal::next(node)) {
-            if (isHTMLContentElement(node)) {
-                const CSSSelectorList& list = toHTMLContentElement(node)->selectorList();
+        for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
+            if (isHTMLContentElement(element)) {
+                const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
                 for (CSSSelector* selector = list.first(); selector; selector = list.next(selector))
                     m_selectFeatures.collectFeaturesFromSelector(selector);                    
             }

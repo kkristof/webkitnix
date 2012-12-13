@@ -163,7 +163,7 @@ HTMLInputElement::~HTMLInputElement()
         document()->formController()->checkedRadioButtons().removeButton(this);
 #if ENABLE(TOUCH_EVENTS)
     if (m_hasTouchEventHandler)
-        document()->didRemoveTouchEventHandler();
+        document()->didRemoveTouchEventHandler(this);
 #endif
 }
 
@@ -489,9 +489,9 @@ void HTMLInputElement::updateType()
     bool hasTouchEventHandler = m_inputType->hasTouchEventHandler();
     if (hasTouchEventHandler != m_hasTouchEventHandler) {
       if (hasTouchEventHandler)
-        document()->didAddTouchEventHandler();
+        document()->didAddTouchEventHandler(this);
       else
-        document()->didRemoveTouchEventHandler();
+        document()->didRemoveTouchEventHandler(this);
       m_hasTouchEventHandler = hasTouchEventHandler;
     }
 #endif
@@ -1773,11 +1773,11 @@ void HTMLInputElement::setCapture(const String& value)
 
 #endif
 
-bool HTMLInputElement::isInRequiredRadioButtonGroup() const
+bool HTMLInputElement::isInRequiredRadioButtonGroup()
 {
     ASSERT(isRadioButton());
     if (CheckedRadioButtons* buttons = checkedRadioButtons())
-        return buttons->isRequiredGroup(name());
+        return buttons->isInRequiredGroup(this);
     return false;
 }
 

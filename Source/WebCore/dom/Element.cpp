@@ -62,6 +62,7 @@
 #include "NodeList.h"
 #include "NodeRenderStyle.h"
 #include "NodeRenderingContext.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "PointerLockController.h"
 #include "PseudoElement.h"
@@ -1168,6 +1169,8 @@ void Element::attach()
     if (parentElement() && parentElement()->isInCanvasSubtree())
         setIsInCanvasSubtree(true);
 
+    updatePseudoElement(BEFORE);
+
     // When a shadow root exists, it does the work of attaching the children.
     if (ElementShadow* shadow = this->shadow()) {
         parentPusher.push();
@@ -1176,6 +1179,8 @@ void Element::attach()
         parentPusher.push();
 
     ContainerNode::attach();
+
+    updatePseudoElement(AFTER);
 
     if (hasRareData()) {   
         ElementRareData* data = elementRareData();
@@ -1329,6 +1334,8 @@ void Element::recalcStyle(StyleChange change)
         }
     }
 
+    updatePseudoElement(BEFORE, change);
+
     // FIXME: This check is good enough for :hover + foo, but it is not good enough for :hover + foo + bar.
     // For now we will just worry about the common case, since it's a lot trickier to get the second case right
     // without doing way too much re-resolution.
@@ -1352,6 +1359,8 @@ void Element::recalcStyle(StyleChange change)
         forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
         forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
+
+    updatePseudoElement(AFTER, change);
 
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
@@ -2079,10 +2088,11 @@ void Element::cancelFocusAppearanceUpdate()
 
 void Element::normalizeAttributes()
 {
-    updateInvalidAttributes();
-    if (AttrNodeList* attrNodeList = attrNodeListForElement(this)) {
-        for (unsigned i = 0; i < attrNodeList->size(); ++i)
-            attrNodeList->at(i)->normalize();
+    if (!hasAttributes())
+        return;
+    for (unsigned i = 0; i < attributeCount(); ++i) {
+        if (RefPtr<Attr> attr = attrIfExists(attributeItem(i)->name()))
+            attr->normalize();
     }
 }
 
@@ -2136,7 +2146,7 @@ PseudoElement* Element::afterPseudoElement() const
 // ElementTraversal API
 Element* Element::firstElementChild() const
 {
-    return WebCore::firstElementChild(this);
+    return ElementTraversal::firstWithin(this);
 }
 
 Element* Element::lastElementChild() const
@@ -2678,22 +2688,5 @@ void Element::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_tagName);
     info.addMember(m_attributeData);
 }
-
-#if ENABLE(SVG)
-bool Element::hasPendingResources() const
-{
-    return hasRareData() && elementRareData()->hasPendingResources();
-}
-
-void Element::setHasPendingResources()
-{
-    ensureElementRareData()->setHasPendingResources(true);
-}
-
-void Element::clearHasPendingResources()
-{
-    ensureElementRareData()->setHasPendingResources(false);
-}
-#endif
 
 } // namespace WebCore

@@ -83,6 +83,7 @@ SVGElement::~SVGElement()
         rareDataMap.remove(it);
     }
     ASSERT(document());
+    document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
     document()->accessSVGExtensions()->removeAllElementReferencesForTarget(this);
 }
 
@@ -182,6 +183,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
     StyledElement::removedFrom(rootParent);
 
     if (wasInDocument) {
+        document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
         document()->accessSVGExtensions()->removeAllElementReferencesForTarget(this);
         document()->accessSVGExtensions()->removeElementFromPendingResources(this);
     }
@@ -536,12 +538,28 @@ void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString&
     StyledElement::attributeChanged(name, newValue);
 
     if (isIdAttributeName(name))
-        document()->accessSVGExtensions()->removeAllElementReferencesForTarget(this);
+        document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
 
     // Changes to the style attribute are processed lazily (see Element::getAttribute() and related methods),
     // so we don't want changes to the style attribute to result in extra work here.
     if (name != HTMLNames::styleAttr)
         svgAttributeChanged(name);
+}
+
+bool SVGElement::hasPendingResources() const
+{
+    return hasSVGRareData() && svgRareData()->hasPendingResources();
+}
+
+void SVGElement::setHasPendingResources()
+{
+    ensureSVGRareData()->setHasPendingResources(true);
+}
+
+void SVGElement::clearHasPendingResourcesIfPossible()
+{
+    if (!document()->accessSVGExtensions()->isElementPendingResources(this))
+        ensureSVGRareData()->setHasPendingResources(false);
 }
 
 void SVGElement::updateAnimatedSVGAttribute(const QualifiedName& name) const

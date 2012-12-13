@@ -1504,9 +1504,9 @@ bool FrameView::fixedElementsLayoutRelativeToFrame() const
     return m_frame->settings()->fixedElementsLayoutRelativeToFrame();
 }
 
-IntPoint FrameView::currentMousePosition() const
+IntPoint FrameView::lastKnownMousePosition() const
 {
-    return m_frame ? m_frame->eventHandler()->currentMousePosition() : IntPoint();
+    return m_frame ? m_frame->eventHandler()->lastKnownMousePosition() : IntPoint();
 }
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -1893,6 +1893,12 @@ bool FrameView::shouldRubberBandInDirection(ScrollDirection direction) const
 bool FrameView::requestScrollPositionUpdate(const IntPoint& position)
 {
 #if ENABLE(THREADED_SCROLLING)
+    if (TiledBacking* tiledBacking = this->tiledBacking()) {
+        IntRect visibleRect = visibleContentRect();
+        visibleRect.setLocation(position);
+        tiledBacking->prepopulateRect(visibleRect);
+    }
+
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             return scrollingCoordinator->requestScrollPositionUpdate(this, position);

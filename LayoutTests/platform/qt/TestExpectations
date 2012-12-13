@@ -109,9 +109,6 @@ http/tests/inspector/indexeddb
 
 inspector/timeline/timeline-animation-frame.html
 
-# ENABLE(ANIMATION_API) is disabled.
-animations/animation-api-1.html
-
 # ENABLE(WEB_ARCHIVE) is disabled.
 svg/custom/image-with-prefix-in-webarchive.svg
 http/tests/webarchive
@@ -188,6 +185,9 @@ fast/dom/shadow
 fast/frames/detached-shadow-frame.html
 inspector/elements/update-shadowdom.html
 
+# ENABLE(MOUSE_CURSOR_SCALE) is disabled
+fast/css/cursor-parsing-image-set.html
+
 # ENABLE(TEMPLATE_ELEMENT) is disabled.
 fast/dom/HTMLTemplateElement
 html5lib/run-template.html
@@ -262,6 +262,7 @@ inspector/profiler/heap-snapshot-summary-show-ranges.html
 inspector/profiler/heap-snapshot-summary-sorting-fields.html
 inspector/profiler/heap-snapshot-summary-sorting.html
 inspector/profiler/heap-snapshot-summary-sorting-instances.html
+webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
@@ -319,10 +320,6 @@ webkit.org/b/84635 fast/dom/HTMLDialogElement
 
 # Missing test infrastructure, no gamepads available.
 webkit.org/b/92873 gamepad/gamepad-polling-access.html
-
-# CSS Variables are not yet enabled.
-webkit.org/b/85580 fast/css/variables
-webkit.org/b/85580 inspector/styles/variables
 
 # CSS image-resolution is not yet enabled.
 webkit.org/b/85262 fast/css/image-resolution
@@ -2137,7 +2134,6 @@ svg/animations/animateTransform-rotate-around-point.svg
 svg/animations/animateMotion-additive-1.svg
 svg/transforms/transformed-text-fill-gradient.html
 fast/regions/floats-basic-in-variable-width-regions.html
-fast/regions/positioned-objects-block-static-spanning-regions-rtl.html
 fast/regions/region-style-rule-position.html
 
 # Failing fast/css/sticky/ tests with minor pixel differences
@@ -2201,6 +2197,12 @@ css2.1/20110323/vertical-align-boxes-001.htm [ Failure Pass ]
 svg/as-image/svg-intrinsic-size-rectangular-vertical.html
 fast/css/word-spacing-characters.html
 css2.1/20110323/c541-word-sp-001.htm [ Failure Pass ]
+webkit.org/b/104696 fast/block/float/floats-offset-image-quirk-lineheight.html
+webkit.org/b/104696 fast/block/float/floats-offset-image-quirk.html
+webkit.org/b/104696 fast/block/float/floats-offset-image-strict-lineheight.html
+webkit.org/b/104696 fast/block/float/floats-offset-image-strict.html
+webkit.org/b/104696 fast/block/float/floats-wrap-inside-inline-007.html
+
 
 # [Qt] css3/filters/huge-region-composited.html makes css3/filters/huge-region.html crash
 # https://bugs.webkit.org/show_bug.cgi?id=90165
@@ -2442,10 +2444,11 @@ webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 
 webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
 
-# [Qt] new fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html fails since introduced in r136857
-webkit.org/b/104351 fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html
-
 # [Qt] new http/tests/xmlhttprequest/post-blob-content-type-sync.html and ~async.html fail since introduced in r136893
 # https://bugs.webkit.org/show_bug.cgi?id=104352
 http/tests/xmlhttprequest/post-blob-content-type-async.html
 http/tests/xmlhttprequest/post-blob-content-type-sync.html
+
+webkit.org/b/104788 css3/flexbox/flex-algorithm.html [ Failure ]
+webkit.org/b/104788 fast/css/large-number-round-trip.html [ Failure ]
+webkit.org/b/104788 fast/css/large-numbers.html [ Failure ]

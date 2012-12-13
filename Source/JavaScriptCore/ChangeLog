@@ -1,3 +1,157 @@
+2012-12-12  Filip Pizlo  <fpizlo@apple.com>
+
+        OSR exit compiler should emit code for resetting the execution counter that matches the logic of ExecutionCounter.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=104791
+
+        Reviewed by Oliver Hunt.
+
+        The OSR exit compiler wants to make it so that every OSR exit does the equivalent
+        of:
+        
+        codeBlock->m_jitExecuteCounter.setNewThreshold(
+            codeBlock->counterValueForOptimizeAfterLongWarmUp());
+        
+        This logically involves:
+        
+        - Resetting the counter to zero.
+        - Setting m_activeThreshold to counterValueForOptimizeAfterLongWarmUp().
+        - Figuring out the scaled threshold, subtracting the count so far (which is zero,
+          so this part is a no-op), and clipping (ExecuteCounter::clippedThreshold()).
+        - Setting m_counter to the negated clipped threshold.
+        - Setting m_totalCount to the previous count so far (which is zero) plus the
+          clipped threshold.
+        
+        Because of the reset, which sets the count-so-far to zero, this amounts to:
+        
+        - Setting m_activeThreshold to counterValueForOptimizeAfterLongWarmUp().
+        - Figuring out the clipped scaled threshold.
+        - Setting m_counter to the negated clipped scaled threshold.
+        - Setting m_totalCount to the (positive) clipped scaled threshold.
+        
+        The code was previously not doing this, but now is. This is performance neutral.
+        The only change in behavior over what the code was previously doing (setting the
+        m_counter to the negated scaled threshold, without clipping, and then setting
+        the m_totalCount to the clipped scaled threshold) is that this will respond more
+        gracefully under memory pressure and will ensure that we get more value profile
+        LUBing before triggering recompilation. More LUBing is almost always a good
+        thing.
+
+        * dfg/DFGOSRExitCompiler.cpp:
+        (JSC::DFG::OSRExitCompiler::handleExitCounts):
+
+2012-12-12  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation: remove fake root MemoryObjectInfo.
+        https://bugs.webkit.org/show_bug.cgi?id=104796
+
+        Reviewed by Yury Semikhatsky.
+
+        It was not a good idea to introduce a fake root MemoryObjectInfo.
+        It makes a problem when we visit an object without its own MemoryObjectType.
+
+        Example: RenderBox has a global pointer to a hash map.
+        HashMap doesn't have its own object type because it is a generic container.
+        It will inherit object type from the fake root memory object info.
+        The same could happen for another container in another class with other MemoryObjectType.
+
+        This fact forces me to create custom process method for root objects
+        because they need to have their own MemoryObjectInfo with customisable memory object type.
+
+        Drive by fix: InstrumentedPointer* was replaced with Wrapper* because actually it is using
+        for instrumented and not instrumented object classes.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+
+2012-12-11  Gabor Ballabas  <gaborb@inf.u-szeged.hu>
+
+        Implement add64 for ARM traditional assembler after r136601
+        https://bugs.webkit.org/show_bug.cgi?id=104103
+
+        Reviewed by Zoltan Herczeg.
+
+        Implement add64 function for ARM traditional macroassembler.
+
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::add64):
+        (MacroAssemblerARM):
+
+2012-12-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed. Fix build with DFG_ENABLE(DEBUG_PROPAGATION_VERBOSE).
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::tallyFrequentExitSites):
+
+2012-12-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Profiler should show bytecode dumps as they would have been visible to the JITs, including the profiling data that the JITs would see
+        https://bugs.webkit.org/show_bug.cgi?id=104647
+
+        Reviewed by Oliver Hunt.
+
+        Adds more profiling data to bytecode dumps, and adds the ability to do a secondary
+        bytecode dump for each JIT compilation of a code block. This is relevant because both
+        the bytecodes, and the profiling data, may change after some number of executions.
+        
+        Also fixes some random dumping code to use PrintStream& rather than
+        static const char[thingy].
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * bytecode/ArrayProfile.cpp:
+        (JSC::dumpArrayModes):
+        (JSC::ArrayProfile::briefDescription):
+        * bytecode/ArrayProfile.h:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::printGetByIdOp):
+        (JSC::CodeBlock::printGetByIdCacheStatus):
+        (JSC::CodeBlock::printCallOp):
+        (JSC::CodeBlock::dumpValueProfiling):
+        (JSC::CodeBlock::dumpArrayProfiling):
+        (JSC::CodeBlock::dumpBytecode):
+        * bytecode/CodeBlock.h:
+        * bytecode/ValueProfile.h:
+        (JSC::ValueProfileBase::briefDescription):
+        * dfg/DFGAbstractValue.h:
+        (JSC::DFG::AbstractValue::dump):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseCodeBlock):
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompile):
+        * profiler/ProfilerBytecodeSequence.cpp: Added.
+        (JSC::Profiler::BytecodeSequence::BytecodeSequence):
+        (JSC::Profiler::BytecodeSequence::~BytecodeSequence):
+        (JSC::Profiler::BytecodeSequence::indexForBytecodeIndex):
+        (JSC::Profiler::BytecodeSequence::forBytecodeIndex):
+        (JSC::Profiler::BytecodeSequence::addSequenceProperties):
+        * profiler/ProfilerBytecodeSequence.h: Added.
+        (JSC::Profiler::BytecodeSequence::size):
+        (JSC::Profiler::BytecodeSequence::at):
+        * profiler/ProfilerBytecodes.cpp:
+        (JSC::Profiler::Bytecodes::Bytecodes):
+        (JSC::Profiler::Bytecodes::toJS):
+        * profiler/ProfilerBytecodes.h:
+        (JSC::Profiler::Bytecodes::instructionCount):
+        * profiler/ProfilerCompilation.cpp:
+        (JSC::Profiler::Compilation::addProfiledBytecodes):
+        (JSC::Profiler::Compilation::toJS):
+        * profiler/ProfilerCompilation.h:
+        (JSC::Profiler::Compilation::profiledBytecodesSize):
+        (JSC::Profiler::Compilation::profiledBytecodesAt):
+        * profiler/ProfilerDatabase.cpp:
+        (JSC::Profiler::Database::ensureBytecodesFor):
+        * profiler/ProfilerDatabase.h:
+        * profiler/ProfilerProfiledBytecodes.cpp: Added.
+        (JSC::Profiler::ProfiledBytecodes::ProfiledBytecodes):
+        (JSC::Profiler::ProfiledBytecodes::~ProfiledBytecodes):
+        (JSC::Profiler::ProfiledBytecodes::toJS):
+        * profiler/ProfilerProfiledBytecodes.h: Added.
+        (JSC::Profiler::ProfiledBytecodes::bytecodes):
+        * runtime/CommonIdentifiers.h:
+
 2012-12-11  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
 
         [Qt] delete dead include paths

@@ -98,7 +98,7 @@
 #endif
 
 #if USE(COORDINATED_GRAPHICS)
-#include "LayerTreeCoordinatorProxyMessages.h"
+#include "CoordinatedLayerTreeHostProxyMessages.h"
 #endif
 
 #if PLATFORM(QT)
@@ -1901,8 +1901,8 @@ void WebPageProxy::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::M
     }
 
 #if USE(COORDINATED_GRAPHICS)
-    if (messageID.is<CoreIPC::MessageClassLayerTreeCoordinatorProxy>()) {
-        m_drawingArea->didReceiveLayerTreeCoordinatorProxyMessage(connection, messageID, decoder);
+    if (messageID.is<CoreIPC::MessageClassCoordinatedLayerTreeHostProxy>()) {
+        m_drawingArea->didReceiveCoordinatedLayerTreeHostProxyMessage(connection, messageID, decoder);
         return;
     }
 #endif

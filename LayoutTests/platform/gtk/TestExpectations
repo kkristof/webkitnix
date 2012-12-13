@@ -41,7 +41,6 @@
 # Tests that require new results.
 #////////////////////////////////////////////////////////////////////////////////////////
 
-webkit.org/b/84043 accessibility/aria-tab-roles.html [ Missing ]
 webkit.org/b/84044 accessibility/image-link.html [ Missing ]
 webkit.org/b/84045 accessibility/image-map1.html [ Missing ]
 webkit.org/b/84045 accessibility/image-map2.html [ Missing ]
@@ -507,6 +506,8 @@ webkit.org/b/100688 editing/text-iterator/backward-textiterator-first-letter-cra
 
 webkit.org/b/104533 fast/block/float/overhanging-tall-block.html [ Crash ]
 
+webkit.org/b/104684 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Crashing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -605,7 +606,12 @@ webkit.org/b/98133 fast/css/sticky/sticky-writing-mode-vertical-rl.html [ ImageO
 
 webkit.org/b/68878 media/video-playing-and-pause.html [ Failure Pass ]
 
-webkit.org/b/100117 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Failure Pass ]
+webkit.org/b/104809 media/adopt-node-crash.html [ Timeout Pass ]
+webkit.org/b/104809 media/encrypted-media/encrypted-media-not-loaded.html [ Failure Pass ]
+webkit.org/b/104809 media/event-queue-crash.html [ Crash Pass ]
+webkit.org/b/104809 media/video-source-type-params.html [ Crash Pass ]
+webkit.org/b/104809 media/video-src-set.html [ Timeout Pass ]
+webkit.org/b/104809 media/W3C/video/events/event_loadstart_manual.html [ Crash Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
@@ -680,8 +686,6 @@ Bug(GTK) http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.h
 
 webkit.org/b/46644 fast/text/large-text-composed-char-dos.html [ Timeout ]
 
-Bug(GTK) http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Timeout ]
-
 Bug(GTK) [ Debug ] fast/css/user-drag-none.html [ Timeout ]
 
 webkit.org/b/61118 fullscreen/full-screen-keyboard-enabled.html [ Timeout ]
@@ -703,7 +707,7 @@ webkit.org/b/73003 [ Release ] editing/spelling/spellcheck-async.html [ Timeout 
 webkit.org/b/73003 [ Release ] editing/spelling/spellcheck-paste.html [ Timeout ]
 webkit.org/b/50740 [ Release ] editing/spelling/spellcheck-queue.html [ Timeout ]
 
-Bug(GTK) media/progress-events-generated-correctly.html [ Timeout Text ]
+Bug(GTK) media/progress-events-generated-correctly.html [ Failure Timeout ]
 
 webkit.org/b/102257 fast/dom/Window/open-window-min-size.html [ Timeout ]
 
@@ -712,6 +716,12 @@ webkit.org/b/104571 http/tests/security/xssAuditor/javascript-link-null-char.htm
 webkit.org/b/104571 http/tests/security/xssAuditor/object-embed-tag-null-char.html [ Timeout ]
 
 webkit.org/b/104648 fast/images/webgl-teximage2d.html [ Timeout ]
+
+# Misses setMediaType() implementation
+Bug(GTK) fast/media/print-restores-previous-mediatype.html [ Timeout ]
+
+# GTK still has the CC toggle button, not the menu of tracks.
+webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Timeout ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests timing out
@@ -750,7 +760,6 @@ webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFail
 
 webkit.org/b/79757 fast/selectors/selection-window-inactive.html [ ImageOnlyFailure ]
 
-webkit.org/b/98352 accessibility/aria-hidden.html [ Failure ]
 webkit.org/b/98353 accessibility/aria-hidden-with-elements.html [ Failure ]
 webkit.org/b/98354 accessibility/aria-labelledby-overrides-label.html [ Failure ]
 webkit.org/b/98355 accessibility/aria-link-supports-press.html [ Failure ]
@@ -879,18 +888,6 @@ webkit.org/b/30620 fast/xsl/sort-locale.xml [ Failure ]
 
 webkit.org/b/53986 svg/text/caret-in-svg-text.xhtml [ Failure ]
 
-# No authentication challenge handling
-webkit.org/b/51104 http/tests/loading/authentication-after-redirect-stores-wrong-credentials/authentication-after-redirect-stores-wrong-credentials.html [ Skip ]
-webkit.org/b/51104 http/tests/loading/basic-auth-resend-wrong-credentials.html [ Failure ]
-webkit.org/b/51104 http/tests/loading/basic-credentials-sent-automatically.html [ Failure ]
-webkit.org/b/51104 http/tests/misc/authentication-redirect-1/authentication-sent-to-redirect-cross-origin.html [ Failure ]
-webkit.org/b/51104 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure ]
-webkit.org/b/51104 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure ]
-webkit.org/b/51104 http/tests/security/401-logout/401-logout.php [ Skip ]
-webkit.org/b/51104 http/tests/xmlhttprequest/basic-auth-nouser.html [ Failure ]
-webkit.org/b/51104 http/tests/xmlhttprequest/basic-auth-nopassword.html [ Failure ]
-webkit.org/b/51104 http/tests/xmlhttprequest/remember-bad-password.html [ Failure ]
-
 # This port doesn't have a global history delegate yet
 Bug(GTK) http/tests/globalhistory [ Failure ]
 
@@ -928,9 +925,6 @@ Bug(GTK) fast/events/platform-wheelevent-paging-y-in-non-scrolling-div.html [ Fa
 Bug(GTK) fast/events/platform-wheelevent-paging-y-in-non-scrolling-page.html [ Failure ]
 Bug(GTK) fast/events/platform-wheelevent-paging-y-in-scrolling-div.html [ Failure ]
 Bug(GTK) fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ Failure ]
-
-# Misses setMediaType() implementation
-Bug(GTK) fast/media/print-restores-previous-mediatype.html [ Failure ]
 
 # Fails on GTK+ since https://bugs.webkit.org/show_bug.cgi?id=25195 got in
 webkit.org/b/36627 editing/selection/extend-after-mouse-selection.html [ Failure ]
@@ -982,6 +976,7 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-show-ranges.html [ F
 webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-fields.html [ Failure ]
 webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Failure ]
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html [ Failure ]
+webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 
 webkit.org/b/37613 webkit.org/b/20011 printing [ Skip ]
 webkit.org/b/37613 editing/execCommand/print.html [ Skip ]
@@ -1140,9 +1135,7 @@ webkit.org/b/68855 editing/selection/select-bidi-run.html [ Failure ]
 # This test is out-dated since r95899.
 webkit.org/b/65709 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ]
 
-# The timeout is caused apparently by the whole process hanging; probably a bug in soup,
-# needs further investigation.
-Bug(GTK) http/tests/multipart/multipart-wait-before-boundary.html [ Timeout ]
+Bug(GTK) http/tests/multipart/multipart-wait-before-boundary.html [ Slow ]
 
 # Does not render the rectangle as it should, even though the multiple parts seem to work
 webkit.org/b/54251 http/tests/multipart/invalid-image-data.html [ Timeout ]
@@ -1279,8 +1272,6 @@ webkit.org/b/89845 fast/forms/input-set-composition-scroll.html [ Failure ]
 
 webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
 
-webkit.org/b/74219 fast/regions/positioned-objects-block-static-spanning-regions-rtl.html [ ImageOnlyFailure ]
-
 # This failure appears to be GTK-specific
 webkit.org/b/91319 css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 
@@ -1367,9 +1358,6 @@ webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ Image
 
 webkit.org/b/102586 media/video-src-blob.html [ Failure ]
 
-# GTK still has the CC toggle button, not the menu of tracks.
-webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Failure ]
-
 # Fix for https://bugs.webkit.org/show_bug.cgi?id=97192 introduces these regressions
 webkit.org/b/102776 webkit.org/b/102993 media/media-document-audio-repaint.html [ Failure ]
 webkit.org/b/102776 media/track/track-cue-container-rendering-position.html [ Failure ]
@@ -1384,8 +1372,6 @@ webkit.org/b/103740 editing/selection/caret-alignment-for-vertical-text.html [ F
 webkit.org/b/103893 media/video-volume.html [ Failure ]
 
 webkit.org/b/104054 svg/custom/use-href-update-crash.svg [ Failure ]
-
-webkit.org/b/104351 fast/exclusions/shape-inside/shape-inside-rounded-rectangle-fit-002.html [ ImageOnlyFailure ]
 
 webkit.org/b/104493 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 webkit.org/b/104493 svg/custom/deep-dynamic-updates.svg [ Failure ]
@@ -1404,6 +1390,12 @@ webkit.org/b/104493 svg/custom/js-update-transform-changes.svg [ Failure ]
 webkit.org/b/104493 svg/custom/text-xy-updates-SVGList.xhtml [ Failure ]
 
 webkit.org/b/104649 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Failure ]
+
+webkit.org/b/104686 http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Failure ]
+
+webkit.org/b/104788 css3/flexbox/flex-algorithm.html [ Failure ]
+webkit.org/b/104788 fast/css/large-number-round-trip.html [ Failure ]
+webkit.org/b/104788 fast/css/large-numbers.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

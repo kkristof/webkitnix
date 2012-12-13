@@ -581,6 +581,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSOESVertexArrayObject.h \
 	DerivedSources/WebCore/JSOESElementIndexUint.cpp \
 	DerivedSources/WebCore/JSOESElementIndexUint.h \
+	DerivedSources/WebCore/JSOfflineAudioContext.cpp \
+	DerivedSources/WebCore/JSOfflineAudioContext.h \
 	DerivedSources/WebCore/JSOfflineAudioCompletionEvent.cpp \
 	DerivedSources/WebCore/JSOfflineAudioCompletionEvent.h \
 	DerivedSources/WebCore/JSOscillatorNode.cpp \
@@ -1288,6 +1290,7 @@ dom_binding_idls += \
 	$(WebCore)/Modules/webaudio/ScriptProcessorNode.idl \
 	$(WebCore)/Modules/webaudio/MediaElementAudioSourceNode.idl \
 	$(WebCore)/Modules/webaudio/MediaStreamAudioSourceNode.idl \
+	$(WebCore)/Modules/webaudio/OfflineAudioContext.idl \
 	$(WebCore)/Modules/webaudio/OfflineAudioCompletionEvent.idl \
     $(WebCore)/Modules/webaudio/OscillatorNode.idl \
 	$(WebCore)/Modules/webaudio/AnalyserNode.idl \
@@ -2061,6 +2064,8 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webaudio/MediaElementAudioSourceNode.h \
 	Source/WebCore/Modules/webaudio/MediaStreamAudioSourceNode.cpp \
 	Source/WebCore/Modules/webaudio/MediaStreamAudioSourceNode.h \
+	Source/WebCore/Modules/webaudio/OfflineAudioContext.cpp \
+	Source/WebCore/Modules/webaudio/OfflineAudioContext.h \
 	Source/WebCore/Modules/webaudio/OfflineAudioDestinationNode.h \
 	Source/WebCore/Modules/webaudio/OfflineAudioDestinationNode.cpp \
 	Source/WebCore/Modules/webaudio/OfflineAudioCompletionEvent.h \
@@ -2093,13 +2098,15 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webdatabase/DatabaseContext.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseContext.h \
 	Source/WebCore/Modules/webdatabase/DatabaseDetails.h \
+	Source/WebCore/Modules/webdatabase/DatabaseManager.cpp \
+	Source/WebCore/Modules/webdatabase/DatabaseManager.h \
+	Source/WebCore/Modules/webdatabase/DatabaseManagerClient.h \
 	Source/WebCore/Modules/webdatabase/DatabaseSync.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseSync.h \
 	Source/WebCore/Modules/webdatabase/DatabaseTask.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseTask.h \
 	Source/WebCore/Modules/webdatabase/DatabaseThread.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseThread.h \
-	Source/WebCore/Modules/webdatabase/DatabaseTrackerClient.h \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.h \
 	Source/WebCore/Modules/webdatabase/OriginQuotaManager.cpp \
@@ -5315,6 +5322,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/HashTools.h \
 	Source/WebCore/platform/HistogramSupport.cpp \
 	Source/WebCore/platform/HistogramSupport.h \
+	Source/WebCore/platform/InitializeLogging.h \
 	Source/WebCore/platform/graphics/ANGLEWebKitBridge.cpp \
 	Source/WebCore/platform/graphics/ANGLEWebKitBridge.h \
 	Source/WebCore/platform/graphics/cpu/arm/GraphicsContext3DNEON.h \
@@ -5675,8 +5683,8 @@ webcore_platform_sources += \
 	Source/WebCore/platform/mediastream/MediaStreamSource.h \
 	Source/WebCore/platform/mediastream/MediaStreamSourcesQueryClient.h \
 	Source/WebCore/platform/mediastream/RTCConfiguration.h \
-	Source/WebCore/platform/mediastream/RTCDataChannelDescriptor.cpp \
-	Source/WebCore/platform/mediastream/RTCDataChannelDescriptor.h \
+	Source/WebCore/platform/mediastream/RTCDataChannelHandler.h \
+	Source/WebCore/platform/mediastream/RTCDataChannelHandlerClient.h \
 	Source/WebCore/platform/mediastream/RTCIceCandidateDescriptor.cpp \
 	Source/WebCore/platform/mediastream/RTCIceCandidateDescriptor.h \
 	Source/WebCore/platform/mediastream/RTCPeerConnectionHandler.cpp \
@@ -5784,6 +5792,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/network/soup/SocketStreamHandleSoup.cpp \
 	Source/WebCore/platform/network/soup/SoupURIUtils.cpp \
 	Source/WebCore/platform/network/soup/SoupURIUtils.h \
+	Source/WebCore/platform/NotImplemented.cpp \
 	Source/WebCore/platform/NotImplemented.h \
 	Source/WebCore/platform/Pasteboard.h \
 	Source/WebCore/platform/PasteboardStrategy.h \

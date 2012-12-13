@@ -169,7 +169,7 @@ my @features = (
       define => "ENABLE_CHANNEL_MESSAGING", default => 1, value => \$channelMessagingSupport },
 
     { option => "csp-next", desc => "Toggle Content Security Policy 1.1 support",
-      define => "ENABLE_CSP_NEXT", default => 0, value => \$cspNextSupport },
+      define => "ENABLE_CSP_NEXT", default => isGtk(), value => \$cspNextSupport },
 
     { option => "css-device-adaptation", desc => "Toggle CSS Device Adaptation support",
       define => "ENABLE_CSS_DEVICE_ADAPTATION", default => isEfl(), value => \$cssDeviceAdaptation },
@@ -421,7 +421,7 @@ my @features = (
       define => "ENABLE_VIDEO", default => (isAppleWebKit() || isGtk() || isBlackBerry() || isEfl()), value => \$videoSupport },
 
     { option => "video-track", desc => "Toggle Video Track support",
-      define => "ENABLE_VIDEO_TRACK", default => (isAppleWebKit() || isGtk() || isEfl() || isBlackBerry()), value => \$videoTrackSupport },
+      define => "ENABLE_VIDEO_TRACK", default => (isAppleWebKit() || isGtk() || isEfl()), value => \$videoTrackSupport },
 
     { option => "webgl", desc => "Toggle WebGL support",
       define => "ENABLE_WEBGL", default => (isAppleMacWebKit() || isGtk() || isEfl()), value => \$webglSupport },

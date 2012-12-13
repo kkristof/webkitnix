@@ -35,9 +35,14 @@
 #include "WebTouchPoint.h"
 #include "platform/WebGraphicsContext3D.h"
 #include "platform/WebKitPlatformSupport.h"
+#include "public/WebCompositorSupport.h"
+#include "public/WebExternalTextureLayer.h"
+#include "public/WebExternalTextureLayerClient.h"
 #include <wtf/Assertions.h>
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
+#include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
 
 using namespace WebKit;
 
@@ -104,8 +109,11 @@ const char* pointState(WebTouchPoint::State state)
 
 void printTouchList(WebTestDelegate* delegate, const WebTouchPoint* points, int length)
 {
-    for (int i = 0; i < length; ++i)
-        delegate->printMessage(std::string("* ") + String::number(points[i].position.x).ascii().data() + ", " + String::number(points[i].position.y).ascii().data() + ": " + pointState(points[i].state) + "\n");
+    for (int i = 0; i < length; ++i) {
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "* %d, %d: %s\n", points[i].position.x, points[i].position.y, pointState(points[i].state));
+        delegate->printMessage(buffer);
+    }
 }
 
 void printEventDetails(WebTestDelegate* delegate, const WebInputEvent& event)
@@ -117,10 +125,14 @@ void printEventDetails(WebTestDelegate* delegate, const WebInputEvent& event)
         printTouchList(delegate, touch.targetTouches, touch.targetTouchesLength);
     } else if (WebInputEvent::isMouseEventType(event.type) || event.type == WebInputEvent::MouseWheel) {
         const WebMouseEvent& mouse = static_cast<const WebMouseEvent&>(event);
-        delegate->printMessage(std::string("* ") + String::number(mouse.x).ascii().data() + ", " + String::number(mouse.y).ascii().data() + "\n");
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "* %d, %d\n", mouse.x, mouse.y);
+        delegate->printMessage(buffer);
     } else if (WebInputEvent::isGestureEventType(event.type)) {
         const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
-        delegate->printMessage(std::string("* ") + String::number(gesture.x).ascii().data() + ", " + String::number(gesture.y).ascii().data() + "\n");
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "* %d, %d\n", gesture.x, gesture.y);
+        delegate->printMessage(buffer);
     }
 }
 
@@ -136,7 +148,7 @@ WebPluginContainer::TouchEventRequestType parseTouchEventRequestType(const WebSt
     return WebPluginContainer::TouchEventRequestTypeNone;
 }
 
-class WebTestPluginImpl : public WebTestPlugin {
+class WebTestPluginImpl : public WebTestPlugin, public WebExternalTextureLayerClient {
 public:
     WebTestPluginImpl(WebFrame*, const WebPluginParams&, WebTestDelegate*);
     virtual ~WebTestPluginImpl();
@@ -160,6 +172,10 @@ public:
     virtual void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) { }
     virtual void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) { }
     virtual bool isPlaceholder() { return false; }
+
+    // WebExternalTextureLayerClient methods:
+    virtual unsigned prepareTexture(WebTextureUpdater&) { return m_colorTexture; }
+    virtual WebGraphicsContext3D* context() { return m_context; }
 
 private:
     enum Primitive {
@@ -216,6 +232,7 @@ private:
     unsigned m_colorTexture;
     unsigned m_framebuffer;
     Scene m_scene;
+    OwnPtr<WebExternalTextureLayer> m_layer;
 
     WebPluginContainer::TouchEventRequestType m_touchEventRequest;
     bool m_printEventDetails;
@@ -284,8 +301,9 @@ bool WebTestPluginImpl::initialize(WebPluginContainer* container)
     if (!initScene())
         return false;
 
+    m_layer = adoptPtr(webKitPlatformSupport()->compositorSupport()->createExternalTextureLayer(this));
     m_container = container;
-    m_container->setBackingTextureId(m_colorTexture);
+    m_container->setWebLayer(m_layer->layer());
     m_container->requestTouchEventType(m_touchEventRequest);
     m_container->setWantsWheelEvents(true);
     return true;
@@ -293,6 +311,7 @@ bool WebTestPluginImpl::initialize(WebPluginContainer* container)
 
 void WebTestPluginImpl::destroy()
 {
+    m_layer.clear();
     destroyScene();
 
     delete m_context;

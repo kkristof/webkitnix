@@ -14,15 +14,6 @@ WEBKIT += javascriptcore
 
 CONFIG += staticlib
 
-RESOURCES += \
-    $$PWD/WebCore.qrc
-
-include_webinspector {
-    RESOURCES += \
-        $$PWD/inspector/front-end/WebKit.qrc \
-        $${WEBCORE_GENERATED_SOURCES_DIR}/InspectorBackendCommands.qrc
-}
-
 SOURCES += \
     Modules/geolocation/Geolocation.cpp \
     Modules/geolocation/GeolocationController.cpp \
@@ -1071,6 +1062,7 @@ SOURCES += \
     platform/network/ResourceLoadTiming.cpp \
     platform/network/ResourceRequestBase.cpp \
     platform/network/ResourceResponseBase.cpp \
+    platform/NotImplemented.cpp \
     platform/text/RegularExpression.cpp \
     platform/PlatformEvent.cpp \
     platform/PlatformInstrumentation.cpp \
@@ -1422,6 +1414,7 @@ HEADERS += \
     Modules/webdatabase/DatabaseAuthorizer.h \
     Modules/webdatabase/Database.h \
     Modules/webdatabase/DatabaseCallback.h \
+    Modules/webdatabase/DatabaseManager.h \
     Modules/webdatabase/DatabaseSync.h \
     Modules/webdatabase/DatabaseTask.h \
     Modules/webdatabase/DatabaseThread.h \
@@ -2094,6 +2087,7 @@ HEADERS += \
     platform/FileStreamClient.h \
     platform/FileSystem.h \
     platform/HistogramSupport.h \
+    platform/InitializeLogging.h \
     platform/image-decoders/ImageDecoder.h \
     platform/mock/DeviceMotionClientMock.h \
     platform/mock/DeviceOrientationClientMock.h \
@@ -2977,6 +2971,7 @@ use?(PLUGIN_BACKEND_XLIB) {
 enable?(SQL_DATABASE) {
     SOURCES += \
         Modules/webdatabase/ChangeVersionWrapper.cpp \
+        Modules/webdatabase/DatabaseManager.cpp \
         Modules/webdatabase/DatabaseTask.cpp \
         Modules/webdatabase/DatabaseThread.cpp \
         Modules/webdatabase/DatabaseTracker.cpp \
@@ -4076,7 +4071,7 @@ use?(WEBP) {
     SOURCES += platform/image-decoders/webp/WEBPImageDecoder.cpp
 }
 
-!system-sqlite:exists( $${SQLITE3SRCDIR}/sqlite3.c ) {
+!have?(sqlite3):exists($${SQLITE3SRCDIR}/sqlite3.c) {
     # Build sqlite3 into WebCore from source
     # somewhat copied from $$QT_SOURCE_TREE/src/plugins/sqldrivers/sqlite/sqlite.pro
     SOURCES += $${SQLITE3SRCDIR}/sqlite3.c
@@ -4112,6 +4107,7 @@ contains(DEFINES, ENABLE_OPENCL=1) {
         platform/graphics/gpu/opencl/FilterContextOpenCL.h
     SOURCES += \
         platform/graphics/gpu/opencl/FilterContextOpenCL.cpp \
+        platform/graphics/gpu/opencl/OpenCLFEColorMatrix.cpp \
         platform/graphics/gpu/opencl/OpenCLFESourceAlpha.cpp \
         platform/graphics/gpu/opencl/OpenCLFESourceGraphic.cpp \
         platform/graphics/gpu/opencl/OpenCLFETurbulence.cpp

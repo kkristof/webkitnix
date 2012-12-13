@@ -54,9 +54,9 @@
 #include "WebProcessMessages.h"
 #include "WebProcessProxy.h"
 #include "WebResourceCacheManagerProxy.h"
+#include <WebCore/InitializeLogging.h>
 #include <WebCore/Language.h>
 #include <WebCore/LinkHash.h>
-#include <WebCore/Logging.h>
 #include <WebCore/ResourceRequest.h>
 #include <WebCore/RunLoop.h>
 #include <runtime/InitializeThreading.h>
@@ -135,6 +135,9 @@ WebContext::WebContext(ProcessModel processModel, const String& injectedBundlePa
     , m_shouldPaintNativeControls(true)
     , m_initialHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicyAlways)
 #endif
+#if USE(SOUP)
+    , m_initialHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain)
+#endif
     , m_processTerminationEnabled(true)
 #if ENABLE(NETWORK_PROCESS)
     , m_usesNetworkProcess(false)
@@ -170,16 +173,13 @@ WebContext::WebContext(ProcessModel processModel, const String& injectedBundlePa
     m_soupRequestManagerProxy = WebSoupRequestManagerProxy::create(this);
 #endif
     
-#if !LOG_DISABLED
-    WebKit::initializeLogChannelsIfNecessary();
-#endif
-
     contexts().append(this);
 
     addLanguageChangeObserver(this, languageChanged);
 
 #if !LOG_DISABLED
     WebCore::initializeLoggingChannelsIfNecessary();
+    WebKit::initializeLogChannelsIfNecessary();
 #endif // !LOG_DISABLED
 
 #ifndef NDEBUG
@@ -297,6 +297,18 @@ void WebContext::setProcessModel(ProcessModel processModel)
 #endif
 
     m_processModel = processModel;
+}
+
+void WebContext::setMaximumNumberOfProcesses(unsigned maximumNumberOfProcesses)
+{
+    // Guard against API misuse.
+    if (!m_processes.isEmpty())
+        CRASH();
+
+    if (maximumNumberOfProcesses == 0)
+        m_webProcessCountLimit = UINT_MAX;
+    else
+        m_webProcessCountLimit = maximumNumberOfProcesses;
 }
 
 WebProcessProxy* WebContext::deprecatedSharedProcess()
@@ -464,6 +476,8 @@ WebProcessProxy* WebContext::createNewWebProcess()
 #if ENABLE(NETWORK_PROCESS)
     parameters.usesNetworkProcess = m_usesNetworkProcess;
 #endif
+
+    parameters.plugInAutoStartOrigins = m_plugInAutoStartProvider.autoStartOriginsCopy();
 
     // Add any platform specific parameters
     platformInitializeWebProcess(parameters);

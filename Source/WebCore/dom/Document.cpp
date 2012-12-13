@@ -498,9 +498,6 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_wheelEventHandlerCount(0)
-#if ENABLE(TOUCH_EVENTS)
-    , m_touchEventHandlerCount(0)
-#endif
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
     , m_visualUpdatesAllowed(true)
@@ -750,15 +747,12 @@ void Document::buildAccessKeyMap(TreeScope* scope)
 {
     ASSERT(scope);
     Node* rootNode = scope->rootNode();
-    for (Node* node = rootNode; node; node = NodeTraversal::next(node, rootNode)) {
-        if (!node->isElementNode())
-            continue;
-        Element* element = static_cast<Element*>(node);
+    for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(element, rootNode)) {
         const AtomicString& accessKey = element->getAttribute(accesskeyAttr);
         if (!accessKey.isEmpty())
             m_elementsByAccessKey.set(accessKey.impl(), element);
 
-        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
+        for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot())
             buildAccessKeyMap(root);
     }
 }
@@ -844,7 +838,7 @@ void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* a
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     
-    Element* newDocumentElement = firstElementChild(this);
+    Element* newDocumentElement = ElementTraversal::firstWithin(this);
     if (newDocumentElement == m_documentElement)
         return;
     m_documentElement = newDocumentElement;
@@ -2667,9 +2661,9 @@ void Document::updateBaseURL()
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
-        for (Node* node = firstChild(); node; node = NodeTraversal::next(node)) {
-            if (node->hasTagName(aTag))
-                static_cast<HTMLAnchorElement*>(node)->invalidateCachedVisitedLinkHash();
+        for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(element)) {
+            if (element->hasTagName(aTag))
+                static_cast<HTMLAnchorElement*>(element)->invalidateCachedVisitedLinkHash();
         }
     }
 }
@@ -2685,15 +2679,15 @@ void Document::processBaseElement()
     // Find the first href attribute in a base element and the first target attribute in a base element.
     const AtomicString* href = 0;
     const AtomicString* target = 0;
-    for (Node* node = document()->firstChild(); node && (!href || !target); node = NodeTraversal::next(node)) {
-        if (node->hasTagName(baseTag)) {
+    for (Element* element = ElementTraversal::firstWithin(this); element && (!href || !target); element = ElementTraversal::next(element)) {
+        if (element->hasTagName(baseTag)) {
             if (!href) {
-                const AtomicString& value = static_cast<Element*>(node)->fastGetAttribute(hrefAttr);
+                const AtomicString& value = element->fastGetAttribute(hrefAttr);
                 if (!value.isNull())
                     href = &value;
             }
             if (!target) {
-                const AtomicString& value = static_cast<Element*>(node)->fastGetAttribute(targetAttr);
+                const AtomicString& value = element->fastGetAttribute(targetAttr);
                 if (!value.isNull())
                     target = &value;
             }
@@ -5602,33 +5596,57 @@ void Document::didRemoveWheelEventHandler()
     wheelEventHandlerCountChanged(this);
 }
 
-void Document::didAddTouchEventHandler()
+void Document::didAddTouchEventHandler(Node* handler)
 {
 #if ENABLE(TOUCH_EVENTS)
-    ++m_touchEventHandlerCount;
-    if (m_touchEventHandlerCount > 1)
+    if (!m_touchEventTargets.get())
+        m_touchEventTargets = adoptPtr(new TouchEventTargetSet);
+    m_touchEventTargets->add(handler);
+    if (Document* parent = parentDocument()) {
+        parent->didAddTouchEventHandler(this);
         return;
-    if (Page* page = this->page())
-        page->chrome()->client()->needTouchEvents(true);
+    }
+    if (Page* page = this->page()) {
+#if ENABLE(TOUCH_EVENT_TRACKING)
+        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+            scrollingCoordinator->touchEventTargetRectsDidChange(this);
+#endif
+        if (m_touchEventTargets->size() == 1)
+            page->chrome()->client()->needTouchEvents(true);
+    }
+#else
+    UNUSED_PARAM(handler);
 #endif
 }
 
-void Document::didRemoveTouchEventHandler()
+void Document::didRemoveTouchEventHandler(Node* handler)
 {
 #if ENABLE(TOUCH_EVENTS)
-    ASSERT(m_touchEventHandlerCount);
-    --m_touchEventHandlerCount;
-    if (m_touchEventHandlerCount)
+    if (!m_touchEventTargets.get())
         return;
+    ASSERT(m_touchEventTargets->contains(handler));
+    m_touchEventTargets->remove(handler);
+    if (Document* parent = parentDocument()) {
+        parent->didRemoveTouchEventHandler(this);
+        return;
+    }
 
     Page* page = this->page();
     if (!page)
         return;
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+        scrollingCoordinator->touchEventTargetRectsDidChange(this);
+#endif
+    if (m_touchEventTargets->size())
+        return;
     for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (frame->document() && frame->document()->touchEventHandlerCount())
+        if (frame->document() && frame->document()->hasTouchEventHandlers())
             return;
     }
     page->chrome()->client()->needTouchEvents(false);
+#else
+    UNUSED_PARAM(handler);
 #endif
 }
 

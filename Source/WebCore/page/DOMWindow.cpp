@@ -27,7 +27,6 @@
 #include "config.h"
 #include "DOMWindow.h"
 
-#include "AbstractDatabase.h"
 #include "BackForwardController.h"
 #include "BarInfo.h"
 #include "BeforeUnloadEvent.h"
@@ -46,8 +45,6 @@
 #include "DOMURL.h"
 #include "DOMWindowExtension.h"
 #include "DOMWindowNotifications.h"
-#include "Database.h"
-#include "DatabaseCallback.h"
 #include "DeviceMotionController.h"
 #include "DeviceOrientationController.h"
 #include "Document.h"
@@ -1584,7 +1581,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
         if (eventType == eventNames().mousewheelEvent)
             document->didAddWheelEventHandler();
         else if (eventNames().isTouchEventType(eventType))
-            document->didAddTouchEventHandler();
+            document->didAddTouchEventHandler(document);
         else if (eventType == eventNames().storageEvent)
             didAddStorageEventListener(this);
     }
@@ -1615,7 +1612,7 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
         if (eventType == eventNames().mousewheelEvent)
             document->didRemoveWheelEventHandler();
         else if (eventNames().isTouchEventType(eventType))
-            document->didRemoveTouchEventHandler();
+            document->didRemoveTouchEventHandler(document);
     }
 
     if (eventType == eventNames().unloadEvent)

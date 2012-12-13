@@ -40,6 +40,7 @@
 #include "CSSStyleSheet.h"
 #include "ChildNodeList.h"
 #include "ClassNodeList.h"
+#include "ComposedShadowTreeWalker.h"
 #include "ContainerNodeAlgorithms.h"
 #include "ContextMenuController.h"
 #include "DOMImplementation.h"
@@ -447,34 +448,6 @@ void Node::setTreeScope(TreeScope* scope)
         return;
 
     ensureRareData()->setTreeScope(scope);
-}
-
-Node* Node::pseudoAwarePreviousSibling() const
-{
-    if (isElementNode() && !previousSibling()) {
-        Element* parent = parentOrHostElement();
-        if (!parent)
-            return 0;
-        if (isAfterPseudoElement() && parent->lastChild())
-            return parent->lastChild();
-        if (!isBeforePseudoElement())
-            return parent->beforePseudoElement();
-    }
-    return previousSibling();
-}
-
-Node* Node::pseudoAwareNextSibling() const
-{
-    if (isElementNode() && !nextSibling()) {
-        Element* parent = parentOrHostElement();
-        if (!parent)
-            return 0;
-        if (isBeforePseudoElement() && parent->firstChild())
-            return parent->firstChild();
-        if (!isAfterPseudoElement())
-            return parent->afterPseudoElement();
-    }
-    return nextSibling();
 }
 
 NodeRareData* Node::rareData() const
@@ -2149,8 +2122,8 @@ void Node::didMoveToNewDocument(Document* oldDocument)
     for (size_t i = 0; i < touchEventNames.size(); ++i) {
         const EventListenerVector& listeners = getEventListeners(touchEventNames[i]);
         for (size_t j = 0; j < listeners.size(); ++j) {
-            oldDocument->didRemoveTouchEventHandler();
-            document()->didAddTouchEventHandler();
+            oldDocument->didRemoveTouchEventHandler(this);
+            document()->didAddTouchEventHandler(this);
         }
     }
 
@@ -2179,7 +2152,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
         if (eventType == eventNames().mousewheelEvent)
             document->didAddWheelEventHandler();
         else if (eventNames().isTouchEventType(eventType))
-            document->didAddTouchEventHandler();
+            document->didAddTouchEventHandler(targetNode);
     }
 
     return true;
@@ -2201,7 +2174,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
         if (eventType == eventNames().mousewheelEvent)
             document->didRemoveWheelEventHandler();
         else if (eventNames().isTouchEventType(eventType))
-            document->didRemoveTouchEventHandler();
+            document->didRemoveTouchEventHandler(targetNode);
     }
 
     return true;
