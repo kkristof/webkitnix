@@ -7,6 +7,9 @@
 using namespace std;
 using namespace TestWebKitAPI::Util;
 
+namespace TestWebKitAPI {
+namespace Util {
+
 void GLOffscreenBuffer::dumpToPng(const char* fileName)
 {
     FILE* fp = fopen(fileName, "w+");
@@ -48,3 +51,16 @@ void GLOffscreenBuffer::dumpToPng(const char* fileName)
 
     fclose(fp);
 }
+
+RGBAPixel GLOffscreenBuffer::readPixelAtPoint(unsigned x, unsigned y)
+{
+    RGBAPixel result = { 0, 0, 0, 0 };
+    // Note: the two first arguments indicate the lower left corner of the rectangle being sampled
+    // and glReadPixels considers the origin (0, 0) is at bottom-left of the buffer. For example,
+    // to get the top-left pixel (a 1x1 rectangle to be sampled), we need to use (0, height - 1).
+    glReadPixels(x, m_height - y - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<unsigned char*>(&result));
+    return result;
+}
+
+} // namespace Util
+} // namespace TestWebKitAPI

@@ -32,32 +32,23 @@ TEST(WebKitNix, WebViewViewport)
 
     Util::PageLoader loader(view.get());
     loader.waitForLoadURLAndRepaint("../nix/WebViewViewport");
-    unsigned char sample[4];
 
-    // All white.
-    glReadPixels(0, size.height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
-    EXPECT_EQ(0xFF, sample[0]);
-    EXPECT_EQ(0xFF, sample[1]);
-    EXPECT_EQ(0xFF, sample[2]);
-    EXPECT_EQ(0xFF, sample[3]);
+    // Checking that without scrolling, we correctly see the white background.
+    Util::RGBAPixel firstDotBefore = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(Util::RGBAPixel::white(), firstDotBefore);
+    Util::RGBAPixel secondDotBefore = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
+    EXPECT_EQ(Util::RGBAPixel::white(), secondDotBefore);
 
+    // Scale and scroll so that the first dot be at the topleft of the view.
     NIXViewSetScale(view.get(), 0.5);
     NIXViewSetScrollPosition(view.get(), WKPointMake(400, 10000));
     loader.forceRepaint();
 
-    // The black dot should be on 0,0
-    glReadPixels(0, size.height - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
-    EXPECT_EQ(0x00, int(sample[0]));
-    EXPECT_EQ(0x00, int(sample[1]));
-    EXPECT_EQ(0x00, int(sample[2]));
-    EXPECT_EQ(0xFF, int(sample[3]));
-
-    // And another black dot on 200, 200
-    glReadPixels(size.height, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
-    EXPECT_EQ(0x00, int(sample[0]));
-    EXPECT_EQ(0x00, int(sample[1]));
-    EXPECT_EQ(0x00, int(sample[2]));
-    EXPECT_EQ(0xFF, int(sample[3]));
+    // Now check that the black dots are in the expected places.
+    Util::RGBAPixel firstDotAfter = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(Util::RGBAPixel::black(), firstDotAfter);
+    Util::RGBAPixel secondDotAfter = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
+    EXPECT_EQ(Util::RGBAPixel::black(), secondDotAfter);
 }
 
 }

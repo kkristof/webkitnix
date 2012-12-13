@@ -26,8 +26,8 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     Util::ForceRepaintClient client(view.get());
     client.setClearColor(0, 0, 1, 1);
 
-    const int translationDelta = 10;
-    NIXMatrix transform = NIXMatrixMakeTranslation(translationDelta, translationDelta);
+    const int delta = 10;
+    NIXMatrix transform = NIXMatrixMakeTranslation(delta, delta);
     NIXViewSetUserViewportTransformation(view.get(), &transform);
 
     NIXViewInitialize(view.get());
@@ -42,39 +42,22 @@ TEST(WebKitNix, WebViewTranslatedScaled)
 
     loader.waitForLoadURLAndRepaint("../nix/red-square");
 
-    // Note that glReadPixels [0, 0] is at the bottom-left of the buffer.
-    unsigned char sample[4 * int(size.width * size.height)];
     for (double scale = 1.0; scale < 3.0; scale++) {
         NIXViewSetScale(view.get(), scale);
         loader.forceRepaint();
-        glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
 
-        // (Left x Top) must be RED
-        int x = translationDelta;
-        int y = size.height - translationDelta - 1;
-        int index = 4 * (y * size.height + x);
-        EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
+        Util::RGBAPixel outsideTheContent = offscreenBuffer.readPixelAtPoint(delta - 1, delta - 1);
+        EXPECT_EQ(Util::RGBAPixel::blue(), outsideTheContent);
 
-        // (Right x Bottom) must be RED
-        x += (20 * scale - 1);
-        y -= (20 * scale - 1);
-        index = 4 * (y * size.height + x);
-        EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
+        Util::RGBAPixel squareTopLeft = offscreenBuffer.readPixelAtPoint(delta, delta);
+        EXPECT_EQ(Util::RGBAPixel::red(), squareTopLeft);
 
-        // (Right x Bottom) + (1,1) must be WHITE
-        x += 1;
-        y -= 1;
-        index = 4 * (y * size.height + x);
-        EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
+        const int scaledSize = scale * 20;
+        Util::RGBAPixel squareBottomRight = offscreenBuffer.readPixelAtPoint(delta + scaledSize - 1, delta + scaledSize - 1);
+        EXPECT_EQ(Util::RGBAPixel::red(), squareBottomRight);
+
+        Util::RGBAPixel outsideSquare = offscreenBuffer.readPixelAtPoint(delta + scaledSize, delta + scaledSize);
+        EXPECT_EQ(Util::RGBAPixel::white(), outsideSquare);
     }
 }
 

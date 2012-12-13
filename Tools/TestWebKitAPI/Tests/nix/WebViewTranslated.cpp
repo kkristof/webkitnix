@@ -42,23 +42,17 @@ TEST(WebKitNix, WebViewTranslated)
     // values going down. We are testing this diagonal here.
 
     // Original background.
-    unsigned char sample[4 * int(size.width * size.height)];
+    Util::RGBAPixel sample[int(size.width * size.height)];
     glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
     for (int x = 0, y = size.height - 1; x < translationDelta; x++, y--) {
-        int index = 4 * (y * size.height + x);
-        EXPECT_EQ(0x00, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
+        int index = y * size.height + x;
+        EXPECT_EQ(Util::RGBAPixel::blue(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
     }
 
     // Red background page.
     for (int x = translationDelta, y = size.height - translationDelta - 1; x < size.width; x++, y--) {
-        int index = 4 * (y * size.height + x);
-        EXPECT_EQ(0xFF, sample[index]) << "Error when checking RED for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 1]) << "Error when checking GREEN for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0x00, sample[index + 2]) << "Error when checking BLUE for pixel (" << x << ", " << y << ")";
-        EXPECT_EQ(0xFF, sample[index + 3]) << "Error when checking ALPHA for pixel (" << x << ", " << y << ")";
+        int index = y * size.height + x;
+        EXPECT_EQ(Util::RGBAPixel::red(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
     }
 }
 
