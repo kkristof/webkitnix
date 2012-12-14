@@ -30,7 +30,7 @@
 #include "WebView.h"
 
 #include "DrawingAreaProxyImpl.h"
-#include "LayerTreeCoordinatorProxy.h"
+#include "CoordinatedLayerTreeHostProxy.h"
 #include "LayerTreeRenderer.h"
 #include "NativeWebGestureEvent.h"
 #include "NativeWebKeyboardEvent.h"
@@ -226,7 +226,7 @@ LayerTreeRenderer* WebView::layerTreeRenderer()
     if (!drawingArea)
         return 0;
 
-    LayerTreeCoordinatorProxy* coordinatorProxy = drawingArea->layerTreeCoordinatorProxy();
+    CoordinatedLayerTreeHostProxy* coordinatorProxy = drawingArea->coordinatedLayerTreeHostProxy();
     if (!coordinatorProxy)
         return 0;
 
@@ -292,7 +292,7 @@ void WebView::commitViewportChanges()
         return;
     if (m_webPageProxy->useFixedLayout()) {
         m_webPageProxy->setViewportSize(m_size);
-        drawingArea->layerTreeCoordinatorProxy()->setContentsSize(m_contentsSize);
+        drawingArea->coordinatedLayerTreeHostProxy()->setContentsSize(m_contentsSize);
     } else {
         drawingArea->setSize(m_size, IntSize());
     }
