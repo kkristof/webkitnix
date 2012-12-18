@@ -464,14 +464,6 @@ http/tests/xmlhttprequest/simple-cross-origin-denied-events-post.html [ Failure 
 http/tests/xmlhttprequest/access-control-preflight-async-header-denied.html [ Failure ]
 http/tests/xmlhttprequest/access-control-preflight-async-method-denied.html [ Failure ]
 http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure ]
-dom/svg/level3/xpath/Attribute_Nodes.svg [ Crash ]
-fast/workers/storage/change-version-sync.html [ Crash ]
-fast/workers/storage/open-database-empty-version-sync.html [ Crash ]
-http/tests/navigation/document-location-click-timeout.html [ Crash ]
-http/tests/navigation/document-location-click.html [ Crash ]
-http/tests/navigation/document-location-mouseover.html [ Crash ]
-http/tests/navigation/slowmetaredirect-basic.html [ Crash ]
-http/tests/navigation/slowtimerredirect-basic.html [ Crash ]
 
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
