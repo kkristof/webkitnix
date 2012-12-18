@@ -32,12 +32,17 @@ SET(webkit2_api_harness_SOURCES
 )
 
 # The list below works like a test expectation. Tests in the
-# test_webkit2_api_BINARIES list are added to the test runner and
-# tried on the bots on every build. Tests in test_webkit2_api_fail_BINARIES
+# test_{webkit2_api|webcore}_BINARIES list are added to the test runner and
+# tried on the bots on every build. Tests in test_{webkit2_api|webcore}_fail_BINARIES
 # are compiled and suffixed with fail and skipped from the test runner.
 #
 # Make sure that the tests are passing on both Debug and
-# Release builds before adding it to test_webkit2_api_BINARIES.
+# Release builds before adding it to test_{webkit2_api|webcore}_BINARIES.
+
+SET(test_webcore_BINARIES
+    LayoutUnit
+    KURL
+)
 
 SET(test_webkit2_api_BINARIES
     CookieManager
