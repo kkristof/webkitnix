@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2011, 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -109,7 +109,8 @@ void SpeculativeJIT::speculationCheck(ExitKind kind, JSValueSource jsValueSource
     if (!m_compileOkay)
         return;
     ASSERT(at(m_compileIndex).canExit() || m_isCheckingArgumentTypes);
-    m_jit.codeBlock()->appendOSRExit(OSRExit(kind, jsValueSource, m_jit.graph().methodOfGettingAValueProfileFor(nodeIndex), jumpToFail, this, m_stream->size()));
+    m_jit.appendExitJump(jumpToFail);
+    m_jit.codeBlock()->appendOSRExit(OSRExit(kind, jsValueSource, m_jit.graph().methodOfGettingAValueProfileFor(nodeIndex), this, m_stream->size()));
 }
 
 void SpeculativeJIT::speculationCheck(ExitKind kind, JSValueSource jsValueSource, Edge nodeUse, MacroAssembler::Jump jumpToFail)
@@ -138,7 +139,8 @@ void SpeculativeJIT::speculationCheck(ExitKind kind, JSValueSource jsValueSource
         return;
     ASSERT(at(m_compileIndex).canExit() || m_isCheckingArgumentTypes);
     m_jit.codeBlock()->appendSpeculationRecovery(recovery);
-    m_jit.codeBlock()->appendOSRExit(OSRExit(kind, jsValueSource, m_jit.graph().methodOfGettingAValueProfileFor(nodeIndex), jumpToFail, this, m_stream->size(), m_jit.codeBlock()->numberOfSpeculationRecoveries()));
+    m_jit.appendExitJump(jumpToFail);
+    m_jit.codeBlock()->appendOSRExit(OSRExit(kind, jsValueSource, m_jit.graph().methodOfGettingAValueProfileFor(nodeIndex), this, m_stream->size(), m_jit.codeBlock()->numberOfSpeculationRecoveries()));
 }
 
 void SpeculativeJIT::speculationCheck(ExitKind kind, JSValueSource jsValueSource, Edge nodeUse, MacroAssembler::Jump jumpToFail, const SpeculationRecovery& recovery)
@@ -159,11 +161,12 @@ JumpReplacementWatchpoint* SpeculativeJIT::speculationWatchpoint(ExitKind kind, 
     if (!m_compileOkay)
         return 0;
     ASSERT(at(m_compileIndex).canExit() || m_isCheckingArgumentTypes);
+    m_jit.appendExitJump(JITCompiler::Jump());
     OSRExit& exit = m_jit.codeBlock()->osrExit(
         m_jit.codeBlock()->appendOSRExit(
             OSRExit(kind, jsValueSource,
                     m_jit.graph().methodOfGettingAValueProfileFor(nodeIndex),
-                    JITCompiler::Jump(), this, m_stream->size())));
+                    this, m_stream->size())));
     exit.m_watchpointIndex = m_jit.codeBlock()->appendWatchpoint(
         JumpReplacementWatchpoint(m_jit.watchpointLabel()));
     return &m_jit.codeBlock()->watchpoint(exit.m_watchpointIndex);
@@ -1900,19 +1903,19 @@ void SpeculativeJIT::compileDoublePutByVal(Node& node, SpeculateCellOperand& bas
     GPRTemporary temporary;
     GPRReg temporaryReg = temporaryRegisterForPutByVal(temporary, node);
 
-    MacroAssembler::JumpList slowCases;
+    MacroAssembler::Jump slowCase;
     
     if (arrayMode.isInBounds()) {
         speculationCheck(
-            Uncountable, JSValueRegs(), NoNode,
+            StoreToHoleOrOutOfBounds, JSValueRegs(), NoNode,
             m_jit.branch32(MacroAssembler::AboveOrEqual, propertyReg, MacroAssembler::Address(storageReg, Butterfly::offsetOfPublicLength())));
     } else {
         MacroAssembler::Jump inBounds = m_jit.branch32(MacroAssembler::Below, propertyReg, MacroAssembler::Address(storageReg, Butterfly::offsetOfPublicLength()));
         
-        slowCases.append(m_jit.branch32(MacroAssembler::AboveOrEqual, propertyReg, MacroAssembler::Address(storageReg, Butterfly::offsetOfVectorLength())));
+        slowCase = m_jit.branch32(MacroAssembler::AboveOrEqual, propertyReg, MacroAssembler::Address(storageReg, Butterfly::offsetOfVectorLength()));
         
         if (!arrayMode.isOutOfBounds())
-            speculationCheck(Uncountable, JSValueRegs(), NoNode, slowCases);
+            speculationCheck(OutOfBounds, JSValueRegs(), NoNode, slowCase);
         
         m_jit.add32(TrustedImm32(1), propertyReg, temporaryReg);
         m_jit.store32(temporaryReg, MacroAssembler::Address(storageReg, Butterfly::offsetOfPublicLength()));
@@ -1930,7 +1933,7 @@ void SpeculativeJIT::compileDoublePutByVal(Node& node, SpeculateCellOperand& bas
     if (arrayMode.isOutOfBounds()) {
         addSlowPathGenerator(
             slowPathCall(
-                slowCases, this,
+                slowCase, this,
                 m_jit.codeBlock()->isStrictMode() ? operationPutDoubleByValBeyondArrayBoundsStrict : operationPutDoubleByValBeyondArrayBoundsNonStrict,
                 NoResult, baseReg, propertyReg, valueReg));
     }

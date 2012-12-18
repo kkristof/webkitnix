@@ -406,12 +406,12 @@ void TextureMapperGL::drawTexture(const BitmapTexture& texture, const FloatRect&
 
 void TextureMapperGL::drawTexture(Platform3DObject texture, Flags flags, const IntSize& textureSize, const FloatRect& targetRect, const TransformationMatrix& modelViewMatrix, float opacity, const BitmapTexture* maskTexture, unsigned exposedEdges)
 {
-    bool needsAntialiasing = m_enableEdgeDistanceAntialiasing && !modelViewMatrix.isIntegerTranslation();
-    if (needsAntialiasing && drawTextureWithAntialiasing(texture, flags, textureSize, targetRect, modelViewMatrix, opacity, maskTexture, exposedEdges))
-       return;
-
     bool useRect = flags & ShouldUseARBTextureRect;
     bool masked = !!maskTexture;
+    bool needsAntialiasing = m_enableEdgeDistanceAntialiasing && !modelViewMatrix.isIntegerTranslation();
+
+    if (!useRect && needsAntialiasing && drawTextureWithAntialiasing(texture, flags, textureSize, targetRect, modelViewMatrix, opacity, maskTexture, exposedEdges))
+        return;
 
     TextureMapperShaderManager::ShaderKey key = TextureMapperShaderManager::Default;
     if (masked && useRect)
@@ -917,7 +917,7 @@ bool TextureMapperGL::drawUsingCustomFilter(BitmapTexture& target, const BitmapT
         const CustomFilterOperation* customFilter = static_cast<const CustomFilterOperation*>(&filter);
         RefPtr<CustomFilterProgram> program = customFilter->program();
         renderer = CustomFilterRenderer::create(m_context3D, program->programType(), customFilter->parameters(), 
-            customFilter->meshRows(), customFilter->meshColumns(), customFilter->meshBoxType(), customFilter->meshType());
+            customFilter->meshRows(), customFilter->meshColumns(), customFilter->meshType());
         RefPtr<CustomFilterCompiledProgram> compiledProgram;
         CustomFilterProgramMap::iterator iter = m_customFilterPrograms.find(program.get());
         if (iter == m_customFilterPrograms.end()) {

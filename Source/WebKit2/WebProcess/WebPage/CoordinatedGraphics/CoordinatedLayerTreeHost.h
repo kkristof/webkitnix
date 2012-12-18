@@ -79,13 +79,13 @@ public:
     virtual void deviceScaleFactorDidChange() { }
     virtual PassRefPtr<CoordinatedImageBacking> createImageBackingIfNeeded(WebCore::Image*) OVERRIDE;
 
+    virtual bool isFlushingLayerChanges() const OVERRIDE { return m_isFlushingLayerChanges; }
     virtual void createTile(CoordinatedLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
     virtual void updateTile(CoordinatedLayerID, uint32_t tileID, const SurfaceUpdateInfo&, const WebCore::IntRect&);
     virtual void removeTile(CoordinatedLayerID, uint32_t tileID);
     virtual WebCore::FloatRect visibleContentsRect() const;
     virtual void renderNextFrame();
     virtual void purgeBackingStores();
-    virtual bool layerTreeTileUpdatesAllowed() const;
     virtual void setVisibleContentsRect(const WebCore::FloatRect&, float scale, const WebCore::FloatPoint&);
     virtual void didReceiveCoordinatedLayerTreeHostMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&);
     virtual WebCore::GraphicsLayerFactory* graphicsLayerFactory() OVERRIDE;
@@ -186,6 +186,7 @@ private:
     bool m_isValid;
     // We don't send the messages related to releasing resources to UI Process during purging, because UI Process already had removed all resources.
     bool m_isPurging;
+    bool m_isFlushingLayerChanges;
 
     bool m_waitingForUIProcess;
     bool m_isSuspended;

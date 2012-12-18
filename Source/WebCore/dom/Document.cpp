@@ -610,6 +610,10 @@ Document::~Document()
     ASSERT(!m_parentTreeScope);
     ASSERT(!m_guardRefCount);
 
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    if (Document* ownerDocument = this->ownerDocument())
+        ownerDocument->didRemoveEventTargetNode(this);
+#endif
     // FIXME: Should we reset m_domWindow when we detach from the Frame?
     if (m_domWindow)
         m_domWindow->resetUnlessSuspendedForPageCache();
@@ -5649,6 +5653,14 @@ void Document::didRemoveTouchEventHandler(Node* handler)
     UNUSED_PARAM(handler);
 #endif
 }
+
+#if ENABLE(TOUCH_EVENT_TRACKING)
+void Document::didRemoveEventTargetNode(Node* handler)
+{
+    if (m_touchEventTargets.get())
+        m_touchEventTargets->removeAll(handler);
+}
+#endif
 
 HTMLIFrameElement* Document::seamlessParentIFrame() const
 {

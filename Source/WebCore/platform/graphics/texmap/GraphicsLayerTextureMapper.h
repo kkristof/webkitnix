@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-class TextureMapper;
-
 class GraphicsLayerTextureMapper : public GraphicsLayer {
     friend class TextureMapperLayer;
 
@@ -66,8 +64,8 @@ public:
     virtual void setContentsRect(const IntRect& r);
     virtual void setReplicatedByLayer(GraphicsLayer*);
     virtual void setContentsToImage(Image*);
-    virtual void setContentsToBackgroundColor(const Color&);
-    Color backgroundColor() const { return m_backgroundColor; }
+    virtual void setContentsToSolidColor(const Color&);
+    Color solidColor() const { return m_solidColor; }
     virtual void setContentsToMedia(PlatformLayer*);
     virtual void setContentsToCanvas(PlatformLayer* canvas) { setContentsToMedia(canvas); }
     virtual void flushCompositingState(const FloatRect&);
@@ -101,7 +99,6 @@ public:
 private:
     virtual void willBeDestroyed();
     void didFlushCompositingState();
-    void didFlushCompositingStateRecursive();
     void updateBackingStore();
     void prepareBackingStore();
     bool shouldHaveBackingStore() const;
@@ -116,7 +113,7 @@ private:
     bool m_needsDisplay;
     bool m_hasOwnBackingStore;
     bool m_fixedToViewport;
-    Color m_backgroundColor;
+    Color m_solidColor;
 
     Color m_debugBorderColor;
     float m_debugBorderWidth;

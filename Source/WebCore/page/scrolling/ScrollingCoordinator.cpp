@@ -30,6 +30,7 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
+#include "GraphicsLayer.h"
 #include "IntRect.h"
 #include "Page.h"
 #include "PlatformWheelEvent.h"
@@ -198,6 +199,9 @@ static void accumulateDocumentEventTargetRects(Vector<IntRect>& rects, const Doc
     const TouchEventTargetSet* targets = document->touchEventTargets();
     for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
         const Node* touchTarget = iter->key;
+        if (!touchTarget->inDocument())
+            continue;
+
         if (touchTarget == document) {
             if (RenderView* view = document->renderView())
                 rects.append(enclosingIntRect(view->clippedOverflowRectForRepaint(0)));

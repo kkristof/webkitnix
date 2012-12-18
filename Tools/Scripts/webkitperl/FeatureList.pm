@@ -127,7 +127,7 @@ my (
     $svgFontsSupport,
     $svgSupport,
     $systemMallocSupport,
-    $templateTagSupport,
+    $templateElementSupport,
     $textAutosizingSupport,
     $tiledBackingStoreSupport,
     $touchEventsSupport,
@@ -396,8 +396,8 @@ my @features = (
     { option => "system-malloc", desc => "Toggle system allocator instead of TCmalloc",
       define => "USE_SYSTEM_MALLOC", default => isWinCE(), value => \$systemMallocSupport },
 
-    { option => "template-tag", desc => "Toggle Templates Tag support",
-      define => "ENABLE_TEMPLATE_ELEMENT", default => 0, value => \$templateTagSupport },
+    { option => "template-element", desc => "Toggle HTMLTemplateElement support",
+      define => "ENABLE_TEMPLATE_ELEMENT", default => 0, value => \$templateElementSupport },
 
     { option => "text-autosizing", desc => "Toggle Text Autosizing support",
       define => "ENABLE_TEXT_AUTOSIZING", default => 0, value => \$textAutosizingSupport },
@@ -421,7 +421,7 @@ my @features = (
       define => "ENABLE_VIDEO", default => (isAppleWebKit() || isGtk() || isBlackBerry() || isEfl()), value => \$videoSupport },
 
     { option => "video-track", desc => "Toggle Video Track support",
-      define => "ENABLE_VIDEO_TRACK", default => (isAppleWebKit() || isGtk() || isEfl()), value => \$videoTrackSupport },
+      define => "ENABLE_VIDEO_TRACK", default => (isAppleWebKit() || isGtk() || isEfl() || isBlackBerry()), value => \$videoTrackSupport },
 
     { option => "webgl", desc => "Toggle WebGL support",
       define => "ENABLE_WEBGL", default => (isAppleMacWebKit() || isGtk() || isEfl()), value => \$webglSupport },

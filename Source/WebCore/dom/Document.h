@@ -1128,6 +1128,10 @@ public:
     void didAddTouchEventHandler(Node*);
     void didRemoveTouchEventHandler(Node*);
 
+#if ENABLE(TOUCH_EVENT_TRACKING)
+    void didRemoveEventTargetNode(Node*);
+#endif
+
 #if ENABLE(TOUCH_EVENTS)
     const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
 #else

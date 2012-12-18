@@ -34,6 +34,7 @@
 #include "HitTestResult.h"
 #include "htmlediting.h"
 #include "HTMLElement.h"
+#include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "ImageBuffer.h"
 #include "FloatQuad.h"
@@ -148,6 +149,10 @@ void RenderBox::willBeDestroyed()
     clearContainingBlockOverrideSize();
 
     RenderBlock::removePercentHeightDescendantIfNeeded(this);
+
+#if ENABLE(CSS_EXCLUSIONS)
+    ExclusionShapeOutsideInfo::removeInfoForRenderBox(this);
+#endif
 
     RenderBoxModelObject::willBeDestroyed();
 }
@@ -281,7 +286,26 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
 
         frame()->view()->recalculateScrollbarOverlayStyle();
     }
+
+#if ENABLE(CSS_EXCLUSIONS)
+    updateExclusionShapeOutsideInfoAfterStyleChange(style()->shapeOutside(), oldStyle ? oldStyle->shapeOutside() : 0);
+#endif
 }
+
+#if ENABLE(CSS_EXCLUSIONS)
+void RenderBox::updateExclusionShapeOutsideInfoAfterStyleChange(const ExclusionShapeValue* shapeOutside, const ExclusionShapeValue* oldShapeOutside)
+{
+    // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
+    if (shapeOutside == oldShapeOutside)
+        return;
+
+    if (shapeOutside) {
+        ExclusionShapeOutsideInfo* exclusionShapeOutsideInfo = ExclusionShapeOutsideInfo::ensureInfoForRenderBox(this);
+        exclusionShapeOutsideInfo->dirtyShapeSize();
+    } else
+        ExclusionShapeOutsideInfo::removeInfoForRenderBox(this);
+}
+#endif
 
 void RenderBox::updateFromStyle()
 {
@@ -640,6 +664,39 @@ void RenderBox::autoscroll()
 {
     if (layer())
         layer()->autoscroll();
+}
+
+// There are two kinds of renderer that can autoscroll.
+bool RenderBox::canAutoscroll() const
+{
+    // Check for a box that can be scrolled in its own right.
+    if (canBeScrolledAndHasScrollableArea())
+        return true;
+
+    // Check for a box that represents the top level of a web page.
+    // This can be scrolled by calling Chrome::scrollRectIntoView.
+    // This only has an effect on the Mac platform in applications
+    // that put web views into scrolling containers, such as Mac OS X Mail.
+    // The code for this is in RenderLayer::scrollRectToVisible.
+    if (node() != document())
+        return false;
+    Frame* frame = this->frame();
+    if (!frame)
+        return false;
+    Page* page = frame->page();
+    return page && page->mainFrame() == frame;
+}
+
+RenderBox* RenderBox::findAutoscrollable(RenderObject* renderer)
+{
+    while (renderer && !(renderer->isBox() && toRenderBox(renderer)->canAutoscroll())) {
+        if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document()->ownerElement())
+            renderer = renderer->document()->ownerElement()->renderer();
+        else
+            renderer = renderer->parent();
+    }
+
+    return renderer && renderer->isBox() ? toRenderBox(renderer) : 0;
 }
 
 void RenderBox::panScroll(const IntPoint& source)
@@ -1426,8 +1483,6 @@ void RenderBox::mapLocalToContainer(const RenderLayerModelObject* repaintContain
         *wasFixed = mode & IsFixed;
     
     LayoutSize containerOffset = offsetFromContainer(o, roundedLayoutPoint(transformState.mappedPoint()));
-    if (mode & SnapOffsetForTransforms)
-        containerOffset = roundedIntSize(containerOffset);
     
     bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());
     if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
@@ -1478,8 +1533,6 @@ const RenderObject* RenderBox::pushMappingToContainer(const RenderLayerModelObje
 
     bool offsetDependsOnPoint = false;
     LayoutSize containerOffset = offsetFromContainer(container, LayoutPoint(), &offsetDependsOnPoint);
-    if (geometryMap.mapCoordinatesFlags() & SnapOffsetForTransforms)
-        containerOffset = roundedIntSize(containerOffset);
 
     if (container->isRenderFlowThread())
         offsetDependsOnPoint = true;
@@ -3327,6 +3380,7 @@ void RenderBox::computePositionedLogicalWidthReplaced(LogicalExtentComputedValue
     const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
 
     const LayoutUnit containerLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock);
+    const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, 0, 0, false);
 
     // To match WinIE, in quirks mode use the parent's 'direction' property
     // instead of the the container block's.
@@ -3411,28 +3465,28 @@ void RenderBox::computePositionedLogicalWidthReplaced(LogicalExtentComputedValue
      *    that value.
     \*-----------------------------------------------------------------------*/
     } else if (logicalLeft.isAuto()) {
-        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerLogicalWidth, renderView);
-        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerLogicalWidth, renderView);
+        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerRelativeLogicalWidth, renderView);
+        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerRelativeLogicalWidth, renderView);
         logicalRightValue = valueForLength(logicalRight, containerLogicalWidth, renderView);
 
         // Solve for 'left'
         logicalLeftValue = availableSpace - (logicalRightValue + marginLogicalLeftAlias + marginLogicalRightAlias);
     } else if (logicalRight.isAuto()) {
-        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerLogicalWidth, renderView);
-        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerLogicalWidth, renderView);
+        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerRelativeLogicalWidth, renderView);
+        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerRelativeLogicalWidth, renderView);
         logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
 
         // Solve for 'right'
         logicalRightValue = availableSpace - (logicalLeftValue + marginLogicalLeftAlias + marginLogicalRightAlias);
     } else if (marginLogicalLeft.isAuto()) {
-        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerLogicalWidth, renderView);
+        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerRelativeLogicalWidth, renderView);
         logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
         logicalRightValue = valueForLength(logicalRight, containerLogicalWidth, renderView);
 
         // Solve for 'margin-left'
         marginLogicalLeftAlias = availableSpace - (logicalLeftValue + logicalRightValue + marginLogicalRightAlias);
     } else if (marginLogicalRight.isAuto()) {
-        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerLogicalWidth, renderView);
+        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerRelativeLogicalWidth, renderView);
         logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
         logicalRightValue = valueForLength(logicalRight, containerLogicalWidth, renderView);
 
@@ -3440,8 +3494,8 @@ void RenderBox::computePositionedLogicalWidthReplaced(LogicalExtentComputedValue
         marginLogicalRightAlias = availableSpace - (logicalLeftValue + logicalRightValue + marginLogicalLeftAlias);
     } else {
         // Nothing is 'auto', just calculate the values.
-        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerLogicalWidth, renderView);
-        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerLogicalWidth, renderView);
+        marginLogicalLeftAlias = valueForLength(marginLogicalLeft, containerRelativeLogicalWidth, renderView);
+        marginLogicalRightAlias = valueForLength(marginLogicalRight, containerRelativeLogicalWidth, renderView);
         logicalRightValue = valueForLength(logicalRight, containerLogicalWidth, renderView);
         logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
         // If the containing block is right-to-left, then push the left position as far to the right as possible
@@ -3495,6 +3549,7 @@ void RenderBox::computePositionedLogicalHeightReplaced(LogicalExtentComputedValu
     const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
 
     const LayoutUnit containerLogicalHeight = containingBlockLogicalHeightForPositioned(containerBlock);
+    const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, 0, 0, false);
 
     // Variables to solve.
     Length marginBefore = style()->marginBefore();
@@ -3561,29 +3616,29 @@ void RenderBox::computePositionedLogicalHeightReplaced(LogicalExtentComputedValu
      *    for that value.
     \*-----------------------------------------------------------------------*/
     } else if (logicalTop.isAuto()) {
-        marginBeforeAlias = valueForLength(marginBefore, containerLogicalHeight, renderView);
-        marginAfterAlias = valueForLength(marginAfter, containerLogicalHeight, renderView);
+        marginBeforeAlias = valueForLength(marginBefore, containerRelativeLogicalWidth, renderView);
+        marginAfterAlias = valueForLength(marginAfter, containerRelativeLogicalWidth, renderView);
         logicalBottomValue = valueForLength(logicalBottom, containerLogicalHeight, renderView);
 
         // Solve for 'top'
         logicalTopValue = availableSpace - (logicalBottomValue + marginBeforeAlias + marginAfterAlias);
     } else if (logicalBottom.isAuto()) {
-        marginBeforeAlias = valueForLength(marginBefore, containerLogicalHeight, renderView);
-        marginAfterAlias = valueForLength(marginAfter, containerLogicalHeight, renderView);
+        marginBeforeAlias = valueForLength(marginBefore, containerRelativeLogicalWidth, renderView);
+        marginAfterAlias = valueForLength(marginAfter, containerRelativeLogicalWidth, renderView);
         logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
 
         // Solve for 'bottom'
         // NOTE: It is not necessary to solve for 'bottom' because we don't ever
         // use the value.
     } else if (marginBefore.isAuto()) {
-        marginAfterAlias = valueForLength(marginAfter, containerLogicalHeight, renderView);
+        marginAfterAlias = valueForLength(marginAfter, containerRelativeLogicalWidth, renderView);
         logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
         logicalBottomValue = valueForLength(logicalBottom, containerLogicalHeight, renderView);
 
         // Solve for 'margin-top'
         marginBeforeAlias = availableSpace - (logicalTopValue + logicalBottomValue + marginAfterAlias);
     } else if (marginAfter.isAuto()) {
-        marginBeforeAlias = valueForLength(marginBefore, containerLogicalHeight, renderView);
+        marginBeforeAlias = valueForLength(marginBefore, containerRelativeLogicalWidth, renderView);
         logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
         logicalBottomValue = valueForLength(logicalBottom, containerLogicalHeight, renderView);
 
@@ -3591,8 +3646,8 @@ void RenderBox::computePositionedLogicalHeightReplaced(LogicalExtentComputedValu
         marginAfterAlias = availableSpace - (logicalTopValue + logicalBottomValue + marginBeforeAlias);
     } else {
         // Nothing is 'auto', just calculate the values.
-        marginBeforeAlias = valueForLength(marginBefore, containerLogicalHeight, renderView);
-        marginAfterAlias = valueForLength(marginAfter, containerLogicalHeight, renderView);
+        marginBeforeAlias = valueForLength(marginBefore, containerRelativeLogicalWidth, renderView);
+        marginAfterAlias = valueForLength(marginAfter, containerRelativeLogicalWidth, renderView);
         logicalTopValue = valueForLength(logicalTop, containerLogicalHeight, renderView);
         // NOTE: It is not necessary to solve for 'bottom' because we don't ever
         // use the value.

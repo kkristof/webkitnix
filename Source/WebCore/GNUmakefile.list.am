@@ -2086,6 +2086,7 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webaudio/WaveTable.h \
 	Source/WebCore/Modules/webdatabase/AbstractDatabase.cpp \
 	Source/WebCore/Modules/webdatabase/AbstractDatabase.h \
+	Source/WebCore/Modules/webdatabase/AbstractDatabaseServer.h \
 	Source/WebCore/Modules/webdatabase/ChangeVersionWrapper.cpp \
 	Source/WebCore/Modules/webdatabase/ChangeVersionWrapper.h \
 	Source/WebCore/Modules/webdatabase/DOMWindowWebDatabase.cpp \
@@ -2109,6 +2110,7 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webdatabase/DatabaseThread.h \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.h \
+	Source/WebCore/Modules/webdatabase/DBBackendServer.h \
 	Source/WebCore/Modules/webdatabase/OriginQuotaManager.cpp \
 	Source/WebCore/Modules/webdatabase/OriginQuotaManager.h \
 	Source/WebCore/Modules/webdatabase/OriginUsageRecord.cpp \
@@ -2880,6 +2882,8 @@ webcore_sources += \
 	Source/WebCore/dom/NodeList.h \
 	Source/WebCore/dom/NodeRareData.h \
 	Source/WebCore/dom/NodeRenderingContext.h \
+	Source/WebCore/dom/NodeRenderingTraversal.h \
+	Source/WebCore/dom/NodeRenderingTraversal.cpp \
 	Source/WebCore/dom/NodeRenderStyle.h \
     Source/WebCore/dom/NodeTraversal.cpp \
     Source/WebCore/dom/NodeTraversal.h \
@@ -3687,6 +3691,8 @@ webcore_sources += \
 	Source/WebCore/inspector/DOMEditor.h \
 	Source/WebCore/inspector/DOMPatchSupport.cpp \
 	Source/WebCore/inspector/DOMPatchSupport.h \
+	Source/WebCore/inspector/HeapGraphSerializer.cpp \
+	Source/WebCore/inspector/HeapGraphSerializer.h \
 	Source/WebCore/inspector/IdentifiersFactory.cpp \
 	Source/WebCore/inspector/IdentifiersFactory.h \
 	Source/WebCore/inspector/InjectedScript.cpp \
@@ -4002,6 +4008,8 @@ webcore_sources += \
 	Source/WebCore/page/animation/KeyframeAnimation.h \
 	Source/WebCore/page/AdjustViewSizeOrNot.h \
 	Source/WebCore/page/AlternativeTextClient.h \
+	Source/WebCore/page/AutoscrollController.cpp \
+	Source/WebCore/page/AutoscrollController.h \
 	Source/WebCore/page/BarInfo.cpp \
 	Source/WebCore/page/BarInfo.h \
 	Source/WebCore/page/Chrome.cpp \
@@ -4235,6 +4243,8 @@ webcore_sources += \
 	Source/WebCore/rendering/ExclusionShape.h \
 	Source/WebCore/rendering/ExclusionShapeInsideInfo.cpp \
 	Source/WebCore/rendering/ExclusionShapeInsideInfo.h \
+	Source/WebCore/rendering/ExclusionShapeOutsideInfo.cpp \
+	Source/WebCore/rendering/ExclusionShapeOutsideInfo.h \
 	Source/WebCore/rendering/FilterEffectRenderer.cpp \
 	Source/WebCore/rendering/FilterEffectRenderer.h \
 	Source/WebCore/rendering/FixedTableLayout.cpp \
@@ -5291,6 +5301,8 @@ webcore_platform_sources += \
 	Source/WebCore/platform/CrossThreadCopier.h \
 	Source/WebCore/platform/Cursor.cpp \
 	Source/WebCore/platform/Cursor.h \
+	Source/WebCore/platform/DatabaseStrategy.cpp \
+	Source/WebCore/platform/DatabaseStrategy.h \
 	Source/WebCore/platform/DateComponents.cpp \
 	Source/WebCore/platform/DateComponents.h \
 	Source/WebCore/platform/DateTimeChooser.h \
@@ -5573,6 +5585,8 @@ webcore_platform_sources += \
 	Source/WebCore/platform/graphics/TextRenderingMode.h \
 	Source/WebCore/platform/graphics/TextRun.cpp \
 	Source/WebCore/platform/graphics/TextRun.h \
+	Source/WebCore/platform/graphics/TextTrackRepresentation.cpp \
+	Source/WebCore/platform/graphics/TextTrackRepresentation.h \
 	Source/WebCore/platform/graphics/TiledBacking.h \
 	Source/WebCore/platform/graphics/transforms/AffineTransform.cpp \
 	Source/WebCore/platform/graphics/transforms/AffineTransform.h \
@@ -6091,16 +6105,19 @@ webcoregtk_sources += \
 
 if TARGET_X11
 webcoregtk_sources += \
-	Source/WebCore/platform/graphics/cairo/GLContext.cpp \
-	Source/WebCore/platform/graphics/cairo/GLContext.h \
 	Source/WebCore/platform/gtk/GtkWidgetBackingStoreX11.cpp \
-	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp \
-	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.h \
 	Source/WebCore/plugins/gtk/gtk2xtbin.c \
 	Source/WebCore/plugins/gtk/gtk2xtbin.h \
 	Source/WebCore/plugins/gtk/PluginPackageGtk.cpp \
 	Source/WebCore/plugins/gtk/PluginViewGtk.cpp \
 	Source/WebCore/plugins/gtk/xembed.h
+if USE_OPENGL
+webcoregtk_sources += \
+	Source/WebCore/platform/graphics/cairo/GLContext.cpp \
+	Source/WebCore/platform/graphics/cairo/GLContext.h \
+	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.cpp \
+	Source/WebCore/platform/gtk/RedirectedXCompositeWindow.h
+endif # END USE_OPENGL
 if USE_EGL
 webcoregtk_sources += \
 	Source/WebCore/platform/graphics/egl/GLContextEGL.cpp \

@@ -218,6 +218,9 @@ public:
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
 
+    void removeTrack(TextTrack*);
+    void removeAllInbandTracks();
+
     virtual void didAddTrack(HTMLTrackElement*);
     virtual void didRemoveTrack(HTMLTrackElement*);
 
@@ -264,6 +267,9 @@ public:
     virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
     virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
     virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
+
+    bool requiresTextTrackRepresentation() const;
+    void setTextTrackRepresentation(TextTrackRepresentation*);
 #endif
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
@@ -428,7 +434,7 @@ private:
 #if ENABLE(ENCRYPTED_MEDIA)
     virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId) OVERRIDE;
     virtual void mediaPlayerKeyError(MediaPlayer*, const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
-    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength) OVERRIDE;
+    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
     virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
 #endif
 

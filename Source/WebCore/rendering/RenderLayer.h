@@ -391,10 +391,11 @@ public:
     bool canRender3DTransforms() const;
 
     enum UpdateLayerPositionsFlag {
-        CheckForRepaint = 1,
-        IsCompositingUpdateRoot = 1 << 1,
-        UpdateCompositingLayers = 1 << 2,
-        UpdatePagination = 1 << 3
+        CheckForRepaint = 1 << 0,
+        NeedsFullRepaintInBacking = 1 << 1,
+        IsCompositingUpdateRoot = 1 << 2,
+        UpdateCompositingLayers = 1 << 3,
+        UpdatePagination = 1 << 4
     };
     typedef unsigned UpdateLayerPositionsFlags;
     static const UpdateLayerPositionsFlags defaultFlags = CheckForRepaint | IsCompositingUpdateRoot | UpdateCompositingLayers;
@@ -405,7 +406,7 @@ public:
     void updateLayerPositionsAfterDocumentScroll();
 
 #if USE(ACCELERATED_COMPOSITING)
-    void positionOverflowControlsAfterPromotionToCompositedScrolling();
+    void positionNewlyCreatedOverflowControls();
 #endif
     
     bool isPaginated() const { return m_isPaginated; }
@@ -590,6 +591,7 @@ public:
         IncludeLayerFilterOutsets = 1 << 2,
         ExcludeHiddenDescendants = 1 << 3,
         DontConstrainForMask = 1 << 4,
+        IncludeCompositedDescendants = 1 << 5,
         DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets
     };
     typedef unsigned CalculateLayerBoundsFlags;

@@ -27,6 +27,7 @@
 #define WebContext_h
 
 #include "APIObject.h"
+#include "DownloadProxyMap.h"
 #include "GenericCallback.h"
 #include "MessageReceiver.h"
 #include "MessageReceiverMap.h"
@@ -50,30 +51,35 @@
 namespace WebKit {
 
 class DownloadProxy;
+class NetworkProcessProxy;
 class WebApplicationCacheManagerProxy;
-#if ENABLE(BATTERY_STATUS)
-class WebBatteryManagerProxy;
-#endif
 class WebCookieManagerProxy;
 class WebDatabaseManagerProxy;
 class WebGeolocationManagerProxy;
 class WebIconDatabase;
 class WebKeyValueStorageManagerProxy;
 class WebMediaCacheManagerProxy;
-#if ENABLE(NETWORK_INFO)
-class WebNetworkInfoManagerProxy;
-#endif
 class WebNotificationManagerProxy;
 class WebPageGroup;
 class WebPageProxy;
 class WebResourceCacheManagerProxy;
-#if USE(SOUP)
-class WebSoupRequestManagerProxy;
-#endif
 struct StatisticsData;
 struct WebProcessCreationParameters;
     
 typedef GenericCallback<WKDictionaryRef> DictionaryCallback;
+
+#if ENABLE(BATTERY_STATUS)
+class WebBatteryManagerProxy;
+#endif
+#if ENABLE(NETWORK_INFO)
+class WebNetworkInfoManagerProxy;
+#endif
+#if USE(SOUP)
+class WebSoupRequestManagerProxy;
+#endif
+#if ENABLE(NETWORK_PROCESS)
+struct NetworkProcessCreationParameters;
+#endif
 
 #if PLATFORM(MAC)
 extern NSString *SchemeForCustomProtocolRegisteredNotificationName;
@@ -178,7 +184,6 @@ public:
     // Downloads.
     DownloadProxy* createDownloadProxy();
     WebDownloadClient& downloadClient() { return m_downloadClient; }
-    void downloadFinished(DownloadProxy*);
 
     WebHistoryClient& historyClient() { return m_historyClient; }
 
@@ -222,6 +227,8 @@ public:
     void setDiskCacheDirectory(const String& dir) { m_overrideDiskCacheDirectory = dir; }
     void setCookieStorageDirectory(const String& dir) { m_overrideCookieStorageDirectory = dir; }
 
+    void allowSpecificHTTPSCertificateForHost(const WebCertificateInfo*, const String& host);
+
     WebProcessProxy* ensureSharedWebProcess();
     WebProcessProxy* createNewWebProcessRespectingProcessCountLimit(); // Will return an existing one if limit is met.
     void warmInitialProcess();
@@ -247,8 +254,20 @@ public:
 
     void textCheckerStateChanged();
 
+
+    // Network Process Management
+
     void setUsesNetworkProcess(bool);
     bool usesNetworkProcess() const;
+
+#if ENABLE(NETWORK_PROCESS)
+    void ensureNetworkProcess();
+    NetworkProcessProxy* networkProcess() { return m_networkProcess.get(); }
+    void removeNetworkProcessProxy(NetworkProcessProxy*);
+
+    void getNetworkProcessConnection(PassRefPtr<Messages::WebProcessProxy::GetNetworkProcessConnection::DelayedReply>);
+#endif
+
 
 #if PLATFORM(MAC)
     static bool applicationIsOccluded() { return s_applicationIsOccluded; }
@@ -267,6 +286,10 @@ private:
     void platformInvalidateContext();
 
     WebProcessProxy* createNewWebProcess();
+
+#if ENABLE(NETWORK_PROCESS)
+    void platformInitializeNetworkProcess(NetworkProcessCreationParameters&);
+#endif
 
 #if PLATFORM(MAC)
     void getPasteboardTypes(const String& pasteboardName, Vector<String>& pasteboardTypes);
@@ -323,7 +346,14 @@ private:
     void unregisterNotificationObservers();
 #endif
 
+#if ENABLE(CUSTOM_PROTOCOLS)
+    void registerSchemeForCustomProtocol(const String&);
+    void unregisterSchemeForCustomProtocol(const String&);
+#endif
+
     void addPlugInAutoStartOriginHash(const String& pageOrigin, unsigned plugInOriginHash);
+
+    CoreIPC::MessageReceiverMap m_messageReceiverMap;
 
     ProcessModel m_processModel;
     unsigned m_webProcessCountLimit; // The limit has no effect when process model is ProcessModelSharedSecondaryProcess.
@@ -369,7 +399,6 @@ private:
     CacheModel m_cacheModel;
 
     WebDownloadClient m_downloadClient;
-    HashMap<uint64_t, RefPtr<DownloadProxy> > m_downloads;
     
     bool m_memorySamplerEnabled;
     double m_memorySamplerInterval;
@@ -421,11 +450,10 @@ private:
 
 #if ENABLE(NETWORK_PROCESS)
     bool m_usesNetworkProcess;
+    RefPtr<NetworkProcessProxy> m_networkProcess;
 #endif
     
     HashMap<uint64_t, RefPtr<DictionaryCallback> > m_dictionaryCallbacks;
-
-    CoreIPC::MessageReceiverMap m_messageReceiverMap;
 
 #if PLATFORM(MAC)
     static bool s_applicationIsOccluded;

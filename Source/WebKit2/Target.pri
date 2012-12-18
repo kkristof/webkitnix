@@ -444,6 +444,7 @@ SOURCES += \
     Shared/Plugins/Netscape/NetscapePluginModule.cpp \
     Shared/Plugins/Netscape/NetscapePluginModuleNone.cpp \
     Shared/Plugins/Netscape/x11/NetscapePluginModuleX11.cpp \
+    Shared/CacheModel.cpp \
     Shared/ShareableBitmap.cpp \
     Shared/Plugins/NPRemoteObjectMap.cpp \
     Shared/Plugins/NPIdentifierData.cpp \
@@ -575,6 +576,7 @@ SOURCES += \
     UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp \
     UIProcess/DefaultUndoController.cpp \
     UIProcess/Downloads/DownloadProxy.cpp \
+    UIProcess/Downloads/DownloadProxyMap.cpp \
     UIProcess/DrawingAreaProxy.cpp \
     UIProcess/DrawingAreaProxyImpl.cpp \
     UIProcess/FindIndicator.cpp \

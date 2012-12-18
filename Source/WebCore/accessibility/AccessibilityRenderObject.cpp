@@ -467,7 +467,7 @@ RenderObject* AccessibilityRenderObject::renderParentObject() const
 AccessibilityObject* AccessibilityRenderObject::parentObjectIfExists() const
 {
     // WebArea's parent should be the scroll view containing it.
-    if (isWebArea())
+    if (isWebArea() || isSeamlessWebArea())
         return axObjectCache()->get(m_renderer->frame()->view());
 
     return axObjectCache()->get(renderParentObject());
@@ -493,7 +493,7 @@ AccessibilityObject* AccessibilityRenderObject::parentObject() const
         return axObjectCache()->getOrCreate(parentObj);
     
     // WebArea's parent should be the scroll view containing it.
-    if (isWebArea())
+    if (isWebArea() || isSeamlessWebArea())
         return axObjectCache()->getOrCreate(m_renderer->frame()->view());
     
     return 0;
@@ -624,12 +624,10 @@ String AccessibilityRenderObject::textUnderElement() const
 {
     if (!m_renderer)
         return String();
-    
+
     if (m_renderer->isFileUploadControl())
         return toRenderFileUploadControl(m_renderer)->buttonValue();
     
-    Node* node = m_renderer->node();
-
 #if ENABLE(MATHML)
     // Math operators create RenderText nodes on the fly that are not tied into the DOM in a reasonable way,
     // so rangeOfContents does not work for them (nor does regular text selection).
@@ -640,8 +638,13 @@ String AccessibilityRenderObject::textUnderElement() const
         }
     }
 #endif
-    
-    if (node) {
+
+#if PLATFORM(GTK)
+    // On GTK, always use a text iterator in order to get embedded object characters.
+    // TODO: Add support for embedded object characters to the other codepaths that try
+    // to build the accessible text recursively, so this special case isn't needed.
+    // https://bugs.webkit.org/show_bug.cgi?id=105214
+    if (Node* node = this->node()) {
         if (Frame* frame = node->document()->frame()) {
             // catch stale WebCoreAXObject (see <rdar://problem/3960196>)
             if (frame->document() != node->document())
@@ -650,18 +653,29 @@ String AccessibilityRenderObject::textUnderElement() const
             return plainText(rangeOfContents(node).get(), textIteratorBehaviorForTextRange());
         }
     }
-    
-    // Sometimes text fragments don't have Node's associated with them (like when
-    // CSS content is used to insert text).
+#endif
+
     if (m_renderer->isText()) {
+        // If possible, use a text iterator to get the text, so that whitespace
+        // is handled consistently.
+        if (Node* node = this->node()) {
+            if (Frame* frame = node->document()->frame()) {
+                // catch stale WebCoreAXObject (see <rdar://problem/3960196>)
+                if (frame->document() != node->document())
+                    return String();
+
+                return plainText(rangeOfContents(node).get(), textIteratorBehaviorForTextRange());
+            }
+        }
+    
+        // Sometimes text fragments don't have Nodes associated with them (like when
+        // CSS content is used to insert text).
         RenderText* renderTextObject = toRenderText(m_renderer);
         if (renderTextObject->isTextFragment())
             return String(static_cast<RenderTextFragment*>(m_renderer)->contentString());
     }
     
-    // return the null string for anonymous text because it is non-trivial to get
-    // the actual text and, so far, that is not needed
-    return String();
+    return AccessibilityNodeObject::textUnderElement();
 }
 
 Node* AccessibilityRenderObject::node() const
@@ -772,7 +786,7 @@ LayoutRect AccessibilityRenderObject::boundingBoxRect() const
     Vector<FloatQuad> quads;
     if (obj->isText())
         toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
-    else if (isWebArea())
+    else if (isWebArea() || isSeamlessWebArea())
         obj->absoluteQuads(quads);
     else
         obj->absoluteFocusRingQuads(quads);
@@ -786,7 +800,7 @@ LayoutRect AccessibilityRenderObject::boundingBoxRect() const
 #endif
     
     // The size of the web area should be the content size, not the clipped size.
-    if (isWebArea() && obj->frame()->view())
+    if ((isWebArea() || isSeamlessWebArea()) && obj->frame()->view())
         result.setSize(obj->frame()->view()->contentsSize());
     
     return result;
@@ -1258,7 +1272,7 @@ bool AccessibilityRenderObject::accessibilityIsIgnored() const
         // Otherwise fall through; use presence of help text, title, or description to decide.
     }
 
-    if (isWebArea() || m_renderer->isListMarker())
+    if (isWebArea() || isSeamlessWebArea() || m_renderer->isListMarker())
         return false;
     
     // Using the help text, title or accessibility description (so we
@@ -2413,8 +2427,12 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(canvasTag))
         return CanvasRole;
 
-    if (cssBox && cssBox->isRenderView())
+    if (cssBox && cssBox->isRenderView()) {
+        // If the iframe is seamless, it should not be announced as a web area to AT clients.
+        if (document() && document()->shouldDisplaySeamlesslyWithParent())
+            return SeamlessWebAreaRole;
         return WebAreaRole;
+    }
     
     if (cssBox && cssBox->isTextField())
         return TextFieldRole;

@@ -99,7 +99,7 @@ public:
 
     void loadString(const BlackBerry::Platform::String&, const BlackBerry::Platform::String& baseURL, const BlackBerry::Platform::String& contentType = "text/html", const BlackBerry::Platform::String& failingURL = BlackBerry::Platform::String::emptyString());
 
-    void download(const Platform::NetworkRequest&);
+    void convertMainResourceLoadToDownload(const Platform::NetworkRequest&);
 
     bool executeJavaScript(const BlackBerry::Platform::String& script, JavaScriptDataType& returnType, BlackBerry::Platform::String& returnValue);
 
@@ -154,7 +154,7 @@ public:
 
     // For conversion to mouse events.
     void touchEventCancel();
-    void touchPointAsMouseEvent(const Platform::TouchPoint&);
+    void touchPointAsMouseEvent(const Platform::TouchPoint&, unsigned modifiers = 0);
 
     void playSoundIfAnchorIsTarget() const;
 

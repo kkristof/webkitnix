@@ -72,13 +72,10 @@ CoordinatedLayerTreeHost::~CoordinatedLayerTreeHost()
 #if ENABLE(CSS_SHADERS)
     disconnectCustomFilterPrograms();
 #endif
+    purgeBackingStores();
 
-    // Prevent setCoordinatedGraphicsLayerClient(0) -> detachLayer() from modifying the set while we iterate it.
-    HashSet<WebCore::CoordinatedGraphicsLayer*> registeredLayers;
-    registeredLayers.swap(m_registeredLayers);
-
-    HashSet<WebCore::CoordinatedGraphicsLayer*>::iterator end = registeredLayers.end();
-    for (HashSet<WebCore::CoordinatedGraphicsLayer*>::iterator it = registeredLayers.begin(); it != end; ++it)
+    HashSet<WebCore::CoordinatedGraphicsLayer*>::iterator end = m_registeredLayers.end();
+    for (HashSet<WebCore::CoordinatedGraphicsLayer*>::iterator it = m_registeredLayers.begin(); it != end; ++it)
         (*it)->setCoordinator(0);
 }
 
@@ -87,6 +84,7 @@ CoordinatedLayerTreeHost::CoordinatedLayerTreeHost(WebPage* webPage)
     , m_notifyAfterScheduledLayerFlush(false)
     , m_isValid(true)
     , m_isPurging(false)
+    , m_isFlushingLayerChanges(false)
     , m_waitingForUIProcess(true)
     , m_isSuspended(false)
     , m_contentsScale(1)
@@ -269,6 +267,8 @@ bool CoordinatedLayerTreeHost::flushPendingLayerChanges()
 {
     if (m_waitingForUIProcess)
         return false;
+
+    TemporaryChange<bool> protector(m_isFlushingLayerChanges, true);
 
     initializeRootCompositingLayerIfNeeded();
 
@@ -615,6 +615,7 @@ void CoordinatedLayerTreeHost::notifyAnimationStarted(const WebCore::GraphicsLay
 
 void CoordinatedLayerTreeHost::notifyFlushRequired(const WebCore::GraphicsLayer*)
 {
+    scheduleLayerFlush();
 }
 
 void CoordinatedLayerTreeHost::paintContents(const WebCore::GraphicsLayer* graphicsLayer, WebCore::GraphicsContext& graphicsContext, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& clipRect)
@@ -638,7 +639,7 @@ PassOwnPtr<GraphicsLayer> CoordinatedLayerTreeHost::createGraphicsLayer(Graphics
     layer->setCoordinator(this);
     m_registeredLayers.add(layer);
     layer->setContentsScale(m_contentsScale);
-    layer->adjustVisibleRect();
+    layer->setNeedsVisibleRectAdjustment();
     return adoptPtr(layer);
 }
 
@@ -720,7 +721,7 @@ void CoordinatedLayerTreeHost::setVisibleContentsRect(const FloatRect& rect, flo
             if (contentsScaleDidChange)
                 (*it)->setContentsScale(scale);
             if (contentsRectDidChange)
-                (*it)->adjustVisibleRect();
+                (*it)->setNeedsVisibleRectAdjustment();
         }
     }
 
@@ -758,11 +759,6 @@ void CoordinatedLayerTreeHost::renderNextFrame()
     scheduleLayerFlush();
     for (unsigned i = 0; i < m_updateAtlases.size(); ++i)
         m_updateAtlases[i]->didSwapBuffers();
-}
-
-bool CoordinatedLayerTreeHost::layerTreeTileUpdatesAllowed() const
-{
-    return !m_isSuspended && !m_waitingForUIProcess;
 }
 
 void CoordinatedLayerTreeHost::purgeBackingStores()

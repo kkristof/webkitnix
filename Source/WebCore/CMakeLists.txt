@@ -1195,6 +1195,7 @@ set(WebCore_SOURCES
     dom/NodeIterator.cpp
     dom/NodeRareData.cpp
     dom/NodeRenderingContext.cpp
+    dom/NodeRenderingTraversal.cpp
     dom/NodeTraversal.cpp
     dom/Notation.cpp
     dom/OverflowEvent.cpp
@@ -1575,6 +1576,7 @@ set(WebCore_SOURCES
     inspector/ContentSearchUtils.cpp
     inspector/DOMEditor.cpp
     inspector/DOMPatchSupport.cpp
+    inspector/HeapGraphSerializer.cpp
     inspector/IdentifiersFactory.cpp
     inspector/InjectedScript.cpp
     inspector/InjectedScriptBase.cpp
@@ -1719,6 +1721,7 @@ set(WebCore_SOURCES
     mathml/MathMLMathElement.cpp
     mathml/MathMLTextElement.cpp
 
+    page/AutoscrollController.cpp
     page/BarInfo.cpp
     page/Chrome.cpp
     page/Console.cpp
@@ -1794,6 +1797,7 @@ set(WebCore_SOURCES
     platform/ContextMenuItem.cpp
     platform/ContentType.cpp
     platform/CrossThreadCopier.cpp
+    platform/DatabaseStrategy.cpp
     platform/DateComponents.cpp
     platform/Decimal.cpp
     platform/DragData.cpp
@@ -2082,6 +2086,7 @@ set(WebCore_SOURCES
     rendering/ExclusionRectangle.cpp
     rendering/ExclusionShape.cpp
     rendering/ExclusionShapeInsideInfo.cpp
+    rendering/ExclusionShapeOutsideInfo.cpp
     rendering/FilterEffectRenderer.cpp
     rendering/FixedTableLayout.cpp
     rendering/FlowThreadController.cpp
@@ -2633,6 +2638,13 @@ if (ENABLE_WEBGL)
         html/canvas/WebGLVertexArrayObjectOES.idl
     )
 endif ()
+
+if (ENABLE_VIDEO_TRACK)
+    list(APPEND WebCore_SOURCES
+        platform/graphics/TextTrackRepresentation.cpp
+    )
+endif ()
+
 
 if (WTF_USE_3D_GRAPHICS)
     list(APPEND WebCore_INCLUDE_DIRECTORIES

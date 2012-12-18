@@ -420,6 +420,7 @@ SOURCES += \
     dom/NodeIterator.cpp \
     dom/NodeRareData.cpp \
     dom/NodeRenderingContext.cpp \
+    dom/NodeRenderingTraversal.cpp \
     dom/NodeTraversal.cpp \
     dom/Notation.cpp \
     dom/StaticHashSetNodeList.cpp \
@@ -739,6 +740,7 @@ SOURCES += \
     inspector/ContentSearchUtils.cpp \
     inspector/DOMEditor.cpp \
     inspector/DOMPatchSupport.cpp \
+    inspector/HeapGraphSerializer.cpp \
     inspector/IdentifiersFactory.cpp \
     inspector/InjectedScript.cpp \
     inspector/InjectedScriptBase.cpp \
@@ -868,6 +870,7 @@ SOURCES += \
     page/animation/CSSPropertyAnimation.cpp \
     page/animation/ImplicitAnimation.cpp \
     page/animation/KeyframeAnimation.cpp \
+    page/AutoscrollController.cpp \
     page/BarInfo.cpp \
     page/Chrome.cpp \
     page/Console.cpp \
@@ -945,6 +948,7 @@ SOURCES += \
     platform/ClockGeneric.cpp \
     platform/ContentType.cpp \
     platform/CrossThreadCopier.cpp \
+    platform/DatabaseStrategy.cpp \
     platform/DateComponents.cpp \
     platform/Decimal.cpp \
     platform/DragData.cpp \
@@ -1003,6 +1007,7 @@ SOURCES += \
     platform/graphics/surfaces/qt/GraphicsSurfaceQt.cpp \
     platform/graphics/SurrogatePairAwareTextIterator.cpp \
     platform/graphics/TextRun.cpp \
+    platform/graphics/TextTrackRepresentation.cpp \
     platform/graphics/TiledBackingStore.cpp \
     platform/graphics/transforms/AffineTransform.cpp \
     platform/graphics/transforms/TransformationMatrix.cpp \
@@ -1123,6 +1128,7 @@ SOURCES += \
     rendering/ExclusionRectangle.cpp \
     rendering/ExclusionShape.cpp \
     rendering/ExclusionShapeInsideInfo.cpp \
+    rendering/ExclusionShapeOutsideInfo.cpp \
     rendering/FilterEffectRenderer.cpp \
     rendering/FixedTableLayout.cpp \
     rendering/FlowThreadController.cpp \
@@ -1409,6 +1415,7 @@ HEADERS += \
     Modules/notifications/WorkerContextNotifications.h \
     \
     Modules/webdatabase/AbstractDatabase.h \
+    Modules/webdatabase/AbstractDatabaseServer.h \
     Modules/webdatabase/ChangeVersionWrapper.h \
     Modules/webdatabase/DOMWindowWebDatabase.h \
     Modules/webdatabase/DatabaseAuthorizer.h \
@@ -1419,6 +1426,7 @@ HEADERS += \
     Modules/webdatabase/DatabaseTask.h \
     Modules/webdatabase/DatabaseThread.h \
     Modules/webdatabase/DatabaseTracker.h \
+    Modules/webdatabase/DBBackendServer.h \
     Modules/webdatabase/OriginQuotaManager.h \
     Modules/webdatabase/OriginUsageRecord.h \
     Modules/webdatabase/SQLCallbackWrapper.h \
@@ -1604,6 +1612,7 @@ HEADERS += \
     dom/NodeIterator.h \
     dom/NodeRareData.h \
     dom/NodeRenderingContext.h \
+    dom/NodeRenderingTraversal.h \
     dom/NodeTraversal.h \
     dom/Notation.h \
     dom/StaticHashSetNodeList.h \
@@ -1893,6 +1902,7 @@ HEADERS += \
     inspector/ContentSearchUtils.h \
     inspector/DOMEditor.h \
     inspector/DOMPatchSupport.h \
+    inspector/HeapGraphSerializer.h \
     inspector/IdentifiersFactory.h \
     inspector/InjectedScript.h \
     inspector/InjectedScriptBase.h \
@@ -2014,6 +2024,7 @@ HEADERS += \
     page/animation/ImplicitAnimation.h \
     page/animation/KeyframeAnimation.h \
     page/AdjustViewSizeOrNot.h \
+    page/AutoscrollController.h \
     page/BarInfo.h \
     page/Chrome.h \
     page/Console.h \
@@ -2356,6 +2367,7 @@ HEADERS += \
     rendering/ExclusionRectangle.h \
     rendering/ExclusionShape.h \
     rendering/ExclusionShapeInsideInfo.h \
+    rendering/ExclusionShapeOutsideInfo.h \
     rendering/FilterEffectRenderer.h \
     rendering/FixedTableLayout.h \
     rendering/HitTestingTransformState.h \

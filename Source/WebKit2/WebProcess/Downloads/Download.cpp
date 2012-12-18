@@ -46,6 +46,7 @@ PassOwnPtr<Download> Download::create(DownloadManager& downloadManager, uint64_t
 
 Download::Download(DownloadManager& downloadManager, uint64_t downloadID, const ResourceRequest& request)
     : m_downloadManager(downloadManager)
+    , m_downloadID(downloadID)
     , m_request(request)
 #if USE(CFNETWORK)
     , m_allowOverwrite(false)
@@ -68,7 +69,7 @@ Download::~Download()
 
 CoreIPC::Connection* Download::connection() const
 {
-    return m_downloadManager.connection();
+    return m_downloadManager.downloadProxyConnection();
 }
 
 void Download::didStart()
@@ -78,7 +79,7 @@ void Download::didStart()
 
 void Download::didReceiveAuthenticationChallenge(const AuthenticationChallenge& authenticationChallenge)
 {
-    AuthenticationManager::shared().didReceiveAuthenticationChallenge(this, authenticationChallenge);
+    m_downloadManager.downloadsAuthenticationManager().didReceiveAuthenticationChallenge(this, authenticationChallenge);
 }
 
 void Download::didReceiveResponse(const ResourceResponse& response)

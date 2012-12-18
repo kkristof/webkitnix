@@ -83,9 +83,14 @@ void DownloadManager::didDestroyDownload()
     m_client->didDestroyDownload();
 }
 
-CoreIPC::Connection* DownloadManager::connection()
+CoreIPC::Connection* DownloadManager::downloadProxyConnection()
 {
-    return m_client->connection();
+    return m_client->downloadProxyConnection();
+}
+
+AuthenticationManager& DownloadManager::downloadsAuthenticationManager()
+{
+    return m_client->downloadsAuthenticationManager();
 }
 
 #if PLATFORM(QT)

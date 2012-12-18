@@ -34,10 +34,10 @@
 #include "WebTestDelegate.h"
 #include "WebTouchPoint.h"
 #include "platform/WebGraphicsContext3D.h"
-#include "platform/WebKitPlatformSupport.h"
 #include "public/WebCompositorSupport.h"
 #include "public/WebExternalTextureLayer.h"
 #include "public/WebExternalTextureLayerClient.h"
+#include <public/Platform.h>
 #include <wtf/Assertions.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -291,7 +291,7 @@ WebTestPluginImpl::~WebTestPluginImpl()
 bool WebTestPluginImpl::initialize(WebPluginContainer* container)
 {
     WebGraphicsContext3D::Attributes attrs;
-    m_context = webKitPlatformSupport()->createOffscreenGraphicsContext3D(attrs);
+    m_context = Platform::current()->createOffscreenGraphicsContext3D(attrs);
     if (!m_context)
         return false;
 
@@ -301,7 +301,7 @@ bool WebTestPluginImpl::initialize(WebPluginContainer* container)
     if (!initScene())
         return false;
 
-    m_layer = adoptPtr(webKitPlatformSupport()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_container = container;
     m_container->setWebLayer(m_layer->layer());
     m_container->requestTouchEventType(m_touchEventRequest);
@@ -311,6 +311,8 @@ bool WebTestPluginImpl::initialize(WebPluginContainer* container)
 
 void WebTestPluginImpl::destroy()
 {
+    if (m_container)
+        m_container->setWebLayer(0);
     m_layer.clear();
     destroyScene();
 
@@ -344,7 +346,7 @@ void WebTestPluginImpl::updateGeometry(const WebRect& frameRect, const WebRect& 
     drawScene();
 
     m_context->flush();
-    m_container->commitBackingTexture();
+    m_layer->layer()->invalidate();
 }
 
 WebTestPluginImpl::Primitive WebTestPluginImpl::parsePrimitive(const WebString& string)

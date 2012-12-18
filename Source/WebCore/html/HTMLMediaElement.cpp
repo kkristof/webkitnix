@@ -1870,12 +1870,13 @@ void HTMLMediaElement::mediaPlayerKeyError(MediaPlayer*, const String& keySystem
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void HTMLMediaElement::mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength)
+void HTMLMediaElement::mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL)
 {
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
     initializer.sessionId = sessionId;
     initializer.message = Uint8Array::create(message, messageLength);
+    initializer.defaultURL = defaultURL; 
     initializer.bubbles = false;
     initializer.cancelable = false;
 
@@ -2767,14 +2768,32 @@ void HTMLMediaElement::mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPriva
     if (!textTrack)
         return;
 
-    m_textTracks->remove(textTrack.get());
-    TextTrackCueList* cues = textTrack->cues();
-    if (cues) {
-        beginIgnoringTrackDisplayUpdateRequests();
-        for (size_t i = 0; i < cues->length(); ++i)
-            textTrackRemoveCue(cues->item(i)->track(), cues->item(i));
-        endIgnoringTrackDisplayUpdateRequests();
+    removeTrack(textTrack.get());
+}
+
+void HTMLMediaElement::removeTrack(TextTrack* track)
+{
+    beginIgnoringTrackDisplayUpdateRequests();
+    m_textTracks->remove(track);
+    TextTrackCueList* cues = track->cues();
+    if (cues)
+        textTrackRemoveCues(track, cues);
+    endIgnoringTrackDisplayUpdateRequests();
+}
+
+void HTMLMediaElement::removeAllInbandTracks()
+{
+    if (!m_textTracks)
+        return;
+
+    beginIgnoringTrackDisplayUpdateRequests();
+    for (int i = m_textTracks->length() - 1; i >= 0; --i) {
+        TextTrack* track = m_textTracks->item(i);
+
+        if (track->trackType() == TextTrack::InBand)
+            removeTrack(track);
     }
+    endIgnoringTrackDisplayUpdateRequests();
 }
 
 PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const String& label, const String& language, ExceptionCode& ec)
@@ -3785,6 +3804,10 @@ void HTMLMediaElement::userCancelledLoad()
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
 {
+#if ENABLE(VIDEO_TRACK)
+    removeAllInbandTracks();
+#endif
+
 #if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 
 #if ENABLE(MEDIA_SOURCE)
@@ -3895,6 +3918,19 @@ bool HTMLMediaElement::willRespondToMouseClickEvents()
     return HTMLElement::willRespondToMouseClickEvents();
 #endif
 }
+
+#if ENABLE(VIDEO_TRACK)
+bool HTMLMediaElement::requiresTextTrackRepresentation() const
+{
+    return m_player ? m_player->requiresTextTrackRepresentation() : 0;
+}
+
+void HTMLMediaElement::setTextTrackRepresentation(TextTrackRepresentation* representation)
+{
+    if (m_player)
+        m_player->setTextTrackRepresentation(representation);
+}
+#endif // ENABLE(VIDEO_TRACK)
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
 

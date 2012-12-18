@@ -42,6 +42,7 @@ class Connection;
 
 namespace WebKit {
 
+class AuthenticationManager;
 class Download;
 class WebPage;
 
@@ -55,8 +56,8 @@ public:
 
         virtual void didCreateDownload() = 0;
         virtual void didDestroyDownload() = 0;
-
-        virtual CoreIPC::Connection* connection() const = 0;
+        virtual CoreIPC::Connection* downloadProxyConnection() = 0;
+        virtual AuthenticationManager& downloadsAuthenticationManager() = 0;
     };
 
     explicit DownloadManager(Client*);
@@ -72,7 +73,8 @@ public:
     void didCreateDownload();
     void didDestroyDownload();
 
-    CoreIPC::Connection* connection();
+    CoreIPC::Connection* downloadProxyConnection();
+    AuthenticationManager& downloadsAuthenticationManager();
 
 #if PLATFORM(QT)
     void startTransfer(uint64_t downloadID, const String& destination);

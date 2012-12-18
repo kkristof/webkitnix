@@ -728,6 +728,11 @@ public:
 
     void saveDataToFileInDownloadsFolder(const String& suggestedFilename, const String& mimeType, const String& originatingURLString, WebData*);
     void savePDFToFileInDownloadsFolder(const String& suggestedFilename, const String& originatingURLString, const CoreIPC::DataReference&);
+#if PLATFORM(MAC)
+    void savePDFToTemporaryFolderAndOpenWithNativeApplicationRaw(const String& suggestedFilename, const String& originatingURLString, const uint8_t* data, unsigned long size, const String& pdfUUID);
+    void savePDFToTemporaryFolderAndOpenWithNativeApplication(const String& suggestedFilename, const String& originatingURLString, const CoreIPC::DataReference&, const String& pdfUUID);
+    void openPDFFromTemporaryFolderWithNativeApplication(const String& pdfUUID);
+#endif
 
     void linkClicked(const String&, const WebMouseEvent&);
 
@@ -1172,6 +1177,7 @@ private:
     bool m_isPerformingDOMPrintOperation;
 
     bool m_inDecidePolicyForResponse;
+    const WebCore::ResourceRequest* m_decidePolicyForResponseRequest;
     bool m_syncMimeTypePolicyActionIsValid;
     WebCore::PolicyAction m_syncMimeTypePolicyAction;
     uint64_t m_syncMimeTypePolicyDownloadID;
@@ -1258,6 +1264,10 @@ private:
 
 #if ENABLE(PAGE_VISIBILITY_API)
     WebCore::PageVisibilityState m_visibilityState;
+#endif
+
+#if PLATFORM(MAC)
+    HashMap<String, String> m_temporaryPDFFiles;
 #endif
 };
 

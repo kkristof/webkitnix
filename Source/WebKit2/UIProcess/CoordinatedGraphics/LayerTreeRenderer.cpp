@@ -343,7 +343,7 @@ void LayerTreeRenderer::setLayerState(CoordinatedLayerID id, const CoordinatedLa
     layer->setBackfaceVisibility(layerInfo.backfaceVisible);
     layer->setContentsOpaque(layerInfo.contentsOpaque);
     layer->setContentsRect(layerInfo.contentsRect);
-    layer->setContentsToBackgroundColor(layerInfo.backgroundColor);
+    layer->setContentsToSolidColor(layerInfo.solidColor);
     layer->setDrawsContent(layerInfo.drawsContent);
     layer->setContentsVisible(layerInfo.contentsVisible);
     toGraphicsLayerTextureMapper(layer)->setFixedToViewport(layerInfo.fixedToViewport);
@@ -392,15 +392,11 @@ WebCore::GraphicsLayer* LayerTreeRenderer::ensureLayer(CoordinatedLayerID id)
 
 void LayerTreeRenderer::setRootLayerID(CoordinatedLayerID layerID)
 {
-    if (layerID == m_rootLayerID)
-        return;
+    ASSERT(layerID != InvalidCoordinatedLayerID);
+    ASSERT(m_rootLayerID == InvalidCoordinatedLayerID);
 
     m_rootLayerID = layerID;
-
     m_rootLayer->removeAllChildren();
-
-    if (!layerID)
-        return;
 
     GraphicsLayer* layer = ensureLayer(layerID);
     m_rootLayer->addChild(layer);

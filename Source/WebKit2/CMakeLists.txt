@@ -52,6 +52,7 @@ set(WebKit2_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/Modules/networkinfo"
     "${WEBCORE_DIR}/Modules/notifications"
     "${WEBCORE_DIR}/Modules/vibration"
+    "${WEBCORE_DIR}/Modules/webdatabase"
     "${WEBCORE_DIR}/accessibility"
     "${WEBCORE_DIR}/bindings/js"
     "${WEBCORE_DIR}/bindings"
@@ -138,6 +139,7 @@ set(WebKit2_SOURCES
 
     Shared/APIClientTraits.cpp
     Shared/APIObject.cpp
+    Shared/CacheModel.cpp
     Shared/ChildProcess.cpp
     Shared/ChildProcessProxy.cpp
     Shared/ConnectionStack.cpp
@@ -351,6 +353,7 @@ set(WebKit2_SOURCES
     UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp
 
     UIProcess/Downloads/DownloadProxy.cpp
+    UIProcess/Downloads/DownloadProxyMap.cpp
 
     UIProcess/InspectorServer/WebInspectorServer.cpp
     UIProcess/InspectorServer/WebSocketServer.cpp

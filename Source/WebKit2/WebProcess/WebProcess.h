@@ -26,6 +26,7 @@
 #ifndef WebProcess_h
 #define WebProcess_h
 
+#include "AuthenticationManager.h"
 #include "CacheModel.h"
 #include "ChildProcess.h"
 #include "DownloadManager.h"
@@ -217,6 +218,7 @@ public:
     void destroyPrivateBrowsingSession();
 
     DownloadManager& downloadManager();
+    AuthenticationManager& authenticationManager() { return m_authenticationManager; }
 
 private:
     WebProcess();
@@ -224,6 +226,8 @@ private:
     // DownloadManager::Client.
     virtual void didCreateDownload() OVERRIDE;
     virtual void didDestroyDownload() OVERRIDE;
+    virtual CoreIPC::Connection* downloadProxyConnection() OVERRIDE;
+    virtual AuthenticationManager& downloadsAuthenticationManager() OVERRIDE;
 
     void initializeWebProcess(const WebProcessCreationParameters&, CoreIPC::MessageDecoder&);
     void platformInitializeWebProcess(const WebProcessCreationParameters&, CoreIPC::MessageDecoder&);
@@ -251,9 +255,6 @@ private:
     void didAddPlugInAutoStartOrigin(unsigned plugInOriginHash);
 
     void platformSetCacheModel(CacheModel);
-    static void calculateCacheSizes(CacheModel cacheModel, uint64_t memorySize, uint64_t diskFreeSize,
-        unsigned& cacheTotalCapacity, unsigned& cacheMinDeadCapacity, unsigned& cacheMaxDeadCapacity, double& deadDecodedDataDeletionInterval,
-        unsigned& pageCacheCapacity, unsigned long& urlCacheMemoryCapacity, unsigned long& urlCacheDiskCapacity);
     void platformClearResourceCaches(ResourceCachesToClear);
     void clearApplicationCache();
 
@@ -264,9 +265,6 @@ private:
     void clearPluginSiteData(const Vector<String>& pluginPaths, const Vector<String>& sites, uint64_t flags, uint64_t maxAgeInSeconds, uint64_t callbackID);
 #endif
 
-#if ENABLE(NETWORK_PROCESS)
-    void networkProcessCrashed(CoreIPC::Connection*);
-#endif
 #if ENABLE(PLUGIN_PROCESS)
     void pluginProcessCrashed(CoreIPC::Connection*, const String& pluginPath, uint32_t processType);
 #endif
@@ -318,6 +316,7 @@ private:
 #endif
 
 #if ENABLE(CUSTOM_PROTOCOLS)
+    void initializeCustomProtocolManager(const WebProcessCreationParameters&);
     void registerSchemeForCustomProtocol(const WTF::String&);
     void unregisterSchemeForCustomProtocol(const WTF::String&);
 #endif
@@ -397,6 +396,7 @@ private:
     WebSoupRequestManager m_soupRequestManager;
 #endif
 
+    AuthenticationManager m_authenticationManager;
 };
 
 } // namespace WebKit

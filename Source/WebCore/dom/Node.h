@@ -247,10 +247,18 @@ public:
     virtual bool isFrameOwnerElement() const { return false; }
     virtual bool isPluginElement() const { return false; }
     virtual bool documentFragmentIsShadowRoot() const;
+    virtual bool isInsertionPointNode() const { return false; }
+
     bool isDocumentNode() const;
     bool isDocumentFragment() const { return getFlag(IsDocumentFragmentFlag); }
     bool isShadowRoot() const { return isDocumentFragment() && documentFragmentIsShadowRoot(); }
-    bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
+    bool isInsertionPoint() const { return getFlag(NeedsShadowTreeWalkerFlag) && isInsertionPointNode(); }
+
+    bool needsShadowTreeWalker() const;
+    bool needsShadowTreeWalkerSlow() const;
+    void setNeedsShadowTreeWalker() { setFlag(NeedsShadowTreeWalkerFlag); }
+    void resetNeedsShadowTreeWalker() { setFlag(needsShadowTreeWalkerSlow(), NeedsShadowTreeWalkerFlag); }
+
     bool inNamedFlow() const { return getFlag(InNamedFlowFlag); }
     bool hasCustomCallbacks() const { return getFlag(HasCustomCallbacksFlag); }
 
@@ -267,7 +275,7 @@ public:
 
     // Returns 0, a child of ShadowRoot, or a legacy shadow root.
     Node* nonBoundaryShadowTreeRootNode();
-    bool isInShadowTree() const;
+
     // Node's parent, shadow tree host.
     ContainerNode* parentOrHostNode() const;
     Element* parentOrHostElement() const;
@@ -468,6 +476,8 @@ public:
         ASSERT(m_document || !getFlag(InDocumentFlag));
         return getFlag(InDocumentFlag);
     }
+    bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
+    bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(InDocumentFlag | IsInShadowTreeFlag)); }
 
     bool isReadOnlyNode() const { return nodeType() == ENTITY_REFERENCE_NODE; }
     bool isDocumentTypeNode() const { return nodeType() == DOCUMENT_TYPE_NODE; }
@@ -703,12 +713,13 @@ private:
         HasScopedHTMLStyleChildFlag = 1 << 22,
         HasEventTargetDataFlag = 1 << 23,
         V8CollectableDuringMinorGCFlag = 1 << 24,
-        IsInsertionPointFlag = 1 << 25,
+        NeedsShadowTreeWalkerFlag = 1 << 25,
+        IsInShadowTreeFlag = 1 << 26,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 6 bits remaining
+    // 5 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
@@ -721,15 +732,15 @@ protected:
         CreateText = DefaultNodeFlags | IsTextFlag,
         CreateContainer = DefaultNodeFlags | IsContainerFlag, 
         CreateElement = CreateContainer | IsElementFlag, 
-        CreatePseudoElement =  CreateElement | InDocumentFlag,
-        CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag,
+        CreatePseudoElement =  CreateElement | InDocumentFlag | NeedsShadowTreeWalkerFlag,
+        CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag | NeedsShadowTreeWalkerFlag | IsInShadowTreeFlag,
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,
         CreateStyledElement = CreateElement | IsStyledElementFlag, 
         CreateHTMLElement = CreateStyledElement | IsHTMLFlag, 
         CreateFrameOwnerElement = CreateHTMLElement | HasCustomCallbacksFlag,
         CreateSVGElement = CreateStyledElement | IsSVGFlag,
         CreateDocument = CreateContainer | InDocumentFlag,
-        CreateInsertionPoint = CreateHTMLElement | IsInsertionPointFlag,
+        CreateInsertionPoint = CreateHTMLElement | NeedsShadowTreeWalkerFlag,
         CreateEditingText = CreateText | HasNameOrIsEditingTextFlag,
     };
     Node(Document*, ConstructionType);

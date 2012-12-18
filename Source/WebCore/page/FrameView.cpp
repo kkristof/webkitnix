@@ -57,6 +57,7 @@
 #include "RenderFullScreen.h"
 #include "RenderIFrame.h"
 #include "RenderLayer.h"
+#include "RenderLayerBacking.h"
 #include "RenderPart.h"
 #include "RenderScrollbar.h"
 #include "RenderScrollbarPart.h"
@@ -131,8 +132,10 @@ static inline RenderView* rootRenderer(const FrameView* view)
 static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullRepaint)
 {
     RenderLayer::UpdateLayerPositionsFlags flags = RenderLayer::defaultFlags;
-    if (didFullRepaint)
+    if (didFullRepaint) {
         flags &= ~RenderLayer::CheckForRepaint;
+        flags |= RenderLayer::NeedsFullRepaintInBacking;
+    }
     if (isRelayoutingSubtree && layer->isPaginated())
         flags |= RenderLayer::UpdatePagination;
     return flags;
@@ -386,13 +389,6 @@ void FrameView::recalculateScrollbarOverlayStyle()
     ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
 
     Color backgroundColor = documentBackgroundColor();
-#if USE(ACCELERATED_COMPOSITING)
-    if (RenderView* root = rootRenderer(this)) {
-        RenderLayerCompositor* compositor = root->compositor();
-        compositor->documentBackgroundColorDidChange();
-    }
-#endif
-
     if (backgroundColor.isValid()) {
         // Reduce the background color from RGB to a lightness value
         // and determine which scrollbar style to use based on a lightness
@@ -1220,8 +1216,12 @@ void FrameView::layout(bool allowSubtree)
         m_layoutRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
+    bool neededFullRepaint = m_doFullRepaint;
+
     if (!subtree && !toRenderView(root)->printing())
         adjustViewSize();
+
+    m_doFullRepaint = neededFullRepaint;
 
     // Now update the positions of all layers.
     beginDeferredRepaints();
@@ -3507,7 +3507,7 @@ void FrameView::adjustPageHeightDeprecated(float *newBottom, float oldTop, float
 
 IntRect FrameView::convertFromRenderer(const RenderObject* renderer, const IntRect& rendererRect) const
 {
-    IntRect rect = renderer->localToAbsoluteQuad(FloatRect(rendererRect), SnapOffsetForTransforms).enclosingBoundingBox();
+    IntRect rect = renderer->localToAbsoluteQuad(FloatRect(rendererRect)).enclosingBoundingBox();
 
     // Convert from page ("absolute") to FrameView coordinates.
     if (!delegatesScrolling())
@@ -3526,13 +3526,13 @@ IntRect FrameView::convertToRenderer(const RenderObject* renderer, const IntRect
 
     // FIXME: we don't have a way to map an absolute rect down to a local quad, so just
     // move the rect for now.
-    rect.setLocation(roundedIntPoint(renderer->absoluteToLocal(rect.location(), UseTransforms | SnapOffsetForTransforms)));
+    rect.setLocation(roundedIntPoint(renderer->absoluteToLocal(rect.location(), UseTransforms)));
     return rect;
 }
 
 IntPoint FrameView::convertFromRenderer(const RenderObject* renderer, const IntPoint& rendererPoint) const
 {
-    IntPoint point = roundedIntPoint(renderer->localToAbsolute(rendererPoint, UseTransforms | SnapOffsetForTransforms));
+    IntPoint point = roundedIntPoint(renderer->localToAbsolute(rendererPoint, UseTransforms));
 
     // Convert from page ("absolute") to FrameView coordinates.
     if (!delegatesScrolling())
@@ -3548,7 +3548,7 @@ IntPoint FrameView::convertToRenderer(const RenderObject* renderer, const IntPoi
     if (!delegatesScrolling())
         point += IntSize(scrollX(), scrollY());
 
-    return roundedIntPoint(renderer->absoluteToLocal(point, UseTransforms | SnapOffsetForTransforms));
+    return roundedIntPoint(renderer->absoluteToLocal(point, UseTransforms));
 }
 
 IntRect FrameView::convertToContainingView(const IntRect& localRect) const

@@ -1038,18 +1038,19 @@ void WebPage::sendViewportAttributesChanged()
     IntPoint contentFixedOrigin = view->fixedVisibleContentRect().location();
 
     // Put the width and height to the viewport width and height. In css units however.
-    IntSize contentFixedSize = m_viewportSize;
+    // Use FloatSize to avoid truncated values during scale.
+    FloatSize contentFixedSize = m_viewportSize;
 
     contentFixedSize.scale(1 / m_page->deviceScaleFactor());
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     // CSS viewport descriptors might be applied to already affected viewport size
     // if the page enables/disables stylesheets, so need to keep initial viewport size.
-    view->setInitialViewportSize(contentFixedSize);
+    view->setInitialViewportSize(roundedIntSize(contentFixedSize));
 #endif
 
     contentFixedSize.scale(1 / attr.initialScale);
-    setFixedVisibleContentRect(IntRect(contentFixedOrigin, contentFixedSize));
+    setFixedVisibleContentRect(IntRect(contentFixedOrigin, roundedIntSize(contentFixedSize)));
 
     attr.initialScale = m_page->viewportArguments().zoom; // Resets auto (-1) if no value was set by user.
 
@@ -3367,6 +3368,18 @@ void WebPage::drawPagesForPrinting(uint64_t frameID, const PrintInfo& printInfo,
     }
 
     send(Messages::WebPageProxy::VoidCallback(callbackID));
+}
+#endif
+
+void WebPage::savePDFToFileInDownloadsFolder(const String& suggestedFilename, const String& originatingURLString, const uint8_t* data, unsigned long size)
+{
+    send(Messages::WebPageProxy::SavePDFToFileInDownloadsFolder(suggestedFilename, originatingURLString, CoreIPC::DataReference(data, size)));
+}
+
+#if PLATFORM(MAC)
+void WebPage::savePDFToTemporaryFolderAndOpenWithNativeApplication(const String& suggestedFilename, const String& originatingURLString, const uint8_t* data, unsigned long size, const String& pdfUUID)
+{
+    send(Messages::WebPageProxy::SavePDFToTemporaryFolderAndOpenWithNativeApplication(suggestedFilename, originatingURLString, CoreIPC::DataReference(data, size), pdfUUID));
 }
 #endif
 

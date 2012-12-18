@@ -340,13 +340,16 @@ inspector/timeline/timeline-receive-response-event.html
 # ENABLE(DRAGGABLE_REGION) is disabled
 fast/css/draggable-region-parser.html
 
-webkit.org/b/99096 fast/canvas/webgl/arraybuffer-transfer-of-control.html [ Failure Pass ]
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/99096 fast/canvas/webgl/arraybuffer-transfer-of-control.html [ Failure Pass Crash ]
 
 # Expected to fail until support for extension is implemented
-webkit.org/b/96828 fast/canvas/webgl/oes-vertex-array-object.html [ Failure Pass ]
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/96828 fast/canvas/webgl/oes-vertex-array-object.html [ Failure Pass Crash ]
 
 # Expected to fail until OES_element_index_uint extension is implemented
-webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass ]
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass Crash ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # TESTS EXPECTED TO FAIL
@@ -855,6 +858,7 @@ webkit.org/b/84338 editing/pasteboard/copy-paste-bidi.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-paste-first-line-in-textarea.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-paste-float.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-paste-pre-line-content.html [ Failure ]
+webkit.org/b/84338 editing/pasteboard/copy-paste-ruby-text-with-block.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-resolves-urls.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-text-with-backgroundcolor.html [ Failure ]
 webkit.org/b/84338 editing/pasteboard/copy-two-pasteboard-types-both-work.html [ Failure ]
@@ -1255,7 +1259,7 @@ webkit.org/b/88191 fast/viewport/viewport-legacy-xhtmlmp-remove-and-add.html [ F
 
 # The EFL port has no support for the FileSystem API
 webkit.org/b/68591 fast/filesystem
-webkit.org/b/68591 fast/mutation/filesystem-callback-delivery.html
+webkit.org/b/68591 fast/dom/MutationObserver/filesystem-callback-delivery.html
 webkit.org/b/68591 http/tests/filesystem
 webkit.org/b/68591 http/tests/security/filesystem-iframe-from-remote.html
 webkit.org/b/68591 http/tests/security/mixedContent/filesystem-url-in-iframe.html
@@ -1411,6 +1415,9 @@ webkit.org/b/93247 [ Debug ] fast/lists/list-marker-remove-crash.html [ Crash ]
 
 # This has always failed on Gtk/Efl - exposed by bug 89826
 webkit.org/b/94009 css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
+
+# REGRESSION (r137487): Crashes in editing/execCommand/indent-paragraphs.html on GTK, EFL.
+webkit.org/b/105042 editing/execCommand/indent-paragraphs.html [ Crash ]
 
 # Requires CSS_COMPOSITING to be turned on
 webkit.org/b/94024 css3/compositing [ Skip ]
@@ -1634,6 +1641,7 @@ webkit.org/b/102493 fast/events/mouse-cursor.html [ Failure ]
 
 # EFL still has the CC toggle button, not the menu of tracks.
 webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Skip ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-sorted.html [ Skip ]
 
 # Fails until we enable the Resource Timing API.
 webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
@@ -1673,3 +1681,39 @@ webkit.org/b/104788 fast/css/large-numbers.html [ Failure ]
 
 # Fixed positioning reftest failing
 webkit.org/b/104808 compositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
+
+# Rendering failure, also missing expected results:
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105093 compositing/webgl/webgl-repaint.html [ ImageOnlyFailure Crash ]
+webkit.org/b/105093 compositing/webgl/webgl-background-color.html [ Skip ]
+webkit.org/b/105093 compositing/webgl/webgl-no-alpha.html [ Skip ]
+webkit.org/b/105093 compositing/webgl/webgl-nonpremultiplied-blend.html [ Skip ]
+webkit.org/b/105093 compositing/webgl/webgl-reflection.html [ Skip ]
+
+# WebProcess timeouts
+webkit.org/b/105092 fast/canvas/webgl/read-pixels-test.html [ Crash ]
+
+# pixel differences, need to investigate.
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105090 fast/canvas/webgl/context-attributes-alpha-depth-stencil-antialias.html [ Failure Crash ]
+
+# shader errors, fails to render.
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105031 fast/canvas/webgl/drawingbuffer-test.html [ Failure Crash ]
+
+# Fail color checks, may also need platform results.
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105030 fast/canvas/webgl/framebuffer-object-attachment.html [ Failure Crash ]
+webkit.org/b/105030 fast/canvas/webgl/premultiplyalpha-test.html [ Failure Crash ]
+
+# These often time out, although pass when run individually.
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105028 fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html [ Failure Pass Crash ]
+webkit.org/b/105028 fast/canvas/webgl/tex-image-and-sub-image-2d-with-video-rgb565.html [ Failure Pass Crash ]
+webkit.org/b/105028 fast/canvas/webgl/tex-image-and-sub-image-2d-with-video-rgba4444.html [ Failure Pass Crash ]
+webkit.org/b/105028 fast/canvas/webgl/tex-image-and-sub-image-2d-with-video-rgba5551.html [ Failure Pass Crash ]
+
+# Rendering issues.
+# Note webkit.org/b/104506, random crashes
+webkit.org/b/105029 fast/canvas/webgl/webgl-composite-modes.html [ ImageOnlyFailure Crash ]
+webkit.org/b/105029 fast/canvas/webgl/webgl-composite-modes-repaint.html [ ImageOnlyFailure Crash ]

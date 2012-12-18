@@ -366,8 +366,12 @@ public:
     virtual void finishParsingChildren();
     virtual void beginParsingChildren();
 
-    PseudoElement* beforePseudoElement() const;
-    PseudoElement* afterPseudoElement() const;
+    bool hasPseudoElements() const;
+    PseudoElement* pseudoElement(PseudoId) const;
+    PseudoElement* beforePseudoElement() const { return pseudoElement(BEFORE); }
+    PseudoElement* afterPseudoElement() const { return pseudoElement(AFTER); }
+    bool childNeedsShadowWalker() const;
+    void didShadowTreeAwareChildrenChange();
 
     // ElementTraversal API
     Element* firstElementChild() const;
@@ -426,6 +430,11 @@ public:
 
 #if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
+#endif
+
+#if ENABLE(VIDEO_TRACK)
+    bool isWebVTTNode() const;
+    void setIsWebVTTNode(bool flag);
 #endif
     
 #if ENABLE(FULLSCREEN_API)
@@ -500,6 +509,7 @@ protected:
 private:
     void updatePseudoElement(PseudoId, StyleChange = NoChange);
     PassRefPtr<PseudoElement> createPseudoElementIfNeeded(PseudoId);
+    void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
 
     // FIXME: Remove the need for Attr to call willModifyAttribute/didModifyAttribute.
     friend class Attr;
@@ -674,7 +684,7 @@ inline void Element::updateName(const AtomicString& oldName, const AtomicString&
 
 inline void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
 {
-    if (!inDocument())
+    if (!isInTreeScope())
         return;
 
     if (oldId == newId)
@@ -685,7 +695,7 @@ inline void Element::updateId(const AtomicString& oldId, const AtomicString& new
 
 inline void Element::updateId(TreeScope* scope, const AtomicString& oldId, const AtomicString& newId)
 {
-    ASSERT(inDocument());
+    ASSERT(isInTreeScope());
     ASSERT(oldId != newId);
 
     if (!oldId.isEmpty())

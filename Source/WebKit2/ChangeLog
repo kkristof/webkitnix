@@ -1,3 +1,1586 @@
+2012-12-17  Sam Weinig  <sam@webkit.org>
+
+        Try to fix the Mac build.
+
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+
+2012-12-17  Halton Huo  <halton.huo@intel.com>
+
+        [EFL] Add ecore_imf_evas to FindEcore.cmake
+        https://bugs.webkit.org/show_bug.cgi?id=105159
+
+        Reviewed by Laszlo Gombos.
+
+        * PlatformEfl.cmake: Add ECORE_IMF_EVAS_LIBRARIES to WebProcess_LIBRARIES
+
+2012-12-17  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Refactor TiledBackingStore code in CoordinatedGraphicsLayer.
+        https://bugs.webkit.org/show_bug.cgi?id=103959
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Currently, CoordinatedGraphicsLayer has complex code related to TiledBackingStore.
+        It has two problem.
+        1. CoordinatedGraphicsLayer hacks TiledBackingStore to prevent
+        TiledBackingStore from asynchronously sending UpdateTile message to UI
+        Process.
+        2. CreateTile and RemoveTile message can be sent to UI Process at any time.
+
+        This patch makes CoordinatedGraphicsLayer use TiledBackingStore more explicitly.
+        It means only during flushing layer states, CoordinatedGraphicsLayer
+        calls methods of TiledBackingStore, which indirectly call createTile(),
+        updateTile() and removeTile().
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::CoordinatedGraphicsLayer):
+        (WebCore::CoordinatedGraphicsLayer::setVisibleContentRectTrajectoryVector):
+        (WebCore::CoordinatedGraphicsLayer::setContentsScale):
+        (WebCore::CoordinatedGraphicsLayer::adjustContentsScale):
+        (WebCore::CoordinatedGraphicsLayer::tiledBackingStoreHasPendingTileCreation):
+        (WebCore::CoordinatedGraphicsLayer::beginContentUpdate):
+        (WebCore::CoordinatedGraphicsLayer::createTile):
+        (WebCore::CoordinatedGraphicsLayer::updateTile):
+        (WebCore::CoordinatedGraphicsLayer::removeTile):
+        (WebCore::CoordinatedGraphicsLayer::updateContentBuffers):
+        (WebCore::CoordinatedGraphicsLayer::purgeBackingStores):
+        (WebCore::CoordinatedGraphicsLayer::setNeedsVisibleRectAdjustment):
+        (WebCore::CoordinatedGraphicsLayer::computeTransformedVisibleRect):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        (CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::notifyFlushRequired):
+        (WebKit::CoordinatedLayerTreeHost::createGraphicsLayer):
+        (WebKit::CoordinatedLayerTreeHost::setVisibleContentsRect):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+
+2012-12-17  Brady Eidson  <beidson@apple.com>
+
+        Can't visit sites with untrusted certs with the NetworkProcess.
+        <rdar://problem/12885641> and https://bugs.webkit.org/show_bug.cgi?id=105235
+
+        Reviewed by Sam Weinig.
+
+        For Mac the missing functionality is being able to tell the network layer in the
+        NetworkProcess to temporarily accept a certificate chain for the given host.
+
+        This patch adds some SPI supporting the way this works on Mac.
+
+        Add a message and Mac implementation for "allowSpecificHTTPSCertificateForHost":
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/NetworkProcess.messages.in:
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::allowSpecificHTTPSCertificateForHost):
+
+        Add SPI for the embedding app"
+        * UIProcess/API/C/WKContext.cpp:
+        (WKContextAllowSpecificHTTPSCertificateForHost):
+        * UIProcess/API/C/WKContextPrivate.h:
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::allowSpecificHTTPSCertificateForHost):
+        * UIProcess/WebContext.h:
+
+2012-12-17  Huang Dongsung  <luxtella@company100.net>
+
+        [CoordinatedGraphics] Assertion hit in WebKit::LayerTreeRenderer::setLayerState()
+        https://bugs.webkit.org/show_bug.cgi?id=104518
+
+        Reviewed by Noam Rosenthal.
+
+        CoordinatedGraphicsLayer::flushCompositingStateForThisLayerOnly() must perform
+        only during flushing pending layer changes in CoordinatedLayerTreeHost.
+        RenderLayerCompositor can call GraphicsLayer::flushCompositingState() regardless
+        of CoordinatedLayerTreeHost and it breaks our assumption. It means that
+        CoordinatedGraphicsLayer can send messages although m_waitingForUIProcess in
+        CoordinatedLayerTreeHost is true.
+
+        Assertion hits because of the same reason. If RenderLayerCompositor calls
+        flushCompositingState() before the first CoordinatedLayerTreeHost::flushPendingLayerChanges(),
+        SetCompositingLayerState message can be prior to SetRootCompositingLayer message.
+
+        We fix this by ensuring that we perform the layer flush only in the code
+        path originating from CoordinatedLayerTreeHost.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::flushCompositingState):
+        (WebCore::CoordinatedGraphicsLayer::flushCompositingStateForThisLayerOnly):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayerClient):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::CoordinatedLayerTreeHost):
+        (WebKit::CoordinatedLayerTreeHost::flushPendingLayerChanges):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+
+2012-12-17  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12895354> NetworkProcess should not exit after downloading
+        https://bugs.webkit.org/show_bug.cgi?id=105209
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::shouldTerminate): This process should never voluntarily
+        terminate, because it keeps session auth and cookies.
+
+2012-12-17  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] Unit tests process hanging on WK2 Release bots
+        https://bugs.webkit.org/show_bug.cgi?id=105021
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Follow-up of r137605, which made it more difficult to reproduce
+        the race condition but doesn't entirely solve the problem. Now
+        we are handling only points in the middle of the fork()/exec().
+
+        * UIProcess/Launcher/efl/ProcessLauncherEfl.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+
+2012-12-17  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [EFL][WK2] window_create doesn't receive the url
+        https://bugs.webkit.org/show_bug.cgi?id=105184
+
+        Reviewed by Alexis Menard.
+
+        Pass the url to the window_create method.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::createNewPage):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/tests/test_ewk2_window_features.cpp:
+        (createDefaultWindow):
+        (createWindow):
+        * UIProcess/efl/PageUIClientEfl.cpp:
+        (WebKit::PageUIClientEfl::createNewPage):
+
+2012-12-17  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2] TiledBackingStore: css3/device-adapt/viewport-width-not-affecting-next-page.html is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=105131
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        The problem was lead by truncation of the scaled result for 'contentFixedSize'.
+        Fixed now with using FloatSize::scale() instead of IntSize::scale().
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::sendViewportAttributesChanged):
+
+2012-12-17  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] remove some unnecessary CONFIG additions
+
+        Reviewed by Simon Hausmann.
+
+        qt is already added by spec_pre.prf, warn_on and depend_includepath by
+        default_pre.prf.
+
+        * UIProcess/API/qt/tests/qmltests/DesktopBehavior.pro:
+        * UIProcess/API/qt/tests/qmltests/WebView.pro:
+
+2012-12-17  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] rely on automatic output directory setup
+
+        Reviewed by Simon Hausmann.
+
+        Now being a proper qt module (by virtue of having load(qt_build_config)
+        in .qmake.conf), webkit gets the path setup goodies for free.
+
+        This also fixes Makefile.api.Debug/Release trying to generate qrc_WebKit.cpp
+        at the same time, instead of the debug and release version ending up in different
+        directories as they should.
+
+        * UIProcess/API/qt/tests/qmltests/DesktopBehavior.pro:
+        * UIProcess/API/qt/tests/qmltests/WebView.pro:
+
+2012-12-17  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] Unit tests process hanging on WK2 Release bots
+        https://bugs.webkit.org/show_bug.cgi?id=105021
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Do not allocate memory in the middle of a fork()/exec().
+        EFL uses global FastMalloc new operator and when we fork(), the
+        process is in a very delicate state. We were being lucky most of the
+        time, but sometimes FastMalloc enters in a busy wait and hangs
+        because it's data structures cannot be trusted after the fork().
+
+        This explains why sometimes we see UIProcess hanging on the bots:
+        they are in fact UIProcess trying to exec() into a WebProcess but
+        hanged just after the fork(). CMake test runner kills the original
+        UIProcess due to timeout and the buggy one stays forever.
+
+        * PlatformEfl.cmake:
+        Set the timeout back to the original value.
+
+        * UIProcess/Launcher/efl/ProcessLauncherEfl.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+        I'm keeping the original behavior, including the call to
+        system() when wrapping the WebProcess on Debug mode. This
+        should be changed to exec() in another patch.
+
+2012-12-17  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Fix the Qt Windows build after r137803
+        https://bugs.webkit.org/show_bug.cgi?id=105152
+
+        Reviewed by Kentaro Hara.
+
+        * Shared/CacheModel.h:
+
+2012-12-16  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: The "Open in Preview" HUD button should work
+        https://bugs.webkit.org/show_bug.cgi?id=102448
+        <rdar://problem/12695729>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Implement the "Open in Preview" button for PDFPlugin, by moving the implementation from PDFViewController
+        onto WebPageProxyMac, and reusing it in PDFViewController and PDFPlugin.
+
+        * UIProcess/API/mac/PDFViewController.h:
+        (PDFViewController): Remove unnecessary members in favor of a UUID that identifies our PDF on disk.
+        * UIProcess/API/mac/PDFViewController.mm:
+        (WebKit::PDFViewController::openPDFInFinder): Move PDFViewController's implementation of openPDFInFinder
+        and related functions to WebPageProxyMac. This will allow it to be shared with PDFPlugin.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Add savePDFToFileInTemporaryFolderAndOpenWithNativeApplication,
+        savePDFToFileInTemporaryFolderAndOpenWithNativeApplicationRaw, and openPDFFromTemporaryFolderWithNativeApplication.
+        Add m_temporaryPDFFiles, which is used to keep track of the filenames of PDFs that we've saved to disk.
+        * UIProcess/WebPageProxy.messages.in:
+        Add SavePDFToFileInTemporaryFolderAndOpenWithNativeApplication and OpenPDFFromTemporaryFolderWithNativeApplication.
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::temporaryPDFDirectoryPath): Copied from PDFViewController. Construct the path to a
+        WebKitPDFs temporary directory into which PDFs to be opened with a native application are downloaded.
+        (WebKit::pathToPDFOnDisk): Copied from PDFViewController. Combine temporaryPDFDirectoryPath
+        with the suggested filename for the given PDF, creating a new filename if the file already exists.
+        (WebKit::WebPageProxy::savePDFToTemporaryFolderAndOpenWithNativeApplicationRaw):
+        (WebKit::WebPageProxy::savePDFToTemporaryFolderAndOpenWithNativeApplication):
+        Save the given PDF data to a temporary file, given the suggested filename. This inserts the
+        filename used into m_temporaryPDFFiles, where it can later be retrieved by UUID when asked
+        to open the PDF again in a native application. Then, open it with NSWorkspace.
+        (WebKit::WebPageProxy::openPDFFromTemporaryFolderWithNativeApplication):
+        Open the previously saved PDF file with NSWorkspace, referenced by UUID.
+        We identify the file by UUID instead of name so that only the UIProcess needs
+        to keep track of the actual filename, and so that the WebProcess
+        cannot hand an arbitrary filename back to the UIProcess to open.
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Add openWithNativeApplication and storage for the UUID that identifies our PDF on disk.
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate openWithPreview]): Forward openWithPreview to PDFPlugin's openWithNativeApplication.
+        (WebKit::PDFPlugin::saveToPDF):
+        Hand raw data to WebPage and have it send the message to WebPageProxy instead of using IPC types in PDFPlugin.
+        (WebKit::PDFPlugin::openWithNativeApplication):
+        Ask WebPage to save the current PDF to a temporary directory and open it with a native application.
+        If we've already downloaded the PDF (and have a non-null m_temporaryPDFUUID),
+        we can just open the existing file.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::savePDFToFileInDownloadsFolder): Hand the PDF data to WebPageProxy to save.
+        (WebKit::WebPage::savePDFToTemporaryFolderAndOpenWithNativeApplication): Hand the PDF data to WebPageProxy to save and open.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Add savePDFToFileInDownloadsFolder and savePDFToTemporaryFolderAndOpenWithNativeApplication.
+
+2012-12-16  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [WK2] Remote Web Inspector requires the inspector
+        https://bugs.webkit.org/show_bug.cgi?id=105088
+
+        Reviewed by Sam Weinig.
+
+        Inspector server should not be started without inspector.
+
+        * config.h:
+
+2012-12-16  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        Fix unused parameter compile warnings
+        https://bugs.webkit.org/show_bug.cgi?id=105089
+
+        Reviewed by Kentaro Hara.
+
+        Use UNUSED_PARAM macro to fix build warning -Wunused-parameter.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_inspector_show):
+        (ewk_view_inspector_close):
+
+2012-12-16  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL][WK2] Header files of ewk_context_menu should be installed
+        https://bugs.webkit.org/show_bug.cgi?id=105069
+
+        Reviewed by Gyuyoung Kim.
+
+        * PlatformEfl.cmake:
+        Modified to install ewk_context_menu.h and ewk_context_menu_item.h which
+        are included in EWebKit2.h
+
+2012-12-16  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12886898> Bundle uploads don't work
+        https://bugs.webkit.org/show_bug.cgi?id=105149
+
+        Reviewed by Sam Weinig.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::didReceiveResponse):
+        (WebKit::NetworkResourceLoader::didFail):
+        Clean up generated files when they are no longer needed. This has to be done before FormData
+        destruction. This duplicates same work done in WebProcess, but duplicaiton is safe, and may
+        be helpful if one of the sides prematurely exits.
+
+2012-12-16  Jon Lee  <jonlee@apple.com>
+
+        Allow built-in PDF plugin and plugin documents to auto-start
+        https://bugs.webkit.org/show_bug.cgi?id=105000
+        <rdar://problem/12633351>
+
+        Reviewed by Sam Weinig.
+
+        Overrides PluginViewBase::shouldAlwaysAutoStart().
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::shouldAlwaysAutoStart): If there's no plug-in, return the default,
+        otherwise return the plug-in's behavior.
+        * WebProcess/Plugins/PluginView.h:
+
+        * WebProcess/Plugins/Plugin.h:
+        (WebKit::Plugin::shouldAlwaysAutoStart): Added. By default, return false.
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h: Built-in PDF plug-ins should auto-start.
+
+2012-12-16  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Small refactor of CoordinatedLayerTreeHost and CoordinatedGraphicsLayer.
+        https://bugs.webkit.org/show_bug.cgi?id=104880
+
+        Reviewed by Noam Rosenthal.
+
+        This patch changes two points.
+        1. Remove layerByIDMap() in CoordinatedGraphicsLayer because it is unused.
+        2. Remove code swapping m_registeredLayers in CoordinatedLayerTreeHost because
+        setCoordinator(0) does not call detachLayer().
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::CoordinatedGraphicsLayer):
+        (WebCore::CoordinatedGraphicsLayer::~CoordinatedGraphicsLayer):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::~CoordinatedLayerTreeHost):
+
+2012-12-16  Anders Carlsson  <andersca@apple.com>
+
+        Remove the random crash thread
+        https://bugs.webkit.org/show_bug.cgi?id=105147
+
+        Reviewed by Sam Weinig.
+
+        Remove old crashy code.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initialize):
+
+2012-12-16  Anders Carlsson  <andersca@apple.com>
+
+        Implement authentication for downloads
+        https://bugs.webkit.org/show_bug.cgi?id=105146
+        <rdar://problem/12239483>
+
+        Reviewed by Sam Weinig.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::initialize):
+        (WebKit::NetworkProcess::didReceiveMessage):
+        (WebKit::NetworkProcess::didReceiveSyncMessage):
+        (WebKit::NetworkProcess::downloadsAuthenticationManager):
+        * NetworkProcess/NetworkProcess.h:
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didReceiveAuthenticationChallenge):
+        * WebProcess/Downloads/Download.cpp:
+        (WebKit::Download::didReceiveAuthenticationChallenge):
+        * WebProcess/Downloads/DownloadManager.cpp:
+        (WebKit::DownloadManager::downloadsAuthenticationManager):
+        * WebProcess/Downloads/DownloadManager.h:
+        * WebProcess/Downloads/mac/DownloadMac.mm:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::downloadsAuthenticationManager):
+        (WebKit::WebProcess::didReceiveSyncMessage):
+        * WebProcess/WebProcess.h:
+
+2012-12-16  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Small refactor of CoordinatedLayerTreeHost and CoordinatedGraphicsLayer.
+        https://bugs.webkit.org/show_bug.cgi?id=104880
+
+        Reviewed by Noam Rosenthal.
+
+        Delete backing stores explicitly in ~CoordinatedLayerTreeHost().
+
+        Clarify the lifecycle of backing stores in CoordinatedGraphicsLayer.
+        Currently, CoordinatedGraphicsLayer::removeTile() checks if m_coordinator
+        exists, because ~CoordinatedLayerTreeHost() sets m_coordinator in
+        CoordinatedGraphicsLayer to 0. This patch purges backing stores before setting
+        m_coordinator to 0. This change makes code more readable.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::~CoordinatedGraphicsLayer):
+        (WebCore::CoordinatedGraphicsLayer::beginContentUpdate):
+        (WebCore::CoordinatedGraphicsLayer::createTile):
+        (WebCore::CoordinatedGraphicsLayer::updateTile):
+        (WebCore::CoordinatedGraphicsLayer::removeTile):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::~CoordinatedLayerTreeHost):
+
+2012-12-16  Anders Carlsson  <andersca@apple.com>
+
+        Authentication manager cleanup
+        https://bugs.webkit.org/show_bug.cgi?id=105144
+
+        Reviewed by Sam Weinig.
+
+        Some cleanup to make it possible to reuse the authentication manager from the network process.
+
+        * UIProcess/Authentication/AuthenticationChallengeProxy.cpp:
+        (WebKit::AuthenticationChallengeProxy::AuthenticationChallengeProxy):
+        (WebKit::AuthenticationChallengeProxy::~AuthenticationChallengeProxy):
+        (WebKit::AuthenticationChallengeProxy::useCredential):
+        (WebKit::AuthenticationChallengeProxy::cancel):
+        * UIProcess/Authentication/AuthenticationChallengeProxy.h:
+        (WebKit::AuthenticationChallengeProxy::create):
+        (AuthenticationChallengeProxy):
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didReceiveAuthenticationChallenge):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::didReceiveAuthenticationChallenge):
+        * WebProcess/Authentication/AuthenticationManager.cpp:
+        (WebKit::AuthenticationManager::AuthenticationManager):
+        (WebKit::AuthenticationManager::setConnection):
+        (WebKit::AuthenticationManager::didReceiveAuthenticationChallenge):
+        (WebKit::AuthenticationManager::useCredentialForChallenge):
+        * WebProcess/Authentication/AuthenticationManager.h:
+        * WebProcess/Downloads/Download.cpp:
+        (WebKit::Download::didReceiveAuthenticationChallenge):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDidReceiveAuthenticationChallenge):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        (WebKit::WebProcess::initialize):
+        * WebProcess/WebProcess.h:
+        (WebKit::WebProcess::authenticationManager):
+        (WebProcess):
+
+2012-12-16  Anders Carlsson  <andersca@apple.com>
+
+        Rudimentary support for main resource downloads
+        https://bugs.webkit.org/show_bug.cgi?id=105141
+
+        Reviewed by Sam Weinig.
+
+        For now, instead of converting a main resource load into a download, just cancel it and start
+        a new separate download.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::downloadRequest):
+        Call through to the download manager.
+        
+        (WebKit::NetworkProcess::cancelDownload):
+        Call through to the download manager.
+
+        * NetworkProcess/NetworkProcess.messages.in:
+        Add new messages.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::cancel):
+        Send the cancel message to the network process when needed.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::download):
+        Handle the network process case.
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::WebPageProxy):
+        (WebKit::WebPageProxy::receivedPolicyDecision):
+        (WebKit::WebPageProxy::decidePolicyForResponse):
+        Keep track of the current request when calling decidePolicyForResponse.
+
+2012-12-16  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] CustomProtocolManager should intercept messages of class MessageClassCustomProtocolManager sent to the network process
+        https://bugs.webkit.org/show_bug.cgi?id=105137
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::didReceiveMessage):
+
+2012-12-16  Levi Weintraub  <leviw@chromium.org>
+
+        Push pixel snapping logic into TransformState
+        https://bugs.webkit.org/show_bug.cgi?id=101779
+
+        Reviewed by Simon Fraser.
+
+        Eliminating use of SnapOffsetForTransforms as it's no longer needed.
+
+        * WebProcess/FullScreen/WebFullScreenManager.cpp:
+        (WebKit::screenRectOfContents):
+
+2012-12-16  Anders Carlsson  <andersca@apple.com>
+
+        Rename WebFrame::convertHandleToDownload to convertMainResourceLoadToDownload
+        https://bugs.webkit.org/show_bug.cgi?id=105134
+
+        Reviewed by Sam Weinig.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::convertMainResourceLoadToDownload):
+        * WebProcess/WebPage/WebFrame.cpp:
+        (WebKit::WebFrame::convertMainResourceLoadToDownload):
+        * WebProcess/WebPage/WebFrame.h:
+        (WebFrame):
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Rename FrameLoaderClient::download to convertMainResourceLoadToDownload
+        https://bugs.webkit.org/show_bug.cgi?id=105122
+
+        Reviewed by Andreas Kling.
+
+        Update for WebCore changes.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::convertMainResourceLoadToDownload):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.h:
+        (WebFrameLoaderClient):
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Another build fix.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createDownloadProxy):
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] Have CustomProtocolManager and CustomProtocolManagerProxy store Connections for messaging
+        https://bugs.webkit.org/show_bug.cgi?id=105124
+
+        Reviewed by Anders Carlsson.
+
+        Remove CustomProtocolManagerProxy's assumption that all messages go to
+        a web process. Have it take a ChildProcessProxy instead and extract its
+        connection.
+
+        Similarly, remove CustomProtocolManager's assumption that all messages
+        go through a shared WebProcess. Initialize the shared CustomProtocolManager
+        with a Connection object instead.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeNetworkProcess): Initialize the
+        shared CustomProtocolManager with the NetworkProcess's connection to
+        the UI process.
+        * Shared/Network/CustomProtocols/CustomProtocolManager.h:
+        (WebKit::CustomProtocolManager::connection): Assert m_connection is
+        non-0 and return it.
+        * Shared/Network/CustomProtocols/mac/CustomProtocolManagerMac.mm:
+        (+[WKCustomProtocol canInitWithRequest:]): Remove an unnecessary
+        namespace.
+        (-[WKCustomProtocol initWithRequest:cachedResponse:client:]): Ditto.
+        (-[WKCustomProtocol startLoading]): Send a message on the
+        CustomProtocolManager's connection rather than assuming there is a
+        shared WebProcess in our address space.
+        (-[WKCustomProtocol stopLoading]): Ditto.
+        (WebKit::CustomProtocolManager::initialize): Initialize the shared
+        CustomProtocolManager with a Connection and register our custom
+        protocol handler with NSURLProtocol.
+        * UIProcess/Network/CustomProtocols/CustomProtocolManagerProxy.h:
+        (WebKit):
+        (CustomProtocolManagerProxy): Take a ChildProcessProxy* rather than a
+        WebProcessProxy*.
+        * UIProcess/Network/CustomProtocols/mac/CustomProtocolManagerProxyMac.mm:
+        (WebKit::CustomProtocolManagerProxy::CustomProtocolManagerProxy): Ditto.
+        (WebKit::CustomProtocolManagerProxy::startLoading): Ditto.
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::NetworkProcessProxy): Instantiate a
+        CustomProtocolManagerProxy for the network process.
+        (WebKit::NetworkProcessProxy::didReceiveMessage): Route messages of
+        class MessageClassCustomProtocolManagerProxy to the
+        CustomProtocolManagerProxy.
+        * UIProcess/Network/NetworkProcessProxy.h:
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::didReceiveMessage): Assert that we aren't
+        using the network process since we've received a message from a
+        web process's CustomProtocolManager.
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess): Break CustomProtocolManager
+        initialization out into a helper function.
+        (WebKit::WebProcess::initializeCustomProtocolManager): Initialize our
+        CustomProtocolManager.
+        * WebProcess/WebProcess.h:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Happy little Qt build fix.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::download):
+
+2012-12-15  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12886312> Cannot upload patches to Bugzilla (<input type=file> doesn't work)
+        https://bugs.webkit.org/show_bug.cgi?id=105120
+
+        Reviewed by Sam Weinig.
+
+        Serialize HTTP body. ResourceRequest serialization cannot (and shouldn't) know about
+        body streams, as used with files.
+
+        * Shared/Network/NetworkResourceLoadParameters.cpp:
+        (WebKit::NetworkResourceLoadParameters::encode):
+        (WebKit::NetworkResourceLoadParameters::decode):
+        * Shared/WebCoreArgumentCoders.cpp:
+        (CoreIPC::::encode):
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Handle downloads in the network process
+        https://bugs.webkit.org/show_bug.cgi?id=105117
+
+        Reviewed by Sam Weinig.
+
+        Start using the download manager in the network process.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::startDownload):
+        Call through to the download manager.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in:
+        Add StartDownload message.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::downloadManager):
+        Add "singleton" download manager.
+
+        (WebKit::NetworkProcess::didCreateDownload):
+        (WebKit::NetworkProcess::didDestroyDownload):
+        (WebKit::NetworkProcess::downloadProxyConnection):
+        Implement DownloadManager::Client.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::didReceiveMessage):
+        (WebKit::NetworkProcessProxy::didReceiveSyncMessage):
+        Call through to the message receiver map.
+
+        * WebProcess/Downloads/Download.cpp:
+        * WebProcess/Downloads/DownloadManager.cpp:
+        (WebKit::DownloadManager::downloadProxyConnection):
+        * WebProcess/Downloads/DownloadManager.h:
+        Rename connection to downloadProxyConnection.
+
+        * WebProcess/WebPage/WebFrame.cpp:
+        (WebKit::WebFrame::startDownload):
+        When using the network process, send a message to it with the request that needs to be downloaded.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::downloadProxyConnection):
+        Return the connection to the UI process.
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        NSURLCache should be disabled in the WebProcess when using the NetworkProcess
+        <rdar://problem/12872266>
+        https://bugs.webkit.org/show_bug.cgi?id=105119
+
+        Reviewed by Alexey Proskuryakov.
+
+        Set the size of the NSURLCache to 0 (both disk and memory) in the WebProcess when using
+        the NetworkProcess.
+
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformSetCacheModel):
+        (WebKit::WebProcess::platformInitializeWebProcess):
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        The network process should use the correct NSURLCache location and set its size correctly for the CacheModel
+        <rdar://problem/12848505>
+        https://bugs.webkit.org/show_bug.cgi?id=105115
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        (WebKit::NetworkProcess::setCacheModel):
+        * NetworkProcess/NetworkProcess.h:
+        (NetworkProcess):
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::platformInitialize):
+        (WebKit::memorySize):
+        (WebKit::volumeFreeSize):
+        (WebKit::NetworkProcess::platformSetCacheModel):
+        Copy code from the WebProcess to set up the NSURLCache correctly (location and size).
+        We should eventually move the calculation of this to the WebContext so it can be done
+        once.
+
+        * Shared/Network/NetworkProcessCreationParameters.cpp:
+        (WebKit::NetworkProcessCreationParameters::encode):
+        (WebKit::NetworkProcessCreationParameters::decode):
+        * Shared/Network/NetworkProcessCreationParameters.h:
+        (NetworkProcessCreationParameters):
+        Add the necessary creation parameters to set up the cache.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::didFinishLaunching):
+        * UIProcess/Network/NetworkProcessProxy.h:
+        (NetworkProcessProxy):
+        * UIProcess/Network/mac/NetworkProcessProxyMac.mm:
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::ensureNetworkProcess):
+        (WebKit::WebContext::setCacheModel):
+        * UIProcess/WebContext.h:
+        (WebKit):
+        (WebContext):
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit):
+        (WebKit::WebContext::platformInitializeNetworkProcess):
+        Move initializing the NetworkProcess to just after creating (matching the WebProcess),
+        rather than waiting for it finish loading before sending the creation parameters.
+        Additionally, this moves the setting up of the creation parameters to the WebContext,
+        as that is where all the interesting state resides (and also matches the WebProcess).
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] Register the custom protocol handler in the network process if it exists
+        https://bugs.webkit.org/show_bug.cgi?id=105118
+
+        Reviewed by Anders Carlsson.
+
+        Register our custom protocol handler with NSURLProtocol when starting
+        up the network process; do not register the custom protocol handler in
+        web processes if a network process is being used.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess):
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        The network process should use the correct NSURLCache location and set its size correctly for the CacheModel
+        <rdar://problem/12848505>
+        https://bugs.webkit.org/show_bug.cgi?id=105115
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        (WebKit::NetworkProcess::setCacheModel):
+        * NetworkProcess/NetworkProcess.h:
+        (NetworkProcess):
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::platformInitialize):
+        (WebKit::memorySize):
+        (WebKit::volumeFreeSize):
+        (WebKit::NetworkProcess::platformSetCacheModel):
+        Copy code from the WebProcess to set up the NSURLCache correctly (location and size).
+        We should eventually move the calculation of this to the WebContext so it can be done
+        once.
+
+        * Shared/Network/NetworkProcessCreationParameters.cpp:
+        (WebKit::NetworkProcessCreationParameters::encode):
+        (WebKit::NetworkProcessCreationParameters::decode):
+        * Shared/Network/NetworkProcessCreationParameters.h:
+        (NetworkProcessCreationParameters):
+        Add the necessary creation parameters to set up the cache.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::didFinishLaunching):
+        * UIProcess/Network/NetworkProcessProxy.h:
+        (NetworkProcessProxy):
+        * UIProcess/Network/mac/NetworkProcessProxyMac.mm:
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::ensureNetworkProcess):
+        (WebKit::WebContext::setCacheModel):
+        * UIProcess/WebContext.h:
+        (WebKit):
+        (WebContext):
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit):
+        (WebKit::WebContext::platformInitializeNetworkProcess):
+        Move initializing the NetworkProcess to just after creating (matching the WebProcess),
+        rather than waiting for it finish loading before sending the creation parameters.
+        Additionally, this moves the setting up of the creation parameters to the WebContext,
+        as that is where all the interesting state resides (and also matches the WebProcess).
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        Clean up the previous build fix; access m_networkProcess directly.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::registerSchemeForCustomProtocol):
+        (WebKit::WebContext::unregisterSchemeForCustomProtocol):
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        Fix the build.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::registerSchemeForCustomProtocol):
+        (WebKit::WebContext::unregisterSchemeForCustomProtocol):
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] Register schemes with the network process if it is being used
+        https://bugs.webkit.org/show_bug.cgi?id=105113
+
+        Reviewed by Anders Carlsson.
+
+        If a WebContext is using the network process, it needs to be told about
+        scheme (un)registration rather than the context's web processes.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeNetworkProcess): Tell the shared
+        CustomProtocolManager about schemes registered at process creation time.
+        (WebKit::NetworkProcess::registerSchemeForCustomProtocol): Tell the
+        shared CustomProtocolManager about a new scheme.
+        (WebKit::NetworkProcess::unregisterSchemeForCustomProtocol): Remove a
+        scheme from the shared CustomProtocolManager.
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/NetworkProcess.messages.in: Add registration and
+        unregistration messages for the NetworkProcess.
+        * Shared/Network/NetworkProcessCreationParameters.cpp:
+        (WebKit::NetworkProcessCreationParameters::encode): Encode
+        urlSchemesRegisteredForCustomProtocols.
+        (WebKit::NetworkProcessCreationParameters::decode): Decode
+        urlSchemesRegisteredForCustomProtocols.
+        * Shared/Network/NetworkProcessCreationParameters.h: Define
+        urlSchemesRegisteredForCustomProtocols.
+        * UIProcess/Network/mac/NetworkProcessProxyMac.mm:
+        (WebKit::NetworkProcessProxy::platformInitializeNetworkProcess): Populate
+        urlSchemesRegisteredForCustomProtocols with the current set of schemes.
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::registerSchemeForCustomProtocol): Send a new
+        scheme to either the network process or to the context's web processes.
+        (WebKit::WebContext::unregisterSchemeForCustomProtocol): Ditto for
+        removing a scheme.
+        * UIProcess/WebContext.h:
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::WebContext::platformInitializeWebProcess): Only populate
+        urlSchemesRegisteredForCustomProtocols if the network process isn't
+        being used.
+        (WebKit::WebContext::registerNotificationObservers):
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+        urlSchemesRegisteredForCustomProtocols should only be non-empty if the
+        network process isn't being used. Assert this.
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Remove the unneeded NetworkProcessCrashed message
+        https://bugs.webkit.org/show_bug.cgi?id=105114
+
+        Reviewed by Sam Weinig.
+
+        Remove the NetworkProcessCrashed message; it's not needed since the connection member variable is already
+        nulled out in WebProcess::networkProcessConnectionClosed which is called when the Connection::Client::didClose member
+        function is called on the connection between the web process and network process.
+        
+        Furthermore, this message was handled on the connection queue which runs on a different thread and the handler was not
+        thread-safe so this could in theory cause bad crashes.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::didClose):
+        * WebProcess/WebProcess.cpp:
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * WebProcess/WebProcess.messages.in:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Add a DownloadProxyMap object to the NetworkProcessProxy object
+        https://bugs.webkit.org/show_bug.cgi?id=105112
+
+        Reviewed by Sam Weinig.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::createDownloadProxy):
+        (WebKit::NetworkProcessProxy::didClose):
+        * UIProcess/Network/NetworkProcessProxy.h:
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createDownloadProxy):
+        * UIProcess/WebProcessProxy.cpp:
+        * UIProcess/WebProcessProxy.h:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Move the download proxy map from the web context to the web process proxy
+        https://bugs.webkit.org/show_bug.cgi?id=105109
+
+        Reviewed by Andreas Kling.
+
+        More progress towards making downloads work with the networking process. Since downloads are handled by the
+        web process when not using a networking process, it makes sense for the download proxy map to live in the
+        web process proxy object.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::shouldTerminate):
+        (WebKit::WebContext::disconnectProcess):
+        (WebKit::WebContext::download):
+        (WebKit::WebContext::createDownloadProxy):
+        * UIProcess/WebContext.h:
+        (WebContext):
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::disconnect):
+        (WebKit::WebProcessProxy::shouldTerminate):
+        (WebKit):
+        (WebKit::WebProcessProxy::createDownloadProxy):
+        * UIProcess/WebProcessProxy.h:
+        (WebProcessProxy):
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        DownloadProxy should keep a strong reference to its associated web context
+        https://bugs.webkit.org/show_bug.cgi?id=105107
+
+        Reviewed by Alexey Proskuryakov.
+
+        While this does create a ref-cycle, it's broken when the download completes, fails, is canceled or
+        if the process that's doing the download crashes.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::processDidClose):
+        (WebKit::DownloadProxy::didStart):
+        (WebKit::DownloadProxy::didReceiveAuthenticationChallenge):
+        (WebKit::DownloadProxy::didReceiveResponse):
+        (WebKit::DownloadProxy::didReceiveData):
+        (WebKit::DownloadProxy::shouldDecodeSourceDataOfMIMEType):
+        (WebKit::DownloadProxy::decideDestinationWithSuggestedFilename):
+        (WebKit::DownloadProxy::didCreateDestination):
+        (WebKit::DownloadProxy::didFinish):
+        (WebKit::DownloadProxy::didFail):
+        (WebKit::DownloadProxy::didCancel):
+        * UIProcess/Downloads/DownloadProxy.h:
+        (DownloadProxy):
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Remove WebContext::downloadFinished
+        https://bugs.webkit.org/show_bug.cgi?id=105105
+
+        Reviewed by Sam Weinig.
+
+        Have DownloadProxyMap manage the message receiver map and remove WebContext::downloadFinished.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didFinish):
+        (WebKit::DownloadProxy::didFail):
+        (WebKit::DownloadProxy::didCancel):
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::DownloadProxyMap):
+        (WebKit::DownloadProxyMap::createDownloadProxy):
+        (WebKit::DownloadProxyMap::downloadFinished):
+        * UIProcess/Downloads/DownloadProxyMap.h:
+        (DownloadProxyMap):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::createDownloadProxy):
+        * UIProcess/WebContext.h:
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        Make the NetworkProcess be managed by the WebContext, rather than a singleton NetworkProcessMananger
+        https://bugs.webkit.org/show_bug.cgi?id=105104
+
+        Reviewed by Alexey Proskuryakov.
+
+        Move to having the WebContext own and manage the NetworkProcessProxy.
+
+        * UIProcess/Network/NetworkProcessManager.cpp: Removed.
+        * UIProcess/Network/NetworkProcessManager.h: Removed.
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::create):
+        (WebKit::NetworkProcessProxy::NetworkProcessProxy):
+        (WebKit::NetworkProcessProxy::networkProcessCrashedOrFailedToLaunch):
+        * UIProcess/Network/NetworkProcessProxy.h:
+        (WebKit):
+        (NetworkProcessProxy):
+        * UIProcess/Network/mac/NetworkProcessManagerMac.mm: Removed.
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::ensureNetworkProcess):
+        (WebKit::WebContext::removeNetworkProcessProxy):
+        (WebKit::WebContext::getNetworkProcessConnection):
+        (WebKit::WebContext::willStartUsingPrivateBrowsing):
+        (WebKit::WebContext::willStopUsingPrivateBrowsing):
+        (WebKit::WebContext::createNewWebProcess):
+        * UIProcess/WebContext.h:
+        (WebKit):
+        (WebContext):
+        (WebKit::WebContext::networkProcess):
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::getNetworkProcessConnection):
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::WebContext::applicationBecameVisible):
+        (WebKit::WebContext::applicationBecameOccluded):
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        DownloadProxy objects should know which DownloadProxyMap they belong to
+        https://bugs.webkit.org/show_bug.cgi?id=105102
+
+        Reviewed by Andy Estes.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::create):
+        (WebKit::DownloadProxy::DownloadProxy):
+        * UIProcess/Downloads/DownloadProxy.h:
+        (WebKit):
+        (DownloadProxy):
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::createDownloadProxy):
+
+2012-12-15  Andy Estes  <aestes@apple.com>
+
+        [WebKit2] Move CustomProtocolManager to Shared/
+        https://bugs.webkit.org/show_bug.cgi?id=105103
+
+        Reviewed by Sam Weinig.
+
+        CustomProtocolManager can be instantiated either in the NetworkProcess or the WebProcess, so it should live in Shared/.
+
+        * DerivedSources.make: Update the path where CustomProtocolManager.messages.in can be found.
+        * Shared/Network/CustomProtocols/CustomProtocolManager.h: Renamed from Source/WebKit2/WebProcess/Network/CustomProtocols/CustomProtocolManager.h.
+        * Shared/Network/CustomProtocols/CustomProtocolManager.messages.in: Renamed from Source/WebKit2/WebProcess/Network/CustomProtocols/CustomProtocolManager.messages.in.
+        * Shared/Network/CustomProtocols/mac/CustomProtocolManagerMac.mm: Renamed from Source/WebKit2/WebProcess/Network/CustomProtocols/mac/CustomProtocolManagerMac.mm.
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        Try to fix the Qt build.
+
+        * Target.pri:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        Get rid of DownloadProxyMap::downloads()
+        https://bugs.webkit.org/show_bug.cgi?id=105100
+
+        Reviewed by Sam Weinig.
+
+        Add the needed member functions to DownloadProxyMap and remove the downloads() member function.
+
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::downloadFinished):
+        (WebKit::DownloadProxyMap::processDidClose):
+        (WebKit):
+        * UIProcess/Downloads/DownloadProxyMap.h:
+        (WebKit::DownloadProxyMap::isEmpty):
+        (DownloadProxyMap):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::shouldTerminate):
+        (WebKit::WebContext::disconnectProcess):
+        (WebKit::WebContext::downloadFinished):
+
+2012-12-15  Sam Weinig  <sam@webkit.org>
+
+        Move calculation of caches sizes based on the cache model to CacheModel.h/cpp
+        https://bugs.webkit.org/show_bug.cgi?id=105098
+
+        Reviewed by Anders Carlsson.
+
+        Move calculation of caches sizes based on the cache model to CacheModel.h/cpp so
+        that it can be used by more than just the WebProcess.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Shared/CacheModel.cpp: Added.
+        (WebKit):
+        (WebKit::calculateCacheSizes):
+        * Shared/CacheModel.h:
+        * Target.pri:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebProcess.cpp:
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * win/WebKit2.vcproj:
+
+2012-12-15  Anders Carlsson  <andersca@apple.com>
+
+        DownloadProxyMap shouldn't be a singleton after all
+        https://bugs.webkit.org/show_bug.cgi?id=105099
+
+        Reviewed by Sam Weinig.
+
+        Make the DownloadProxyMap be per context instead, and get rid of the m_downloads hash map from WebContext.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didFinish):
+        (WebKit::DownloadProxy::didFail):
+        (WebKit::DownloadProxy::didCancel):
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::~DownloadProxyMap):
+        * UIProcess/Downloads/DownloadProxyMap.h:
+        (DownloadProxyMap):
+        (WebKit::DownloadProxyMap::downloads):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::shouldTerminate):
+        (WebKit::WebContext::disconnectProcess):
+        (WebKit::WebContext::createDownloadProxy):
+        (WebKit::WebContext::downloadFinished):
+        * UIProcess/WebContext.h:
+        (WebContext):
+
+2012-12-15  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Disambiguate "background color" and "contents as solid color" on GraphicsLayer
+        https://bugs.webkit.org/show_bug.cgi?id=104842
+
+        Reviewed by Simon Fraser.
+
+        Rename overloads in coordinated graphics to account for the rename in GraphicsLayer.
+
+        * Shared/CoordinatedGraphics/CoordinatedLayerInfo.h:
+        (CoordinatedLayerInfo):
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::setLayerState):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::setContentsToSolidColor):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.h:
+        (CoordinatedGraphicsLayer):
+
+2012-12-15  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [GTK][WK2] Memory leak in ChunkedUpdateDrawingArea::paintIntoUpdateChunk()
+        https://bugs.webkit.org/show_bug.cgi?id=105095
+
+        Reviewed by Martin Robinson.
+
+        Adopt the pointer returned by cairo_create() in
+        ChunkedUpdateDrawingArea::paintIntoUpdateChunk() to avoid leaking
+        memory.
+
+        * WebProcess/WebPage/gtk/ChunkedUpdateDrawingAreaGtk.cpp:
+        (WebKit::ChunkedUpdateDrawingArea::paintIntoUpdateChunk):
+
+2012-12-15  Mark Lam  <mark.lam@apple.com>
+
+        Added #if ENABLE(SQL_DATABASE) around WebPlatformStrategies::getDatabaseServer().
+        https://bugs.webkit.org/show_bug.cgi?id=104934..
+
+        Not reviewed.
+
+        Greening the Qt Linux Release Minimal bot.
+
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit):
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.h:
+        (WebPlatformStrategies):
+
+2012-12-15  Mark Lam  <mark.lam@apple.com>
+
+        Re-landing patch for "Introducing the DatabaseStrategy and database servers".
+        https://bugs.webkit.org/show_bug.cgi?id=104934.
+
+        Not reviewed.
+
+        Merged from r137767. Previously reviewed by Sam Weinig.
+
+        * CMakeLists.txt:
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::createDatabaseStrategy):
+        (WebKit):
+        (WebKit::WebPlatformStrategies::getDatabaseServer):
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.h:
+        (WebPlatformStrategies):
+
+2012-12-14  Anders Carlsson  <andersca@apple.com>
+
+        DownloadProxy objects should be message receivers
+        https://bugs.webkit.org/show_bug.cgi?id=105068
+
+        Reviewed by Andreas Kling.
+
+        This simplifies the WebContext message dispatch code somewhat.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didReceiveMessage):
+        (WebKit::DownloadProxy::didReceiveSyncMessage):
+        * UIProcess/Downloads/DownloadProxy.h:
+        (DownloadProxy):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createDownloadProxy):
+        (WebKit::WebContext::didReceiveMessage):
+        (WebKit::WebContext::didReceiveSyncMessage):
+
+2012-12-14  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r137767.
+        http://trac.webkit.org/changeset/137767
+        https://bugs.webkit.org/show_bug.cgi?id=105062
+
+        Broke Mac builds. (Requested by mlam on #webkit).
+
+        * CMakeLists.txt:
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.h:
+        (WebPlatformStrategies):
+
+2012-12-14  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12874760> NetworkProcess loads may get stuck when WebProcess quits
+        https://bugs.webkit.org/show_bug.cgi?id=105056
+
+        Reviewed by Anders Carlsson.
+
+        Make response maps per-connection.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::didClose): Cancel waiting for responses
+        from WebProcess, they will never arrive.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        (WebKit::NetworkConnectionToWebProcess::willSendRequestResponseMap):
+        (WebKit::NetworkConnectionToWebProcess::canAuthenticateAgainstProtectionSpaceResponseMap):
+        Maps now live here.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::connectionToWebProcessDidClose): Added a FIXME.
+
+        (WebKit::NetworkResourceLoader::willSendRequest):
+        (WebKit::NetworkResourceLoader::willSendRequestHandled):
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpace):
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpaceHandled):
+        Handle the cases where we can't send a request, or can't expect a response any more.
+
+        * Shared/BlockingResponseMap.h:
+        (BlockingResponseMap):
+        (BlockingResponseMap::BlockingResponseMap):
+        (BlockingResponseMap::~BlockingResponseMap):
+        (BlockingResponseMap::waitForResponse):
+        (BlockingResponseMap::didReceiveResponse):
+        (BlockingResponseMap::cancel):
+        (BlockingBoolResponseMap):
+        (BlockingBoolResponseMap::BlockingBoolResponseMap):
+        (BlockingBoolResponseMap::~BlockingBoolResponseMap):
+        (BlockingBoolResponseMap::waitForResponse):
+        (BlockingBoolResponseMap::didReceiveResponse):
+        (BlockingBoolResponseMap::cancel):
+        Added an ability to cancel, and slightly beefed up overall.
+
+2012-12-14  Anders Carlsson  <andersca@apple.com>
+
+        DownloadProxyMap should keep track of outstanding DownloadProxy objects
+        https://bugs.webkit.org/show_bug.cgi?id=105053
+
+        Reviewed by Andreas Kling.
+
+        This is more work towards removing the m_downloads map from every WebContext object.
+
+        * UIProcess/Downloads/DownloadProxy.cpp:
+        (WebKit::DownloadProxy::didFinish):
+        (WebKit::DownloadProxy::didFail):
+        (WebKit::DownloadProxy::didCancel):
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::createDownloadProxy):
+        (WebKit):
+        (WebKit::DownloadProxyMap::downloadFinished):
+        * UIProcess/Downloads/DownloadProxyMap.h:
+        (DownloadProxyMap):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createDownloadProxy):
+
+2012-12-14  Mark Lam  <mark.lam@apple.com>
+
+        Introducing the DatabaseStrategy and database servers.
+        https://bugs.webkit.org/show_bug.cgi?id=104934.
+
+        Reviewed by Sam Weinig.
+
+        The database server is currently a placeholder that does nothing.
+
+        * CMakeLists.txt:
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::createDatabaseStrategy):
+        (WebKit):
+        (WebKit::WebPlatformStrategies::getDatabaseServer):
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.h:
+        (WebPlatformStrategies):
+
+2012-12-14  Alexey Proskuryakov  <ap@apple.com>
+
+        Resource loads sometimes stall
+        https://bugs.webkit.org/show_bug.cgi?id=104976
+
+        Apply the same quick an dirty fix to BlockingBoolResponseMap.
+
+        * Shared/BlockingResponseMap.h:
+        (BlockingBoolResponseMap::didReceiveResponse):
+
+2012-12-14  Anders Carlsson  <andersca@apple.com>
+
+        Add a DownloadsProxyMap class in preparation for moving the downloads map away from WebContext
+        https://bugs.webkit.org/show_bug.cgi?id=104980
+
+        Reviewed by Andreas Kling.
+
+        Currently the DownloadProxyMap doesn't really do anything; this initial change is to make sure that
+        adding the new files won't break any builds.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * UIProcess/Downloads/DownloadProxyMap.cpp: Added.
+        (WebKit):
+        (WebKit::DownloadProxyMap::shared):
+        (WebKit::DownloadProxyMap::DownloadProxyMap):
+        (WebKit::DownloadProxyMap::~DownloadProxyMap):
+        (WebKit::DownloadProxyMap::createDownloadProxy):
+        * UIProcess/Downloads/DownloadProxyMap.h: Added.
+        (WebKit):
+        (DownloadProxyMap):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createDownloadProxy):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * win/WebKit2.vcproj:
+
+2012-12-14  Anders Carlsson  <andersca@apple.com>
+
+        Fix assertion failure when the network process is enabled
+        https://bugs.webkit.org/show_bug.cgi?id=105040
+        <rdar://problem/12883632>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Make sure that we don't call into the download manager when running with a network process.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::shouldTerminate):
+
+2012-12-14  Michelangelo De Simone  <michelangelo@webkit.org>
+
+        [CSS Shaders] Remove code for the other mesh box types (border-box | padding-box | content-box)
+        https://bugs.webkit.org/show_bug.cgi?id=103776
+
+        Reviewed by Dean Jackson.
+
+        The MeshBoxType has been removed and the code has been refactored. The specs will be updated shortly
+        and therefore this feature - even though it was not fully implemented yet - shall not be used anymore.
+
+        In this patch we remove everything but the parsing code, which shall be addressed in a different patch
+        (see: https://bugs.webkit.org/show_bug.cgi?id=103778).
+
+        Specification to be updated: http://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#ltboxgt
+
+        Existing tests have been updated and new parsing legacy cases have been added.
+
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::::encode):
+        (CoreIPC::::decode):
+        * Shared/CoordinatedGraphics/WebCustomFilterOperation.h:
+        (WebCore::WebCustomFilterOperation::create):
+        (WebCore::WebCustomFilterOperation::WebCustomFilterOperation):
+
+2012-12-14  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12880750> RGRESSION: Crash when emptying cookie jar
+        https://bugs.webkit.org/show_bug.cgi?id=105038
+
+        Reviewed by Jessie Berlin.
+
+        Handle null context, which is used for cookie management functions.
+
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::cookiesForDOM):
+        (WebKit::WebPlatformStrategies::setCookiesFromDOM):
+        (WebKit::WebPlatformStrategies::cookiesEnabled):
+        (WebKit::WebPlatformStrategies::cookieRequestHeaderFieldValue):
+        (WebKit::WebPlatformStrategies::getRawCookies):
+        (WebKit::WebPlatformStrategies::deleteCookie):
+        (WebKit::WebPlatformStrategies::getHostnamesWithCookies):
+        (WebKit::WebPlatformStrategies::deleteCookiesForHostname):
+        (WebKit::WebPlatformStrategies::deleteAllCookies):
+
+2012-12-14  Alberto Garcia  <agarcia@igalia.com>
+
+        [GTK] When in private mode WebKitGTK+ should not save HTTP authentication credentials to the persistent storage
+        https://bugs.webkit.org/show_bug.cgi?id=104910
+
+        Reviewed by Martin Robinson.
+
+        * UIProcess/API/gtk/WebKit2GtkAuthenticationDialog.cpp:
+        (WebKit::WebKit2GtkAuthenticationDialog::WebKit2GtkAuthenticationDialog):
+        * UIProcess/API/gtk/WebKit2GtkAuthenticationDialog.h:
+        (WebKit2GtkAuthenticationDialog):
+        GtkAuthenticationDialog has a new credential storage mode
+        parameter, so add it here too.
+
+        * UIProcess/API/gtk/WebKitWebView.cpp:
+        (webkitWebViewHandleAuthenticationChallenge):
+        When creating the GtkAuthenticationDialog, set the credential
+        storage mode using the private browsing setting from the current
+        page.
+
+2012-12-14  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][WK2] Fix EFL build after r137718
+        https://bugs.webkit.org/show_bug.cgi?id=105018
+
+        Unreviewed build fix.
+
+        The problem was that UNUSED_PARAM(size) was left in the code
+        for non-existent variable 'size'.
+
+        * UIProcess/efl/PageClientDefaultImpl.cpp:
+        (WebKit::PageClientDefaultImpl::updateViewportSize):
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::updateViewportSize):
+
+2012-12-13  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [EFL][WK2] Do not pass size to updateViewportSize
+        https://bugs.webkit.org/show_bug.cgi?id=104994
+
+        Reviewed by Gyuyoung Kim.
+
+        There is no need to pass size to updateViewportSize as we
+        have direct access to it. This makes the code differ less
+        from Qt.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (_ewk_view_smart_calculate):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::pageDidRequestScroll):
+        * UIProcess/efl/PageClientBase.h:
+        (PageClientBase):
+        * UIProcess/efl/PageClientDefaultImpl.cpp:
+        (WebKit::PageClientDefaultImpl::updateViewportSize):
+        * UIProcess/efl/PageClientDefaultImpl.h:
+        (PageClientDefaultImpl):
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::updateViewportSize):
+        * UIProcess/efl/PageClientLegacyImpl.h:
+        (PageClientLegacyImpl):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::updateViewportSize):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (PageViewportControllerClientEfl):
+
+2012-12-13  Sanghyup Lee  <sh53.lee@samsung.com>
+
+        Fix build warning
+        https://bugs.webkit.org/show_bug.cgi?id=104978
+
+        Reviewed by Kentaro Hara.
+
+        Initialize parameter 'downloadID' to fix 'unused parameter' build warning.
+
+        * WebProcess/Downloads/Download.cpp:
+        (WebKit::Download::Download):
+
+2012-12-13  Alexey Proskuryakov  <ap@apple.com>
+
+        Resource loads sometimes stall
+        https://bugs.webkit.org/show_bug.cgi?id=104976
+
+        Reviewed by Anders Carlsson.
+
+        Quick and dirty partial fix.
+
+        * Shared/BlockingResponseMap.h: (BlockingResponseMap::didReceiveResponse):
+        Wake up all threads, so that non-sequential responses don't break us. This is still
+        horribly inefficient,but should improve behavior quite a bit.
+
+2012-12-13  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        Fix unused parameter compile warnings
+        https://bugs.webkit.org/show_bug.cgi?id=104907
+
+        Reviewed by Kentaro Hara.
+
+        Use UNUSED_PARAM macro to fix build warning -Wunused-parameter
+        when ENABLE_INSPECTOR is disabled.
+
+        * UIProcess/API/C/WKInspector.cpp:
+        (WKInspectorGetPage):
+        (WKInspectorIsVisible):
+        (WKInspectorIsFront):
+        (WKInspectorShow):
+        (WKInspectorClose):
+        (WKInspectorShowConsole):
+        (WKInspectorShowResources):
+        (WKInspectorShowMainResourceForFrame):
+        (WKInspectorIsAttached):
+        (WKInspectorAttach):
+        (WKInspectorDetach):
+        (WKInspectorIsDebuggingJavaScript):
+        (WKInspectorToggleJavaScriptDebugging):
+        (WKInspectorIsProfilingJavaScript):
+        (WKInspectorToggleJavaScriptProfiling):
+        (WKInspectorIsProfilingPage):
+        (WKInspectorTogglePageProfiling):
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageGetInspector):
+
+2012-12-13  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [QT][GTK][EFL] Add guard for WebInspectorServer
+        https://bugs.webkit.org/show_bug.cgi?id=104889
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add ENABLE(INSPECTOR_SERVER) guard around platform-specific implementation for WebInspectorServer.
+
+        * UIProcess/InspectorServer/efl/WebInspectorServerEfl.cpp:
+        * UIProcess/InspectorServer/gtk/WebInspectorServerGtk.cpp:
+        * UIProcess/InspectorServer/qt/WebInspectorServerQt.cpp:
+
+2012-12-13  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Reorder messages to CoordinatedLayerTreeHostProxy
+        https://bugs.webkit.org/show_bug.cgi?id=103843
+
+        Reviewed by Noam Rosenthal.
+
+        Clarify LayerTreeRenderer::setRootLayerID() can be called only once during its
+        lifecycle. LayerTreeRenderer, CoordinatedLayerTreeHost and CoordinatedLayerTreeHostProxy
+        have the same lifecycle to WebPage and the root layer is reused even if loading
+        new page, so it is impossible to call LayerTreeRenderer::setRootLayerID() more
+        than twice.
+
+        * UIProcess/CoordinatedGraphics/LayerTreeRenderer.cpp:
+        (WebKit::LayerTreeRenderer::setRootLayerID):
+
+2012-12-13  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12838354> DOM cookie access functions should respect private browsing
+        https://bugs.webkit.org/show_bug.cgi?id=104691
+
+        Reviewed by Anders Carlsson.
+
+        Remove obsolete FIXMEs, and fix one function that I overlooked.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::cookiesForDOM):
+        (WebKit::NetworkConnectionToWebProcess::setCookiesFromDOM):
+        (WebKit::NetworkConnectionToWebProcess::cookiesEnabled):
+        (WebKit::NetworkConnectionToWebProcess::cookieRequestHeaderFieldValue):
+        (WebKit::NetworkConnectionToWebProcess::getRawCookies):
+        (WebKit::NetworkConnectionToWebProcess::deleteCookie):
+        (WebKit::NetworkConnectionToWebProcess::getHostnamesWithCookies):
+        (WebKit::NetworkConnectionToWebProcess::deleteCookiesForHostname):
+        (WebKit::NetworkConnectionToWebProcess::deleteAllCookies):
+
 2012-12-13  Anders Carlsson  <andersca@apple.com>
 
         DownloadManager shouldn't call the web process directly

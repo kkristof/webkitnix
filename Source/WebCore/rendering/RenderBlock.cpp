@@ -65,6 +65,7 @@
 #include <wtf/StdLibExtras.h>
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"
+#include "ExclusionShapeOutsideInfo.h"
 #endif
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
@@ -3749,7 +3750,17 @@ RenderBlock::FloatingObject* RenderBlock::insertFloatingObject(RenderBox* o)
         o->updateLogicalWidth();
         o->computeAndSetBlockDirectionMargins(this);
     }
-    setLogicalWidthForFloat(newObj, logicalWidthForChild(o) + marginStartForChild(o) + marginEndForChild(o));
+
+#if ENABLE(CSS_EXCLUSIONS)
+    ExclusionShapeOutsideInfo* shapeOutside = o->exclusionShapeOutsideInfo();
+    if (shapeOutside) {
+        shapeOutside->setShapeSize(o->logicalWidth(), o->logicalHeight());
+        // The CSS Exclusions specification says that the margins are ignored
+        // when a float has a shape outside.
+        setLogicalWidthForFloat(newObj, shapeOutside->shapeLogicalWidth());
+    } else
+#endif
+        setLogicalWidthForFloat(newObj, logicalWidthForChild(o) + marginStartForChild(o) + marginEndForChild(o));
 
     newObj->setShouldPaint(!o->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
     newObj->setIsDescendant(true);
@@ -3818,8 +3829,23 @@ void RenderBlock::removeFloatingObjectsBelow(FloatingObject* lastFloat, int logi
 LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* floatingObject, LayoutUnit logicalTopOffset) const
 {
     RenderBox* childBox = floatingObject->renderer();
-    LayoutUnit logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
     LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent(logicalTopOffset); // Constant part of left offset.
+    LayoutUnit logicalRightOffset; // Constant part of right offset.
+#if ENABLE(CSS_EXCLUSIONS)
+    // FIXME Bug 102948: This only works for shape outside directly set on this block.
+    ExclusionShapeInsideInfo* shapeInsideInfo = exclusionShapeInsideInfo();
+    // FIXME Bug 102846: Take into account the height of the content. The offset should be
+    // equal to the maximum segment length.
+    if (shapeInsideInfo && shapeInsideInfo->hasSegments() && shapeInsideInfo->segments().size() == 1) {
+        // FIXME Bug 102949: Add support for shapes with multipe segments.
+
+        // The segment offsets are relative to the content box.
+        logicalRightOffset = logicalLeftOffset + shapeInsideInfo->segments()[0].logicalRight;
+        logicalLeftOffset += shapeInsideInfo->segments()[0].logicalLeft;
+    } else
+#endif
+        logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset);
+
     LayoutUnit floatLogicalWidth = min(logicalWidthForFloat(floatingObject), logicalRightOffset - logicalLeftOffset); // The width we look for.
 
     LayoutUnit floatLogicalLeft;
@@ -3920,8 +3946,14 @@ bool RenderBlock::positionNewFloats()
         LayoutPoint floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, logicalTop);
 
         setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
-        setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
-        setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
+
+        bool hasShapeOutside = false;
+#if ENABLE(CSS_EXCLUSIONS)
+        hasShapeOutside = floatingObject->renderer()->exclusionShapeOutsideInfo();
+#endif
+        // The CSS Exclusions specification says that the margins are ignored when a float has a shape outside.
+        setLogicalLeftForChild(childBox, floatLogicalLocation.x() + (hasShapeOutside ? LayoutUnit() : childLogicalLeftMargin));
+        setLogicalTopForChild(childBox, floatLogicalLocation.y() + (hasShapeOutside ? LayoutUnit() : marginBeforeForChild(childBox)));
 
         LayoutState* layoutState = view()->layoutState();
         bool isPaginated = layoutState->isPaginated();
@@ -3949,8 +3981,10 @@ bool RenderBlock::positionNewFloats()
 
                 floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, newLogicalTop);
                 setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());
-                setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
-                setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
+
+                // The CSS Exclusions specification says that the margins are ignored when a float has a shape outside.
+                setLogicalLeftForChild(childBox, floatLogicalLocation.x() + (hasShapeOutside ? LayoutUnit() : childLogicalLeftMargin));
+                setLogicalTopForChild(childBox, floatLogicalLocation.y() + (hasShapeOutside ? LayoutUnit() : marginBeforeForChild(childBox)));
         
                 if (childBlock)
                     childBlock->setChildNeedsLayout(true, MarkOnlyThis);
@@ -3959,7 +3993,12 @@ bool RenderBlock::positionNewFloats()
         }
 
         setLogicalTopForFloat(floatingObject, floatLogicalLocation.y());
-        setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
+#if ENABLE(CSS_EXCLUSIONS)
+        if (hasShapeOutside)
+            setLogicalHeightForFloat(floatingObject, floatingObject->renderer()->exclusionShapeOutsideInfo()->shapeLogicalHeight());
+        else
+#endif
+            setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
         m_floatingObjects->addPlacedObject(floatingObject);
 

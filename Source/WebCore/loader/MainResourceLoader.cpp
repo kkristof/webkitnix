@@ -316,11 +316,11 @@ void MainResourceLoader::continueAfterContentPolicy(PolicyAction contentPolicy, 
         ResourceRequest request = this->request();
         frameLoader()->setOriginalURLForDownloadRequest(request);
 
-        frameLoader()->client()->download(loader()->handle(), request, r);
+        frameLoader()->client()->convertMainResourceLoadToDownload(this, request, r);
 
         // It might have gone missing
-        if (frameLoader())
-            receivedError(interruptedForPolicyChangeError());
+        if (loader())
+            loader()->didFail(interruptedForPolicyChangeError());
         return;
     }
     case PolicyIgnore:

@@ -412,8 +412,13 @@ Node::~Node()
     if (hasRareData())
         clearRareData();
 
-    if (hasEventTargetData())
+    if (hasEventTargetData()) {
+#if ENABLE(TOUCH_EVENT_TRACKING)
+        if (m_document)
+            m_document->didRemoveEventTargetNode(this);
+#endif
         clearEventTargetData();
+    }
 
     if (renderer())
         detach();
@@ -1270,11 +1275,6 @@ ContainerNode* Node::nonShadowBoundaryParentNode() const
     return parent && !parent->isShadowRoot() ? parent : 0;
 }
 
-bool Node::isInShadowTree() const
-{
-    return treeScope() != document();
-}
-
 Element* Node::parentOrHostElement() const
 {
     ContainerNode* parent = parentOrHostNode();
@@ -1290,6 +1290,10 @@ Element* Node::parentOrHostElement() const
     return toElement(parent);
 }
 
+bool Node::needsShadowTreeWalkerSlow() const
+{
+    return (isShadowRoot() || (isElementNode() && (isInsertionPoint() || isPseudoElement() || toElement(this)->hasPseudoElements() || toElement(this)->shadow())));
+}
 
 bool Node::isBlockFlow() const
 {
@@ -2096,6 +2100,8 @@ Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* insertionPo
     ASSERT(insertionPoint->inDocument() || isContainerNode());
     if (insertionPoint->inDocument())
         setFlag(InDocumentFlag);
+    if (parentOrHostNode()->isInShadowTree())
+        setFlag(IsInShadowTreeFlag);
     return InsertionDone;
 }
 
@@ -2104,6 +2110,8 @@ void Node::removedFrom(ContainerNode* insertionPoint)
     ASSERT(insertionPoint->inDocument() || isContainerNode());
     if (insertionPoint->inDocument())
         clearFlag(InDocumentFlag);
+    if (isInShadowTree() && !treeScope()->rootNode()->isShadowRoot())
+        clearFlag(IsInShadowTreeFlag);
 }
 
 void Node::didMoveToNewDocument(Document* oldDocument)

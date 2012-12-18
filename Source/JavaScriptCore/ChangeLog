@@ -1,3 +1,388 @@
+2012-12-17  Geoffrey Garen  <ggaren@apple.com>
+
+        Constant fold !{number} in the parser
+        https://bugs.webkit.org/show_bug.cgi?id=105232
+
+        Reviewed by Filip Pizlo.
+
+        Typically, we wait for hot execution and constant fold in the DFG.
+        However, !0 and !1 are common enough in minifiers that it can be good
+        to get them out of the way early, for faster/smaller parsing and startup.
+
+        * parser/ASTBuilder.h:
+        (JSC::ASTBuilder::createLogicalNot): !{literal} is super simple, especially
+        since there's no literal form of NaN or Inf.
+
+2012-12-17  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG is too aggressive eliding overflow checks for additions involving large constants
+        https://bugs.webkit.org/show_bug.cgi?id=105239
+
+        Reviewed by Gavin Barraclough.
+
+        If we elide overflow checks on an addition (or subtraction) involving a larger-than-2^32 immediate,
+        then make sure that the non-constant child of the addition knows that he's got to do an overflow
+        check, by flowing the UsedAsNumber property at him.
+
+        * dfg/DFGGraph.h:
+        (JSC::DFG::Graph::addSpeculationMode):
+        (Graph):
+        (JSC::DFG::Graph::addShouldSpeculateInteger):
+        (JSC::DFG::Graph::addImmediateShouldSpeculateInteger):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+
+2012-12-17  Michael Saboff  <msaboff@apple.com>
+
+        DFG: Refactor DFGCorrectableJumpPoint to reduce size of OSRExit data
+        https://bugs.webkit.org/show_bug.cgi?id=105237
+
+        Reviewed by Filip Pizlo.
+
+        Replaced DFGCorrectableJumpPoint with OSRExitCompilationInfo which is used and kept alive only while we are
+        compiling in the DFG.  Moved the patchable branch offset directly into OSRExit.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * assembler/AbstractMacroAssembler.h:
+        * dfg/DFGCorrectableJumpPoint.cpp: Removed.
+        * dfg/DFGCorrectableJumpPoint.h: Removed.
+        * dfg/DFGJITCompiler.cpp:
+        (JSC::DFG::JITCompiler::linkOSRExits):
+        (JSC::DFG::JITCompiler::link):
+        * dfg/DFGJITCompiler.h:
+        (JSC::DFG::JITCompiler::appendExitJump):
+        (JITCompiler):
+        * dfg/DFGOSRExit.cpp:
+        (JSC::DFG::OSRExit::OSRExit):
+        (JSC::DFG::OSRExit::setPatchableCodeOffset):
+        (JSC::DFG::OSRExit::getPatchableCodeOffsetAsJump):
+        (JSC::DFG::OSRExit::codeLocationForRepatch):
+        (JSC::DFG::OSRExit::correctJump):
+        * dfg/DFGOSRExit.h:
+        (OSRExit):
+        * dfg/DFGOSRExitCompilationInfo.h: Added.
+        (OSRExitCompilationInfo):
+        (JSC::DFG::OSRExitCompilationInfo::OSRExitCompilationInfo):
+        (JSC::DFG::OSRExitCompilationInfo::failureJump):
+        * dfg/DFGOSRExitCompiler.cpp:
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::speculationCheck):
+        (JSC::DFG::SpeculativeJIT::speculationWatchpoint):
+
+2012-12-17  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG is too aggressive with eliding overflow checks in loops
+        https://bugs.webkit.org/show_bug.cgi?id=105226
+
+        Reviewed by Mark Hahnenberg and Oliver Hunt.
+
+        If we see a variable's live range cross basic block boundaries, conservatively assume that it may
+        be part of a data-flow back-edge, and as a result, we may have entirely integer operations that
+        could lead to the creation of an integer that is out of range of 2^52 (the significand of a double
+        float). This does not seem to regress any of the benchmarks we care about, and it fixes the bug.
+        
+        In future we may want to actually look at whether or not there was a data-flow back-edge instead
+        of being super conservative about it. But we have no evidence, yet, that this would help us on
+        real code.
+
+        * dfg/DFGNodeFlags.h:
+        (DFG):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+
+2012-12-17  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Butterfly::growArrayRight shouldn't be called on null Butterfly objects
+        https://bugs.webkit.org/show_bug.cgi?id=105221
+
+        Reviewed by Filip Pizlo.
+
+        Currently we depend upon the fact that Butterfly::growArrayRight works with null Butterfly 
+        objects purely by coincidence. We should add a new static function that null checks the old 
+        Butterfly object and creates a new one if it's null, or calls growArrayRight if it isn't for 
+        use in the couple of places in JSObject that expect such behavior to work.
+
+        * runtime/Butterfly.h:
+        (Butterfly):
+        * runtime/ButterflyInlines.h:
+        (JSC::Butterfly::createOrGrowArrayRight):
+        (JSC):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::createInitialIndexedStorage):
+        (JSC::JSObject::createArrayStorage):
+
+2012-12-17  Filip Pizlo  <fpizlo@apple.com>
+
+        javascript integer overflow
+        https://bugs.webkit.org/show_bug.cgi?id=104967
+
+        Reviewed by Mark Hahnenberg.
+
+        Fix PutScopedVar backward flow.
+
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+
+2012-12-16  Filip Pizlo  <fpizlo@apple.com>
+
+        Rationalize array profiling for out-of-bounds and hole cases
+        https://bugs.webkit.org/show_bug.cgi?id=105139
+
+        Reviewed by Geoffrey Garen.
+
+        This makes ArrayProfile track whether or not we had out-of-bounds, which allows
+        for more precise decision-making in the DFG.
+        
+        Also cleaned up ExitKinds for out-of-bounds and hole cases to make it easier to
+        look at them in the profiler.
+        
+        Slight speed-up (5-8%) on SunSpider/crypto-md5.
+
+        * bytecode/ArrayProfile.cpp:
+        (JSC::ArrayProfile::computeUpdatedPrediction):
+        (JSC::ArrayProfile::briefDescription):
+        * bytecode/ArrayProfile.h:
+        (JSC::ArrayProfile::ArrayProfile):
+        (JSC::ArrayProfile::addressOfOutOfBounds):
+        (JSC::ArrayProfile::expectedStructure):
+        (JSC::ArrayProfile::structureIsPolymorphic):
+        (JSC::ArrayProfile::outOfBounds):
+        (JSC::ArrayProfile::polymorphicStructure):
+        * bytecode/CodeBlock.cpp:
+        (JSC::dumpChain):
+        * bytecode/ExitKind.cpp:
+        (JSC::exitKindToString):
+        (JSC::exitKindIsCountable):
+        * bytecode/ExitKind.h:
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::getArrayModeAndEmitChecks):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileDoublePutByVal):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compileContiguousPutByVal):
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * jit/JIT.h:
+        * jit/JITInlines.h:
+        (JSC::JIT::emitArrayProfileOutOfBoundsSpecialCase):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emitSlow_op_get_by_val):
+        (JSC::JIT::emitSlow_op_put_by_val):
+        * jit/JITPropertyAccess32_64.cpp:
+        (JSC::JIT::emitSlow_op_get_by_val):
+        (JSC::JIT::emitSlow_op_put_by_val):
+        * llint/LowLevelInterpreter32_64.asm:
+        * llint/LowLevelInterpreter64.asm:
+
+2012-12-17  Balazs Kilvady  <kilvadyb@homejinni.com>
+
+        Implement add64 for MIPS assembler after r136601
+        https://bugs.webkit.org/show_bug.cgi?id=104106
+
+        Reviewed by Zoltan Herczeg.
+
+        Added add64 function to MacroAssebler of MIPS.
+
+        * assembler/MacroAssemblerMIPS.h:
+        (JSC::MacroAssemblerMIPS::add32):
+        (JSC::MacroAssemblerMIPS::add64):
+        (MacroAssemblerMIPS):
+
+2012-12-17  Jonathan Liu  <net147@gmail.com>
+
+        Fix Math.pow implementation with MinGW-w64
+        https://bugs.webkit.org/show_bug.cgi?id=105087
+
+        Reviewed by Simon Hausmann.
+
+        The MinGW-w64 runtime has different behaviour for pow()
+        compared to other C runtimes. This results in the following
+        test262 tests failing with the latest MinGW-w64 runtime:
+        - S15.8.2.13_A14
+        - S15.8.2.13_A16
+        - S15.8.2.13_A20
+        - S15.8.2.13_A22
+
+        Handle the special cases that are different with MinGW-w64.
+
+        * runtime/MathObject.cpp:
+        (JSC::mathPow):
+
+2012-12-16  Filip Pizlo  <fpizlo@apple.com>
+
+        Bytecode dumping should show rare case profiles
+        https://bugs.webkit.org/show_bug.cgi?id=105133
+
+        Reviewed by Geoffrey Garen.
+
+        Refactored the dumper to call dumpBytecodeCommandAndNewLine in just one place,
+        rather than in all of the places. Changed the rare case profile getters to use
+        tryBinarySearch rather than binarySearch, so that they can be used speculatively
+        even if you don't know that the bytecode has rare case profiles. This actually
+        increases our assertion level, since it means that in release builds we will get
+        null and crash rather than getting some random adjacent profile. And then this
+        adds some printing of the rare case profiles.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::printUnaryOp):
+        (JSC::CodeBlock::printBinaryOp):
+        (JSC::CodeBlock::printConditionalJump):
+        (JSC::CodeBlock::printCallOp):
+        (JSC::CodeBlock::printPutByIdOp):
+        (JSC::CodeBlock::beginDumpProfiling):
+        (JSC):
+        (JSC::CodeBlock::dumpValueProfiling):
+        (JSC::CodeBlock::dumpArrayProfiling):
+        (JSC::CodeBlock::dumpRareCaseProfile):
+        (JSC::CodeBlock::dumpBytecode):
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::rareCaseProfileForBytecodeOffset):
+        (JSC::CodeBlock::specialFastCaseProfileForBytecodeOffset):
+
+2012-12-13  Filip Pizlo  <fpizlo@apple.com>
+
+        Attempt to rationalize and simplify WTF::binarySearch
+        https://bugs.webkit.org/show_bug.cgi?id=104890
+
+        Reviewed by Maciej Stachowiak.
+
+        Switch to using the new binarySearch() API. No change in behavior.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::bytecodeOffset):
+        (JSC::CodeBlock::codeOriginForReturn):
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::getStubInfo):
+        (JSC::CodeBlock::getByValInfo):
+        (JSC::CodeBlock::getCallLinkInfo):
+        (JSC::CodeBlock::dfgOSREntryDataForBytecodeIndex):
+        (JSC::CodeBlock::valueProfileForBytecodeOffset):
+        (JSC::CodeBlock::rareCaseProfileForBytecodeOffset):
+        (JSC::CodeBlock::specialFastCaseProfileForBytecodeOffset):
+        * dfg/DFGGraph.h:
+        (JSC::DFG::Graph::blockIndexForBytecodeOffset):
+        * dfg/DFGMinifiedGraph.h:
+        (JSC::DFG::MinifiedGraph::at):
+        * dfg/DFGOSRExitCompiler32_64.cpp:
+        (JSC::DFG::OSRExitCompiler::compileExit):
+        * dfg/DFGOSRExitCompiler64.cpp:
+        (JSC::DFG::OSRExitCompiler::compileExit):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+        * profiler/ProfilerBytecodeSequence.cpp:
+        (JSC::Profiler::BytecodeSequence::indexForBytecodeIndex):
+
+2012-12-13  Filip Pizlo  <fpizlo@apple.com>
+
+        Don't assert that flags <= 0x3ff in JSTypeInfo
+        https://bugs.webkit.org/show_bug.cgi?id=104988
+
+        Reviewed by Sam Weinig.
+
+        This assertion doesn't accomplish anything other than crashes.
+
+        * runtime/JSTypeInfo.h:
+        (JSC::TypeInfo::TypeInfo):
+
+2012-12-13  Filip Pizlo  <fpizlo@apple.com>
+
+        Named lookups on HTML documents produce inconsistent results in JavaScriptCore bindings
+        https://bugs.webkit.org/show_bug.cgi?id=104623
+
+        Reviewed by Geoffrey Garen.
+
+        Add the notion of objects that HasImpureGetOwnPropertySlot, and use that to inhibit prototype chain caching
+        in some cases. This appears to be perf-neutral on benchmarks that we track.
+
+        * dfg/DFGRepatch.cpp:
+        (JSC::DFG::tryCacheGetByID):
+        (JSC::DFG::tryBuildGetByIDProtoList):
+        * jit/JITStubs.cpp:
+        (JSC::JITThunks::tryCacheGetByID):
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/JSTypeInfo.h:
+        (JSC):
+        (JSC::TypeInfo::hasImpureGetOwnPropertySlot):
+        * runtime/Operations.h:
+        (JSC::normalizePrototypeChainForChainAccess):
+
+2012-12-13  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed, roll out http://trac.webkit.org/changeset/137683.
+        It broke gmail.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::putStructureStoreElimination):
+        (JSC::DFG::CSEPhase::performNodeCSE):
+        * dfg/DFGCapabilities.h:
+        (JSC::DFG::canCompileOpcode):
+        * dfg/DFGNodeType.h:
+        (DFG):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * runtime/Operations.cpp:
+        (JSC::jsTypeStringForValue):
+        (JSC):
+        * runtime/Operations.h:
+        (JSC):
+
+2012-13-11  Oliver Hunt  <oliver@apple.com>
+
+        Support op_typeof in the DFG
+        https://bugs.webkit.org/show_bug.cgi?id=98898
+
+        Reviewed by Filip Pizlo.
+
+        Adds a TypeOf node to the DFG to support op_typeof. 
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::execute):
+          We try to determine the result early here, and substitute in a constant.
+          Otherwise we leave the node intact, and set the result type to SpecString.
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+          Parse op_typeof
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::performNodeCSE):
+          TypeOf nodes can be subjected to pure CSE
+        * dfg/DFGCapabilities.h:
+        (JSC::DFG::canCompileOpcode):
+          We can handle typeof.
+        * dfg/DFGNodeType.h:
+        (DFG):
+          Define the node.
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+          Add operationTypeOf to support the non-trivial cases.
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+          Actual codegen
+        * runtime/Operations.cpp:
+        (JSC::jsTypeStringForValue):
+        (JSC):
+        * runtime/Operations.h:
+        (JSC):
+          Some refactoring to allow us to get the type string for an
+          object without needing a callframe.
+
 2012-12-12  Filip Pizlo  <fpizlo@apple.com>
 
         OSR exit compiler should emit code for resetting the execution counter that matches the logic of ExecutionCounter.cpp

@@ -40,6 +40,7 @@ public:
 
     void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
     PseudoElement* pseudoElement(PseudoId) const;
+    bool hasPseudoElements() const { return m_generatedBefore || m_generatedAfter; }
 
     void resetComputedStyle();
     void resetDynamicRestyleObservations();
@@ -53,6 +54,10 @@ public:
     bool isInCanvasSubtree() const { return m_isInCanvasSubtree; }
     void setIsInCanvasSubtree(bool value) { m_isInCanvasSubtree = value; }
 
+#if ENABLE(VIDEO_TRACK)
+    using NodeRareData::isWebVTTNode;
+    using NodeRareData::setIsWebVTTNode;
+#endif
 #if ENABLE(FULLSCREEN_API)
     bool containsFullScreenElement() { return m_containsFullScreenElement; }
     void setContainsFullScreenElement(bool value) { m_containsFullScreenElement = value; }

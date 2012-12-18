@@ -226,7 +226,7 @@ webkit.org/b/58443 http/tests/security/mixedContent/filesystem-url-in-iframe.htm
 webkit.org/b/58443 http/tests/websocket/tests/hybi/send-file-blob.html [ Skip ]
 webkit.org/b/58443 http/tests/websocket/tests/hybi/send-file-blob-fail.html [ Skip ]
 webkit.org/b/58443 http/tests/workers/terminate-during-sync-operation.html [ Skip ]
-webkit.org/b/58443 fast/mutation/filesystem-callback-delivery.html [ Skip ]
+webkit.org/b/58443 fast/dom/MutationObserver/filesystem-callback-delivery.html [ Skip ]
 webkit.org/b/58443 fast/forms/file/input-file-entries.html [ Skip ]
 
 # Requires WebP support.
@@ -508,6 +508,10 @@ webkit.org/b/104533 fast/block/float/overhanging-tall-block.html [ Crash ]
 
 webkit.org/b/104684 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
 
+webkit.org/b/105042 editing/execCommand/indent-paragraphs.html [ Crash ]
+
+webkit.org/b/105043 [ Debug ] fast/loader/javascript-url-iframe-remove-on-navigate.html [ Crash ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Crashing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -609,7 +613,8 @@ webkit.org/b/68878 media/video-playing-and-pause.html [ Failure Pass ]
 webkit.org/b/104809 media/adopt-node-crash.html [ Timeout Pass ]
 webkit.org/b/104809 media/encrypted-media/encrypted-media-not-loaded.html [ Failure Pass ]
 webkit.org/b/104809 media/event-queue-crash.html [ Crash Pass ]
-webkit.org/b/104809 media/video-source-type-params.html [ Crash Pass ]
+webkit.org/b/104809 media/track/track-cues-pause-on-exit.html [ Timeout Pass ]
+webkit.org/b/104809 media/video-source-type-params.html [ Crash Timeout Pass ]
 webkit.org/b/104809 media/video-src-set.html [ Timeout Pass ]
 webkit.org/b/104809 media/W3C/video/events/event_loadstart_manual.html [ Crash Pass ]
 
@@ -721,7 +726,8 @@ webkit.org/b/104648 fast/images/webgl-teximage2d.html [ Timeout ]
 Bug(GTK) fast/media/print-restores-previous-mediatype.html [ Timeout ]
 
 # GTK still has the CC toggle button, not the menu of tracks.
-webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Timeout ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Skip ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-sorted.html [ Skip ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests timing out
@@ -768,8 +774,9 @@ webkit.org/b/98358 accessibility/aria-scrollbar-role.html [ Failure ]
 webkit.org/b/98359 accessibility/aria-text-role.html [ Failure ]
 webkit.org/b/98360 accessibility/aria-used-on-image-maps.html [ Failure ]
 webkit.org/b/98361 accessibility/button-press-action.html [ Failure ]
+webkit.org/b/105214 accessibility/button-title-uses-inner-img-alt.html [ Failure ]
 webkit.org/b/98363 accessibility/canvas-fallback-content-2.html [ Failure ]
-webkit.org/b/98365 accessibility/ellipsis-text.html [ Failure ]
+webkit.org/b/105214 accessibility/focusable-div.html [ Failure ]
 webkit.org/b/98370 accessibility/loading-iframe-sends-notification.html [ Failure ]
 webkit.org/b/98371 accessibility/loading-iframe-updates-axtree.html [ Failure ]
 webkit.org/b/98372 accessibility/onclick-handlers.html [ Failure ]
@@ -1135,7 +1142,7 @@ webkit.org/b/68855 editing/selection/select-bidi-run.html [ Failure ]
 # This test is out-dated since r95899.
 webkit.org/b/65709 canvas/philip/tests/2d.drawImage.outsidesource.html [ Failure ]
 
-Bug(GTK) http/tests/multipart/multipart-wait-before-boundary.html [ Slow ]
+Bug(GTK) http/tests/multipart/multipart-wait-before-boundary.html [ Failure Timeout Pass Slow ]
 
 # Does not render the rectangle as it should, even though the multiple parts seem to work
 webkit.org/b/54251 http/tests/multipart/invalid-image-data.html [ Timeout ]
@@ -1389,13 +1396,20 @@ webkit.org/b/104493 svg/custom/js-update-transform-addition.svg [ Failure ]
 webkit.org/b/104493 svg/custom/js-update-transform-changes.svg [ Failure ]
 webkit.org/b/104493 svg/custom/text-xy-updates-SVGList.xhtml [ Failure ]
 
-webkit.org/b/104649 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Failure ]
-
 webkit.org/b/104686 http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Failure ]
 
 webkit.org/b/104788 css3/flexbox/flex-algorithm.html [ Failure ]
 webkit.org/b/104788 fast/css/large-number-round-trip.html [ Failure ]
 webkit.org/b/104788 fast/css/large-numbers.html [ Failure ]
+
+webkit.org/b/87734 svg/dom/SVGViewSpec.html [ Failure ]
+webkit.org/b/87734 svg/dom/complex-svgView-specification.html [ ImageOnlyFailure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-1.html [ Failure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-3.html [ Failure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-4.html [ Failure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-5.html [ Failure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-6.html [ Failure ]
+webkit.org/b/87734 svg/dom/viewspec-parser-7.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

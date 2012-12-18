@@ -243,6 +243,8 @@
 		1AC86FF4130B46D3002C1257 /* WKPluginSiteDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC86FF2130B46D3002C1257 /* WKPluginSiteDataManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1AC8702D130B49A2002C1257 /* WebPluginSiteDataManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC8702B130B49A2002C1257 /* WebPluginSiteDataManager.h */; };
 		1AC8702E130B49A2002C1257 /* WebPluginSiteDataManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AC8702C130B49A2002C1257 /* WebPluginSiteDataManager.cpp */; };
+		1AD25E95167AB08100EA9BCD /* DownloadProxyMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD25E93167AB08100EA9BCD /* DownloadProxyMap.cpp */; };
+		1AD25E96167AB08100EA9BCD /* DownloadProxyMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AD25E94167AB08100EA9BCD /* DownloadProxyMap.h */; };
 		1AE117F611DBB30900981615 /* ProcessLauncher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AE117F511DBB30900981615 /* ProcessLauncher.cpp */; };
 		1AE4976811FF658E0048B464 /* NPJSObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AE4976611FF658E0048B464 /* NPJSObject.h */; };
 		1AE4976911FF658E0048B464 /* NPJSObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AE4976711FF658E0048B464 /* NPJSObject.cpp */; };
@@ -282,10 +284,10 @@
 		296BD85E15019BC30071F424 /* StringUtilities.mm in Sources */ = {isa = PBXBuildFile; fileRef = 296BD85C15019BC30071F424 /* StringUtilities.mm */; };
 		2984F57C164B915F004BC0C6 /* CustomProtocolManagerProxyMessageReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2984F57A164B915F004BC0C6 /* CustomProtocolManagerProxyMessageReceiver.cpp */; };
 		2984F57D164B915F004BC0C6 /* CustomProtocolManagerProxyMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = 2984F57B164B915F004BC0C6 /* CustomProtocolManagerProxyMessages.h */; };
-		2984F581164B9BBD004BC0C6 /* CustomProtocolManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2984F580164B9BBD004BC0C6 /* CustomProtocolManager.h */; };
-		2984F583164B9BD9004BC0C6 /* CustomProtocolManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2984F582164B9BD9004BC0C6 /* CustomProtocolManagerMac.mm */; };
 		2984F588164BA095004BC0C6 /* CustomProtocolManagerMessageReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2984F586164BA095004BC0C6 /* CustomProtocolManagerMessageReceiver.cpp */; };
 		2984F589164BA095004BC0C6 /* CustomProtocolManagerMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = 2984F587164BA095004BC0C6 /* CustomProtocolManagerMessages.h */; };
+		2989A411167D1834004F96D2 /* CustomProtocolManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2989A410167D1834004F96D2 /* CustomProtocolManagerMac.mm */; };
+		2989A414167D184B004F96D2 /* CustomProtocolManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2989A412167D184B004F96D2 /* CustomProtocolManager.h */; };
 		29AD3093164B4C5D0072DEA9 /* CustomProtocolManagerProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 29AD3092164B4C5D0072DEA9 /* CustomProtocolManagerProxy.h */; };
 		29AD3096164B4C930072DEA9 /* CustomProtocolManagerProxyMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 29AD3095164B4C930072DEA9 /* CustomProtocolManagerProxyMac.mm */; };
 		29CD55AA128E294F00133C85 /* WKAccessibilityWebPageObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 29CD55A8128E294F00133C85 /* WKAccessibilityWebPageObject.h */; };
@@ -380,8 +382,6 @@
 		3F87B9C0158940D80090FF62 /* WebColorChooserProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F87B9BF158940D80090FF62 /* WebColorChooserProxy.h */; };
 		4F601432155C5AA2001FBDE0 /* BlockingResponseMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F601430155C5A32001FBDE0 /* BlockingResponseMap.h */; };
 		51021E9C12B16788005C033C /* WebContextMenuClientMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 51021E9B12B16788005C033C /* WebContextMenuClientMac.mm */; };
-		5105B0DD162F7E9D00E27709 /* NetworkProcessManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5105B0DB162F7E9D00E27709 /* NetworkProcessManager.cpp */; };
-		5105B0DE162F7E9D00E27709 /* NetworkProcessManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5105B0DC162F7E9D00E27709 /* NetworkProcessManager.h */; };
 		510AFFB916542048001BA05E /* WebResourceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 510AFFB716542048001BA05E /* WebResourceLoader.cpp */; };
 		510AFFBA16542048001BA05E /* WebResourceLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 510AFFB816542048001BA05E /* WebResourceLoader.h */; };
 		510CC8491613C85C00D03ED3 /* NetworkProcess.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 510CC80E1613C79900D03ED3 /* NetworkProcess.app */; };
@@ -566,7 +566,6 @@
 		93FC67C012D3CCF200A60610 /* EncoderAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 93FC67A012D3CC7400A60610 /* EncoderAdapter.h */; };
 		9F4F59421648B40700493B7E /* SharedWorkerProcessManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4F59411648B40700493B7E /* SharedWorkerProcessManagerMac.mm */; };
 		9F4F59441648B67F00493B7E /* SharedWorkerProcessProxyMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4F59431648B67F00493B7E /* SharedWorkerProcessProxyMac.mm */; };
-		9F4F59461648BA8E00493B7E /* NetworkProcessManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4F59451648BA8E00493B7E /* NetworkProcessManagerMac.mm */; };
 		9F54F88F16488E87007DF81A /* ChildProcessMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F54F88E16488E87007DF81A /* ChildProcessMac.mm */; };
 		9F54F8951648AE0F007DF81A /* PluginProcessManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F54F8941648AE0E007DF81A /* PluginProcessManagerMac.mm */; };
 		B62E7310143047A60069EC35 /* WKHitTestResult.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B62E730F143047A60069EC35 /* WKHitTestResult.cpp */; };
@@ -962,6 +961,7 @@
 		BCEE966D112FAF57006BCC24 /* Attachment.h in Headers */ = {isa = PBXBuildFile; fileRef = BCEE966B112FAF57006BCC24 /* Attachment.h */; };
 		BCF049E611FE20F600F86A58 /* WKBundleFramePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = BCF049E411FE20F600F86A58 /* WKBundleFramePrivate.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		BCF049E711FE20F600F86A58 /* WKBundlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = BCF049E511FE20F600F86A58 /* WKBundlePrivate.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		BCF18638167D071E00A1A85A /* CacheModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BCF18637167D071E00A1A85A /* CacheModel.cpp */; };
 		BCF505E71243047B005955AE /* PlatformCertificateInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = BCF505E51243047B005955AE /* PlatformCertificateInfo.h */; };
 		BCF505E81243047B005955AE /* PlatformCertificateInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = BCF505E61243047B005955AE /* PlatformCertificateInfo.mm */; };
 		BCF50728124329AA005955AE /* WebCertificateInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = BCF50726124329AA005955AE /* WebCertificateInfo.h */; };
@@ -1459,6 +1459,8 @@
 		1AC86FF2130B46D3002C1257 /* WKPluginSiteDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKPluginSiteDataManager.h; sourceTree = "<group>"; };
 		1AC8702B130B49A2002C1257 /* WebPluginSiteDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebPluginSiteDataManager.h; sourceTree = "<group>"; };
 		1AC8702C130B49A2002C1257 /* WebPluginSiteDataManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebPluginSiteDataManager.cpp; sourceTree = "<group>"; };
+		1AD25E93167AB08100EA9BCD /* DownloadProxyMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DownloadProxyMap.cpp; sourceTree = "<group>"; };
+		1AD25E94167AB08100EA9BCD /* DownloadProxyMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadProxyMap.h; sourceTree = "<group>"; };
 		1AE117F511DBB30900981615 /* ProcessLauncher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProcessLauncher.cpp; sourceTree = "<group>"; };
 		1AE4976611FF658E0048B464 /* NPJSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NPJSObject.h; sourceTree = "<group>"; };
 		1AE4976711FF658E0048B464 /* NPJSObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NPJSObject.cpp; sourceTree = "<group>"; };
@@ -1500,11 +1502,11 @@
 		296BD85C15019BC30071F424 /* StringUtilities.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = StringUtilities.mm; sourceTree = "<group>"; };
 		2984F57A164B915F004BC0C6 /* CustomProtocolManagerProxyMessageReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CustomProtocolManagerProxyMessageReceiver.cpp; sourceTree = "<group>"; };
 		2984F57B164B915F004BC0C6 /* CustomProtocolManagerProxyMessages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomProtocolManagerProxyMessages.h; sourceTree = "<group>"; };
-		2984F580164B9BBD004BC0C6 /* CustomProtocolManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomProtocolManager.h; path = Network/CustomProtocols/CustomProtocolManager.h; sourceTree = "<group>"; };
-		2984F582164B9BD9004BC0C6 /* CustomProtocolManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CustomProtocolManagerMac.mm; path = Network/CustomProtocols/mac/CustomProtocolManagerMac.mm; sourceTree = "<group>"; };
-		2984F584164B9ED9004BC0C6 /* CustomProtocolManager.messages.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CustomProtocolManager.messages.in; path = Network/CustomProtocols/CustomProtocolManager.messages.in; sourceTree = "<group>"; };
 		2984F586164BA095004BC0C6 /* CustomProtocolManagerMessageReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CustomProtocolManagerMessageReceiver.cpp; sourceTree = "<group>"; };
 		2984F587164BA095004BC0C6 /* CustomProtocolManagerMessages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomProtocolManagerMessages.h; sourceTree = "<group>"; };
+		2989A410167D1834004F96D2 /* CustomProtocolManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CustomProtocolManagerMac.mm; path = Network/CustomProtocols/mac/CustomProtocolManagerMac.mm; sourceTree = "<group>"; };
+		2989A412167D184B004F96D2 /* CustomProtocolManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomProtocolManager.h; path = Network/CustomProtocols/CustomProtocolManager.h; sourceTree = "<group>"; };
+		2989A413167D184B004F96D2 /* CustomProtocolManager.messages.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CustomProtocolManager.messages.in; path = Network/CustomProtocols/CustomProtocolManager.messages.in; sourceTree = "<group>"; };
 		29AD3092164B4C5D0072DEA9 /* CustomProtocolManagerProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomProtocolManagerProxy.h; path = CustomProtocols/CustomProtocolManagerProxy.h; sourceTree = "<group>"; };
 		29AD3095164B4C930072DEA9 /* CustomProtocolManagerProxyMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CustomProtocolManagerProxyMac.mm; path = CustomProtocols/mac/CustomProtocolManagerProxyMac.mm; sourceTree = "<group>"; };
 		29AD3097164B4E210072DEA9 /* CustomProtocolManagerProxy.messages.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = CustomProtocolManagerProxy.messages.in; path = CustomProtocols/CustomProtocolManagerProxy.messages.in; sourceTree = "<group>"; };
@@ -1618,8 +1620,6 @@
 		51021E9B12B16788005C033C /* WebContextMenuClientMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebContextMenuClientMac.mm; sourceTree = "<group>"; };
 		5105B0D4162F7A7A00E27709 /* NetworkProcessConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkProcessConnection.cpp; path = Network/NetworkProcessConnection.cpp; sourceTree = "<group>"; };
 		5105B0D5162F7A7A00E27709 /* NetworkProcessConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkProcessConnection.h; path = Network/NetworkProcessConnection.h; sourceTree = "<group>"; };
-		5105B0DB162F7E9D00E27709 /* NetworkProcessManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkProcessManager.cpp; sourceTree = "<group>"; };
-		5105B0DC162F7E9D00E27709 /* NetworkProcessManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkProcessManager.h; sourceTree = "<group>"; };
 		5105B0F31630872E00E27709 /* NetworkProcessProxy.messages.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = NetworkProcessProxy.messages.in; sourceTree = "<group>"; };
 		510AFFB716542048001BA05E /* WebResourceLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WebResourceLoader.cpp; path = Network/WebResourceLoader.cpp; sourceTree = "<group>"; };
 		510AFFB816542048001BA05E /* WebResourceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebResourceLoader.h; path = Network/WebResourceLoader.h; sourceTree = "<group>"; };
@@ -1824,7 +1824,6 @@
 		93FC67A012D3CC7400A60610 /* EncoderAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncoderAdapter.h; sourceTree = "<group>"; };
 		9F4F59411648B40700493B7E /* SharedWorkerProcessManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SharedWorkerProcessManagerMac.mm; sourceTree = "<group>"; };
 		9F4F59431648B67F00493B7E /* SharedWorkerProcessProxyMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SharedWorkerProcessProxyMac.mm; sourceTree = "<group>"; };
-		9F4F59451648BA8E00493B7E /* NetworkProcessManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NetworkProcessManagerMac.mm; path = mac/NetworkProcessManagerMac.mm; sourceTree = "<group>"; };
 		9F54F88E16488E87007DF81A /* ChildProcessMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ChildProcessMac.mm; sourceTree = "<group>"; };
 		9F54F8941648AE0E007DF81A /* PluginProcessManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PluginProcessManagerMac.mm; sourceTree = "<group>"; };
 		A72D5D7F1236CBA800A88B15 /* WebSerializedScriptValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSerializedScriptValue.h; sourceTree = "<group>"; };
@@ -2235,6 +2234,7 @@
 		BCF049E511FE20F600F86A58 /* WKBundlePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKBundlePrivate.h; sourceTree = "<group>"; };
 		BCF04C8C11FF9B7D00F86A58 /* APIObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = APIObject.h; sourceTree = "<group>"; };
 		BCF04C8E11FF9F6E00F86A58 /* WebString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebString.h; sourceTree = "<group>"; };
+		BCF18637167D071E00A1A85A /* CacheModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CacheModel.cpp; sourceTree = "<group>"; };
 		BCF505E51243047B005955AE /* PlatformCertificateInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlatformCertificateInfo.h; sourceTree = "<group>"; };
 		BCF505E61243047B005955AE /* PlatformCertificateInfo.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformCertificateInfo.mm; sourceTree = "<group>"; };
 		BCF5068412431861005955AE /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = /System/Library/Frameworks/Security.framework; sourceTree = "<absolute>"; };
@@ -2765,6 +2765,7 @@
 				B63403F814910D57001070B5 /* APIObject.cpp */,
 				BCF04C8C11FF9B7D00F86A58 /* APIObject.h */,
 				4F601430155C5A32001FBDE0 /* BlockingResponseMap.h */,
+				BCF18637167D071E00A1A85A /* CacheModel.cpp */,
 				BC3065F91259344E00E71278 /* CacheModel.h */,
 				1A2D956E12848564001EB962 /* ChildProcess.cpp */,
 				1A2D956D12848564001EB962 /* ChildProcess.h */,
@@ -2975,6 +2976,8 @@
 				1AB7D4C91288AAA700CFD08C /* DownloadProxy.cpp */,
 				1AB7D4C81288AAA700CFD08C /* DownloadProxy.h */,
 				1AB7D5E91288B8C000CFD08C /* DownloadProxy.messages.in */,
+				1AD25E93167AB08100EA9BCD /* DownloadProxyMap.cpp */,
+				1AD25E94167AB08100EA9BCD /* DownloadProxyMap.h */,
 			);
 			path = Downloads;
 			sourceTree = "<group>";
@@ -3008,20 +3011,20 @@
 			path = mac;
 			sourceTree = "<group>";
 		};
-		2984F57E164B9B56004BC0C6 /* CustomProtocols */ = {
+		2989A40E167D1813004F96D2 /* CustomProtocols */ = {
 			isa = PBXGroup;
 			children = (
-				2984F57F164B9B5D004BC0C6 /* mac */,
-				2984F580164B9BBD004BC0C6 /* CustomProtocolManager.h */,
-				2984F584164B9ED9004BC0C6 /* CustomProtocolManager.messages.in */,
+				2989A40F167D181B004F96D2 /* mac */,
+				2989A412167D184B004F96D2 /* CustomProtocolManager.h */,
+				2989A413167D184B004F96D2 /* CustomProtocolManager.messages.in */,
 			);
 			name = CustomProtocols;
 			sourceTree = "<group>";
 		};
-		2984F57F164B9B5D004BC0C6 /* mac */ = {
+		2989A40F167D181B004F96D2 /* mac */ = {
 			isa = PBXGroup;
 			children = (
-				2984F582164B9BD9004BC0C6 /* CustomProtocolManagerMac.mm */,
+				2989A410167D1834004F96D2 /* CustomProtocolManagerMac.mm */,
 			);
 			name = mac;
 			sourceTree = "<group>";
@@ -3128,7 +3131,6 @@
 		5105B0D2162F7A5E00E27709 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				2984F57E164B9B56004BC0C6 /* CustomProtocols */,
 				5105B0D4162F7A7A00E27709 /* NetworkProcessConnection.cpp */,
 				5105B0D5162F7A7A00E27709 /* NetworkProcessConnection.h */,
 				51FB0902163A3B1C00EC324A /* NetworkProcessConnection.messages.in */,
@@ -3181,8 +3183,6 @@
 			children = (
 				29AD3091164B4C100072DEA9 /* CustomProtocols */,
 				516319931628980E00E22F00 /* mac */,
-				5105B0DB162F7E9D00E27709 /* NetworkProcessManager.cpp */,
-				5105B0DC162F7E9D00E27709 /* NetworkProcessManager.h */,
 				510CC7EA16138E7200D03ED3 /* NetworkProcessProxy.cpp */,
 				510CC7EB16138E7200D03ED3 /* NetworkProcessProxy.h */,
 				5105B0F31630872E00E27709 /* NetworkProcessProxy.messages.in */,
@@ -3246,7 +3246,6 @@
 		516319931628980E00E22F00 /* mac */ = {
 			isa = PBXGroup;
 			children = (
-				9F4F59451648BA8E00493B7E /* NetworkProcessManagerMac.mm */,
 				516319911628980A00E22F00 /* NetworkProcessProxyMac.mm */,
 			);
 			name = mac;
@@ -3255,6 +3254,7 @@
 		51A8A60D1627F2AC000D90E9 /* Network */ = {
 			isa = PBXGroup;
 			children = (
+				2989A40E167D1813004F96D2 /* CustomProtocols */,
 				51A8A6121627F325000D90E9 /* NetworkProcessCreationParameters.cpp */,
 				51A8A60F1627F2BD000D90E9 /* NetworkProcessCreationParameters.h */,
 				51CBBA0D165219B6005BE8FD /* NetworkResourceLoadParameters.cpp */,
@@ -4984,7 +4984,6 @@
 				1A2328FF162C866A00D82F7A /* MessageEncoder.h in Headers */,
 				1A232903162C867300D82F7A /* MessageDecoder.h in Headers */,
 				5136183E163126DA00A99DDE /* ConnectionStack.h in Headers */,
-				5105B0DE162F7E9D00E27709 /* NetworkProcessManager.h in Headers */,
 				513A163D163088F6005D7D22 /* NetworkProcessProxyMessages.h in Headers */,
 				513A164D1630A9BF005D7D22 /* NetworkConnectionToWebProcess.h in Headers */,
 				1A13BEB41635A9C800F19C03 /* StringReference.h in Headers */,
@@ -5007,7 +5006,6 @@
 				510AFFBA16542048001BA05E /* WebResourceLoader.h in Headers */,
 				29AD3093164B4C5D0072DEA9 /* CustomProtocolManagerProxy.h in Headers */,
 				2984F57D164B915F004BC0C6 /* CustomProtocolManagerProxyMessages.h in Headers */,
-				2984F581164B9BBD004BC0C6 /* CustomProtocolManager.h in Headers */,
 				2984F589164BA095004BC0C6 /* CustomProtocolManagerMessages.h in Headers */,
 				51F060E01654317F00F3281B /* WebResourceLoaderMessages.h in Headers */,
 				5175944B1657080400DD771D /* NetworkResourceLoaderMessages.h in Headers */,
@@ -5016,6 +5014,8 @@
 				E1513C67166EABB200149FCB /* ChildProcessProxy.h in Headers */,
 				31A67E0D165B2A99006CBA66 /* PlugInAutoStartProvider.h in Headers */,
 				31D5929F166E060000E6BF02 /* WebPlugInClient.h in Headers */,
+				1AD25E96167AB08100EA9BCD /* DownloadProxyMap.h in Headers */,
+				2989A414167D184B004F96D2 /* CustomProtocolManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5928,7 +5928,6 @@
 				1A2328FE162C866A00D82F7A /* MessageEncoder.cpp in Sources */,
 				1A232902162C867300D82F7A /* MessageDecoder.cpp in Sources */,
 				5136183D163126DA00A99DDE /* ConnectionStack.cpp in Sources */,
-				5105B0DD162F7E9D00E27709 /* NetworkProcessManager.cpp in Sources */,
 				513A163C163088F6005D7D22 /* NetworkProcessProxyMessageReceiver.cpp in Sources */,
 				513A164C1630A9BF005D7D22 /* NetworkConnectionToWebProcess.cpp in Sources */,
 				5183DDEC1630BDFC008BE5C7 /* NetworkProcessConnection.cpp in Sources */,
@@ -5949,7 +5948,6 @@
 				9F54F8951648AE0F007DF81A /* PluginProcessManagerMac.mm in Sources */,
 				9F4F59421648B40700493B7E /* SharedWorkerProcessManagerMac.mm in Sources */,
 				9F4F59441648B67F00493B7E /* SharedWorkerProcessProxyMac.mm in Sources */,
-				9F4F59461648BA8E00493B7E /* NetworkProcessManagerMac.mm in Sources */,
 				1AB16AE9164B3A8800290D62 /* RemoteLayerTreeContext.mm in Sources */,
 				1AB16AED164B41E400290D62 /* RemoteGraphicsLayer.mm in Sources */,
 				51217460164C20E30037A5C1 /* ShareableResource.cpp in Sources */,
@@ -5963,7 +5961,6 @@
 				510AFFB916542048001BA05E /* WebResourceLoader.cpp in Sources */,
 				29AD3096164B4C930072DEA9 /* CustomProtocolManagerProxyMac.mm in Sources */,
 				2984F57C164B915F004BC0C6 /* CustomProtocolManagerProxyMessageReceiver.cpp in Sources */,
-				2984F583164B9BD9004BC0C6 /* CustomProtocolManagerMac.mm in Sources */,
 				2984F588164BA095004BC0C6 /* CustomProtocolManagerMessageReceiver.cpp in Sources */,
 				51F060E11654318500F3281B /* WebResourceLoaderMessageReceiver.cpp in Sources */,
 				5175944A1657080400DD771D /* NetworkResourceLoaderMessageReceiver.cpp in Sources */,
@@ -5972,6 +5969,9 @@
 				E1513C66166EABB200149FCB /* ChildProcessProxy.cpp in Sources */,
 				31A67E0C165B2A99006CBA66 /* PlugInAutoStartProvider.cpp in Sources */,
 				31D5929E166E060000E6BF02 /* WebPlugInClient.cpp in Sources */,
+				1AD25E95167AB08100EA9BCD /* DownloadProxyMap.cpp in Sources */,
+				BCF18638167D071E00A1A85A /* CacheModel.cpp in Sources */,
+				2989A411167D1834004F96D2 /* CustomProtocolManagerMac.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
