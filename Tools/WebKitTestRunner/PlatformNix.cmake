@@ -18,6 +18,7 @@ LIST(APPEND WebKitTestRunner_SOURCES
     ${WEBKIT_TESTRUNNER_DIR}/nix/EventSenderProxyNix.cpp
     ${WEBKIT_TESTRUNNER_DIR}/nix/PlatformWebViewNix.cpp
     ${WEBKIT_TESTRUNNER_DIR}/nix/TestControllerNix.cpp
+    ${TOOLS_DIR}/Shared/nix/GLUtilities.cpp
     ${WEBKIT_TESTRUNNER_DIR}/nix/main.cpp
 )
 
@@ -30,6 +31,7 @@ LIST(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
     ${FONTCONFIG_INCLUDE_DIR}
 
     "${PLATFORM_DIR}/nix/"
+    "${TOOLS_DIR}/Shared/nix"
 )
 
 SET(WebKitTestRunner_LIBRARIES
@@ -38,7 +40,15 @@ SET(WebKitTestRunner_LIBRARIES
     ${CAIRO_LIBRARIES}
     ${GLIB_LIBRARIES}
     ${FONTCONFIG_LIBRARIES}
+    ${PNG_LIBRARY}
 )
+
+IF (WTF_USE_EGL)
+  LIST(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesEGL.cpp)
+  LIST(APPEND WebKitTestRunner_LIBRARIES ${EGL_LIBRARY})
+ELSE ()
+  LIST(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesGLX.cpp)
+ENDIF ()
 
 IF (WTF_USE_OPENGL_ES_2)
    LIST(APPEND WebKitTestRunner_LIBRARIES ${OPENGLES2_LIBRARIES})

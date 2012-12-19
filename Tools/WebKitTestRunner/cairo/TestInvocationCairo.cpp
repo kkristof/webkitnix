@@ -106,7 +106,7 @@ static void paintRepaintRectOverlay(cairo_surface_t* surface, WKArrayRef repaint
     cairo_destroy(context);
 }
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
 void TestInvocation::forceRepaintDoneCallback(WKErrorRef, void *context)
 {
     static_cast<TestInvocation*>(context)->m_gotRepaint = true;
@@ -116,7 +116,7 @@ void TestInvocation::forceRepaintDoneCallback(WKErrorRef, void *context)
 
 void TestInvocation::dumpPixelsAndCompareWithExpected(WKImageRef wkImage, WKArrayRef repaintRects)
 {
-#if USE(ACCELERATED_COMPOSITING) && PLATFORM(EFL)
+#if USE(ACCELERATED_COMPOSITING) && (PLATFORM(EFL) || PLATFORM(NIX))
     UNUSED_PARAM(wkImage);
 
     cairo_surface_t* surface;
@@ -124,6 +124,8 @@ void TestInvocation::dumpPixelsAndCompareWithExpected(WKImageRef wkImage, WKArra
     WKPageRef page = TestController::shared().mainWebView()->page();
     WKPageForceRepaint(page, this, &forceRepaintDoneCallback);
 
+    // FIXME NIX Some repaint related tests may fail as viewNeedsDisplay may have not been called
+    // after this loop. Needs further investigation.
     TestController::shared().runUntil(m_gotRepaint, TestController::ShortTimeout);
 
     if (!m_gotRepaint) {

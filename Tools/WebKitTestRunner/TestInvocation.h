@@ -54,7 +54,7 @@ private:
     void dumpAudio(WKDataRef);
     bool compareActualHashToExpectedAndDumpResults(const char[33]);
 
-#if PLATFORM(QT) || PLATFORM(EFL)
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM (NIX)
     static void forceRepaintDoneCallback(WKErrorRef, void* context);
 #endif
     

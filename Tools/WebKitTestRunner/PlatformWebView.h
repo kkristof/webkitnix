@@ -28,6 +28,10 @@
 
 #include <WebKit2/WKRetainPtr.h>
 
+#if PLATFORM(NIX)
+#include "GLUtilities.h"
+#endif
+
 #if defined(BUILDING_QT__)
 QT_BEGIN_NAMESPACE
 class QQuickView;
@@ -105,6 +109,11 @@ public:
 
     WKRetainPtr<WKImageRef> windowSnapshotImage();
 
+#if PLATFORM(NIX)
+    void scheduleDisplayUpdate();
+    void performDisplayUpdate();
+#endif
+
 private:
     PlatformWKView m_view;
     PlatformWindow m_window;
@@ -114,6 +123,10 @@ private:
 #endif
 #if PLATFORM(QT)
     QEventLoop* m_modalEventLoop;
+#endif
+#if PLATFORM(NIX)
+    bool m_displayUpdateScheduled;
+    ToolsNix::GLOffscreenBuffer *m_offscreenBuffer;
 #endif
 };
 
