@@ -44,7 +44,7 @@ TEST(WebKitNix, WebViewFindZoomableArea)
     // from touch point (13,18).
 
     const WKSize size = WKSizeMake(100, 100);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());

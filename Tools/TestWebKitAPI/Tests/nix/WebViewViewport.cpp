@@ -17,7 +17,7 @@ TEST(WebKitNix, WebViewViewport)
 
     const unsigned contentsWidth = 980;
     const WKSize size = WKSizeMake(contentsWidth / 2, 200);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
     glViewport(0, 0, size.width, size.height);
 
@@ -34,10 +34,10 @@ TEST(WebKitNix, WebViewViewport)
     loader.waitForLoadURLAndRepaint("../nix/WebViewViewport");
 
     // Checking that without scrolling, we correctly see the white background.
-    Util::RGBAPixel firstDotBefore = offscreenBuffer.readPixelAtPoint(0, 0);
-    EXPECT_EQ(Util::RGBAPixel::white(), firstDotBefore);
-    Util::RGBAPixel secondDotBefore = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
-    EXPECT_EQ(Util::RGBAPixel::white(), secondDotBefore);
+    ToolsNix::RGBAPixel firstDotBefore = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(ToolsNix::RGBAPixel::white(), firstDotBefore);
+    ToolsNix::RGBAPixel secondDotBefore = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
+    EXPECT_EQ(ToolsNix::RGBAPixel::white(), secondDotBefore);
 
     // Scale and scroll so that the first dot be at the topleft of the view.
     NIXViewSetScale(view.get(), 0.5);
@@ -45,10 +45,10 @@ TEST(WebKitNix, WebViewViewport)
     loader.forceRepaint();
 
     // Now check that the black dots are in the expected places.
-    Util::RGBAPixel firstDotAfter = offscreenBuffer.readPixelAtPoint(0, 0);
-    EXPECT_EQ(Util::RGBAPixel::black(), firstDotAfter);
-    Util::RGBAPixel secondDotAfter = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
-    EXPECT_EQ(Util::RGBAPixel::black(), secondDotAfter);
+    ToolsNix::RGBAPixel firstDotAfter = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(ToolsNix::RGBAPixel::black(), firstDotAfter);
+    ToolsNix::RGBAPixel secondDotAfter = offscreenBuffer.readPixelAtPoint(200, size.height - 1);
+    EXPECT_EQ(ToolsNix::RGBAPixel::black(), secondDotAfter);
 }
 
 }

@@ -17,7 +17,7 @@ TEST(WebKitNix, WebViewTranslatedScaled)
     // At this point we will have a red rectangle of (40x40)px at (10,10).
 
     const WKSize size = WKSizeMake(100, 100);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
@@ -46,18 +46,18 @@ TEST(WebKitNix, WebViewTranslatedScaled)
         NIXViewSetScale(view.get(), scale);
         loader.forceRepaint();
 
-        Util::RGBAPixel outsideTheContent = offscreenBuffer.readPixelAtPoint(delta - 1, delta - 1);
-        EXPECT_EQ(Util::RGBAPixel::blue(), outsideTheContent);
+        ToolsNix::RGBAPixel outsideTheContent = offscreenBuffer.readPixelAtPoint(delta - 1, delta - 1);
+        EXPECT_EQ(ToolsNix::RGBAPixel::blue(), outsideTheContent);
 
-        Util::RGBAPixel squareTopLeft = offscreenBuffer.readPixelAtPoint(delta, delta);
-        EXPECT_EQ(Util::RGBAPixel::red(), squareTopLeft);
+        ToolsNix::RGBAPixel squareTopLeft = offscreenBuffer.readPixelAtPoint(delta, delta);
+        EXPECT_EQ(ToolsNix::RGBAPixel::red(), squareTopLeft);
 
         const int scaledSize = scale * 20;
-        Util::RGBAPixel squareBottomRight = offscreenBuffer.readPixelAtPoint(delta + scaledSize - 1, delta + scaledSize - 1);
-        EXPECT_EQ(Util::RGBAPixel::red(), squareBottomRight);
+        ToolsNix::RGBAPixel squareBottomRight = offscreenBuffer.readPixelAtPoint(delta + scaledSize - 1, delta + scaledSize - 1);
+        EXPECT_EQ(ToolsNix::RGBAPixel::red(), squareBottomRight);
 
-        Util::RGBAPixel outsideSquare = offscreenBuffer.readPixelAtPoint(delta + scaledSize, delta + scaledSize);
-        EXPECT_EQ(Util::RGBAPixel::white(), outsideSquare);
+        ToolsNix::RGBAPixel outsideSquare = offscreenBuffer.readPixelAtPoint(delta + scaledSize, delta + scaledSize);
+        EXPECT_EQ(ToolsNix::RGBAPixel::white(), outsideSquare);
     }
 }
 

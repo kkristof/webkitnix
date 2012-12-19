@@ -5,10 +5,8 @@
 #include <png.h>
 
 using namespace std;
-using namespace TestWebKitAPI::Util;
 
-namespace TestWebKitAPI {
-namespace Util {
+namespace ToolsNix {
 
 void GLOffscreenBuffer::dumpToPng(const char* fileName)
 {
@@ -62,5 +60,4 @@ RGBAPixel GLOffscreenBuffer::readPixelAtPoint(unsigned x, unsigned y)
     return result;
 }
 
-} // namespace Util
-} // namespace TestWebKitAPI
+} // namespace ToolsNix

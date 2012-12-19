@@ -102,7 +102,7 @@ SET(TestWebKitNixAPIBase_SOURCES
     ${test_main_SOURCES}
     ${TESTWEBKITAPI_DIR}/nix/PlatformUtilitiesNix.cpp
     ${TESTWEBKITAPI_DIR}/nix/PageLoader.cpp
-    ${TESTWEBKITAPI_DIR}/nix/GLUtilities.cpp
+    ${TOOLS_DIR}/Shared/nix/GLUtilities.cpp
     ${TESTWEBKITAPI_DIR}/nix/TestsControllerNix.cpp
     ${TESTWEBKITAPI_DIR}/PlatformUtilities.cpp
 )
@@ -121,10 +121,10 @@ ELSE ()
 ENDIF ()
 
 IF (WTF_USE_EGL)
-  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesEGL.cpp)
+  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesEGL.cpp)
   LIST(APPEND TestWebKitNixAPIBase_LIBRARIES ${EGL_LIBRARY})
 ELSE ()
-  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TESTWEBKITAPI_DIR}/nix/GLUtilitiesGLX.cpp)
+  LIST(APPEND TestWebKitNixAPIBase_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesGLX.cpp)
 ENDIF ()
 
 ADD_LIBRARY(TestWebKitNixAPIBase ${TestWebKitNixAPIBase_SOURCES})
@@ -137,6 +137,7 @@ LIST(APPEND bundle_harness_SOURCES
 
 INCLUDE_DIRECTORIES(
     ${TESTWEBKITAPI_DIR}/nix
+    ${TOOLS_DIR}/Shared/nix
 )
 
 SET(test_webkitnix_api_LIBRARIES

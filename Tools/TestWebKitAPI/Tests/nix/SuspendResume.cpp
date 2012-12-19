@@ -19,7 +19,7 @@ TEST(WebKitNix, SuspendResumeAPI)
 
 
     const WKSize size = WKSizeMake(150, 100);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());

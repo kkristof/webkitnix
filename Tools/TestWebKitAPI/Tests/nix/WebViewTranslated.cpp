@@ -12,7 +12,7 @@ namespace TestWebKitAPI {
 TEST(WebKitNix, WebViewTranslated)
 {
     const WKSize size = WKSizeMake(100, 100);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
@@ -42,17 +42,17 @@ TEST(WebKitNix, WebViewTranslated)
     // values going down. We are testing this diagonal here.
 
     // Original background.
-    Util::RGBAPixel sample[int(size.width * size.height)];
+    ToolsNix::RGBAPixel sample[int(size.width * size.height)];
     glReadPixels(0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, &sample);
     for (int x = 0, y = size.height - 1; x < translationDelta; x++, y--) {
         int index = y * size.height + x;
-        EXPECT_EQ(Util::RGBAPixel::blue(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
+        EXPECT_EQ(ToolsNix::RGBAPixel::blue(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
     }
 
     // Red background page.
     for (int x = translationDelta, y = size.height - translationDelta - 1; x < size.width; x++, y--) {
         int index = y * size.height + x;
-        EXPECT_EQ(Util::RGBAPixel::red(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
+        EXPECT_EQ(ToolsNix::RGBAPixel::red(), sample[index]) << "Error when checking for pixel (" << x << ", " << y << ")";
     }
 }
 

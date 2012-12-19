@@ -2,6 +2,7 @@
 #define GLUtilities_h
 
 #include <iostream>
+#include <iomanip>
 
 #if USE(OPENGL_ES_2)
 #include <GLES2/gl2.h>
@@ -16,8 +17,7 @@
 #include <GL/glx.h>
 #endif
 
-namespace TestWebKitAPI {
-namespace Util {
+namespace ToolsNix {
 
 struct RGBAPixel {
     unsigned char r;
@@ -66,7 +66,6 @@ private:
 #endif
 };
 
-} // namespace Util
-} // namespace TestWebKitAPI
+} // namespace ToolsNix
 
 #endif // GLUtilities_h

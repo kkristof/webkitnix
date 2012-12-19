@@ -12,7 +12,7 @@ namespace TestWebKitAPI {
 TEST(WebKitNix, WebViewPaintToCurrentGLContext)
 {
     const WKSize size = WKSizeMake(100, 100);
-    Util::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
+    ToolsNix::GLOffscreenBuffer offscreenBuffer(size.width, size.height);
     ASSERT_TRUE(offscreenBuffer.makeCurrent());
 
     WKRetainPtr<WKContextRef> context = adoptWK(WKContextCreate());
@@ -28,18 +28,18 @@ TEST(WebKitNix, WebViewPaintToCurrentGLContext)
     glClearColor(0, 0, 1, 1);
 
     glClear(GL_COLOR_BUFFER_BIT);
-    Util::RGBAPixel clearedSample = offscreenBuffer.readPixelAtPoint(0, 0);
-    EXPECT_EQ(Util::RGBAPixel::blue(), clearedSample);
+    ToolsNix::RGBAPixel clearedSample = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(ToolsNix::RGBAPixel::blue(), clearedSample);
 
     glClear(GL_COLOR_BUFFER_BIT);
     loader.waitForLoadURLAndRepaint("../nix/red-background");
-    Util::RGBAPixel redSample = offscreenBuffer.readPixelAtPoint(0, 0);
-    EXPECT_EQ(Util::RGBAPixel::red(), redSample);
+    ToolsNix::RGBAPixel redSample = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(ToolsNix::RGBAPixel::red(), redSample);
 
     glClear(GL_COLOR_BUFFER_BIT);
     loader.waitForLoadURLAndRepaint("../nix/green-background");
-    Util::RGBAPixel greenSample = offscreenBuffer.readPixelAtPoint(0, 0);
-    EXPECT_EQ(Util::RGBAPixel::green(), greenSample);
+    ToolsNix::RGBAPixel greenSample = offscreenBuffer.readPixelAtPoint(0, 0);
+    EXPECT_EQ(ToolsNix::RGBAPixel::green(), greenSample);
 }
 
 } // TestWebKitAPI

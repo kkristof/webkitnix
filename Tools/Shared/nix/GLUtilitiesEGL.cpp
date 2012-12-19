@@ -5,8 +5,7 @@
 
 using std::cerr;
 
-namespace TestWebKitAPI {
-namespace Util {
+namespace ToolsNix {
 
 GLOffscreenBuffer::GLOffscreenBuffer(unsigned width, unsigned height)
     : m_width(width)
@@ -86,5 +85,4 @@ bool GLOffscreenBuffer::makeCurrent()
     return eglMakeCurrent(m_display, m_surface, m_surface, m_context);
 }
 
-} // namespace Util
-} // namespace TestWebKitAPI
+} // namespace ToolsNix
