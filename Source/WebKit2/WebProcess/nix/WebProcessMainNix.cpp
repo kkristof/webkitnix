@@ -69,8 +69,6 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
         g_object_unref(resolverNix);
     }
 
-    CoordinatedGraphicsLayer::initFactory();
-
     WebCore::ResourceHandle::setIgnoreSSLErrors(true);
 
     int socket = atoi(argv[1]);

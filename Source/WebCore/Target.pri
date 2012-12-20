@@ -25,6 +25,7 @@ SOURCES += \
     Modules/webdatabase/DatabaseAuthorizer.cpp \
     Modules/webdatabase/DatabaseContext.cpp \
     Modules/webdatabase/DatabaseSync.cpp \
+    Modules/webdatabase/DBBackendServer.cpp \
     Modules/webdatabase/WorkerContextWebDatabase.cpp \
     \
     accessibility/AccessibilityImageMapLink.cpp \
@@ -3918,9 +3919,6 @@ enable?(WEB_SOCKETS) {
         platform/network/SocketStreamErrorBase.cpp \
         platform/network/SocketStreamHandleBase.cpp \
         platform/network/qt/SocketStreamHandleQt.cpp
-
-    SOURCES += \
-        bindings/js/JSWebSocketCustom.cpp
 
     enable?(WORKERS) {
         HEADERS += \

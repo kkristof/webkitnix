@@ -110,7 +110,7 @@ ALWAYS_INLINE void JSObject::copyButterfly(CopyVisitor& visitor, Butterfly* butt
         indexingPayloadSizeInBytes = 0;
     }
     size_t capacityInBytes = Butterfly::totalSize(preCapacity, propertyCapacity, hasIndexingHeader, indexingPayloadSizeInBytes);
-    if (visitor.checkIfShouldCopy(butterfly->base(preCapacity, propertyCapacity), capacityInBytes)) {
+    if (visitor.checkIfShouldCopy(butterfly->base(preCapacity, propertyCapacity))) {
         Butterfly* newButterfly = Butterfly::createUninitializedDuringCollection(visitor, preCapacity, propertyCapacity, hasIndexingHeader, indexingPayloadSizeInBytes);
         
         // Copy the properties.
@@ -951,6 +951,8 @@ void JSObject::convertDoubleToContiguousWhilePerformingSetIndex(JSGlobalData& gl
 
 WriteBarrier<Unknown>* JSObject::ensureInt32Slow(JSGlobalData& globalData)
 {
+    ASSERT(inherits(&s_info));
+    
     switch (structure()->indexingType()) {
     case ALL_BLANK_INDEXING_TYPES:
         if (UNLIKELY(indexingShouldBeSparse() || structure()->needsSlowPutIndexing()))
@@ -973,6 +975,8 @@ WriteBarrier<Unknown>* JSObject::ensureInt32Slow(JSGlobalData& globalData)
 
 double* JSObject::ensureDoubleSlow(JSGlobalData& globalData)
 {
+    ASSERT(inherits(&s_info));
+    
     switch (structure()->indexingType()) {
     case ALL_BLANK_INDEXING_TYPES:
         if (UNLIKELY(indexingShouldBeSparse() || structure()->needsSlowPutIndexing()))
@@ -997,6 +1001,8 @@ double* JSObject::ensureDoubleSlow(JSGlobalData& globalData)
 
 WriteBarrier<Unknown>* JSObject::ensureContiguousSlow(JSGlobalData& globalData, DoubleToContiguousMode mode)
 {
+    ASSERT(inherits(&s_info));
+    
     switch (structure()->indexingType()) {
     case ALL_BLANK_INDEXING_TYPES:
         if (UNLIKELY(indexingShouldBeSparse() || structure()->needsSlowPutIndexing()))
@@ -1035,6 +1041,8 @@ WriteBarrier<Unknown>* JSObject::rageEnsureContiguousSlow(JSGlobalData& globalDa
 
 ArrayStorage* JSObject::ensureArrayStorageSlow(JSGlobalData& globalData)
 {
+    ASSERT(inherits(&s_info));
+    
     switch (structure()->indexingType()) {
     case ALL_BLANK_INDEXING_TYPES:
         if (UNLIKELY(indexingShouldBeSparse()))

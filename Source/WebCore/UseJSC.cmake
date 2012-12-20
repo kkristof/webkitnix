@@ -202,13 +202,9 @@ if (ENABLE_INDEXED_DATABASE)
     list(APPEND WebCore_SOURCES
         bindings/js/IDBBindingUtilities.cpp
         bindings/js/JSIDBAnyCustom.cpp
+        bindings/js/JSIDBDatabaseCustom.cpp
         bindings/js/JSIDBKeyCustom.cpp
-    )
-endif ()
-
-if (ENABLE_WEB_SOCKETS)
-    list(APPEND WebCore_SOURCES
-        bindings/js/JSWebSocketCustom.cpp
+        bindings/js/JSIDBObjectStoreCustom.cpp
     )
 endif ()
 

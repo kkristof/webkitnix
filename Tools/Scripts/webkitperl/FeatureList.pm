@@ -61,7 +61,9 @@ my (
     $cssImageResolutionSupport,
     $cssRegionsSupport,
     $cssShadersSupport,
+    $cssStickyPositionSupport,
     $cssCompositingSupport,
+    $cssAnimationsTransitionsTransformsUnprefixedSupport,
     $cssVariablesSupport,
     $customSchemeHandlerSupport,
     $dataTransferItemsSupport,
@@ -201,8 +203,14 @@ my @features = (
     { option => "css-shaders", desc => "Toggle CSS Shaders support",
       define => "ENABLE_CSS_SHADERS", default => isAppleMacWebKit(), value => \$cssShadersSupport },
 
+    { option => "css-sticky-position", desc => "Toggle CSS sticky position support",
+      define => "ENABLE_CSS_STICKY_POSITION", default => isGtk(), value => \$cssStickyPositionSupport },
+
     { option => "css-compositing", desc => "Toggle CSS Compositing support",
       define => "ENABLE_CSS_COMPOSITING", default => isAppleWebKit(), value => \$cssCompositingSupport },
+
+    { option => "css-transforms-animations-transitions-unprefixed", desc => "Toggle support for unprefixed CSS animations, transitions and transforms",
+      define => "ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED", default => 1, value => \$cssAnimationsTransitionsTransformsUnprefixedSupport },
 
     { option => "css-variables", desc => "Toggle CSS Variable support",
       define => "ENABLE_CSS_VARIABLES", default => (isBlackBerry() || isEfl()), value => \$cssVariablesSupport },
@@ -427,7 +435,7 @@ my @features = (
       define => "ENABLE_WEBGL", default => (isAppleMacWebKit() || isGtk() || isEfl()), value => \$webglSupport },
 
     { option => "web-audio", desc => "Toggle Web Audio support",
-      define => "ENABLE_WEB_AUDIO", default => 0, value => \$webAudioSupport },
+      define => "ENABLE_WEB_AUDIO", default => (isEfl()), value => \$webAudioSupport },
 
     { option => "web-intents", desc => "Toggle Web Intents support",
       define => "ENABLE_WEB_INTENTS", default => isEfl(), value => \$webIntentsSupport },

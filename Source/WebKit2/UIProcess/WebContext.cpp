@@ -260,6 +260,11 @@ WebContext::~WebContext()
 #endif
 }
 
+void WebContext::initializeClient(const WKContextClient* client)
+{
+    m_client.initialize(client);
+}
+
 void WebContext::initializeInjectedBundleClient(const WKContextInjectedBundleClient* client)
 {
     m_injectedBundleClient.initialize(client);
@@ -1050,6 +1055,9 @@ void WebContext::allowSpecificHTTPSCertificateForHost(const WebCertificateInfo* 
         m_networkProcess->send(Messages::NetworkProcess::AllowSpecificHTTPSCertificateForHost(certificate->platformCertificateInfo(), host), 0);
         return;
     }
+#else
+    UNUSED_PARAM(certificate);
+    UNUSED_PARAM(host);
 #endif
     // FIXME: It's unclear whether we want this SPI to be exposed and used for clients that don't use the NetworkProcess.
     ASSERT_NOT_REACHED();
@@ -1141,6 +1149,16 @@ void WebContext::setJavaScriptGarbageCollectorTimerEnabled(bool flag)
 void WebContext::addPlugInAutoStartOriginHash(const String& pageOrigin, unsigned plugInOriginHash)
 {
     m_plugInAutoStartProvider.addAutoStartOrigin(pageOrigin, plugInOriginHash);
+}
+
+PassRefPtr<ImmutableDictionary> WebContext::plugInAutoStartOriginHashes() const
+{
+    return m_plugInAutoStartProvider.autoStartOriginsTableCopy();
+}
+
+void WebContext::setPlugInAutoStartOriginHashes(ImmutableDictionary& dictionary)
+{
+    return m_plugInAutoStartProvider.setAutoStartOriginsTable(dictionary);
 }
 
 #if ENABLE(CUSTOM_PROTOCOLS)

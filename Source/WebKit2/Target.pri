@@ -47,6 +47,7 @@ HEADERS += \
     Shared/API/c/WKConnectionRef.h \
     Shared/API/c/WKContextMenuItem.h \
     Shared/API/c/WKContextMenuItemTypes.h \
+    Shared/API/c/WKData.h \
     Shared/API/c/WKDictionary.h \
     Shared/API/c/WKError.h \
     Shared/API/c/WKGeometry.h \
@@ -245,6 +246,7 @@ HEADERS += \
     UIProcess/WebColorPickerResultListenerProxy.h \
     UIProcess/WebConnectionToWebProcess.h \
     UIProcess/WebContext.h \
+    UIProcess/WebContextClient.h \
     UIProcess/WebContextConnectionClient.h \
     UIProcess/WebContextInjectedBundleClient.h \
     UIProcess/WebContextMenuProxy.h \
@@ -420,6 +422,7 @@ SOURCES += \
     Shared/API/c/WKCertificateInfo.cpp \
     Shared/API/c/WKConnectionRef.cpp \
     Shared/API/c/WKContextMenuItem.cpp \
+    Shared/API/c/WKData.cpp \
     Shared/API/c/WKDictionary.cpp \
     Shared/API/c/WKError.cpp \
     Shared/API/c/WKGeometry.cpp \
@@ -607,6 +610,7 @@ SOURCES += \
     UIProcess/WebColorPickerResultListenerProxy.cpp \
     UIProcess/WebConnectionToWebProcess.cpp \
     UIProcess/WebContext.cpp \
+    UIProcess/WebContextClient.cpp \
     UIProcess/WebContextConnectionClient.cpp \
     UIProcess/WebContextInjectedBundleClient.cpp \
     UIProcess/WebContextMenuProxy.cpp \

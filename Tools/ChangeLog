@@ -1,3 +1,482 @@
+2012-12-20  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Skip unit test /webkit/atk/getTextInParagraphAndBodyModerate
+
+        * Scripts/run-gtk-tests:
+        (TestRunner):
+
+2012-12-20  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [Qt] Move ImageDiff to the Tools directory root
+        https://bugs.webkit.org/show_bug.cgi?id=105420
+
+        Reviewed by Tor Arne Vestbø.
+
+        Moved ImageDiff from outside DumpRenderTree because it is also a
+        dependency when running pixel tests for WebKit2.
+
+        * ImageDiff/ImageDiff.pro: Renamed from Tools/DumpRenderTree/qt/ImageDiff.pro.
+        * ImageDiff/qt/ImageDiff.cpp: Renamed from Tools/DumpRenderTree/qt/ImageDiff.cpp.
+        * Tools.pro:
+
+2012-12-20  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Remove the --enable-unstable-features configuration option
+        https://bugs.webkit.org/show_bug.cgi?id=105327
+
+        Reviewed by Martin Robinson.
+
+        Add a missing feature option for the CSS sticky position feature.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-12-20  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Skip unit test WebKit2.ForceRepaint that times out
+
+        * Scripts/run-gtk-tests:
+        (TestRunner):
+
+2012-12-20  Dominik Röttsches  <dominik.rottsches@intel.com>
+
+        [EFL] MiniBrowser does not play Infinite Gangnam Style
+        https://bugs.webkit.org/show_bug.cgi?id=103531
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        For EFL we would like this feature to be built by default.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2012-12-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] EWS bots should call qmake always
+        https://bugs.webkit.org/show_bug.cgi?id=90049
+
+        Reviewed by Simon Hausmann.
+
+        * Scripts/webkitdirs.pm:
+        (buildQMakeProjects):
+
+2012-12-20  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] fix stray printf in TestRunner's WebTestProxy
+        https://bugs.webkit.org/show_bug.cgi?id=105515
+
+        Reviewed by Ryosuke Niwa.
+
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::shouldInsertNode):
+
+2012-12-20  Dominik Röttsches  <dominik.rottsches@intel.com>
+
+        [WK2] WebAudio WKTR support
+        https://bugs.webkit.org/show_bug.cgi?id=95084
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Implementing audio data dump support for WebKitTestRunner,
+        by adding the API to the IDL, enabling IPC for transferring
+        the audio data as bytebuffer and dumping it according
+        to run-webkit-tests script's expectations.
+        This enables audio testing on WebKit2 ports.
+        Based on initial wip-patch from Philippe Normand - thanks.
+
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl: Adding setAudioData API.
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp: Assign audio buffer data to a local WKDataRef after extracting it from WK2 using WKBundleDataFromUint8Array bundle API.
+        (WTR::TestRunner::setAudioData):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h: Add a whatToDump state for dumping Audio.
+        (TestRunner):
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp: Add audio to the message that's transferred to the WKTR process.
+        (WTR::InjectedBundle::done):
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.h: Allow setting and audio result handle to be transferred.
+        (WTR::InjectedBundle::setAudioResult):
+        (InjectedBundle):
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::dump): Dummy handling the Audio case in the switch, build fix for Mac.
+        * WebKitTestRunner/TestInvocation.cpp: Audio dump support, dump audio if we haven't received a text dump from the web process.
+        (WTR::TestInvocation::dumpResults):
+        (WTR):
+        (WTR::TestInvocation::dumpAudio):
+        (WTR::TestInvocation::didReceiveMessageFromInjectedBundle): Storing received audio data before dumping.
+        * WebKitTestRunner/TestInvocation.h:
+        (TestInvocation):
+
+2012-12-20  Alberto Garcia  <agarcia@igalia.com>
+
+        [GTK] Count failed and timed out tests separately
+        https://bugs.webkit.org/show_bug.cgi?id=105448
+
+        Reviewed by Carlos Garcia Campos.
+
+        Display the number of tests that fail, time out and are skipped
+        separately in the buildbot page.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (RunGtkAPITests.commandComplete):
+        (RunGtkAPITests.evaluateCommand):
+        (RunGtkAPITests.getText2):
+        * Scripts/run-gtk-tests:
+        (TestRunner.run_tests):
+
+2012-12-19  Ryosuke Niwa  <rniwa@webkit.org>
+
+        PerfTest.parse_output does too much
+        https://bugs.webkit.org/show_bug.cgi?id=105391
+
+        Reviewed by Tony Chang.
+
+        Moved the code to filter lines into PerfTest._filter_output, which has been renamed from _filter_stderr.
+        Also moved the code to output test results into PerfTest._run_with_driver.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest.__init__): Added _description.
+        (PerfTest.description): Added.
+        (PerfTest._run_with_driver): Moved the code to output test description and test results.
+        (PerfTest._filter_output): Moved and renamed from PerfTest._filter_stderr.
+        (PerfTest.parse_output): Removed the code to output test results. Return test results and description
+        respectively. Also removed the code that allowed some tests to omit values since all tests report each
+        iteration now since r136492.
+        (PerfTest.output_statistics): Removed the code to print test description, now done in _run_with_driver.
+        (ChromiumStylePerfTest._run_with_driver): Added. Chromium style tests are sufficiently different from
+        regular PerfTest that it doesn't make much sense to share _run_with_driver. But really, we should just
+        get rid of this type of test altogether in favor of regular performance tests that uses runner.js.
+        (ChromiumStylePerfTest.parse_and_log_output): Renamed from parse_output.
+        (PageLoadingPerfTest._run_with_driver): Removed the explicit '' for the test description.
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (MainTest.test_parse_output): Removed the expected logs since parse_output no longer prints out results.
+        Also added a call to _filter_output since parse_output doesn't filter the output text anymore.
+        (MainTest.test_parse_output_with_failing_line): Added a call to _filter_output. Also added ',' after 'Time:'
+        so that it's not string-concatenated with the next line.
+        (MainTest.test_parse_output_with_description): Added; a test for PerfTest.description().
+        (MainTest.test_parse_output_with_subtests): Removed the expected logs, and added a call to _filter_output.
+
+2012-12-19  Alexis Menard  <alexis@webkit.org>
+
+        Implement CSS parsing for CSS transitions unprefixed.
+        https://bugs.webkit.org/show_bug.cgi?id=104804
+
+        Reviewed by Dean Jackson.
+
+        Add a new flag ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED
+        to cover the work of unprefixing Transforms, Animations and 
+        Transitions. It will let the possibility of each ports to turn it off 
+        in their release branches until we're confident that these CSS 
+        properties are ready to be unprefixed.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2012-12-19  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        2 clampTo unit tests are failing
+        https://bugs.webkit.org/show_bug.cgi?id=105253
+
+        Reviewed by Emil A Eklund.
+
+        Removed clampToUnsigned as it was actually testing exactly what
+        clampToUnsignedLong was doing. Also made clampToIntFloat more robust
+        to precision loss (fix suggested by Emil).
+
+        * TestWebKitAPI/Tests/WTF/MathExtras.cpp:
+
+2012-12-19  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] Move ImageDiff to the Tools directory root
+        https://bugs.webkit.org/show_bug.cgi?id=105305
+
+        Reviewed by Laszlo Gombos.
+
+        We previously moved this directory from the DRT directory to
+        efl/ImageDiff. The major reason for doing so was because ImageDiff does
+        not depend on DumpRenderTree but for legacy reasons was living inside the
+        DRT folder, even though it is needed when running pixel tests for WK2.
+
+        Now we are moving to Tool directory root as other ports agreed to do the same.
+
+        * CMakeLists.txt:
+        * ImageDiff/CMakeLists.txt: Added.
+        * ImageDiff/PlatformEfl.cmake: Added.
+        * ImageDiff/efl/ImageDiff.cpp: Renamed from Tools/efl/ImageDiff/ImageDiff.cpp.
+        * efl/ImageDiff/CMakeLists.txt: Removed.
+
+2012-12-19  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt][Mac] run-launcher cannot find Qt5WebKitWidgets.
+        https://bugs.webkit.org/show_bug.cgi?id=105309
+
+        The version number is only used as a part
+        of the library name on Linux.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * Scripts/webkitdirs.pm:
+        (builtDylibPathForName):
+
+2012-12-19  Alberto Garcia  <agarcia@igalia.com>
+
+        [GTK] Tests that time out are not considered as failures.
+        https://bugs.webkit.org/show_bug.cgi?id=105318
+
+        Reviewed by Martin Robinson.
+
+        Fix parsing of the GTK API tests log files.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (RunGtkAPITests.commandComplete):
+
+2012-12-18  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed, rolling out r138061.
+        https://bugs.webkit.org/show_bug.cgi?id=105396
+
+        Original patch:
+        http://trac.webkit.org/changeset/138061
+        https://bugs.webkit.org/show_bug.cgi?id=97359
+
+        It is crashing on Debug bots
+
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.cpp:
+        (WebTestRunner::AccessibilityUIElement::AccessibilityUIElement):
+        (WebTestRunner::AccessibilityUIElement::elementAtPointCallback):
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.h:
+        (AccessibilityUIElement):
+
+2012-12-18  Alice Liu  <alice.liu@apple.com>
+
+        Test for https://bugs.webkit.org/show_bug.cgi?id=105106
+        Add SPI to WebKit1 WebFrame for hit testing
+
+        Reviewed by Dan Bernstein.
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj: Added file Tests/mac/ElementAtPointInWebFrame.mm
+        * TestWebKitAPI/Tests/mac/ElementAtPointInWebFrame.mm: Added.
+        (TestWebKitAPI::TEST): Loads html with two divs positioned in the 2nd and 4th quadrants of the webview.
+        Then hit-tests at three points, expecting to hit the two divs and body element. 
+
+2012-12-18  Alice Liu  <alice.liu@apple.com>
+
+        Test for https://bugs.webkit.org/show_bug.cgi?id=105262
+        Add SPI to WebKit1 WebFrame for node conversion to JSValueRef
+
+        Reviewed by Anders Carlsson.
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj: Added file Tests/mac/JSWrapperForNodeInWebFrame.mm.mm
+        * TestWebKitAPI/Tests/mac/JSWrapperForNodeInWebFrame.mm.mm: Added.
+        (TestWebKitAPI::TEST): Tests for the correct JS wrapper for a DOMNode, provided a WebScriptWorld.
+        Loads html with a single div element. In an isolated world, creates a property on that node.
+        Also, in the standard world, creates a different property on that node.  Then tests for 4 things:
+            - Existence of the isolated property in the isolated world.
+            - Existence of the standard property in the standard world.
+            - Non-existence of the isolated property in the standard world.
+            - Non-existence of the standard property in the isolated world.
+
+2012-12-18  Simon Fraser  <simon.fraser@apple.com>
+
+        Disable the SimplifyMarkup API test, wich asserts in debug builds.
+        Tracked by https://bugs.webkit.org/show_bug.cgi?id=105370.
+        
+        * TestWebKitAPI/Tests/mac/SimplifyMarkup.mm:
+        (TestWebKitAPI::TEST):
+
+2012-12-18  Joseph Pecoraro  <pecoraro@apple.com>
+
+        [Mac] Add Build Phase to Check Headers for Inappropriate Macros (Platform.h macros)
+        https://bugs.webkit.org/show_bug.cgi?id=104279
+
+        Reviewed by David Kilzer.
+
+        Add a build phase script that checks a framework's header files for
+        Platform.h and Compiler.h macros. Also add some tests for the script.
+
+        * Scripts/check-for-inappropriate-macros-in-external-headers: Added.
+        Script to be used in build phases to check for inappropriate macros in headers.
+
+        * Scripts/test-webkitruby: Added.
+        Script that can be used to run all webkitruby tests.
+
+        * Scripts/test-webkit-scripts:
+        Also run the ruby tests.
+
+        * Scripts/webkitruby/check-for-inappropriate-macros-in-external-headers-tests/fake-data-failing-expected.txt: Added.
+        * Scripts/webkitruby/check-for-inappropriate-macros-in-external-headers-tests/pass-expected.txt: Added.
+        * Scripts/webkitruby/check-for-inappropriate-macros-in-external-headers-tests/resources/Fake.framework/Headers/Fail.h: Added.
+        * Scripts/webkitruby/check-for-inappropriate-macros-in-external-headers-tests/resources/Fake.framework/Headers/Pass.h: Added.
+        * Scripts/webkitruby/check-for-inappropriate-macros-in-external-headers-tests/run-test.rb: Added.
+        Tests for the new script.
+
+2012-12-18  Dominic Mazzoni  <dmazzoni@google.com>
+
+        AX: support clickPoint in DRT for chromium
+        https://bugs.webkit.org/show_bug.cgi?id=97359
+
+        Reviewed by Chris Fleizach.
+
+        Implement clickPointX, clickPointY, and elementAtPoint for Chromium, so that
+        several more tests can pass.
+
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.cpp:
+        (WebTestRunner::AccessibilityUIElement::AccessibilityUIElement):
+        (WebTestRunner::AccessibilityUIElement::clickPointXGetterCallback):
+        (WebTestRunner):
+        (WebTestRunner::AccessibilityUIElement::clickPointYGetterCallback):
+        (WebTestRunner::AccessibilityUIElement::elementAtPointCallback):
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.h:
+        (AccessibilityUIElement):
+
+2012-12-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix after r138045.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._collect_tests): Use relative_path. We skip only when this path
+        is not explicitly specified. The condition was backwards but never matched so we
+        always ran the test regardless of whether it's listed in the skipped list or not.
+        * Scripts/webkitpy/performance_tests/perftestsrunner_unittest.py:
+        (test_collect_tests_with_ignored_skipped_list): Renamed so that it actually runs.
+
+2012-12-18  Emil A Eklund  <eae@chromium.org>
+
+        TestWebKitAPI/Tests/WebCore/LayoutUnit fails on mac
+        https://bugs.webkit.org/show_bug.cgi?id=105332
+        
+        Reviewed by Levi Weintraub.
+        
+        Create new test suite for LayoutUnit tests as the KURL tests are
+        of the incompatible TEST_F type.
+
+        * TestWebKitAPI/Tests/WebCore/LayoutUnit.cpp:
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST_F):
+
+2012-12-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Running a skipped test with run-perf-tests could alert the user
+        https://bugs.webkit.org/show_bug.cgi?id=105219
+
+        Reviewed by Eric Seidel.
+
+        Force run skipped performance tests explicitly specified in the command line.
+        Also warn the user when the specified paths don't exist.
+
+        * Scripts/webkitpy/layout_tests/port/base.py:
+        (Port.relative_test_filename):
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._parse_args):
+        (PerfTestsRunner._collect_tests):
+        * Scripts/webkitpy/performance_tests/perftestsrunner_unittest.py:
+        (test_collect_tests_with_skipped_list_and_files):
+
+2012-12-18  Yaron Friedman  <yfriedman@chromium.org>
+
+        Chrome Android java output is too verbose
+        https://bugs.webkit.org/show_bug.cgi?id=105247
+
+        Reviewed by Tony Chang.
+
+        Pass -quiet to ant to suppress extraneous output.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+        * TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:
+
+2012-12-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Consider removing --pause-before-testing option
+        https://bugs.webkit.org/show_bug.cgi?id=105248
+
+        Reviewed by Eric Seidel.
+
+        Remove --pause-before-testing option.
+
+        * Tools/Scripts/webkitpy/layout_tests/port/driver.py:
+        (DriverProxy.start): Removed.
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest.__init__):
+        (PerfTest.test_path): Renamed from path_or_url.
+        (PerfTest.run):
+        (PerfTest): Removed "driver" argument.
+        (PerfTest._run_with_driver):
+        (PerfTest.run_single):
+        (ChromiumStylePerfTest.__init__):
+        (PageLoadingPerfTest.__init__):
+        (PageLoadingPerfTest.run_single):
+        (PageLoadingPerfTest._run_with_driver): Renamed from run so that PerfTest.run can create a driver for us.
+        (ReplayPerfTest.__init__):
+        (ReplayPerfTest.prepare):
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestPageLoadingPerfTest.test_run):
+        (TestPageLoadingPerfTest.test_run_with_memory_output):
+        (TestPageLoadingPerfTest.test_run_with_bad_output):
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._parse_args):
+        (PerfTestsRunner._run_tests_set): Removed the code to create a driver and pause before running the test.
+        (PerfTestsRunner._run_single_test): Removed "driver" argument.
+        * Scripts/webkitpy/performance_tests/perftestsrunner_unittest.py:
+        (run_test):
+        (test_run_test_pause_before_testing): Removed.
+
+2012-12-18  Alberto Garcia  <agarcia@igalia.com>
+
+        [GTK] Tests that time out are not considered as failures.
+        https://bugs.webkit.org/show_bug.cgi?id=105318
+
+        Reviewed by Martin Robinson.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (RunGtkAPITests.commandComplete):
+        Consider log lines that end with TIMEOUT as errors.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner.run_tests):
+        Consider timeouts as failures when returning the number of failed
+        tests.
+
+2012-12-18  Pravin D  <pravin.d@samsung.com>
+
+        Unreviewed, adding secondary email.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-18  Pravin D  <pravin.d@samsung.com>
+
+        Unreviewed, promoting myself to committer's list.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2012-12-18  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [EFL] ImageDiff does not build on WebKit2 only builds
+        https://bugs.webkit.org/show_bug.cgi?id=105288
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Moved ImageDiff to the efl/ folder inside Tools/ (so we don't pollute
+        the folder with things which are EFL-specific.
+
+        ImageDiff will be built by default now regardless of WebKit API flavor
+        you choose.
+
+        * CMakeLists.txt:
+        * DumpRenderTree/efl/CMakeLists.txt:
+        * efl/ImageDiff/CMakeLists.txt: Added.
+        * efl/ImageDiff/ImageDiff.cpp: Renamed from Tools/DumpRenderTree/efl/ImageDiff.cpp.
+
+2012-12-18  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        [EFL][WK2] When creating new windows, use the opener's context
+        https://bugs.webkit.org/show_bug.cgi?id=105283
+
+        Reviewed by Laszlo Gombos.
+
+        Use the context of the opener if exists.
+
+        * MiniBrowser/efl/main.c:
+        (on_key_down):
+        (on_window_create):
+        (window_create):
+        (elm_main):
+
 2012-12-18  Thiago Marcos P. Santos  <thiago.santos@intel.com>
 
         [EFL][WK2] Gardening of TestWebKitAPI tests

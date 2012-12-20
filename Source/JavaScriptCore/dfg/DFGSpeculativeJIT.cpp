@@ -438,7 +438,7 @@ JITCompiler::JumpList SpeculativeJIT::jumpSlowForUnwantedArrayMode(GPRReg tempGP
             }
             m_jit.and32(TrustedImm32(IsArray | IndexingShapeMask), tempGPR);
             result.append(
-                m_jit.branch32(invert ? MacroAssembler::Equal : MacroAssembler::NotEqual, tempGPR, TrustedImm32(ArrayStorageShape)));
+                m_jit.branch32(invert ? MacroAssembler::Equal : MacroAssembler::NotEqual, tempGPR, TrustedImm32(IsArray | ArrayStorageShape)));
             break;
         }
         m_jit.and32(TrustedImm32(IndexingShapeMask), tempGPR);
@@ -563,15 +563,6 @@ void SpeculativeJIT::arrayify(Node& node, GPRReg baseReg, GPRReg propertyReg)
             MacroAssembler::Address(structureGPR, Structure::indexingTypeOffset()), tempGPR);
         
         done = jumpSlowForUnwantedArrayMode(tempGPR, node.arrayMode(), true);
-
-        // Next check that the object does not intercept indexed accesses. If it does,
-        // then this mode won't work.
-        speculationCheck(
-            BadIndexingType, JSValueSource::unboxedCell(baseReg), NoNode,
-            m_jit.branchTest8(
-                MacroAssembler::NonZero,
-                MacroAssembler::Address(structureGPR, Structure::typeInfoFlagsOffset()),
-                MacroAssembler::TrustedImm32(InterceptsGetOwnPropertySlotByIndexEvenWhenLengthIsNotZero)));
     }
         
     // If we're allegedly creating contiguous storage and the index is bogus, then

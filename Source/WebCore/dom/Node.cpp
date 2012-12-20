@@ -1355,7 +1355,7 @@ PassRefPtr<NodeList> Node::getElementsByTagName(const AtomicString& localName)
         return 0;
 
     if (document()->isHTMLDocument())
-        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLTagNodeList>(this, TagNodeListType, localName);
+        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
     return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
 }
 
@@ -2093,25 +2093,6 @@ const AtomicString& Node::interfaceName() const
 ScriptExecutionContext* Node::scriptExecutionContext() const
 {
     return document();
-}
-
-Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* insertionPoint)
-{
-    ASSERT(insertionPoint->inDocument() || isContainerNode());
-    if (insertionPoint->inDocument())
-        setFlag(InDocumentFlag);
-    if (parentOrHostNode()->isInShadowTree())
-        setFlag(IsInShadowTreeFlag);
-    return InsertionDone;
-}
-
-void Node::removedFrom(ContainerNode* insertionPoint)
-{
-    ASSERT(insertionPoint->inDocument() || isContainerNode());
-    if (insertionPoint->inDocument())
-        clearFlag(InDocumentFlag);
-    if (isInShadowTree() && !treeScope()->rootNode()->isShadowRoot())
-        clearFlag(IsInShadowTreeFlag);
 }
 
 void Node::didMoveToNewDocument(Document* oldDocument)

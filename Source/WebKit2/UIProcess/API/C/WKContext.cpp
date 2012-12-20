@@ -62,6 +62,11 @@ WKContextRef WKContextCreateWithInjectedBundlePath(WKStringRef pathRef)
     return toAPI(context.release().leakRef());
 }
 
+void WKContextSetClient(WKContextRef contextRef, const WKContextClient* wkClient)
+{
+    toImpl(contextRef)->initializeClient(wkClient);
+}
+
 void WKContextSetInjectedBundleClient(WKContextRef contextRef, const WKContextInjectedBundleClient* wkClient)
 {
     toImpl(contextRef)->initializeInjectedBundleClient(wkClient);
@@ -330,6 +335,18 @@ void WKContextSetJavaScriptGarbageCollectorTimerEnabled(WKContextRef contextRef,
 void WKContextSetUsesNetworkProcess(WKContextRef contextRef, bool usesNetworkProcess)
 {
     toImpl(contextRef)->setUsesNetworkProcess(usesNetworkProcess);
+}
+
+WKDictionaryRef WKContextCopyPlugInAutoStartOriginHashes(WKContextRef contextRef)
+{
+    return toAPI(toImpl(contextRef)->plugInAutoStartOriginHashes().leakRef());
+}
+
+void WKContextSetPlugInAutoStartOriginHashes(WKContextRef contextRef, WKDictionaryRef dictionaryRef)
+{
+    if (!dictionaryRef)
+        return;
+    toImpl(contextRef)->setPlugInAutoStartOriginHashes(*toImpl(dictionaryRef));
 }
 
 // Deprecated functions.

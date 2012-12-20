@@ -1,3 +1,282 @@
+2012-12-18  Nima Ghanavatian  <nghanavatian@rim.com>
+
+        [BlackBerry] Calculate correct word offsets for form elements.
+        https://bugs.webkit.org/show_bug.cgi?id=105354
+
+        Reviewed by Rob Buis.
+
+        PR266117
+        We need to calculate correct offsets for form elements, such as
+        textareas, relative to the start of the field. This allows for correct
+        spell checking of words in a textarea element after line breaks.
+
+        Internally reviewed by Mike Fenton.
+
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::requestSpellingCheckingOptions):
+
+2012-12-18  Genevieve Mak  <gmak@rim.com>
+
+        [BlackBerry] Remove extra call to doFatFingers.
+        https://bugs.webkit.org/show_bug.cgi?id=105347
+
+        Reviewed by Rob Buis.
+
+        Reviewed Internally by Mike Fenton.
+        Now that we do fat fingers on touch start, we don't need this anymore.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPage::touchEvent):
+
+2012-12-18  Genevieve Mak  <gmak@rim.com>
+
+        Bug 105344 - [BlackBerry] Make single line text edits touch scrollable.
+        https://bugs.webkit.org/show_bug.cgi?id=105344
+
+        Reviewed by Antonio Gomes.
+
+        Reviewed Internally by Mike Fenton.
+        We don't need to check the overflow for editable layers because there's
+        no need for overflow to be set by the content.
+        PR #231776
+
+        * WebKitSupport/InRegionScrollableArea.cpp:
+        (BlackBerry::WebKit::InRegionScrollableArea::InRegionScrollableArea):
+
+2012-12-18  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Build fix for r138024.
+        https://bugs.webkit.org/show_bug.cgi?id=105199
+        RIM PR 260232
+
+        Reviewed by Yong Li.
+
+        The clearVisibleTiles() function doesn't exist anymore
+        and apparently I fail at merge conflict resolution.
+
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::dispatchDidLayout):
+
+2012-12-18  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Clean up "frontState" vs. "geometry" naming confusion.
+        https://bugs.webkit.org/show_bug.cgi?id=105331
+        RIM PR 260232
+
+        Reviewed by Adam Treat.
+
+        The concept of the "front state" is going away or will be
+        marginalized/renamed, but I don't want to clutter upcoming
+        patches with renames. So do the variable renames in here,
+        once, and have future patches focus on actual behavior changes.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::shouldDirectRenderingToWindow):
+        (BlackBerry::WebKit::BackingStorePrivate::setBackingStoreRect):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTilesAfterBackingStoreRectChange):
+        (BlackBerry::WebKit::BackingStorePrivate::render):
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        (BlackBerry::WebKit::BackingStorePrivate::compositeContents):
+        (BlackBerry::WebKit::BackingStorePrivate::resetTiles):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTiles):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTilesForScrollOrNotRenderedRegion):
+        (BlackBerry::WebKit::BackingStorePrivate::createSurfaces):
+
+2012-12-18  Nima Ghanavatian  <nghanavatian@rim.com>
+
+        [BlackBerry] Reduce calls to IMF on return
+        https://bugs.webkit.org/show_bug.cgi?id=105308
+
+        Reviewed by Yong Li.
+
+        PR207743
+        The extra calls of selection change and most importantly, end composition
+        are sent incorrectly on return. This is causing our state to be reset
+        every time we hit enter.
+
+        Internally reviewed by Mike Fenton and Gen Mak.
+
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::InputHandler):
+        (BlackBerry::WebKit::InputHandler::nodeTextChanged):
+        (BlackBerry::WebKit::InputHandler::selectionChanged):
+        (BlackBerry::WebKit::InputHandler::handleKeyboardInput):
+        (BlackBerry::WebKit::InputHandler::shouldNotifyWebView):
+        (WebKit):
+        * WebKitSupport/InputHandler.h:
+        (InputHandler):
+
+2012-12-18  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Remove the visible tile buffer from the BackingStore.
+        https://bugs.webkit.org/show_bug.cgi?id=105302
+        RIM PR 260232
+
+        Reviewed by George Staikos.
+
+        The visible tile buffer was introduced as an additional
+        buffering solution that was necessary because other
+        buffers would only cover part of the screen and could
+        only be swapped one by one, with long blocking calls
+        between each newly rendered tile. By carrying an old copy
+        of all tiles at once, we were avoiding checkerboard and
+        visual artifacts during load time when much zoom-to-fit
+        action is going on.
+
+        These days, the visual tile buffer hurts more than it helps,
+        not only taking up lots of memory but also requiring
+        complexity that we'd rather get rid of. Now that multiple
+        buffers are being swapped into the user interface thread
+        at once, the need for the visible tile buffer is no longer
+        there and can be exchanged for standard geometry behavior.
+
+        This patch simply deletes the visible tile buffer to use
+        existing other code instead. Differences in behavior are
+        non-existent or negligible.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        (BlackBerry::WebKit::BackingStorePrivate::transformChanged):
+        (BlackBerry::WebKit::BackingStorePrivate::orientationChanged):
+        (BlackBerry::WebKit::BackingStorePrivate::createSurfaces):
+        * Api/BackingStore_p.h:
+        (BackingStorePrivate):
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setViewportSize):
+        * WebKitSupport/SurfacePool.cpp:
+        (BlackBerry::WebKit::SurfacePool::SurfacePool):
+        (BlackBerry::WebKit::SurfacePool::initialize):
+        (BlackBerry::WebKit::SurfacePool::createBuffers):
+        (BlackBerry::WebKit::SurfacePool::releaseBuffers):
+        * WebKitSupport/SurfacePool.h:
+        (SurfacePool):
+
+2012-12-18  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Restructure the render queue to process multiple tiles at once.
+        https://bugs.webkit.org/show_bug.cgi?id=105199
+        RIM PR 260232
+
+        Reviewed by George Staikos.
+        Internally reviewed by Arvid Nilsson.
+
+        Since my last big commit, r136442, the BackingStore's render()
+        function is able to fetch multiple back buffers and swap them
+        into the user interface thread in one go. However, it turns out
+        that this is not enough to actually render to all of the
+        available back buffers at once. The RenderQueue class was still
+        working with a model based on processing one rectangle after
+        another.
+
+        This commit rewrites large parts of RenderQueue to issue
+        render() calls for multiple tiles at once. As WebCore painting
+        gets cheaper and blocking becomes more of an issue, this commit
+        does away with paints smaller than tile size and always renders
+        whole tiles at once. This means the demise of RenderRect.
+        As an additional benefit, this means we can remove the
+        copyPreviousContentsToTileBuffer() function which caused
+        potential threading issues as it was accessing a buffer
+        now owned by the UI thread from the WebKit thread.
+
+        RenderQueue is also smarter than before in assigning batches,
+        it now takes into account the number of available back buffers
+        for rendering as well as excludes tiles outside contents
+        boundaries. Regular render jobs continue being tracked as
+        regions (and are being issued to didRenderContent()) with only
+        the changed content regions. Everything else switches over to
+        tile index lists from previously lists of rectangles.
+        By default, we render as many tiles at once as we can grab
+        back buffers, or until a given set of jobs is done.
+        For high-priority jobs, render() will be called in a loop.
+
+        To allow for the necessary changes in render() and improve
+        reliability in the same go, we now call render() almost
+        exclusively through RenderQueue. Other places would often
+        call renderVisibleContents() in situations where rendering
+        is not possible, geometries don't get updated, or content
+        rendered notifications would not get issued to the client.
+        By replacing renderVisibleContents() with a scheduled
+        high-priority queue that's immediately being processed
+        (but only if possible), these problems go away.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::resumeScreenUpdates):
+        (BlackBerry::WebKit::BackingStorePrivate::repaint):
+        (BlackBerry::WebKit::BackingStorePrivate::slowScroll):
+        (BlackBerry::WebKit::BackingStorePrivate::renderJob):
+        (BlackBerry::WebKit::BackingStorePrivate::setBackingStoreRect):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTilesAfterBackingStoreRectChange):
+        (BlackBerry::WebKit::BackingStorePrivate::indexesForBackingStoreRect):
+        (BlackBerry::WebKit::BackingStorePrivate::clearAndUpdateTileOfNotRenderedRegion):
+        (BlackBerry::WebKit::BackingStorePrivate::isCurrentVisibleJob):
+        (BlackBerry::WebKit::BackingStorePrivate::renderDirectToWindow):
+        (BlackBerry::WebKit::BackingStorePrivate::render):
+        (BlackBerry::WebKit::BackingStorePrivate::renderAndBlitVisibleContentsImmediately):
+        (BlackBerry::WebKit::BackingStorePrivate::renderAndBlitImmediately):
+        (BlackBerry::WebKit::BackingStorePrivate::paintDefaultBackground):
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        (BlackBerry::WebKit::BackingStorePrivate::compositeContents):
+        (BlackBerry::WebKit::BackingStorePrivate::visibleTileIndexes):
+        (BlackBerry::WebKit::BackingStorePrivate::resetTiles):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTilesForScrollOrNotRenderedRegion):
+        (BlackBerry::WebKit::BackingStorePrivate::updateTile):
+        (BlackBerry::WebKit::BackingStorePrivate::transformChanged):
+        (BlackBerry::WebKit::BackingStorePrivate::didRenderContent):
+        * Api/BackingStore_p.h:
+        (BackingStorePrivate):
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setLoadState):
+        (BlackBerry::WebKit::WebPagePrivate::zoomAboutPoint):
+        (BlackBerry::WebKit::WebPagePrivate::resumeBackingStore):
+        * Api/WebPageCompositor.cpp:
+        (BlackBerry::WebKit::WebPageCompositorPrivate::animationFrameChanged):
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::dispatchDidLayout):
+        * WebKitSupport/RenderQueue.cpp:
+        (BlackBerry::WebKit::compareRectOneDirection):
+        (BlackBerry::WebKit::tileIndexIsLessThan):
+        (WebKit):
+        (BlackBerry::WebKit::tileIndexLessThanFunction):
+        (BlackBerry::WebKit::TileIndexLessThan::TileIndexLessThan):
+        (BlackBerry::WebKit::TileIndexLessThan::operator()):
+        (TileIndexLessThan):
+        (BlackBerry::WebKit::RenderQueue::reset):
+        (BlackBerry::WebKit::RenderQueue::isEmpty):
+        (BlackBerry::WebKit::RenderQueue::hasCurrentRegularRenderJob):
+        (BlackBerry::WebKit::RenderQueue::hasCurrentVisibleZoomJob):
+        (BlackBerry::WebKit::RenderQueue::hasCurrentVisibleScrollJob):
+        (BlackBerry::WebKit::RenderQueue::isCurrentVisibleZoomJob):
+        (BlackBerry::WebKit::RenderQueue::isCurrentVisibleZoomJobCompleted):
+        (BlackBerry::WebKit::RenderQueue::isCurrentVisibleScrollJob):
+        (BlackBerry::WebKit::RenderQueue::isCurrentVisibleScrollJobCompleted):
+        (BlackBerry::WebKit::RenderQueue::isCurrentRegularRenderJob):
+        (BlackBerry::WebKit::RenderQueue::tileIndexesIntersectingRegion):
+        (BlackBerry::WebKit::RenderQueue::tileIndexesFullyContainedInRegion):
+        (BlackBerry::WebKit::RenderQueue::tileRegion):
+        (BlackBerry::WebKit::RenderQueue::addToQueue):
+        (BlackBerry::WebKit::RenderQueue::addToRegularQueue):
+        (BlackBerry::WebKit::RenderQueue::addToScrollZoomQueue):
+        (BlackBerry::WebKit::RenderQueue::quickSort):
+        (BlackBerry::WebKit::RenderQueue::visibleContentChanged):
+        (BlackBerry::WebKit::RenderQueue::backingStoreRectChanging):
+        (BlackBerry::WebKit::RenderQueue::clear):
+        (BlackBerry::WebKit::RenderQueue::clearRegions):
+        (BlackBerry::WebKit::RenderQueue::clearTileIndexes):
+        (BlackBerry::WebKit::RenderQueue::render):
+        (BlackBerry::WebKit::RenderQueue::renderRegularRenderJobs):
+        (BlackBerry::WebKit::RenderQueue::renderScrollZoomJobs):
+        (BlackBerry::WebKit::RenderQueue::scrollZoomJobsCompleted):
+        * WebKitSupport/RenderQueue.h:
+        (WebKit):
+        (RenderQueue):
+        * WebKitSupport/SurfacePool.cpp:
+        (BlackBerry::WebKit::SurfacePool::numberOfAvailableBackBuffers):
+        (BlackBerry::WebKit::SurfacePool::takeBackBuffer):
+        * WebKitSupport/SurfacePool.h:
+        (SurfacePool):
+        * WebKitSupport/TileIndex.h:
+        (WebKit):
+
 2012-12-17  Sean Wang  <Xuewen.Wang@torchmobile.com.cn>
 
         [BlackBerry] Editable text element can't be selected

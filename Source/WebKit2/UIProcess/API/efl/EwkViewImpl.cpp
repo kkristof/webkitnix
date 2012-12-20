@@ -164,6 +164,9 @@ EwkViewImpl::EwkViewImpl(Evas_Object* view, PassRefPtr<EwkContext> context, Pass
     m_pageProxy->fullScreenManager()->setWebView(m_view);
     m_pageProxy->pageGroup()->preferences()->setFullScreenEnabled(true);
 #endif
+#if ENABLE(WEB_AUDIO)
+    m_pageProxy->pageGroup()->preferences()->setWebAudioEnabled(true);
+#endif
 
     m_pageProxy->pageGroup()->preferences()->setOfflineWebApplicationCacheEnabled(true);
 
@@ -289,11 +292,17 @@ void EwkViewImpl::setCursor(const Cursor& cursor)
     ecore_evas_object_cursor_set(ecoreEvas, cursorObject.release().leakRef(), EVAS_LAYER_MAX, hotspotX, hotspotY);
 }
 
+void EwkViewImpl::setDeviceScaleFactor(float scale)
+{
+    page()->setIntrinsicDeviceScaleFactor(scale);
+}
+
 AffineTransform EwkViewImpl::transformFromScene() const
 {
     AffineTransform transform;
 
 #if USE(TILED_BACKING_STORE)
+    // Note that the scale factor incl page and device scale for now.
     transform.scale(1 / m_scaleFactor);
     transform.translate(pagePosition().x(), pagePosition().y());
 #endif
@@ -367,6 +376,9 @@ void EwkViewImpl::displayTimerFired(Timer<EwkViewImpl>*)
     if (m_pendingSurfaceResize) {
         // Create a GL surface here so that Evas has no chance of painting to an empty GL surface.
         createGLSurface(IntSize(sd->view.w, sd->view.h));
+        if (!m_evasGLSurface)
+            return;
+
         m_pendingSurfaceResize = false;
     } else
         evas_gl_make_current(m_evasGL.get(), evasGLSurface(), evasGLContext());

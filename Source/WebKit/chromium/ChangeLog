@@ -1,3 +1,286 @@
+2012-12-19  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: introduce Page.captureScreenshot
+        https://bugs.webkit.org/show_bug.cgi?id=105315
+
+        Reviewed by Yury Semikhatsky.
+
+        Introduces a way for browser to handle protocol commands:
+        embedder will ask WebKit whether it should override the command
+        result and will get a hint value. Based on that hint, browser
+        will prepare the data and ask WebKit again to patch this data in.
+
+        * public/WebDevToolsAgent.h:
+        (WebDevToolsAgent):
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::captureScreenshot):
+        (WebKit):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (BrowserDataHintStringValues):
+        (WebKit):
+        (WebKit::WebDevToolsAgentImpl::WebDevToolsAgentImpl):
+        (WebKit::WebDevToolsAgentImpl::captureScreenshot):
+        (WebKit::browserHintToString):
+        (WebKit::browserHintFromString):
+        (WebKit::WebDevToolsAgentImpl::sendMessageToFrontend):
+        (WebKit::WebDevToolsAgent::shouldPatchWithBrowserData):
+        (WebKit::WebDevToolsAgent::patchWithBrowserData):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2012-12-20  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r138215.
+        http://trac.webkit.org/changeset/138215
+        https://bugs.webkit.org/show_bug.cgi?id=105505
+
+        it broke downstream compilation with clang (Requested by
+        loislo on #webkit).
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        (WebKitPlatformSupport):
+        (WebKit::WebKitPlatformSupport::sharedWorkerRepository):
+        * src/SharedWorkerRepository.cpp:
+        (WebKit::sharedWorkerRepository):
+        (WebCore::SharedWorkerRepository::isAvailable):
+
+2012-12-19  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove idbFactory from PlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=105460
+
+        Reviewed by Darin Fisher.
+
+        Part of a larger refactoring series; see tracking bug 82948.
+
+        * WebKit.gyp:
+        * src/IDBFactoryBackendInterface.cpp: Added.
+        (WebCore):
+        (WebCore::IDBFactoryBackendInterface::create):
+        * src/PlatformSupport.cpp: Removed.
+
+2012-12-19  Antoine Labour  <piman@chromium.org>
+
+        [chromium] Remove old setBackingTextureId/setBackingIOSurfaceId API on WebPluginContainer
+        https://bugs.webkit.org/show_bug.cgi?id=105472
+
+        Reviewed by James Robinson.
+
+        This is not called anymore by chromium (as of r173545), using
+        setWebPlugin instead.
+
+        * public/WebPluginContainer.h:
+        * src/WebPluginContainerImpl.cpp:
+        (WebKit::WebPluginContainerImpl::WebPluginContainerImpl):
+        * src/WebPluginContainerImpl.h:
+        (WebPluginContainerImpl):
+
+2012-12-19  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] add setIDBFactory method for embedders to call
+        https://bugs.webkit.org/show_bug.cgi?id=105465
+
+        Reviewed by Darin Fisher.
+
+        This is step 1 of getting rid of WebKitPlatform::idbFactory. This
+        adds a setter for embedders to call upon initialization, which (if
+        set) will be used instead of calling the idbFactory()
+        method. Eventually the idbFactory() method will go away, and this
+        setter will be the only way to initialize the Indexed Database API.
+
+        * public/WebIDBFactory.h:
+        (WebKit):
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit):
+        (WebKit::setIDBFactory):
+        (WebKit::IDBFactoryBackendProxy::IDBFactoryBackendProxy):
+
+2012-12-19  Rachel Blum  <groby@chromium.org>
+
+        [Chromium] Check Document now should work with continuous check off
+        https://bugs.webkit.org/show_bug.cgi?id=105228
+
+        Reviewed by Anders Carlsson.
+
+        * src/EditorClientImpl.cpp:
+        (WebKit::EditorClientImpl::checkSpellingOfString):
+
+2012-12-19  Rachel Blum  <groby@chromium.org>
+
+        [Chromium] Spellchecker should provide suggestions for non-caret selection, too
+        https://bugs.webkit.org/show_bug.cgi?id=104841
+
+        Reviewed by Anders Carlsson.
+
+        Allow spelling suggestions for a word if the word is already selected. No suggestion 
+        if subset of a word or more than a word is selected.
+
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::ContextMenuClientImpl::getCustomMenuFromDefaultItems):
+
+2012-12-19  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove all references to sharedWorkerRepository()
+        https://bugs.webkit.org/show_bug.cgi?id=104704
+
+        Reviewed by Darin Fisher.
+
+        Now that Chromium calls setSharedWorkerRepository upon
+        initializing WebKit (
+        https://codereview.chromium.org/10990121/ and
+        https://codereview.chromium.org/11576028/ ) and no longer
+        tries to override sharedWorkerRepository, it is safe to remove
+        all references to this function.
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        (WebKit::WebKitPlatformSupport::idbFactory):
+        * src/SharedWorkerRepository.cpp:
+        (WebKit::sharedWorkerRepository):
+        (WebCore::SharedWorkerRepository::isAvailable):
+
+2012-12-19  Alexis Menard  <alexis@webkit.org>
+
+        Implement CSS parsing for CSS transitions unprefixed.
+        https://bugs.webkit.org/show_bug.cgi?id=104804
+
+        Reviewed by Dean Jackson.
+
+        Add a new flag ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED
+        to cover the work of unprefixing Transforms, Animations and 
+        Transitions. It will let the possibility of each ports to turn it off 
+        in their release branches until we're confident that these CSS 
+        properties are ready to be unprefixed.
+
+        * features.gypi:
+
+2012-12-19  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Support titleUIElement in chromium DRT
+        https://bugs.webkit.org/show_bug.cgi?id=96529
+
+        Reviewed by Chris Fleizach.
+
+        Fix implementation of titleUIElement - it shouldn't return anything
+        if supportsTitleUIElement returns false, so that accessible label
+        overriding logic works correctly.
+
+        * src/WebAccessibilityObject.cpp:
+        (WebKit::WebAccessibilityObject::titleUIElement):
+
+2012-12-19  Gavin Peters  <gavinp@chromium.org>
+
+        [chromium] WebCore::Prerender::didStartPrerender depends on LinkLoader
+        https://bugs.webkit.org/show_bug.cgi?id=105290
+
+        Reviewed by Abhishek Arya.
+
+        The LinkLoader now removes itself from its prerender in time.
+
+        * tests/PrerenderingTest.cpp:
+
+2012-12-18  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed, rolling out r138061.
+        https://bugs.webkit.org/show_bug.cgi?id=105396
+
+        Original patch:
+        http://trac.webkit.org/changeset/138061
+        https://bugs.webkit.org/show_bug.cgi?id=97359
+
+        It is crashing on Debug bots
+
+        * public/WebAccessibilityObject.h:
+        (WebAccessibilityObject):
+        * src/WebAccessibilityObject.cpp:
+
+2012-12-18  David Dorwin  <ddorwin@chromium.org>
+
+        [Chromium] Remove temporary backwards compatible interface code (from r137724).
+        https://bugs.webkit.org/show_bug.cgi?id=105205
+
+        Reviewed by James Robinson.
+
+        * public/WebMediaPlayerClient.h:
+        * src/WebMediaPlayerClientImpl.cpp:
+
+2012-12-18  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] pull in the CDM module recently added to media
+        https://bugs.webkit.org/show_bug.cgi?id=105360
+
+        Unreiviewed build fix, but sanity checked by ddorwin.
+
+        * DEPS:
+
+2012-12-18  Dean Jackson  <dino@apple.com>
+
+        Unreviewed attempted build fix for Chromium.
+
+        Insert stub methods for localized text track menu labels.
+
+        * src/LocalizedStrings.cpp:
+        (WebCore):
+        (WebCore::textTrackClosedCaptionsText):
+        (WebCore::textTrackSubtitlesText):
+        (WebCore::textTrackOffText):
+        (WebCore::textTrackNoLabelText):
+
+2012-12-18  Dirk Pranke  <dpranke@chromium.org>
+
+        Pull in the opus codec sources.
+
+        Unreviewed, build fix.
+
+        * DEPS:
+
+2012-12-18  Dirk Pranke  <dpranke@chromium.org>
+
+        Unreviewed, roll chromium deps to r173769
+
+        * DEPS:
+
+2012-12-18  Dominic Mazzoni  <dmazzoni@google.com>
+
+        AX: support clickPoint in DRT for chromium
+        https://bugs.webkit.org/show_bug.cgi?id=97359
+
+        Reviewed by Chris Fleizach.
+
+        Exposes the clickPoint accessibility method in WebAccessibilityObject.
+
+        * public/WebAccessibilityObject.h:
+        (WebAccessibilityObject):
+        * src/WebAccessibilityObject.cpp:
+        (WebKit::WebAccessibilityObject::clickPoint):
+        (WebKit):
+
+2012-12-18  Wei Jia  <wjia@chromium.org>
+
+        Enable media stream on Android for Chromium
+        https://bugs.webkit.org/show_bug.cgi?id=102545
+
+        Reviewed by Eric Seidel.
+
+        Put all webrtc related stuff under one flag "enable_webrtc" which is set to 1
+        on Linux/Windows/Mac and 0 on Android.
+
+        * features.gypi:
+
+2012-12-18  Yaron Friedman  <yfriedman@chromium.org>
+
+        Chrome Android java output is too verbose
+        https://bugs.webkit.org/show_bug.cgi?id=105247
+
+        Reviewed by Tony Chang.
+
+        Pass -quiet to ant to suppress extraneous output.
+
+        * WebKitUnitTests.gyp:
+
 2012-12-17  Andrey Kosyakov  <caseq@chromium.org>
 
         Web Inspector: paint inspector overlay on a transparency layer

@@ -2110,6 +2110,7 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webdatabase/DatabaseThread.h \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.h \
+	Source/WebCore/Modules/webdatabase/DBBackendServer.cpp \
 	Source/WebCore/Modules/webdatabase/DBBackendServer.h \
 	Source/WebCore/Modules/webdatabase/OriginQuotaManager.cpp \
 	Source/WebCore/Modules/webdatabase/OriginQuotaManager.h \
@@ -2346,7 +2347,9 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSHistoryCustom.cpp \
 	Source/WebCore/bindings/js/JSHistoryCustom.h \
 	Source/WebCore/bindings/js/JSIDBAnyCustom.cpp \
+	Source/WebCore/bindings/js/JSIDBDatabaseCustom.cpp \
 	Source/WebCore/bindings/js/JSIDBKeyCustom.cpp \
+	Source/WebCore/bindings/js/JSIDBObjectStoreCustom.cpp \
 	Source/WebCore/bindings/js/JSImageConstructor.cpp \
 	Source/WebCore/bindings/js/JSImageConstructor.h \
 	Source/WebCore/bindings/js/JSImageDataCustom.cpp \
@@ -2406,7 +2409,6 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSWebKitCSSKeyframesRuleCustom.cpp \
 	Source/WebCore/bindings/js/JSWebGLRenderingContextCustom.cpp \
 	Source/WebCore/bindings/js/JSWebKitPointCustom.cpp \
-	Source/WebCore/bindings/js/JSWebSocketCustom.cpp \
 	Source/WebCore/bindings/js/JSWorkerContextBase.cpp \
 	Source/WebCore/bindings/js/JSWorkerContextBase.h \
 	Source/WebCore/bindings/js/JSWorkerContextCustom.cpp \

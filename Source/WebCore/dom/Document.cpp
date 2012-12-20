@@ -5654,11 +5654,14 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 #endif
 }
 
-#if ENABLE(TOUCH_EVENT_TRACKING)
+#if ENABLE(TOUCH_EVENTS)
 void Document::didRemoveEventTargetNode(Node* handler)
 {
     if (m_touchEventTargets.get())
         m_touchEventTargets->removeAll(handler);
+    if (handler == this)
+        if (Document* parentDocument = this->parentDocument())
+            parentDocument->didRemoveEventTargetNode(this);
 }
 #endif
 

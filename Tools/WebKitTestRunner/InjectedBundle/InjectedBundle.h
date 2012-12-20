@@ -71,6 +71,7 @@ public:
     void dumpBackForwardListsForAllPages(StringBuilder&);
 
     void done();
+    void setAudioResult(WKDataRef audioData) { m_audioResult = audioData; }
     void setPixelResult(WKImageRef image) { m_pixelResult = image; }
     void setRepaintRects(WKArrayRef rects) { m_repaintRects = rects; }
 
@@ -159,6 +160,7 @@ private:
     bool m_useWaitToDumpWatchdogTimer;
     bool m_useWorkQueue;
 
+    WKRetainPtr<WKDataRef> m_audioResult;
     WKRetainPtr<WKImageRef> m_pixelResult;
     WKRetainPtr<WKArrayRef> m_repaintRects;
 };
