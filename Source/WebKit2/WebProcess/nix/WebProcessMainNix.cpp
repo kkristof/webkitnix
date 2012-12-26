@@ -36,6 +36,7 @@
 #include <WebCore/RunLoop.h>
 #include <WebKit2/WebProcess.h>
 #include <libsoup/soup-cache.h>
+#include <libsoup/soup.h>
 #include <runtime/InitializeThreading.h>
 #include <unistd.h>
 #include <wtf/MainThread.h>

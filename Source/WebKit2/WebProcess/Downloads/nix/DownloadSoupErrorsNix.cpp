@@ -28,6 +28,7 @@
 #include "DownloadSoupErrors.h"
 
 #include <WebCore/ErrorsNix.h>
+#include <WebCore/ResourceError.h>
 
 using namespace WebCore;
 
@@ -43,4 +44,4 @@ ResourceError platformDownloadDestinationError(const ResourceResponse& response,
     return downloadDestinationError(response, message);
 }
 
-}
+} // namespace WebKit
