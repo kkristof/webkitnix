@@ -543,6 +543,11 @@ touchadjustment [ Skip ]
 webarchive [ Skip ]
 webaudio [ Skip ]
 
+# The future of Web Intents is uncertain. There is also work to be done to allow
+# the API to be fully used by WK2, e.g. having a way to know when the delivered intent
+# called postResult or postFailure.
+# See also http://lists.w3.org/Archives/Public/public-web-intents/2012Nov/0000.html
+webintents [ Skip ]
 
 ################################################################################
 # MISSING RESULTS
