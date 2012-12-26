@@ -643,10 +643,10 @@ void MainResourceLoader::load(const ResourceRequest& initialRequest, const Subst
     documentLoader()->applicationCacheHost()->maybeLoadMainResource(request, m_substituteData);
 
     if (m_substituteData.isValid()) {
-        handleSubstituteDataLoadSoon(request);
         m_substituteDataLoadIdentifier = m_documentLoader->frame()->page()->progress()->createUniqueIdentifier();
         frameLoader()->notifier()->assignIdentifierToInitialRequest(m_substituteDataLoadIdentifier, documentLoader(), request);
         frameLoader()->notifier()->dispatchWillSendRequest(documentLoader(), m_substituteDataLoadIdentifier, request, ResourceResponse());
+        handleSubstituteDataLoadSoon(request);
         return;
     }
 
@@ -679,10 +679,10 @@ bool MainResourceLoader::defersLoading() const
     return loader() ? loader()->defersLoading() : false;
 }
 
-void MainResourceLoader::setShouldBufferData(DataBufferingPolicy shouldBufferData)
+void MainResourceLoader::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
 {
     ASSERT(m_resource);
-    m_resource->setShouldBufferData(shouldBufferData);
+    m_resource->setDataBufferingPolicy(dataBufferingPolicy);
 }
 
 ResourceLoader* MainResourceLoader::loader() const

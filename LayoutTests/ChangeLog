@@ -1,3 +1,1047 @@
+2012-12-25  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: Crash when modifying a rule that has been removed through JavaScript
+        https://bugs.webkit.org/show_bug.cgi?id=105718
+
+        Reviewed by Yury Semikhatsky.
+
+        * http/tests/inspector/elements-test.js: Add InspectorTest.toggleMatchedStyleProperty.
+        (initialize_ElementTest.InspectorTest.toggleMatchedStyleProperty): Added.
+        * inspector/styles/removed-rule-crash-expected.txt: Added.
+        * inspector/styles/removed-rule-crash.html: Added.
+
+2012-12-25  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: device-metrics-fit-window.html is failing on Chromium-Mac
+        https://bugs.webkit.org/show_bug.cgi?id=104362
+
+        Unreviewed expectations rebaseline.
+
+        * platform/chromium-mac/platform/chromium/inspector/styles/device-metrics-fit-window-expected.txt: Added.
+        * platform/chromium/TestExpectations:
+
+2012-12-24  Takashi Sakamoto  <tasak@google.com>
+
+        ::first-letter { overflow: -webkit-paged-y } causes crash
+        https://bugs.webkit.org/show_bug.cgi?id=105393
+
+        Reviewed by Beth Dakin.
+
+        * fast/css/pseudo-element-opagedxy-crash-expected.txt: Added.
+        * fast/css/pseudo-element-opagedxy-crash.html: Added.
+
+2012-12-24  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSS Regions] Convert some fast/regions pixel tests to reftests
+        https://bugs.webkit.org/show_bug.cgi?id=80191
+
+        Reviewed by Tony Chang.
+
+        Convert fast/regions/bottom-overflow-out-of-first-region.html to a ref test.
+        Used a monospace font, removed text-align and margins for text flowing into regions so that
+        the text fits nicely in the two regions of the test.
+
+        * fast/regions/bottom-overflow-out-of-first-region-expected.html: Added.
+        * fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * fast/regions/bottom-overflow-out-of-first-region.html:
+        * platform/chromium-linux/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/chromium-mac-lion/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/chromium-mac/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/chromium-mac/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+        * platform/chromium-win/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/chromium-win/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+        * platform/efl/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+        * platform/gtk/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+        * platform/mac/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/mac/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+        * platform/qt/fast/regions/bottom-overflow-out-of-first-region-expected.png: Removed.
+        * platform/qt/fast/regions/bottom-overflow-out-of-first-region-expected.txt: Removed.
+
+2012-12-24  Andrey Lushnikov  <lushnikov@chromium.com>
+
+        Web Inspector: refactor TextEditorHighlighter's highlight attributes to dense array
+        https://bugs.webkit.org/show_bug.cgi?id=105626
+
+        Reviewed by Pavel Feldman.
+
+        Fix tests according to new highlight attribute structure.
+
+        * inspector/editor/highlighter-long-line.html:
+        * inspector/editor/highlighter-test.js:
+        (initialize_HighlighterTests.InspectorTest.dumpTextModel):
+        (initialize_HighlighterTests):
+
+2012-12-23  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding crashing expectations for two tests that constantly crash
+        in debug builds.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-22  Dan Winship  <danw@gnome.org>
+
+        Unskip tests that were failing in libxml 2.9.0
+        https://bugs.webkit.org/show_bug.cgi?id=104494
+
+        Reviewed by Martin Robinson.
+
+        Added a patch from upstream to the jhbuild config to make all but
+        one of these pass again; the remaining one fails for a different
+        reason and is being tracked in a different bug.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-23  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL] Unreviewed gardening
+
+        Rebaseline fast/js/global-constructors.html after
+        r138393.
+
+        * platform/efl/fast/js/global-constructors-expected.txt:
+
+2012-12-23  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed Xmas gardening after r138395.
+
+        * platform/qt-5.0/fast/js/global-constructors-expected.txt:
+
+2012-12-21  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Rebaselining the global constructors test after r138393.
+        Adjusting and merging expectations as required.
+
+        * platform/gtk/TestExpectations:
+        * platform/gtk/fast/js/global-constructors-expected.txt:
+
+2012-12-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed. Remove Crash expectation from media/track tests after r138381.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-21  Ryosuke Niwa  <rniwa@webkit.org>
+
+        [Mountain Lion] platform/mac/editing/spelling/removing-underline-after-accepting-autocorrection-using-punctuation.html failing
+        https://bugs.webkit.org/show_bug.cgi?id=95477
+
+        Reviewed by Sam Weinig.
+
+        Use "notationl" -> "notational" auto correction in autocorrection-blockquote-crash.html to get reliable results.
+        Also add a failing expectation to removing-underline-after-accepting-autocorrection-using-punctuation.html for WebKit2.
+        This failure is tracked by the bug 105616.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac/editing/spelling/autocorrection-blockquote-crash-expected.txt:
+        * platform/mac/editing/spelling/autocorrection-blockquote-crash.html:
+
+2012-12-21  Joshua Bell  <jsbell@chromium.org>
+
+        [Chromium] IndexedDB: storage/indexeddb/intversion-close-between-events.html flaky in content_shell
+        https://bugs.webkit.org/show_bug.cgi?id=105665
+
+        Test uses a setTimeout() which may fire at different times relative to the completion of the
+        IDBOpenDBRequest in multiprocess ports. Make the test resilient against different outcomes.
+
+        Reviewed by Tony Chang.
+
+        * storage/indexeddb/resources/intversion-close-between-events.js:
+        (deleteSuccess):
+        (openSuccessOrError):
+        (checkFinished):
+
+2012-12-21  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Combine openConnection and openConnectionWithVersion
+        https://bugs.webkit.org/show_bug.cgi?id=105658
+
+        Reviewed by Tony Chang.
+
+        * storage/indexeddb/open-ordering-expected.txt: Added.
+        * storage/indexeddb/open-ordering.html: Added.
+        * storage/indexeddb/resources/open-ordering.js: Added.
+        (runTest):
+        (onDeleteSuccess):
+        (onRequest1Success):
+        (onRequest2Success):
+        (onRequest3Success):
+        (checkOrder):
+
+2012-12-21  Aaron Colwell  <acolwell@chromium.org>
+
+        Unreviewed. Removing CRASH expectations for media layout tests
+        broken by http://crbug.com/162917.
+        https://bugs.webkit.org/show_bug.cgi?id=103093
+
+        * platform/chromium/TestExpectations:
+
+2012-12-21  Kenneth Russell  <kbr@google.com>
+
+        Expose ArrayBufferView constructor on DOMWindow
+        https://bugs.webkit.org/show_bug.cgi?id=105605
+
+        Reviewed by Sam Weinig.
+
+        Updated test from Khronos repository.
+
+        * fast/canvas/webgl/array-unit-tests-expected.txt:
+        * fast/canvas/webgl/array-unit-tests.html:
+
+2012-12-21  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed gardening, unskip now passing tests.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+
+2012-12-21  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Unreviewed, rolling out r138376.
+        http://trac.webkit.org/changeset/138376
+        https://bugs.webkit.org/show_bug.cgi?id=104995
+
+        Broke a bunch of tests on mac.
+
+        * editing/deleting/delete-ligature-001-expected.txt:
+        * editing/pasteboard/copy-in-password-field-expected.txt:
+        * editing/selection/select-all-textarea-expected.txt:
+        * fast/dom/shadow/layout-tests-can-access-shadow-expected.txt:
+        * fast/dom/shadow/layout-tests-can-access-shadow.html:
+        * fast/dom/shadow/resources/shadow-dom.js:
+        (isShadowRoot):
+        * fast/events/5056619-expected.txt:
+        * fast/forms/focus-selection-input-expected.txt:
+        * inspector/elements/shadow-dom-modify-chardata-expected.txt:
+        * inspector/elements/shadow-root-expected.txt:
+        * inspector/elements/update-shadowdom-expected.txt:
+        * platform/chromium-linux/editing/selection/select-from-textfield-outwards-expected.txt:
+        * platform/chromium-linux/fast/forms/input-text-double-click-expected.txt:
+        * platform/chromium-linux/fast/forms/textfield-outline-expected.txt:
+        * platform/chromium-linux/fast/forms/validation-message-appearance-expected.txt:
+        * platform/chromium-win/editing/deleting/delete-all-text-in-text-field-assertion-expected.txt:
+        * platform/chromium-win/editing/input/caret-at-the-edge-of-input-expected.txt:
+        * platform/chromium-win/editing/input/reveal-caret-of-multiline-input-expected.txt:
+        * platform/chromium-win/editing/inserting/4960120-1-expected.txt:
+        * platform/chromium-win/editing/pasteboard/drop-text-without-selection-expected.txt:
+        * platform/chromium-win/editing/pasteboard/pasting-tabs-expected.txt:
+        * platform/chromium-win/editing/selection/4895428-3-expected.txt:
+        * platform/chromium-win/editing/selection/4975120-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-1-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-4-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-5-expected.txt:
+        * platform/chromium-win/fast/events/autoscroll-expected.txt:
+        * platform/chromium-win/fast/events/context-no-deselect-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-focus-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-readonly-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-selection-expected.txt:
+        * platform/chromium-win/fast/forms/input-double-click-selection-gap-bug-expected.txt:
+        * platform/chromium-win/fast/forms/input-placeholder-visibility-1-expected.txt:
+        * platform/chromium-win/fast/forms/input-placeholder-visibility-3-expected.txt:
+        * platform/chromium-win/fast/forms/input-readonly-autoscroll-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-click-inside-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-drag-down-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-option-delete-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-scroll-left-on-blur-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-self-emptying-click-expected.txt:
+        * platform/chromium-win/fast/forms/number/number-appearance-rtl-expected.txt:
+        * platform/chromium-win/fast/forms/plaintext-mode-2-expected.txt:
+        * platform/chromium-win/fast/forms/search-rtl-expected.txt:
+        * platform/chromium-win/fast/forms/tabbing-input-iframe-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-placeholder-visibility-1-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-placeholder-visibility-2-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-scrollbar-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-scrolled-type-expected.txt:
+        * platform/chromium-win/fast/forms/textfield-focus-ring-expected.txt:
+        * platform/chromium-win/fast/forms/textfield-overflow-expected.txt:
+        * platform/chromium-win/fast/frames/take-focus-from-iframe-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-1-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-10-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-2-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-3-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-4-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-5-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-6-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-7-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-8-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-9-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-1-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-2-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-3-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-4-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-5-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-6-and-click-expected.txt:
+        * platform/chromium-win/fast/repaint/renderer-destruction-by-invalidateSelection-crash-expected.txt:
+        * platform/chromium-win/fast/transforms/transformed-focused-text-input-expected.txt:
+        * resources/dump-as-markup.js:
+        (Markup._get):
+
+2012-12-21  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Removing a list of failure expectations that were added as a precaution
+        in r138250 in case of regressions (which in the end didn't occur).
+
+        * platform/gtk/TestExpectations:
+
+2012-12-21  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Adding a few missing expectations for tests that require their baselines
+        to be checked before they are added.
+        Adding and modifying expectations where necessary to accommodate recent
+        changes in test behavior.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-21  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Add WebKit1-specific TestExpectations file
+        https://bugs.webkit.org/show_bug.cgi?id=97562
+
+        Reviewed by Dirk Pranke.
+
+        Add properly formatted but currently empty TestExpectations file
+        for GTK WebKit1-specific test expectations.
+
+        * platform/gtk-wk1/TestExpectations: Added.
+
+2012-12-21  Alexei Svitkine  <asvitkine@chromium.org>
+
+        [Chromium/Mac] Don't send an onclick event from a ctrl-click
+        https://bugs.webkit.org/show_bug.cgi?id=105554
+
+        Reviewed by Dimitri Glazkov.
+
+        Don't send the onclick event on a control click event (which
+        triggers the context menu on the Mac). This matches the
+        behaviour of the Apple Mac port, although the Apple port
+        does this by checking whether the context menu is visible
+        in WebPage::mouseEvent().
+
+        This is a fix for http://crbug.com/146143
+
+        * fast/events/controlclick-no-onclick-expected.txt: Added.
+        * fast/events/controlclick-no-onclick.html: Added.
+
+2012-12-21  Shinya Kawanaka  <shinyak@chromium.org>
+
+        Implement ShadowRoot::elementFromPoint
+        https://bugs.webkit.org/show_bug.cgi?id=104579
+
+        Reviewed by Dimitri Glazkov.
+
+        * fast/dom/shadow/elementfrompoint-expected.txt: Added.
+        * fast/dom/shadow/elementfrompoint.html: Added.
+
+2012-12-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed. Add Crash test expectation to the media/track/ tests which have explicit expectations.
+        It needs to be removed after fixing https://bugs.webkit.org/show_bug.cgi?id=105606
+
+        * platform/chromium/TestExpectations:
+
+2012-12-21  Shinya Kawanaka  <shinyak@chromium.org>
+
+        [Shadow DOM]: ShadowRoot wrong nodeName attribute
+        https://bugs.webkit.org/show_bug.cgi?id=104995
+
+        Reviewed by Dimitri Glazkov.
+
+        Uses 'instanceof' to check the instance is ShadowRoot or not.
+        Update dump-as-markup.js to see 'instanceof' instead of nodeType.
+        Also, a lot of rebaselines have been conducted.
+
+        * editing/deleting/delete-ligature-001-expected.txt:
+        * editing/pasteboard/copy-in-password-field-expected.txt:
+        * editing/selection/select-all-textarea-expected.txt:
+        * fast/dom/shadow/layout-tests-can-access-shadow-expected.txt:
+        * fast/dom/shadow/layout-tests-can-access-shadow.html:
+        * fast/dom/shadow/resources/shadow-dom.js:
+        (isShadowRoot):
+        * fast/events/5056619-expected.txt:
+        * fast/forms/focus-selection-input-expected.txt:
+        * inspector/elements/shadow-dom-modify-chardata-expected.txt:
+        * inspector/elements/shadow-root-expected.txt:
+        * inspector/elements/update-shadowdom-expected.txt:
+        * platform/chromium-linux/editing/selection/select-from-textfield-outwards-expected.txt:
+        * platform/chromium-linux/fast/forms/input-text-double-click-expected.txt:
+        * platform/chromium-linux/fast/forms/textfield-outline-expected.txt:
+        * platform/chromium-linux/fast/forms/validation-message-appearance-expected.txt:
+        * platform/chromium-win/editing/deleting/delete-all-text-in-text-field-assertion-expected.txt:
+        * platform/chromium-win/editing/input/caret-at-the-edge-of-input-expected.txt:
+        * platform/chromium-win/editing/input/reveal-caret-of-multiline-input-expected.txt:
+        * platform/chromium-win/editing/inserting/4960120-1-expected.txt:
+        * platform/chromium-win/editing/pasteboard/drop-text-without-selection-expected.txt:
+        * platform/chromium-win/editing/pasteboard/pasting-tabs-expected.txt:
+        * platform/chromium-win/editing/selection/4895428-3-expected.txt:
+        * platform/chromium-win/editing/selection/4975120-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-1-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-4-expected.txt:
+        * platform/chromium-win/editing/selection/select-across-readonly-input-5-expected.txt:
+        * platform/chromium-win/fast/events/autoscroll-expected.txt:
+        * platform/chromium-win/fast/events/context-no-deselect-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-focus-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-readonly-expected.txt:
+        * platform/chromium-win/fast/forms/input-appearance-selection-expected.txt:
+        * platform/chromium-win/fast/forms/input-double-click-selection-gap-bug-expected.txt:
+        * platform/chromium-win/fast/forms/input-placeholder-visibility-1-expected.txt:
+        * platform/chromium-win/fast/forms/input-placeholder-visibility-3-expected.txt:
+        * platform/chromium-win/fast/forms/input-readonly-autoscroll-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-click-inside-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-drag-down-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-option-delete-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-scroll-left-on-blur-expected.txt:
+        * platform/chromium-win/fast/forms/input-text-self-emptying-click-expected.txt:
+        * platform/chromium-win/fast/forms/number/number-appearance-rtl-expected.txt:
+        * platform/chromium-win/fast/forms/plaintext-mode-2-expected.txt:
+        * platform/chromium-win/fast/forms/search-rtl-expected.txt:
+        * platform/chromium-win/fast/forms/tabbing-input-iframe-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-placeholder-visibility-1-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-placeholder-visibility-2-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-scrollbar-expected.txt:
+        * platform/chromium-win/fast/forms/textarea-scrolled-type-expected.txt:
+        * platform/chromium-win/fast/forms/textfield-focus-ring-expected.txt:
+        * platform/chromium-win/fast/forms/textfield-overflow-expected.txt:
+        * platform/chromium-win/fast/frames/take-focus-from-iframe-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-1-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-10-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-2-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-3-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-4-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-5-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-6-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-7-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-8-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-add-summary-9-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-1-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-2-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-3-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-4-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-5-and-click-expected.txt:
+        * platform/chromium-win/fast/html/details-remove-summary-6-and-click-expected.txt:
+        * platform/chromium-win/fast/repaint/renderer-destruction-by-invalidateSelection-crash-expected.txt:
+        * platform/chromium-win/fast/transforms/transformed-focused-text-input-expected.txt:
+        * resources/dump-as-markup.js:
+        (Markup._get):
+
+2012-12-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed rebaseline.
+
+        * platform/chromium-win-xp/fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events-expected.txt:
+
+2012-12-21  Mihai Parparita  <mihaip@chromium.org>
+
+        Slow performance with <select> with many options and size >= 2
+        https://bugs.webkit.org/show_bug.cgi?id=105483
+
+        Reviewed by Eric Seidel.
+
+        Test that checks that text and non-<option> and <optgroup> element 
+        children of <select> do not get a renderer.
+
+        * fast/forms/menulist-no-renderer-for-unexpected-children-expected.txt: Added.
+        * fast/forms/menulist-no-renderer-for-unexpected-children.html: Added.
+
+2012-12-21  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline fast/js/global-constructors.html after r138248.
+
+        * platform/efl/fast/js/global-constructors-expected.txt:
+
+2012-12-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed rebaseline.
+
+        * platform/chromium-win-xp/fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events-expected.txt:
+
+2012-12-21  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark svg/custom/feDisplacementMap-01.svg as missing.
+
+        * platform/efl/TestExpectations:
+
+2012-12-21  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2] TiledBackingStore: Scroll position is not reset when new page is loaded
+        https://bugs.webkit.org/show_bug.cgi?id=105627
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added a layout test checking scroll position for newly loaded pages.
+
+        * fast/dom/resources/check-scroll-position-onload.html: Added.
+        * fast/dom/scroll-position-for-new-loads-expected.txt: Added.
+        * fast/dom/scroll-position-for-new-loads.html: Added.
+
+2012-12-21  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed gardening. Rebaseline after r138365.
+
+        * platform/chromium-mac-snowleopard/fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events-expected.txt:
+
+2012-12-21  Keishi Hattori  <keishi@webkit.org>
+
+        Fix typing zero into multiple field input
+        https://bugs.webkit.org/show_bug.cgi?id=105501
+
+        Reviewed by Kent Tamura.
+
+        * fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html:
+        * fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html:
+        * fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events.html:
+        * fast/forms/week-multiple-fields/week-multiple-fields-keyboard-events-expected.txt:
+        * fast/forms/week-multiple-fields/week-multiple-fields-keyboard-events.html:
+
+2012-12-21  János Badics  <jbadics@inf.u-szeged.hu>
+
+        [Qt][WK2] Gardening after r138232. Skipped 4 tests timing out.
+        https://bugs.webkit.org/show_bug.cgi?id=105623
+
+        Reviewed by Csaba Osztrogonác.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+
+2012-12-21  János Badics  <jbadics@inf.u-szeged.hu>
+
+        [Qt] Gardening after r138316. Skipped a new failing reftest
+        with minor pixel differences.
+
+        Reviewed by Csaba Osztrogonác.
+
+        * platform/qt/TestExpectations:
+
+2012-12-21  Adam Bergkvist  <adam.bergkvist@ericsson.com>
+
+        MediaStream API: Update the MediaStream constructor
+        https://bugs.webkit.org/show_bug.cgi?id=98416
+
+        Reviewed by Adam Barth.
+
+        Updated the MediaStream constructor to support the more general argument
+        list from the latest Media Capture and Streams specification:
+        http://dev.w3.org/2011/webrtc/editor/getusermedia.html
+
+        * fast/js/constructor-length.html:
+        * fast/mediastream/MediaStreamConstructor-expected.txt:
+        * fast/mediastream/MediaStreamConstructor.html:
+        * platform/blackberry/fast/js/constructor-length-expected.txt:
+        * platform/chromium/fast/js/constructor-length-expected.txt:
+        * platform/gtk/fast/js/constructor-length-expected.txt:
+        * platform/mac/fast/js/constructor-length-expected.txt:
+        * platform/qt/fast/js/constructor-length-expected.txt:
+
+2012-12-21  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Add new TestExpectations for qt-5.0-mac-wk2.
+        https://bugs.webkit.org/show_bug.cgi?id=105424
+
+        This change will allow us to run a very specific
+        subset of the available LayoutTests on a mac buildbot.
+        The new baseline search path for mac will look as follows:
+        qt-5.0-mac-wk2 -> qt-5.0-wk2 -> qt-5.0 -> qt-mac -> qt
+
+        Reviewed by Dirk Pranke.
+
+        * platform/qt-5.0-mac-wk2/TestExpectations: Added.
+
+2012-12-20  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed, rolling out r138347.
+        http://trac.webkit.org/changeset/138347
+
+        media/track tests still failing
+
+        * platform/chromium/TestExpectations:
+
+2012-12-20  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed. Rollout Crash Pass expectation changes for media/track after rolling out r138320.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Revert the wrong expectation update done in r138344 and fix a syntax error in TestExpectations for Mac.
+
+        * platform/mac/TestExpectations:
+        * platform/mac/editing/spelling/removing-underline-after-accepting-autocorrection-using-punctuation-expected.txt:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Update Mac test expectation once more.
+
+        It turned out that the bug 73865 had been fixed for JSC. So filed the bug 105606 instead.
+        At this point, I have to add [ Crash Pass ] expectation to the entire media/track for
+        the lack of alternatives.
+
+        i.e. now these media/track tests crashes are tracked by the bug 105606.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Even more Mac test expectation for bug 73865.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add more Mac test expectations for bugs 73865 and 105603.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectation per bug 105601.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add another Mac test expectations for the bug 73865.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Rik Cabanier  <cabanier@adobe.com>
+
+        Add canvas blending modes using Core Graphics
+        https://bugs.webkit.org/show_bug.cgi?id=100070
+
+        Reviewed by Dirk Schulze.
+
+        Added test files for the new blending modes in Canvas
+
+        * fast/canvas/canvas-blend-image-expected.txt: Added.
+        * fast/canvas/canvas-blend-image.html: Added.
+        * fast/canvas/canvas-blend-solid-expected.txt: Added.
+        * fast/canvas/canvas-blend-solid.html: Added.
+        * fast/canvas/script-tests/canvas-blend-image.js: Added.
+        (myGetImageData):
+        (checkBlendModeResult):
+        (prepareTestScenario):
+        * fast/canvas/script-tests/canvas-blend-solid.js: Added.
+        (myGetImageData):
+        (checkBlendModeResult):
+        (prepareTestScenario):
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/qt/TestExpectations:
+
+2012-12-20  Tony Chang  <tony@chromium.org>
+
+        [chromium] Unreviewed, mark a new test as failing on Chromium Mac.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-20  KyungTae Kim  <ktf.kim@samsung.com>
+
+        Percentage min/max width replaced element may incorrectly rendered
+        https://bugs.webkit.org/show_bug.cgi?id=105264
+
+        Reviewed by Tony Chang.
+
+        Add test to check when the source of images with percentage min-width is changed.
+
+        * fast/css/percent-min-width-img-src-change-expected.txt: Added.
+        * fast/css/percent-min-width-img-src-change.html: Added.
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add Mac test expectations for the bug 73865.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Dominic Mazzoni  <dmazzoni@google.com>
+
+        accessibility/svg-remote-element.html is flaky (times out)
+        https://bugs.webkit.org/show_bug.cgi?id=105587
+
+        Reviewed by Chris Fleizach.
+
+        Avoid race condition where the test would never run if the
+        SVG image was already loaded before the load event listener
+        gets added.
+
+        * accessibility/svg-remote-element.html:
+
+2012-12-20  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed, remove css3/flexbox/flex-algorithm.html from efl, gtk and qt TestExpectations file.
+
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/qt/TestExpectations:
+
+2012-12-20  Dean Jackson  <dino@apple.com>
+
+        REGRESSION: media/video-controls-captions-trackmenu.html intermittently fails
+        https://bugs.webkit.org/show_bug.cgi?id=105584
+
+        Unreviewed expected results update. Remove the failure expectation.
+
+        * media/video-controls-captions-trackmenu-expected.txt:
+        * media/video-controls-captions-trackmenu.html:
+        * platform/mac/TestExpectations:
+
+2012-12-20  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r138270.
+        http://trac.webkit.org/changeset/138270
+        https://bugs.webkit.org/show_bug.cgi?id=105589
+
+        Many media tests are failing/crashing intermittently, often
+        pointing at WebCore::HTMLTrackElement::didCompleteLoad as
+        culprit (Requested by dino_ on #webkit).
+
+        * fast/events/constructors/track-event-constructor.html:
+        * http/tests/security/text-track-crossorigin.html:
+        * media/track/track-add-track-expected.txt:
+        * media/track/track-add-track.html:
+        * media/track/track-element-load-event-expected.txt: Removed.
+        * media/track/track-element-load-event.html: Removed.
+        * media/track/track-load-from-src-readyState.html:
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+        * platform/win/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a crash test expectation on Mac. ap is looking into the problem as we speak.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Elliott Sprehn  <esprehn@chromium.org>
+
+        RenderBlock hit testing should ignore PseudoElements
+        https://bugs.webkit.org/show_bug.cgi?id=105545
+
+        Reviewed by Eric Seidel.
+
+        Add test for hit testing on pseudo element generated blocks and boxes.
+
+        * fast/css-generated-content/block-and-box-hit-testing-expected.txt: Added.
+        * fast/css-generated-content/block-and-box-hit-testing.html: Added.
+
+2012-12-20  Stephen Chenney  <schenney@chromium.org>
+
+        SVG: <altglpyh> for a surrogate pair character in a ligature fails
+        https://bugs.webkit.org/show_bug.cgi?id=102969
+
+        Reviewed by Dirk Schulze.
+
+        Test and reference result for altGlyph elements applied to a surrogate pair
+        following an arabic form. Note that these tests are html, but for the test to fail
+        without the patch they must be parsed as svg (xml).
+
+        * svg/text/alt-glyph-for-surrogate-pair-expected.svg: Added.
+        * svg/text/alt-glyph-for-surrogate-pair.svg: Added.
+
+2012-12-20  Adam Klein  <adamk@chromium.org>
+
+        Properly process <template> end tags when in TemplateContentsMode
+        https://bugs.webkit.org/show_bug.cgi?id=105556
+
+        Reviewed by Eric Seidel.
+
+        * html5lib/resources/template.dat:
+
+2012-12-20  Emil A Eklund  <eae@chromium.org>
+
+        [flexbox] Fix handling of very large flex grow/shrink values
+        https://bugs.webkit.org/show_bug.cgi?id=105579
+
+        Reviewed by Tony Chang.
+
+        Update expectations for element with very large flex grow value.
+
+        * css3/flexbox/flex-algorithm.html:
+
+2012-12-20  Simon Fraser  <simon.fraser@apple.com>
+
+        Remove an incorrect WK2 result, and two there were identical to the WK1 results.
+
+        * platform/mac-wk2/svg/zoom/page/zoom-svg-through-object-with-absolute-size-expected.txt: Removed.
+        * platform/mac-wk2/svg/zoom/page/zoom-svg-through-object-with-huge-size-expected.txt: Removed.
+        * platform/mac-wk2/svg/zoom/page/zoom-svg-through-object-with-override-size-expected.txt: Removed.
+
+2012-12-20  Simon Fraser  <simon.fraser@apple.com>
+
+        Skip tests in WK2 that rely on eventSender.beginDragWithFiles.
+
+        * platform/mac-wk2/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectation per bug 105584.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectation per bug 105580.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryan Sleevi  <rsleevi@chromium.org>
+
+        window.crypto.getRandomValues should return the input ArrayBufferView
+        https://bugs.webkit.org/show_bug.cgi?id=104845
+
+        Reviewed by Kentaro Hara.
+
+        * fast/js/resources/js-test-pre.js:
+        (shouldBeType):
+        Added helper to assert that an expression returns an object of the
+        correct type.
+        * security/crypto-random-values-types-expected.txt:
+        * security/crypto-random-values-types.html:
+        Test all possible TypedArray integer types and ensure that both the
+        correct TypedArray type is returned and that it is equal to the input
+        type; that is, that the input type is modified in place, rather then
+        copied.
+
+2012-12-20  Tony Chang  <tony@chromium.org>
+
+        [chromium] Unreviewed gardening.
+
+        Rebaseline tests mentioned in 105121 and remove tests that are passing on Win bots according to the flakiness dashboard.
+
+        * platform/chromium-linux/platform/chromium/virtual/gpu/compositedscrolling/overflow/nested-scrolling-expected.png: Added.
+        * platform/chromium-linux/platform/chromium/virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations-expected.png: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/gpu/compositedscrolling/overflow/nested-scrolling-expected.png: Added.
+        * platform/chromium-mac-lion/platform/chromium/virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations-expected.png: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/gpu/compositedscrolling/overflow/nested-scrolling-expected.png: Added.
+        * platform/chromium-mac-snowleopard/platform/chromium/virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations-expected.png: Added.
+        * platform/chromium-mac/platform/chromium/virtual/gpu/compositedscrolling/overflow/nested-scrolling-expected.png: Added.
+        * platform/chromium-mac/platform/chromium/virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations-expected.png: Added.
+        * platform/chromium/TestExpectations:
+        * platform/chromium/platform/chromium/virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch-toggle-expected.txt: Added.
+
+2012-12-20  Tony Chang  <tony@chromium.org>
+
+        [chromium] Unreviewed gardening.
+
+        Mark an inspector test as flakey and update form date tests after r138255.
+
+        * platform/chromium-win-xp/fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events-expected.txt:
+        * platform/chromium-win-xp/fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events-expected.txt:
+        * platform/chromium/TestExpectations:
+
+2012-12-20  David Dorwin  <ddorwin@chromium.org>
+
+        [Chromium] Restore WebM EME canPlayType() expectations.
+        https://bugs.webkit.org/show_bug.cgi?id=105070
+
+        Unreviewed TestExpectations revert of r137225.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectation per bug 104848.
+
+        * platform/mac/TestExpectations:
+
+2012-12-20  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Update Mac test expectation per bugs 105566 and 105567.
+
+        * platform/mac/TestExpectations:
+
+2012-12-19  Dean Jackson  <dino@apple.com>
+
+        Cleanup some captions menu tests
+        https://bugs.webkit.org/show_bug.cgi?id=105500
+
+        Reviewed by Eric Carlson.
+
+        Use the helper library where possible. Dynamically add
+        video.src so that we always get the 'canplaythrough' event.
+
+        * media/video-controls-captions-trackmenu-expected.txt:
+        * media/video-controls-captions-trackmenu-localized.html:
+        * media/video-controls-captions-trackmenu-sorted.html:
+        * media/video-controls-captions-trackmenu.html:
+
+2012-12-19  Dean Jackson  <dino@apple.com>
+
+        Follow WebVTT line breaking rules
+        https://bugs.webkit.org/show_bug.cgi?id=105496
+
+        Reviewed by Eric Carlson.
+
+        Test that captions do emergency line breaking. Since we can't
+        rely on text dimensions, the test simply compares a caption that
+        will be on one line to a caption with a single huge word, that must
+        break at least twice. If the bounding rectangle of the second caption
+        is bigger than the first, we know we broke.
+
+        * media/track/captions-webvtt/long-word.vtt: Added.
+        * media/track/track-word-breaking-expected.txt: Added.
+        * media/track/track-word-breaking.html: Added.
+
+2012-12-20  James Simonsen  <simonjam@chromium.org>
+
+        [Resource Timing] 304 responses should show up in the timing buffer
+        https://bugs.webkit.org/show_bug.cgi?id=105490
+
+        Reviewed by Tony Gentilcore.
+
+        * http/tests/w3c/webperf/resources/generate_resource.php:
+        * http/tests/w3c/webperf/submission/resource-timing/html/test_resource_cached-expected.txt: Added.
+        * http/tests/w3c/webperf/submission/resource-timing/html/test_resource_cached.html: Added.
+
+2012-12-20  Elliott Sprehn  <esprehn@gmail.com>
+
+        Block level pseudo elements bleed background color to <html>
+        https://bugs.webkit.org/show_bug.cgi?id=104855
+
+        Reviewed by Julien Chaffraix.
+
+        Before r137336 placing a pseudo element :before or :after that was display
+        block on the <html> element would also set the background color of the
+        root of the document.
+
+        This was because RenderObject::isRoot checked if document()->documentElement() == m_node,
+        which was true for html:before or html:after with the old implementation
+        of generated content. Instead it should have compared against node() which
+        would have compensated for the anonymous generated content.
+
+        This is fixed by the new generated content implementation that was turned
+        on in r137336 because m_node is now the PseudoElement, not the generatingNode.
+
+        * fast/css-generated-content/html-pseudo-background-color-expected.html: Added.
+        * fast/css-generated-content/html-pseudo-background-color.html: Added.
+
+2012-12-20  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Unreviewed. Adjust Mac TestExpectations.
+        https://bugs.webkit.org/show_bug.cgi?id=105372
+
+        Removes accessibility/svg-bounds.html from
+        platform/mac/TestExpectations.
+
+        The problem was caused by bug 97359: committed r138061,
+        reverted r138121, re-landed r138260 without the bug.
+
+        * platform/mac/TestExpectations: remove accessibility/svg-bounds.html
+
+2012-12-20  Antoine Quint  <graouts@apple.com>
+
+        onload callback for <track> element attached to <video> does not fire
+        https://bugs.webkit.org/show_bug.cgi?id=103258
+
+        Reviewed by Eric Carlson.
+
+        As a result of fixing this bug, a few new failures were uncovered and TestExpectations
+        needed to be updated to take this into account. Additionally, some existing tests were
+        incorrect or outdated and were fixed as well. Finally, a new test was added to thoroughly
+        test the various conditions required for a <track> element to successfully load.
+
+        * fast/events/constructors/track-event-constructor.html: Update the test to correctly set
+        a non-disabled mode on the text track such that it may load per the rules enforced with this patch.
+        * http/tests/security/text-track-crossorigin.html: Update the test to correctly set a non-disabled
+        mode on the text track such that it may load per the rules enforced with this patch.
+        * media/track/track-add-track-expected.txt: Update the output to match changes made to test.
+        * media/track/track-add-track.html: Update the test to correctly set a non-disabled mode on
+        the text track such that it may load per the rules enforced with this patch. Also, ensure
+        the .readyState of the text track is correctly assumed to be NONE vs. LOADING as it would
+        have to wait until the next run loop to be changed to anything but NONE.
+        * media/track/track-element-load-event-expected.txt: Added.
+        * media/track/track-element-load-event.html: Added.
+        * media/track/track-load-from-src-readyState.html: Update the test to correctly set a
+        non-disabled mode on the text track such that it may load per the rules enforced with
+        this patch.
+        * platform/chromium/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/efl/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/gtk/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/mac/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/qt/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/win/TestExpectations: Skip tests that now fail instead of timing out.
+
+2012-12-20  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Layout test showing delete database getting two blocked events
+        https://bugs.webkit.org/show_bug.cgi?id=92674
+
+        Reviewed by Tony Chang.
+
+        Update/add tests to match the expected behavior where blocked/versionchange events fire
+        even when a "versionchange" transaction is running.
+
+        * storage/indexeddb/delete-in-upgradeneeded-close-in-open-success-expected.txt: Copied from LayoutTests/storage/indexeddb/intversion-delete-in-upgradeneeded-expected.txt.
+        * storage/indexeddb/delete-in-upgradeneeded-close-in-open-success.html: Copied from LayoutTests/storage/indexeddb/intversion-delete-in-upgradeneeded.html.
+        * storage/indexeddb/delete-in-upgradeneeded-close-in-versionchange-expected.txt: Renamed from LayoutTests/storage/indexeddb/intversion-delete-in-upgradeneeded-expected.txt.
+        * storage/indexeddb/delete-in-upgradeneeded-close-in-versionchange.html: Renamed from LayoutTests/storage/indexeddb/intversion-delete-in-upgradeneeded.html.
+        * storage/indexeddb/deletedatabase-delayed-by-open-and-versionchange-expected.txt:
+        * storage/indexeddb/deletedatabase-delayed-by-versionchange-expected.txt:
+        * storage/indexeddb/intversion-gated-on-delete-expected.txt:
+        * storage/indexeddb/resources/delete-in-upgradeneeded-close-in-open-success.js: Copied from LayoutTests/storage/indexeddb/resources/intversion-delete-in-upgradeneeded.js.
+        * storage/indexeddb/resources/delete-in-upgradeneeded-close-in-versionchange.js: Renamed from LayoutTests/storage/indexeddb/resources/intversion-delete-in-upgradeneeded.js.
+        * storage/indexeddb/resources/deletedatabase-delayed-by-open-and-versionchange.js:
+        * storage/indexeddb/resources/factory-deletedatabase.js:
+        * storage/indexeddb/resources/intversion-gated-on-delete.js:
+
+2012-12-20  Tony Chang  <tony@chromium.org>
+
+        [chromium] Unreviewed gardening.
+
+        Update pixel results for fast/sub-pixel/transformed-iframe-copy-on-scroll.html
+        on mac. The test uses mock scrollbars but the old results have real scrollbars.
+
+        * platform/chromium-mac-lion/fast/sub-pixel/transformed-iframe-copy-on-scroll-expected.png:
+        * platform/chromium-mac/fast/sub-pixel/transformed-iframe-copy-on-scroll-expected.png:
+
+2012-12-20  Dominic Mazzoni  <dmazzoni@google.com>
+
+        AX: support clickPoint in DRT for chromium
+        https://bugs.webkit.org/show_bug.cgi?id=97359
+
+        Reviewed by Chris Fleizach.
+
+        Enable four more tests now that clickPointX, clickPointY,
+        and elementAtPoint are implemented for Chromium.
+
+        Minor fixes to two tests to make them more robust
+        across platfoms and when run in parallel.
+
+        * accessibility/svg-bounds.html: Updated
+        * accessibility/svg-bounds-expected.txt: Added (made cross-platform
+        * accessibility/svg-remote-element.html: Updated
+        * accessibility/svg-remote-element-expected.txt: Added (made cross-platform)
+        * platform/mac/accessibility/svg-bounds-expected.txt: Deleted
+        * platform/mac/accessibility/svg-remote-element-expected.txt: Deleted
+        * platform/chromium/TestExpectations: Updated
+
+2012-12-20  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [Qt]REGRESSION(r138222): It made fast/forms/number/number-spinbutton-click-in-iframe.html crash
+        https://bugs.webkit.org/show_bug.cgi?id=105529
+
+        Reviewed by Nate Chapin.
+
+        * platform/qt/TestExpectations: Unskip
+        fast/forms/number/number-spinbutton-click-in-iframe.html.
+
 2012-12-20  Lianghui Chen  <liachen@rim.com>
 
         2 fast/filesystem test cases ask for more space than the size they request when creating the file system

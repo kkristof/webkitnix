@@ -161,6 +161,7 @@
 #if ENABLE(PDFKIT_PLUGIN)
 #include "PDFPlugin.h"
 #endif
+#include <WebCore/LegacyWebArchive.h>
 #endif
 
 #if PLATFORM(QT)
@@ -1032,10 +1033,10 @@ void WebPage::sendViewportAttributesChanged()
 
     ViewportAttributes attr = computeViewportAttributes(m_page->viewportArguments(), minimumLayoutFallbackWidth, deviceWidth, deviceHeight, m_page->deviceScaleFactor(), m_viewportSize);
 
-    // Keep the current position, update size only.
-    // For the new loads position is already reset to (0,0).
     FrameView* view = m_page->mainFrame()->view();
-    IntPoint contentFixedOrigin = view->fixedVisibleContentRect().location();
+
+    // If no layout was done yet set contentFixedOrigin to (0,0).
+    IntPoint contentFixedOrigin = view->didFirstLayout() ? view->fixedVisibleContentRect().location() : IntPoint();
 
     // Put the width and height to the viewport width and height. In css units however.
     // Use FloatSize to avoid truncated values during scale.
@@ -2083,6 +2084,37 @@ void WebPage::getRenderTreeExternalRepresentation(uint64_t callbackID)
 {
     String resultString = renderTreeExternalRepresentation();
     send(Messages::WebPageProxy::StringCallback(resultString, callbackID));
+}
+
+#if PLATFORM(MAC)
+static Frame* frameWithSelection(Page* page)
+{
+    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+        if (frame->selection()->isRange())
+            return frame;
+    }
+
+    return 0;
+}
+#endif
+
+void WebPage::getSelectionAsWebArchiveData(uint64_t callbackID)
+{
+    CoreIPC::DataReference dataReference;
+
+#if PLATFORM(MAC)
+    RefPtr<LegacyWebArchive> archive;
+    RetainPtr<CFDataRef> data;
+
+    Frame* frame = frameWithSelection(m_page.get());
+    if (frame) {
+        archive = LegacyWebArchive::createFromSelection(frame);
+        data = archive->rawDataRepresentation();
+        dataReference = CoreIPC::DataReference(CFDataGetBytePtr(data.get()), CFDataGetLength(data.get()));
+    }
+#endif
+
+    send(Messages::WebPageProxy::DataCallback(dataReference, callbackID));
 }
 
 void WebPage::getSelectionOrContentsAsString(uint64_t callbackID)
@@ -3263,7 +3295,7 @@ void WebPage::computePagesForPrinting(uint64_t frameID, const PrintInfo& printIn
 }
 
 #if PLATFORM(MAC) || PLATFORM(WIN)
-void WebPage::drawRectToImage(uint64_t frameID, const PrintInfo& printInfo, const WebCore::IntRect& rect, uint64_t callbackID)
+void WebPage::drawRectToImage(uint64_t frameID, const PrintInfo& printInfo, const WebCore::IntRect& rect, const WebCore::IntSize& imageSize, uint64_t callbackID)
 {
     WebFrame* frame = WebProcess::shared().webFrame(frameID);
     Frame* coreFrame = frame ? frame->coreFrame() : 0;
@@ -3278,8 +3310,11 @@ void WebPage::drawRectToImage(uint64_t frameID, const PrintInfo& printInfo, cons
         ASSERT(coreFrame->document()->printing());
 #endif
 
-        RefPtr<ShareableBitmap> bitmap = ShareableBitmap::createShareable(rect.size(), ShareableBitmap::SupportsAlpha);
+        RefPtr<ShareableBitmap> bitmap = ShareableBitmap::createShareable(imageSize, ShareableBitmap::SupportsAlpha);
         OwnPtr<GraphicsContext> graphicsContext = bitmap->createGraphicsContext();
+
+        float printingScale = static_cast<float>(imageSize.width()) / rect.width();
+        graphicsContext->scale(FloatSize(printingScale, printingScale));
 
 #if PLATFORM(MAC)
         if (RetainPtr<PDFDocument> pdfDocument = pdfDocumentForPrintingFrame(coreFrame)) {

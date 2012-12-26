@@ -27,39 +27,30 @@
 #define WebCookieManager_h
 
 #include "HTTPCookieAcceptPolicy.h"
+#include "MessageReceiver.h"
+#include <stdint.h>
+#include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
 
 #if USE(SOUP)
 #include "SoupCookiePersistentStorageType.h"
 #endif
 
-namespace CoreIPC {
-    class Connection;
-    class MessageDecoder;
-    class MessageID;
-}
-
 namespace WebKit {
 
-class WebCookieManager {
+class ChildProcess;
+
+class WebCookieManager  : private CoreIPC::MessageReceiver {
     WTF_MAKE_NONCOPYABLE(WebCookieManager);
 public:
-    static WebCookieManager& shared();
-
-    void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&);
-    
-    void dispatchCookiesDidChange();
+    WebCookieManager(ChildProcess*);
 
     void setHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicy);
-
 #if USE(SOUP)
     void setCookiePersistentStorage(const String& storagePath, uint32_t storageType);
 #endif
 
-private:
-    WebCookieManager();
-    
+private:    
     void getHostnamesWithCookies(uint64_t callbackID);
     void deleteCookiesForHostname(const String&);
     void deleteAllCookies();
@@ -71,7 +62,13 @@ private:
     void startObservingCookieChanges();
     void stopObservingCookieChanges();
 
+    static void cookiesDidChange();
+    void dispatchCookiesDidChange();
+
+    void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&) OVERRIDE;
     void didReceiveWebCookieManagerMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&);
+
+    ChildProcess* m_process;
 };
 
 } // namespace WebKit

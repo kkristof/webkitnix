@@ -35,6 +35,7 @@
 #include "WKAPICast.h"
 #include "WKBundleAPICast.h"
 #include "WebApplicationCacheManager.h"
+#include "WebConnectionToUIProcess.h"
 #include "WebContextMessageKinds.h"
 #include "WebCookieManager.h"
 #include "WebCoreArgumentCoders.h"
@@ -75,6 +76,14 @@
 
 #if ENABLE(SHADOW_DOM) || ENABLE(CSS_REGIONS)
 #include <WebCore/RuntimeEnabledFeatures.h>
+#endif
+
+#if PLATFORM(MAC)
+#include "WebSystemInterface.h"
+#endif
+
+#if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
+#include "WebNotificationManager.h"
 #endif
 
 using namespace WebCore;
@@ -135,7 +144,7 @@ void InjectedBundle::setShouldTrackVisitedLinks(bool shouldTrackVisitedLinks)
 
 void InjectedBundle::setAlwaysAcceptCookies(bool accept)
 {
-    WebCookieManager::shared().setHTTPCookieAcceptPolicy(accept ? HTTPCookieAcceptPolicyAlways : HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain);
+    WebProcess::shared().cookieManager().setHTTPCookieAcceptPolicy(accept ? HTTPCookieAcceptPolicyAlways : HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain);
 }
 
 void InjectedBundle::removeAllVisitedLinks()
@@ -303,7 +312,8 @@ void InjectedBundle::switchNetworkLoaderToNewTestingSession()
 {
 #if (PLATFORM(MAC) || USE(CFNETWORK)) && !PLATFORM(WIN)
     // FIXME (NetworkProcess): Do this in network process, too.
-    WebFrameNetworkingContext::switchToNewTestingSession();
+    InitWebCoreSystemInterface();
+    NetworkStorageSession::switchToNewTestingSession();
 #endif
 }
 
@@ -339,7 +349,7 @@ void InjectedBundle::resetOriginAccessWhitelists()
 void InjectedBundle::clearAllDatabases()
 {
 #if ENABLE(SQL_DATABASE)
-    WebDatabaseManager::shared().deleteAllDatabases();
+    WebProcess::shared().databaseManager().deleteAllDatabases();
 #endif
 }
 
@@ -348,13 +358,13 @@ void InjectedBundle::setDatabaseQuota(uint64_t quota)
 #if ENABLE(SQL_DATABASE)
     // Historically, we've used the following (somewhat non-sensical) string
     // for the databaseIdentifier of local files.
-    WebDatabaseManager::shared().setQuotaForOrigin("file__0", quota);
+    WebProcess::shared().databaseManager().setQuotaForOrigin("file__0", quota);
 #endif
 }
 
 void InjectedBundle::clearApplicationCache()
 {
-    WebApplicationCacheManager::shared().deleteAllEntries();
+    WebProcess::shared().applicationCacheManager().deleteAllEntries();
 }
 
 void InjectedBundle::clearApplicationCacheForOrigin(const String& originString)
@@ -365,7 +375,7 @@ void InjectedBundle::clearApplicationCacheForOrigin(const String& originString)
 
 void InjectedBundle::setAppCacheMaximumSize(uint64_t size)
 {
-    WebApplicationCacheManager::shared().setAppCacheMaximumSize(size);
+    WebProcess::shared().applicationCacheManager().setAppCacheMaximumSize(size);
 }
 
 uint64_t InjectedBundle::appCacheUsageForOrigin(const String& originString)

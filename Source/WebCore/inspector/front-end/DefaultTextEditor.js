@@ -813,7 +813,6 @@ WebInspector.TextEditorChunkedPanel.prototype = {
             lineChunk.expand();
             if (suffixChunk)
                 suffixChunk.expand();
-            this._repaintAll();
         }
 
         this.endDomUpdates();
@@ -933,7 +932,7 @@ WebInspector.TextEditorChunkedPanel.prototype = {
         delete this._repaintAllTimer;
 
         if (this._paintCoalescingLevel)
-            return false;
+            return;
 
         var visibleFrom = this._scrollTop();
         var visibleTo = visibleFrom + this._clientHeight();
@@ -942,7 +941,6 @@ WebInspector.TextEditorChunkedPanel.prototype = {
             var result = this._findVisibleChunks(visibleFrom, visibleTo);
             this._expandChunks(result.start, result.end);
         }
-        return true;
     },
 
     _scrollTop: function()
@@ -1363,25 +1361,6 @@ WebInspector.TextEditorMainPanel.prototype = {
         this._isShowing = false;
     },
 
-    _repaintAll: function()
-    {
-        // calling overridden |_repaintAll| method
-        if (!WebInspector.TextEditorChunkedPanel.prototype._repaintAll.call(this))
-            return false;
-
-        var visibleFrom = this._scrollTop();
-        var visibleTo = visibleFrom + this._clientHeight();
-
-        if (visibleTo) {
-            var result = this._findVisibleChunks(visibleFrom, visibleTo);
-            for(var i = result.start; i < result.end; i++) {
-                var chunk = this._textChunks[i];
-                this._paintLines(chunk.startLine, chunk.startLine + chunk.linesCount, true);
-            }
-        }
-        return true;
-    },
-
     _attachMutationObserver: function()
     {
         if (!this._isShowing)
@@ -1795,8 +1774,8 @@ WebInspector.TextEditorMainPanel.prototype = {
     },
 
     /**
-     * @param {number} fromLine
-     * @param {number} toLine
+     * @param {number} fromLine inclusive
+     * @param {number} toLine exclusive
      * @param {boolean=} restoreSelection
      */
     _paintLines: function(fromLine, toLine, restoreSelection)
@@ -1884,34 +1863,26 @@ WebInspector.TextEditorMainPanel.prototype = {
             }
 
             var line = this._textModel.line(lineNumber);
+            var ranges = this._highlighter.orderedRangesPerLine(lineNumber);
+
             if (!line)
                 lineRow.insertBefore(document.createElement("br"), decorationsElement);
 
-            var plainTextStart = -1;
-            for (var j = 0; j < line.length;) {
-                if (j > 1000) {
-                    // This line is too long - do not waste cycles on minified js highlighting.
-                    if (plainTextStart === -1)
-                        plainTextStart = j;
-                    break;
-                }
-                var attribute = highlight[j];
-                if (!attribute || !attribute.tokenType) {
-                    if (plainTextStart === -1)
-                        plainTextStart = j;
-                    j++;
-                } else {
-                    if (plainTextStart !== -1) {
-                        this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, j));
-                        plainTextStart = -1;
-                        --this._paintLinesOperationsCredit;
-                    }
-                    this._insertSpanBefore(lineRow, decorationsElement, line.substring(j, j + attribute.length), attribute.tokenType);
-                    j += attribute.length;
+            var plainTextStart = 0;
+            for(var i = 0; i < ranges.length; i++) {
+                var rangeStart = ranges[i].startColumn;
+                var rangeEnd = ranges[i].endColumn;
+                var rangeToken = ranges[i].token;
+
+                if (plainTextStart < rangeStart) {
+                    this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, rangeStart));
                     --this._paintLinesOperationsCredit;
                 }
+                this._insertSpanBefore(lineRow, decorationsElement, line.substring(rangeStart, rangeEnd + 1), rangeToken);
+                --this._paintLinesOperationsCredit;
+                plainTextStart = rangeEnd + 1;
             }
-            if (plainTextStart !== -1) {
+            if (plainTextStart < line.length) {
                 this._insertTextNodeBefore(lineRow, decorationsElement, line.substring(plainTextStart, line.length));
                 --this._paintLinesOperationsCredit;
             }
@@ -2383,16 +2354,16 @@ WebInspector.TextEditorMainPanel.prototype = {
             var attribute = this._textModel.getAttribute(i, "highlight");
             if (!attribute)
                 continue;
-            var columnNumbers = Object.keys(attribute).reverse();
-            for (var j = 0; j < columnNumbers.length; ++j) {
-                var column = columnNumbers[j];
-                if (attribute[column].tokenType === "block-start") {
+            var ranges = attribute.ranges;
+            for (var j = ranges.length - 1; j >= 0; j--) {
+                var token = ranges[j].token;
+                if (token === "block-start") {
                     if (!(--nestingLevel)) {
                         var lineContent = this._textModel.line(i);
                         return lineContent.length - lineContent.trimLeft().length;
                     }
                 }
-                if (attribute[column].tokenType === "block-end")
+                if (token === "block-end")
                     ++nestingLevel;
             }
         }
@@ -2679,8 +2650,10 @@ WebInspector.TextEditorMainChunk.prototype = {
 
         this._expanded = true;
 
-        if (this.linesCount === 1)
+        if (this.linesCount === 1) {
+            this._chunkedPanel._paintLine(this.element);
             return;
+        }
 
         this._chunkedPanel.beginDomUpdates();
 
@@ -2692,6 +2665,7 @@ WebInspector.TextEditorMainChunk.prototype = {
             this._expandedLineRows.push(lineRow);
         }
         parentElement.removeChild(this.element);
+        this._chunkedPanel._paintLines(this.startLine, this.startLine + this.linesCount);
 
         this._chunkedPanel.endDomUpdates();
     },

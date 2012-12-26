@@ -1,3 +1,230 @@
+2012-12-25  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        [CMAKE] Remove header files in JavaScriptCore/CMakeLists.txt
+        https://bugs.webkit.org/show_bug.cgi?id=105753
+
+        Reviewed by Laszlo Gombos.
+
+        * CMakeLists.txt: Remove header files in source list.
+
+2012-12-25  Filip Pizlo  <fpizlo@apple.com>
+
+        JITThunks should be in its own file
+        https://bugs.webkit.org/show_bug.cgi?id=105744
+
+        Rubber stamped by Sam Weinig.
+        
+        Moved JITThunks into its own file and removed some static methods from it
+        that were not related to what JITThunks currently does. Performed various
+        pagan rituals to get it to build - apparently there is a circular dependency
+        between JSCell, Weak, and JITThunks, which magically resolves itself if you
+        make sure to first include Register.h. Making it so that fewer pagan rituals
+        need to be performed if this code changes in the future is covered by
+        https://bugs.webkit.org/show_bug.cgi?id=105696.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * jit/JITStubs.cpp:
+        (JSC::tryCachePutByID):
+        (JSC::tryCacheGetByID):
+        * jit/JITStubs.h:
+        (JSC::JITStackFrame::returnAddressSlot):
+        (JSC::returnAddressIsInCtiTrampoline):
+        * jit/JITThunks.cpp: Added.
+        (JSC::JITThunks::JITThunks):
+        (JSC::JITThunks::~JITThunks):
+        (JSC::JITThunks::ctiStub):
+        (JSC::JITThunks::hostFunctionStub):
+        (JSC::JITThunks::clearHostFunctionStubs):
+        * jit/JITThunks.h: Added.
+        (JSC::JITThunks::ctiStringLengthTrampoline):
+        (JSC::JITThunks::ctiVirtualCallLink):
+        (JSC::JITThunks::ctiVirtualConstructLink):
+        (JSC::JITThunks::ctiVirtualCall):
+        (JSC::JITThunks::ctiVirtualConstruct):
+        (JSC::JITThunks::ctiNativeCall):
+        (JSC::JITThunks::ctiNativeConstruct):
+        * jit/ThunkGenerator.h: Added.
+        * jit/ThunkGenerators.cpp:
+        * jit/ThunkGenerators.h:
+        * runtime/JSGlobalData.h:
+
+2012-12-25  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed follow-up for r138455.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+
+2012-12-24  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed compilation fix for r138452.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.def:
+
+2012-12-24  Laszlo Gombos  <l.gombos@samsung.com>
+
+        Remove wtf/Platform.h includes from {c|cpp} files
+        https://bugs.webkit.org/show_bug.cgi?id=105678
+
+        Reviewed by Kentaro Hara.
+
+        Remove wtf/Platform.h from the include list as it is already
+        included in config.h.
+
+        * disassembler/udis86/udis86.c:
+        * disassembler/udis86/udis86_decode.c:
+        * disassembler/udis86/udis86_input.c:
+        * disassembler/udis86/udis86_itab_holder.c:
+        * disassembler/udis86/udis86_syn-att.c:
+        * disassembler/udis86/udis86_syn-intel.c:
+        * disassembler/udis86/udis86_syn.c:
+        * heap/VTableSpectrum.cpp:
+
+2012-12-21  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG Arrayify slow path should be out-of-line
+        https://bugs.webkit.org/show_bug.cgi?id=105400
+
+        Reviewed by Gavin Barraclough.
+        
+        The interesting bit of this change is allowing out-of-line slow path generators
+        to emit speculation checks. This is accomplished by having a version of
+        speculationCheck() that returns a jump placeholder instead of taking a jump (or
+        jump list) as an argument. You can then fill in that jump placeholder at a
+        later time, so long as you do it before OSR exit linking. Slow path generators
+        run before linking, so that just naturally ends up working.
+        
+        This isn't really a big win, but we know that out-of-lining slow paths is
+        generally a good thing to do, so it's fair to assume that this is a move in the
+        right direction.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * dfg/DFGArrayifySlowPathGenerator.h: Added.
+        (DFG):
+        (ArrayifySlowPathGenerator):
+        (JSC::DFG::ArrayifySlowPathGenerator::ArrayifySlowPathGenerator):
+        (JSC::DFG::ArrayifySlowPathGenerator::generateInternal):
+        * dfg/DFGOSRExitJumpPlaceholder.cpp: Added.
+        (DFG):
+        (JSC::DFG::OSRExitJumpPlaceholder::fill):
+        * dfg/DFGOSRExitJumpPlaceholder.h: Added.
+        (DFG):
+        (OSRExitJumpPlaceholder):
+        (JSC::DFG::OSRExitJumpPlaceholder::OSRExitJumpPlaceholder):
+        (JSC::DFG::OSRExitJumpPlaceholder::operator!):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::speculationCheck):
+        (DFG):
+        (JSC::DFG::SpeculativeJIT::arrayify):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+
+2012-12-20  Oliver Hunt  <oliver@apple.com>
+
+        Finally found the problem.  Using the wrong JSContextGroup.
+
+        * API/tests/testapi.c:
+        (main):
+
+2012-12-20  Oliver Hunt  <oliver@apple.com>
+
+        Try to convince bots to be happy with testapi.
+
+        * API/JSScriptRefPrivate.h:
+
+2012-12-20  Michael Saboff  <msaboff@apple.com>
+
+        JIT: Change uninitialized pointer value -1 to constant
+        https://bugs.webkit.org/show_bug.cgi?id=105576
+
+        Rubber stamped by Gavin Barraclough.
+
+        Changed the use of -1 as a pointer value in the JITs to be the constant unusedPointer defined in the
+        new file jit/UnusedPointer.h.  Made it's value 0xd1e7beef, which is a bad pointer on most architectures
+        because it is odd, and to distinguish it from other common values.
+
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * dfg/DFGRepatch.cpp:
+        (JSC::DFG::dfgResetGetByID):
+        (JSC::DFG::dfgResetPutByID):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::cachedGetById):
+        (JSC::DFG::SpeculativeJIT::cachedPutById):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::cachedGetById):
+        (JSC::DFG::SpeculativeJIT::cachedPutById):
+        * jit/JIT.h:
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::resetPatchGetById):
+        (JSC::JIT::resetPatchPutById):
+        * jit/JITPropertyAccess32_64.cpp:
+        (JSC::JIT::resetPatchGetById):
+        (JSC::JIT::resetPatchPutById):
+        * jit/JITWriteBarrier.h:
+        (JSC::JITWriteBarrierBase::clearToUnusedPointer):
+        (JSC::JITWriteBarrierBase::get):
+        * jit/UnusedPointer.h: Added.
+
+2012-12-20  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG shouldn't emit CheckStructure on array accesses if exit profiling tells it not to
+        https://bugs.webkit.org/show_bug.cgi?id=105577
+
+        Reviewed by Mark Hahnenberg.
+        
+        I don't know why this wasn't there from the beginning.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::getArrayModeAndEmitChecks):
+
+2012-12-19  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG speculation checks that take JumpList should consolidate OSRExits
+        https://bugs.webkit.org/show_bug.cgi?id=105401
+
+        Reviewed by Oliver Hunt.
+
+        Change OSRExitCompilationInfo to always contain a JumpList, and change JumpList
+        to be more compact. This way, a speculationCheck that takes a JumpList only has
+        to emit one OSRExit structure, and one OSRExit landing pad.
+        
+        The downside is that we get less precise information about *where* we exited
+        from. So, this also includes changes to the profiler to be more relaxed about
+        what an ExitSite is.
+
+        * assembler/AbstractMacroAssembler.h:
+        (JumpList):
+        * dfg/DFGJITCompiler.cpp:
+        (JSC::DFG::JITCompiler::linkOSRExits):
+        (JSC::DFG::JITCompiler::link):
+        * dfg/DFGJITCompiler.h:
+        (DFG):
+        (JSC::DFG::JITCompiler::appendExitInfo):
+        (JITCompiler):
+        * dfg/DFGOSRExitCompilationInfo.h:
+        (OSRExitCompilationInfo):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::speculationCheck):
+        (JSC::DFG::SpeculativeJIT::speculationWatchpoint):
+        (JSC::DFG::SpeculativeJIT::forwardSpeculationCheck):
+        * profiler/ProfilerCompilation.cpp:
+        (JSC::Profiler::Compilation::addOSRExitSite):
+        * profiler/ProfilerCompilation.h:
+        (Compilation):
+        * profiler/ProfilerOSRExitSite.cpp:
+        (JSC::Profiler::OSRExitSite::toJS):
+        * profiler/ProfilerOSRExitSite.h:
+        (JSC::Profiler::OSRExitSite::OSRExitSite):
+        (JSC::Profiler::OSRExitSite::codeAddress):
+        (OSRExitSite):
+
 2012-12-19  Oliver Hunt  <oliver@apple.com>
 
         Fix some incorrect tests in testapi.c

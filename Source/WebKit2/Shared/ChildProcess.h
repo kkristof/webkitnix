@@ -27,6 +27,8 @@
 #define ChildProcess_h
 
 #include "Connection.h"
+#include "MessageReceiverMap.h"
+#include "MessageSender.h"
 #include <WebCore/RunLoop.h>
 #include <wtf/RetainPtr.h>
 
@@ -36,7 +38,7 @@ OBJC_CLASS NSString;
 
 namespace WebKit {
 
-class ChildProcess : protected CoreIPC::Connection::Client {
+class ChildProcess : protected CoreIPC::Connection::Client, public CoreIPC::MessageSender<ChildProcess> {
     WTF_MAKE_NONCOPYABLE(ChildProcess);
 
 public:
@@ -62,6 +64,10 @@ public:
         ChildProcess& m_childProcess;
     };
 
+    void addMessageReceiver(CoreIPC::StringReference messageReceiverName, CoreIPC::MessageReceiver*);
+    void addMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID, CoreIPC::MessageReceiver*);
+    void removeMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID);
+
 #if PLATFORM(MAC)
     bool applicationIsOccluded() const { return !m_processVisibleAssertion; }
     void setApplicationIsOccluded(bool);
@@ -69,11 +75,17 @@ public:
 
     static void didCloseOnConnectionWorkQueue(WorkQueue&, CoreIPC::Connection*);
 
+    // Used by CoreIPC::MessageSender
+    virtual CoreIPC::Connection* connection() const = 0;
+    virtual uint64_t destinationID() const = 0;
+
 protected:
     explicit ChildProcess();
-    ~ChildProcess();
+    virtual ~ChildProcess();
 
     void setTerminationTimeout(double seconds) { m_terminationTimeout = seconds; }
+
+    CoreIPC::MessageReceiverMap m_messageReceiverMap;
 
 private:
     void terminationTimerFired();

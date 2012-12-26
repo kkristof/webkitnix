@@ -258,6 +258,7 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl.get();
 }
 
+
 StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     : m_hasUAAppearance(false)
     , m_backgroundData(BackgroundFillLayer)
@@ -405,10 +406,10 @@ void StyleResolver::pushParentElement(Element* parent)
     // style recalc in the middle of tree building. We may also be invoked from somewhere within the tree.
     // Reset the stack in this case, or if we see a new root element.
     // Otherwise just push the new parent.
-    if (!parentsParent || m_checker.parentStackIsEmpty())
-        m_checker.setupParentStack(parent);
+    if (!parentsParent || m_selectorFilter.parentStackIsEmpty())
+        m_selectorFilter.setupParentStack(parent);
     else
-        m_checker.pushParent(parent);
+        m_selectorFilter.pushParent(parent);
 
     // Note: We mustn't skip ShadowRoot nodes for the scope stack.
     if (m_scopeResolver)
@@ -419,8 +420,8 @@ void StyleResolver::popParentElement(Element* parent)
 {
     // Note that we may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
-    if (m_checker.parentStackIsConsistent(parent))
-        m_checker.popParent();
+    if (m_selectorFilter.parentStackIsConsistent(parent))
+        m_selectorFilter.popParent();
     if (m_scopeResolver)
         m_scopeResolver->pop(parent);
 }
@@ -843,12 +844,12 @@ void StyleResolver::collectMatchingRulesForList(const Vector<RuleData>* rules, i
 
     // In some cases we may end up looking up style for random elements in the middle of a recursive tree resolve.
     // Ancestor identifier filter won't be up-to-date in that case and we can't use the fast path.
-    bool canUseFastReject = m_checker.parentStackIsConsistent(m_parentNode);
+    bool canUseFastReject = m_selectorFilter.parentStackIsConsistent(m_parentNode);
 
     unsigned size = rules->size();
     for (unsigned i = 0; i < size; ++i) {
         const RuleData& ruleData = rules->at(i);
-        if (canUseFastReject && m_checker.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes()))
+        if (canUseFastReject && m_selectorFilter.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes()))
             continue;
 
         StyleRule* rule = ruleData.rule();
@@ -2048,7 +2049,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     // Call setStylesForPaginationMode() if a pagination mode is set for any non-root elements. If these
     // styles are specified on a root element, then they will be incorporated in
     // StyleResolver::styleForDocument().
-    if ((style->overflowY() == OPAGEDX || style->overflowY() == OPAGEDY) && !(e->hasTagName(htmlTag) || e->hasTagName(bodyTag)))
+    if ((style->overflowY() == OPAGEDX || style->overflowY() == OPAGEDY) && !(e && (e->hasTagName(htmlTag) || e->hasTagName(bodyTag))))
         setStylesForPaginationMode(WebCore::paginationModeForRenderStyle(style), style);
 
     // Table rows, sections and the table itself will support overflow:hidden and will ignore scroll/auto.
@@ -2151,23 +2152,19 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
     return false;
 }
 
-static void checkForOrientationChange(RenderStyle* style, const RenderStyle* parentStyle)
+static void checkForOrientationChange(RenderStyle* style)
 {
-    FontOrientation childFontOrientation;
-    NonCJKGlyphOrientation childGlyphOrientation;
-    getFontAndGlyphOrientation(style, childFontOrientation, childGlyphOrientation);
+    FontOrientation fontOrientation;
+    NonCJKGlyphOrientation glyphOrientation;
+    getFontAndGlyphOrientation(style, fontOrientation, glyphOrientation);
 
-    FontOrientation parentFontOrientation;
-    NonCJKGlyphOrientation parentGlyphOrientation;
-    getFontAndGlyphOrientation(parentStyle, parentFontOrientation, parentGlyphOrientation);
-
-    if (childFontOrientation == parentFontOrientation && childGlyphOrientation == parentGlyphOrientation)
+    const FontDescription& fontDescription = style->fontDescription();
+    if (fontDescription.orientation() == fontOrientation && fontDescription.nonCJKGlyphOrientation() == glyphOrientation)
         return;
 
-    const FontDescription& childFont = style->fontDescription();
-    FontDescription newFontDescription(childFont);
-    newFontDescription.setNonCJKGlyphOrientation(childGlyphOrientation);
-    newFontDescription.setOrientation(childFontOrientation);
+    FontDescription newFontDescription(fontDescription);
+    newFontDescription.setNonCJKGlyphOrientation(glyphOrientation);
+    newFontDescription.setOrientation(fontOrientation);
     style->setFontDescription(newFontDescription);
 }
 
@@ -2179,7 +2176,7 @@ void StyleResolver::updateFont()
     checkForTextSizeAdjust();
     checkForGenericFamilyChange(style(), m_parentStyle);
     checkForZoomChange(style(), m_parentStyle);
-    checkForOrientationChange(style(), m_parentStyle);
+    checkForOrientationChange(style());
     m_style->font().update(m_fontSelector);
     m_fontDirty = false;
 }

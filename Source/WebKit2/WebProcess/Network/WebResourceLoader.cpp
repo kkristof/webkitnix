@@ -35,7 +35,9 @@
 #include "NetworkResourceLoaderMessages.h"
 #include "PlatformCertificateInfo.h"
 #include "WebCoreArgumentCoders.h"
+#include "WebErrors.h"
 #include "WebProcess.h"
+#include <WebCore/AuthenticationChallenge.h>
 #include <WebCore/ResourceLoader.h>
 
 using namespace WebCore;
@@ -169,6 +171,12 @@ void WebResourceLoader::receivedCancellation(const AuthenticationChallenge& chal
     send(Messages::NetworkResourceLoader::ReceivedAuthenticationCancellation(challenge));
 
     m_currentAuthenticationChallenge.clear();
+}
+
+void WebResourceLoader::networkProcessCrashed()
+{
+    ASSERT(m_coreLoader);
+    m_coreLoader->didFail(internalError(m_coreLoader->url()));
 }
 
 } // namespace WebKit

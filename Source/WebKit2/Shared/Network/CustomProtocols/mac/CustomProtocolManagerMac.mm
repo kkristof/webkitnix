@@ -28,11 +28,15 @@
 
 #if ENABLE(CUSTOM_PROTOCOLS)
 
+#import "ChildProcess.h"
+#import "CustomProtocolManagerMessages.h"
 #import "CustomProtocolManagerProxyMessages.h"
 #import "DataReference.h"
 #import "WebCoreArgumentCoders.h"
-#import "WebProcess.h"
 #import <WebCore/KURL.h>
+#import <WebCore/ResourceError.h>
+#import <WebCore/ResourceRequest.h>
+#import <WebCore/ResourceResponse.h>
 
 using namespace WebKit;
 
@@ -81,12 +85,12 @@ static uint64_t generateCustomProtocolID()
 
 - (void)startLoading
 {
-    CustomProtocolManager::shared().connection()->send(Messages::CustomProtocolManagerProxy::StartLoading(self.customProtocolID, [self request]), 0);
+    CustomProtocolManager::shared().childProcess()->send(Messages::CustomProtocolManagerProxy::StartLoading(self.customProtocolID, [self request]), 0);
 }
 
 - (void)stopLoading
 {
-    CustomProtocolManager::shared().connection()->send(Messages::CustomProtocolManagerProxy::StopLoading(self.customProtocolID), 0);
+    CustomProtocolManager::shared().childProcess()->send(Messages::CustomProtocolManagerProxy::StopLoading(self.customProtocolID), 0);
     CustomProtocolManager::shared().removeCustomProtocol(self);
 }
 
@@ -100,11 +104,22 @@ CustomProtocolManager& CustomProtocolManager::shared()
     return customProtocolManager;
 }
 
-void CustomProtocolManager::initialize(PassRefPtr<CoreIPC::Connection> connection)
+CustomProtocolManager::CustomProtocolManager()
+    : m_childProcess(0)
 {
-    ASSERT(connection);
-    ASSERT(!CustomProtocolManager::shared().m_connection);
-    CustomProtocolManager::shared().m_connection = connection;
+}
+
+void CustomProtocolManager::initialize(ChildProcess* childProcess)
+{
+    ASSERT(!m_childProcess);
+    ASSERT(childProcess);
+
+    m_childProcess = childProcess;
+    m_childProcess->addMessageReceiver(Messages::CustomProtocolManager::messageReceiverName(), this);
+}
+
+void CustomProtocolManager::connectionEstablished()
+{
     [NSURLProtocol registerClass:[WKCustomProtocol class]];
 }
 

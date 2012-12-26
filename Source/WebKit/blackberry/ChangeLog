@@ -1,3 +1,94 @@
+2012-12-25  Charles Wei  <charles.wei@torchmobile.com.cn>
+
+        [BlackBerry] Need to initialize the onLine in the global
+        https://bugs.webkit.org/show_bug.cgi?id=105749
+
+        Reviewed by George Staikos.
+
+        The NetworkStatus is initialized to online in the constructor by default,
+        we need to update it correctly with the network status at startup.
+
+        * Api/BlackBerryGlobal.cpp:
+        (BlackBerry::WebKit::globalInitialize):
+
+2012-12-24  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Fix various RenderQueue bugs introduced by r138024.
+        https://bugs.webkit.org/show_bug.cgi?id=105717
+        RIM PR 269029
+
+        Reviewed by George Staikos.
+
+        Scroll/zoom jobs were pretty solid, but I managed to
+        leave some bugs in the region handling of RenderQueue's
+        renderRegularRenderJobs() function, causing us to skip
+        a desired blit or render operation in cases where the
+        region and tile tracking did not match up.
+
+        This commit fixes these errors.
+
+        * WebKitSupport/RenderQueue.cpp:
+        (BlackBerry::WebKit::RenderQueue::renderRegularRenderJobs):
+
+2012-12-24  Charles Wei  <charles.wei@torchmobile.com.cn>
+
+        [BlackBerry] Close page popup when a page becomes invisible.
+        https://bugs.webkit.org/show_bug.cgi?id=105704
+
+        Reviewed by George Staikos.
+
+        Reviewed internally by Jakob Petsovits.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setVisible):
+
+2012-12-23  Mary Wu  <mary.wu@torchmobile.com.cn>
+
+        [BlackBerry] give url when createWindow
+        https://bugs.webkit.org/show_bug.cgi?id=105702
+        RIM bug# 257329
+
+        Reviewed by George Staikos.
+
+        This is to revert previous commit 575407238c35f1a0fa7ff7dd5dbbf6cc3ece1107
+        for integration issue of cascade and air, as old app side still use the url
+        to invoke. It would unrevert after resolving the integration issue.
+
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::dispatchCreatePage):
+
+2012-12-23  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Specify tile usage enum for backingstore tiles.
+        https://bugs.webkit.org/show_bug.cgi?id=105688
+        RIM PR 262120
+
+        Reviewed by George Staikos.
+
+        This enables us to have separate tile sizes for
+        backingstore / root layer purposes and generic layers.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::tileSize):
+
+2012-12-21  Max Feil  <mfeil@rim.com>
+
+        [BlackBerry] Fullscreen video fixed position container horizontal position is wrong
+        https://bugs.webkit.org/show_bug.cgi?id=105488
+
+        Reviewed by George Staikos.
+
+        The fix for https://bugs.webkit.org/show_bug.cgi?id=105333 has
+        broken fullscreen video, which was compensating by doing its
+        own positioning in x. My patch fixes things by making vertical
+        and horizontal handling symmetrical.
+        NOTE: This function was not upstreamed before, so you can't
+        actually see my diff. See the bug.
+
+        * Api/WebPage.cpp:
+        (WebKit):
+        (BlackBerry::WebKit::WebPagePrivate::adjustFullScreenElementDimensionsIfNeeded):
+
 2012-12-18  Nima Ghanavatian  <nghanavatian@rim.com>
 
         [BlackBerry] Calculate correct word offsets for form elements.
@@ -1142,26 +1233,6 @@
         (WebCore::FrameLoaderClientBlackBerry::dispatchDidFailProvisionalLoad):
         (WebCore::FrameLoaderClientBlackBerry::dispatchWillSendRequest):
         (WebCore::FrameLoaderClientBlackBerry::decidePolicyForExternalLoad):
-
-2012-12-07  Mary Wu  <mary.wu@torchmobile.com.cn>
-
-        [BlackBerry] new target window would cause the url being loaded twice
-        https://bugs.webkit.org/show_bug.cgi?id=104086
-
-        Reviewed by Yong Li.
-
-        When webkit need to open window for a new target like "_blank", it would
-        load the url subsequently after createWindow. But the chrome browser would
-        load the url again when it get the OpenWindowEvent from native, which
-        causes the url being loaded twice. We should make sure that createWindow() be
-        used to create a new window only, not loading url, so we pass empty url
-        as parameter.
-
-        RIM PR# 257329
-        Internally reviewed by Charles Wei.
-
-        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
-        (WebCore::FrameLoaderClientBlackBerry::dispatchCreatePage):
 
 2012-12-05  Otto Derek Cheung  <otcheung@rim.com>
 

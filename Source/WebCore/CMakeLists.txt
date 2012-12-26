@@ -1078,6 +1078,7 @@ set(WebCore_SOURCES
     css/RuleSet.h
     css/RuleSet.cpp
     css/SelectorChecker.cpp
+    css/SelectorFilter.cpp
     css/ShadowValue.cpp
     css/StyleBuilder.cpp
     css/StyleInvalidationAnalysis.cpp
@@ -2029,6 +2030,7 @@ set(WebCore_SOURCES
     platform/network/HTTPValidation.cpp
     platform/network/MIMEHeader.cpp
     platform/network/NetworkStateNotifier.cpp
+    platform/network/NetworkStorageSessionStub.cpp
     platform/network/ParsedContentType.cpp
     platform/network/ProtectionSpace.cpp
     platform/network/ProxyServer.cpp

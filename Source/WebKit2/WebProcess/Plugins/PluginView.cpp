@@ -736,6 +736,16 @@ void PluginView::setParent(ScrollView* scrollView)
         initializePlugin();
 }
 
+unsigned PluginView::countFindMatches(const String& target, WebCore::FindOptions options, unsigned maxMatchCount)
+{
+    return m_plugin->countFindMatches(target, options, maxMatchCount);
+}
+
+bool PluginView::findString(const String& target, WebCore::FindOptions options, unsigned maxMatchCount)
+{
+    return m_plugin->findString(target, options, maxMatchCount);
+}
+
 PassOwnPtr<WebEvent> PluginView::createWebEvent(MouseEvent* event) const
 {
     WebEvent::Type type = WebEvent::NoType;
@@ -854,6 +864,14 @@ bool PluginView::shouldAllowScripting()
         return false;
 
     return m_plugin->shouldAllowScripting();
+}
+
+bool PluginView::shouldAllowNavigationFromDrags() const
+{
+    if (!m_isInitialized || !m_plugin)
+        return false;
+
+    return m_plugin->shouldAllowNavigationFromDrags();
 }
 
 void PluginView::notifyWidget(WidgetNotification notification)

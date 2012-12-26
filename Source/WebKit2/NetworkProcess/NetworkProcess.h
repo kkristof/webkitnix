@@ -28,7 +28,6 @@
 
 #if ENABLE(NETWORK_PROCESS)
 
-#include "AuthenticationManager.h"
 #include "CacheModel.h"
 #include "ChildProcess.h"
 #include "DownloadManager.h"
@@ -42,10 +41,13 @@ namespace WebCore {
 
 namespace WebKit {
 
+class AuthenticationManager;
 class NetworkConnectionToWebProcess;
+class PlatformCertificateInfo;
+class WebCookieManager;
 struct NetworkProcessCreationParameters;
 
-class NetworkProcess : ChildProcess, DownloadManager::Client {
+class NetworkProcess : public ChildProcess, DownloadManager::Client {
     WTF_MAKE_NONCOPYABLE(NetworkProcess);
 public:
     static NetworkProcess& shared();
@@ -66,6 +68,8 @@ private:
 
     // ChildProcess
     virtual bool shouldTerminate() OVERRIDE;
+    virtual CoreIPC::Connection* connection() const OVERRIDE { return m_uiConnection.get(); }
+    virtual uint64_t destinationID() const OVERRIDE { return 0; }
 
     // CoreIPC::Connection::Client
     virtual void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&) OVERRIDE;
@@ -101,8 +105,6 @@ private:
     // The connection to the UI process.
     RefPtr<CoreIPC::Connection> m_uiConnection;
 
-    CoreIPC::MessageReceiverMap m_messageReceiverMap;
-
     // Connections to WebProcesses.
     Vector<RefPtr<NetworkConnectionToWebProcess> > m_webProcessConnections;
 
@@ -112,7 +114,8 @@ private:
     bool m_hasSetCacheModel;
     CacheModel m_cacheModel;
 
-    AuthenticationManager m_downloadsAuthenticationManager;
+    AuthenticationManager* m_downloadsAuthenticationManager;
+    WebCookieManager* m_cookieManager;
 };
 
 } // namespace WebKit

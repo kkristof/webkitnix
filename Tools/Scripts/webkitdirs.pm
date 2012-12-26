@@ -223,7 +223,7 @@ sub determineBaseProductDir
 
         undef $baseProductDir unless $baseProductDir =~ /^\//;
     } elsif (isChromium()) {
-        if (isLinux() || isChromiumAndroid() || isChromiumMacMake()) {
+        if (isLinux() || isChromiumAndroid() || isChromiumMacMake() || isChromiumNinja()) {
             $baseProductDir = "$sourceDir/out";
         } elsif (isDarwin()) {
             $baseProductDir = "$sourceDir/Source/WebKit/chromium/xcodebuild";
@@ -725,7 +725,7 @@ sub builtDylibPathForName
     }
     if (isQt()) {
         my $isSearchingForWebCore = $libraryName =~ "WebCore";
-        if (isDarwin() || isWindows()) {
+        if (isDarwin()) {
             $libraryName = "QtWebKitWidgets";
         } else {
             $libraryName = "Qt5WebKitWidgets";
@@ -1216,7 +1216,11 @@ sub determineIsChromiumNinja()
 {
     return if defined($isChromiumNinja);
 
-    my $config = configuration();
+    # This function can be called from baseProductDir(), which in turn is
+    # called by configuration(). So calling configuration() here leads to
+    # infinite recursion. Gyp writes both Debug and Release at the same time
+    # by default, so just check the timestamp on the Release build.ninja file.
+    my $config = "Release";
 
     my $hasUpToDateNinjabuild = 0;
     if (-e "out/$config/build.ninja") {

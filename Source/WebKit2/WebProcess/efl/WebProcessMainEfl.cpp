@@ -32,6 +32,8 @@
 #include "WKBase.h"
 #include <Ecore.h>
 #include <Efreet.h>
+#include <WebCore/AuthenticationChallenge.h>
+#include <WebCore/NetworkingContext.h>
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/RunLoop.h>
 #include <WebKit2/WebProcess.h>
@@ -110,8 +112,6 @@ WK_EXPORT int WebProcessMainEfl(int argc, char* argv[])
     SoupCache* soupCache = soup_cache_new(soupCacheDirectory.utf8().data(), SOUP_CACHE_SINGLE_USER);
     soup_session_add_feature(session, SOUP_SESSION_FEATURE(soupCache));
     soup_cache_load(soupCache);
-
-    WebCore::ResourceHandle::setIgnoreSSLErrors(true);
 
     int socket = atoi(argv[1]);
     WebProcess::shared().initialize(socket, RunLoop::main());

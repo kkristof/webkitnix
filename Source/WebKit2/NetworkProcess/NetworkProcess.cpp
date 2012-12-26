@@ -30,12 +30,14 @@
 
 #include "ArgumentCoders.h"
 #include "Attachment.h"
+#include "AuthenticationManager.h"
 #include "CustomProtocolManager.h"
 #include "Logging.h"
 #include "NetworkConnectionToWebProcess.h"
 #include "NetworkProcessCreationParameters.h"
 #include "NetworkProcessProxyMessages.h"
 #include "RemoteNetworkingContext.h"
+#include "WebCookieManager.h"
 #include <WebCore/InitializeLogging.h>
 #include <WebCore/ResourceRequest.h>
 #include <WebCore/RunLoop.h>
@@ -54,8 +56,12 @@ NetworkProcess& NetworkProcess::shared()
 NetworkProcess::NetworkProcess()
     : m_hasSetCacheModel(false)
     , m_cacheModel(CacheModelDocumentViewer)
-    , m_downloadsAuthenticationManager(m_messageReceiverMap)
+    , m_downloadsAuthenticationManager(new AuthenticationManager(this))
+    , m_cookieManager(new WebCookieManager(this))
 {
+#if ENABLE(CUSTOM_PROTOCOLS)
+    CustomProtocolManager::shared().initialize(this);
+#endif
 }
 
 NetworkProcess::~NetworkProcess()
@@ -75,8 +81,6 @@ void NetworkProcess::initialize(CoreIPC::Connection::Identifier serverIdentifier
     m_uiConnection = CoreIPC::Connection::createClientConnection(serverIdentifier, this, runLoop);
     m_uiConnection->setDidCloseOnConnectionWorkQueueCallback(didCloseOnConnectionWorkQueue);
     m_uiConnection->open();
-
-    m_downloadsAuthenticationManager.setConnection(m_uiConnection.get());
 }
 
 void NetworkProcess::removeNetworkConnectionToWebProcess(NetworkConnectionToWebProcess* connection)
@@ -97,13 +101,6 @@ void NetworkProcess::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC:
 {
     if (m_messageReceiverMap.dispatchMessage(connection, messageID, decoder))
         return;
-
-#if ENABLE(CUSTOM_PROTOCOLS)
-    if (messageID.is<CoreIPC::MessageClassCustomProtocolManager>()) {
-        CustomProtocolManager::shared().didReceiveMessage(connection, messageID, decoder);
-        return;
-    }
-#endif
 
     didReceiveNetworkProcessMessage(connection, messageID, decoder);
 }
@@ -141,7 +138,7 @@ CoreIPC::Connection* NetworkProcess::downloadProxyConnection()
 
 AuthenticationManager& NetworkProcess::downloadsAuthenticationManager()
 {
-    return m_downloadsAuthenticationManager;
+    return *m_downloadsAuthenticationManager;
 }
 
 void NetworkProcess::initializeNetworkProcess(const NetworkProcessCreationParameters& parameters)
@@ -163,7 +160,7 @@ void NetworkProcess::initializeNetworkProcess(const NetworkProcessCreationParame
         RemoteNetworkingContext::ensurePrivateBrowsingSession();
 
 #if ENABLE(CUSTOM_PROTOCOLS)
-    CustomProtocolManager::shared().initialize(m_uiConnection);
+    CustomProtocolManager::shared().connectionEstablished();
     for (size_t i = 0; i < parameters.urlSchemesRegisteredForCustomProtocols.size(); ++i)
         CustomProtocolManager::shared().registerScheme(parameters.urlSchemesRegisteredForCustomProtocols[i]);
 #endif
