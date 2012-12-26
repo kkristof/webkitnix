@@ -518,6 +518,10 @@ fast/dom/HTMLTemplateElement/ownerDocument.html [ Failure ]
 fast/dom/HTMLTemplateElement/ownerDocumentXHTML.xhtml [ Failure ]
 html5lib/run-template.html [ Failure ]
 
+http/tests/xmlhttprequest/access-control-preflight-async-header-denied.html [ Failure Pass ]
+http/tests/xmlhttprequest/cross-site-denied-response.html [ Failure Pass ]
+http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
+
 #############################################################
 # DISABLED APIS
 #############################################################
