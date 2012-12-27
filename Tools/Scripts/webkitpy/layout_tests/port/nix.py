@@ -41,6 +41,14 @@ class NixPort(Port, PulseAudioSanitizer):
     def _wk2_port_name(self):
         return 'nix'
 
+    @classmethod
+    def determine_full_port_name(cls, host, options, port_name):
+        """Determine the port name based on host and options values."""
+        # Currently the only "port" instance supported by Nix is "nix". Reimplementing
+        # this method avoids changing port name to nix-wk2, which is the default
+        # behavior in base.py.
+        return port_name
+
     def __init__(self, *args, **kwargs):
         super(NixPort, self).__init__(*args, **kwargs)
 
