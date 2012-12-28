@@ -81,6 +81,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
 {
     m_view = NIXViewCreate(context, pageGroup);
     m_window = 0;
+    m_displayUpdateScheduled = false;
 
     WKSize size = WKSizeMake(800, 600);
 
