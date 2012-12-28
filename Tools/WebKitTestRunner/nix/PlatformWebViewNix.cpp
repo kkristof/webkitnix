@@ -175,7 +175,7 @@ WKRetainPtr<WKImageRef> PlatformWebView::windowSnapshotImage()
 
     WKImageRef resultImage =  WKImageCreateFromCairoSurface(surface, options);
     cairo_surface_destroy(surface);
-    return resultImage;
+    return adoptWK(resultImage);
 }
 
 } // namespace WTR
