@@ -51,7 +51,6 @@ canvas/philip/tests/type.prototype.html [ Skip ]
 fast/xsl/sort-locale.xml [ Skip ]
 
 fast/events/context-nodrag.html [ Failure ]
-http/tests/canvas/webgl/origin-clean-conformance.html [ Failure ]
 
 scrollbars/scroll-rtl-or-bt-layer.html [ Skip ]
 userscripts/user-style-all-frames.html [ Skip ]
@@ -288,12 +287,6 @@ fast/preloader/script.html [ Skip ]
 fast/profiler/dead-time.html [ Skip ]
 fast/profiler/stop-profiling-after-setTimeout.html [ Skip ]
 fast/reflections [ Skip ]
-
-# tables
-fast/table/height-percent-test-vertical.html [ Failure ]
-# Missing PNG expectation.
-fast/table/wide-colspan.html [ Failure Missing ]
-fast/table/wide-column.html [ Failure Missing ]
 
 fast/viewport/viewport-128.html [ Skip ]
 fast/workers/shared-worker-load-error.html [ Skip ]
@@ -592,9 +585,6 @@ compositing/geometry/fixed-position-composited-switch.html [ Failure ]
 compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure ]
 compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
 
-# Empty cursor variables.
-fast/css/cursor-parsing-image-set.html [ Failure ]
-
 # Computed style failures.
 fast/css/style-scoped/style-scoped-nested.html [ Failure ]
 fast/css/style-scoped/style-scoped-with-important-rule.html [ Failure ]
@@ -670,9 +660,6 @@ fast/dom/MutationObserver/end-of-task-delivery.html [ Failure ]
 
 # Requires MUTATION_OBSERVERS and FILE_SYSTEM
 fast/dom/MutationObserver/filesystem-callback-delivery.html [ Failure ]
-
-# Wrong events logged.
-fast/events/mouse-click-events.html [ Failure ]
 
 # CSS Sticky tests. Sticky doesn't seem to work.
 fast/css/sticky/inflow-sticky.html [ ImageOnlyFailure ]
@@ -798,7 +785,6 @@ compositing/layer-creation/spanOverlapsCanvas.html [ Missing Failure ]
 # Tests missing results - PNG. Some of them have a text expectation.
 fast/layers/scroll-with-transform-layer.html [ Missing Pass ]
 fast/layers/scroll-with-transform-composited-layer.html [ Missing Pass ]
-fast/repaint/body-background-image.html [ Missing ]
 fast/dom/css-insert-import-rule.html [ Missing Pass ]
 fast/dom/importNodeXML.xhtml [ Missing Pass ]
 fast/dom/scroll-reveal-left-overflow.html [ Missing Pass ]
@@ -807,14 +793,6 @@ fast/dom/isindex-001.html [ Missing Pass ]
 fast/dom/attr_dead_doc.html [ Missing Pass ]
 fast/dom/comment-not-documentElement.html [ Missing Pass ]
 fast/dom/css-mediarule-deleteRule-update.html [ Missing Pass ]
-fast/dom/css-cached-import-rule.html [ Missing Pass ]
-fast/dom/css-mediarule-insertRule-update.html [ Missing Pass ]
-fast/dom/clone-contents-0-end-offset.html [ Missing Pass ]
-fast/dom/clone-node-dynamic-style.html [ Missing Pass ]
-fast/dom/gc-10.html [ Missing Pass ]
-fast/dom/scroll-reveal-top-overflow.html [ Missing Pass ]
-fast/dom/delete-contents.html [ Missing Pass ]
-fast/dom/createDocumentType.html [ Missing Pass ]
 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Missing Pass ]
 fast/dom/focus-contenteditable.html [ Missing Pass ]
 fast/dom/anchor-text.html [ Missing Pass ]
@@ -884,7 +862,6 @@ compositing/geometry/fixed-position-iframe-composited-page-scale.html [ Missing 
 compositing/geometry/fixed-position-transform-composited-page-scale.html [ Missing Pass ]
 compositing/geometry/fixed-position-composited-page-scale-down.html [ Missing Pass ]
 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ Missing Pass ]
-fast/text/zero-font-size.html [ Missing ]
 
 # Failing due to missing setUseDeferredFrameLoading
 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Missing Failure ]
@@ -1154,8 +1131,6 @@ fast/dom/HTMLStyleElement/insert-parser-generated.html [ Missing ]
 fast/dom/HTMLTableElement/colSpan.html [ Missing ]
 fast/dom/HTMLTableElement/createCaption.html [ Missing ]
 fast/dom/HTMLTextAreaElement/reset-textarea.html [ Missing ]
-fast/events/touch/gesture/context-menu-on-long-tap.html [ Missing ]
-fast/events/touch/gesture/long-press-on-draggable-element-triggers-drag.html [ Missing ]
 
 fast/encoding/invalid-UTF-8.html [ Skip ]
 fast/encoding/utf-16-big-endian.html [ Skip ]
@@ -1540,10 +1515,6 @@ fast/repaint [ Skip ]
 
 # Many tests depend on shadowRoot.
 fast/css/style-scoped [ Skip ]
-
-# added from wk2 webkit.org/b/101773
-# Flaky pixel tests due to caching issues.
-fast/repaint/body-background-image.html [ ImageOnlyFailure Pass ]
 
 fast/replaced [ Skip ]
 fast/ruby [ Skip ]
