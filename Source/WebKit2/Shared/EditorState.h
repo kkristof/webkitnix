@@ -73,7 +73,7 @@ struct EditorState {
     WTF::String surroundingText;
 #endif
 
-#if PLATFORM(QT) || PLATFORM(GTK)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(NIX)
     WebCore::IntRect cursorRect;
 #endif
 
