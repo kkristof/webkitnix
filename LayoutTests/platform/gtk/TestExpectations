@@ -940,10 +940,10 @@ webkit.org/b/83174 inspector [ Skip ]
 webkit.org/b/83174 http/tests/inspector [ Skip ]
 
 webkit.org/b/82886 inspector/styles/override-screen-size.html [ Failure ]
-webkit.org/b/43332 inspector/debugger/dom-breakpoints.html [ Timeout Failure ]
-webkit.org/b/43332 inspector/debugger/event-listener-breakpoints.html [ Failure ]
-webkit.org/b/43332 inspector/debugger/step-through-event-listeners.html [ Failure ]
-webkit.org/b/43332 inspector/debugger/xhr-breakpoints.html [ Failure Timeout ]
+webkit.org/b/88780 inspector/debugger/dom-breakpoints.html [ Timeout Failure ]
+webkit.org/b/88780 inspector/debugger/event-listener-breakpoints.html [ Failure ]
+webkit.org/b/88780 inspector/debugger/step-through-event-listeners.html [ Failure ]
+webkit.org/b/89056 inspector/debugger/xhr-breakpoints.html [ Failure Timeout ]
 webkit.org/b/40300 inspector/debugger/live-edit.html [ Timeout Failure ]
 webkit.org/b/40300 inspector/debugger/live-edit-breakpoints.html [ Failure ]
 webkit.org/b/89652 inspector/debugger/debugger-compile-and-run.html [ Failure ]
@@ -981,6 +981,7 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-fields.html 
 webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Failure ]
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html [ Failure ]
 webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html [ Failure ]
 
 webkit.org/b/37613 webkit.org/b/20011 printing [ Skip ]
 webkit.org/b/37613 editing/execCommand/print.html [ Skip ]
@@ -1389,6 +1390,9 @@ webkit.org/b/105443 accessibility/aria-controls-with-tabs.html [ Failure ]
 webkit.org/b/105522 transitions/transitions-parsing.html [ Failure ]
 
 webkit.org/b/98146 accessibility/svg-bounds.html [ Failure ]
+
+# Leaking state into the next test.
+webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

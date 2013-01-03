@@ -54990,6 +54990,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\dom\TemplateContentDocumentFragment.h"
+				>
+			</File>
+			<File
 				RelativePath="..\dom\Text.cpp"
 				>
 				<FileConfiguration
@@ -76473,6 +76477,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\inspector\front-end\DefaultScriptMapping.js"
+					>
+				</File>
+				<File
 					RelativePath="..\inspector\front-end\DefaultTextEditor.js"
 					>
 				</File>
@@ -76721,6 +76729,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\inspector\front-end\JSHeapSnapshot.js"
+					>
+				</File>
+				<File
 					RelativePath="..\inspector\front-end\JavaScriptFormatter.js"
 					>
 				</File>
@@ -76742,6 +76754,10 @@
 				</File>
 				<File
 					RelativePath="..\inspector\front-end\Linkifier.js"
+					>
+				</File>
+				<File
+					RelativePath="..\inspector\front-end\LiveEditSupport.js"
 					>
 				</File>
 				<File
@@ -77098,6 +77114,10 @@
 				</File>
 				<File
 					RelativePath="..\inspector\front-end\SourceJavaScriptTokenizer.js"
+					>
+				</File>
+				<File
+					RelativePath="..\inspector\front-end\SourceMap.js"
 					>
 				</File>
 				<File

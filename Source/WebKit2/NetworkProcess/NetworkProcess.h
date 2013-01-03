@@ -43,8 +43,8 @@ namespace WebKit {
 
 class AuthenticationManager;
 class NetworkConnectionToWebProcess;
+class NetworkProcessSupplement;
 class PlatformCertificateInfo;
-class WebCookieManager;
 struct NetworkProcessCreationParameters;
 
 class NetworkProcess : public ChildProcess, DownloadManager::Client {
@@ -52,6 +52,19 @@ class NetworkProcess : public ChildProcess, DownloadManager::Client {
 public:
     static NetworkProcess& shared();
 
+    template <typename T>
+    T* supplement()
+    {
+        return static_cast<T*>(m_supplements.get(T::supplementName()));
+    }
+
+    template <typename T>
+    void addSupplement()
+    {
+        m_supplements.add(T::supplementName(), new T(this));
+    }
+
+    void initializeSandbox(const String& clientIdentifier);
     void initialize(CoreIPC::Connection::Identifier, WebCore::RunLoop*);
 
     void removeNetworkConnectionToWebProcess(NetworkConnectionToWebProcess*);
@@ -92,10 +105,6 @@ private:
     void downloadRequest(uint64_t downloadID, const WebCore::ResourceRequest&);
     void cancelDownload(uint64_t downloadID);
     void setCacheModel(uint32_t);
-#if ENABLE(CUSTOM_PROTOCOLS)
-    void registerSchemeForCustomProtocol(const String&);
-    void unregisterSchemeForCustomProtocol(const String&);
-#endif
 
     void allowSpecificHTTPSCertificateForHost(const PlatformCertificateInfo&, const String& host);
 
@@ -114,8 +123,8 @@ private:
     bool m_hasSetCacheModel;
     CacheModel m_cacheModel;
 
-    AuthenticationManager* m_downloadsAuthenticationManager;
-    WebCookieManager* m_cookieManager;
+    typedef HashMap<AtomicString, NetworkProcessSupplement*> NetworkProcessSupplementMap;
+    NetworkProcessSupplementMap m_supplements;
 };
 
 } // namespace WebKit

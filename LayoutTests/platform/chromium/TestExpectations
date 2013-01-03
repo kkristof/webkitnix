@@ -92,6 +92,7 @@ webkit.org/b/102464 [ Debug ] platform/chromium/virtual/deferred/fast/images/web
 webkit.org/b/103744 svg/dom/viewspec-parser-7.html [ Pass Timeout ]
 webkit.org/b/103744 svg/dom/viewspec-parser-6.html [ Pass Timeout ]
 crbug.com/24182 [ Debug ] platform/chromium/inspector/styles/device-metrics-fit-window.html [ Pass Slow ]
+webkit.org/b/105785 [ Release ] http/tests/inspector/indexeddb [ Pass Slow ]
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Pass Slow ]
@@ -1222,6 +1223,10 @@ crbug.com/62433 [ Win ] fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 # -----------------------------------------------------------------
 # SVG TESTS
 # -----------------------------------------------------------------
+
+# Reporting translation of -0.00.
+crbug.com/167819 [ XP ] svg/overflow/overflow-on-inner-svg-element.svg [ Failure ]
+crbug.com/167822 [ XP ] svg/dom/css-transforms.xhtml [ Failure ]
 
 # New in WebKit r52559
 crbug.com/18116 svg/custom/global-constructors.html [ Failure ]
@@ -4040,6 +4045,7 @@ webkit.org/b/101255 [ Mac Android ] fast/repaint/block-selection-gap-in-table-ce
 
 # Needs baselines
 Bug(thakis) [ Android Release ] fast/forms/zoomed-controls.html [ ImageOnlyFailure ]
+Bug(leviw) [ Android Win Mac Linux ] platform/chromium/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 
 # Flaky on win7 since at least r162410
 webkit.org/b/99886 [ Win7 ] fast/dom/shadow/input-with-validation.html [ ImageOnlyFailure Pass ]
@@ -4104,6 +4110,7 @@ webkit.org/b/100475 compositing/tiling/tile-cache-zoomed.html [ Failure ]
 webkit.org/b/100475 platform/chromium/virtual/softwarecompositing/tiling/tile-cache-zoomed.html [ Failure ]
 
 webkit.org/b/100647 [ Win ] webaudio/audiobuffersource-loop-points.html [ Failure ]
+webkit.org/b/105937 [ XP ] webaudio/automatic-pull-node.html [ Pass Slow ]
 
 webkit.org/b/100806 [ Win ] fast/css/font-face-implicit-local-font.html [ Failure ]
 webkit.org/b/100806 [ Win ] fast/css/font-face-unicode-range.html [ Failure ]
@@ -4125,7 +4132,7 @@ webkit.org/b/104993 [ XP ] fast/forms/time-multiple-fields/time-multiple-fields-
 
 webkit.org/b/101539 [ Linux Win ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
-webkit.org/b/101618 http/tests/inspector/indexeddb/database-data.html [ Pass Crash ]
+webkit.org/b/101618 http/tests/inspector/indexeddb/database-data.html [ Pass Crash Slow ]
 
 webkit.org/b/90022 fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
 webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-resize-reset-pixelRatio.html [ WontFix ]
@@ -4230,6 +4237,10 @@ webkit.org/b/104548 [ Linux ] fast/text/hyphenate-limit-lines.html [ Failure ]
 webkit.org/b/104548 [ Linux ] fast/text/hyphenate-locale.html [ Failure ]
 webkit.org/b/104548 [ Linux ] fast/text/hyphens.html [ Failure ]
 
+# Unprefixed transitions are disabled while they're being implemented.
+# See also http://wkb.ug/105647
+webkit.org/b/93136 transitions/transitions-parsing.html [ Failure ]
+
 # Flaky
 webkit.org/b/104283 [ Win Release ] fonts/monospace.html [ Failure Pass ]
 webkit.org/b/104283 [ Mac Debug ] fonts/monospace.html [ ImageOnlyFailure Pass ]
@@ -4257,10 +4268,6 @@ webkit.org/b/104715 [ MountainLion ] fast/block/float/floats-wrap-inside-inline-
 webkit.org/b/103667 [ Linux ] fast/ruby/position-after.html [ ImageOnlyFailure ]
 
 webkit.org/b/104834 [ MountainLion ] fast/css/nested-rounded-corners.html [ Failure Pass ]
-
-webkit.org/b/104848 [ Linux XP SnowLeopard Lion Release ] fast/frames/sandboxed-iframe-attribute-parsing.html [ Pass Failure ]
-webkit.org/b/104848 [ SnowLeopard Debug ] fast/frames/sandboxed-iframe-attribute-parsing.html [ Pass Failure ]
-webkit.org/b/104848 [ Release ] fast/frames/sandboxed-iframe-parsing-space-characters.html [ Pass Failure ]
 
 webkit.org/b/105471 [ Win ] platform/chromium/virtual/gpu/compositedscrolling/overflow/scrolling-without-painting.html
 webkit.org/b/105471 [ Win ] platform/chromium/virtual/gpu/compositedscrolling/overflow/updating-scrolling-content.html

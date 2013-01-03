@@ -144,7 +144,7 @@ void InjectedBundle::setShouldTrackVisitedLinks(bool shouldTrackVisitedLinks)
 
 void InjectedBundle::setAlwaysAcceptCookies(bool accept)
 {
-    WebProcess::shared().cookieManager().setHTTPCookieAcceptPolicy(accept ? HTTPCookieAcceptPolicyAlways : HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain);
+    WebProcess::shared().supplement<WebCookieManager>()->setHTTPCookieAcceptPolicy(accept ? HTTPCookieAcceptPolicyAlways : HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain);
 }
 
 void InjectedBundle::removeAllVisitedLinks()
@@ -201,6 +201,7 @@ void InjectedBundle::overrideBoolPreferenceForTestRunner(WebPageGroupProxy* page
     // Map the names used in LayoutTests with the names used in WebCore::Settings and WebPreferencesStore.
 #define FOR_EACH_OVERRIDE_BOOL_PREFERENCE(macro) \
     macro(WebKitAcceleratedCompositingEnabled, AcceleratedCompositingEnabled, acceleratedCompositingEnabled) \
+    macro(WebKitCanvasUsesAcceleratedDrawing, CanvasUsesAcceleratedDrawing, canvasUsesAcceleratedDrawing) \
     macro(WebKitCSSCustomFilterEnabled, CSSCustomFilterEnabled, cssCustomFilterEnabled) \
     macro(WebKitCSSGridLayoutEnabled, CSSGridLayoutEnabled, cssGridLayoutEnabled) \
     macro(WebKitJavaEnabled, JavaEnabled, javaEnabled) \
@@ -349,7 +350,7 @@ void InjectedBundle::resetOriginAccessWhitelists()
 void InjectedBundle::clearAllDatabases()
 {
 #if ENABLE(SQL_DATABASE)
-    WebProcess::shared().databaseManager().deleteAllDatabases();
+    WebProcess::shared().supplement<WebDatabaseManager>()->deleteAllDatabases();
 #endif
 }
 
@@ -358,13 +359,13 @@ void InjectedBundle::setDatabaseQuota(uint64_t quota)
 #if ENABLE(SQL_DATABASE)
     // Historically, we've used the following (somewhat non-sensical) string
     // for the databaseIdentifier of local files.
-    WebProcess::shared().databaseManager().setQuotaForOrigin("file__0", quota);
+    WebProcess::shared().supplement<WebDatabaseManager>()->setQuotaForOrigin("file__0", quota);
 #endif
 }
 
 void InjectedBundle::clearApplicationCache()
 {
-    WebProcess::shared().applicationCacheManager().deleteAllEntries();
+    WebProcess::shared().supplement<WebApplicationCacheManager>()->deleteAllEntries();
 }
 
 void InjectedBundle::clearApplicationCacheForOrigin(const String& originString)
@@ -375,7 +376,7 @@ void InjectedBundle::clearApplicationCacheForOrigin(const String& originString)
 
 void InjectedBundle::setAppCacheMaximumSize(uint64_t size)
 {
-    WebProcess::shared().applicationCacheManager().setAppCacheMaximumSize(size);
+    WebProcess::shared().supplement<WebApplicationCacheManager>()->setAppCacheMaximumSize(size);
 }
 
 uint64_t InjectedBundle::appCacheUsageForOrigin(const String& originString)
@@ -635,7 +636,7 @@ uint64_t InjectedBundle::webNotificationID(JSContextRef jsContext, JSValueRef js
     WebCore::Notification* notification = toNotification(toJS(toJS(jsContext), jsNotification));
     if (!notification)
         return 0;
-    return WebProcess::shared().notificationManager().notificationIDForTesting(notification);
+    return WebProcess::shared().supplement<WebNotificationManager>()->notificationIDForTesting(notification);
 #else
     UNUSED_PARAM(jsContext);
     UNUSED_PARAM(jsNotification);

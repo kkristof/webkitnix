@@ -1,3 +1,1102 @@
+2013-01-02  Jon Lee  <jonlee@apple.com>
+
+        Revert auto-start plugins to snapshotted plugins after a period of inactivity
+        https://bugs.webkit.org/show_bug.cgi?id=105973
+        <rdar://problem/12947865>
+
+        Reviewed by Brady Eidson.
+
+        Change the set of origin hashes maintained by the web process to a hash map that associates
+        a timestamp for each hash. If the plug-in's origin is marked for auto-start, we also check
+        it against the timestamp. If the time is later, then we consider the entry stale, and snapshot
+        the plug-in instead.
+
+        But, if the user interacts with the plug-in, we delay that expiration timestamp out, so that
+        it expires a month from first interaction. To avoid too much chatter between the web processes
+        and UI process, we only update the timestamp if a day a passed since the last change to the
+        timestamp.
+
+        * WebProcess/Plugins/PluginView.h:
+        (PluginView): Add a member variable to flag whether the user had interacted with the plug-in.
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::PluginView): Initialize the flag to false.
+        (WebKit::PluginView::handleEvent): We consider mouse down, up, wheel, context menu, and keyboard
+        events as user interaction. Do not consider mouse enter, leave, and move events as user
+        interaction. Also, remove unneeded comments.
+        (WebKit::PluginView::pluginDidReceiveUserInteraction): If this is the first time the function is
+        called, tell the web process, so that the expiration timestamp can be updated.
+
+        * WebProcess/WebProcess.messages.in: Update the messages to include the expiration time.
+        * WebProcess/WebProcess.h:
+        (WebProcess): Update the cached copy of the auto-start origins to include their expiration
+        timestamps. Update the message signatures. Add a function to update the expiration timestamp
+        for a specific origin. Rename plugInAutoStartOriginsChanged to resetPlugInAutoStartOrigins.
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess): Instead of individually adding the origins in the
+        provided vector, just call resetPlugInAutoStartOrigins().
+        (WebKit::WebProcess::isPlugInAutoStartOrigin): Check to see if the origin is in the table, and if
+        so, check the current time against the expiration time.
+        (WebKit::WebProcess::didAddPlugInAutoStartOrigin): Update the cached table.
+        (WebKit::WebProcess::resetPlugInAutoStartOrigins): Swap the tables between the provided parameter
+        and the member variable. We can safely do this because the function is called in two cases where
+        the parameter is afterwards thrown away: when a new web process is created, and when it is called
+        through an IPC message.
+        (WebKit::WebProcess::plugInDidReceiveUserInteraction): When invoked, we tell the UI process to
+        update the expiration time for the given origin if the time difference between the expiration
+        time and the current time is less than the threshold plugInAutoStartExpirationTimeUpdateThreshold.
+
+        * UIProcess/WebContext.messages.in: Add message that is called when the web process wants to
+        update the expiration timestamp for the plug-in origin.
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::plugInDidReceiveUserInteraction): Forward to the provider.
+        * UIProcess/WebContext.h:
+
+        * UIProcess/Plugins/PlugInAutoStartProvider.cpp:
+        (WebKit::expirationTimeFromNow): Returns a new time based on the current time + 1 month.
+        (WebKit::PlugInAutoStartProvider::addAutoStartOrigin): Refactor. Set the expiration time for the
+        added origin.
+        (WebKit::PlugInAutoStartProvider::autoStartOriginsCopy): Refactor.
+        (WebKit::PlugInAutoStartProvider::autoStartOriginsTableCopy): Refactor to include the expiration
+        times. Also, check the current time against the expiration time. If we are past the time, remove
+        the entry from the copy.
+        (WebKit::PlugInAutoStartProvider::setAutoStartOriginsTable): Refactor to extract and duplicate
+        the provided map of origins and expiration timestamps.
+        (WebKit::PlugInAutoStartProvider::didReceiveUserInteraction): Look for the origin hash. If found,
+        update the expiration time. Update all existing web processes with the new expiration time, and
+        tell the context client that the hashes have changed.
+        * UIProcess/Plugins/PlugInAutoStartProvider.h:
+        (PlugInAutoStartProvider): Change the m_autoStartHashes variable to a map of a hash to its domain
+        entry in the auto-start table. It is used to cross-reference the auto-start table and update
+        the origin's expiration time.
+
+        * Shared/WebProcessCreationParameters.h:
+        (WebProcessCreationParameters): Switch the creation parameter to seed the origin table to a map.
+
+2013-01-03  Alexis Menard  <alexis@webkit.org>
+
+        Querying transition-timing-function value on the computed style does not return keywords when it should.
+        https://bugs.webkit.org/show_bug.cgi?id=105442
+
+        Reviewed by Simon Fraser.
+
+        Update the code to pass the animations from one process to another as
+        the constructor of TimingFunction changed to take an extra parameter
+        holding the type of the cubic-bezier form.
+
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::encodeTimingFunction):
+        (CoreIPC::decodeTimingFunction):
+
+2013-01-03  Rik Cabanier  <cabanier@adobe.com>
+
+        Canvas blending tests fail on Mac WK2
+        https://bugs.webkit.org/show_bug.cgi?id=105943
+
+        Reviewed by Simon Fraser.
+
+        CanvasUsesAcceleratedDrawing preference was not passed to the WebProcess.
+
+        * WebProcess/InjectedBundle/InjectedBundle.cpp: Adds support for CanvasUsesAcceleratedDrawing to WK2
+        (WebKit::InjectedBundle::overrideBoolPreferenceForTestRunner):
+
+2013-01-02  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [Qt] Use WebPageProxy::postMessageToInjectedBundle when passing messages to a specific page in the builtin bundle
+        https://bugs.webkit.org/show_bug.cgi?id=105928
+
+        Reviewed by Simon Hausmann.
+
+        Simplify the code since we now can send the contents as is, instead of packaging it inside
+        an array that also contained the reference for the page. This was made possible after
+        r126311.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::setNavigatorQtObjectEnabled):
+        (QQuickWebViewExperimental::postMessage):
+        Built the messages and used WebPageProxy::postMessageToInjectedBundle() directly.
+
+        * UIProcess/qt/QtWebContext.cpp: Removed functions that now are simpler and were inlined in
+        qquickwebview.cpp.
+        * UIProcess/qt/QtWebContext.h: Ditto.
+        * WebProcess/qt/QtBuiltinBundle.cpp:
+        (WebKit::QtBuiltinBundle::initialize): Used the callback that gets messages for specific
+        pages. Also changed the way we create the bundle client: now we fill the struct with zeros,
+        and then set the fields we care about. This way if another field is added to that client,
+        this code doesn't need to be changed.
+        (WebKit::QtBuiltinBundle::didReceiveMessageToPage):
+        (WebKit::QtBuiltinBundle::handleMessageToNavigatorQtObject): Changed to not read the page
+        reference from the message, since we get it in the callback already.
+        (WebKit::QtBuiltinBundle::handleSetNavigatorQtObjectEnabled): Ditto.
+        * WebProcess/qt/QtBuiltinBundle.h:
+        (QtBuiltinBundle):
+
+2013-01-03  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Fix a crash when the QQuickWebPage is destroyed between the scene graph sync and render.
+        https://bugs.webkit.org/show_bug.cgi?id=106018
+
+        Reviewed by Simon Hausmann.
+
+        The main and rendering threads are only guaranteed to be synchronised in
+        the updatePaintNode call. In every other cases, QQuickItems cannot be
+        safely accessed from the rendering thread.
+
+        Do as the first patch version in
+        https://bugs.webkit.org/show_bug.cgi?id=104574 was doing and copy the
+        ratio value directly to fix the issue.
+
+        Also add a note about the threading issue in QQuickWebPage::updatePaintNode.
+
+        * UIProcess/API/qt/qquickwebpage.cpp:
+        (QQuickWebPage::updatePaintNode):
+        * UIProcess/qt/QtWebPageSGNode.cpp:
+        (WebKit::QtWebPageSGNode::QtWebPageSGNode):
+        * UIProcess/qt/QtWebPageSGNode.h:
+        (QtWebPageSGNode):
+        (WebKit::QtWebPageSGNode::devicePixelRatio):
+        (WebKit::QtWebPageSGNode::setDevicePixelRatio):
+
+2013-01-02  Sam Weinig  <sam@webkit.org>
+
+        Stop pretending its possible to run the WebProcess in threaded mode
+        https://bugs.webkit.org/show_bug.cgi?id=105969
+
+        Reviewed by Alexey Proskuryakov.
+
+        - Removes WebProcess::isSeparateProcess()
+        - Stop storing a RunLoop on the WebProcess and just use RunLoop::main().
+
+        * WebProcess/Network/NetworkProcessConnection.cpp:
+        (WebKit::NetworkProcessConnection::NetworkProcessConnection):
+        * WebProcess/Plugins/Netscape/NPRuntimeObjectMap.cpp:
+        (WebKit::NPRuntimeObjectMap::NPRuntimeObjectMap):
+        * WebProcess/Plugins/PluginProcessConnection.cpp:
+        (WebKit::PluginProcessConnection::PluginProcessConnection):
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::DrawingAreaImpl):
+        * WebProcess/WebPage/PageOverlay.cpp:
+        (WebKit::PageOverlay::PageOverlay):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+        (WebKit::WebPage::close):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeConnection):
+        (WebKit::WebProcess::shouldTerminate):
+        (WebKit::WebProcess::terminate):
+        (WebKit::WebProcess::didClose):
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+        * WebProcess/gtk/WebProcessMainGtk.cpp:
+        (WebKit::WebProcessMainGtk):
+        * WebProcess/mac/WebProcessInitialization.mm:
+        (WebKit::initializeWebProcess):
+        * WebProcess/qt/WebProcessMainQt.cpp:
+        (WebKit::WebProcessMainQt):
+        * WebProcess/win/WebProcessMainWin.cpp:
+        (WebKit::WebProcessMain):
+
+2013-01-02  Sam Weinig  <sam@webkit.org>
+
+        Factor out NetworkProcess initialization into its own function in preparation of adding a NetworkProcess service
+        https://bugs.webkit.org/show_bug.cgi?id=105946
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/mac/NetworkProcessInitialization.h: Added.
+        (NetworkProcessInitializationParameters):
+        * NetworkProcess/mac/NetworkProcessInitialization.mm: Added.
+        (WebKit::initializeNetworkProcess):
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::initializeSandbox):
+        (WebKit::NetworkProcess::platformInitialize):
+        * NetworkProcess/mac/NetworkProcessMainMac.mm:
+        (WebKit::NetworkProcessMain):
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r138403.
+        http://trac.webkit.org/changeset/138403
+        https://bugs.webkit.org/show_bug.cgi?id=105950
+
+        Fixing e138331 which was rolled out in r138403 (Requested by
+        rfong on #webkit).
+
+        * win/WebKit2.def.in:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Yet another Windows build fix attempt. Try exporting more symbols.
+
+        * win/WebKit2.def.in:
+
+2013-01-02  Alexey Proskuryakov  <ap@apple.com>
+
+        REGRESSION (r138464): Safari hangs when opening Privacy preferences
+        https://bugs.webkit.org/show_bug.cgi?id=105933
+
+        Reviewed by Sam Weinig.
+
+        Quick and dirty fix - added a special case for main thread. But I'm not sure if
+        dispatch_sync on main queue is really the best idiom here.
+
+        * Shared/Plugins/Netscape/mac/NetscapePluginModuleMac.mm:
+        (WebKit::getPluginInfoFromCarbonResources):
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Don't include a header that has been removed in r138413.
+
+        * WebProcess/win/WebProcessWin.cpp:
+
+2013-01-02  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [WK2] Rename SetFrameInViewSourceMode to SetMainFrameInViewSourceMode
+        https://bugs.webkit.org/show_bug.cgi?id=105885
+
+        Reviewed by Martin Robinson.
+
+        This way we don't depend on a WebFrameProxy and
+        webkit_web_view_set_view_mode() works even if the main frame proxy
+        hasn't been created yet.
+
+        * UIProcess/API/gtk/WebKitWebView.cpp:
+        (webkit_web_view_set_view_mode): Call
+        WebPageProxy::setMainFrameInViewSourceMode() directly.
+        * UIProcess/WebFrameProxy.cpp:
+        (WebKit::WebFrameProxy::WebFrameProxy): Remove
+        setInViewSourceMode().
+        * UIProcess/WebFrameProxy.h:
+        (WebFrameProxy):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::setMainFrameInViewSourceMode):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setMainFrameInViewSourceMode):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+
+2013-01-02  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [Qt] Use WebPageGroup to create user scripts instead of Qt-specific function in WebPage
+        https://bugs.webkit.org/show_bug.cgi?id=105921
+
+        Reviewed by Simon Hausmann.
+
+        After r131281 the WebPageGroup.h (in UIProcess) exposes a way to add user scripts, so we can
+        use this directly to implement the user script functionality in Qt. The previous solution was
+        a Qt-port specific function in WebPage that can be removed now.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::updateUserScripts): Use WebPageGroup functions to manipulate user scripts directly.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Remove now unused function.
+        * UIProcess/qt/WebPageProxyQt.cpp: Ditto.
+        * WebProcess/WebPage/WebPage.messages.in: Ditto.
+        * WebProcess/WebPage/qt/WebPageQt.cpp: Remove now unused function and headers.
+
+2013-01-02  Heikki Paajanen  <heikki.paajanen@palm.com>
+
+        [Qt][WK2] Add experimental API to find text from page
+        https://bugs.webkit.org/show_bug.cgi?id=96481
+
+        Reviewed by Jocelyn Turcotte.
+
+        Expose findString and PageFindClient provided functionality to QtQuick
+        applications.
+
+        * Target.pri:
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+        (QQuickWebViewExperimental::findText):
+        (QQuickWebViewPrivate::didFindString):
+        * UIProcess/API/qt/qquickwebview_p.h:
+        (WebKit):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_findText.qml: Added.
+        * UIProcess/qt/QtWebPageFindClient.cpp: Added.
+        (WebKit):
+        (WebKit::QtWebPageFindClient::QtWebPageFindClient):
+        (WebKit::QtWebPageFindClient::didFindString):
+        (WebKit::toQtWebPageFindClient):
+        (WebKit::QtWebPageFindClient::didFailToFindString):
+        * UIProcess/qt/QtWebPageFindClient.h: Added.
+        (WebKit):
+        (QtWebPageFindClient):
+
+2013-01-02  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Regression(r138607): Causes crashes related to WebIconDatabase
+        https://bugs.webkit.org/show_bug.cgi?id=105909
+
+        Reviewed by Gyuyoung Kim.
+
+        Add back WebIconDatabase initialization statement
+        in WebContext constructor. It was removed in
+        r138607 and causing a lot of crashes on WebKit2.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+
+2012-12-31  Sam Weinig  <sam@webkit.org>
+
+        Convert more classes to be WebContextSupplements
+        https://bugs.webkit.org/show_bug.cgi?id=105890
+
+        Reviewed by Dan Bernstein.
+
+        * UIProcess/API/C/WKContext.cpp:
+        (WKContextGetCookieManager):
+        (WKContextGetDatabaseManager):
+        (WKContextGetGeolocationManager):
+        (WKContextGetKeyValueStorageManager):
+        (WKContextGetMediaCacheManager):
+        (WKContextGetNotificationManager):
+        (WKContextGetResourceCacheManager):
+        * UIProcess/API/efl/ewk_context.cpp:
+        (EwkContext::cookieManager):
+        (EwkContext::clearResourceCache):
+        * UIProcess/API/efl/ewk_database_manager_private.h:
+        (EwkDatabaseManager::create):
+        * UIProcess/API/efl/ewk_storage_manager_private.h:
+        (EwkStorageManager::create):
+        * UIProcess/API/gtk/WebKitWebContext.cpp:
+        (createDefaultWebContext):
+        (webkit_web_context_clear_cache):
+        (webkit_web_context_get_cookie_manager):
+        * UIProcess/Notifications/WebNotificationManagerProxy.cpp:
+        (WebKit::WebNotificationManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebNotificationManagerProxy::WebNotificationManagerProxy):
+        (WebKit::WebNotificationManagerProxy::initializeProvider):
+        (WebKit::WebNotificationManagerProxy::contextDestroyed):
+        (WebKit::WebNotificationManagerProxy::processDidClose):
+        (WebKit::WebNotificationManagerProxy::refWebContextSupplement):
+        (WebKit::WebNotificationManagerProxy::derefWebContextSupplement):
+        (WebKit::WebNotificationManagerProxy::didReceiveMessage):
+        (WebKit::WebNotificationManagerProxy::providerDidShowNotification):
+        (WebKit::WebNotificationManagerProxy::providerDidClickNotification):
+        (WebKit::WebNotificationManagerProxy::providerDidCloseNotifications):
+        (WebKit::WebNotificationManagerProxy::providerDidUpdateNotificationPolicy):
+        (WebKit::WebNotificationManagerProxy::providerDidRemoveNotificationPolicies):
+        * UIProcess/Notifications/WebNotificationManagerProxy.h:
+        (WebNotificationManagerProxy):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::~WebContext):
+        (WebKit::WebContext::removeNetworkProcessProxy):
+        (WebKit::WebContext::createNewWebProcess):
+        (WebKit::WebContext::shouldTerminate):
+        (WebKit::WebContext::disconnectProcess):
+        * UIProcess/WebContext.h:
+        (WebKit):
+        (WebContext):
+        (WebKit::WebContext::iconDatabase):
+        * UIProcess/WebContextSupplement.h:
+        (WebKit):
+        (WebKit::WebContextSupplement::contextDestroyed):
+        (WebKit::WebContextSupplement::processDidClose):
+        (WebContextSupplement):
+        (WebKit::WebContextSupplement::shouldTerminate):
+        (WebKit::WebContextSupplement::ref):
+        (WebKit::WebContextSupplement::deref):
+        * UIProcess/WebCookieManagerProxy.cpp:
+        (WebKit::WebCookieManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebCookieManagerProxy::WebCookieManagerProxy):
+        (WebKit::WebCookieManagerProxy::initializeClient):
+        (WebKit::WebCookieManagerProxy::contextDestroyed):
+        (WebKit::WebCookieManagerProxy::processDidClose):
+        (WebKit::WebCookieManagerProxy::shouldTerminate):
+        (WebKit::WebCookieManagerProxy::refWebContextSupplement):
+        (WebKit::WebCookieManagerProxy::derefWebContextSupplement):
+        (WebKit::WebCookieManagerProxy::getHostnamesWithCookies):
+        (WebKit::WebCookieManagerProxy::deleteCookiesForHostname):
+        (WebKit::WebCookieManagerProxy::deleteAllCookies):
+        (WebKit::WebCookieManagerProxy::startObservingCookieChanges):
+        (WebKit::WebCookieManagerProxy::stopObservingCookieChanges):
+        (WebKit::WebCookieManagerProxy::setHTTPCookieAcceptPolicy):
+        (WebKit::WebCookieManagerProxy::getHTTPCookieAcceptPolicy):
+        * UIProcess/WebCookieManagerProxy.h:
+        (WebCookieManagerProxy):
+        * UIProcess/WebDatabaseManagerProxy.cpp:
+        (WebKit::WebDatabaseManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebDatabaseManagerProxy::WebDatabaseManagerProxy):
+        (WebKit::WebDatabaseManagerProxy::initializeClient):
+        (WebKit::WebDatabaseManagerProxy::contextDestroyed):
+        (WebKit::WebDatabaseManagerProxy::processDidClose):
+        (WebKit::WebDatabaseManagerProxy::refWebContextSupplement):
+        (WebKit::WebDatabaseManagerProxy::derefWebContextSupplement):
+        (WebKit::WebDatabaseManagerProxy::didReceiveMessage):
+        (WebKit::WebDatabaseManagerProxy::getDatabasesByOrigin):
+        (WebKit::WebDatabaseManagerProxy::getDatabaseOrigins):
+        (WebKit::WebDatabaseManagerProxy::deleteDatabaseWithNameForOrigin):
+        (WebKit::WebDatabaseManagerProxy::deleteDatabasesForOrigin):
+        (WebKit::WebDatabaseManagerProxy::deleteAllDatabases):
+        (WebKit::WebDatabaseManagerProxy::setQuotaForOrigin):
+        * UIProcess/WebDatabaseManagerProxy.h:
+        (WebDatabaseManagerProxy):
+        * UIProcess/WebGeolocationManagerProxy.cpp:
+        (WebKit::WebGeolocationManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebGeolocationManagerProxy::WebGeolocationManagerProxy):
+        (WebKit::WebGeolocationManagerProxy::initializeProvider):
+        (WebKit::WebGeolocationManagerProxy::contextDestroyed):
+        (WebKit::WebGeolocationManagerProxy::processDidClose):
+        (WebKit::WebGeolocationManagerProxy::refWebContextSupplement):
+        (WebKit::WebGeolocationManagerProxy::derefWebContextSupplement):
+        (WebKit::WebGeolocationManagerProxy::didReceiveMessage):
+        (WebKit::WebGeolocationManagerProxy::providerDidChangePosition):
+        (WebKit::WebGeolocationManagerProxy::providerDidFailToDeterminePosition):
+        * UIProcess/WebGeolocationManagerProxy.h:
+        (WebGeolocationManagerProxy):
+        * UIProcess/WebKeyValueStorageManagerProxy.cpp:
+        (WebKit::WebKeyValueStorageManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebKeyValueStorageManagerProxy::WebKeyValueStorageManagerProxy):
+        (WebKit::WebKeyValueStorageManagerProxy::contextDestroyed):
+        (WebKit::WebKeyValueStorageManagerProxy::processDidClose):
+        (WebKit::WebKeyValueStorageManagerProxy::refWebContextSupplement):
+        (WebKit::WebKeyValueStorageManagerProxy::derefWebContextSupplement):
+        (WebKit::WebKeyValueStorageManagerProxy::getKeyValueStorageOrigins):
+        (WebKit::WebKeyValueStorageManagerProxy::deleteEntriesForOrigin):
+        (WebKit::WebKeyValueStorageManagerProxy::deleteAllEntries):
+        * UIProcess/WebKeyValueStorageManagerProxy.h:
+        (WebKeyValueStorageManagerProxy):
+        * UIProcess/WebMediaCacheManagerProxy.cpp:
+        (WebKit::WebMediaCacheManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebMediaCacheManagerProxy::WebMediaCacheManagerProxy):
+        (WebKit::WebMediaCacheManagerProxy::contextDestroyed):
+        (WebKit::WebMediaCacheManagerProxy::processDidClose):
+        (WebKit::WebMediaCacheManagerProxy::refWebContextSupplement):
+        (WebKit::WebMediaCacheManagerProxy::derefWebContextSupplement):
+        (WebKit::WebMediaCacheManagerProxy::getHostnamesWithMediaCache):
+        (WebKit::WebMediaCacheManagerProxy::clearCacheForHostname):
+        (WebKit::WebMediaCacheManagerProxy::clearCacheForAllHostnames):
+        * UIProcess/WebMediaCacheManagerProxy.h:
+        (WebMediaCacheManagerProxy):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::showNotification):
+        * UIProcess/WebResourceCacheManagerProxy.cpp:
+        (WebKit::WebResourceCacheManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebResourceCacheManagerProxy::WebResourceCacheManagerProxy):
+        (WebKit::WebResourceCacheManagerProxy::contextDestroyed):
+        (WebKit::WebResourceCacheManagerProxy::processDidClose):
+        (WebKit::WebResourceCacheManagerProxy::refWebContextSupplement):
+        (WebKit::WebResourceCacheManagerProxy::derefWebContextSupplement):
+        (WebKit::WebResourceCacheManagerProxy::didReceiveMessage):
+        (WebKit::WebResourceCacheManagerProxy::getCacheOrigins):
+        (WebKit::WebResourceCacheManagerProxy::clearCacheForOrigin):
+        (WebKit::WebResourceCacheManagerProxy::clearCacheForAllOrigins):
+        * UIProcess/WebResourceCacheManagerProxy.h:
+        (WebResourceCacheManagerProxy):
+        * UIProcess/efl/WebContextEfl.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        * UIProcess/gtk/WebContextGtk.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        * UIProcess/qt/WebContextQt.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+
+2013-01-01  Dan Bernstein  <mitz@apple.com>
+
+        <rdar://problem/12942239> Update copyright strings
+
+        Reviewed by Sam Weinig.
+
+        * Info.plist:
+        * NetworkProcess/Info.plist:
+        * PluginProcess/Info.plist:
+        * SharedWorkerProcess/Info.plist:
+        * WebProcess/Info.plist:
+        * WebProcessService/Info.plist:
+        * WebProcessServiceForWebKitDevelopment/Info.plist:
+
+2013-01-01  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [EFL] Enable MHTML feature
+        https://bugs.webkit.org/show_bug.cgi?id=105815
+
+        Reviewed by Laszlo Gombos.
+
+        Add missing include directory for ENABLE_MHTML.
+
+        * CMakeLists.txt:
+
+2012-12-30  Sam Weinig  <sam@webkit.org>
+
+        Add supplementability for WebContext
+        https://bugs.webkit.org/show_bug.cgi?id=105878
+
+        Reviewed by Dan Bernstein.
+
+        Add WebContextSupplement and convert WebApplicationCacheManagerProxy to it.
+
+        * UIProcess/API/C/WKContext.cpp:
+        (WKContextGetApplicationCacheManager):
+        * UIProcess/WebApplicationCacheManagerProxy.cpp:
+        (WebKit::WebApplicationCacheManagerProxy::supplementName):
+        (WebKit::WebApplicationCacheManagerProxy::WebApplicationCacheManagerProxy):
+        (WebKit::WebApplicationCacheManagerProxy::contextDestroyed):
+        (WebKit::WebApplicationCacheManagerProxy::processDidClose):
+        (WebKit::WebApplicationCacheManagerProxy::refWebContextSupplement):
+        (WebKit::WebApplicationCacheManagerProxy::derefWebContextSupplement):
+        (WebKit::WebApplicationCacheManagerProxy::getApplicationCacheOrigins):
+        (WebKit::WebApplicationCacheManagerProxy::deleteEntriesForOrigin):
+        (WebKit::WebApplicationCacheManagerProxy::deleteAllEntries):
+        * UIProcess/WebApplicationCacheManagerProxy.h:
+        (WebApplicationCacheManagerProxy):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::~WebContext):
+        (WebKit::WebContext::shouldTerminate):
+        (WebKit::WebContext::disconnectProcess):
+        * UIProcess/WebContext.h:
+        (WebKit::WebContext::supplement):
+        (WebKit::WebContext::addSupplement):
+        * UIProcess/WebContextSupplement.h: Added.
+        (WebKit::WebContextSupplement::WebContextSupplement):
+        (WebKit::WebContextSupplement::~WebContextSupplement):
+        (WebKit::WebContextSupplement::ref):
+        (WebKit::WebContextSupplement::deref):
+        (WebKit::WebContextSupplement::context):
+        (WebKit::WebContextSupplement::clearContext):
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2012-12-31  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL[WK2] Regression(r138574): Should not allocate memory in the fork
+        https://bugs.webkit.org/show_bug.cgi?id=105868
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Store prefixed executable path in a CString before the fork to
+        avoid allocating memory in the fork by calling String::utf8().
+        Allocating memory in the fork may lead to deadlocks due to
+        FastMalloc and the fork not inheriting the threads.
+
+        * UIProcess/Launcher/efl/ProcessLauncherEfl.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+
+2012-12-31  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Add API to set a WebKitWebView in view source mode to WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=99315
+
+        Reviewed by Martin Robinson.
+
+        Add a generic API to set/get a view mode. For now there are only
+        two modes, Web and Source, but the API can be extended if we
+        eventually support other view modes like Printing for example.
+
+        * UIProcess/API/gtk/WebKitWebView.cpp:
+        (webkitWebViewSetProperty): Implement setter for view-mode
+        property.
+        (webkitWebViewGetProperty): Implement getter for view-mode
+        property.
+        (webkit_web_view_class_init): Add view-source property.
+        (webkit_web_view_set_view_mode): Public method to set the view
+        mode.
+        (webkit_web_view_get_view_mode): Public method to get the view
+        mode.
+        * UIProcess/API/gtk/WebKitWebView.h: Add WebKitViewMode enum.
+        * UIProcess/API/gtk/docs/webkit2gtk-sections.txt: Add new symbols.
+        * UIProcess/API/gtk/tests/TestWebKitWebView.cpp:
+        (testWebViewMode):
+        (beforeAll):
+        * UIProcess/WebFrameProxy.cpp:
+        (WebKit::WebFrameProxy::WebFrameProxy): Initialize
+        m_inViewSourceMode.
+        (WebKit::WebFrameProxy::setInViewSourceMode): Set
+        m_inViewSourceMode if it has changed and call
+        WebPageProxy::setFrameInViewSourceMode() to notify the WebProcess.
+        * UIProcess/WebFrameProxy.h:
+        (WebKit::WebFrameProxy::inViewSourceMode): Return whether the
+        frame is currently in view source mode.
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::setFrameInViewSourceMode): Send a message
+        to the WebProcess to set the given frame in view source mode or not.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Add setFrameInViewSourceMode().
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setFrameInViewSourceMode): Call
+        setInViewSourceMode for the main frame.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Add setFrameInViewSourceMode().
+        * WebProcess/WebPage/WebPage.messages.in: Add new message
+        SetFrameInViewSourceMode.
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] Invalid use of temporary object in ProcessLauncher::launchProcess()
+        https://bugs.webkit.org/show_bug.cgi?id=105867
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Fix invalid use of temporary object in ProcessLauncher::launchProcess()
+        for prefixedExecutablePath.
+
+        * UIProcess/Launcher/efl/ProcessLauncherEfl.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+
+2012-12-29  Sam Weinig  <sam@webkit.org>
+
+        Windows build fix.
+
+        * win/WebKit2Common.vsprops:
+
+2012-12-29  Sam Weinig  <sam@webkit.org>
+
+        Add supplementability to the NetworkProcess
+        https://bugs.webkit.org/show_bug.cgi?id=105838
+
+        Reviewed by Dan Bernstein.
+
+        This patch adds a NetworkProcessSupplement, which is almost identical to
+        WebProcessSupplement, but has a different initialization override. It also
+        stops WebProcessSupplement from inheriting from MessageReceiver (and makes
+        everything that is a WebProcessSupplement also a MessageReceiver) as keeping
+        that would cause classes that need to be both WebProcessSupplements and
+        NetworkProcessSupplements inherit from MessageReceiver twice.
+
+        * GNUmakefile.list.am:
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::downloadsAuthenticationManager):
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        * NetworkProcess/NetworkProcess.h:
+        (WebKit):
+        (NetworkProcess):
+        (WebKit::NetworkProcess::supplement):
+        (WebKit::NetworkProcess::addSupplement):
+        * Shared/Network/CustomProtocols/CustomProtocolManager.h:
+        (CustomProtocolManager):
+        * Shared/Network/NetworkProcessSupplement.h: Added.
+        (WebKit):
+        (NetworkProcessSupplement):
+        (WebKit::NetworkProcessSupplement::~NetworkProcessSupplement):
+        (WebKit::NetworkProcessSupplement::initialize):
+        * Target.pri:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/ApplicationCache/WebApplicationCacheManager.h:
+        * WebProcess/Authentication/AuthenticationManager.h:
+        * WebProcess/Cookies/WebCookieManager.h:
+        * WebProcess/Geolocation/WebGeolocationManager.h:
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.h:
+        * WebProcess/MediaCache/WebMediaCacheManager.h:
+        * WebProcess/Notifications/WebNotificationManager.h:
+        * WebProcess/ResourceCache/WebResourceCacheManager.h:
+        * WebProcess/WebCoreSupport/WebDatabaseManager.h:
+        * WebProcess/WebProcessSupplement.h:
+        * win/WebKit2.vcproj:
+
+2012-12-28  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL][WK2] MiniBrowser could not be launched on specific machine
+        https://bugs.webkit.org/show_bug.cgi?id=105844
+
+        Reviewed by Gyuyoung Kim.
+
+        * UIProcess/Launcher/efl/ProcessLauncherEfl.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+        Modified to avoid bad use of temporary object.
+
+2012-12-28  Joone Hur  <joone.hur@intel.com>
+
+        [EFL][WK2] Implement ewk_context_resource_cache_clear
+        https://bugs.webkit.org/show_bug.cgi?id=104782
+
+        The purpose of this API is to clear HTTP caches in local storage and 
+        all resources cached in memory such as images, CSS, JavaScript, XSL, 
+        and fonts.
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * UIProcess/API/efl/ewk_context.cpp:
+        (EwkContext::clearResourceCache): Call WebResourceCacheManager::ClearCacheForAllOrigins.
+        (ewk_context_resource_cache_clear):
+        * UIProcess/API/efl/ewk_context.h: Add ewk_context_resource_cache_clear. 
+        * UIProcess/API/efl/ewk_context_private.h:
+        (EwkContext):
+
+2012-12-28  Mark Rowe  <mrowe@apple.com>
+
+        Move logic for extracting the OS X marketing version in to WebCore
+        <http://webkit.org/b/105841> / <rdar://problem/10736041>
+
+        Reviewed by Dan Bernstein.
+
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::systemMarketingVersionForUserAgentString): Call the WebCore function instead
+        of the WKSI function.
+        (WebKit::WebPageProxy::standardUserAgent):
+        * WebProcess/WebCoreSupport/mac/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface): Remove the code related to the WKSI symbol.
+
+2012-12-28  Sam Weinig  <sam@webkit.org>
+
+        Fix assert seen when adding a custom protocol handler before an initial
+        web process has been created.
+
+        * UIProcess/WebContext.h:
+        (WebKit::WebContext::sendToNetworkingProcess):
+
+2012-12-28  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK][WK2] Add support for IME Composition
+        https://bugs.webkit.org/show_bug.cgi?id=65093
+
+        Reviewed by Carlos Garcia Campos.
+
+        Add a WebKit2 implementation of the GtkInputMethodFilter and provide
+        the necessary plumbing to pass composition information along with
+        input method events.
+
+        * GNUmakefile.list.am: Add new files to the source list.
+        * Shared/EditorState.cpp: The cursorRect is now passed for GTK+ as well as
+        Qt, so update the encode and decode methods to pass that along.
+        * Shared/EditorState.h: Add the cursorRect member for GTK+ as well.
+        * Shared/NativeWebKeyboardEvent.h:
+        (NativeWebKeyboardEvent): Keyboard events should also have knowledge of
+        the compositionResults and whether or not the event was faked for composition
+        purposes.
+        * Shared/gtk/NativeWebKeyboardEventGtk.cpp: Ditto.
+        * Shared/gtk/WebEventFactory.cpp:
+        (WebKit::WebEventFactory::createWebKeyboardEvent): Copy the logic of PlatformKeyEvent,
+        for properly setting the windows key code and the event text from the composition
+        results.
+        * Shared/gtk/WebEventFactory.h: The createWebKeyboardEvent factory now takes a
+        CompositionResults argument.
+        * UIProcess/API/gtk/PageClientImpl.cpp:
+        (WebKit::PageClientImpl::doneWithKeyEvent): Don't forward keyboard events that
+        were faked for composition reasons. These events originated from WebKit and should
+        never be passed to parent classes.
+        (WebKit::PageClientImpl::updateTextInputState): Plumb through the updateTextInputState
+        method to the WebViewBase.
+        * UIProcess/API/gtk/PageClientImpl.h:
+        (PageClientImpl): Add a updateTextInputState method.
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp: 
+        (_WebKitWebViewBasePrivate): Instead of having an input method context as a member
+        keep a WebViewBaseInputMethodFilter.
+        (webkitWebViewBaseRealize): Set the filter widget when the WebViewBase is realized.
+        (webkit_web_view_base_init): No longer create a input method context during init.
+        (webkitWebViewBaseFocusInEvent): Pass along focus in events to the filter.
+        (webkitWebViewBaseFocusOutEvent): Pass along focus out events to the filter.
+        (webkitWebViewBaseKeyPressEvent): Instead of passing key presses directly to the WebProcess,
+        filter them through the input method filter.
+        (webkitWebViewBaseKeyReleaseEvent): Ditto.
+        (webkitWebViewBaseButtonPressEvent): Notify the input method filter about button press events.
+        (webkitWebViewBaseGetIMContext): The input method filter owns the input method now.
+        (webkitWebViewBaseSetInputMethodState): Add a bit of plumbing for the PageClient.
+        (webkitWebViewBaseUpdateTextInputState): Ditto.
+        * UIProcess/API/gtk/WebKitWebViewBasePrivate.h: Add plumbing declarations.
+        * UIProcess/API/gtk/WebViewBaseInputMethodFilter.cpp: Added. An implementation of GtkInputMethodFilter for WebKit2.
+        * UIProcess/API/gtk/WebViewBaseInputMethodFilter.h: Copied from Source/WebKit/gtk/WebCoreSupport/WebViewInputMethodFilter.h.
+        * UIProcess/PageClient.h:
+        (PageClient): updateInputMethod state is now for both Qt and GTK+.
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::editorStateChanged): Pass the editor state for GTK+ as well as Qt.
+        (WebKit::WebPageProxy::setComposition): Moved this method from WebPageProxyQt as it's used for GTK+ now as well.
+        (WebKit::WebPageProxy::confirmComposition): Ditto.
+        (WebKit::WebPageProxy::cancelComposition): Ditto.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): The setInputMethodState message is for GTK+ as well as Qt now.
+        * UIProcess/WebPageProxy.messages.in: Ditto.
+        * UIProcess/gtk/WebPageProxyGtk.cpp:
+        (WebKit::WebPageProxy::setInputMethodState): Ditto.
+        * UIProcess/qt/WebPageProxyQt.cpp: Move some methods to the platform-independent file.
+        * WebProcess/WebCoreSupport/gtk/WebEditorClientGtk.cpp: More closely match the WebKit1
+        logic for dealing with key events so that composition events will be handled properly.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::editorState): Properly pass the cursorRect for GTK+.
+        (WebKit::targetFrameForEditing): Moved from the Qt file, because its used by GTK+ as well. They
+        now pass along the updated EditorState as well, just like the Mac versions.
+        (WebKit::WebPage::confirmComposition): Ditto.
+        (WebKit::WebPage::setComposition): Ditto.
+        (WebKit::WebPage::cancelComposition): Ditto.
+        * WebProcess/WebPage/WebPage.h: The above messages are now for GTK+ as well as Qt.
+        * WebProcess/WebPage/WebPage.messages.in: Ditto.
+        * WebProcess/WebPage/qt/WebPageQt.cpp: Moved some methods to the platform-independent file.
+
+2012-12-28  Sam Weinig  <sam@webkit.org>
+
+        Appease the Windows Gods.
+
+        * WebProcess/Notifications/WebNotificationManager.cpp:
+
+2012-12-27  Sam Weinig  <sam@webkit.org>
+
+        Make CustomProtocolManager a WebProcessSupplement
+        https://bugs.webkit.org/show_bug.cgi?id=105814
+
+        Reviewed by Dan Bernstein.
+
+        This converts CustomProtocolManager from a global singleton, to be a
+        supplement of the WebProcess. Since it also needs to act as a supplement
+        of the NetworkProcess, it adds an initialization function for the NetworkProcess
+        as well, while we await the arrival of the forthcoming NetworkProcessSupplement.
+        
+        In addition, this moves the handling of registering and unregistering schemes
+        directly to the CustomProtocolManager, instead of requiring an unnecessary trip
+        in the ChildProcess.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/NetworkProcess.messages.in:
+        * Shared/Network/CustomProtocols/CustomProtocolManager.h:
+        (CustomProtocolManager):
+        * Shared/Network/CustomProtocols/CustomProtocolManager.messages.in:
+        * Shared/Network/CustomProtocols/mac/CustomProtocolManagerMac.mm:
+        (+[WKCustomProtocol canInitWithRequest:]):
+        (-[WKCustomProtocol initWithRequest:cachedResponse:client:]):
+        (-[WKCustomProtocol startLoading]):
+        (-[WKCustomProtocol stopLoading]):
+        (WebKit::CustomProtocolManager::supplementName):
+        (WebKit::CustomProtocolManager::CustomProtocolManager):
+        (WebKit::CustomProtocolManager::initialize):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::registerSchemeForCustomProtocol):
+        (WebKit::WebContext::unregisterSchemeForCustomProtocol):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        (WebKit::WebProcess::initializeWebProcess):
+        * WebProcess/WebProcess.h:
+        * WebProcess/WebProcess.messages.in:
+
+2012-12-27  Sam Weinig  <sam@webkit.org>
+
+        Convert a few other WebProcess managers to be WebProcessSupplements
+        https://bugs.webkit.org/show_bug.cgi?id=105812
+
+        Reviewed by Dan Bernstein.
+
+        * WebProcess/ApplicationCache/WebApplicationCacheManager.cpp:
+        (WebKit::WebApplicationCacheManager::supplementName):
+        * WebProcess/ApplicationCache/WebApplicationCacheManager.h:
+        (WebApplicationCacheManager):
+        * WebProcess/Authentication/AuthenticationManager.cpp:
+        (WebKit::AuthenticationManager::supplementName):
+        * WebProcess/Authentication/AuthenticationManager.h:
+        (AuthenticationManager):
+        * WebProcess/Cookies/WebCookieManager.cpp:
+        (WebKit::WebCookieManager::supplementName):
+        * WebProcess/Cookies/WebCookieManager.h:
+        (WebCookieManager):
+        * WebProcess/Geolocation/WebGeolocationManager.cpp:
+        (WebKit::WebGeolocationManager::supplementName):
+        * WebProcess/Geolocation/WebGeolocationManager.h:
+        (WebGeolocationManager):
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::setAlwaysAcceptCookies):
+        (WebKit::InjectedBundle::clearApplicationCache):
+        (WebKit::InjectedBundle::setAppCacheMaximumSize):
+        (WebKit::InjectedBundle::webNotificationID):
+        * WebProcess/MediaCache/WebMediaCacheManager.cpp:
+        (WebKit::WebMediaCacheManager::supplementName):
+        * WebProcess/MediaCache/WebMediaCacheManager.h:
+        (WebMediaCacheManager):
+        * WebProcess/Notifications/NotificationPermissionRequestManager.cpp:
+        (WebKit::NotificationPermissionRequestManager::permissionLevel):
+        (WebKit::NotificationPermissionRequestManager::setPermissionLevelForTesting):
+        (WebKit::NotificationPermissionRequestManager::removeAllPermissionsForTesting):
+        (WebKit::NotificationPermissionRequestManager::didReceiveNotificationPermissionDecision):
+        * WebProcess/Notifications/WebNotificationManager.cpp:
+        (WebKit::WebNotificationManager::supplementName):
+        (WebKit::WebNotificationManager::initialize):
+        * WebProcess/Notifications/WebNotificationManager.h:
+        (WebNotificationManager):
+        * WebProcess/ResourceCache/WebResourceCacheManager.cpp:
+        (WebKit::WebResourceCacheManager::supplementName):
+        * WebProcess/ResourceCache/WebResourceCacheManager.h:
+        (WebResourceCacheManager):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDidReceiveAuthenticationChallenge):
+        * WebProcess/WebCoreSupport/WebGeolocationClient.cpp:
+        (WebKit::WebGeolocationClient::geolocationDestroyed):
+        (WebKit::WebGeolocationClient::startUpdating):
+        (WebKit::WebGeolocationClient::stopUpdating):
+        * WebProcess/WebCoreSupport/WebNotificationClient.cpp:
+        (WebKit::WebNotificationClient::show):
+        (WebKit::WebNotificationClient::cancel):
+        (WebKit::WebNotificationClient::clearNotifications):
+        (WebKit::WebNotificationClient::notificationObjectDestroyed):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        (WebKit::WebProcess::downloadsAuthenticationManager):
+        * WebProcess/WebProcess.h:
+        (WebKit::WebProcess::textCheckerState):
+        (WebKit::WebProcess::networkAccessManager):
+        (WebKit::WebProcess::soupRequestManager):
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+        * WebProcess/soup/WebProcessSoup.cpp:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+        * WebProcess/win/WebProcessWin.cpp:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+
+2012-12-27  Viatcheslav Ostapenko  <sl.ostapenko@samsung.com>
+
+        [EFL][WK2] Regression(138462) Sometimes garbage in snapshots
+        https://bugs.webkit.org/show_bug.cgi?id=105803
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Instead of creating temporary buffer and then creating cairo surface
+        from it, create cairo surface 1st and use surface image internal buffer
+        to read pixels from GL buffer. 
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::takeSnapshot):
+        * UIProcess/API/efl/SnapshotImageGL.cpp:
+        (getImageSurfaceFromFrameBuffer):
+        * UIProcess/API/efl/SnapshotImageGL.h:
+
+2012-12-27  Sam Weinig  <sam@webkit.org>
+
+        Actually make use of the WebProcessSupplements by adding a supplement map to WebProcess
+        https://bugs.webkit.org/show_bug.cgi?id=105804
+
+        Reviewed by Dan Bernstein.
+
+        This continues the work of adding extensibility to WebProcess by adding a supplement
+        map, and using it as proof of concept for WebDatabaseManager and WebKeyValueStorageManager.
+
+        - A supplement is added to WebProcess by calling:
+            process->addSupplement<SupplementFoo>();
+        - A supplement can be used accessed by calling:
+            process->supplement<SupplementFoo>();
+
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::clearAllDatabases):
+        (WebKit::InjectedBundle::setDatabaseQuota):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+        Switch to using the new supplement accessor.
+
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp:
+        (WebKit::WebKeyValueStorageManager::supplementName):
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.h:
+        * WebProcess/WebCoreSupport/WebDatabaseManager.cpp:
+        (WebKit::WebDatabaseManager::supplementName):
+        * WebProcess/WebCoreSupport/WebDatabaseManager.h:
+        Add static supplementName functions. We might want to merge this with
+        the message class name, but for now we have both. 
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        Add supplements the new way. This should eventually move to the caller
+        of WebProcess::initialize, so that we can reduce #ifdefs and ports have
+        a chance to customize.
+        
+        (WebKit::WebProcess::initializeWebProcess):
+        Iterate the supplements to give each a chance to initialize.
+
+        * WebProcess/WebProcess.h:
+        (WebKit::WebProcess::supplement):
+        (WebKit::WebProcess::addSupplement):
+        Add functions to add and get WebProcessSupplements.
+
+2012-12-26  Sam Weinig  <sam@webkit.org>
+
+        Add an initial stab at a generic supplemental interface for WebProcess
+        https://bugs.webkit.org/show_bug.cgi?id=105779
+
+        Reviewed by Darin Adler.
+
+        This starts the process of adding a mechanism to WebProcess to extend its
+        functionality without actually changing it (similar to the Supplement
+        mechanism in WebCore). This will make it possible for ports to add functionality
+        that might not be needed or wanted by other ports.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp:
+        (WebKit::WebKeyValueStorageManager::initialize):
+        (WebKit):
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.h:
+        (WebKeyValueStorageManager):
+        (WebKit::WebKeyValueStorageManager::localStorageDirectory):
+        * WebProcess/WebCoreSupport/WebDatabaseManager.cpp:
+        (WebKit::WebDatabaseManager::WebDatabaseManager):
+        (WebKit::WebDatabaseManager::initialize):
+        * WebProcess/WebCoreSupport/WebDatabaseManager.h:
+        (WebDatabaseManager):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess):
+        (WebKit::WebProcess::keyValueStorageManager):
+        (WebKit):
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * WebProcess/WebProcessSupplement.h: Added.
+        (WebKit):
+        (WebProcessSupplement):
+        (WebKit::WebProcessSupplement::~WebProcessSupplement):
+        (WebKit::WebProcessSupplement::initialize):
+
+2012-12-27  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] Regression(135935) layout tests snapshots are flaky
+        https://bugs.webkit.org/show_bug.cgi?id=103468
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Make sure that we wait for pending repaints before taking a
+        snapshot to avoid flakiness in pixel / ref tests. We also
+        suspend all animations before taking the snapshot to make
+        sure we don't wait forever for repaint events to be processed.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::takeSnapshot):
+
+2012-12-26  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed Xmas buildfix after r138479.
+
+        * WebProcess/MediaCache/WebMediaCacheManager.h:
+
+2012-12-25  Sam Weinig  <sam@webkit.org>
+
+        Convert WebKeyValueStorageManager and WebMediaCacheManager to MessageReceiver
+        https://bugs.webkit.org/show_bug.cgi?id=105751
+
+        Reviewed by Andreas Kling.
+
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp:
+        (WebKit::WebKeyValueStorageManager::WebKeyValueStorageManager):
+        (WebKit::WebKeyValueStorageManager::dispatchDidGetKeyValueStorageOrigins):
+        (WebKit::WebKeyValueStorageManager::getKeyValueStorageOrigins):
+        (WebKit::WebKeyValueStorageManager::deleteEntriesForOrigin):
+        (WebKit::WebKeyValueStorageManager::deleteAllEntries):
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.h:
+        (WebKeyValueStorageManager): Remove unused m_originsLoaded member variable.
+        * WebProcess/MediaCache/WebMediaCacheManager.cpp:
+        (WebKit::WebMediaCacheManager::WebMediaCacheManager):
+        (WebKit::WebMediaCacheManager::getHostnamesWithMediaCache):
+        (WebKit::WebMediaCacheManager::clearCacheForHostname):
+        (WebKit::WebMediaCacheManager::clearCacheForAllHostnames):
+        * WebProcess/MediaCache/WebMediaCacheManager.h:
+        (WebMediaCacheManager):
+        Convert the managers to MessageReceiver.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        (WebKit::WebProcess::initializeWebProcess):
+        (WebKit::WebProcess::didReceiveMessage):
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        Add the new managers.
+
 2012-12-25  Sam Weinig  <sam@webkit.org>
 
         Fix the Database manager assert, again.

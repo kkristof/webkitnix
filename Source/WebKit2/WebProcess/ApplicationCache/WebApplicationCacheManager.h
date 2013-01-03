@@ -27,6 +27,7 @@
 #define WebApplicationCacheManager_h
 
 #include "MessageReceiver.h"
+#include "WebProcessSupplement.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
 
@@ -35,10 +36,12 @@ namespace WebKit {
 class ChildProcess;
 struct SecurityOriginData;
 
-class WebApplicationCacheManager : private CoreIPC::MessageReceiver {
+class WebApplicationCacheManager : public WebProcessSupplement, public CoreIPC::MessageReceiver {
     WTF_MAKE_NONCOPYABLE(WebApplicationCacheManager);
 public:
     WebApplicationCacheManager(ChildProcess*);
+
+    static const AtomicString& supplementName();
 
     void deleteAllEntries();
     void setAppCacheMaximumSize(uint64_t);

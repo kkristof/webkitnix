@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010, 2011, 2012 Apple Inc. All rights reserved.
  * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,6 +69,7 @@
 #include "WebInspector.h"
 #include "WebInspectorClient.h"
 #include "WebInspectorMessages.h"
+#include "WebKeyValueStorageManager.h"
 #include "WebNotificationClient.h"
 #include "WebOpenPanelResultListener.h"
 #include "WebPageCreationParameters.h"
@@ -107,6 +109,7 @@
 #include <WebCore/PlatformKeyboardEvent.h>
 #include <WebCore/PluginDocument.h>
 #include <WebCore/PrintContext.h>
+#include <WebCore/Range.h>
 #include <WebCore/RenderLayer.h>
 #include <WebCore/RenderTreeAsText.h>
 #include <WebCore/RenderView.h>
@@ -122,12 +125,10 @@
 #include <WebCore/SharedBuffer.h>
 #include <WebCore/SubstituteData.h>
 #include <WebCore/TextIterator.h>
+#include <WebCore/VisiblePosition.h>
 #include <WebCore/markup.h>
 #include <runtime/JSLock.h>
 #include <runtime/JSValue.h>
-
-#include <WebCore/Range.h>
-#include <WebCore/VisiblePosition.h>
 
 #if ENABLE(MHTML)
 #include <WebCore/MHTMLArchive.h>
@@ -244,7 +245,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 #elif PLATFORM(GTK)
     , m_accessibilityObject(0)
 #endif
-    , m_setCanStartMediaTimer(WebProcess::shared().runLoop(), this, &WebPage::setCanStartMediaTimerFired)
+    , m_setCanStartMediaTimer(RunLoop::main(), this, &WebPage::setCanStartMediaTimerFired)
     , m_findController(this)
 #if ENABLE(TOUCH_EVENTS)
 #if PLATFORM(QT)
@@ -631,6 +632,10 @@ EditorState WebPage::editorState() const
     }
 #endif
 
+#if PLATFORM(GTK)
+    result.cursorRect = frame->selection()->absoluteCaretBounds();
+#endif
+
     return result;
 }
 
@@ -804,7 +809,7 @@ void WebPage::close()
     WebProcess::shared().removeWebPage(m_pageID);
 
     if (isRunningModal)
-        WebProcess::shared().runLoop()->stop();
+        RunLoop::main()->stop();
 }
 
 void WebPage::tryClose()
@@ -2344,7 +2349,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setFullScreenEnabled(store.getBoolValueForKey(WebPreferencesKey::fullScreenEnabledKey()));
 #endif
 
-    settings->setLocalStorageDatabasePath(WebProcess::shared().localStorageDirectory());
+    settings->setLocalStorageDatabasePath(WebProcess::shared().supplement<WebKeyValueStorageManager>()->localStorageDirectory());
 
 #if USE(AVFOUNDATION)
     settings->setAVFoundationEnabled(store.getBoolValueForKey(WebPreferencesKey::isAVFoundationEnabledKey()));
@@ -3663,6 +3668,105 @@ bool WebPage::shouldUseCustomRepresentationForResponse(const ResourceResponse& r
 
     // If a plug-in exists that claims to support this response, it should take precedence over the custom representation.
     return !canPluginHandleResponse(response);
+}
+
+#if PLATFORM(QT) || PLATFORM(GTK)
+static Frame* targetFrameForEditing(WebPage* page)
+{
+    Frame* targetFrame = page->corePage()->focusController()->focusedOrMainFrame();
+
+    if (!targetFrame || !targetFrame->editor())
+        return 0;
+
+    Editor* editor = targetFrame->editor();
+    if (!editor->canEdit())
+        return 0;
+
+    if (editor->hasComposition()) {
+        // We should verify the parent node of this IME composition node are
+        // editable because JavaScript may delete a parent node of the composition
+        // node. In this case, WebKit crashes while deleting texts from the parent
+        // node, which doesn't exist any longer.
+        if (PassRefPtr<Range> range = editor->compositionRange()) {
+            Node* node = range->startContainer();
+            if (!node || !node->isContentEditable())
+                return 0;
+        }
+    }
+    return targetFrame;
+}
+
+void WebPage::confirmComposition(const String& compositionString, int64_t selectionStart, int64_t selectionLength, EditorState& newState)
+{
+    Frame* targetFrame = targetFrameForEditing(this);
+    if (!targetFrame) {
+        newState = editorState();
+        return;
+    }
+
+    Editor* editor = targetFrame->editor();
+    editor->confirmComposition(compositionString);
+
+    if (selectionStart == -1) {
+        newState = editorState();
+        return;
+    }
+
+    Element* scope = targetFrame->selection()->rootEditableElement();
+    RefPtr<Range> selectionRange = TextIterator::rangeFromLocationAndLength(scope, selectionStart, selectionLength);
+    ASSERT_WITH_MESSAGE(selectionRange, "Invalid selection: [%lld:%lld] in text of length %d", static_cast<long long>(selectionStart), static_cast<long long>(selectionLength), scope->innerText().length());
+
+    if (selectionRange) {
+        VisibleSelection selection(selectionRange.get(), SEL_DEFAULT_AFFINITY);
+        targetFrame->selection()->setSelection(selection);
+    }
+    newState = editorState();
+}
+
+void WebPage::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementStart, uint64_t replacementLength, EditorState& newState)
+{
+    Frame* targetFrame = targetFrameForEditing(this);
+    if (!targetFrame) {
+        newState = editorState();
+        return;
+    }
+
+    if (!targetFrame->selection()->isContentEditable()) {
+        newState = editorState();
+        return;
+    }
+
+    if (replacementLength > 0) {
+        // The layout needs to be uptodate before setting a selection
+        targetFrame->document()->updateLayout();
+
+        Element* scope = targetFrame->selection()->rootEditableElement();
+        RefPtr<Range> replacementRange = TextIterator::rangeFromLocationAndLength(scope, replacementStart, replacementLength);
+        targetFrame->editor()->setIgnoreCompositionSelectionChange(true);
+        targetFrame->selection()->setSelection(VisibleSelection(replacementRange.get(), SEL_DEFAULT_AFFINITY));
+        targetFrame->editor()->setIgnoreCompositionSelectionChange(false);
+    }
+
+    targetFrame->editor()->setComposition(text, underlines, selectionStart, selectionEnd);
+    newState = editorState();
+}
+
+void WebPage::cancelComposition(EditorState& newState)
+{
+    Frame* targetFrame = targetFrameForEditing(this);
+    if (!targetFrame) {
+        newState = editorState();
+        return;
+    }
+
+    targetFrame->editor()->cancelComposition();
+    newState = editorState();
+}
+#endif
+
+void WebPage::setMainFrameInViewSourceMode(bool inViewSourceMode)
+{
+    m_mainFrame->coreFrame()->setInViewSourceMode(inViewSourceMode);
 }
 
 } // namespace WebKit

@@ -88,7 +88,6 @@
 #include "NodeRenderStyle.h"
 #include "NodeRenderingContext.h"
 #include "Page.h"
-#include "PageGroup.h"
 #include "Pair.h"
 #include "PerspectiveTransformOperation.h"
 #include "QuotesData.h"
@@ -124,6 +123,7 @@
 #include "TranslateTransformOperation.h"
 #include "UserAgentStyleSheets.h"
 #include "ViewportStyleResolver.h"
+#include "VisitedLinkState.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitCSSKeyframeRule.h"
 #include "WebKitCSSKeyframesRule.h"
@@ -264,7 +264,8 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_backgroundData(BackgroundFillLayer)
     , m_matchedPropertiesCacheAdditionsSinceLastSweep(0)
     , m_matchedPropertiesCacheSweepTimer(this, &StyleResolver::sweepMatchedPropertiesCache)
-    , m_checker(document, !document->inQuirksMode())
+    , m_document(document)
+    , m_selectorChecker(document)
     , m_parentStyle(0)
     , m_rootElementStyle(0)
     , m_element(0)
@@ -536,11 +537,13 @@ static void loadSimpleDefaultStyle()
     // No need to initialize quirks sheet yet as there are no quirk rules for elements allowed in simple default style.
 }
 
-static void loadViewSourceStyle()
+static RuleSet* viewSourceStyle()
 {
-    ASSERT(!defaultViewSourceStyle);
-    defaultViewSourceStyle = RuleSet::create().leakPtr();
-    defaultViewSourceStyle->addRulesFromSheet(parseUASheet(sourceUserAgentStyleSheet, sizeof(sourceUserAgentStyleSheet)), screenEval());
+    if (!defaultViewSourceStyle) {
+        defaultViewSourceStyle = RuleSet::create().leakPtr();
+        defaultViewSourceStyle->addRulesFromSheet(parseUASheet(sourceUserAgentStyleSheet, sizeof(sourceUserAgentStyleSheet)), screenEval());
+    }
+    return defaultViewSourceStyle;
 }
 
 static void ensureDefaultStyleSheetsForElement(Element* element)
@@ -675,7 +678,7 @@ void StyleResolver::collectMatchingRules(RuleSet* rules, int& firstRuleIndex, in
 
     if (m_element->isLink())
         collectMatchingRulesForList(rules->linkPseudoClassRules(), firstRuleIndex, lastRuleIndex, options);
-    if (m_checker.matchesFocusPseudoClass(m_element))
+    if (m_selectorChecker.matchesFocusPseudoClass(m_element))
         collectMatchingRulesForList(rules->focusPseudoClassRules(), firstRuleIndex, lastRuleIndex, options);
     collectMatchingRulesForList(rules->tagRules(m_element->localName().impl()), firstRuleIndex, lastRuleIndex, options);
     collectMatchingRulesForList(rules->universalRules(), firstRuleIndex, lastRuleIndex, options);
@@ -704,7 +707,7 @@ void StyleResolver::sortAndTransferMatchedRules(MatchResult& result)
 
     sortMatchedRules();
 
-    if (m_checker.mode() == SelectorChecker::CollectingRules) {
+    if (m_selectorChecker.mode() == SelectorChecker::CollectingRules) {
         if (!m_ruleList)
             m_ruleList = StaticCSSRuleList::create();
         for (unsigned i = 0; i < m_matchedRules.size(); ++i)
@@ -869,7 +872,7 @@ void StyleResolver::collectMatchingRulesForList(const Vector<RuleData>* rules, i
             // If we're matching normal rules, set a pseudo bit if
             // we really just matched a pseudo-element.
             if (m_dynamicPseudo != NOPSEUDO && m_pseudoStyle == NOPSEUDO) {
-                if (m_checker.mode() == SelectorChecker::CollectingRules) {
+                if (m_selectorChecker.mode() == SelectorChecker::CollectingRules) {
                     InspectorInstrumentation::didMatchRule(cookie, false);
                     continue;
                 }
@@ -964,7 +967,7 @@ inline void StyleResolver::initElement(Element* e)
     if (m_element != e) {
         m_element = e;
         m_styledElement = m_element && m_element->isStyledElement() ? static_cast<StyledElement*>(m_element) : 0;
-        m_elementLinkState = m_checker.determineLinkState(m_element);
+        m_elementLinkState = document()->visitedLinkState()->determineLinkState(m_element);
         if (e && e == e->document()->documentElement()) {
             e->document()->setDirectionSetOnDocumentElement(false);
             e->document()->setWritingModeSetOnDocumentElement(false);
@@ -990,7 +993,7 @@ inline void StyleResolver::initForStyleResolve(Element* e, RenderStyle* parentSt
     }
 
     Node* docElement = e ? e->document()->documentElement() : 0;
-    RenderStyle* docStyle = m_checker.document()->renderStyle();
+    RenderStyle* docStyle = document()->renderStyle();
     m_rootElementStyle = docElement && e != docElement ? docElement->renderStyle() : docStyle;
 
     m_style = 0;
@@ -1057,9 +1060,9 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
     m_matchedRules.clear();
 
     int firstRuleIndex = -1, lastRuleIndex = -1;
-    m_checker.setMode(SelectorChecker::SharingRules);
+    m_selectorChecker.setMode(SelectorChecker::SharingRules);
     collectMatchingRules(ruleSet, firstRuleIndex, lastRuleIndex, false);
-    m_checker.setMode(SelectorChecker::ResolvingStyle);
+    m_selectorChecker.setMode(SelectorChecker::ResolvingStyle);
     if (m_matchedRules.isEmpty())
         return false;
     m_matchedRules.clear();
@@ -1333,15 +1336,12 @@ void StyleResolver::matchUARules(MatchResult& result)
     matchUARules(result, userAgentStyleSheet);
 
     // In quirks mode, we match rules from the quirks user agent sheet.
-    if (!m_checker.strictParsing())
+    if (!m_selectorChecker.strictParsing())
         matchUARules(result, defaultQuirksStyle);
 
     // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
-    if (m_checker.document()->isViewSource()) {
-        if (!defaultViewSourceStyle)
-            loadViewSourceStyle();
-        matchUARules(result, defaultViewSourceStyle);
-    }
+    if (document()->isViewSource())
+        matchUARules(result, viewSourceStyle());
 }
 
 static void setStylesForPaginationMode(Pagination::Mode paginationMode, RenderStyle* style)
@@ -1758,7 +1758,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(PseudoId pseudo, El
 
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
-    initForStyleResolve(m_checker.document()->documentElement()); // m_rootElementStyle will be set to the document style.
+    initForStyleResolve(document()->documentElement()); // m_rootElementStyle will be set to the document style.
 
     m_style = RenderStyle::create();
     m_style->inheritFrom(m_rootElementStyle);
@@ -1914,7 +1914,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         // property.
         // Sites also commonly use display:inline/block on <td>s and <table>s. In quirks mode we force
         // these tags to retain their display types.
-        if (!m_checker.strictParsing() && e) {
+        if (!m_selectorChecker.strictParsing() && e) {
             if (e->hasTagName(tdTag)) {
                 style->setDisplay(TABLE_CELL);
                 style->setFloating(NoFloat);
@@ -1961,7 +1961,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
         // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
         if (style->hasOutOfFlowPosition() || style->isFloating() || (e && e->document()->documentElement() == e))
-            style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), m_checker.strictParsing()));
+            style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), m_selectorChecker.strictParsing()));
 
         // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
         // clear how that should work.
@@ -1991,7 +1991,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
         if (isDisplayFlexibleBox(parentStyle->display())) {
             style->setFloating(NoFloat);
-            style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), m_checker.strictParsing()));
+            style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), m_selectorChecker.strictParsing()));
         }
     }
 
@@ -2201,7 +2201,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
-    m_checker.setMode(SelectorChecker::CollectingRules);
+    m_selectorChecker.setMode(SelectorChecker::CollectingRules);
 
     initElement(e);
     initForStyleResolve(e, 0, pseudoId);
@@ -2225,7 +2225,7 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
         m_sameOriginOnly = false;
     }
 
-    m_checker.setMode(SelectorChecker::ResolvingStyle);
+    m_selectorChecker.setMode(SelectorChecker::ResolvingStyle);
 
     return m_ruleList.release();
 }
@@ -2247,7 +2247,7 @@ inline bool StyleResolver::checkSelector(const RuleData& ruleData, const Contain
             return false;
         if (!SelectorChecker::fastCheckRightmostAttributeSelector(m_element, ruleData.selector()))
             return false;
-        return m_checker.fastCheckSelector(ruleData.selector(), m_element);
+        return m_selectorChecker.fastCheckSelector(ruleData.selector(), m_element);
     }
 
     // Slow path.
@@ -2256,7 +2256,7 @@ inline bool StyleResolver::checkSelector(const RuleData& ruleData, const Contain
     context.elementParentStyle = m_parentNode ? m_parentNode->renderStyle() : 0;
     context.scope = scope;
     context.pseudoStyle = m_pseudoStyle;
-    SelectorChecker::SelectorMatch match = m_checker.checkSelector(context, m_dynamicPseudo);
+    SelectorChecker::SelectorMatch match = m_selectorChecker.checkSelector(context, m_dynamicPseudo);
     if (match != SelectorChecker::SelectorMatches)
         return false;
     if (m_pseudoStyle != NOPSEUDO && m_pseudoStyle != m_dynamicPseudo)
@@ -2272,7 +2272,7 @@ bool StyleResolver::checkRegionSelector(CSSSelector* regionSelector, Element* re
     m_pseudoStyle = NOPSEUDO;
 
     for (CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(s))
-        if (m_checker.checkSelector(s, regionElement))
+        if (m_selectorChecker.checkSelector(s, regionElement))
             return true;
 
     return false;
@@ -3089,7 +3089,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             // We need to adjust the size to account for the generic family change from monospace
             // to non-monospace.
             if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize())
-                setFontSize(fontDescription, fontSizeForKeyword(m_checker.document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, false));
+                setFontSize(fontDescription, fontSizeForKeyword(document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, false));
             fontDescription.setGenericFamily(initialDesc.genericFamily());
             if (!initialDesc.firstFamily().familyIsEmpty())
                 fontDescription.setFamily(initialDesc.firstFamily());
@@ -3168,7 +3168,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         // If currFamily is non-zero then we set at least one family on this description.
         if (currFamily) {
             if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
-                setFontSize(fontDescription, fontSizeForKeyword(m_checker.document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
+                setFontSize(fontDescription, fontSizeForKeyword(document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
 
             setFontDescription(fontDescription);
         }
@@ -3217,10 +3217,10 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 if (!settings)
                     return;
                 fontDescription.setRenderingMode(settings->fontRenderingMode());
-                fontDescription.setUsePrinterFont(m_checker.document()->printing() || !settings->screenFontSubstitutionEnabled());
+                fontDescription.setUsePrinterFont(document()->printing() || !settings->screenFontSubstitutionEnabled());
 
                 // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(m_checker.document(), m_style.get(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), useSVGZoomRules()));
+                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), m_style.get(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), useSVGZoomRules()));
                 setFontDescription(fontDescription);
             }
         } else if (value->isFontValue()) {
@@ -4101,7 +4101,7 @@ void StyleResolver::checkForGenericFamilyChange(RenderStyle* style, RenderStyle*
     // multiplying by our scale factor.
     float size;
     if (childFont.keywordSize())
-        size = fontSizeForKeyword(m_checker.document(), CSSValueXxSmall + childFont.keywordSize() - 1, childFont.useFixedDefaultSize());
+        size = fontSizeForKeyword(document(), CSSValueXxSmall + childFont.keywordSize() - 1, childFont.useFixedDefaultSize());
     else {
         Settings* settings = documentSettings();
         float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
@@ -4122,14 +4122,14 @@ void StyleResolver::initializeFontStyle(Settings* settings)
     FontDescription fontDescription;
     fontDescription.setGenericFamily(FontDescription::StandardFamily);
     fontDescription.setRenderingMode(settings->fontRenderingMode());
-    fontDescription.setUsePrinterFont(m_checker.document()->printing() || !settings->screenFontSubstitutionEnabled());
+    fontDescription.setUsePrinterFont(document()->printing() || !settings->screenFontSubstitutionEnabled());
     const AtomicString& standardFontFamily = documentSettings()->standardFontFamily();
     if (!standardFontFamily.isEmpty()) {
         fontDescription.firstFamily().setFamily(standardFontFamily);
         fontDescription.firstFamily().appendFamily(0);
     }
     fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    setFontSize(fontDescription, fontSizeForKeyword(m_checker.document(), CSSValueMedium, false));
+    setFontSize(fontDescription, fontSizeForKeyword(document(), CSSValueMedium, false));
     m_style->setLineHeight(RenderStyle::initialLineHeight());
     m_lineHeightValue = 0;
     setFontDescription(fontDescription);
@@ -4138,7 +4138,7 @@ void StyleResolver::initializeFontStyle(Settings* settings)
 void StyleResolver::setFontSize(FontDescription& fontDescription, float size)
 {
     fontDescription.setSpecifiedSize(size);
-    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(m_checker.document(), m_style.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules()));
+    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), m_style.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules()));
 }
 
 float StyleResolver::getComputedSizeFromSpecifiedSize(Document* document, RenderStyle* style, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules)
@@ -5275,11 +5275,8 @@ void StyleResolver::collectFeatures()
     // sharing candidates.
     m_features.add(defaultStyle->features());
     m_features.add(m_authorStyle->features());
-    if (document()->isViewSource()) {
-        if (!defaultViewSourceStyle)
-            loadViewSourceStyle();
-        m_features.add(defaultViewSourceStyle->features());
-    }
+    if (document()->isViewSource())
+        m_features.add(viewSourceStyle()->features());
 
     if (m_scopeResolver)
         m_scopeResolver->collectFeaturesTo(m_features);

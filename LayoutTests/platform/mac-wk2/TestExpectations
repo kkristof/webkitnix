@@ -157,7 +157,6 @@ media/controls-right-click-on-timebar.html
 platform/mac/editing/pasteboard/dataTransfer-set-data-file-url.html
 platform/mac/editing/pasteboard/drag-selections-to-contenteditable.html
 platform/mac/fast/forms/listbox-scrollbar-hit-test.html
-plugins/clicking-missing-plugin-fires-delegate.html
 scrollbars/scrollbar-iframe-click-does-not-blur-content.html
 scrollbars/scrollevent-iframe-no-scrolling-wheel.html
 svg/custom/foreignObject-crash-on-hover.xml
@@ -272,6 +271,30 @@ webkit.org/b/98960 fast/parser/document-open-in-unload.html [ Skip ]
 # ENABLE(SHADOW_DOM) is disabled.
 webkit.org/b/76359 editing/shadow [ Skip ]
 webkit.org/b/76359 fast/dom/shadow [ Skip ]
+
+# fast/events/controlclick-no-onclick.html fails on Mac WK2
+webkit.org/b/105948 fast/events/controlclick-no-onclick.html [ Failure ]
+
+webkit.org/b/105954 http/tests/navigation/reload-subframe-object.html [ Failure ]
+
+webkit.org/b/105956 inspector/geolocation-watchPosition.html [ Pass Failure ]
+
+webkit.org/b/105958 platform/mac/fast/events/numpad-keycode-mapping.html [ Failure ]
+
+webkit.org/b/105960 plugins/navigator-plugins.html [ Failure ]
+
+webkit.org/b/105988 [ Debug ] inspector/debugger/pause-in-internal-script.html [ Pass Crash ]
+webkit.org/b/105988 [ Debug ] inspector/debugger/watch-expressions-panel-switch.html [ Pass Crash ]
+webkit.org/b/105988 [ Debug ] inspector/debugger/properties-special.html [ Pass Crash ]
+webkit.org/b/105988 [ Debug ] inspector/debugger/reveal-execution-line.html [ Pass Crash ]
+
+webkit.org/b/105998 [ Lion Release ] fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure ]
+webkit.org/b/105998 [ MountainLion Debug ] fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure Pass ]
+webkit.org/b/105998 [ Lion Release ] fast/css/sticky/inline-sticky.html [ ImageOnlyFailure ]
+webkit.org/b/105998 [ MountainLion Debug ] fast/css/sticky/inline-sticky.html [ ImageOnlyFailure Pass ]
+webkit.org/b/105998 [ MountainLion Debug ] fast/css/sticky/sticky-both-sides.html [ ImageOnlyFailure Pass ]
+
+webkit.org/b/93552 inspector/device-orientation-success.html [ Failure ]
 
 ### END OF (1) Classified failures with bug reports
 ########################################

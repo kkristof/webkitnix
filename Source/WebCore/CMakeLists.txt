@@ -1246,6 +1246,7 @@ set(WebCore_SOURCES
     dom/UserGestureIndicator.cpp
     dom/UserTypingGestureIndicator.cpp
     dom/ViewportArguments.cpp
+    dom/VisitedLinkState.cpp
     dom/WebCoreMemoryInstrumentation.cpp
     dom/WebKitAnimationEvent.cpp
     dom/WebKitNamedFlow.cpp
@@ -2944,7 +2945,7 @@ list(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/ExceptionCodeDescript
 
 
 GENERATE_SETTINGS_MACROS(${WEBCORE_DIR}/page/Settings.in SettingsMacros.h)
-list(APPEND WebCore_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/SettingsMacros.h)
+list(APPEND WebCoreTestSupport_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/InternalSettingsGenerated.cpp)
 
 
 GENERATE_FONT_NAMES(${WEBCORE_DIR}/css/WebKitFontFamilyNames.in)

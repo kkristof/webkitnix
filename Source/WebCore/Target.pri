@@ -471,6 +471,7 @@ SOURCES += \
     dom/UserGestureIndicator.cpp \
     dom/UserTypingGestureIndicator.cpp \
     dom/ViewportArguments.cpp \
+    dom/VisitedLinkState.cpp \
     dom/WebCoreMemoryInstrumentation.cpp \
     dom/WebKitAnimationEvent.cpp \
     dom/WebKitTransitionEvent.cpp \
@@ -1644,6 +1645,7 @@ HEADERS += \
     dom/StyledElement.h \
     dom/StyleElement.h \
     dom/TagNodeList.h \
+    dom/TemplateContentDocumentFragment.h \
     dom/TextEvent.h \
     dom/TextEventInputType.h \
     dom/Text.h \
@@ -3419,6 +3421,7 @@ enable?(WEB_AUDIO) {
         bindings/js/JSAudioBufferSourceNodeCustom.cpp \
         bindings/js/JSAudioContextCustom.cpp \
         bindings/js/JSDOMWindowWebAudioCustom.cpp \
+        bindings/js/JSOscillatorNodeCustom.cpp \
         bindings/js/JSScriptProcessorNodeCustom.cpp \
         Modules/webaudio/AsyncAudioDecoder.cpp \
         Modules/webaudio/AudioBasicInspectorNode.cpp \

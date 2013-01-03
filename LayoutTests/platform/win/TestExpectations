@@ -1290,6 +1290,7 @@ webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
@@ -2230,6 +2231,7 @@ http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html
 http/tests/inspector/console-resource-errors.html
 http/tests/inspector/resource-tree/resource-request-content-while-loading.html
 http/tests/inspector/search/resources-search-match-index.html
+http/tests/inspector/network/network-initiator-from-console.html
 inspector/profiler/heap-snapshot.html
 inspector/profiler/memory-instrumentation-cached-images.html
 inspector/styles/media-queries.html

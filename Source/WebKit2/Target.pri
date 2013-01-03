@@ -90,6 +90,7 @@ HEADERS += \
     Shared/NativeWebKeyboardEvent.h \
     Shared/NativeWebMouseEvent.h \
     Shared/NativeWebWheelEvent.h \
+    Shared/Network/NetworkProcessSupplement.h \
     Shared/OriginAndDatabases.h \
     Shared/PlatformPopupMenuData.h \
     Shared/PrintInfo.h \
@@ -389,6 +390,7 @@ HEADERS += \
     WebProcess/WebPage/WebPageGroupProxy.h \
     WebProcess/WebPage/WebUndoStep.h \
     WebProcess/WebConnectionToUIProcess.h \
+    WebProcess/WebProcessSupplement.h \
     WebProcess/WebProcess.h \
     WebProcess/qt/QtBuiltinBundle.h \
     WebProcess/qt/QtBuiltinBundlePage.h \
@@ -824,6 +826,7 @@ have?(QTQUICK) {
         UIProcess/qt/QtDialogRunner.h \
         UIProcess/qt/QtDownloadManager.h \
         UIProcess/qt/QtPageClient.h \
+        UIProcess/qt/QtWebPageFindClient.h \
         UIProcess/qt/QtWebPageLoadClient.h \
         UIProcess/qt/QtWebPagePolicyClient.h \
         UIProcess/qt/QtWebPageSGNode.h \
@@ -852,6 +855,7 @@ have?(QTQUICK) {
         UIProcess/qt/QtDialogRunner.cpp \
         UIProcess/qt/QtDownloadManager.cpp \
         UIProcess/qt/QtPageClient.cpp \
+        UIProcess/qt/QtWebPageFindClient.cpp \
         UIProcess/qt/QtWebPageLoadClient.cpp \
         UIProcess/qt/QtWebPagePolicyClient.cpp \
         UIProcess/qt/QtWebPageSGNode.cpp \

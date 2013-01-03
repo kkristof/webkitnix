@@ -1,3 +1,1093 @@
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove failing or flaky test expectations from tests that have been passing on Mac.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed gardening of Apple Windows port.
+
+        * platform/win/TestExpectations:
+        * platform/win/fast/inline/justify-emphasis-inline-box-expected.txt: Added.
+
+2013-01-03  Adam Klein  <adamk@chromium.org>
+
+        [HTMLTemplateElement] Disallow cycles within template content
+        https://bugs.webkit.org/show_bug.cgi?id=105066
+
+        Reviewed by Ojan Vafai.
+
+        * fast/dom/HTMLTemplateElement/cycles-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/cycles-in-shadow-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/cycles-in-shadow.html: Added.
+        * fast/dom/HTMLTemplateElement/cycles.html: Added.
+        * fast/dom/shadow/shadow-hierarchy-exception-expected.txt: Added.
+        * fast/dom/shadow/shadow-hierarchy-exception.html: Added.
+
+2013-01-03  Alexis Menard  <alexis@webkit.org>
+
+        Querying transition-timing-function value on the computed style does not return keywords when it should.
+        https://bugs.webkit.org/show_bug.cgi?id=105442
+
+        Reviewed by Simon Fraser.
+
+        Update the tests to match the correct behavior of returning a keyword
+        rather than a cubic-bezier() form when using predefined values for the
+        transition-timing-function property.
+
+        * animations/animation-shorthand-name-order-expected.txt:
+        * animations/animation-shorthand-name-order.html:
+        * animations/animation-shorthand-removed.html:
+        * animations/animation-shorthand.html:
+        * animations/computed-style-expected.txt:
+        * animations/computed-style.html:
+        * fast/css/getComputedStyle/computed-style-expected.txt:
+        * fast/css/getComputedStyle/computed-style-without-renderer-expected.txt:
+        * svg/css/getComputedStyle-basic-expected.txt:
+        * transitions/inherit-other-props-expected.txt:
+        * transitions/inherit-other-props.html:
+        * transitions/transitions-parsing-expected.txt:
+        * transitions/transitions-parsing.html:
+
+2013-01-03  Rik Cabanier  <cabanier@adobe.com>
+
+        Canvas blending tests fail on Mac WK2
+        https://bugs.webkit.org/show_bug.cgi?id=105943
+
+        Reviewed by Simon Fraser.
+
+        * platform/mac-wk2/TestExpectations: updated expectations as the test now passes
+
+2013-01-03  Adam Klein  <adamk@chromium.org>
+
+        Clear failed image loads when an <img> is adopted into a different document
+        https://bugs.webkit.org/show_bug.cgi?id=104409
+
+        Reviewed by Nate Chapin.
+
+        * loader/image-loader-adoptNode-assert-expected.txt: Added.
+        * loader/image-loader-adoptNode-assert.html: Added.
+
+2013-01-03  Vincent Scheib  <scheib@chromium.org>
+
+        Sandbox-blocked pointer lock should log to the console.
+        https://bugs.webkit.org/show_bug.cgi?id=105794
+
+        Reviewed by Adrienne Walker.
+
+        * http/tests/pointer-lock/iframe-sandboxed-expected.txt:
+        * http/tests/pointer-lock/iframe-sandboxed-nested-disallow-then-allow-pointer-lock-expected.txt:
+
+2013-01-03  Alexis Menard  <alexis@webkit.org>
+
+        Add tests to cover what transition-timing-function accepts for cubic-bezier values.
+        https://bugs.webkit.org/show_bug.cgi?id=105426
+
+        Reviewed by Simon Fraser.
+
+        http://www.w3.org/TR/css3-transitions/#transition-timing-function-property
+        has not yet been updated following the discussions
+        http://lists.w3.org/Archives/Public/www-style/2010Apr/0489.html and
+        http://lists.w3.org/Archives/Public/www-style/2010Jun/0254.html where
+        the range restriction of Y values for cubic-bezier type has been
+        removed. This patch add tests to cover that behavior to avoid breakage
+        in the future and test also various other different cubic-bezier use
+        cases.
+
+        * transitions/transitions-parsing-expected.txt:
+        * transitions/transitions-parsing.html:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Update Mac test expectations after merging the bug 105987 into the bug 105986.
+
+        Also add one more test expectation for the bug.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-02  Levi Weintraub  <leviw@chromium.org>
+
+        Fix incorrect assumption about in-flow descendants of inlines in touch event rect tracking
+        https://bugs.webkit.org/show_bug.cgi?id=105970
+
+        Reviewed by Simon Fraser.
+
+        * platform/chromium-linux/platform/chromium/fast/events/touch/compositor-touch-hit-rects-expected.txt: Updating expectations
+        * platform/chromium/fast/events/touch/compositor-touch-hit-rects.html: Updating test to check previously failing case where
+        an inline with a touch handler contains a non-normal-flow child. Also, fixing the test since it was incorrectly duplicated.
+        * platform/chromium/TestExpectations:
+
+2013-01-03  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. Marking webaudio/automatic-pull-node.html as
+        [ Pass Slow ] instead of [ Pass Timeout ] for XP.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed gardening, skip a new failing test.
+
+        * platform/qt/TestExpectations:
+
+2013-01-03  Mike West  <mkwst@chromium.org>
+
+        The 'body' of seamless IFrames should default to 'margin: 0'
+        https://bugs.webkit.org/show_bug.cgi?id=90834
+
+        Reviewed by Antti Koivisto.
+
+        * fast/frames/seamless/seamless-body-margin-expected.txt: Added.
+        * fast/frames/seamless/seamless-body-margin.html: Added.
+            New test to explicitly check 'body' margins.
+        * fast/frames/seamless/resources/nested-seamless.html:
+        * fast/frames/seamless/resources/quirks-square.html:
+        * fast/frames/seamless/resources/two-inline-blocks.html:
+        * fast/frames/seamless/seamless-inherited-origin-expected.txt:
+        * fast/frames/seamless/seamless-inherited-origin.html:
+            Updated these tests to remove the assumption that the body had an
+            8px margin.
+
+2013-01-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed gardening.
+
+        * platform/qt/TestExpectations: Skip new failing tests.
+        * platform/qt/editing/deleting/delete-to-select-table-expected.txt: Updated after r138654.
+        * platform/qt/editing/execCommand/print-expected.txt: Updated after r138654.
+        * platform/qt/editing/execCommand/selectAll-expected.txt: Updated after r138654.
+        * platform/qt/editing/inserting/editable-html-element-expected.txt: Updated after r138654.
+
+2013-01-03  Mike West  <mkwst@chromium.org>
+
+        seamless iframes don't inherit styles when srcdoc is used
+        https://bugs.webkit.org/show_bug.cgi?id=103539
+
+        Reviewed by Antti Koivisto.
+
+        * fast/frames/seamless/resources/span.html: Added.
+        * fast/frames/seamless/seamless-contenteditable-not-inherited-expected.txt:
+            Updating the previously failing expectation.
+        * fast/frames/seamless/seamless-srcdoc-expected.txt: Added.
+        * fast/frames/seamless/seamless-srcdoc.html: Added.
+            Exciting new test to ensure that this doesn't regress, neither
+            for totally simple srcdoc attriubtes, nor for slightly more
+            complex variations.
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add failing test expectations for two canvas tests on Mac Lion
+        since they have been failing as far as we could tell on the flakiness dashboard.
+
+        The failure is tracked by the bug 105999.
+
+        * platform/mac/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectation for the bug 105998.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        More Mac test expectation updates per bugs 105988 and 105987.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add flaky crash expectations for multiple tests on Mac WebKit2.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Kenneth Russell  <kbr@google.com>
+
+        [chromium] Creation of dedicated workers (isolates) leaks reference to HTMLDocument
+        https://bugs.webkit.org/show_bug.cgi?id=105367
+
+        Reviewed by Dmitry Titov.
+
+        * fast/workers/resources/empty-worker.js: Added.
+        * fast/workers/resources/worker-document-leak-iframe.html: Added.
+        * fast/workers/worker-document-leak-expected.txt: Added.
+        * fast/workers/worker-document-leak.html: Added.
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        One more Mac rebaseline attempt for r138654. Also remove an entry for the bug 105514
+        which has been dup'ed with the bug 103663 for which we have more specific expectations.
+
+        * platform/mac-lion/editing/deleting: Removed.
+        * platform/mac-lion/editing/deleting/delete-to-select-table-expected.txt: Removed.
+        * platform/mac-wk2/editing/deleting: Removed.
+        * platform/mac-wk2/editing/deleting/delete-to-select-table-expected.txt: Removed.
+        * platform/mac/TestExpectations:
+        * platform/mac/editing/deleting/delete-to-select-table-expected.txt:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Mac and Chromium rebaselines after r138654.
+
+        * editing/deleting/delete-to-select-table-expected.txt: Added.
+        * platform/chromium-mac/editing/deleting/delete-to-select-table-expected.txt: Added.
+        * platform/chromium/editing/deleting/delete-to-select-table-expected.txt: Removed.
+        * platform/efl/editing/deleting/delete-to-select-table-expected.txt: Removed.
+        * platform/gtk/editing/deleting/delete-to-select-table-expected.txt: Removed.
+        * platform/mac-lion/editing/deleting/delete-to-select-table-expected.txt: Added.
+        * platform/mac-wk2/editing/deleting: Added.
+        * platform/mac-wk2/editing/deleting/delete-to-select-table-expected.txt: Added.
+
+2013-01-02  Luke Macpherson   <macpherson@chromium.org>
+
+        Unreviewed Chromium gardening.
+
+        Rebaseline win-xp image for svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr-expected.html.
+
+        * platform/chromium-win-xp/svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr-expected.png: Added.
+
+2013-01-02  Bem Jones-Bey  <bjonesbe@adobe.com>
+
+        When a block's height is determined by min-height/max-height, children with percentage heights are sized incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=26559
+
+        Reviewed by Tony Chang.
+
+        Add tests to ensure percent heights are correctly determined.
+
+        * fast/block/min-max-height-percent-height-child-expected.txt: Added.
+        * fast/block/min-max-height-percent-height-child.html: Added.
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a failing test expectation to a test added by r136697.
+        The failure is tracked by the bug 105960.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a failing test expectations to a test added by r132411.
+        The patch updated DumpRenderTree but didn't update WebKitTestRunner.
+        The failure is tracked by the bug 105958.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac WebKit2 test expectation for the bug 105954.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a failing test expectation for the bug 105954.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Douglas Stockwell  <dstockwell@chromium.org>
+
+        Crash in WebCore::InlineBox::deleteLine
+        https://bugs.webkit.org/show_bug.cgi?id=93448
+
+        Reviewed by Eric Seidel.
+
+        * editing/deleting/delete-block-table-expected.txt:
+        * editing/execCommand/selectAll-expected.txt: Renamed from LayoutTests/platform/chromium/editing/execCommand/selectAll-expected.txt.
+        * fast/text/whitespace/inline-whitespace-wrapping-1-expected.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-1.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-2-expected.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-2.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-3-expected.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-3.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-4-expected.html: Added.
+        * fast/text/whitespace/inline-whitespace-wrapping-4.html: Added.
+        * fast/text/whitespace/nowrap-white-space-collapse-expected.html: Added.
+        * fast/text/whitespace/nowrap-white-space-collapse.html: Added.
+        * fast/text/whitespace/pre-block-normal-inline-crash-1-expected.txt: Added.
+        * fast/text/whitespace/pre-block-normal-inline-crash-1.html: Added.
+        * fast/text/whitespace/pre-block-normal-inline-crash-2-expected.txt: Added.
+        * fast/text/whitespace/pre-block-normal-inline-crash-2.html: Added.
+        * platform/chromium-win/editing/deleting/delete-to-select-table-expected.txt:
+        * platform/chromium-win/editing/execCommand/print-expected.txt:
+        * platform/chromium-win/editing/execCommand/selectAll-expected.txt:
+        * platform/chromium-win/editing/inserting/editable-html-element-expected.txt:
+        * platform/efl/editing/execCommand/selectAll-expected.txt: Removed.
+        * platform/gtk/editing/execCommand/selectAll-expected.txt: Removed.
+        * platform/mac/editing/execCommand/selectAll-expected.txt: Removed.
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a test expectation for the bug 105952.
+
+        * platform/wk2/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a failing test expectation to a test added by r138380 on Mac WK2.
+        The failure is tracked by the bug 105948.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-02  Tom Sepez  <tsepez@chromium.org>
+
+        X-XSS-Protection report-uri doesn't work with mode=block
+        https://bugs.webkit.org/show_bug.cgi?id=105907
+
+        Reviewed by Adam Barth.
+
+        Appears to work as-is, but the test was missing for this case. Checking
+        for completion is complicated by the frame navigating to about:blank, rather
+        than the echo-report page, so check it from the parent frame.
+        
+        * http/tests/security/xssAuditor/report-script-tag-full-block-expected.txt: Added.
+        * http/tests/security/xssAuditor/report-script-tag-full-block.html: Added.
+        * http/tests/security/xssAuditor/resources/echo-intertag.pl:
+
+2013-01-02  Terry Anderson  <tdanderson@chromium.org>
+
+        [chromium] Mark webaudio/automatic-pull-node.html as Timeout for XP
+        https://bugs.webkit.org/show_bug.cgi?id=105941
+
+        Unreviewed gardening.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Rebaseline tests after r137798 and update test expectations per bug 105943.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac-wk2/compositing/rtl/rtl-fixed-expected.txt:
+        * platform/mac-wk2/compositing/rtl/rtl-fixed-overflow-expected.txt:
+
+2013-01-02  Elliott Sprehn  <esprehn@chromium.org>
+
+        View source mode is missing the processing instruction line.
+        https://bugs.webkit.org/show_bug.cgi?id=15961
+
+        Reviewed by Adam Barth.
+
+        Add a test for XML documents shown in viewsource mode. The bug
+        with the missing processing instruction line was fixed long
+        ago with the HTML5 parser rewrite so this just adds a test.
+
+        * fast/frames/viewsource-xml-expected.txt: Added.
+        * fast/frames/viewsource-xml.html: Added.
+
+2013-01-02  Elliott Sprehn  <esprehn@chromium.org>
+
+        Transitions and animations do not apply to CSS ::before and ::after pseudo-elements
+        https://bugs.webkit.org/show_bug.cgi?id=92591
+
+        Reviewed by Eric Seidel.
+
+        Add tests that check if animations and transitions play for pseudo
+        :before and :after pseudo elements.
+
+        * fast/css-generated-content/pseudo-animation-expected.txt: Added.
+        * fast/css-generated-content/pseudo-animation.html: Added.
+        * fast/css-generated-content/pseudo-transition-expected.txt: Added.
+        * fast/css-generated-content/pseudo-transition.html: Added.
+
+2013-01-02  Chris Rogers  <crogers@google.com>
+
+        Implement WebIDL-style string constants in WebAudio
+        https://bugs.webkit.org/show_bug.cgi?id=105058
+
+        Reviewed by Kentaro Hara.
+
+        * webaudio/oscillator-basic-expected.txt:
+        * webaudio/oscillator-basic.html:
+        * webaudio/resources/audio-testing.js:
+
+2013-01-02  Robert Hogan  <robert@webkit.org>
+
+        Regression (r132935): WebKit breaks between <nobr> tags
+        https://bugs.webkit.org/show_bug.cgi?id=11857
+
+        Reviewed by David Hyatt.
+
+        * fast/inline/break-between-nobr-expected.html: Added.
+        * fast/inline/break-between-nobr.html: Added.
+
+2013-01-02  Mike West  <mkwst@chromium.org>
+
+        sandboxed iframe attribute parsing layout tests are flaky
+        https://bugs.webkit.org/show_bug.cgi?id=104848
+
+        Reviewed by Adam Barth.
+
+        This patch breaks the monolithic sandboxed-iframe-attribute-parsing.html
+        test into separate tests for each case. The flaky failures were due to
+        one of the 14 frames loading out of order, which shifted console message
+        positions around. Breaking them into separate tests should both speed up
+        the tests, as more can run in parallel, and solve the flake.
+
+        * fast/frames/resources/sandboxed-iframe-attribute-test.js: Added.
+        (fail):
+        (setStatus):
+        (allowedCallFromSandbox):
+        (disallowedCallFromSandbox):
+        (disallowedFormSubmitted):
+        (window.onload):
+        * fast/frames/sandboxed-iframe-attribute-parsing-01-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-01.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-02-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-02.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-03-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-03.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-04-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-04.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-05-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-05.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-06-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-06.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-07-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-07.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-08-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-08.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-09-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-09.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-10-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-10.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-11-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-11.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-12-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-12.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-13-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-13.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-14-expected.txt: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-14.html: Added.
+        * fast/frames/sandboxed-iframe-attribute-parsing-expected.txt: Removed.
+        * fast/frames/sandboxed-iframe-attribute-parsing.html: Removed.
+        * platform/chromium/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt-arm/TestExpectations:
+
+2013-01-02  Mike West  <mkwst@chromium.org>
+
+        Sandboxed iframes should not be granted notification permission of the parent frame unless allow-same-origin is specified
+        https://bugs.webkit.org/show_bug.cgi?id=36732
+
+        Reviewed by Adam Barth.
+
+        The behavior was fixed in wkbug.com/79704, but there aren't currently
+        any tests ensuring that it doesn't regress for sandboxed frames. This
+        patch adds one.
+
+        * fast/notifications/notifications-sandbox-permission-expected.txt: Added.
+        * fast/notifications/notifications-sandbox-permission.html: Added.
+        * fast/notifications/resources/notifications-iframe.html: Added.
+
+2013-01-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Update Mac test expectation per bug 105932.
+
+        * platform/mac/TestExpectations:
+
+2013-01-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r138601.
+        http://trac.webkit.org/changeset/138601
+        https://bugs.webkit.org/show_bug.cgi?id=105917
+
+        Also not an optimal solution, needs more discussion.
+        (Requested by mkwst_ on #webkit).
+
+        * fast/frames/seamless/resources/span.html: Removed.
+        * fast/frames/seamless/seamless-contenteditable-not-inherited-expected.txt:
+        * fast/frames/seamless/seamless-srcdoc-expected.txt: Removed.
+        * fast/frames/seamless/seamless-srcdoc.html: Removed.
+
+2013-01-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r138611.
+        http://trac.webkit.org/changeset/138611
+        https://bugs.webkit.org/show_bug.cgi?id=105916
+
+        Not an optimal solution, needs more discussion. (Requested by
+        mkwst_ on #webkit).
+
+        * fast/frames/seamless/resources/nested-seamless.html:
+        * fast/frames/seamless/resources/quirks-square.html:
+        * fast/frames/seamless/resources/two-inline-blocks.html:
+        * fast/frames/seamless/seamless-body-margin-expected.txt: Removed.
+        * fast/frames/seamless/seamless-body-margin.html: Removed.
+        * fast/frames/seamless/seamless-inherited-origin-expected.txt:
+        * fast/frames/seamless/seamless-inherited-origin.html:
+
+2013-01-02  Mike West  <mkwst@chromium.org>
+
+        The 'body' of seamless IFrames should default to 'margin: 0'
+        https://bugs.webkit.org/show_bug.cgi?id=90834
+
+        Reviewed by Eric Seidel.
+
+        * fast/frames/seamless/seamless-body-margin-expected.txt: Added.
+        * fast/frames/seamless/seamless-body-margin.html: Added.
+            New test to explicitly check 'body' margins.
+        * fast/frames/seamless/resources/nested-seamless.html:
+        * fast/frames/seamless/resources/quirks-square.html:
+        * fast/frames/seamless/resources/two-inline-blocks.html:
+        * fast/frames/seamless/seamless-inherited-origin-expected.txt:
+        * fast/frames/seamless/seamless-inherited-origin.html:
+            Updated these tests to remove the assumption that the body had an
+            8px margin.
+
+2013-01-01  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [WK2] plugins/clicking-missing-plugin-fires-delegate.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=105897
+
+        Reviewed by Alexey Proskuryakov.
+
+        Unskip plugins/clicking-missing-plugin-fires-delegate.html for
+        WK2 now that WebKitTestRunner is dumping the expected text when
+        the missing plugin button is clicked.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-01  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL][WK1] Skip some webaudio test cases due to lack of implementation
+        https://bugs.webkit.org/show_bug.cgi?id=105882
+
+        Unreviewed, EFL gardening.
+
+        Bunch of webaudio test cases need setAudioData implementation and DRT has not it.
+        So, skips those cases.
+
+        * platform/efl-wk1/TestExpectations:
+
+2013-01-01  Mike West  <mkwst@chromium.org>
+
+        seamless iframes don't inherit styles when srcdoc is used
+        https://bugs.webkit.org/show_bug.cgi?id=103539
+
+        Reviewed by Eric Seidel.
+
+        * fast/frames/seamless/resources/span.html: Added.
+        * fast/frames/seamless/seamless-contenteditable-not-inherited-expected.txt:
+            Updating the previously FAILing expectation.
+        * fast/frames/seamless/seamless-srcdoc-expected.txt: Added.
+        * fast/frames/seamless/seamless-srcdoc.html: Added.
+            Exciting new test to ensure that this doesn't regress, neither
+            for totally simple srcdoc attriubtes, nor for slightly more
+            complex variations.
+
+2012-12-31  Kangil Han  <kangil.han@samsung.com>
+
+        [EFL] css3/masking/clip-path-circle-relative-overflow.html needs expected results update after 97217
+        https://bugs.webkit.org/show_bug.cgi?id=105883
+
+        Unreviewed, EFL gardening.
+
+        Rebaseline css3/masking/clip-path-circle-relative-overflow.html because BUG 97217 has been resolved.
+
+        * platform/efl/TestExpectations:
+        * platform/efl/css3/masking/clip-path-circle-relative-overflow-expected.png:
+
+2012-12-31  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark editing/spelling/spelling-insert-html.html as flaky
+        since it sometimes hits an assertion in RenderObject
+        destructor.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark fast/dom/Range/range-extract-contents.html as flaky
+        since it sometimes hits an assertion in
+        WebCore::endOfContinuations().
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark editing/pasteboard/4806874.html as flaky since
+        it sometimes hits an assertion in RenderObject
+        destructor.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline fast/js/global-constructors.html after
+        TEMPLATE_ELEMENT was enabled for EFL port in r138586.
+
+        * platform/efl/fast/js/global-constructors-expected.txt:
+
+2012-12-30  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        [EFL] Enable TEMPLATE_ELEMENT feature
+        https://bugs.webkit.org/show_bug.cgi?id=105865
+
+        Reviewed by Laszlo Gombos.
+
+        * platform/efl/TestExpectations: Unskip test cases for template element.
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Add several webaudio tests to TestExpectations since
+        they sometimes hit !m_finishedNodes.size() assertion
+        in AudioContext destructor.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip XSS Auditor test case that has been consistently
+        passing on EFL port for a while.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip fast/dom/shadow/host-wrapper-reclaimed.html
+        since it is passing after r137978.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Update expectations for 2 fast/dom test cases so
+        that they are not reported as unexpected passes.
+
+        Those tests are passing because their generated
+        expectations are wrong.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Philippe Normand  <pnormand@igalia.com>
+
+        [GStreamer] webaudio/decode-audio-data-basic.html fails
+        https://bugs.webkit.org/show_bug.cgi?id=105298
+
+        Reviewed by Martin Robinson.
+
+        * platform/efl/TestExpectations: Unflag fixed test.
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip text-decoration-style tests passing after
+        r126054 and r132076.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip cairo-related tests that are now consistently
+        passing on both WK1 and WK2 EFL.
+
+        * platform/efl/TestExpectations:
+
+2012-12-30  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Unskip several compositing test cases that are passing
+        consistently on EFL WK2.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/efl/TestExpectations:
+
+2012-12-30  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed gardening, unskip a now passing test.
+
+        * platform/qt/TestExpectations:
+
+2012-12-29  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [GTK] Change bug for some inspector tests
+        https://bugs.webkit.org/show_bug.cgi?id=105842
+
+        Unreviewed gardening.
+
+        Bug 43332 was landed. But these tests still fail on GTK port.
+        And change bug to track the failures.
+
+        * platform/gtk/TestExpectations:
+
+2012-12-29  Andrey Lushnikov  <lushnikov@chromium.com>
+
+        Web Inspector: refactor DefaultTextEditor
+        https://bugs.webkit.org/show_bug.cgi?id=105829
+
+        Reviewed by Pavel Feldman.
+
+        Fix test to correlate with refactoring of DefaultTextEditor.
+
+        * inspector/editor/text-editor-selection.html:
+
+2012-12-28  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed rebaseline.
+
+        * platform/chromium-win-xp/inspector/extensions/extensions-resources-expected.txt: Removed.
+
+2012-12-28  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed updated test expectations
+
+        * platform/chromium/TestExpectations:
+
+2012-12-28  Fady Samuel  <fsamuel@chromium.org>
+      
+        Unreviewed updated TestExpectations. Mark test as fail on XP only.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-28  Rafael Weinstein  <rafaelw@chromium.org>
+
+        [Templates]: Fix assert in colgroup parse handling
+        https://bugs.webkit.org/show_bug.cgi?id=105837
+
+        Reviewed by Eric Seidel.
+
+        * html5lib/resources/template.dat:
+
+2012-12-27  Emil A Eklund  <eae@chromium.org>
+
+        REGRESSION (r138196): Regions with text-overflow: ellipsis; are being ellipsized unnecessarily
+        https://bugs.webkit.org/show_bug.cgi?id=105600
+
+        Reviewed by Darin Adler.
+        
+        Add test for text-overflow: ellipsis inside a table. 
+
+        * fast/sub-pixel/ellipsis-table-expected.html: Added.
+        * fast/sub-pixel/ellipsis-table.html: Added.
+
+2012-12-28  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed Updated TestExpectations
+
+        * platform/chromium/TestExpectations:
+
+2012-12-28  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed rebaseline
+
+        * platform/chromium-win-xp/svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop-expected.png: Added.
+
+2012-12-28  Rafael Weinstein  <rafaelw@chromium.org>
+
+        Heap-use-after-free in WebCore::HTMLConstructionSite::mergeAttributesFromTokenIntoElement
+        https://bugs.webkit.org/show_bug.cgi?id=105780
+
+        Reviewed by Eric Seidel.
+
+        * html5lib/resources/template.dat:
+
+2012-12-27  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Web Inspector: Introduce uri as a UISourceCode unique identifier in workspace.
+        https://bugs.webkit.org/show_bug.cgi?id=105799
+
+        Reviewed by Pavel Feldman.
+
+        * http/tests/inspector/compiler-script-mapping.html:
+        * http/tests/inspector/workspace-test.js:
+        (initialize_WorkspaceTest.InspectorTest.createWorkspace):
+        (initialize_WorkspaceTest.InspectorTest.addMockUISourceCodeToWorkspace):
+        * inspector/debugger/breakpoint-manager.html:
+        * inspector/debugger/resource-script-mapping.html:
+        * inspector/debugger/scripts-file-selector.html:
+        * inspector/debugger/scripts-panel.html:
+        * inspector/debugger/scripts-sorting.html:
+        * inspector/debugger/ui-source-code-display-name.html:
+        * inspector/debugger/ui-source-code.html:
+        * inspector/uisourcecode-revisions.html:
+
+2012-12-28  Mike West  <mkwst@chromium.org>
+
+        [Qt,EFL,GTK] Unreviewed gardening.
+
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/qt/TestExpectations:
+            Skipping http/tests/security/sandboxed-iframe-form-top.html
+            as it's leaking state (console messages) into the next test.
+            See wkbug.com/105819 and wkbug.com/85522 for details.
+
+2012-12-28  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: debugger should step into event handler on event dispatch
+        https://bugs.webkit.org/show_bug.cgi?id=105827
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/debugger/debugger-step-into-event-listener-expected.txt: Added.
+        * inspector/debugger/debugger-step-into-event-listener.html: Added.
+
+2012-12-28  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Skip http/tests/security/sandboxed-iframe-form-top.html which
+        started failing after r138525.
+
+        * platform/efl/TestExpectations:
+
+2012-12-28  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: rename distanceToWindow to distance
+        https://bugs.webkit.org/show_bug.cgi?id=105823
+
+        Reviewed by Pavel Feldman.
+
+        Updated tests after renaming distanceToWindow to distance.
+
+        * inspector/profiler/heap-snapshot-summary-sorting-fields.html:
+        * inspector/profiler/heap-snapshot-summary-sorting-instances.html:
+        * inspector/profiler/heap-snapshot-summary-sorting.html:
+
+2012-12-28  Andrey Lushnikov  <lushnikov@chromium.com>
+
+        Web Inspector: refactor DefaultTextEditor's private methods
+        https://bugs.webkit.org/show_bug.cgi?id=105797
+
+        Reviewed by Pavel Feldman.
+
+        Fix test to correspond to method renamings of TextEditorMainPanel.
+
+        * inspector/editor/text-editor-selection.html:
+
+2012-12-28  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed holiday gardening, skip new failing tests to paint the bots green.
+
+        * platform/qt/TestExpectations:
+
+2012-12-27  Stuart Eichert  <stuart@fivemicro.com>
+
+        instance-of-immediates.js : the word "passing" is spelled incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=105669
+
+        Reviewed by Julien Chaffraix.
+
+        Corrected spelling of the word "passing" in instance-of-immediates.js
+
+        * fast/js/script-tests/instance-of-immediates.js:
+
+2012-12-27  Mike West  <mkwst@chromium.org>
+
+        Add context to the console message generated by Document::printNavigationErrorMessage.
+        https://bugs.webkit.org/show_bug.cgi?id=105774
+
+        Reviewed by Darin Adler.
+
+        * fast/frames/sandboxed-iframe-close-top-noclose-expected.txt:
+        * fast/frames/sandboxed-iframe-history-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-parent-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-targetlink-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-top-by-name-denied-expected.txt:
+        * fast/frames/sandboxed-iframe-navigation-top-denied-expected.txt:
+        * fast/frames/seamless/seamless-window-location-sandbox-expected.txt:
+        * http/tests/security/no-popup-from-sandbox-top-expected.txt:
+        * http/tests/security/frameNavigation/not-opener-expected.txt:
+        * http/tests/security/frameNavigation/xss-DENIED-plugin-navigation-expected.txt:
+        * http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation-expected.txt:
+        * platform/chromium/http/tests/security/frameNavigation/xss-DENIED-plugin-navigation-expected.txt:
+        * platform/chromium/http/tests/security/no-popup-from-sandbox-top-expected.txt:
+            Update test expectations with new error message.
+
+2012-12-27  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Web Inspector: [Regression] Can not set breakpoints in scripts loaded with source map.
+        https://bugs.webkit.org/show_bug.cgi?id=105801
+
+        Reviewed by Alexander Pavlov.
+
+        * http/tests/inspector/compiler-script-mapping-expected.txt:
+        * http/tests/inspector/compiler-script-mapping.html:
+        * http/tests/inspector/debugger-test.js:
+        (initialize_DebuggerTest):
+
+2012-12-27  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [EFL][WK2] Regression(135935) layout tests snapshots are flaky
+        https://bugs.webkit.org/show_bug.cgi?id=103468
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Unskip a lot of ref tests for WebKit2 EFL now that they are no longer
+        flaky.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-27  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed rebaseline
+
+        * platform/chromium-win-xp/webaudio/realtimeanalyser-fft-sizing-expected.txt: Added.
+
+2012-12-27  Fady Samuel  <fsamuel@chromium.org>
+
+        Unreviewed rebaseline.
+
+        * platform/chromium-win-xp/inspector/extensions/extensions-resources-expected.txt: Added.
+
+2012-12-27  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: remove support for legacy heap graph node format
+        https://bugs.webkit.org/show_bug.cgi?id=105802
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/profiler/heap-snapshot-comparison-dom-groups-change.html: switched to the new
+        heap graph node representation: store edge count for each node instead of the first edge
+        index.
+
+2012-12-27  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: move js heap snapshot preprocessing to JSHeapSnapshot
+        https://bugs.webkit.org/show_bug.cgi?id=105798
+
+        Reviewed by Pavel Feldman.
+
+        * inspector/profiler/heap-snapshot.html: updated test to match HeapSnapshot.js changes
+
+2012-12-27  Alexander Pavlov  <apavlov@chromium.org>
+
+        Web Inspector: Refactor SourceMapParser to enable range-based sourcemap
+        https://bugs.webkit.org/show_bug.cgi?id=105764
+
+        Reviewed by Vsevolod Vlasov.
+
+        * http/tests/inspector/compiler-script-mapping-expected.txt:
+        * http/tests/inspector/compiler-script-mapping.html:
+        * inspector/styles/range-based-mapping-expected.txt: Added.
+        * inspector/styles/range-based-mapping.html: Added.
+
+2012-12-27  Andrey Adaikin  <aandrey@chromium.org>
+
+        Forgot to SKIP a test on wincairo.
+
+        * platform/wincairo/TestExpectations:
+
+2012-12-27  Andrey Adaikin  <aandrey@chromium.org>
+
+        Forgot to SKIP a test on QT.
+
+        * platform/qt/TestExpectations:
+
+2012-12-25  Andrey Adaikin  <aandrey@chromium.org>
+
+        Web Inspector: [Canvas] report if there is any uninstrumented canvas on a page
+        https://bugs.webkit.org/show_bug.cgi?id=105721
+
+        Reviewed by Yury Semikhatsky.
+
+        * inspector/profiler/canvas-profiler-test.js:
+        (initialize_CanvasWebGLProfilerTest.InspectorTest.enableCanvasAgent):
+        (initialize_CanvasWebGLProfilerTest.InspectorTest.disableCanvasAgent):
+        (initialize_CanvasWebGLProfilerTest):
+        * inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases-expected.txt: Added.
+        * inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html: Added.
+
+2012-12-27  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Web Inspector: Simplify script mappings by introducing DefaultScriptMapping.
+        https://bugs.webkit.org/show_bug.cgi?id=103038
+
+        Reviewed by Pavel Feldman.
+
+        * http/tests/inspector/compiler-script-mapping.html:
+        * inspector/debugger/breakpoint-manager-expected.txt:
+        * inspector/debugger/breakpoint-manager.html:
+        * inspector/debugger/dynamic-script-tag-expected.txt:
+        * inspector/debugger/live-edit-breakpoints-expected.txt:
+        * inspector/debugger/live-edit-breakpoints.html:
+        * inspector/debugger/pause-in-inline-script-expected.txt:
+        * inspector/debugger/pause-in-inline-script.html:
+        * inspector/debugger/resource-script-mapping-expected.txt:
+        * inspector/debugger/resource-script-mapping.html:
+        * inspector/debugger/scripts-panel.html:
+
+2012-12-27  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark http/tests/appcache/main-resource-redirect.html as crashing
+        for EFL WK2 after r138222.
+
+        * platform/efl-wk2/TestExpectations:
+
+2012-12-27  Eugene Klyuchnikov  <eustas@chromium.org>
+
+        Web Inspector: console.profileEnd() crashes if called without arguments
+        https://bugs.webkit.org/show_bug.cgi?id=105759
+
+        Reviewed by Vsevolod Vlasov.
+
+        Added tests to check that browser do not crash.
+
+        * inspector/profiler/cpu-profiler-parameterless-profile-end-crash-expected.txt: Added.
+        * inspector/profiler/cpu-profiler-parameterless-profile-end-crash.html: Added.
+
+2012-12-27  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Unreviewed chromium test expectations update.
+
+        * platform/chromium/TestExpectations:
+
+2012-12-26  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a Mac test expectations for bugs 105777 and 105778.
+
+        * platform/mac/TestExpectations:
+
+2012-12-26  Emil A Eklund  <eae@chromium.org>
+
+        Unreviewed. Enable most sub-pixel tests on mac.
+
+        * platform/mac/TestExpectations:
+
+2012-12-26  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: extract JS heap profiler specifics into JSHeapSnapshot.js
+        https://bugs.webkit.org/show_bug.cgi?id=105768
+
+        Reviewed by Pavel Feldman.
+
+        Inroduced JSHeapSnapshot, JSHeapSnapshotNode, JSHeapSnapshotEdge and JSHeapSnapshotRetainerEdge which
+        should encapsulate logic specific to JS-heap. The tests were switched to the new classes.
+
+        * inspector/profiler/heap-snapshot-loader.html:
+        * inspector/profiler/heap-snapshot-test.js:
+        (initialize_HeapSnapshotTest.InspectorTest.createJSHeapSnapshotMockObject):
+        (initialize_HeapSnapshotTest.InspectorTest.createHeapSnapshotMockRaw):
+        * inspector/profiler/heap-snapshot.html:
+
 2012-12-25  Alexander Pavlov  <apavlov@chromium.org>
 
         Web Inspector: Crash when modifying a rule that has been removed through JavaScript

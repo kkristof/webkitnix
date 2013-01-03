@@ -1819,10 +1819,6 @@ fast/block/positioning/002.html
 # https://bugs.webkit.org/show_bug.cgi?id=92733
 fast/block/positioning/056.html
 
-# REGRESSION (r130557): fast/exclusions/shape-inside/shape-inside-rounded-rectangle-003.html fails on Qt and GTK
-# https://bugs.webkit.org/show_bug.cgi?id=98585
-fast/exclusions/shape-inside/shape-inside-rounded-rectangle-003.html
-
 # REGRESSION (r130570): fast/writing-mode/vertical-subst-font-vert-no-dflt.html fails on non-Chromium platforms
 # https://bugs.webkit.org/show_bug.cgi?id=98587
 fast/writing-mode/vertical-subst-font-vert-no-dflt.html
@@ -2433,6 +2429,7 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
 
 # [Qt] Unidentified pixel failures
 webkit.org/b/99306 animations/additive-transform-animations.html [ ImageOnlyFailure ]
@@ -2501,3 +2498,15 @@ webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
 # https://bugs.webkit.org/show_bug.cgi?id=104352
 http/tests/xmlhttprequest/post-blob-content-type-async.html
 http/tests/xmlhttprequest/post-blob-content-type-sync.html
+
+# Leaking state into the next test.
+webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
+
+# [Qt] New tests introduced in r138632 fails
+# https://bugs.webkit.org/show_bug.cgi?id=106015
+fast/css-generated-content/pseudo-animation.html
+fast/css-generated-content/pseudo-transition.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=106016
+# [Qt] New fast/workers/worker-document-leak.html fails
+fast/workers/worker-document-leak.html

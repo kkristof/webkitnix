@@ -28,6 +28,7 @@
 
 #include "MessageReceiver.h"
 #include "ResourceCachesToClear.h"
+#include "WebProcessSupplement.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RetainPtr.h>
 #include <wtf/text/WTFString.h>
@@ -37,10 +38,12 @@ namespace WebKit {
 class WebProcess;
 struct SecurityOriginData;
 
-class WebResourceCacheManager : private CoreIPC::MessageReceiver {
+class WebResourceCacheManager : public WebProcessSupplement, public CoreIPC::MessageReceiver {
     WTF_MAKE_NONCOPYABLE(WebResourceCacheManager);
 public:
     WebResourceCacheManager(WebProcess*);
+
+    static const AtomicString& supplementName();
 
 private:
     // CoreIPC::MessageReceiver

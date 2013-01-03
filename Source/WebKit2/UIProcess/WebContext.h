@@ -44,6 +44,7 @@
 #include "WebProcessProxy.h"
 #include <WebCore/LinkHash.h>
 #include <wtf/Forward.h>
+#include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -57,17 +58,10 @@
 namespace WebKit {
 
 class DownloadProxy;
-class WebApplicationCacheManagerProxy;
-class WebCookieManagerProxy;
-class WebDatabaseManagerProxy;
-class WebGeolocationManagerProxy;
+class WebContextSupplement;
 class WebIconDatabase;
-class WebKeyValueStorageManagerProxy;
-class WebMediaCacheManagerProxy;
-class WebNotificationManagerProxy;
 class WebPageGroup;
 class WebPageProxy;
-class WebResourceCacheManagerProxy;
 struct StatisticsData;
 struct WebProcessCreationParameters;
     
@@ -99,6 +93,18 @@ public:
     virtual ~WebContext();
 
     static const Vector<WebContext*>& allContexts();
+
+    template <typename T>
+    T* supplement()
+    {
+        return static_cast<T*>(m_supplements.get(T::supplementName()).get());
+    }
+
+    template <typename T>
+    void addSupplement()
+    {
+        m_supplements.add(T::supplementName(), T::create(this));
+    }
 
     void addMessageReceiver(CoreIPC::StringReference messageReceiverName, CoreIPC::MessageReceiver*);
     void addMessageReceiver(CoreIPC::StringReference messageReceiverName, uint64_t destinationID, CoreIPC::MessageReceiver*);
@@ -200,26 +206,16 @@ public:
 
     static HashSet<String, CaseFoldingHash> pdfAndPostScriptMIMETypes();
 
-    WebApplicationCacheManagerProxy* applicationCacheManagerProxy() const { return m_applicationCacheManagerProxy.get(); }
 #if ENABLE(BATTERY_STATUS)
     WebBatteryManagerProxy* batteryManagerProxy() const { return m_batteryManagerProxy.get(); }
 #endif
-    WebCookieManagerProxy* cookieManagerProxy() const { return m_cookieManagerProxy.get(); }
-#if ENABLE(SQL_DATABASE)
-    WebDatabaseManagerProxy* databaseManagerProxy() const { return m_databaseManagerProxy.get(); }
-#endif
-    WebGeolocationManagerProxy* geolocationManagerProxy() const { return m_geolocationManagerProxy.get(); }
     WebIconDatabase* iconDatabase() const { return m_iconDatabase.get(); }
-    WebKeyValueStorageManagerProxy* keyValueStorageManagerProxy() const { return m_keyValueStorageManagerProxy.get(); }
-    WebMediaCacheManagerProxy* mediaCacheManagerProxy() const { return m_mediaCacheManagerProxy.get(); }
 #if ENABLE(NETWORK_INFO)
     WebNetworkInfoManagerProxy* networkInfoManagerProxy() const { return m_networkInfoManagerProxy.get(); }
 #endif
-    WebNotificationManagerProxy* notificationManagerProxy() const { return m_notificationManagerProxy.get(); }
 #if ENABLE(NETSCAPE_PLUGIN_API)
     WebPluginSiteDataManager* pluginSiteDataManager() const { return m_pluginSiteDataManager.get(); }
 #endif
-    WebResourceCacheManagerProxy* resourceCacheManagerProxy() const { return m_resourceCacheManagerProxy.get(); }
 #if USE(SOUP)
     WebSoupRequestManagerProxy* soupRequestManagerProxy() const { return m_soupRequestManagerProxy.get(); }
 #endif
@@ -370,6 +366,7 @@ private:
 #endif
 
     void addPlugInAutoStartOriginHash(const String& pageOrigin, unsigned plugInOriginHash);
+    void plugInDidReceiveUserInteraction(unsigned plugInOriginHash);
 
     CoreIPC::MessageReceiverMap m_messageReceiverMap;
 
@@ -420,29 +417,22 @@ private:
     bool m_memorySamplerEnabled;
     double m_memorySamplerInterval;
 
-    RefPtr<WebApplicationCacheManagerProxy> m_applicationCacheManagerProxy;
 #if ENABLE(BATTERY_STATUS)
     RefPtr<WebBatteryManagerProxy> m_batteryManagerProxy;
 #endif
-    RefPtr<WebCookieManagerProxy> m_cookieManagerProxy;
-#if ENABLE(SQL_DATABASE)
-    RefPtr<WebDatabaseManagerProxy> m_databaseManagerProxy;
-#endif
-    RefPtr<WebGeolocationManagerProxy> m_geolocationManagerProxy;
     RefPtr<WebIconDatabase> m_iconDatabase;
-    RefPtr<WebKeyValueStorageManagerProxy> m_keyValueStorageManagerProxy;
-    RefPtr<WebMediaCacheManagerProxy> m_mediaCacheManagerProxy;
 #if ENABLE(NETWORK_INFO)
     RefPtr<WebNetworkInfoManagerProxy> m_networkInfoManagerProxy;
 #endif
-    RefPtr<WebNotificationManagerProxy> m_notificationManagerProxy;
 #if ENABLE(NETSCAPE_PLUGIN_API)
     RefPtr<WebPluginSiteDataManager> m_pluginSiteDataManager;
 #endif
-    RefPtr<WebResourceCacheManagerProxy> m_resourceCacheManagerProxy;
 #if USE(SOUP)
     RefPtr<WebSoupRequestManagerProxy> m_soupRequestManagerProxy;
 #endif
+
+    typedef HashMap<AtomicString, RefPtr<WebContextSupplement> > WebContextSupplementMap;
+    WebContextSupplementMap m_supplements;
 
 #if PLATFORM(WIN)
     bool m_shouldPaintNativeControls;
@@ -485,7 +475,7 @@ template<typename U> inline void WebContext::sendToNetworkingProcess(const U& me
 {
     switch (m_processModel) {
     case ProcessModelSharedSecondaryProcess:
-        if (m_processes[0]->canSendMessage())
+        if (!m_processes.isEmpty() && m_processes[0]->canSendMessage())
             m_processes[0]->send(message, 0);
         return;
     case ProcessModelMultipleSecondaryProcesses:

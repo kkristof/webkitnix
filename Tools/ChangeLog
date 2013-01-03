@@ -1,3 +1,407 @@
+2013-01-03  Julie Parent  <jparent@chromium.org>
+
+        Add unit test for default builder for the dashboards.
+        https://bugs.webkit.org/show_bug.cgi?id=105972
+
+        Reviewed by Dirk Pranke.
+
+        * TestResultServer/static-dashboards/loader_unittests.js:
+
+2013-01-03  Tony Chang  <tony@chromium.org>
+
+        Generate internal.settings from Settings.in
+        https://bugs.webkit.org/show_bug.cgi?id=104740
+
+        Reviewed by Adam Barth.
+
+        * GNUmakefile.am: Compile new generated files on GTK+.
+        * qmake/mkspecs/features/default_post.prf: Qt: Make it so an action
+        with both extra_sources and add_output_to_sources=false will still
+        compile the files in extra_sources. This makes it possible to compile
+        InternalSettingsGenerated.cpp and not be confused by
+        InternalSettingsGenerated.idl.
+
+2013-01-03  Zan Dobersek  <zandobersek@gmail.com>
+
+        [style] WebIDL-reflecting uppercase enums reported as style violation
+        https://bugs.webkit.org/show_bug.cgi?id=105832
+
+        Reviewed by Tony Chang.
+
+        Recognize the enum as WebIDL-reflecting one if there's a comment present that
+        indicates this. In enums spanning over multiple lines, the comment is expected
+        on the first line. In enums placed in one line, the comment is expected at the
+        end of that line.
+
+        WebIDL-reflecting enum values are required to be written in uppercase and as such
+        violate the common rule of these values being written in InterCaps. Annotating
+        enums this way makes it possible to avoid false style violation reports.
+
+        The comment is of form '// Web(?:Kit)?IDL enum'.
+
+        * Scripts/webkitpy/style/checkers/cpp.py:
+        (_EnumState.__init__):
+        (_EnumState.process_clean_line):
+        (check_enum_casing):
+        * Scripts/webkitpy/style/checkers/cpp_unittest.py:
+        (NoNonVirtualDestructorsTest.test_enum_casing):
+
+2013-01-03  Tim 'mithro' Ansell  <mithro@mithis.com>
+
+        Adding favicon.ico to the garden-o-matic.
+        https://bugs.webkit.org/show_bug.cgi?id=105982
+
+        Reviewed by Adam Barth.
+
+        * Scripts/webkitpy/tool/servers/gardeningserver.py:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/favicon.ico:
+
+2013-01-03  Jonathan Liu  <net147@gmail.com>
+
+        [Qt] Fix library linking order
+        https://bugs.webkit.org/show_bug.cgi?id=105818
+
+        Some Qt libraries are linked before the private static libraries
+        that depend on them which results in QtWebKit failing to link.
+
+        Copy Qt module dependencies from QT to QT_PRIVATE when creating
+        module to ensure the Qt libraries are linked after the private
+        static libraries that depend on them.
+
+        Reviewed by Tor Arne Vestbø.
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2013-01-02  Byungwoo Lee  <bw80.lee@samsung.com>
+
+        [EFL][WK2] Fix tooltip bugs in MiniBrowser.
+        https://bugs.webkit.org/show_bug.cgi?id=102209
+
+        Reviewed by Gyuyoung Kim.
+
+        Set tooltip on the elm_window instead of ewk_view, and add delay to
+        show the tooltip window.
+
+        Setting tooltip on the ewk_view makes elementary error message because
+        ewk_view is not an elementary widget. To remove the error message,
+        tooltip should be set on the elm_window.
+
+        Most browsers show the tooltip after a mouse pointer stays on an
+        element object that has tooltip text.
+        But elm_tooltip widget itself doesn't have delay or handle mouse
+        events to show/hide.
+
+        So additional codes are added to show/hide tooltip widget along with
+        mouse events.
+          1) When a mouse pointer stays for a second on an element which has
+             tooltip text, then tooltip widget is displayed.
+          2) When a mouse pointer is moved or out of ewk_view, hide the tooltip
+             widget.
+
+        * MiniBrowser/efl/main.c:
+        (_Tooltip_Information):
+        (_Browser_Window):
+        (on_tooltip_show):
+        (window_tooltip_hide):
+        (window_tooltip_update):
+        (on_mouse_in):
+        (on_mouse_move):
+        (on_mouse_out):
+        (window_free):
+        (on_tooltip_text_set):
+        (on_tooltip_text_unset):
+        (window_create):
+
+2013-01-02  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, rolling out r138661.
+        http://trac.webkit.org/changeset/138661
+        https://bugs.webkit.org/show_bug.cgi?id=104740
+
+        Compile problems on EFL
+
+        * GNUmakefile.am:
+        * qmake/mkspecs/features/default_post.prf:
+
+2013-01-02  Tony Chang  <tony@chromium.org>
+
+        Generate internal.settings from Settings.in
+        https://bugs.webkit.org/show_bug.cgi?id=104740
+
+        Reviewed by Adam Barth.
+
+        * GNUmakefile.am: Compile new generated files on GTK+.
+        * qmake/mkspecs/features/default_post.prf: Qt: Make it so an action
+        with both extra_sources and add_output_to_sources=false will still
+        compile the files in extra_sources. This makes it possible to compile
+        InternalSettingsGenerated.cpp and not be confused by
+        InternalSettingsGenerated.idl.
+
+2013-01-02  Adam Barth  <abarth@webkit.org>
+
+        Remove old-run-webkit-tests support from webkitpy
+        https://bugs.webkit.org/show_bug.cgi?id=105619
+
+        Reviewed by Eric Seidel.
+
+        This patch removes support for webkitpy parsing the
+        old-run-webkit-tests results format. There doesn't seem to be any
+        reason to keep this code around anymore now that most bots have
+        switched to new-run-webkit-tests.
+
+        * Scripts/webkitpy/common/net/buildbot/buildbot.py:
+        (Builder.fetch_layout_test_results):
+        * Scripts/webkitpy/common/net/layouttestresults.py:
+        (path_for_layout_test):
+        (LayoutTestResults.results_from_string):
+        (LayoutTestResults):
+        * Scripts/webkitpy/common/net/layouttestresults_unittest.py:
+        (LayoutTestResultsTest.test_results_from_string):
+        * Scripts/webkitpy/tool/bot/commitqueuetask_unittest.py:
+        (test_flaky_test_failure):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader_unittest.py:
+        (LayoutTestResultsReaderTest.test_missing_layout_test_results):
+        * Scripts/webkitpy/tool/bot/patchanalysistask.py:
+        (PatchAnalysisTask._test_patch):
+        * Scripts/webkitpy/tool/commands/queuestest.py:
+        (QueuesTest.assert_queue_outputs):
+
+2013-01-02  Heikki Paajanen  <heikki.paajanen@palm.com>
+
+        [Qt][WK2] Add simple UI to find text from page
+        https://bugs.webkit.org/show_bug.cgi?id=96481
+
+        Reviewed by Jocelyn Turcotte.
+
+        Find bar that slides between navigation bar and WebView.
+
+        * MiniBrowser/qt/BrowserWindow.cpp:
+        (BrowserWindow::toggleFind):
+        * MiniBrowser/qt/BrowserWindow.h:
+        (BrowserWindow):
+        * MiniBrowser/qt/MiniBrowser.qrc:
+        * MiniBrowser/qt/MiniBrowserApplication.cpp:
+        (MiniBrowserApplication::notify):
+        * MiniBrowser/qt/icons/find.png: Added.
+        * MiniBrowser/qt/qml/BrowserWindow.qml:
+
+2013-01-02  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Regression(r138603): Caused 2 webkitpy tests to fail
+        https://bugs.webkit.org/show_bug.cgi?id=105913
+
+        Reviewed by Kentaro Hara.
+
+        Fix 2 webkitpy tests that started to fail after
+        r138603.
+
+        * Scripts/webkitpy/tool/bot/irc_command_unittest.py:
+        (IRCCommandTest._sheriff_test_data_url): Make sure the
+        returned test file URL is valid no matter what the
+        current working directory is.
+        * Scripts/webkitpy/tool/bot/ircbot_unittest.py:
+        (IRCBotTest.test_help): Add "sheriffs" command to the
+        list of available commands.
+
+2013-01-01  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [WK2] plugins/clicking-missing-plugin-fires-delegate.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=105897
+
+        Reviewed by Alexey Proskuryakov.
+
+        Dump in WebKitTestRunner the message that is expected by layout tests
+        when the missing plugin button is clicked.
+
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::createWebViewWithOptions):
+        (WTR::TestController::unavailablePluginButtonClicked):
+        (WTR):
+        * WebKitTestRunner/TestController.h:
+        (TestController):
+
+2013-01-01  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [EFL] Enable MHTML feature
+        https://bugs.webkit.org/show_bug.cgi?id=105815
+
+        Reviewed by Laszlo Gombos.
+
+        Enable MHTML feature for EFL port by default.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-01-01  Alan Cutter  <alancutter@chromium.org>
+
+        sheriff-bot should know who the gardeners/sheriffs are
+        https://bugs.webkit.org/show_bug.cgi?id=105698
+
+        Reviewed by Eric Seidel.
+
+        Added a "sheriffs" command to sheriffbot to fetch the current Chromium Webkit sheriffs.
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Current):
+        (Current._retrieve_webkit_sheriffs):
+        (Current.execute):
+        * Scripts/webkitpy/tool/bot/irc_command_unittest.py:
+        (IRCCommandTest.test_current):
+        * Scripts/webkitpy/tool/bot/testdata/webkit_sheriff_0.js: Added.
+        * Scripts/webkitpy/tool/bot/testdata/webkit_sheriff_1.js: Added.
+        * Scripts/webkitpy/tool/bot/testdata/webkit_sheriff_2.js: Added.
+        * Scripts/webkitpy/tool/bot/testdata/webkit_sheriff_malformed.js: Added.
+        * Scripts/webkitpy/tool/bot/testdata/webkit_sheriff_zero.js: Added.
+
+2012-12-31  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Move ImageDiff to the Tools directory root
+        https://bugs.webkit.org/show_bug.cgi?id=105421
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * DumpRenderTree/gtk/GNUmakefile.ImageDiff.am: Removed.
+        * GNUmakefile.am:
+        * ImageDiff/gtk/ImageDiff.cpp: Renamed from Tools/DumpRenderTree/gtk/ImageDiff.cpp.
+
+2012-12-30  Mike West  <mkwst@chromium.org>
+
+        Add myself to watchlists for CSP and console logs.
+        https://bugs.webkit.org/show_bug.cgi?id=105874
+
+        Reviewed by Dirk Pranke.
+
+        Because I really, really, really need more email.
+
+        * Scripts/webkitpy/common/config/committers.py:
+            Add mkwst+watchlist@chromium.org as a contributor.
+        * Scripts/webkitpy/common/config/watchlist:
+            Create watchlist categories for 1) the various mechanisms used to
+            generate console messages, and 2) CSP usage and files.
+
+2012-12-30  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        [EFL] Enable TEMPLATE_ELEMENT feature
+        https://bugs.webkit.org/show_bug.cgi?id=105865
+        
+        Reviewed by Laszlo Gombos.
+
+        * Scripts/webkitperl/FeatureList.pm: Enable template element feature for EFL port.
+
+2012-12-30  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening of the unit tests.
+
+        Skip the TestInspectorServer unit test that's timing out completely.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner):
+
+2012-12-29  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation plugin: do not generate 'not instrumented' warning for instrumented mutable members.
+        https://bugs.webkit.org/show_bug.cgi?id=105855
+
+        Reviewed by Vsevolod Vlasov.
+
+        Extract MemberExpr from ImplicitCastExpr. It happens when we instrument a mutable member because
+        addMember expects const T& and the mutable ref to member implicitly converts into const ref to member.
+
+        * clang/ReportMemoryUsagePlugin/ReportMemoryUsage.cpp:
+        (ReportMemoryUsageVisitor):
+        (clang::AddMemberCallVisitor::VisitCallExpr):
+        (clang::ReportMemoryUsageVisitor::VisitCXXMethodDecl):
+        (clang::ReportMemoryUsageVisitor::checkMembersCoverage):
+
+2012-12-29  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation plugin: move function bodies out of class declarations.
+        https://bugs.webkit.org/show_bug.cgi?id=105852
+
+        Reviewed by Alexander Pavlov.
+
+        * clang/ReportMemoryUsagePlugin/ReportMemoryUsage.cpp:
+        (clang):
+        (AddMemberCallVisitor):
+        (ReportMemoryUsageVisitor):
+        (clang::ReportMemoryUsageAction::ParseArgs):
+        (clang::AddMemberCallVisitor::VisitCallExpr):
+        (clang::ReportMemoryUsageVisitor::VisitCXXMethodDecl):
+        (clang::ReportMemoryUsageVisitor::emitWarning):
+        (clang::ReportMemoryUsageVisitor::findInstrumentationMethod):
+        (clang::ReportMemoryUsageVisitor::needsToBeInstrumented):
+        (clang::ReportMemoryUsageVisitor::CheckMembersCoverage):
+
+2012-12-29  Zan Dobersek  <zandobersek@gmail.com>
+
+        [webkitpy] Omit webkitpy/thirdparty/BeautifulSoup.py from code coverage checking
+        https://bugs.webkit.org/show_bug.cgi?id=105835
+
+        Reviewed by Dirk Pranke.
+
+        The BeautifulSoup module is a third-party import and as such we don't have much control
+        over its testing. Because of that it should be omitted from code coverage checking.
+
+        * Scripts/webkitpy/test/main.py:
+        (Tester._run_tests):
+
+2012-12-28  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK][WK2] Add support for IME Composition
+        https://bugs.webkit.org/show_bug.cgi?id=65093
+
+        Reviewed by Carlos Garcia Campos.
+
+        Update unit tests for GtkInputMethodFilter to note whether or not an event
+        was a fake event synthesized for composition purposes. This is now used
+        for WebKit2.
+
+        * TestWebKitAPI/Tests/gtk/InputMethodFilter.cpp:
+        (TestWebKitAPI::TestInputMethodFilter::sendSimpleKeyEvent):
+        (TestWebKitAPI::TestInputMethodFilter::sendKeyEventWithCompositionResults):
+        (TestWebKitAPI::TEST):
+        * gtk/generate-gtkdoc:
+        (get_webkit2_options): Skip new files in the WebKit2 source directory for documentation
+        generation.
+
+2012-12-27  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation. Update clang plugin according to the current state of memory instrumentation code.
+        https://bugs.webkit.org/show_bug.cgi?id=105800
+
+        Reviewed by Yury Semikhatsky.
+
+        * clang/ReportMemoryUsagePlugin/ReportMemoryUsage.cpp:
+        (clang::ReportMemoryUsageConsumer::ReportMemoryUsageConsumer):
+        (clang):
+
+2012-12-27  Zan Dobersek  <zandobersek@gmail.com>
+
+        Create a GTK build system watchlist and add myself to it
+        https://bugs.webkit.org/show_bug.cgi?id=105769
+
+        Reviewed by Dirk Pranke.
+
+        Add a GTK build system watchlist, watching the configure.ac, GNUmakefile.am files
+        and the input GNUmakefile.features.am.in file. The GNUmakefile.list.am files are
+        omitted on purpose due to relatively high change rate they are exposed to.
+
+        The new watchlist would be of use to me as the GTK build system recently went
+        through a series of changes that included a changed policy on adding configuration
+        flags to configure.ac and subsequent additions to GNUmakefile.am files. A PSA on the
+        mailing list about this change will be published later, but I'd also like to be
+        notified of any pending changes to these files just so I can check the changes are
+        in compliance with the new policy.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2012-12-26  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Unreviewed. Replace find("Tools") with rfind("Tools") because base dir of WebKit may have Tools word.
+        As example ..../DevTools/src/third_party/WebKit
+
+        * Scripts/webkitpy/common/webkit_finder.py:
+        (WebKitFinder.webkit_base):
+
 2012-12-25  Christophe Dumez  <christophe.dumez@intel.com>
 
         [EFL][WK2] Refactor snapshot taking code

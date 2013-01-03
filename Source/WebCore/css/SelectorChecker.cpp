@@ -31,11 +31,9 @@
 #include "CSSSelector.h"
 #include "CSSSelectorList.h"
 #include "Document.h"
-#include "DocumentStyleSheetCollection.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameSelection.h"
-#include "HTMLAnchorElement.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
@@ -44,9 +42,7 @@
 #include "HTMLStyleElement.h"
 #include "InspectorInstrumentation.h"
 #include "NodeRenderStyle.h"
-#include "NodeTraversal.h"
 #include "Page.h"
-#include "PageGroup.h"
 #include "RenderObject.h"
 #include "RenderScrollbar.h"
 #include "RenderStyle.h"
@@ -56,12 +52,6 @@
 #include "SiblingTraversalStrategies.h"
 #include "StyledElement.h"
 #include "Text.h"
-#include "XLinkNames.h"
-
-#if USE(PLATFORM_STRATEGIES)
-#include "PlatformStrategies.h"
-#include "VisitedLinkStrategy.h"
-#endif
 
 namespace WebCore {
 
@@ -69,62 +59,11 @@ using namespace HTMLNames;
 
 static bool htmlAttributeHasCaseInsensitiveValue(const QualifiedName& attr);
 
-SelectorChecker::SelectorChecker(Document* document, bool strictParsing)
-    : m_document(document)
-    , m_strictParsing(strictParsing)
+SelectorChecker::SelectorChecker(Document* document)
+    : m_strictParsing(!document->inQuirksMode())
     , m_documentIsHTML(document->isHTMLDocument())
     , m_mode(ResolvingStyle)
 {
-}
-
-static inline const AtomicString* linkAttribute(Element* element)
-{
-    if (!element->isLink())
-        return 0;
-    if (element->isHTMLElement())
-        return &element->fastGetAttribute(hrefAttr);
-    if (element->isSVGElement())
-        return &element->getAttribute(XLinkNames::hrefAttr);
-    return 0;
-}
-
-EInsideLink SelectorChecker::determineLinkStateSlowCase(Element* element) const
-{
-    ASSERT(element->isLink());
-
-    const AtomicString* attribute = linkAttribute(element);
-    if (!attribute || attribute->isNull())
-        return NotInsideLink;
-
-    // An empty href refers to the document itself which is always visited. It is useful to check this explicitly so
-    // that visited links can be tested in platform independent manner, without explicit support in the test harness.
-    if (attribute->isEmpty())
-        return InsideVisitedLink;
-    
-    LinkHash hash;
-    if (element->hasTagName(aTag)) 
-        hash = static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
-    else
-        hash = visitedLinkHash(m_document->baseURL(), *attribute);
-
-    if (!hash)
-        return InsideUnvisitedLink;
-
-    Frame* frame = m_document->frame();
-    if (!frame)
-        return InsideUnvisitedLink;
-
-    Page* page = frame->page();
-    if (!page)
-        return InsideUnvisitedLink;
-
-    m_linksCheckedForVisitedState.add(hash);
-
-#if USE(PLATFORM_STRATEGIES)
-    return platformStrategies()->visitedLinkStrategy()->isLinkVisited(page, hash, m_document->baseURL(), *attribute) ? InsideVisitedLink : InsideUnvisitedLink;
-#else
-    return page->group().isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
-#endif
 }
 
 bool SelectorChecker::checkSelector(CSSSelector* sel, Element* element, bool isFastCheckableSelector) const
@@ -651,10 +590,10 @@ bool SelectorChecker::checkOneSelector(const SelectorCheckingContext& context, c
         } else if (context.hasScrollbarPseudo) {
             // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
             // (since there are no elements involved).
-            return checkScrollbarPseudoClass(selector);
+            return checkScrollbarPseudoClass(element->document(), selector);
         } else if (context.hasSelectionPseudo) {
             if (selector->pseudoType() == CSSSelector::PseudoWindowInactive)
-                return !m_document->page()->focusController()->isActive();
+                return !element->document()->page()->focusController()->isActive();
         }
 
         // Normal element pseudo class checking.
@@ -984,6 +923,12 @@ bool SelectorChecker::checkOneSelector(const SelectorCheckingContext& context, c
                 return false;
             return true;
 #endif
+#if ENABLE(IFRAME_SEAMLESS)
+        case CSSSelector::PseudoSeamlessDocument:
+            // While a document is rendered in a seamless iframe, the 'seamless-document' pseudoclass applies
+            // to all elements of that Document.
+            return element->document()->shouldDisplaySeamlesslyWithParent();
+#endif
         case CSSSelector::PseudoInRange:
             if (!element)
                 return false;
@@ -1020,7 +965,7 @@ bool SelectorChecker::checkOneSelector(const SelectorCheckingContext& context, c
     return true;
 }
 
-bool SelectorChecker::checkScrollbarPseudoClass(CSSSelector* sel) const
+bool SelectorChecker::checkScrollbarPseudoClass(Document* document, CSSSelector* sel) const
 {
     RenderScrollbar* scrollbar = RenderScrollbar::scrollbarForStyleResolve();
     ScrollbarPart part = RenderScrollbar::partForStyleResolve();
@@ -1028,7 +973,7 @@ bool SelectorChecker::checkScrollbarPseudoClass(CSSSelector* sel) const
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real
     // pseudo class and just apply to everything.
     if (sel->pseudoType() == CSSSelector::PseudoWindowInactive)
-        return !m_document->page()->focusController()->isActive();
+        return !document->page()->focusController()->isActive();
 
     if (!scrollbar)
         return false;
@@ -1098,31 +1043,6 @@ bool SelectorChecker::checkScrollbarPseudoClass(CSSSelector* sel) const
         return scrollbar->scrollableArea()->isScrollCornerVisible();
     default:
         return false;
-    }
-}
-
-void SelectorChecker::allVisitedStateChanged()
-{
-    if (m_linksCheckedForVisitedState.isEmpty())
-        return;
-    for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(element)) {
-        if (element->isLink())
-            element->setNeedsStyleRecalc();
-    }
-}
-
-void SelectorChecker::visitedStateChanged(LinkHash visitedHash)
-{
-    if (!m_linksCheckedForVisitedState.contains(visitedHash))
-        return;
-    for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(element)) {
-        LinkHash hash = 0;
-        if (element->hasTagName(aTag))
-            hash = static_cast<HTMLAnchorElement*>(element)->visitedLinkHash();
-        else if (const AtomicString* attr = linkAttribute(element))
-            hash = visitedLinkHash(m_document->baseURL(), *attr);
-        if (hash == visitedHash)
-            element->setNeedsStyleRecalc();
     }
 }
 

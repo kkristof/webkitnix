@@ -333,7 +333,7 @@ my @features = (
       define => "ENABLE_METER_ELEMENT", default => !isAppleWinWebKit(), value => \$meterTagSupport },
 
     { option => "mhtml", desc => "Toggle MHTML support",
-      define => "ENABLE_MHTML", default => isGtk(), value => \$mhtmlSupport },
+      define => "ENABLE_MHTML", default => (isGtk() || isEfl()), value => \$mhtmlSupport },
 
     { option => "microdata", desc => "Toggle Microdata support",
       define => "ENABLE_MICRODATA", default => (isEfl() || isBlackBerry() || isGtk()), value => \$microdataSupport },
@@ -405,7 +405,7 @@ my @features = (
       define => "USE_SYSTEM_MALLOC", default => isWinCE(), value => \$systemMallocSupport },
 
     { option => "template-element", desc => "Toggle HTMLTemplateElement support",
-      define => "ENABLE_TEMPLATE_ELEMENT", default => 0, value => \$templateElementSupport },
+      define => "ENABLE_TEMPLATE_ELEMENT", default => isEfl(), value => \$templateElementSupport },
 
     { option => "text-autosizing", desc => "Toggle Text Autosizing support",
       define => "ENABLE_TEXT_AUTOSIZING", default => 0, value => \$textAutosizingSupport },

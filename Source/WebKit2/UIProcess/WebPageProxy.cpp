@@ -77,8 +77,6 @@
 #include "WebProtectionSpace.h"
 #include "WebSecurityOrigin.h"
 #include "WebURLRequest.h"
-#include <CoreIPC/ArgumentEncoder.h>
-#include <CoreIPC/ArgumentDecoder.h>
 #include <WebCore/DragController.h>
 #include <WebCore/DragData.h>
 #include <WebCore/DragSession.h>
@@ -3017,7 +3015,7 @@ void WebPageProxy::editorStateChanged(const EditorState& editorState)
 
 #if PLATFORM(MAC)
     m_pageClient->updateTextInputState(couldChangeSecureInputState);
-#elif PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
+#elif PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(GTK) || PLATFORM(NIX)
     m_pageClient->updateTextInputState();
 #endif
 }

@@ -374,17 +374,21 @@ public:
     void authenticationRequiredRequest(const String& hostname, const String& realm, const String& prefilledUsername, String& username, String& password);
     void certificateVerificationRequest(const String& hostname, bool& ignoreErrors);
     void proxyAuthenticationRequiredRequest(const String& hostname, uint16_t port, const String& prefilledUsername, String& username, String& password);
-    void setUserScripts(const Vector<String>&);
 #endif // PLATFORM(QT).
 #if PLATFORM(EFL)
     void setThemePath(const String&);
 #endif
 
-#if PLATFORM(QT)
+#if PLATFORM(QT) || PLATFORM(GTK)
     void setComposition(const String& text, Vector<WebCore::CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementRangeStart, uint64_t replacementRangeEnd);
     void confirmComposition(const String& compositionString, int64_t selectionStart, int64_t selectionLength);
     void cancelComposition();
 #endif
+
+#if PLATFORM(GTK)
+    void setInputMethodState(bool enabled);
+#endif
+
 #if PLATFORM(MAC)
     void updateWindowIsVisible(bool windowIsVisible);
     void windowAndViewFramesChanged(const WebCore::IntRect& windowFrameInScreenCoordinates, const WebCore::IntRect& viewFrameInWindowCoordinates, const WebCore::IntPoint& accessibilityViewCoordinates);
@@ -769,6 +773,8 @@ public:
 
     double minimumLayoutWidth() const { return m_minimumLayoutWidth; }
     void setMinimumLayoutWidth(double);
+
+    void setMainFrameInViewSourceMode(bool);
 
 private:
     WebPageProxy(PageClient*, PassRefPtr<WebProcessProxy>, WebPageGroup*, uint64_t pageID);

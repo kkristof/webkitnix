@@ -56,12 +56,10 @@ NetworkProcess& NetworkProcess::shared()
 NetworkProcess::NetworkProcess()
     : m_hasSetCacheModel(false)
     , m_cacheModel(CacheModelDocumentViewer)
-    , m_downloadsAuthenticationManager(new AuthenticationManager(this))
-    , m_cookieManager(new WebCookieManager(this))
 {
-#if ENABLE(CUSTOM_PROTOCOLS)
-    CustomProtocolManager::shared().initialize(this);
-#endif
+    addSupplement<AuthenticationManager>();
+    addSupplement<WebCookieManager>();
+    addSupplement<CustomProtocolManager>();
 }
 
 NetworkProcess::~NetworkProcess()
@@ -138,7 +136,7 @@ CoreIPC::Connection* NetworkProcess::downloadProxyConnection()
 
 AuthenticationManager& NetworkProcess::downloadsAuthenticationManager()
 {
-    return *m_downloadsAuthenticationManager;
+    return *supplement<AuthenticationManager>();
 }
 
 void NetworkProcess::initializeNetworkProcess(const NetworkProcessCreationParameters& parameters)
@@ -159,11 +157,10 @@ void NetworkProcess::initializeNetworkProcess(const NetworkProcessCreationParame
     if (parameters.privateBrowsingEnabled)
         RemoteNetworkingContext::ensurePrivateBrowsingSession();
 
-#if ENABLE(CUSTOM_PROTOCOLS)
-    CustomProtocolManager::shared().connectionEstablished();
-    for (size_t i = 0; i < parameters.urlSchemesRegisteredForCustomProtocols.size(); ++i)
-        CustomProtocolManager::shared().registerScheme(parameters.urlSchemesRegisteredForCustomProtocols[i]);
-#endif
+    NetworkProcessSupplementMap::const_iterator it = m_supplements.begin();
+    NetworkProcessSupplementMap::const_iterator end = m_supplements.end();
+    for (; it != end; ++it)
+        it->value->initialize(parameters);
 }
 
 void NetworkProcess::createNetworkConnectionToWebProcess()
@@ -203,18 +200,6 @@ void NetworkProcess::cancelDownload(uint64_t downloadID)
 {
     downloadManager().cancelDownload(downloadID);
 }
-
-#if ENABLE(CUSTOM_PROTOCOLS)
-void NetworkProcess::registerSchemeForCustomProtocol(const String& scheme)
-{
-    CustomProtocolManager::shared().registerScheme(scheme);
-}
-
-void NetworkProcess::unregisterSchemeForCustomProtocol(const String& scheme)
-{
-    CustomProtocolManager::shared().unregisterScheme(scheme);
-}
-#endif
 
 void NetworkProcess::setCacheModel(uint32_t cm)
 {

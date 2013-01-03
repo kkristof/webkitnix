@@ -161,6 +161,7 @@
 #include "TreeWalker.h"
 #include "UserActionElementSet.h"
 #include "UserContentURLPattern.h"
+#include "VisitedLinkState.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitNamedFlow.h"
 #include "XMLDocumentParser.h"
@@ -392,11 +393,9 @@ static bool canAccessAncestor(const SecurityOrigin* activeSecurityOrigin, Frame*
     return false;
 }
 
-static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL)
+static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL, const char* reason)
 {
-    // FIXME: this error message should contain more specifics of why the navigation change is not allowed.
-    String message = "Unsafe JavaScript attempt to initiate a navigation change for frame with URL " +
-                     frame->document()->url().string() + " from frame with URL " + activeURL.string() + ".\n";
+    String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + frame->document()->url().string() + "' from frame with URL '" + activeURL.string() + "'. " + reason + "\n";
 
     // FIXME: should we print to the console of the document performing the navigation instead?
     frame->document()->domWindow()->printErrorMessage(message);
@@ -449,6 +448,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_mutationObserverTypes(0)
 #endif
     , m_styleSheetCollection(DocumentStyleSheetCollection::create(this))
+    , m_visitedLinkState(VisitedLinkState::create(this))
     , m_readyState(Complete)
     , m_styleRecalcTimer(this, &Document::styleRecalcTimerFired)
     , m_pendingStyleRecalcShouldForce(false)
@@ -2254,6 +2254,12 @@ void Document::implicitOpen()
 
     setCompatibilityMode(NoQuirksMode);
 
+    // Documents rendered seamlessly should start out requiring a stylesheet
+    // collection update in order to ensure they inherit all the relevant data
+    // from their parent.
+    if (shouldDisplaySeamlesslyWithParent())
+        styleResolverChanged(DeferRecalcStyle);
+
     m_parser = createParser();
     setParsing(true);
     setReadyState(Loading);
@@ -2709,7 +2715,7 @@ bool Document::canNavigate(Frame* targetFrame)
     if (!targetFrame)
         return true;
 
-    // Frame-busting is generally allowed (unless we're sandboxed and prevent from frame-busting).
+    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
     if (!isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree()->top())
         return true;
 
@@ -2717,7 +2723,11 @@ bool Document::canNavigate(Frame* targetFrame)
         if (targetFrame->tree()->isDescendantOf(m_frame))
             return true;
 
-        printNavigationErrorMessage(targetFrame, url());
+        const char* reason = "The frame attempting navigation is sandboxed, and is therefore disallowed from navigating its ancestors.";
+        if (isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree()->top())
+            reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
+
+        printNavigationErrorMessage(targetFrame, url(), reason);
         return false;
     }
 
@@ -2750,7 +2760,7 @@ bool Document::canNavigate(Frame* targetFrame)
             return true;
     }
 
-    printNavigationErrorMessage(targetFrame, url());
+    printNavigationErrorMessage(targetFrame, url(), "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.");
     return false;
 }
 
@@ -5935,18 +5945,15 @@ Locale& Document::getCachedLocale(const AtomicString& locale)
 }
 
 #if ENABLE(TEMPLATE_ELEMENT)
-Document* Document::templateContentsOwnerDocument()
+Document* Document::ensureTemplateContentsOwnerDocument()
 {
-    // If DOCUMENT does not have a browsing context, Let TEMPLATE CONTENTS OWNER be DOCUMENT and abort these steps.
-    if (!m_frame)
-        return this;
+    if (const Document* document = templateContentsOwnerDocument())
+        return const_cast<Document*>(document);
 
-    if (!m_templateContentsOwnerDocument) {
-        if (isHTMLDocument())
-            m_templateContentsOwnerDocument = HTMLDocument::create(0, blankURL());
-        else
-            m_templateContentsOwnerDocument = Document::create(0, blankURL());
-    }
+    if (isHTMLDocument())
+        m_templateContentsOwnerDocument = HTMLDocument::create(0, blankURL());
+    else
+        m_templateContentsOwnerDocument = Document::create(0, blankURL());
 
     return m_templateContentsOwnerDocument.get();
 }

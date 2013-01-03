@@ -1,3 +1,136 @@
+2013-01-02  Jacky Jiang  <zhajiang@rim.com>
+
+        [BlackBerry] file:/// pages don't get correct scales after several rotations and history navigations
+        https://bugs.webkit.org/show_bug.cgi?id=105996
+
+        Reviewed by George Staikos.
+
+        PR: 273541
+        When navigating back to the previous page on portrait mode, we were
+        trying to set virtual viewport after recalculation. However, we didn't
+        change the fixed layout size so that we still layouted the contents at
+        the old virtual viewport size. In this case, the old virtual viewport
+        was 570 * 293 which was set in landscape mode unfortunately. There
+        would be no chance for such kind of contents size to fit the portrait
+        mode screen size nicely.
+        This was a regression of webkit/cc31d9bad where setViewMode() was
+        removed as a noop. So just get setViewMode() back to apply the fixed
+        layout size with a little bit change as SVG document path was proved
+        invalid in that patch. Thanks to George for the float comparison change.
+        Put a FIXME as we don't have a way to save the scale precisely before
+        the rotation and history navigation currently.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setLoadState):
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::saveViewStateToItem):
+
+2013-01-02  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] Do not determine db quota limit using db file size
+        https://bugs.webkit.org/show_bug.cgi?id=105991
+
+        PR 267191
+
+        Reviewed by George Staikos.
+
+        Passing the current quota to WebPageClientImpl::databaseQuota so we can determine a better
+        quota limit without using the db file size.
+
+        * Api/WebPageClient.h:
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::exceededDatabaseQuota):
+
+2013-01-02  Yong Li  <yoli@rim.com>
+
+        [BlackBerry] Cached frame shouldn't access the page when being destroyed
+        https://bugs.webkit.org/show_bug.cgi?id=105942
+
+        Reviewed by George Staikos.
+
+        In order to prevent our FrameLoaderClient from dangling WebPagePrivate object in any case,
+        this patches clear the m_webPagePrivate pointer when the frame is detached or cached.
+
+        RIM PR# 272137.
+
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::isMainFrame):
+        (WebCore::FrameLoaderClientBlackBerry::detachedFromParent2):
+        (WebCore::FrameLoaderClientBlackBerry::didSaveToPageCache):
+        (WebCore::FrameLoaderClientBlackBerry::didRestoreFromPageCache):
+
+2013-01-02  Nima Ghanavatian  <nghanavatian@rim.com>
+
+        [BlackBerry] Use fatfingers result when checking for misspelled words
+        https://bugs.webkit.org/show_bug.cgi?id=105923
+
+        Reviewed by Yong Li.
+
+        PR270866
+        Currently we are using the raw touch point when checking to see if spell check
+        is required on a word. When tapping close to a boundary, the raw point can be
+        placed off but fatfingers moves the point onto the word. This causes the caret
+        to be placed on a word but no spell check request triggered.
+
+        Internally reviewed by Mike Fenton and Tiancheng Jiang
+
+        * WebKitSupport/TouchEventHandler.cpp:
+        (BlackBerry::WebKit::TouchEventHandler::handleTouchPoint):
+
+2012-12-28  Charles Wei  <charles.wei@torchmobile.com.cn>
+
+        [BlackBerry] Remove unused BackingStorePrivate::m_defersBlit
+        https://bugs.webkit.org/show_bug.cgi?id=105811
+        RIM PR 272067
+
+        Reviewed by George Staikos.
+        Internally Reviewed by Jakob Petsovits.
+
+        BackingStorePrivate::m_defersBlit is not used anywhere, it should
+        be removed to simplify the code and to avoid confusion.
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::BackingStorePrivate):
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        * Api/BackingStore.h:
+        * Api/BackingStore_p.h:
+        (BackingStorePrivate):
+
+2012-12-26  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Set load state for popups manually, in absence of a loader.
+        https://bugs.webkit.org/show_bug.cgi?id=105708
+        RIM PR 257216
+
+        Reviewed by George Staikos.
+        Internally reviewed by Chris Guan.
+
+        The WebPage class relies on the load state for various things,
+        among others it will only emit contents size changes after
+        layouts if a load state other than None is set.
+
+        Given that popups write the web page content itself with no
+        loader that would issue such notifications, the load state
+        should probably just be set manually in this case.
+
+        * WebCoreSupport/PagePopupBlackBerry.cpp:
+        (WebCore::PagePopupBlackBerry::init):
+
+2012-12-26  Sean Wang  <Xuewen.Wang@torchmobile.com.cn>
+
+        [BlackBerry] Caret doesn't update position when scrolling text in Input element
+        https://bugs.webkit.org/show_bug.cgi?id=105757
+
+        Reviewed by George Staikos.
+
+        PR 271627
+        Internally reviewed by George Staikos.
+
+        Call FrameSelection's updateAppearence instead of SelectionHandler's
+        selectionPositionChanged to update the caret position.
+
+        * Api/InRegionScroller.cpp:
+        (BlackBerry::WebKit::InRegionScrollerPrivate::setLayerScrollPosition):
+
 2012-12-25  Charles Wei  <charles.wei@torchmobile.com.cn>
 
         [BlackBerry] Need to initialize the onLine in the global

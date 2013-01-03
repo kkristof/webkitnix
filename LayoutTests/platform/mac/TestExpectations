@@ -259,6 +259,7 @@ webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
 
 # Skipping newly added tests while I'm finding out what is wrong.
 # https://bugs.webkit.org/show_bug.cgi?id=59706
@@ -733,9 +734,14 @@ fast/profiler/dead-time.html
 # https://bugs.webkit.org/show_bug.cgi?id=85319
 inspector/debugger/linkifier.html
 
-# Fail until SUBPIXEL_LAYOUT is enabled
+# Failing subpixel reference tests
 # https://bugs.webkit.org/show_bug.cgi?id=85532
-fast/sub-pixel
+fast/sub-pixel/file-upload-control-at-fractional-offset.html [ ImageOnlyFailure ]
+fast/sub-pixel/float-wrap-zoom.html [ ImageOnlyFailure ]
+fast/sub-pixel/zoomed-image-tiles.html [ ImageOnlyFailure ]
+
+# Needs rebaseline
+fast/sub-pixel/inline-block-with-padding.html [ Failure ]
 
 # No CORS support for media elements is implemented yet.
 http/tests/security/video-cross-origin-readback.html
@@ -1076,11 +1082,6 @@ webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFail
 webkit.org/b/34331 http/tests/media/video-referer.html [ Failure Pass ]
 webkit.org/b/97259 media/track/track-cue-rendering-inner-timestamps.html [ Skip ]
 
-# https://bugs.webkit.org/show_bug.cgi?id=81276
-# Allowed to regress to fix a crash.
-webkit.org/b/69210 fast/inline/continuation-outlines-with-layers.html [ Skip ]
-webkit.org/b/69210 fast/repaint/transform-absolute-in-positioned-container.html [ Failure ]
-
 # Failing ref tests
 webkit.org/b/84759 ietestcenter/css3/multicolumn/column-containing-block-001.htm [ ImageOnlyFailure ]
 webkit.org/b/84760 ietestcenter/css3/multicolumn/column-containing-block-002.htm [ ImageOnlyFailure ]
@@ -1125,15 +1126,8 @@ webkit.org/b/85918 compositing/backface-visibility/backface-visibility-3d.html [
 webkit.org/b/85918 compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ ImageOnlyFailure ]
 webkit.org/b/85918 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
 
-# Accelerated compositing is disabled for elements in a RenderFlowThread
-webkit.org/b/84900 compositing/regions/webkit-flow-renderer-layer-compositing.html [ ImageOnlyFailure ]
-
-webkit.org/b/101897 fast/regions/region-style-inline-background-color.html [ ImageOnlyFailure ]
-
 # Disable webaudio codec tests, including proprietary codecs.
 webkit.org/b/88794 webaudio/codec-tests
-
-webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
 
 # Text Autosizing is not enabled.
 webkit.org/b/84186 fast/text-autosizing
@@ -1156,9 +1150,6 @@ webkit.org/b/98687 fast/css-generated-content/table-row-group-to-inline.html [ F
 webkit.org/b/104595 fast/css/empty-generated-content.html [ Failure ]
 
 webkit.org/b/93247 [ Debug ] fast/lists/list-marker-remove-crash.html [ Crash ]
-
-# (r124484) inspector/device-orientation-success.html failing on Mac ports
-webkit.org/b/93552 inspector/device-orientation-success.html [ Failure ]
 
 # (r125790): Newly added test inspector/timeline/timeline-decode-resize.html is failing on mac
 webkit.org/b/94374 inspector/timeline/timeline-decode-resize.html [ Failure ]
@@ -1237,16 +1228,11 @@ webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip
 # Mountain Lion and prior do not support custom media data loading
 Bug(jernoble) [ MountainLion Lion SnowLeopard ] media/video-src-blob.html
 
-webkit.org/b/105514 media/track/track-in-band-cues-added-once.html [ Failure ]
-
 # Mountain Lion and prior do not allow access to in-band text tracks
 webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band.html
 webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band-cues-added-once.html
 
 webkit.org/b/104104 fast/overflow/scrollbar-click-retains-focus.html [ Failure ]
-
-webkit.org/b/104942 compositing/background-color/background-color-change-to-text.html [ ImageOnlyFailure ]
-webkit.org/b/104942 compositing/background-color/background-color-text-change.html [ ImageOnlyFailure ]
 
 webkit.org/b/104949 fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Failure ]
 
@@ -1264,7 +1250,6 @@ webkit.org/b/105606 media/track [ Crash Pass ]
 
 webkit.org/b/105567 http/tests/security/data-url-inline.css.html [ Crash Pass ]
 
-webkit.org/b/104848 fast/frames/sandboxed-iframe-attribute-parsing.html [ Failure Pass ]
 webkit.org/b/104848 fast/frames/sandboxed-iframe-parsing-space-characters.html [ Failure Pass ]
 
 # ap is looking into this crash.
@@ -1273,3 +1258,17 @@ Bug(rniwa) http/tests/appcache/main-resource-redirect.html [ Crash ]
 webkit.org/b/105601 svg/zoom/page/zoom-replaced-intrinsic-ratio-001.htm [ Crash Pass ]
 
 webkit.org/b/105603 http/tests/cookies/single-quoted-value.html [ Failure Pass ]
+
+webkit.org/b/105777 platform/mac/editing/spelling/autocorrection-in-textarea.html [ Failure Pass ]
+
+webkit.org/b/105778 platform/mac/accessibility/file-upload-button-subrole.html [ Failure ]
+
+webkit.org/b/105932 [ MountainLion Debug ] http/tests/inspector/resource-har-pages.html [ Crash ]
+
+webkit.org/b/105986 [ Debug ] transitions/hang-with-bad-transition-list.html [ Pass Crash ]
+webkit.org/b/105986 [ Debug ] svg/dynamic-updates/SVGFEMorphologyElement-dom-in-attr.html [ Pass Crash ]
+webkit.org/b/105986 [ Debug ] svg/dynamic-updates/SVGFEMorphologyElement-dom-radius-attr.html [ Pass Crash ]
+webkit.org/b/105986 [ Debug ] transitions/interrupt-transform-transition.html [ Pass Crash ]
+
+webkit.org/b/105999 [ Lion ] fast/canvas/canvas-composite-canvas.html [ Failure ]
+webkit.org/b/105999 [ Lion ] fast/canvas/canvas-composite-image.html [ Failure ]
