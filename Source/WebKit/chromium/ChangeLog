@@ -1,3 +1,119 @@
+2013-01-04  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove lost-compositor-context layout tests
+        https://bugs.webkit.org/show_bug.cgi?id=106089
+
+        Reviewed by James Robinson.
+
+        Remove the loseCompositorContext() test function.
+
+        * public/WebView.h:
+        (WebView):
+        * src/WebViewImpl.cpp:
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2013-01-04  Adam Klein  <adamk@chromium.org>
+
+        Remove ENABLE_MUTATION_OBSERVERS #define
+        https://bugs.webkit.org/show_bug.cgi?id=105459
+
+        Reviewed by Ryosuke Niwa.
+
+        * features.gypi:
+        * src/WebKit.cpp:
+        (WebKit::initialize):
+        (WebKit::shutdown):
+
+2013-01-04  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Update some #includes to use headers in the new Platform directory
+        https://bugs.webkit.org/show_bug.cgi?id=106092
+
+        Reviewed by Kentaro Hara.
+
+        Working towards getting rid of legacy header files in
+        WebKit/chromium/public/ and WebKit/chromium/public/platform/
+
+        * src/AsyncFileSystemChromium.cpp:
+        * src/StorageAreaProxy.cpp:
+        * src/StorageNamespaceProxy.cpp:
+        * src/WebFileSystemCallbacksImpl.cpp:
+        * src/WebGraphicsContext3D.cpp:
+        * src/WebIDBCursorImpl.h:
+        * src/WebIDBDatabaseCallbacksImpl.cpp:
+        * src/WebIDBDatabaseCallbacksImpl.h:
+        * src/WebIDBDatabaseError.cpp:
+        * src/WebIDBDatabaseImpl.h:
+        * src/WebIDBIndexImpl.h:
+        * src/WebIDBKeyPath.cpp:
+        * src/WebIDBMetadata.cpp:
+        * src/WebIDBObjectStoreImpl.h:
+        * src/WebWorkerClientImpl.cpp:
+        * src/WebWorkerRunLoop.cpp:
+        * src/WorkerFileSystemCallbacksBridge.cpp:
+        * tests/AssociatedURLLoaderTest.cpp:
+        * tests/FrameTestHelpers.cpp:
+        * tests/PopupMenuTest.cpp:
+        * tests/URLTestHelpers.cpp:
+        * tests/WebFrameTest.cpp:
+        * tests/WebPageNewSerializerTest.cpp:
+        * tests/WebPageSerializerTest.cpp:
+        * tests/WebURLRequestTest.cpp:
+        * tests/WebURLResponseTest.cpp:
+        * tests/WebUnitTests.h:
+        * tests/WebViewTest.cpp:
+
+2013-01-04  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2013-01-03  Sami Kyostila  <skyostil@chromium.org>
+
+        [chromium] Rename low latency rendering mode setting to vsync notification
+        https://bugs.webkit.org/show_bug.cgi?id=106020
+
+        Reviewed by James Robinson.
+
+        Rename low latency rendering mode setting to vsync notification because
+        the old name was ambiguous and bad. This setting is meant to control
+        whether the renderer uses a vsync signal provided by the browser to
+        schedule rendering.
+
+2013-01-03  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove all references to sharedWorkerRepository()
+        https://bugs.webkit.org/show_bug.cgi?id=104704
+
+        Reviewed by Adam Barth.
+
+        Now that Chromium calls setSharedWorkerRepository upon
+        initializing WebKit (
+        https://codereview.chromium.org/10990121/ and
+        https://codereview.chromium.org/11576028/ ) and no longer
+        tries to override sharedWorkerRepository, it is safe to remove
+        all references to this function.
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        (WebKit::WebKitPlatformSupport::idbFactory):
+        * src/SharedWorkerRepository.cpp:
+        (WebKit::sharedWorkerRepository):
+        (WebCore::SharedWorkerRepository::isAvailable):
+
+2013-01-03  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Add a missing state to RTCPeerConnection
+        https://bugs.webkit.org/show_bug.cgi?id=106017
+
+        Reviewed by Adam Barth.
+
+        Adding the missing ReadyStateHaveRemoteOffer which will show up in the spec soon.
+
+        * src/AssertMatchingEnums.cpp:
+
 2013-01-03  Joshua Bell  <jsbell@chromium.org>
 
         IndexedDB: Simplify IDBTransactionBackendImpl::scheduleTask usage

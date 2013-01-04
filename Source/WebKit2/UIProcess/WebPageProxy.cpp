@@ -3456,7 +3456,7 @@ void WebPageProxy::didReceiveEvent(uint32_t opaqueType, bool handled)
     case WebEvent::GestureScrollBegin:
     case WebEvent::GestureScrollEnd:
     case WebEvent::GestureSingleTap: {
-        NativeWebGestureEvent event = m_gestureEventQueue.first();
+        WebGestureEvent event = m_gestureEventQueue.first();
         MESSAGE_CHECK(type == event.type());
 
         m_gestureEventQueue.removeFirst();
@@ -4263,8 +4263,40 @@ void WebPageProxy::dictationAlternatives(uint64_t dictationContext, Vector<Strin
 #if USE(SOUP)
 void WebPageProxy::didReceiveURIRequest(String uriString, uint64_t requestID)
 {
-    m_process->context()->soupRequestManagerProxy()->didReceiveURIRequest(uriString, this, requestID);
+    m_process->context()->supplement<WebSoupRequestManagerProxy>()->didReceiveURIRequest(uriString, this, requestID);
 }
 #endif
+
+#if PLATFORM(QT) || PLATFORM(GTK)
+void WebPageProxy::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementRangeStart, uint64_t replacementRangeEnd)
+{
+    // FIXME: We need to find out how to proper handle the crashes case.
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::SetComposition(text, underlines, selectionStart, selectionEnd, replacementRangeStart, replacementRangeEnd), m_pageID);
+}
+
+void WebPageProxy::confirmComposition(const String& compositionString, int64_t selectionStart, int64_t selectionLength)
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::ConfirmComposition(compositionString, selectionStart, selectionLength), m_pageID);
+}
+
+void WebPageProxy::cancelComposition()
+{
+    if (!isValid())
+        return;
+
+    process()->send(Messages::WebPage::CancelComposition(), m_pageID);
+}
+#endif // PLATFORM(QT) || PLATFORM(GTK)
+
+void WebPageProxy::setMainFrameInViewSourceMode(bool inViewSourceMode)
+{
+    m_process->send(Messages::WebPage::SetMainFrameInViewSourceMode(inViewSourceMode), m_pageID);
+}
 
 } // namespace WebKit

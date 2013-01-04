@@ -35,7 +35,7 @@ namespace WebCore {
 
 class ElementRareData : public NodeRareData {
 public:
-    ElementRareData(Document*);
+    ElementRareData();
     virtual ~ElementRareData();
 
     void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
@@ -57,6 +57,8 @@ public:
 #if ENABLE(VIDEO_TRACK)
     using NodeRareData::isWebVTTNode;
     using NodeRareData::setIsWebVTTNode;
+    using NodeRareData::isWebVTTFutureNode;
+    using NodeRareData::setIsWebVTTFutureNode;
 #endif
 #if ENABLE(FULLSCREEN_API)
     bool containsFullScreenElement() { return m_containsFullScreenElement; }
@@ -141,9 +143,8 @@ inline IntSize defaultMinimumSizeForResizing()
     return IntSize(LayoutUnit::max(), LayoutUnit::max());
 }
 
-inline ElementRareData::ElementRareData(Document* document)
-    : NodeRareData(document)
-    , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
+inline ElementRareData::ElementRareData()
+    : m_minimumSizeForResizing(defaultMinimumSizeForResizing())
     , m_generatedBefore(0)
     , m_generatedAfter(0)
 {

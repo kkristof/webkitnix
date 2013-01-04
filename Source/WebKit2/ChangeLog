@@ -1,3 +1,237 @@
+2013-01-04  Adam Klein  <adamk@chromium.org>
+
+        Remove ENABLE_MUTATION_OBSERVERS #define
+        https://bugs.webkit.org/show_bug.cgi?id=105459
+
+        Reviewed by Ryosuke Niwa.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-01-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [WK2] [Gtk] crash when web inspector is attached, and window height is reduced.
+        https://bugs.webkit.org/show_bug.cgi?id=106052
+
+        Reviewed by Martin Robinson.
+
+        Do not allocate more size for the inspector view than its parent
+        size. Also make sure that the view size is always at least 1.
+
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp:
+        (resizeWebKitWebViewBaseFromAllocation):
+
+2013-01-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK][Qt] Make compositing messages async again
+        https://bugs.webkit.org/show_bug.cgi?id=106082
+
+        Reviewed by Simon Hausmann.
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::setComposition):
+        (WebKit::WebPageProxy::confirmComposition):
+        (WebKit::WebPageProxy::cancelComposition):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::confirmComposition):
+        (WebKit::WebPage::setComposition):
+        (WebKit::WebPage::cancelComposition):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+
+2013-01-04  Christophe Dumez  <christophe.dumez@intel.com>
+
+        Regression(r138728): Causes crashes on the build bots
+        https://bugs.webkit.org/show_bug.cgi?id=106083
+
+        Reviewed by Simon Hausmann.
+
+        Update encodeTimingFunction() to encode the x/y members only
+        if the bezierPreset is set to custom. This is needed because
+        decodeTimingFunction() only decodes x/y members if the
+        bezierPreset is set to custom.
+
+        This fixes assertion hits on the debug build bots.
+
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::encodeTimingFunction):
+
+2013-01-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [SOUP] Convert WebSoupRequestManagerProxy to be WebContextSupplement
+        https://bugs.webkit.org/show_bug.cgi?id=106012
+
+        Reviewed by Martin Robinson.
+
+        * UIProcess/API/C/soup/WKContextSoup.cpp:
+        (WKContextGetSoupRequestManager):
+        * UIProcess/API/gtk/WebKitWebContext.cpp:
+        (createDefaultWebContext):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::~WebContext):
+        (WebKit::WebContext::disconnectProcess):
+        * UIProcess/WebContext.h:
+        (WebKit):
+        (WebContext):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::didReceiveURIRequest):
+        * UIProcess/efl/WebContextEfl.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        * UIProcess/gtk/WebContextGtk.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+        * UIProcess/soup/WebSoupRequestManagerProxy.cpp:
+        (WebKit::WebSoupRequestManagerProxy::supplementName):
+        (WebKit):
+        (WebKit::WebSoupRequestManagerProxy::WebSoupRequestManagerProxy):
+        (WebKit::WebSoupRequestManagerProxy::initializeClient):
+        (WebKit::WebSoupRequestManagerProxy::contextDestroyed):
+        (WebKit::WebSoupRequestManagerProxy::processDidClose):
+        (WebKit::WebSoupRequestManagerProxy::refWebContextSupplement):
+        (WebKit::WebSoupRequestManagerProxy::derefWebContextSupplement):
+        (WebKit::WebSoupRequestManagerProxy::registerURIScheme):
+        (WebKit::WebSoupRequestManagerProxy::didHandleURIRequest):
+        (WebKit::WebSoupRequestManagerProxy::didReceiveURIRequestData):
+        * UIProcess/soup/WebSoupRequestManagerProxy.h:
+        (WebSoupRequestManagerProxy):
+
+2013-01-04  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][WK2] Remove unneeded EwkViewImpl::informLoadCommitted()
+        https://bugs.webkit.org/show_bug.cgi?id=106010
+
+        Reviewed by Gyuyoung Kim.
+
+        Removed EwkViewImpl::informLoadCommitted() method to simplify the code.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        * UIProcess/API/efl/EwkViewImpl.h:
+        * UIProcess/efl/PageClientBase.h:
+        (PageClientBase):
+        * UIProcess/efl/PageLoadClientEfl.cpp:
+        (WebKit::PageLoadClientEfl::didCommitLoadForFrame):
+
+2013-01-03  Jon Lee  <jonlee@apple.com>
+
+        REGRESSION(r138729): crash and assertion failures in WebKit::WebProcess::plugInDidReceiveUserInteraction
+        https://bugs.webkit.org/show_bug.cgi?id=106042
+        <rdar://problem/12953469>
+
+        Reviewed by Brady Eidson.
+
+        The assertion is hit if plugin snapshotting is disabled, and the user interacts with a plug-in that
+        comes from an origin not found in the cached dictionary. The proper fix is to check for whether the
+        setting is enabled. Otherwise, that origin should be in the dictionary since the plugin is running.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::pluginDidReceiveUserInteraction): Check for the setting, and avoid the whole code
+        path if snapshotting is disabled.
+
+2013-01-03  Roger Fong  <roger_fong@apple.com>
+
+        Remove all traces of Windows from WebKit2 folder.
+        https://bugs.webkit.org/show_bug.cgi?id=105585.
+
+        Reviewed by Sam Weinig.
+
+        * win: Removed.
+        * win/MainWin.cpp: Removed.
+        * win/WebKit2.def.in: Removed.
+        * win/WebKit2.make: Removed.
+        * win/WebKit2.rc: Removed.
+        * win/WebKit2.submit.sln: Removed.
+        * win/WebKit2.vcproj: Removed.
+        * win/WebKit2Apple.vsprops: Removed.
+        * win/WebKit2CFLite.vsprops: Removed.
+        * win/WebKit2Common.vsprops: Removed.
+        * win/WebKit2Debug.vsprops: Removed.
+        * win/WebKit2DebugAll.vsprops: Removed.
+        * win/WebKit2DebugCairoCFLite.vsprops: Removed.
+        * win/WebKit2DirectX.vsprops: Removed.
+        * win/WebKit2ExportGenerator.vcproj: Removed.
+        * win/WebKit2ExportGeneratorBuildCmd.cmd: Removed.
+        * win/WebKit2ExportGeneratorCommon.vsprops: Removed.
+        * win/WebKit2ExportGeneratorDebug.vsprops: Removed.
+        * win/WebKit2ExportGeneratorDebugAll.vsprops: Removed.
+        * win/WebKit2ExportGeneratorDebugCairoCFLite.vsprops: Removed.
+        * win/WebKit2ExportGeneratorPostBuild.cmd: Removed.
+        * win/WebKit2ExportGeneratorPreBuild.cmd: Removed.
+        * win/WebKit2ExportGeneratorProduction.vsprops: Removed.
+        * win/WebKit2ExportGeneratorRelease.vsprops: Removed.
+        * win/WebKit2ExportGeneratorReleaseCairoCFLite.vsprops: Removed.
+        * win/WebKit2Generated.make: Removed.
+        * win/WebKit2Generated.vcproj: Removed.
+        * win/WebKit2GeneratedCommon.vsprops: Removed.
+        * win/WebKit2Production.vsprops: Removed.
+        * win/WebKit2Release.vsprops: Removed.
+        * win/WebKit2ReleaseCairoCFLite.vsprops: Removed.
+        * win/WebKit2WebProcess.resources: Removed.
+        * win/WebKit2WebProcess.resources/Info.plist: Removed.
+        * win/WebKit2WebProcess.vcproj: Removed.
+        * win/WebKit2WebProcessCommon.vsprops: Removed.
+        * win/WebKit2WebProcessDebug.vsprops: Removed.
+        * win/WebKit2WebProcessDebugAll.vsprops: Removed.
+        * win/WebKit2WebProcessDebugCairoCFLite.vsprops: Removed.
+        * win/WebKit2WebProcessPostBuild.cmd: Removed.
+        * win/WebKit2WebProcessPreBuild.cmd: Removed.
+        * win/WebKit2WebProcessProduction.vsprops: Removed.
+        * win/WebKit2WebProcessRelease.vsprops: Removed.
+        * win/WebKit2WebProcessReleaseCairoCFLite.vsprops: Removed.
+        * win/WebKitPostBuild.cmd: Removed.
+        * win/WebKitPreBuild.cmd: Removed.
+        * win/WebKitPreLink.cmd: Removed.
+        * win/build-generated-files.sh: Removed.
+        * win/deleteButton.png: Removed.
+        * win/deleteButtonPressed.png: Removed.
+        * win/fsVideoAudioVolumeHigh.png: Removed.
+        * win/fsVideoAudioVolumeLow.png: Removed.
+        * win/fsVideoExitFullscreen.png: Removed.
+        * win/fsVideoPause.png: Removed.
+        * win/fsVideoPlay.png: Removed.
+        * win/missingImage.png: Removed.
+        * win/nullplugin.png: Removed.
+        * win/panEastCursor.png: Removed.
+        * win/panIcon.png: Removed.
+        * win/panNorthCursor.png: Removed.
+        * win/panNorthEastCursor.png: Removed.
+        * win/panNorthWestCursor.png: Removed.
+        * win/panSouthCursor.png: Removed.
+        * win/panSouthEastCursor.png: Removed.
+        * win/panSouthWestCursor.png: Removed.
+        * win/panWestCursor.png: Removed.
+        * win/resource.h: Removed.
+        * win/searchCancel.png: Removed.
+        * win/searchCancelPressed.png: Removed.
+        * win/searchMagnifier.png: Removed.
+        * win/searchMagnifierResults.png: Removed.
+        * win/textAreaResizeCorner.png: Removed.
+        * win/verticalTextCursor.png: Removed.
+        * win/xcopy.excludes: Removed.
+        * win/zoomInCursor.png: Removed.
+        * win/zoomOutCursor.png: Removed.
+
+2013-01-03  Kiran Muppala  <cmuppala@apple.com>
+
+        Ensure autorelease pool exists when calling WKNSProcessInfoProcessAssertionWithTypes on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=105674
+
+        Reviewed by Sam Weinig.
+
+        The function WKNSProcessInfoProcessAssertionWithTypes returns a autoreleased object and since,
+        it is called during process initialization prior to the runloop being started in PluginProcess
+        and SharedWorkerProcess, an autorelease pool must be explictly created.
+
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (WebKit::PluginProcessMain): Enclose process initialization code in an @autoreleasepool block.
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain): Ditto.
+
+2013-01-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed debug buildfix after r138723.
+
+        * WebProcess/qt/QtBuiltinBundle.cpp:
+
 2013-01-02  Jon Lee  <jonlee@apple.com>
 
         Revert auto-start plugins to snapshotted plugins after a period of inactivity

@@ -29,6 +29,9 @@
 #include "MutationObserverRegistration.h"
 #include "QualifiedName.h"
 #include "TagNodeList.h"
+#if ENABLE(VIDEO_TRACK)
+#include "TextTrack.h"
+#endif
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -226,14 +229,12 @@ private:
 class NodeRareData : public NodeRareDataBase {
     WTF_MAKE_NONCOPYABLE(NodeRareData); WTF_MAKE_FAST_ALLOCATED;
 
-#if ENABLE(MUTATION_OBSERVERS)
     struct NodeMutationObserverData {
         Vector<OwnPtr<MutationObserverRegistration> > m_registry;
         HashSet<MutationObserverRegistration*> m_transientRegistry;
 
         static PassOwnPtr<NodeMutationObserverData> create() { return adoptPtr(new NodeMutationObserverData); }
     };
-#endif
 
 #if ENABLE(MICRODATA)
     struct NodeMicroDataTokenLists {
@@ -246,17 +247,13 @@ class NodeRareData : public NodeRareDataBase {
 #endif
 
 public:    
-    NodeRareData(Document* document)
-        : NodeRareDataBase(document)
-        , m_tabIndex(0)
+    NodeRareData()
+        : m_tabIndex(0)
         , m_childIndex(0)
         , m_tabIndexWasSetExplicitly(false)
         , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
         , m_styleAffectedByEmpty(false)
         , m_isInCanvasSubtree(false)
-#if ENABLE(VIDEO_TRACK)
-        , m_isWebVTTNode(false)
-#endif
 #if ENABLE(FULLSCREEN_API)
         , m_containsFullScreenElement(false)
 #endif
@@ -271,6 +268,9 @@ public:
         , m_childrenAffectedByDirectAdjacentRules(false)
         , m_childrenAffectedByForwardPositionalRules(false)
         , m_childrenAffectedByBackwardPositionalRules(false)
+#if ENABLE(VIDEO_TRACK)
+        , m_WebVTTNodeType(TextTrack::WebVTTNodeTypeNone)
+#endif
     {
     }
 
@@ -292,7 +292,6 @@ public:
     bool tabIndexSetExplicitly() const { return m_tabIndexWasSetExplicitly; }
     void clearTabIndexExplicitly() { m_tabIndex = 0; m_tabIndexWasSetExplicitly = false; }
 
-#if ENABLE(MUTATION_OBSERVERS)
     Vector<OwnPtr<MutationObserverRegistration> >* mutationObserverRegistry() { return m_mutationObserverData ? &m_mutationObserverData->m_registry : 0; }
     Vector<OwnPtr<MutationObserverRegistration> >* ensureMutationObserverRegistry()
     {
@@ -308,7 +307,6 @@ public:
             m_mutationObserverData = NodeMutationObserverData::create();
         return &m_mutationObserverData->m_transientRegistry;
     }
-#endif
 
 #if ENABLE(MICRODATA)
     NodeMicroDataTokenLists* ensureMicroDataTokenLists() const
@@ -371,8 +369,10 @@ public:
 
 protected:
 #if ENABLE(VIDEO_TRACK)
-    bool isWebVTTNode() { return m_isWebVTTNode; }
-    void setIsWebVTTNode(bool value) { m_isWebVTTNode = value; }
+    bool isWebVTTNode() { return m_WebVTTNodeType != TextTrack::WebVTTNodeTypeNone; }
+    void setIsWebVTTNode() { m_WebVTTNodeType = TextTrack::WebVTTNodeTypePast; }
+    bool isWebVTTFutureNode() { return m_WebVTTNodeType == TextTrack::WebVTTNodeTypeFuture; }
+    void setIsWebVTTFutureNode() { m_WebVTTNodeType = TextTrack::WebVTTNodeTypeFuture; }
 #endif
     short m_tabIndex;
     unsigned short m_childIndex;
@@ -380,9 +380,6 @@ protected:
     bool m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
     bool m_styleAffectedByEmpty : 1;
     bool m_isInCanvasSubtree : 1;
-#if ENABLE(VIDEO_TRACK)
-    bool m_isWebVTTNode : 1;
-#endif
 #if ENABLE(FULLSCREEN_API)
     bool m_containsFullScreenElement : 1;
 #endif
@@ -400,13 +397,12 @@ protected:
     bool m_childrenAffectedByDirectAdjacentRules : 1;
     bool m_childrenAffectedByForwardPositionalRules : 1;
     bool m_childrenAffectedByBackwardPositionalRules : 1;
-
+#if ENABLE(VIDEO_TRACK)
+    TextTrack::WebVTTNodeType m_WebVTTNodeType : 2;
+#endif
 private:
     OwnPtr<NodeListsNodeData> m_nodeLists;
-
-#if ENABLE(MUTATION_OBSERVERS)
     OwnPtr<NodeMutationObserverData> m_mutationObserverData;
-#endif
 
 #if ENABLE(MICRODATA)
     mutable OwnPtr<NodeMicroDataTokenLists> m_microDataTokenLists;

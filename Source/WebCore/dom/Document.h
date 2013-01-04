@@ -782,14 +782,12 @@ public:
     bool hasListenerType(ListenerType listenerType) const { return (m_listenerTypes & listenerType); }
     void addListenerTypeIfNeeded(const AtomicString& eventType);
 
-#if ENABLE(MUTATION_OBSERVERS)
     bool hasMutationObserversOfType(MutationObserver::MutationType type) const
     {
         return m_mutationObserverTypes & type;
     }
     bool hasMutationObservers() const { return m_mutationObserverTypes; }
     void addMutationObserverTypes(MutationObserverOptions types) { m_mutationObserverTypes |= types; }
-#endif
 
     CSSStyleDeclaration* getOverrideStyle(Element*, const String& pseudoElt);
 
@@ -1355,10 +1353,7 @@ private:
 
     unsigned short m_listenerTypes;
 
-#if ENABLE(MUTATION_OBSERVERS)
     MutationObserverOptions m_mutationObserverTypes;
-#endif
-
 
     OwnPtr<DocumentStyleSheetCollection> m_styleSheetCollection;
     RefPtr<StyleSheetList> m_styleSheetList;
@@ -1586,22 +1581,20 @@ inline const Document* Document::templateContentsOwnerDocument() const
 
 inline bool Node::isDocumentNode() const
 {
-    return this == m_document;
-}
-
-inline TreeScope* Node::treeScope() const
-{
-    return hasRareData() ? m_data.m_rareData->treeScope() : documentInternal();
+    return this == documentInternal();
 }
 
 inline Node::Node(Document* document, ConstructionType type)
     : m_nodeFlags(type)
-    , m_document(document)
+    , m_treeScope(document)
     , m_previous(0)
     , m_next(0)
 {
     if (document)
         document->guardRef();
+    else
+        m_treeScope = TreeScope::noDocumentInstance();
+
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
     trackForDebugging();
 #endif

@@ -3696,11 +3696,11 @@ static Frame* targetFrameForEditing(WebPage* page)
     return targetFrame;
 }
 
-void WebPage::confirmComposition(const String& compositionString, int64_t selectionStart, int64_t selectionLength, EditorState& newState)
+void WebPage::confirmComposition(const String& compositionString, int64_t selectionStart, int64_t selectionLength)
 {
     Frame* targetFrame = targetFrameForEditing(this);
     if (!targetFrame) {
-        newState = editorState();
+        send(Messages::WebPageProxy::EditorStateChanged(editorState()));
         return;
     }
 
@@ -3708,7 +3708,7 @@ void WebPage::confirmComposition(const String& compositionString, int64_t select
     editor->confirmComposition(compositionString);
 
     if (selectionStart == -1) {
-        newState = editorState();
+        send(Messages::WebPageProxy::EditorStateChanged(editorState()));
         return;
     }
 
@@ -3720,19 +3720,14 @@ void WebPage::confirmComposition(const String& compositionString, int64_t select
         VisibleSelection selection(selectionRange.get(), SEL_DEFAULT_AFFINITY);
         targetFrame->selection()->setSelection(selection);
     }
-    newState = editorState();
+    send(Messages::WebPageProxy::EditorStateChanged(editorState()));
 }
 
-void WebPage::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementStart, uint64_t replacementLength, EditorState& newState)
+void WebPage::setComposition(const String& text, Vector<CompositionUnderline> underlines, uint64_t selectionStart, uint64_t selectionEnd, uint64_t replacementStart, uint64_t replacementLength)
 {
     Frame* targetFrame = targetFrameForEditing(this);
-    if (!targetFrame) {
-        newState = editorState();
-        return;
-    }
-
-    if (!targetFrame->selection()->isContentEditable()) {
-        newState = editorState();
+    if (!targetFrame || !targetFrame->selection()->isContentEditable()) {
+        send(Messages::WebPageProxy::EditorStateChanged(editorState()));
         return;
     }
 
@@ -3748,19 +3743,14 @@ void WebPage::setComposition(const String& text, Vector<CompositionUnderline> un
     }
 
     targetFrame->editor()->setComposition(text, underlines, selectionStart, selectionEnd);
-    newState = editorState();
+    send(Messages::WebPageProxy::EditorStateChanged(editorState()));
 }
 
-void WebPage::cancelComposition(EditorState& newState)
+void WebPage::cancelComposition()
 {
-    Frame* targetFrame = targetFrameForEditing(this);
-    if (!targetFrame) {
-        newState = editorState();
-        return;
-    }
-
-    targetFrame->editor()->cancelComposition();
-    newState = editorState();
+    if (Frame* targetFrame = targetFrameForEditing(this))
+        targetFrame->editor()->cancelComposition();
+    send(Messages::WebPageProxy::EditorStateChanged(editorState()));
 }
 #endif
 

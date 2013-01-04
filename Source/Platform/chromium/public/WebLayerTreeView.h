@@ -51,7 +51,7 @@ public:
             , showPlatformLayerTree(false)
             , showPaintRects(false)
             , renderVSyncEnabled(true)
-            , lowLatencyRenderingEnabled(false)
+            , renderVSyncNotificationEnabled(false)
             , perTilePaintingEnabled(false)
             , partialSwapEnabled(false)
             , acceleratedAnimationEnabled(true)
@@ -68,7 +68,7 @@ public:
         bool showPlatformLayerTree;
         bool showPaintRects;
         bool renderVSyncEnabled;
-        bool lowLatencyRenderingEnabled;
+        bool renderVSyncNotificationEnabled;
         bool perTilePaintingEnabled;
         bool partialSwapEnabled;
         bool acceleratedAnimationEnabled;
@@ -187,7 +187,7 @@ public:
     // Toggles the paint rects in the HUD layer
     virtual void setShowPaintRects(bool) { }
 
-    // Simulates a lost context. For testing only.
+    // FIXME: Remove this.
     virtual void loseCompositorContext(int numTimes) { }
 };
 

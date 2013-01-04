@@ -1923,14 +1923,6 @@ bool WebViewImpl::isInputThrottled() const
     return false;
 }
 
-void WebViewImpl::loseCompositorContext(int numTimes)
-{
-#if USE(ACCELERATED_COMPOSITING)
-    if (m_layerTreeView)
-        m_layerTreeView->loseCompositorContext(numTimes);
-#endif
-}
-
 void WebViewImpl::enterFullScreenForElement(WebCore::Element* element)
 {
     // We are already transitioning to fullscreen for a different element.
@@ -4014,12 +4006,12 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 
         WebLayerTreeView::Settings layerTreeViewSettings;
         layerTreeViewSettings.acceleratePainting = page()->settings()->acceleratedDrawingEnabled();
-        layerTreeViewSettings.lowLatencyRenderingEnabled = settingsImpl()->lowLatencyRenderingEnabled();
         layerTreeViewSettings.showDebugBorders = page()->settings()->showDebugBorders();
         layerTreeViewSettings.showFPSCounter = settingsImpl()->showFPSCounter();
         layerTreeViewSettings.showPlatformLayerTree = settingsImpl()->showPlatformLayerTree();
         layerTreeViewSettings.showPaintRects = settingsImpl()->showPaintRects();
         layerTreeViewSettings.renderVSyncEnabled = settingsImpl()->renderVSyncEnabled();
+        layerTreeViewSettings.renderVSyncNotificationEnabled = settingsImpl()->renderVSyncNotificationEnabled();
         layerTreeViewSettings.perTilePaintingEnabled = settingsImpl()->perTilePaintingEnabled();
         layerTreeViewSettings.acceleratedAnimationEnabled = settingsImpl()->acceleratedAnimationEnabled();
         layerTreeViewSettings.pageScalePinchZoomEnabled = settingsImpl()->applyPageScaleFactorInCompositor();

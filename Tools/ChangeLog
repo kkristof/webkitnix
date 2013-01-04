@@ -1,3 +1,279 @@
+2013-01-04  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove lost-compositor-context layout tests
+        https://bugs.webkit.org/show_bug.cgi?id=106089
+
+        Reviewed by James Robinson.
+
+        Remove the loseCompositorContext() test function.
+
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+
+2013-01-04  Adam Klein  <adamk@chromium.org>
+
+        Remove ENABLE_MUTATION_OBSERVERS #define
+        https://bugs.webkit.org/show_bug.cgi?id=105459
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2013-01-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Statistics used in perftest_unittest.py and perftest_integrationtest.py are bogus
+        https://bugs.webkit.org/show_bug.cgi?id=106078
+
+        Reviewed by Tony Chang.
+
+        This patch updates values for individual iterations in dummy performance tests used in
+        perftest_unittest.py and perftest_integrationtest.py so that they match up with
+        statistics such as stdev and median reported in those tests. This change is required
+        to resolve the bug 97510.
+
+        This patch also refactors integration tests by extracting *TestData classes that
+        centralizes the definitions of each dummy performance test's text (DRT output),
+        runner output, and parsed results (JSON) so that we may share more data between
+        python tests.
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (MainTest._assert_results_are_correct): Extracted from test_parse_output.
+        Use self.assertAlmostEqual when comparing the standard deviation.
+        (MainTest.test_parse_output):
+        (test_parse_output_with_failing_line):
+        (test_parse_output_with_description): Use _assert_results_are_correct.
+        (test_parse_output_with_subtests): Ditto.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py:
+        (InspectorPassTestData): Extracted from tests below.
+        (EventTargetWrapperTestData): Ditto.
+        (SomeParserTestData): Ditto.
+        (MemoryTestData): Ditto.
+        (TestDriver.run_test): Moved test definitions out of the method.
+        (MainTest._normalize_output): Truncate standard deviations at 5th decimal point.
+        (MainTest._load_output_json): Extracted from create_runner.
+        (MainTest.create_runner):
+        (MainTest.test_run_test_set_for_parser_tests):
+        (MainTest.test_run_memory_test):
+        (MainTest._test_run_with_json_output):
+        (MainTest.test_run_with_json_output):
+        (MainTest.test_run_with_description):
+        (MainTest.test_run_generates_json_by_default):
+        (MainTest.test_run_merges_output_by_default):
+        (MainTest.test_run_respects_reset_results):
+        (MainTest.test_run_generates_and_show_results_page):
+        (MainTest.test_run_with_slave_config_json):
+        (MainTest.test_run_with_multiple_repositories):
+
+2013-01-04  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] [WebKit2] Clicking on a word that is selected in an editable area deletes it
+        https://bugs.webkit.org/show_bug.cgi?id=106045
+
+        Reviewed by Carlos Garcia Campos.
+
+        Update test results to confirm that compositions without preedits do not trigger
+        a composition confirmation.
+
+        * TestWebKitAPI/Tests/gtk/InputMethodFilter.cpp:
+        (TestWebKitAPI::verifyCanceledComposition):
+
+2013-01-04  Sailesh Agrawal  <sail@chromium.org>
+
+        [Mac] [WK2] platform/mac/fast/events/numpad-keycode-mapping.html fails
+        https://bugs.webkit.org/show_bug.cgi?id=105958
+
+        Reviewed by Alexey Proskuryakov.
+
+        Ported code from DumpRenderTree to WebKitTestRunner to map all numpad keys.
+
+        * WebKitTestRunner/mac/EventSenderProxy.mm:
+        (KeyMappingEntry):
+        (WTR):
+        (WTR::EventSenderProxy::keyDown): Added all numpad keys.
+
+2013-01-03  Chris Fleizach  <cfleizach@apple.com>
+
+        REGRESSION: [Mac] Intermittent crash in WTR::AccessibilityUIElement::isEqual
+        https://bugs.webkit.org/show_bug.cgi?id=106073
+
+        Reviewed by Ryosuke Niwa.
+
+        Check that the element being compared to is not nil. 
+        This crash is happening because one of the accessibility tests does an isEqual comparison within a callback function.
+        It looks like occasionally, one of the elements passed in to the isEqual is nil because the notification handler is on the accessibility
+        controller, and the notification is being delivered after the document objects are cleared. This shouldn't happen but I've seen it 
+        sometimes before on parallel WebKitTestRunner runs.
+
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        (AccessibilityUIElement::isEqual):
+        * WebKitTestRunner/InjectedBundle/mac/AccessibilityUIElementMac.mm:
+        (WTR::AccessibilityUIElement::isEqual):
+
+2013-01-03  Tim 'mithro' Ansell  <mithro@mithis.com>
+
+        Downloads can be flaky, so try downloading multiple times.
+        https://bugs.webkit.org/show_bug.cgi?id=105976
+
+        Reviewed by Eric Seidel.
+
+        * Scripts/webkitpy/common/system/autoinstall.py:
+        (AutoInstaller._download_to_stream):
+
+2013-01-03  Eric Seidel  <eric@webkit.org>
+
+        Rename Tool.port to deprecated_port in preparation for removing more callers
+        https://bugs.webkit.org/show_bug.cgi?id=106076
+
+        Reviewed by Ryosuke Niwa.
+
+        This resolves a long-standing FIXME to rename this method. :)
+
+        * Scripts/webkitpy/tool/bot/botinfo.py:
+        (BotInfo.summary_text):
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Rollout._update_working_copy):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader.py:
+        (LayoutTestResultsReader._create_layout_test_results):
+        (LayoutTestResultsReader._create_unit_test_results):
+        (LayoutTestResultsReader._results_directory):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader_unittest.py:
+        (test_missing_unit_test_results_path):
+        * Scripts/webkitpy/tool/main.py:
+        (WebKitPatch.deprecated_port):
+        * Scripts/webkitpy/tool/mocktool.py:
+        (MockTool.deprecated_port):
+        * Scripts/webkitpy/tool/steps/build.py:
+        (Build.build):
+        * Scripts/webkitpy/tool/steps/checkstyle.py:
+        (CheckStyle.run):
+        * Scripts/webkitpy/tool/steps/commit.py:
+        (Commit._check_test_expectations):
+        * Scripts/webkitpy/tool/steps/preparechangelog.py:
+        (PrepareChangeLog.run):
+        * Scripts/webkitpy/tool/steps/preparechangelogfordepsroll.py:
+        (PrepareChangeLogForDEPSRoll.run):
+        * Scripts/webkitpy/tool/steps/preparechangelogforrevert.py:
+        (PrepareChangeLogForRevert.run):
+        * Scripts/webkitpy/tool/steps/runtests.py:
+        (RunTests.run):
+        * Scripts/webkitpy/tool/steps/steps_unittest.py:
+        (StepsTest.test_runtests_args):
+        * Scripts/webkitpy/tool/steps/update.py:
+        (Update._update_command):
+
+2013-01-03  Eric Seidel  <eric@webkit.org>
+
+        Add myself to the webkitpy watchlist.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Cleanup perftest* tests and add a test for computing statistics
+        https://bugs.webkit.org/show_bug.cgi?id=105685
+
+        Reviewed by Eric Seidel.
+
+        Add a test for PerfTest.compute_statistics (moved and renamed from PageLoadingPerfTest.calculate_statistics) and
+        extracted perftestsrunner_itegrationtests.py from perftestsrunner_unittests.py.
+
+        Also fixed a bug in compute_statistics that the mean ('avg') value can have a large rounding errors in some cases.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest.compute_statistics): Moved from PageLoadingPerfTest to prepare for the bug 97510. Also compute the mean
+        directly from sorted_values instead of using the one from Knuth's online algorithm. This approach gives more
+        accurate result for the mean.
+        (PageLoadingPerfTest.run_single):
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (MainTest.test_compute_statistics):
+        (MainTest.test_compute_statistics.compute_statistics): Added.
+        (TestPageLoadingPerfTest.test_run): floatify values.
+        (TestPageLoadingPerfTest.test_run_with_memory_output): Ditto. Also got rid of ".0" from mean values now that Python
+        correctly recognizes them as integers.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py: Copied from
+        Tools/Scripts/webkitpy/performance_tests/perftestsrunner_unittest.py.
+        (TestDriver): Moved out of MainTest.
+        (MainTest): Got rid of assertWritten and all unit tests.
+        (MainTest._normalize_output): Renamed from normalizeFinishedTime to match the PEP8 naming convention.
+        (MainTest.test_run_test_set_kills_drt_per_run.TestDriverWithStopCount):
+        (MainTest.test_run_test_set_for_parser_tests):
+        (MainTest.test_run_memory_test):
+        (MainTest._test_run_with_json_output):
+        (MainTest.test_run_generates_json_by_default):
+        (MainTest.test_run_merges_output_by_default):
+        (MainTest.test_run_respects_reset_results):
+        (MainTest.test_run_generates_and_show_results_page): Use runner.load_output_json() instead of manually loading and
+        parsing output JSON files. Just verify that the output path is correct instead.
+        * Scripts/webkitpy/performance_tests/perftestsrunner_unittest.py:
+        (MainTest): Removed all integration tests.
+        (MainTest.create_runner): Simplified.
+
+2013-01-03  Julie Parent  <jparent@chromium.org>
+
+        Dashboard cleanup: remove usage of global g_defaultBuilderName
+        https://bugs.webkit.org/show_bug.cgi?id=106043
+
+        Use now public defaultBuilder() from the BuilderGroup, rather
+        than global variable.
+
+        Also eliminates the setup() and initBuilders() functions since we
+        no longer need to track the global.
+
+        Reviewed by Adam Barth.
+
+        * TestResultServer/static-dashboards/builders.js:
+        (BuilderGroup.prototype.defaultBuilder):
+        (BuilderGroup.prototype.master):
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (parseParameters):
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (updateDefaultBuilderState):
+        * TestResultServer/static-dashboards/loader.js:
+        (.):
+        * TestResultServer/static-dashboards/loader_unittests.js:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Disable an intermittently failing unit test for now.
+        The failure is tracked by the bug 106051.
+
+        * TestWebKitAPI/Tests/mac/MemoryCachePruneWithinResourceLoadDelegate.mm:
+        (TestWebKitAPI::TEST):
+
+2013-01-03  Dan Bernstein  <mitz@apple.com>
+
+        No way to obtain a DOMNode given a JS wrapper for a Node
+        https://bugs.webkit.org/show_bug.cgi?id=106033
+
+        Added a test for +[DOMNode _nodeFromJSWrapper:].
+
+        Reviewed by Sam Weinig.
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/mac/DOMNodeFromJSObject.mm: Added.
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST):
+
+2013-01-03  Emil A Eklund  <eae@chromium.org>
+
+        Fix overflow in LayoutUnit::ceil and floor for SATURATED_LAYOUT_ARITHMETIC
+        https://bugs.webkit.org/show_bug.cgi?id=105961
+
+        Reviewed by Levi Weintraub.
+        
+        Add tests for LayoutUnit::ceil and floor.
+
+        * TestWebKitAPI/Tests/WebCore/LayoutUnit.cpp:
+        (TestWebKitAPI::TEST):
+        (TestWebKitAPI):
+
 2013-01-03  Julie Parent  <jparent@chromium.org>
 
         Add unit test for default builder for the dashboards.

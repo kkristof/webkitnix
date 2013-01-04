@@ -217,7 +217,7 @@ inline ElementRareData* Element::ensureElementRareData()
 
 PassOwnPtr<NodeRareData> Element::createRareData()
 {
-    return adoptPtr(new ElementRareData(documentInternal()));
+    return adoptPtr(new ElementRareData());
 }
 
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, blur);
@@ -2284,9 +2284,19 @@ bool Element::isWebVTTNode() const
     return hasRareData() && elementRareData()->isWebVTTNode();
 }
 
-void Element::setIsWebVTTNode(bool flag)
+void Element::setIsWebVTTNode()
 {
-    ensureElementRareData()->setIsWebVTTNode(flag);
+    ensureElementRareData()->setIsWebVTTNode();
+}
+
+bool Element::isWebVTTFutureNode() const
+{
+    return hasRareData() && elementRareData()->isWebVTTFutureNode();
+}
+
+void Element::setIsWebVTTFutureNode()
+{
+    ensureElementRareData()->setIsWebVTTFutureNode();
 }
 #endif
 
@@ -2481,10 +2491,8 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
             updateLabel(scope, oldValue, newValue);
     }
 
-#if ENABLE(MUTATION_OBSERVERS)
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
-#endif
 
 #if ENABLE(INSPECTOR)
     InspectorInstrumentation::willModifyDOMAttr(document(), this, oldValue, newValue);

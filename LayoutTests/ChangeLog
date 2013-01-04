@@ -1,3 +1,430 @@
+2013-01-04  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove lost-compositor-context layout tests
+        https://bugs.webkit.org/show_bug.cgi?id=106089
+
+        Reviewed by James Robinson.
+
+        Better test coverage for these issues is now provided by the unit tests
+        in the compositor's cc/layer_tree_host_unittest_context.cc file.
+
+        * platform/chromium-linux-x86/platform/chromium/compositing/webgl-loses-compositor-context-expected.png: Removed.
+        * platform/chromium-linux/platform/chromium/compositing/webgl-loses-compositor-context-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/platform/chromium/compositing/lost-compositor-context-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/platform/chromium/compositing/lost-compositor-context-permanently-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/platform/chromium/compositing/lost-compositor-context-twice-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/platform/chromium/compositing/lost-compositor-context-with-rendersurface-expected.png: Removed.
+        * platform/chromium-mac-snowleopard/platform/chromium/compositing/webgl-loses-compositor-context-expected.png: Removed.
+        * platform/chromium-mac/platform/chromium/compositing/lost-compositor-context-with-video-expected.png: Removed.
+        * platform/chromium-win-xp/platform/chromium/compositing/webgl-loses-compositor-context-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-expected.txt: Removed.
+        * platform/chromium/compositing/lost-compositor-context-permanently-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-permanently-expected.txt: Removed.
+        * platform/chromium/compositing/lost-compositor-context-permanently.html: Removed.
+        * platform/chromium/compositing/lost-compositor-context-twice-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-twice-expected.txt: Removed.
+        * platform/chromium/compositing/lost-compositor-context-twice.html: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-rendersurface-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-rendersurface-expected.txt: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-rendersurface.html: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-video-expected.png: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-video-expected.txt: Removed.
+        * platform/chromium/compositing/lost-compositor-context-with-video.html: Removed.
+        * platform/chromium/compositing/lost-compositor-context.html: Removed.
+        * platform/chromium/compositing/webgl-loses-compositor-context-expected.png: Removed.
+        * platform/chromium/compositing/webgl-loses-compositor-context-expected.txt: Removed.
+        * platform/chromium/compositing/webgl-loses-compositor-context.html: Removed.
+
+2013-01-04  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. fast/repaint/japanese-rl-selection-repaint-in-regions.html
+        has image-only failures on SnowLeopard and Lion.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-04  Adam Klein  <adamk@chromium.org>
+
+        Remove ENABLE_MUTATION_OBSERVERS #define
+        https://bugs.webkit.org/show_bug.cgi?id=105459
+
+        Reviewed by Ryosuke Niwa.
+
+        Remove references to ENABLE(MUTATION_OBSERVERS) from tests.
+
+        * fast/dom/MutationObserver/cross-document.html:
+        * fast/dom/MutationObserver/database-callback-delivery.html:
+        * fast/dom/MutationObserver/disconnect-cancel-pending.html:
+        * fast/dom/MutationObserver/filesystem-callback-delivery.html:
+        * fast/dom/MutationObserver/mutation-observer-constructor.html:
+        * fast/dom/MutationObserver/observe-attributes.html:
+        * fast/dom/MutationObserver/observe-characterdata.html:
+        * fast/dom/MutationObserver/observe-childList.html:
+        * fast/dom/MutationObserver/observe-exceptions.html:
+        * fast/dom/MutationObserver/observe-subtree.html:
+        * fast/dom/MutationObserver/takeRecords.html:
+
+2013-01-04  Rick Byers  <rbyers@chromium.org>
+
+        Existence of window.Touch can break websites mobile device detection
+        https://bugs.webkit.org/show_bug.cgi?id=106071
+
+        Revert http://trac.webkit.org/changeset/135562 for now while I work
+        on a slightly safer version.
+
+        Reviewed by Ojan Vafai.
+
+        * fast/events/touch/document-create-touch-list-expected.txt:
+        * fast/events/touch/script-tests/document-create-touch-list.js:
+        * platform/efl/fast/js/global-constructors-expected.txt:
+        * platform/qt-5.0/fast/js/global-constructors-expected.txt:
+        * platform/qt/fast/js/global-constructors-expected.txt:
+
+2013-01-04  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt][WK2] Unreviewed gardening, unskip a now passing test.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+
+2013-01-04  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed gardening, skip a new failing test.
+
+        * platform/qt/TestExpectations:
+
+2013-01-04  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. New image baselines for test
+        fast/regions/full-screen-video-from-region.html
+
+        * platform/chromium-mac-snowleopard/fast/regions/full-screen-video-from-region-expected.png: Added.
+        * platform/chromium-mac/fast/regions/full-screen-video-from-region-expected.png:
+        * platform/chromium-win-xp/fast/regions/full-screen-video-from-region-expected.png: Added.
+
+2013-01-04  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed GTK gardening.
+
+        Rebaselining an editing test after r138654.
+
+        Adding failure expectations for two tests added in r138632.
+        Add a temporary failure expectation for transitions/transitions-parsing.html,
+        the test is fixed but just requires a clean build. It shouldn't paint the bots
+        red until then.
+
+        * platform/gtk/TestExpectations:
+        * platform/gtk/editing/deleting/delete-to-select-table-expected.txt: Added.
+
+2013-01-04  Zan Dobersek  <zandobersek@gmail.com>
+
+        REGRESSION (r138184): transitions/transitions-parsing.html is failing on GTK
+        https://bugs.webkit.org/show_bug.cgi?id=105522
+
+        Reviewed by Xan Lopez.
+
+        Remove a failure expectation for a test that's now passing.
+
+        * platform/gtk/TestExpectations:
+
+2013-01-04  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Skip new failing tests introduced in r138632 and r138756.
+
+        * platform/efl/TestExpectations:
+
+2013-01-04  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline editing/deleting/delete-to-select-table.html.
+
+        * platform/efl/editing/deleting/delete-to-select-table-expected.png:
+        * platform/efl/editing/deleting/delete-to-select-table-expected.txt: Added.
+
+2013-01-04  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Mark test webaudio/codec-tests/mp3/128kbps-44khz.html as Missing.
+
+        * platform/efl/TestExpectations:
+
+2013-01-04  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        Unreviewed EFL gardening.
+
+        Rebaseline 2 media/track test cases after r138784.
+
+        * platform/efl/media/track/track-cue-rendering-horizontal-expected.png:
+        * platform/efl/media/track/track-cue-rendering-horizontal-expected.txt:
+        * platform/efl/media/track/track-cue-rendering-vertical-expected.png:
+        * platform/efl/media/track/track-cue-rendering-vertical-expected.txt:
+
+2013-01-04  Sailesh Agrawal  <sail@chromium.org>
+
+        [Mac] [WK2] platform/mac/fast/events/numpad-keycode-mapping.html fails
+        https://bugs.webkit.org/show_bug.cgi?id=105958
+
+        Reviewed by Alexey Proskuryakov.
+
+        Fixed numpad-keycode-mapping.html failure in WebKitTestRunner.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-04  Mihnea Ovidenie  <mihnea@adobe.com>
+
+        [CSS Regions]Content overflowing last region displayed wrong
+        https://bugs.webkit.org/show_bug.cgi?id=105893
+
+        Reviewed by David Hyatt.
+
+        Add tests for all writing modes with content overflowing the last region in chain.
+        Hit testing for content overflowing the last region is not yet supported, therefore tests
+        for that will be added in the future.
+
+        * fast/regions/overflow-last-region-expected.html: Added.
+        * fast/regions/overflow-last-region-horiz-bt-expected.html: Added.
+        * fast/regions/overflow-last-region-horiz-bt.html: Added.
+        * fast/regions/overflow-last-region-vert-lr-expected.html: Added.
+        * fast/regions/overflow-last-region-vert-lr.html: Added.
+        * fast/regions/overflow-last-region-vert-rl-expected.html: Added.
+        * fast/regions/overflow-last-region-vert-rl.html: Added.
+        * fast/regions/overflow-last-region.html: Added.
+
+2013-01-04  Dima Gorbik  <dgorbik@apple.com>
+
+        Implement :future pseudo class for the WebVTT ::cue pseudo element
+        https://bugs.webkit.org/show_bug.cgi?id=105473
+
+        Reviewed by Antti Koivisto.
+
+        Modified the track css matching test to cover :future pseudo-class case.
+
+        * media/track/captions-webvtt/captions-inner-timestamps.vtt: Removed.
+        * media/track/captions-webvtt/styling.vtt:
+        * media/track/track-css-matching-expected.txt:
+        * media/track/track-css-matching.html:
+        * media/track/track-cue-rendering-inner-timestamps-expected.txt: Removed.
+        * media/track/track-cue-rendering-inner-timestamps.html: The test was removed because it was based on the old
+        future/past nodes rendering logic.
+
+2013-01-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        REGRESSION (r138222?): Assertion failure on appcache/main-resource-redirect.html
+        https://bugs.webkit.org/show_bug.cgi?id=105591
+
+        Reviewed by Brady Eidson.
+
+        Unskip http/tests/appcache/main-resource-redirect.html.
+
+        * platform/efl-wk2/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add one more Mac test expectation for the bug 105986.
+
+        * platform/mac/TestExpectations:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add Mac test expectations for the bugs 105986 and 105988.
+
+        * platform/mac-wk2/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a crashing test expectation for the test added by r138755 on Mac.
+        The test failure is tracked by the bug 138755.
+
+        * platform/mac/TestExpectations:
+
+2013-01-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Gardening Apple Windows port.
+
+        * platform/win/fast/css/image-set-value-not-removed-crash-expected.txt: Added.
+
+2013-01-03  Tony Chang  <tony@chromium.org>
+
+        incorrect flexbox relayout with overflow, padding and absolute positioning
+        https://bugs.webkit.org/show_bug.cgi?id=106022
+
+        Reviewed by Ojan Vafai.
+
+        * css3/flexbox/stretch-simplified-layout-expected.txt: Added.
+        * css3/flexbox/stretch-simplified-layout.html: Added.
+
+2013-01-03  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. Marking fast/events/5056619.html as flaky
+        on XP and Win7.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-03  Antoine Quint  <graouts@apple.com>
+
+        onload callback for <track> element attached to <video> does not fire
+        https://bugs.webkit.org/show_bug.cgi?id=103258
+
+        Reviewed by Eric Carlson.
+
+        As a result of fixing this bug, a few new failures were uncovered and TestExpectations
+        needed to be updated to take this into account. Additionally, some existing tests were
+        incorrect or outdated and were fixed as well. Finally, a new test was added to thoroughly
+        test the various conditions required for a <track> element to successfully load.
+
+        * fast/events/constructors/track-event-constructor.html: Update the test to correctly set
+        a non-disabled mode on the text track such that it may load per the rules enforced with this patch.
+        * http/tests/security/text-track-crossorigin.html: Update the test to correctly set a non-disabled
+        mode on the text track such that it may load per the rules enforced with this patch.
+        * media/track/track-add-track-expected.txt: Update the output to match changes made to test.
+        * media/track/track-add-track.html: Update the test to correctly set a non-disabled mode on
+        the text track such that it may load per the rules enforced with this patch. Also, ensure
+        the .readyState of the text track is correctly assumed to be NONE vs. LOADING as it would
+        have to wait until the next run loop to be changed to anything but NONE.
+        * media/track/track-element-load-event-expected.txt: Added.
+        * media/track/track-element-load-event.html: Added.
+        * media/track/track-load-from-src-readyState.html: Update the test to correctly set a
+        non-disabled mode on the text track such that it may load per the rules enforced with
+        this patch.
+        * platform/chromium/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/efl/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/gtk/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/mac/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/qt/TestExpectations: Skip tests that now fail instead of timing out.
+        * platform/win/TestExpectations: Skip tests that now fail instead of timing out.
+
+2013-01-03  Jon Lee  <jonlee@apple.com>
+
+        REGRESSION(r138729): crash and assertion failures in WebKit::WebProcess::plugInDidReceiveUserInteraction
+        https://bugs.webkit.org/show_bug.cgi?id=106042
+        <rdar://problem/12953469>
+
+        Reviewed by Brady Eidson.
+
+        * platform/mac-wk2/TestExpectations: Unskip the crashing tests.
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a failing test expectation for fast/inline/continuation-outlines-with-layers.html on Mac
+        and associate it with the bug 106064.
+        
+        Also update Chromium test expectations to associate the failure with the bug 106064.
+        They were erroneously associated with resolved bugs.
+
+        * platform/chromium/TestExpectations:
+        * platform/mac/TestExpectations:
+
+2013-01-03  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. Adding cr-linux image baseline for
+        http://trac.webkit.org/changeset/138755
+
+        * platform/chromium-linux/fast/regions/full-screen-video-from-region-expected.png: Added.
+
+2013-01-03  Beth Dakin  <bdakin@apple.com>
+
+        https://bugs.webkit.org/show_bug.cgi?id=105475
+        Nested fixed position elements incorrectly repositioned on scrolling
+
+        Reviewed by Simon Fraser.
+
+        Unfortunately, the children were not really accurate before, and they are not 
+        really accurate now. It seems like the state tree is not fully up-to-date when the 
+        test is printing it. 
+        * platform/mac/tiled-drawing/fixed/nested-fixed-expected.txt:
+
+2013-01-03  Adam Klein  <adamk@chromium.org>
+
+        [HTMLTemplateElement] When adopting a template element, also adopt its content into the appropriate document
+        https://bugs.webkit.org/show_bug.cgi?id=106039
+
+        Reviewed by Eric Seidel.
+
+        * fast/dom/HTMLTemplateElement/ownerDocument-adoptNode-expected.txt: Added.
+        * fast/dom/HTMLTemplateElement/ownerDocument-adoptNode.html: Added.
+
+2013-01-03  Zoltan Horvath  <zoltan@webkit.org>
+
+        [CSS Regions] Don't apply region flow to fullscreen video playing
+        https://bugs.webkit.org/show_bug.cgi?id=102388
+
+        Reviewed by David Hyatt.
+
+        In case of full screen video playing we want to watch the video full screen without applying the region flow.
+
+        * fast/regions/full-screen-video-from-region-expected.txt: Added.
+        * fast/regions/full-screen-video-from-region.html: Added.
+        * platform/chromium-mac/fast/regions/full-screen-video-from-region-expected.png: Added.
+
+2013-01-03  Rafael Weinstein  <rafaelw@chromium.org>
+
+        [Mutation Observers] prevent delivery while recipient context is suspended
+        https://bugs.webkit.org/show_bug.cgi?id=105810
+
+        Reviewed by Adam Barth.
+
+        * inspector/debugger/mutation-observer-suspend-while-paused-expected.txt: Added.
+        * inspector/debugger/mutation-observer-suspend-while-paused.html: Added.
+
+2013-01-03  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt][WK2] Unreviewed gardening, skip a new crashing test to paint the bots green.
+
+        * platform/qt-5.0-wk2/TestExpectations:
+
+2013-01-03  Terry Anderson  <tdanderson@chromium.org>
+
+        Unreviewed gardening. Setting webaudio/automatic-pull-node.html to
+        [ Timeout Pass ] for XP.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-03  Terry Anderson  <tdanderson@chromium.org>
+
+        css3/filters/effect-invert.html is flaky/has incorrect image output on Win
+
+        Unreviewed gardening. Marked this as [ Failure Pass ] for Win7 and
+        as [ Failure ] for XP.
+
+        * platform/chromium/TestExpectations:
+
+2013-01-03  Uday Kiran  <udaykiran@motorola.com>
+
+        webkit fails IETC column-width-negative-001.htm
+        https://bugs.webkit.org/show_bug.cgi?id=84778
+
+        Reviewed by Tony Chang.
+
+        New test for multicolumn 'column-width' property with zero value.
+        Enable IETC column-width-negative test.
+
+        * fast/multicol/column-width-zero-expected.txt: Added.
+        * fast/multicol/column-width-zero.html: Added.
+        * platform/chromium/TestExpectations:
+        * platform/efl/TestExpectations:
+        * platform/gtk/TestExpectations:
+        * platform/mac/TestExpectations:
+        * platform/qt/TestExpectations:
+
+2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add crash test expectations for tests regressed by r138729
+        The failure is tracked by the bug 106042.
+
+        * platform/mac-wk2/TestExpectations:
+
+2013-01-03  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Add Windows specific result for passing test.
+
+        * platform/win/loader: Added.
+        * platform/win/loader/image-loader-adoptNode-assert-expected.txt: Added.
+
 2013-01-03  Ryosuke Niwa  <rniwa@webkit.org>
 
         Remove failing or flaky test expectations from tests that have been passing on Mac.

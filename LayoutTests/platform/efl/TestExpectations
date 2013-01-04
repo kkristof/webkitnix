@@ -796,6 +796,12 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-b
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
 
+# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
+# At any rate, there is no regression, just a different type of failure.
+webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
+
 webkit.org/b/100636 [ Debug ] jquery/traversing.html [ Failure Crash Pass ]
 
 webkit.org/b/102928 svg/foreignObject/viewport-foreignobject-crash.html [ Crash Failure Pass ]
@@ -1189,7 +1195,6 @@ webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm
 webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-webkit.org/b/84778 ietestcenter/css3/multicolumn/column-width-negative-001.htm [ ImageOnlyFailure ]
 
 webkit.org/b/72363 fast/dom/Window/window-postmessage-arrays.html [ Failure ]
 
@@ -1761,7 +1766,7 @@ webkit.org/b/105291 webaudio/oscillator-custom.html [ Failure ]
 webkit.org/b/105291 webaudio/oscillator-triangle.html [ Failure ]
 webkit.org/b/105291 webaudio/oscillator-sawtooth.html [ Failure ]
 webkit.org/b/105294 webaudio/codec-tests/aac/vbr-128kbps-44khz.html [ Failure ]
-webkit.org/b/105294 webaudio/codec-tests/mp3/128kbps-44khz.html [ Failure ]
+webkit.org/b/105294 webaudio/codec-tests/mp3/128kbps-44khz.html [ Missing Failure ]
 webkit.org/b/105294 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Failure ]
 webkit.org/b/105294 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Failure ]
 webkit.org/b/105294 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Failure ]
@@ -1776,3 +1781,10 @@ webkit.org/b/105535 inspector-protocol/nmi-webaudio-leak-test.html [ Failure ]
 
 # Leaking state into the next test.
 webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
+
+# New tests introduced in r138632 is failing.
+webkit.org/b/106015 fast/css-generated-content/pseudo-animation.html [ Failure ]
+webkit.org/b/106015 fast/css-generated-content/pseudo-transition.html [ Failure ]
+
+# New test introduced in r138756 is failing.
+webkit.org/b/106086 fast/dom/HTMLTemplateElement/ownerDocument-adoptNode.html [ Failure ]

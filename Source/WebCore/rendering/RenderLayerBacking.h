@@ -94,7 +94,7 @@ public:
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
-    void attachToScrollingCoordinator(RenderLayerBacking* parent);
+    void attachToScrollingCoordinatorWithParent(RenderLayerBacking* parent);
     void detachFromScrollingCoordinator();
     uint64_t scrollLayerID() const { return m_scrollLayerID; }
     
@@ -186,8 +186,6 @@ public:
     // Return an estimate of the backing store area (in pixels) allocated by this object's GraphicsLayers.
     double backingStoreMemoryEstimate() const;
 
-    String nameForLayer() const;
-    
 #if ENABLE(CSS_COMPOSITING)
     void setBlendMode(BlendMode);
 #endif

@@ -458,6 +458,12 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-b
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
 
+# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
+# At any rate, there is no regression, just a different type of failure.
+webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
+
 # No support for exposing in-band text tracks
 webkit.org/b/103771 media/track/track-in-band.html [ Failure ]
 webkit.org/b/103771 media/track/track-in-band-cues-added-once.html [ Timeout ]
@@ -1214,7 +1220,6 @@ webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm
 webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-webkit.org/b/84778 ietestcenter/css3/multicolumn/column-width-negative-001.htm [ ImageOnlyFailure ]
 
 webkit.org/b/87951 fast/dom/Window/mozilla-focus-blur.html [ Failure ]
 
@@ -1387,12 +1392,16 @@ webkit.org/b/87734 svg/dom/viewspec-parser-7.html [ Failure ]
 
 webkit.org/b/105443 accessibility/aria-controls-with-tabs.html [ Failure ]
 
-webkit.org/b/105522 transitions/transitions-parsing.html [ Failure ]
-
 webkit.org/b/98146 accessibility/svg-bounds.html [ Failure ]
 
 # Leaking state into the next test.
 webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
+
+webkit.org/b/106015 fast/css-generated-content/pseudo-animation.html [ Failure ]
+webkit.org/b/106015 fast/css-generated-content/pseudo-transition.html [ Failure ]
+
+# Added only temporarily, until a clean build is performed on the builders.
+Bug(GTK) transitions/transitions-parsing.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

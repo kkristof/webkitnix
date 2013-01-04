@@ -2758,6 +2758,8 @@ webkit.org/b/59673 http/tests/history/cross-origin-replace-history-object-child.
 webkit.org/b/91673 [ Win Debug ] fast/filesystem/file-writer-truncate-extend.html [ Failure Pass ]
 webkit.org/b/70886 [ Debug ] fast/events/change-overflow-on-overflow-change.html [ Pass Timeout ]
 
+webkit.org/b/106065 [ XP Win7 ] fast/events/5056619.html [ Failure Pass ]
+
 webkit.org/b/60112 fast/css/epub-properties.html [ Failure ]
 
 webkit.org/b/60136 [ Win ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Failure Pass ]
@@ -2863,6 +2865,11 @@ webkit.org/b/65124 [ Android Win MountainLion ] fast/repaint/japanese-rl-selecti
 webkit.org/b/65124 [ Win MountainLion ] fast/repaint/japanese-rl-selection-repaint.html [ Failure ]
 webkit.org/b/65124 [ Android Win MountainLion ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ Failure ]
 webkit.org/b/65124 [ Android ] fast/repaint/line-flow-with-floats-in-regions.html [ Failure ]
+
+webkit.org/b/106097 [ SnowLeopard Release ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
+webkit.org/b/106097 [ SnowLeopard Debug ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
+webkit.org/b/106097 [ Lion Release ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
+webkit.org/b/106097 [ Lion Debug ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
 
 webkit.org/b/65199 [ Android Linux SnowLeopard Win ] fast/writing-mode/broken-ideograph-small-caps.html [ Failure ]
 
@@ -3017,6 +3024,12 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-b
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
 
+# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
+# At any rate, there is no regression, just a different type of failure.
+webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
+webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
+
 webkit.org/b/72271 [ SnowLeopard Debug ] fast/dom/node-iterator-reference-node-moved-crash.html [ Crash Pass ]
 
 webkit.org/b/72376 [ Win ] fast/forms/file/input-file-label.html [ Failure Pass ]
@@ -3105,7 +3118,9 @@ webkit.org/b/78159 [ Debug ] platform/chromium/virtual/softwarecompositing/ifram
 fast/js/stack-trace.html [ WontFix ]
 
 webkit.org/b/69210 [ SnowLeopard ] fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
-webkit.org/b/69210 [ Mac ] fast/inline/continuation-outlines-with-layers.html [ Failure ]
+
+webkit.org/b/106064 [ Mac ] fast/inline/continuation-outlines-with-layers.html [ Failure ]
+webkit.org/b/106064 [ Android Win ] fast/inline/continuation-outlines-with-layers.html [ ImageOnlyFailure ]
 
 webkit.org/b/79013 http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout Crash ]
 
@@ -3159,8 +3174,6 @@ webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.
 webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
 
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
-
-webkit.org/b/81276 [ Android Win ] fast/inline/continuation-outlines-with-layers.html [ ImageOnlyFailure ]
 
 webkit.org/b/81721 [ Win ] fullscreen/full-screen-restrictions.html [ Pass Timeout ]
 
@@ -3361,7 +3374,6 @@ webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm
 webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-webkit.org/b/84778 ietestcenter/css3/multicolumn/column-width-negative-001.htm [ ImageOnlyFailure ]
 
 webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ ImageOnlyFailure ]
 webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ ImageOnlyFailure ]
@@ -3737,6 +3749,9 @@ webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-clipped.htm
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom.html [ ImageOnlyFailure ]
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-rotated.html [ ImageOnlyFailure ]
 
+webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ Failure Pass ]
+webkit.org/b/106044 [ XP ] css3/filters/effect-invert.html [ Failure ]
+
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
 webkit.org/b/95581 http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
@@ -4110,7 +4125,7 @@ webkit.org/b/100475 compositing/tiling/tile-cache-zoomed.html [ Failure ]
 webkit.org/b/100475 platform/chromium/virtual/softwarecompositing/tiling/tile-cache-zoomed.html [ Failure ]
 
 webkit.org/b/100647 [ Win ] webaudio/audiobuffersource-loop-points.html [ Failure ]
-webkit.org/b/105937 [ XP ] webaudio/automatic-pull-node.html [ Pass Slow ]
+webkit.org/b/105937 [ XP ] webaudio/automatic-pull-node.html [ Pass Timeout ]
 
 webkit.org/b/100806 [ Win ] fast/css/font-face-implicit-local-font.html [ Failure ]
 webkit.org/b/100806 [ Win ] fast/css/font-face-unicode-range.html [ Failure ]
