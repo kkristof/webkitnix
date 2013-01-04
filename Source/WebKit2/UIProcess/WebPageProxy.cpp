@@ -3456,7 +3456,7 @@ void WebPageProxy::didReceiveEvent(uint32_t opaqueType, bool handled)
     case WebEvent::GestureScrollBegin:
     case WebEvent::GestureScrollEnd:
     case WebEvent::GestureSingleTap: {
-        WebGestureEvent event = m_gestureEventQueue.first();
+        NativeWebGestureEvent event = m_gestureEventQueue.first();
         MESSAGE_CHECK(type == event.type());
 
         m_gestureEventQueue.removeFirst();
