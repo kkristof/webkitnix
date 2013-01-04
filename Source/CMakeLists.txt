@@ -57,4 +57,6 @@ endif ()
 # -----------------------------------------------------------------------------
 # Create the configuration file
 # -----------------------------------------------------------------------------
-configure_file(cmakeconfig.h.cmake ${CMAKE_BINARY_DIR}/cmakeconfig.h @ONLY)
+if (NOT "${PORT}" STREQUAL "Nix")
+    configure_file(cmakeconfig.h.cmake ${CMAKE_BINARY_DIR}/cmakeconfig.h @ONLY)
+endif ()

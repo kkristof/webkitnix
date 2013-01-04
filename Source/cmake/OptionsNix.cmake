@@ -3,6 +3,22 @@ SET(PROJECT_VERSION_MINOR 1)
 SET(PROJECT_VERSION_PATCH 0)
 SET(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 
+# Set default values for features based on Features${PORT}.config
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/Source/cmake/Features${PORT}.config" featureData NEWLINE_CONSUME)
+string(REPLACE ";" "\\\\;" featureData "${featureData}")
+string(REPLACE "\n" ";" featureData "${featureData}")
+
+set(_WEBKIT_AVAILABLE_OPTIONS "")
+foreach (feature IN ITEMS ${featureData})
+    string(REGEX MATCH "^[^\#].*" validRecord ${feature})
+    if (validRecord)
+        string(REGEX REPLACE "([0-9A-Z_-]+).*" "\\1" defineName "${feature}")
+        string(REGEX REPLACE "[0-9A-Z_-]+ *= *(.*)" "\\1" value "${feature}")
+        option(${defineName} "Toggle ${defineName}" ${value})
+        list(APPEND _WEBKIT_AVAILABLE_OPTIONS ${defineName})
+    endif ()
+endforeach ()
+
 ADD_DEFINITIONS(-DBUILDING_NIX__=1)
 ADD_DEFINITIONS(-DWTF_PLATFORM_NIX=1)
 SET(WTF_PLATFORM_NIX 1)
@@ -19,6 +35,7 @@ FIND_PACKAGE(PNG REQUIRED)
 FIND_PACKAGE(ZLIB REQUIRED)
 
 IF (WTF_USE_OPENGL_ES_2)
+    set(WTF_USE_EGL 1)
     FIND_PACKAGE(OpenGLES2 REQUIRED)
 ELSE ()
     FIND_PACKAGE(OpenGL REQUIRED)
@@ -29,6 +46,9 @@ FIND_PACKAGE(LibSoup 2.39.4.1 REQUIRED)
 ADD_DEFINITIONS(-DENABLE_GLIB_SUPPORT=1)
 
 SET(SHARED_CORE 0)
+
+set(ENABLE_WEBKIT 0)
+set(ENABLE_WEBKIT2 1)
 
 SET(WTF_USE_SOUP 1)
 ADD_DEFINITIONS(-DWTF_USE_SOUP=1)
@@ -51,14 +71,6 @@ SET(JavaScriptCore_LIBRARY_NAME javascriptcore_nix)
 SET(WebCore_LIBRARY_NAME webcore_nix)
 SET(WebKit2_LIBRARY_NAME WebKitNix)
 
-# Don't call WEBKIT_OPTION_BEGIN, the magic is made automagically for Nix
-# and maybe for all ports when this patch goes up stream.
-#
-# Default feature list can be found at Tools/Scripts/webkitperl/FeatureDefaultsNix.txt
-WEBKIT_OPTION_DEFINE(ENABLE_API_TESTS "Enable public API unit tests" ON)
-WEBKIT_OPTION_DEFINE(WTF_USE_EGL "Use GLE instead of GLX" OFF)
-WEBKIT_OPTION_DEFINE(WTF_USE_OPENGL_ES_2 "Use OpenGLESv2 instead of OpenGL" OFF)
-WEBKIT_OPTION_END()
 
 FIND_PACKAGE(Freetype REQUIRED)
 FIND_PACKAGE(HarfBuzz REQUIRED)
@@ -119,3 +131,64 @@ ADD_DEFINITIONS(-DWTF_USE_TEXTURE_MAPPER_GL=1)
 
 SET(WTF_USE_3D_GRAPHICS 1)
 ADD_DEFINITIONS(-DWTF_USE_3D_GRAPHICS=1)
+
+macro(PROCESS_WEBKIT_OPTIONS)
+    # Show all options on screen
+    message(STATUS "Enabled features:")
+
+    set(_MAX_FEATURE_LENGTH 0)
+    foreach (_name ${_WEBKIT_AVAILABLE_OPTIONS})
+        string(LENGTH ${_name} _NAME_LENGTH)
+        if (_NAME_LENGTH GREATER _MAX_FEATURE_LENGTH)
+            set(_MAX_FEATURE_LENGTH ${_NAME_LENGTH})
+        endif ()
+    endforeach ()
+
+    set(_SHOULD_PRINT_POINTS OFF)
+    set(_0 "OFF")
+    set(_1 "ON")
+    foreach (_name ${_WEBKIT_AVAILABLE_OPTIONS})
+        string(LENGTH ${_name} _NAME_LENGTH)
+
+        set(_MESSAGE " ${_name} ")
+
+        if (_SHOULD_PRINT_POINTS)
+            foreach (IGNORE RANGE ${_NAME_LENGTH} ${_MAX_FEATURE_LENGTH})
+                set(_MESSAGE "${_MESSAGE} ")
+            endforeach ()
+            set(_SHOULD_PRINT_POINTS OFF)
+        else ()
+            foreach (IGNORE RANGE ${_NAME_LENGTH} ${_MAX_FEATURE_LENGTH})
+                set(_MESSAGE "${_MESSAGE}.")
+            endforeach ()
+            set(_SHOULD_PRINT_POINTS ON)
+        endif ()
+
+        if (${_name})
+            list(APPEND FEATURE_DEFINES ${_name})
+            set(FEATURE_DEFINES_WITH_SPACE_SEPARATOR "${FEATURE_DEFINES_WITH_SPACE_SEPARATOR} ${_name}")
+        endif ()
+
+        message(STATUS "${_MESSAGE} ${${_name}}")
+    endforeach ()
+
+    # Create cmakeconfig.h.in based on the features we have available
+    set(CMK_CONFIG_H_IN "${CMAKE_BINARY_DIR}/cmakeconfig.h.in")
+
+    file(WRITE ${CMK_CONFIG_H_IN}
+        "#ifndef CMAKECONFIG_H\n"
+        "#define CMAKECONFIG_H\n\n")
+    foreach (_name ${_WEBKIT_AVAILABLE_OPTIONS})
+        file(APPEND ${CMK_CONFIG_H_IN} "#cmakedefine01 ${_name}\n")
+    endforeach ()
+    file(APPEND ${CMK_CONFIG_H_IN} "\n#endif // CMAKECONFIG_H\n")
+
+    file(MD5 ${CMK_CONFIG_H_IN} CMK_CONFIG_H_IN_NEW_MD5)
+    if (NOT "${CMK_CONFIG_H_IN_MD5}" STREQUAL "${CMK_CONFIG_H_IN_NEW_MD5}")
+        message(STATUS "Creating cmakeconfig.h")
+        configure_file(${CMK_CONFIG_H_IN} "${CMAKE_BINARY_DIR}/cmakeconfig.h" @ONLY)
+        set(CMK_CONFIG_H_IN_MD5 "${CMK_CONFIG_H_IN_NEW_MD5}" CACHE STRING "Md5 of ${CMK_CONFIG_H_IN}" FORCE)
+    endif ()
+endmacro()
+
+PROCESS_WEBKIT_OPTIONS()

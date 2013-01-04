@@ -174,39 +174,3 @@ macro(WEBKIT_OPTION_END)
         message(STATUS "${_MESSAGE}")
     endforeach ()
 endmacro()
-
-if (PORT STREQUAL "Nix")
-    # Get all features from FeatureDescription.txt
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/Tools/Scripts/webkitperl/FeatureDescription.txt" featureData NEWLINE_CONSUME)
-    string(REPLACE ";" "\\\\;" featureData "${featureData}")
-    string(REPLACE "\n" ";" featureData "${featureData}")
-
-    foreach (feature IN ITEMS ${featureData})
-        string(REGEX MATCH "^[^\#].*" validRecord ${feature})
-        if (validRecord)
-            string(REGEX REPLACE "[a-z0-9A-Z-]+ +([0-9A-Z_-]+) +.*" "\\1" defineName "${feature}")
-            string(REGEX REPLACE "[a-z0-9A-Z-]+ +[0-9A-Z_-]+ +(.*)" "\\1" description "${feature}")
-
-            WEBKIT_OPTION_DEFINE(${defineName} "${description}" OFF)
-        endif ()
-    endforeach ()
-
-    # Set default values for features based on FeatureList${PORT}.txt
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/Tools/Scripts/webkitperl/FeatureDefaults${PORT}.txt" featureData NEWLINE_CONSUME)
-    string(REPLACE ";" "\\\\;" featureData "${featureData}")
-    string(REPLACE "\n" ";" featureData "${featureData}")
-
-    foreach (feature IN ITEMS ${featureData})
-        string(REGEX MATCH "^[^\#].*" validRecord ${feature})
-        if (validRecord)
-            WEBKIT_OPTION_DEFAULT_PORT_VALUE(${feature} ON)
-        endif ()
-    endforeach ()
-
-    # FIXME: Perhaps we need a more generic way of defining dependencies between features.
-    # VIDEO_TRACK depends on VIDEO.
-    if (NOT ENABLE_VIDEO AND ENABLE_VIDEO_TRACK)
-        message(STATUS "Disabling VIDEO_TRACK since VIDEO support is disabled.")
-        set(ENABLE_VIDEO_TRACK OFF)
-    endif ()
-endif ()

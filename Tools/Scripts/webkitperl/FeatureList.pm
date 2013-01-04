@@ -463,40 +463,39 @@ my @features = (
 );
 
 if (isNix()) {
-    # Reset WebKit @features array and populate it with FeatureDescription.txt file
+    # Reset WebKit @features array and populate it with Source/cmake/FeaturesNix.config file
     @features = ( );
+    my @featureValues = ( );
     my %featureIndex = ( );
     my $baseDir = __FILE__;
-    $baseDir =~ s/FeatureList\.pm//;
-    my $featureDescriptionFile = "${baseDir}FeatureDescription.txt";
+    $baseDir =~ s/Tools\/Scripts\/webkitperl\/FeatureList\.pm/Source\/cmake\//;
+    my $featureDescriptionFile = "${baseDir}FeaturesNix.config";
 
-    open(FEATURE_DESCRIPTION, $featureDescriptionFile) or die("Failed to open $featureDescriptionFile\n.");
-    while (<FEATURE_DESCRIPTION>) {
+    open(FEATURE_FILE, $featureDescriptionFile) or die("Failed to open $featureDescriptionFile\n.");
+    while (<FEATURE_FILE>) {
         chomp;
-        if (!$_ or $_ =~ /^#/) {
-            next;
-        }
+        next if (!$_ or $_ =~ /^#/);
+        next if (!($_ =~ m/([A-Z0-9_]*)\s+=\s+([01])/));
 
-        my @values = split(/\s+/, $_, 3);
+        my $define = $1;
+        my $default = $2;
+
+        # get feature description from name
+        my $descr = lc($define);
+        $descr =~ s/(enable_|wtf_use_)//;
+        my $switch = $descr;
+        $switch =~ s/_/-/g;
+        $switch = "opengles2" if ($switch eq "opengl-es-2");
+        $descr =~ s/_/ /g;
+        $descr =~ s/(\w+)/\u\L$1/g; # capitalize
+        $descr =~ s/Api/API/g;
+        $descr = "Toggle $descr support";
 
         push(@featureValues, 0);
-        push(@features, { option => $values[0], desc => $values[2], define => $values[1], default => 0, value => \$featureValues[$#featureValues + 1]});
-        $featureIndex{ $values[1] } = \$features[$#features];
+        push(@features, { option => $switch, desc => $descr, define => $define, default => $default, value => \$featureValues[$#featureValues + 1]});
+        $featureIndex{ $define } = \$features[$#features];
     }
-
-    # Fill the default values using Port specific FeatureList
-    my $featureFile = "${baseDir}FeatureDefaultsNix.txt";
-
-    if (open(FEATURES, $featureFile)) {
-        while (<FEATURES>) {
-            chomp;
-            ${$featureIndex{$_}}->{default} = 1;
-        }
-        close(FEATURES);
-    } else {
-        print STDERR "Failed to open $featureFile.\n";
-        exit 1;
-    }
+    close(FEATURE_FILE);
 }
 
 sub getFeatureOptionList()
