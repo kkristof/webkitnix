@@ -1546,4 +1546,42 @@ fast/events/mouse-click-events.html [ Failure ]
 fast/events/touch/touch-input-element-change-documents.html [ Failure ]
 transitions/transitions-parsing.html [ Failure ]
 
+# Flakey and failing tests after merge from 2012-01-03
+http/tests/navigation/ping-cross-origin-from-https.html [ Failure ]
+http/tests/security/contentSecurityPolicy/block-mixed-content-hides-warning.html [ Failure ]
+http/tests/security/contentSecurityPolicy/script-src-star-cross-scheme.html [ Failure ]
+http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Failure ]
+http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure ]
+http/tests/security/mixedContent/data-url-script-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Failure ]
+http/tests/security/mixedContent/insecure-css-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/insecure-image-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/insecure-script-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure ]
+http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+http/tests/security/mixedContent/redirect-http-to-https-script-in-iframe.html [ Failure ]
+http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+http/tests/security/mixedContent/redirect-https-to-http-script-in-iframe.html [ Failure ]
+http/tests/security/originHeader/origin-header-for-https.html [ Failure ]
+http/tests/security/sandboxed-iframe-form-top.html [ Failure ]
+# 0 range(s) selected.
+fast/events/drag-selects-image.html [ Failure ]
+# 'undefined' is not an object (evaluating 'template.content.appendChild').
+fast/dom/HTMLTemplateElement/cycles-in-shadow.html [ Failure]
+fast/dom/HTMLTemplateElement/cycles.html [ Failure ]
+fast/dom/HTMLTemplateElement/ownerDocument-adoptNode.html [ Failure ]
+# Jumped down.
+fast/events/autoscroll-in-textarea.html [ Failure ]
+# Text not scrolled.
+fast/events/autoscroll-in-textfield.html [ Failure ]
+# Auto scroll not working.
+fast/events/autoscroll-nonscrollable-iframe-in-scrollable-div.html [ Failure ]
+# should be 2016. Was 400.
+fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure ]
+fast/events/drag-and-drop-set-drag-data-arguments.html
+
+
+
 ################################################################################
