@@ -182,8 +182,10 @@ void TouchMocker::sendCurrentTouchEvent(NIXTouchPointState state, double timesta
         break;
     }
 
-    for (size_t i = 0; i < m_touchPoints.size(); i++)
-        ev.touchPoints[i] = m_touchPoints[i];
+    int i = 0;
+    TouchMap::iterator it = m_touchPoints.begin();
+    for (; it != m_touchPoints.end(); ++it, ++i)
+        ev.touchPoints[i] = it->second;
     ev.numTouchPoints = m_touchPoints.size();
 
     NIXViewSendTouchEvent(m_view, &ev);
