@@ -124,8 +124,6 @@ macro(PROCESS_WEBKIT_OPTIONS)
     endforeach ()
 
     set(_SHOULD_PRINT_POINTS OFF)
-    set(_0 "OFF")
-    set(_1 "ON")
     foreach (_name ${_WEBKIT_AVAILABLE_OPTIONS})
         string(LENGTH ${_name} _NAME_LENGTH)
 
