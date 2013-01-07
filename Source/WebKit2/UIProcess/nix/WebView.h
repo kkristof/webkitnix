@@ -8,6 +8,7 @@
 #include "TextureMapperPlatformLayer.h"
 #include "WebContextMenuProxy.h"
 #include "WebViewClient.h"
+#include <WebCore/TransformationMatrix.h>
 
 namespace WebKit {
 
@@ -28,7 +29,7 @@ public:
     WKPoint scrollPosition() const { return WKPointMake(m_scrollPosition.x(), m_scrollPosition.y()); }
     void setScrollPosition(const WKPoint& position);
 
-    void setUserViewportTransformation(const cairo_matrix_t& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
+    void setUserViewportTransformation(const WebCore::TransformationMatrix& userViewportTransformation) { m_userViewportTransformation = userViewportTransformation; }
     WKPoint userViewportToContents(WKPoint point);
 
     bool isFocused() const;
@@ -154,9 +155,8 @@ private:
     LayerTreeRenderer* layerTreeRenderer();
     void updateVisibleContents();
 
-    cairo_matrix_t userViewportToContentTransformation() const;
-    cairo_matrix_t contentToUserViewportTransformation() const;
-
+    WebCore::TransformationMatrix userViewportToContentTransformation() const;
+    WebCore::TransformationMatrix contentToUserViewportTransformation() const;
 
     WebCore::FloatRect visibleRect() const;
 
@@ -172,7 +172,7 @@ private:
     WebCore::FloatPoint m_scrollPosition;
     float m_scale;
     float m_opacity;
-    cairo_matrix_t m_userViewportTransformation;
+    WebCore::TransformationMatrix m_userViewportTransformation;
 };
 
 inline WebKit::WebView* toImpl(NIXView view)

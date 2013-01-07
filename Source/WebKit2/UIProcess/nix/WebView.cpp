@@ -55,9 +55,6 @@ WebView::WebView(WebContext* context, WebPageGroup* pageGroup)
     , m_opacity(1.f)
 {
     m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
-    cairo_matrix_t identityTransform;
-    cairo_matrix_init_identity(&identityTransform);
-    setUserViewportTransformation(identityTransform);
 }
 
 void WebView::setViewClient(const NIXViewClient* viewClient)
@@ -136,9 +133,9 @@ void WebView::setScrollPosition(const WKPoint& position)
 
 WKPoint WebView::userViewportToContents(WKPoint point)
 {
-    cairo_matrix_t transformMatrix = userViewportToContentTransformation();
-    cairo_matrix_transform_point(&transformMatrix, &point.x, &point.y);
-    return point;
+    WKPoint result = point;
+    userViewportToContentTransformation().map(point.x, point.y, result.x, result.y);
+    return result;
 }
 
 bool WebView::isFocused() const
@@ -214,12 +211,6 @@ void WebView::sendGestureEvent(const NIXGestureEvent& event)
     m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
 }
 
-// TODO: Create a constructor in TransformationMatrix that takes a cairo_matrix_t.
-static TransformationMatrix toTransformationMatrix(const cairo_matrix_t& matrix)
-{
-    return TransformationMatrix(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
-}
-
 LayerTreeRenderer* WebView::layerTreeRenderer()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
@@ -246,9 +237,10 @@ FloatRect WebView::visibleRect() const
     return visibleRect;
 }
 
-cairo_matrix_t WebView::contentToUserViewportTransformation() const
+TransformationMatrix WebView::contentToUserViewportTransformation() const
 {
-    cairo_matrix_t transform;
+    TransformationMatrix transform = m_userViewportTransformation;
+
     if (m_webPageProxy->useFixedLayout()) {
         // We switch the order between scale and translate here to make the resulting matrix hold
         // integer values for translation. If we did the natural order, the translation would be
@@ -259,11 +251,11 @@ cairo_matrix_t WebView::contentToUserViewportTransformation() const
         // and now will never translate into non-integer unit, producing now a slightly different matrix with
         // rounded translation.
         IntPoint roundedScrollPosition = roundedViewportPosition();
-        cairo_matrix_init_translate(&transform, -roundedScrollPosition.x(), -roundedScrollPosition.y());
-        cairo_matrix_scale(&transform, m_scale, m_scale);
-    } else
-        cairo_matrix_init_scale(&transform, m_scale, m_scale);
-    cairo_matrix_multiply(&transform, &transform, &m_userViewportTransformation);
+        transform.translate(-roundedScrollPosition.x(), -roundedScrollPosition.y());
+    }
+
+    transform.scale(m_scale);
+
     return transform;
 }
 
@@ -273,15 +265,9 @@ void WebView::paintToCurrentGLContext()
     if (!renderer)
         return;
 
-    double x = 0;
-    double y = 0;
-    double width = m_size.width();
-    double height = m_size.height();
-    cairo_matrix_transform_point(&m_userViewportTransformation, &x, &y);
-    cairo_matrix_transform_distance(&m_userViewportTransformation, &width, &height);
+    FloatRect viewport = m_userViewportTransformation.mapRect(FloatRect(FloatPoint(), m_size));
 
-    FloatRect rect(x, y, width, height);
-    renderer->paintToCurrentGLContext(toTransformationMatrix(contentToUserViewportTransformation()), m_opacity, rect);
+    renderer->paintToCurrentGLContext(contentToUserViewportTransformation(), m_opacity, viewport);
 }
 
 void WebView::commitViewportChanges()
@@ -336,11 +322,9 @@ void WebView::pageTransitionViewportReady()
     m_webPageProxy->commitPageTransitionViewport();
 }
 
-cairo_matrix_t WebView::userViewportToContentTransformation() const
+TransformationMatrix WebView::userViewportToContentTransformation() const
 {
-    cairo_matrix_t transform = contentToUserViewportTransformation();
-    cairo_matrix_invert(&transform);
-    return transform;
+    return contentToUserViewportTransformation().inverse();
 }
 
 #if ENABLE(TOUCH_EVENTS)

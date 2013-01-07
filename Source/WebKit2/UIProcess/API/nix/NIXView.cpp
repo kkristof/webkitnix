@@ -82,13 +82,9 @@ void NIXViewSetScrollPosition(NIXView view, WKPoint position)
 
 void NIXViewSetUserViewportTransformation(NIXView view, const NIXMatrix* userViewportTransformation)
 {
-    cairo_matrix_t transform;
-    transform.xx = userViewportTransformation->xx;
-    transform.yx = userViewportTransformation->yx;
-    transform.xy = userViewportTransformation->xy;
-    transform.yy = userViewportTransformation->yy;
-    transform.x0 = userViewportTransformation->x0;
-    transform.y0 = userViewportTransformation->y0;
+    WebCore::TransformationMatrix transform(userViewportTransformation->xx, userViewportTransformation->yx,
+                                            userViewportTransformation->xy, userViewportTransformation->yy,
+                                            userViewportTransformation->x0, userViewportTransformation->y0);
     toImpl(view)->setUserViewportTransformation(transform);
 }
 
