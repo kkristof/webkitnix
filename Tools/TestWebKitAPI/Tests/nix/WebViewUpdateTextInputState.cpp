@@ -13,16 +13,26 @@ static bool didFinishLoad = false;
 static bool didUpdateTextInputState = false;
 static bool didChangeToContentEditable = false;
 static bool isDoneWithSingleTapEvent = false;
+static const WKRect invalidRectState = WKRectMake(0, 0, 0, 0);
+static WKRect editorRectState = invalidRectState;
+static WKRect cursorRectState = invalidRectState;
+
+static bool WKRectIsEqual(const WKRect& a, const WKRect& b)
+{
+    return a.origin.x == b.origin.x && a.origin.y == b.origin.y && a.size.width == b.size.width && a.size.height == b.size.height;
+}
 
 static void didFinishLoadForFrame(WKPageRef page, WKFrameRef, WKTypeRef, const void*)
 {
     didFinishLoad = true;
 }
 
-static void updateTextInputState(NIXView, bool isContentEditable, WKRect, WKRect, const void*)
+static void updateTextInputState(NIXView, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void*)
 {
     didUpdateTextInputState = true;
     didChangeToContentEditable = isContentEditable;
+    cursorRectState = cursorRect;
+    editorRectState = editorRect;
 }
 
 static void doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool, const void*)
@@ -78,6 +88,9 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     ASSERT_TRUE(isDoneWithSingleTapEvent);
     ASSERT_TRUE(didUpdateTextInputState);
     ASSERT_TRUE(didChangeToContentEditable);
+    ASSERT_TRUE(!WKRectIsEqual(cursorRectState, invalidRectState));
+    ASSERT_TRUE(!WKRectIsEqual(editorRectState, invalidRectState));
+    ASSERT_TRUE(!WKRectIsEqual(cursorRectState, editorRectState));
 }
 
 } // TestWebKitAPI

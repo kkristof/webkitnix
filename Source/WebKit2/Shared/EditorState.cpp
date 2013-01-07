@@ -51,7 +51,7 @@ void EditorState::encode(CoreIPC::ArgumentEncoder& encoder) const
     encoder << surroundingText;
 #endif
 
-#if PLATFORM(QT) || PLATFORM(GTK)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(NIX)
     encoder << cursorRect;
 #endif
 }
@@ -102,7 +102,7 @@ bool EditorState::decode(CoreIPC::ArgumentDecoder* decoder, EditorState& result)
         return false;
 #endif
 
-#if PLATFORM(QT) || PLATFORM(GTK)
+#if PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(NIX)
     if (!decoder->decode(result.cursorRect))
         return false;
 #endif

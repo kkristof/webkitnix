@@ -596,7 +596,7 @@ void MiniBrowser::doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool w
 
 void MiniBrowser::doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo)
 {
-    if (!wasEventHandled)
+    if (wasEventHandled)
         return;
 
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
