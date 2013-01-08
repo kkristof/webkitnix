@@ -117,10 +117,7 @@ DRTTestRunner::DRTTestRunner(TestShell* shell)
     bindMethod("disableAutoResizeMode", &DRTTestRunner::disableAutoResizeMode);
     bindMethod("display", &DRTTestRunner::display);
     bindMethod("displayInvalidatedRegion", &DRTTestRunner::displayInvalidatedRegion);
-    bindMethod("dumpAsText", &DRTTestRunner::dumpAsText);
     bindMethod("dumpBackForwardList", &DRTTestRunner::dumpBackForwardList);
-    bindMethod("dumpChildFramesAsText", &DRTTestRunner::dumpChildFramesAsText);
-    bindMethod("dumpChildFrameScrollPositions", &DRTTestRunner::dumpChildFrameScrollPositions);
     bindMethod("dumpFrameLoadCallbacks", &DRTTestRunner::dumpFrameLoadCallbacks);
     bindMethod("dumpProgressFinishedCallback", &DRTTestRunner::dumpProgressFinishedCallback);
     bindMethod("dumpUserGestureInFrameLoadCallbacks", &DRTTestRunner::dumpUserGestureInFrameLoadCallbacks);
@@ -156,7 +153,6 @@ DRTTestRunner::DRTTestRunner(TestShell* shell)
     bindMethod("setCustomPolicyDelegate", &DRTTestRunner::setCustomPolicyDelegate);
     bindMethod("setDatabaseQuota", &DRTTestRunner::setDatabaseQuota);
     bindMethod("setDeferMainResourceDataLoad", &DRTTestRunner::setDeferMainResourceDataLoad);
-    bindMethod("setAudioData", &DRTTestRunner::setAudioData);
     bindMethod("setGeolocationPermission", &DRTTestRunner::setGeolocationPermission);
     bindMethod("setMockDeviceOrientation", &DRTTestRunner::setMockDeviceOrientation);
     bindMethod("setMockGeolocationPositionUnavailableError", &DRTTestRunner::setMockGeolocationPositionUnavailableError);
@@ -249,18 +245,6 @@ void DRTTestRunner::WorkQueue::addWork(WorkItem* work)
     m_queue.append(work);
 }
 
-void DRTTestRunner::dumpAsText(const CppArgumentList& arguments, CppVariant* result)
-{
-    m_dumpAsText = true;
-    m_generatePixelResults = false;
-
-    // Optional paramater, describing whether it's allowed to dump pixel results in dumpAsText mode.
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_generatePixelResults = arguments[0].value.boolValue;
-
-    result->setNull();
-}
-
 void DRTTestRunner::dumpBackForwardList(const CppArgumentList&, CppVariant* result)
 {
     m_dumpBackForwardList = true;
@@ -300,18 +284,6 @@ void DRTTestRunner::dumpResourceRequestCallbacks(const CppArgumentList&, CppVari
 void DRTTestRunner::dumpResourceResponseMIMETypes(const CppArgumentList&, CppVariant* result)
 {
     m_dumpResourceResponseMIMETypes = true;
-    result->setNull();
-}
-
-void DRTTestRunner::dumpChildFrameScrollPositions(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpChildFrameScrollPositions = true;
-    result->setNull();
-}
-
-void DRTTestRunner::dumpChildFramesAsText(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpChildFramesAsText = true;
     result->setNull();
 }
 
@@ -523,8 +495,6 @@ void DRTTestRunner::reset()
     TestRunner::reset();
     if (m_shell)
         m_shell->webViewHost()->setDeviceScaleFactor(1);
-    m_dumpAsText = false;
-    m_dumpAsAudio = false;
     m_dumpCreateView = false;
     m_dumpFrameLoadCallbacks = false;
     m_dumpProgressFinishedCallback = false;
@@ -533,13 +503,10 @@ void DRTTestRunner::reset()
     m_dumpResourceRequestCallbacks = false;
     m_dumpResourceResponseMIMETypes = false;
     m_dumpBackForwardList = false;
-    m_dumpChildFrameScrollPositions = false;
-    m_dumpChildFramesAsText = false;
     m_dumpWindowStatusChanges = false;
     m_dumpSelectionRect = false;
     m_dumpTitleChanges = false;
     m_dumpPermissionClientCallbacks = false;
-    m_generatePixelResults = true;
     m_waitUntilDone = false;
     m_canOpenWindows = false;
     m_testRepaint = false;
@@ -1068,23 +1035,6 @@ void DRTTestRunner::setBackingScaleFactor(const CppArgumentList& arguments, CppV
     callbackArguments[0].set(arguments[1]);
     result->setNull();
     postTask(new InvokeCallbackTask(this, callbackArguments.release(), 1));
-}
-
-void DRTTestRunner::setAudioData(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-
-    if (arguments.size() < 1 || !arguments[0].isObject())
-        return;
-
-    // Check that passed-in object is, in fact, an ArrayBufferView.
-    NPObject* npobject = NPVARIANT_TO_OBJECT(arguments[0]);
-    if (!npobject)
-        return;
-    if (!WebBindings::getArrayBufferView(npobject, &m_audioData))
-        return;
-
-    setShouldDumpAsAudio(true);
 }
 
 #if ENABLE(POINTER_LOCK)

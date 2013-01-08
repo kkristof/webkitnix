@@ -118,6 +118,7 @@ set(WebCore_IDL_INCLUDES
     Modules/mediastream
     Modules/networkinfo
     Modules/notifications
+    Modules/proximity
     Modules/quota
     Modules/speech
     Modules/vibration
@@ -890,6 +891,7 @@ set(WebCore_SOURCES
     Modules/notifications/Notification.cpp
     Modules/notifications/WorkerContextNotifications.cpp
 
+    Modules/proximity/DeviceProximityController.cpp
     Modules/proximity/DeviceProximityEvent.cpp
 
     Modules/quota/DOMWindowQuota.cpp
@@ -1528,6 +1530,7 @@ set(WebCore_SOURCES
     html/parser/HTMLEntityParser.cpp
     html/parser/HTMLEntitySearch.cpp
     html/parser/HTMLParserIdioms.cpp
+    html/parser/HTMLParserOptions.cpp
     html/parser/HTMLParserScheduler.cpp
     html/parser/HTMLFormattingElementList.cpp
     html/parser/HTMLMetaCharsetParser.cpp
@@ -2762,6 +2765,7 @@ set(WebCoreTestSupport_IDL_FILES
     testing/Internals.idl
     testing/InternalSettings.idl
     testing/MallocStatistics.idl
+    testing/TypeConversions.idl
 )
 
 set(WebCoreTestSupport_SOURCES

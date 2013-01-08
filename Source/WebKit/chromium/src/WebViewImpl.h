@@ -89,7 +89,6 @@ class BatteryClientImpl;
 class ContextFeaturesClientImpl;
 class ContextMenuClientImpl;
 class DeviceOrientationClientProxy;
-class DragScrollTimer;
 class GeolocationClientProxy;
 class LinkHighlight;
 class NonCompositedContentHost;
@@ -142,7 +141,6 @@ public:
     virtual void willExitFullScreen();
     virtual void didExitFullScreen();
     virtual void setCompositorSurfaceReady();
-    virtual WebLayerTreeView* webLayerTreeView();
     virtual void animate(double);
     virtual void layout(); // Also implements WebLayerTreeViewClient::layout()
     virtual void enterForceCompositingMode(bool enable) OVERRIDE;
@@ -813,7 +811,6 @@ private:
 
     typedef HashMap<WTF::String, WTF::String> SettingsMap;
     OwnPtr<SettingsMap> m_inspectorSettingsMap;
-    OwnPtr<DragScrollTimer> m_dragScrollTimer;
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     // The provider of desktop notifications;

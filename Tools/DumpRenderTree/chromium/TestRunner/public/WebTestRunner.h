@@ -31,6 +31,10 @@
 #ifndef WebTestRunner_h
 #define WebTestRunner_h
 
+namespace WebKit {
+class WebArrayBufferView;
+}
+
 namespace WebTestRunner {
 
 // FIXME: Once the TestRunner class is complete, this class should take a
@@ -38,6 +42,14 @@ namespace WebTestRunner {
 class WebTestRunner {
 public:
     virtual bool shouldDumpEditingCallbacks() const { return false; }
+    virtual bool shouldDumpAsText() const { return false; }
+    virtual void setShouldDumpAsText(bool) { }
+    virtual bool shouldGeneratePixelResults() const { return false; }
+    virtual void setShouldGeneratePixelResults(bool) { }
+    virtual bool shouldDumpChildFrameScrollPositions() const { return false; }
+    virtual bool shouldDumpChildFramesAsText() const { return false; }
+    virtual bool shouldDumpAsAudio() const { return false; }
+    virtual const WebKit::WebArrayBufferView* audioData() const { return 0; }
 };
 
 }

@@ -3662,7 +3662,7 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
     IntSize viewportSizeAfter = actualVisibleSize();
 
     IntSize offset;
-    if (hasPendingOrientation) {
+    if (hasPendingOrientation && !m_fullscreenVideoNode) {
         offset = IntSize(roundf((viewportSizeBefore.width() - viewportSizeAfter.width()) / 2.0),
             roundf((viewportSizeBefore.height() - viewportSizeAfter.height()) / 2.0));
     }
@@ -4038,6 +4038,9 @@ bool WebPage::touchEvent(const Platform::TouchEvent& event)
 
     if (d->m_page->defersLoading())
         return false;
+
+    if (d->m_inputHandler)
+        d->m_inputHandler->setInputModeEnabled();
 
     PluginView* pluginView = d->m_fullScreenPluginView.get();
     if (pluginView)

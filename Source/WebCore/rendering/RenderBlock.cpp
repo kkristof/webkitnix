@@ -70,6 +70,7 @@
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationListHashSet.h>
+#include <wtf/TemporaryChange.h>
 
 using namespace std;
 using namespace WTF;
@@ -116,6 +117,8 @@ typedef WTF::HashMap<RenderBlock*, OwnPtr<ListHashSet<RenderInline*> > > Continu
 typedef WTF::HashSet<RenderBlock*> DelayedUpdateScrollInfoSet;
 static int gDelayUpdateScrollInfo = 0;
 static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = 0;
+
+static bool gIsInColumnFlowSplit = false;
 
 bool RenderBlock::s_canPropagateFloatIntoSibling = false;
 
@@ -774,10 +777,6 @@ RenderBlock* RenderBlock::columnsBlockForSpanningElement(RenderObject* newChild)
 
 void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild)
 {
-    // Make sure we don't append things after :after-generated content if we have it.
-    if (!beforeChild)
-        beforeChild = afterPseudoElementRenderer();
-
     if (beforeChild && beforeChild->parent() != this) {
         RenderObject* beforeChildContainer = beforeChild->parent();
         while (beforeChildContainer->parent() != this)
@@ -833,30 +832,33 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
         beforeChild = beforeChild->nextSibling();
 
     // Check for a spanning element in columns.
-    RenderBlock* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
-    if (columnsBlockAncestor) {
-        // We are placing a column-span element inside a block. 
-        RenderBlock* newBox = createAnonymousColumnSpanBlock();
+    if (!gIsInColumnFlowSplit) {
+        RenderBlock* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
+        if (columnsBlockAncestor) {
+            TemporaryChange<bool> isInColumnFlowSplit(gIsInColumnFlowSplit, true);
+            // We are placing a column-span element inside a block.
+            RenderBlock* newBox = createAnonymousColumnSpanBlock();
         
-        if (columnsBlockAncestor != this) {
-            // We are nested inside a multi-column element and are being split by the span.  We have to break up
-            // our block into continuations.
-            RenderBoxModelObject* oldContinuation = continuation();
+            if (columnsBlockAncestor != this) {
+                // We are nested inside a multi-column element and are being split by the span. We have to break up
+                // our block into continuations.
+                RenderBoxModelObject* oldContinuation = continuation();
 
-            // When we split an anonymous block, there's no need to do any continuation hookup,
-            // since we haven't actually split a real element.
-            if (!isAnonymousBlock())
-                setContinuation(newBox);
+                // When we split an anonymous block, there's no need to do any continuation hookup,
+                // since we haven't actually split a real element.
+                if (!isAnonymousBlock())
+                    setContinuation(newBox);
 
-            splitFlow(beforeChild, newBox, newChild, oldContinuation);
+                splitFlow(beforeChild, newBox, newChild, oldContinuation);
+                return;
+            }
+
+            // We have to perform a split of this block's children. This involves creating an anonymous block box to hold
+            // the column-spanning |newChild|. We take all of the children from before |newChild| and put them into
+            // one anonymous columns block, and all of the children after |newChild| go into another anonymous block.
+            makeChildrenAnonymousColumnBlocks(beforeChild, newBox, newChild);
             return;
         }
-
-        // We have to perform a split of this block's children.  This involves creating an anonymous block box to hold
-        // the column-spanning |newChild|.  We take all of the children from before |newChild| and put them into
-        // one anonymous columns block, and all of the children after |newChild| go into another anonymous block.
-        makeChildrenAnonymousColumnBlocks(beforeChild, newBox, newChild);
-        return;
     }
 
     bool madeBoxesNonInline = false;
@@ -1290,8 +1292,8 @@ bool RenderBlock::isSelfCollapsingBlock() const
 
 void RenderBlock::startDelayUpdateScrollInfo()
 {
-    if (!gDelayedUpdateScrollInfoSet) {
-        ASSERT(!gDelayUpdateScrollInfo);
+    if (gDelayUpdateScrollInfo == 0) {
+        ASSERT(!gDelayedUpdateScrollInfoSet);
         gDelayedUpdateScrollInfoSet = new DelayedUpdateScrollInfoSet;
     }
     ASSERT(gDelayedUpdateScrollInfoSet);
@@ -1305,22 +1307,15 @@ void RenderBlock::finishDelayUpdateScrollInfo()
     if (gDelayUpdateScrollInfo == 0) {
         ASSERT(gDelayedUpdateScrollInfoSet);
 
-        Vector<RenderBlock*> infoSet;
-        while (gDelayedUpdateScrollInfoSet && gDelayedUpdateScrollInfoSet->size()) {
-            copyToVector(*gDelayedUpdateScrollInfoSet, infoSet);
-            for (Vector<RenderBlock*>::iterator it = infoSet.begin(); it != infoSet.end(); ++it) {
-                RenderBlock* block = *it;
-                // |block| may have been destroyed at this point, but then it will have been removed from gDelayedUpdateScrollInfoSet.
-                if (gDelayedUpdateScrollInfoSet && gDelayedUpdateScrollInfoSet->contains(block)) {
-                    gDelayedUpdateScrollInfoSet->remove(block);
-                    if (block->hasOverflowClip())
-                        block->layer()->updateScrollInfoAfterLayout();
-                }
+        OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
+        gDelayedUpdateScrollInfoSet = 0;
+
+        for (DelayedUpdateScrollInfoSet::iterator it = infoSet->begin(); it != infoSet->end(); ++it) {
+            RenderBlock* block = *it;
+            if (block->hasOverflowClip()) {
+                block->layer()->updateScrollInfoAfterLayout();
             }
         }
-        delete gDelayedUpdateScrollInfoSet;
-        gDelayedUpdateScrollInfoSet = 0;
-        ASSERT(!gDelayUpdateScrollInfo);
     }
 }
 
@@ -3076,7 +3071,7 @@ LayoutPoint RenderBlock::flipFloatForWritingModeForChild(const FloatingObject* c
     // case.
     if (isHorizontalWritingMode())
         return LayoutPoint(point.x(), point.y() + height() - child->renderer()->height() - 2 * yPositionForFloatIncludingMargin(child));
-    return LayoutPoint(point.x() + width() - child->width() - 2 * xPositionForFloatIncludingMargin(child), point.y());
+    return LayoutPoint(point.x() + width() - child->renderer()->width() - 2 * xPositionForFloatIncludingMargin(child), point.y());
 }
 
 void RenderBlock::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool preservePhase)
@@ -6148,7 +6143,7 @@ void RenderBlock::computeBlockPreferredLogicalWidths()
         }
         
         if (child->isFloating()) {
-            if (styleToUse->floating() == LeftFloat)
+            if (childStyle->floating() == LeftFloat)
                 floatLeftWidth += w;
             else
                 floatRightWidth += w;

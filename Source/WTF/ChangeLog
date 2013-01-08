@@ -1,3 +1,66 @@
+2013-01-07  Filip Pizlo  <fpizlo@apple.com>
+
+        Rationalize closure call heuristics and profiling
+        https://bugs.webkit.org/show_bug.cgi?id=106270
+
+        Reviewed by Oliver Hunt.
+        
+        Add a macro to add a method to a class that returns a dumper. Allows you to have
+        secondary dump() methods for dumping either more or less information.
+
+        * wtf/PrintStream.h:
+        (WTF):
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Sorted the xcodeproj file.
+
+        * WTF.xcodeproj/project.pbxproj:
+
+2013-01-07  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed, it should be possible to build JSC on ARM.
+
+        * wtf/FastMalloc.cpp:
+        (WTF::TCMalloc_PageHeap::IncrementalScavenge):
+
+2013-01-07  Balazs Kilvady  <kilvadyb@homejinni.com>
+
+        MIPS LLInt implementation.
+        https://bugs.webkit.org/show_bug.cgi?id=99706
+
+        Reviewed by Filip Pizlo.
+
+        LLInt implementation for MIPS.
+
+        * wtf/Platform.h:
+
+2013-01-05  Jonathan Liu  <net147@gmail.com>
+
+        Only enable MinGW-w64 pow() workaround if needed
+        https://bugs.webkit.org/show_bug.cgi?id=106099
+
+        Reviewed by Filip Pizlo.
+
+        The pow() workaround is no longer needed in the latest version
+        of MinGW-w64.
+
+        * wtf/MathExtras.h:
+
+2013-01-05  Jonathan Liu  <net147@gmail.com>
+
+        Fix compilation of MathExtras.h with MinGW-w64
+        https://bugs.webkit.org/show_bug.cgi?id=106105
+
+        Reviewed by Simon Hausmann.
+
+        The isfinite and isinf functions are required by wtf_pow but
+        not defined until after wtf_pow. Move wtf_pow to after
+        "using std::isfinite" and "using std::isinf" to fix compilation.
+
+        * wtf/MathExtras.h:
+        (wtf_pow):
+
 2013-01-03  Filip Pizlo  <fpizlo@apple.com>
 
         CallLinkStatus should be aware of closure calls, and the DFG bytecode parser should use that as its sole internal notion of how to optimize calls

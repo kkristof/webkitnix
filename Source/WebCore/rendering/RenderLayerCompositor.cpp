@@ -256,7 +256,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         forceCompositingMode = settings->forceCompositingMode() && hasAcceleratedCompositing;
 
         if (forceCompositingMode && m_renderView->document()->ownerElement())
-            forceCompositingMode = settings->acceleratedCompositingForScrollableFramesEnabled() && requiresCompositingForScrollableFrame();
+            forceCompositingMode = requiresCompositingForScrollableFrame();
 
         acceleratedDrawingEnabled = settings->acceleratedDrawingEnabled();
     }
@@ -1170,6 +1170,9 @@ void RenderLayerCompositor::frameViewDidScroll()
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
         if (scrollingCoordinator->coordinatesScrollingForFrameView(frameView))
             return;
+        if (Settings* settings = m_renderView->document()->settings())
+            if (settings->compositedScrollingForFramesEnabled())
+                scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView, m_scrollLayer.get());
     }
 
     m_scrollLayer->setPosition(FloatPoint(-scrollPosition.x(), -scrollPosition.y()));
@@ -1797,6 +1800,12 @@ bool RenderLayerCompositor::requiresCompositingForScrollableFrame() const
 {
     // Need this done first to determine overflow.
     ASSERT(!m_renderView->needsLayout());
+    HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement();
+    if (!ownerElement)
+        return false;
+
+    if (!(m_compositingTriggers & ChromeClient::ScrollableInnerFrameTrigger))
+        return false;
 
     FrameView* frameView = m_renderView->frameView();
     return frameView->isScrollable();

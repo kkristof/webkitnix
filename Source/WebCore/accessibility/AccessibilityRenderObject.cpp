@@ -669,10 +669,12 @@ String AccessibilityRenderObject::textUnderElement() const
         }
     
         // Sometimes text fragments don't have Nodes associated with them (like when
-        // CSS content is used to insert text).
+        // CSS content is used to insert text or when a RenderCounter is used.)
         RenderText* renderTextObject = toRenderText(m_renderer);
         if (renderTextObject->isTextFragment())
             return String(static_cast<RenderTextFragment*>(m_renderer)->contentString());
+        else
+            return String(renderTextObject->text());
     }
     
     return AccessibilityNodeObject::textUnderElement();
@@ -3364,7 +3366,7 @@ void AccessibilityRenderObject::scrollTo(const IntPoint& point) const
         return;
 
     RenderLayer* layer = box->layer();
-    layer->scrollToOffset(toSize(point), RenderLayer::ScrollOffsetClamped);
+    layer->scrollToOffset(toIntSize(point), RenderLayer::ScrollOffsetClamped);
 }
 
 #if ENABLE(MATHML)

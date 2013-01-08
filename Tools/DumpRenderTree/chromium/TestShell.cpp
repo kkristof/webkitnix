@@ -150,6 +150,7 @@ TestShell::TestShell()
     WebRuntimeFeatures::enableScriptedSpeech(true);
     WebRuntimeFeatures::enableRequestAutocomplete(true);
     WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
+    WebRuntimeFeatures::enableSeamlessIFrames(true);
 
     // 30 second is the same as the value in Mac DRT.
     // If we use a value smaller than the timeout value of
@@ -578,8 +579,8 @@ void TestShell::dump()
     bool dumpedAnything = false;
 
     if (shouldDumpAsAudio) {
-        const WebKit::WebArrayBufferView& webArrayBufferView = m_testRunner->audioData();
-        m_printer.handleAudio(webArrayBufferView.baseAddress(), webArrayBufferView.byteLength());
+        const WebKit::WebArrayBufferView* webArrayBufferView = m_testRunner->audioData();
+        m_printer.handleAudio(webArrayBufferView->baseAddress(), webArrayBufferView->byteLength());
         m_printer.handleAudioFooter();
         m_printer.handleTestFooter(true);
 

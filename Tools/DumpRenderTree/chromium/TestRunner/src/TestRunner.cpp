@@ -133,6 +133,10 @@ TestRunner::TestRunner()
 
     // The following modify the state of the TestRunner.
     bindMethod("dumpEditingCallbacks", &TestRunner::dumpEditingCallbacks);
+    bindMethod("dumpAsText", &TestRunner::dumpAsText);
+    bindMethod("dumpChildFramesAsText", &TestRunner::dumpChildFramesAsText);
+    bindMethod("dumpChildFrameScrollPositions", &TestRunner::dumpChildFrameScrollPositions);
+    bindMethod("setAudioData", &TestRunner::setAudioData);
 
     // The following methods interact with the WebTestProxy.
     bindMethod("sendWebIntentResponse", &TestRunner::sendWebIntentResponse);
@@ -198,6 +202,11 @@ void TestRunner::reset()
 #endif
 
     m_dumpEditingCallbacks = false;
+    m_dumpAsText = false;
+    m_generatePixelResults = true;
+    m_dumpChildFrameScrollPositions = false;
+    m_dumpChildFramesAsText = false;
+    m_dumpAsAudio = false;
 
     m_globalFlag.set(false);
     m_platformName.set("chromium");
@@ -208,6 +217,46 @@ void TestRunner::reset()
 bool TestRunner::shouldDumpEditingCallbacks() const
 {
     return m_dumpEditingCallbacks;
+}
+
+bool TestRunner::shouldDumpAsText() const
+{
+    return m_dumpAsText;
+}
+
+void TestRunner::setShouldDumpAsText(bool value)
+{
+    m_dumpAsText = value;
+}
+
+bool TestRunner::shouldGeneratePixelResults() const
+{
+    return m_generatePixelResults;
+}
+
+void TestRunner::setShouldGeneratePixelResults(bool value)
+{
+    m_generatePixelResults = value;
+}
+
+bool TestRunner::shouldDumpChildFrameScrollPositions() const
+{
+    return m_dumpChildFrameScrollPositions;
+}
+
+bool TestRunner::shouldDumpChildFramesAsText() const
+{
+    return m_dumpChildFramesAsText;
+}
+
+bool TestRunner::shouldDumpAsAudio() const
+{
+    return m_dumpAsAudio;
+}
+
+const WebArrayBufferView* TestRunner::audioData() const
+{
+    return &m_audioData;
 }
 
 void TestRunner::setTabKeyCyclesThroughElements(const CppArgumentList& arguments, CppVariant* result)
@@ -908,6 +957,47 @@ void TestRunner::dumpEditingCallbacks(const CppArgumentList&, CppVariant* result
 {
     m_dumpEditingCallbacks = true;
     result->setNull();
+}
+
+void TestRunner::dumpAsText(const CppArgumentList& arguments, CppVariant* result)
+{
+    m_dumpAsText = true;
+    m_generatePixelResults = false;
+
+    // Optional paramater, describing whether it's allowed to dump pixel results in dumpAsText mode.
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_generatePixelResults = arguments[0].value.boolValue;
+
+    result->setNull();
+}
+
+void TestRunner::dumpChildFrameScrollPositions(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpChildFrameScrollPositions = true;
+    result->setNull();
+}
+
+void TestRunner::dumpChildFramesAsText(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpChildFramesAsText = true;
+    result->setNull();
+}
+
+void TestRunner::setAudioData(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+
+    if (arguments.size() < 1 || !arguments[0].isObject())
+        return;
+
+    // Check that passed-in object is, in fact, an ArrayBufferView.
+    NPObject* npobject = NPVARIANT_TO_OBJECT(arguments[0]);
+    if (!npobject)
+        return;
+    if (!WebBindings::getArrayBufferView(npobject, &m_audioData))
+        return;
+
+    m_dumpAsAudio = true;
 }
 
 void TestRunner::workerThreadCount(CppVariant* result)

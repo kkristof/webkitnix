@@ -205,7 +205,8 @@ fast/js/i18n-bindings-locale.html
 http/tests/security/isolatedWorld/cross-origin-xhr.html
 
 # JSC also doesn't support setIsolatedWorldContentSecurityPolicy (webkit.org/b/100815)
-http/tests/security/isolatedWorld/bypass-main-world-csp.html
+webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html [ Failure ]
+webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
 # This test is for clients that choose to make the missing plugin indicator a button
 plugins/clicking-missing-plugin-fires-delegate.html
@@ -410,10 +411,6 @@ fast/canvas/webgl
 
 # Pre-HMTL5 parser quirks only apply to the mac port for now.
 fast/parser/pre-html5-parser-quirks.html
-
-# fast/dom/Window/window-postmessage-arrays.html fails on JSC platforms
-# https://bugs.webkit.org/show_bug.cgi?id=72363
-fast/dom/Window/window-postmessage-arrays.html
 
 #Vibration API is not implemented.
 fast/dom/navigator-vibration.html
@@ -1106,17 +1103,6 @@ http/tests/security/isolatedWorld/didClearWindowObject.html
 # This needs more investigation
 http/tests/security/isolatedWorld/world-reuse.html
 
-# ------- missing ruby annotation support for japanese fonts
-fast/ruby/ruby-beforeafter.html
-fast/ruby/ruby-empty-rt.html
-fast/ruby/ruby-length.html
-fast/ruby/ruby-run-break.html
-fast/ruby/ruby-runs-spans.html
-fast/ruby/ruby-runs.html
-fast/ruby/ruby-simple-rp.html
-fast/ruby/ruby-simple.html
-fast/ruby/ruby-trailing.html
-
 # [Qt] http/tests/misc/favicon-loads-with-icon-loading-override.html fails
 # https://bugs.webkit.org/show_bug.cgi?id=58396
 http/tests/misc/favicon-loads-with-icon-loading-override.html
@@ -1438,10 +1424,6 @@ css3/filters/effect-reference-hw.html
 # ============================================================================= #
 # failing fast tests
 # ============================================================================= #
-
-# [Qt] fast/ruby/overhang* tests fail
-# https://bugs.webkit.org/show_bug.cgi?id=57824
-fast/ruby/overhang-vertical.html
 
 # New test flakey on Qt Linux Release introduced in r113086
 # https://bugs.webkit.org/show_bug.cgi?id=83057
@@ -2105,6 +2087,7 @@ fast/canvas/canvas-composite-canvas.html
 
 # track not functional yet.
 fast/events/constructors/track-event-constructor.html
+http/tests/security/contentSecurityPolicy/media-src-track-block.html
 http/tests/security/text-track-crossorigin.html
 
 # Linecaps wrong for zero length lines
@@ -2517,3 +2500,6 @@ webkit.org/b/106016 fast/workers/worker-document-leak.html
 
 # [Qt] New fast/regions/full-screen-video-from-region.html times out
 webkit.org/b/106095 fast/regions/full-screen-video-from-region.html
+
+# [Qt][EFL] New fast/events/drag-and-drop-autoscroll.html fails
+webkit.org/b/106318 fast/events/drag-and-drop-autoscroll.html

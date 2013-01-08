@@ -1,3 +1,869 @@
+2013-01-08  Kihong Kwon  <kihong.kwon@samsung.com>
+
+        Add DeviceProximityController to support Device Proximity Events.
+        https://bugs.webkit.org/show_bug.cgi?id=97630
+
+        Reviewed by Hajime Morita.
+
+        Add initial WebDeviceProximityClient class which is inherited DeviceProximityClient.
+        But startUpdating and stopUpdating need to be implemented.
+
+        * CMakeLists.txt:
+        * WebProcess/WebCoreSupport/WebDeviceProximityClient.cpp: Added.
+        (WebKit):
+        (WebKit::WebDeviceProximityClient::WebDeviceProximityClient):
+        (WebKit::WebDeviceProximityClient::startUpdating):
+        (WebKit::WebDeviceProximityClient::stopUpdating):
+        (WebKit::WebDeviceProximityClient::hasLastData):
+        * WebProcess/WebCoreSupport/WebDeviceProximityClient.h: Added.
+        (WebKit):
+        (WebDeviceProximityClient):
+        (WebKit::WebDeviceProximityClient::~WebDeviceProximityClient):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+
+2013-01-03  Sergio Villar Senin  <svillar@igalia.com>
+
+        [GTK] Add WebP image support
+        https://bugs.webkit.org/show_bug.cgi?id=105915
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: link against WebP library.
+
+2013-01-08  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt][Win] Unreviewed buildfix, partially revert
+        r139003, because Qt port still uses these files.
+
+        * Platform/CoreIPC/win/BinarySemaphoreWin.cpp: Added.
+        * Platform/CoreIPC/win/ConnectionWin.cpp: Added.
+        * Platform/win/SharedMemoryWin.cpp: Added.
+        * Platform/win/WorkQueueWin.cpp: Added.
+
+2013-01-07  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [CoordinatedGraphics] compositing/repaint/resize-repaint.html is failing
+        https://bugs.webkit.org/show_bug.cgi?id=104637
+
+        Reviewed by Noam Rosenthal.
+
+        r137526 attempted to fix excessive repainting when compositing layers
+        change size. However, the fix did not suffice for ports using Coordinated
+        Graphics because CoordinatedGraphicsLayer::setSize() was calling
+        setNeedsDisplay() causing a full repaint.
+
+        This patch removes the call to setNeedsDisplay() in
+        CoordinatedGraphicsLayer::setSize() so that we don't unconditionally
+        repaint CoordinatedGraphics layers when their size changes.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::setSize):
+
+2013-01-07  Christophe Dumez  <christophe.dumez@intel.com>
+
+        [CoordinatedGraphics] Support invalidation tracking for CoordinatedGraphicsLayer
+        https://bugs.webkit.org/show_bug.cgi?id=106002
+
+        Reviewed by Noam Rosenthal.
+
+        Add calls to addRepaintRect() to CoordinatedGraphicsLayer so that
+        we can track invalidation in the composited layer.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedGraphicsLayer.cpp:
+        (WebCore::CoordinatedGraphicsLayer::setContentsNeedsDisplay):
+        (WebCore::CoordinatedGraphicsLayer::setNeedsDisplay): Pass a FloatRect instead
+        of an IntRect to setNeedsDisplayInRect() since it is what it expects.
+        (WebCore::CoordinatedGraphicsLayer::setNeedsDisplayInRect):
+
+2013-01-07  Anders Carlsson  <andersca@apple.com>
+
+        Remove PLATFORM(WIN) #ifdefs
+        https://bugs.webkit.org/show_bug.cgi?id=106279
+
+        Reviewed by Sam Weinig.
+
+        * Platform/CoreIPC/BinarySemaphore.cpp:
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::waitForSyncReply):
+        * Platform/CoreIPC/Connection.h:
+        (Client):
+        * Platform/Module.cpp:
+        (WebKit::Module::Module):
+        * Platform/Module.h:
+        (Module):
+        * Platform/PlatformProcessIdentifier.h:
+        (WebKit):
+        * Shared/CommandLine.h:
+        (CommandLine):
+        * Shared/FontSmoothingLevel.h:
+        * Shared/LayerTreeContext.h:
+        (LayerTreeContext):
+        * Shared/NativeWebKeyboardEvent.h:
+        (NativeWebKeyboardEvent):
+        * Shared/NativeWebMouseEvent.h:
+        (NativeWebMouseEvent):
+        * Shared/NativeWebWheelEvent.h:
+        (NativeWebWheelEvent):
+        * Shared/PlatformPopupMenuData.cpp:
+        (WebKit::PlatformPopupMenuData::PlatformPopupMenuData):
+        (WebKit::PlatformPopupMenuData::encode):
+        (WebKit::PlatformPopupMenuData::decode):
+        * Shared/PlatformPopupMenuData.h:
+        (PlatformPopupMenuData):
+        * Shared/Plugins/PluginModuleInfo.h:
+        (PluginModuleInfo):
+        (WebKit::PluginModuleInfo::isolatedCopy):
+        * Shared/ShareableBitmap.h:
+        (ShareableBitmap):
+        * Shared/WebCoreArgumentCoders.h:
+        * Shared/WebEvent.h:
+        (WebMouseEvent):
+        * Shared/WebEventConversion.cpp:
+        (WebKit::WebKit2PlatformMouseEvent::WebKit2PlatformMouseEvent):
+        * Shared/WebMouseEvent.cpp:
+        (WebKit::WebMouseEvent::WebMouseEvent):
+        (WebKit::WebMouseEvent::encode):
+        (WebKit::WebMouseEvent::decode):
+        * Shared/WebPageCreationParameters.cpp:
+        (WebKit::WebPageCreationParameters::encode):
+        (WebKit::WebPageCreationParameters::decode):
+        * Shared/WebPageCreationParameters.h:
+        (WebPageCreationParameters):
+        * Shared/WebPreferencesStore.h:
+        (WebKit):
+        * Shared/WebProcessCreationParameters.cpp:
+        (WebKit::WebProcessCreationParameters::WebProcessCreationParameters):
+        (WebKit::WebProcessCreationParameters::encode):
+        (WebKit::WebProcessCreationParameters::decode):
+        * Shared/WebProcessCreationParameters.h:
+        (WebProcessCreationParameters):
+        * Shared/WebURLRequest.h:
+        * Shared/WebURLResponse.h:
+        * Shared/cg/ShareableBitmapCG.cpp:
+        (WebKit::ShareableBitmap::makeCGImageCopy):
+        * UIProcess/API/C/WKAPICast.h:
+        (WebKit::toFontSmoothingLevel):
+        (WebKit::toAPI):
+        * UIProcess/API/C/WKPage.cpp:
+        * UIProcess/BackingStore.h:
+        (BackingStore):
+        * UIProcess/PageClient.h:
+        (WebKit):
+        (PageClient):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        * UIProcess/WebContext.h:
+        (WebContext):
+        * UIProcess/WebFullScreenManagerProxy.h:
+        (WebKit):
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::WebInspectorProxy):
+        * UIProcess/WebInspectorProxy.h:
+        (WebInspectorProxy):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::performDragControllerAction):
+        (WebKit::WebPageProxy::didReceiveEvent):
+        (WebKit::WebPageProxy::creationParameters):
+        (WebKit):
+        * UIProcess/WebPageProxy.h:
+        (WebKit):
+        (WebPageProxy):
+        * UIProcess/WebPageProxy.messages.in:
+        * UIProcess/WebProcessProxy.h:
+        (WebProcessProxy):
+        * WebKit2Prefix.h:
+        * WebProcess/InjectedBundle/API/c/WKBundleFrame.cpp:
+        (WKBundleFrameCopyWebArchiveFilteringSubframes):
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::setPrivateBrowsingEnabled):
+        (WebKit::InjectedBundle::switchNetworkLoaderToNewTestingSession):
+        * WebProcess/InjectedBundle/InjectedBundle.h:
+        (WebKit):
+        (InjectedBundle):
+        * WebProcess/Plugins/Netscape/NetscapeBrowserFuncs.cpp:
+        (WebKit::NPN_GetValue):
+        * WebProcess/Plugins/Netscape/NetscapePlugin.h:
+        (NetscapePlugin):
+        * WebProcess/Plugins/PluginController.h:
+        (PluginController):
+        * WebProcess/Plugins/PluginView.cpp:
+        * WebProcess/Plugins/PluginView.h:
+        (PluginView):
+        * WebProcess/ResourceCache/cf/WebResourceCacheManagerCFNet.cpp:
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::selectItemWritingDirectionIsNatural):
+        (WebKit::WebChromeClient::selectItemAlignmentFollowsMenuWritingDirection):
+        (WebKit):
+        * WebProcess/WebCoreSupport/WebChromeClient.h:
+        (WebChromeClient):
+        * WebProcess/WebCoreSupport/WebDragClient.cpp:
+        (WebKit):
+        * WebProcess/WebCoreSupport/WebEditorClient.cpp:
+        (WebKit::WebEditorClient::respondToChangedSelection):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.h:
+        (WebFrameLoaderClient):
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        * WebProcess/WebCoreSupport/WebPopupMenu.cpp:
+        (WebKit::WebPopupMenu::updateFromElement):
+        * WebProcess/WebKitMain.cpp:
+        * WebProcess/WebPage/DrawingArea.h:
+        (WebKit):
+        (DrawingArea):
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::createGraphicsContext):
+        * WebProcess/WebPage/DrawingAreaImpl.h:
+        (DrawingAreaImpl):
+        * WebProcess/WebPage/LayerTreeHost.cpp:
+        (WebKit::LayerTreeHost::create):
+        * WebProcess/WebPage/LayerTreeHost.h:
+        (WebCore):
+        (WebKit):
+        (LayerTreeHost):
+        * WebProcess/WebPage/WebFrame.cpp:
+        (WebKit):
+        * WebProcess/WebPage/WebFrame.h:
+        (WebFrame):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+        (WebKit::WebPage::installPageOverlay):
+        (WebKit::WebPage::uninstallPageOverlay):
+        (WebKit::WebPage::getWebArchiveOfFrame):
+        (WebKit):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeWebProcess):
+        (WebKit::WebProcess::ensurePrivateBrowsingSession):
+        (WebKit::WebProcess::destroyPrivateBrowsingSession):
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * WebProcess/WebProcess.messages.in:
+        * config.h:
+
+2013-01-07  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Delete more obsolete Keychain code
+        https://bugs.webkit.org/show_bug.cgi?id=106276
+
+        Reviewed by Sam Weinig.
+
+        Deleting dead code.
+
+        * Shared/mac/KeychainAttribute.cpp: Removed.
+        * Shared/mac/KeychainAttribute.h: Removed.
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-07  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Merge SecItemShimMethods files into SecItemShim
+        https://bugs.webkit.org/show_bug.cgi?id=106278
+
+        Reviewed by Anders Carlsson.
+
+        Now that we have a SecItemShim class, there is no reason to split implementation
+        into a separate file.
+
+        * Shared/mac/SecItemShim.cpp:
+        (WebKit::responseMap):
+        (WebKit::generateSecItemRequestID):
+        (WebKit::sendSecItemRequest):
+        (WebKit::webSecItemCopyMatching):
+        (WebKit::webSecItemAdd):
+        (WebKit::webSecItemUpdate):
+        (WebKit::webSecItemDelete):
+        (WebKit::SecItemShim::secItemResponse):
+        (WebKit::SecItemShim::install):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/mac/SecItemShimMethods.h: Removed.
+        * WebProcess/mac/SecItemShimMethods.mm: Removed.
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Sorted the xcodeproj file.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-07  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Make SecItemShim messages work with any process
+        https://bugs.webkit.org/show_bug.cgi?id=106269
+
+        Reviewed by Sam Weinig.
+
+        Add SecItemShim and SecItemShimProxy classes to manage message sending, and moved
+        relevant code from WebProcess(Proxy).
+
+        * DerivedSources.make:
+        * Platform/CoreIPC/MessageID.h:
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::didFinishLaunching):
+        * UIProcess/WebProcessProxy.h:
+        (WebProcessProxy):
+        * UIProcess/WebProcessProxy.messages.in:
+        * Shared/mac/SecItemShim.cpp: Added.
+        (WebKit::SecItemShim::shared):
+        (WebKit::SecItemShim::SecItemShim):
+        (WebKit::SecItemShim::secItemResponse):
+        (WebKit::SecItemShim::install):
+        (WebKit::SecItemShim::didReceiveMessageOnConnectionWorkQueue):
+        * Shared/mac/SecItemShim.h: Added.
+        * Shared/mac/SecItemShim.messages.in: Added.
+        * UIProcess/mac/SecItemShimProxy.cpp: Added.
+        (WebKit::SecItemShimProxy::shared):
+        (WebKit::SecItemShimProxy::SecItemShimProxy):
+        (WebKit::handleSecItemRequest):
+        (WebKit::dispatchFunctionOnQueue):
+        (WebKit::SecItemShimProxy::secItemRequest):
+        (WebKit::SecItemShimProxy::didReceiveMessageOnConnectionWorkQueue):
+        * UIProcess/mac/SecItemShimProxy.h: Added.
+        * UIProcess/mac/SecItemShimProxy.messages.in: Added.
+        * UIProcess/mac/WebProcessProxyMac.mm:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeConnection):
+        * WebProcess/WebProcess.h:
+        * WebProcess/WebProcess.messages.in:
+        * WebProcess/mac/SecItemShimMethods.mm:
+        (WebKit::sendSeqItemRequest):
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformInitializeProcess):
+
+2013-01-07  Anders Carlsson  <andersca@apple.com>
+
+        Remove Windows files from WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=106264
+
+        Reviewed by Sam Weinig.
+
+        * Platform/CoreIPC/win/BinarySemaphoreWin.cpp: Removed.
+        * Platform/CoreIPC/win/ConnectionWin.cpp: Removed.
+        * Platform/win/ModuleWin.cpp: Removed.
+        * Platform/win/SharedMemoryWin.cpp: Removed.
+        * Platform/win/WorkQueueWin.cpp: Removed.
+        * Shared/API/c/win/WKBaseWin.h: Removed.
+        * Shared/API/c/win/WKCertificateInfoWin.cpp: Removed.
+        * Shared/API/c/win/WKCertificateInfoWin.h: Removed.
+        * Shared/Plugins/Netscape/win/NetscapePluginModuleWin.cpp: Removed.
+        * Shared/cg/win/ShareableBitmapCGWin.cpp: Removed.
+        * Shared/win/CoalescedWindowGeometriesUpdater.cpp: Removed.
+        * Shared/win/CoalescedWindowGeometriesUpdater.h: Removed.
+        * Shared/win/CommandLineWin.cpp: Removed.
+        * Shared/win/LayerTreeContextWin.cpp: Removed.
+        * Shared/win/NativeWebKeyboardEventWin.cpp: Removed.
+        * Shared/win/NativeWebMouseEventWin.cpp: Removed.
+        * Shared/win/NativeWebWheelEventWin.cpp: Removed.
+        * Shared/win/PlatformCertificateInfo.cpp: Removed.
+        * Shared/win/PlatformCertificateInfo.h: Removed.
+        * Shared/win/ShareableBitmapWin.cpp: Removed.
+        * Shared/win/WebCoreArgumentCodersWin.cpp: Removed.
+        * Shared/win/WebEventFactory.cpp: Removed.
+        * Shared/win/WebEventFactory.h: Removed.
+        * Shared/win/WebKitBundle.cpp: Removed.
+        * Shared/win/WebKitBundle.h: Removed.
+        * Shared/win/WebURLRequestWin.cpp: Removed.
+        * Shared/win/WebURLResponseWin.cpp: Removed.
+        * Shared/win/WindowGeometry.cpp: Removed.
+        * Shared/win/WindowGeometry.h: Removed.
+        * UIProcess/API/C/win/WKAPICastWin.h: Removed.
+        * UIProcess/API/C/win/WKContextPrivateWin.h: Removed.
+        * UIProcess/API/C/win/WKContextWin.cpp: Removed.
+        * UIProcess/API/C/win/WKView.cpp: Removed.
+        * UIProcess/API/C/win/WKView.h: Removed.
+        * UIProcess/API/C/win/WKViewPrivate.cpp: Removed.
+        * UIProcess/API/C/win/WKViewPrivate.h: Removed.
+        * UIProcess/Launcher/win/ProcessLauncherWin.cpp: Removed.
+        * UIProcess/Plugins/win/PluginInfoStoreWin.cpp: Removed.
+        * UIProcess/win/BackingStoreWin.cpp: Removed.
+        * UIProcess/win/TextCheckerWin.cpp: Removed.
+        * UIProcess/win/WebContextMenuProxyWin.cpp: Removed.
+        * UIProcess/win/WebContextMenuProxyWin.h: Removed.
+        * UIProcess/win/WebContextWin.cpp: Removed.
+        * UIProcess/win/WebFullScreenManagerProxyWin.cpp: Removed.
+        * UIProcess/win/WebInspectorProxyWin.cpp: Removed.
+        * UIProcess/win/WebPageProxyWin.cpp: Removed.
+        * UIProcess/win/WebPopupMenuProxyWin.cpp: Removed.
+        * UIProcess/win/WebPopupMenuProxyWin.h: Removed.
+        * UIProcess/win/WebProcessProxyWin.cpp: Removed.
+        * UIProcess/win/WebUndoClient.cpp: Removed.
+        * UIProcess/win/WebUndoClient.h: Removed.
+        * UIProcess/win/WebView.cpp: Removed.
+        * UIProcess/win/WebView.h: Removed.
+        * WebProcess/Downloads/cf/win/DownloadCFWin.cpp: Removed.
+        * WebProcess/InjectedBundle/API/c/win/WKBundlePrivateWin.cpp: Removed.
+        * WebProcess/InjectedBundle/API/c/win/WKBundlePrivateWin.h: Removed.
+        * WebProcess/InjectedBundle/win/InjectedBundleWin.cpp: Removed.
+        * WebProcess/Plugins/Netscape/win/NetscapePluginWin.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebContextMenuClientWin.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebDragClientWin.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebDragSource.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebDragSource.h: Removed.
+        * WebProcess/WebCoreSupport/win/WebErrorsWin.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebFrameNetworkingContext.cpp: Removed.
+        * WebProcess/WebCoreSupport/win/WebFrameNetworkingContext.h: Removed.
+        * WebProcess/WebCoreSupport/win/WebPopupMenuWin.cpp: Removed.
+        * WebProcess/WebPage/ca/win/LayerTreeHostCAWin.cpp: Removed.
+        * WebProcess/WebPage/ca/win/LayerTreeHostCAWin.h: Removed.
+        * WebProcess/WebPage/ca/win/WKCACFViewWindow.cpp: Removed.
+        * WebProcess/WebPage/ca/win/WKCACFViewWindow.h: Removed.
+        * WebProcess/WebPage/win/DrawingAreaImplWin.cpp: Removed.
+        * WebProcess/WebPage/win/LayerTreeHostWin.cpp: Removed.
+        * WebProcess/WebPage/win/WebInspectorWin.cpp: Removed.
+        * WebProcess/WebPage/win/WebPageWin.cpp: Removed.
+        * WebProcess/win/WebProcessMainWin.cpp: Removed.
+        * WebProcess/win/WebProcessWin.cpp: Removed.
+
+2013-01-07  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        Add window.internals.nonFastScrollableRects for testing scrollable areas in fast/slow paths
+        https://bugs.webkit.org/show_bug.cgi?id=105546
+
+        Reviewed by James Robinson.
+
+        Export the new symbol.
+
+        * win/WebKit2.def.in:
+
+2013-01-07  Mike West  <mkwst@chromium.org>
+
+        Make the IFRAME_SEAMLESS flag runtime-enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=106213
+
+        Reviewed by Ojan Vafai.
+
+        * WebProcess/InjectedBundle/API/c/WKBundle.cpp:
+        (WKBundleSetSeamlessIFramesEnabled):
+        * WebProcess/InjectedBundle/API/c/WKBundlePrivate.h:
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::setSeamlessIFramesEnabled):
+        (WebKit):
+        * WebProcess/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+            Add a toggle for seamless IFrames to InjectedBundle, and set it to
+            true when beginning testing.
+
+2013-01-07  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Remove more obsolete shim code
+        https://bugs.webkit.org/show_bug.cgi?id=106248
+
+        Reviewed by Anders Carlsson.
+
+        Removing KeychainItemShimCallbacks, and SecItemRequestData::CopyContent, which was
+        only needed for that obsolete version of shim.
+
+        We now use WebProcessSecItemShimCallbacks.
+
+        * Shared/mac/SecItemRequestData.h:
+        * UIProcess/mac/WebProcessProxyMac.mm:
+        (WebKit::handleSecItemRequest):
+        * WebProcess/mac/WebProcessShim.h:
+
+2013-01-05  Sam Weinig  <sam@webkit.org>
+
+        Merge child process main functions as much as possible
+        https://bugs.webkit.org/show_bug.cgi?id=106192
+
+        Reviewed by Anders Carlsson.
+
+        To reduce copied code, this merges the Mac main functions for the WebProcess,
+        NetworkProcess, PluginProcess, and SharedWorkerProcess. Since slight variations
+        are needed, it adds a delegate class for hooks into the main function that each
+        process can override if necessary.
+
+        * NetworkProcess/mac/NetworkProcessMainMac.mm:
+        (WebKit::NetworkProcessMain):
+        Remove almost everything with a call to ChildProcessMain with the default delegate.
+
+        * PluginProcess/mac/PluginProcessMac.mm:
+        (WebKit::PluginProcess::platformInitializeProcess):
+        Move defaults registration here from PluginProcessMainMac.
+
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (PluginProcessMainDelegate):
+        Add a delegate for the new shared main function that does does PluginProcess
+        specific work.
+
+        (WebKit::PluginProcessMainDelegate::doPreInitializationWork):
+        Move DYLD_INSERT_LIBRARIES removal and createPluginMIMETypesPreferences special mode
+        to this pre-initialization hook.
+
+        (WebKit::PluginProcessMainDelegate::doPostRunWork):
+        Move private temporary and cache directories clean up to this post run hook.
+
+        (WebKit::PluginProcessMain):
+        Call the ChildProcessMain shared main function with the PluginProcess as the process
+        to initialize and PluginProcessMainDelegate as the main delegate.
+
+        * Shared/mac/ChildProcessMain.h: Added.
+        (ChildProcessMainDelegate):
+        ChildProcessMainDelegate is a helper class that process can subclass to hook into
+        the main function.
+
+        (WebKit::ChildProcessMain):
+        Add a single version of the "main" function that uses the ChildProcessMainDelegate to
+        allow processes to hook into it.
+
+        * Shared/mac/ChildProcessMain.mm:
+        (WebKit::ChildProcessMainDelegate::~ChildProcessMainDelegate):
+        (WebKit::ChildProcessMainDelegate::installSignalHandlers):
+        (WebKit::ChildProcessMainDelegate::doPreInitializationWork):
+        (WebKit::ChildProcessMainDelegate::getConnectionIdentifier):
+        (WebKit::ChildProcessMainDelegate::getClientIdentifier):
+        (WebKit::ChildProcessMainDelegate::getClientProcessName):
+        (WebKit::ChildProcessMainDelegate::doPostRunWork):
+        Add default implementations of the delegate hooks, most processes should be able to
+        use the defaults.
+
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain):
+        Remove almost everything with a call to ChildProcessMain with the default delegate.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        Add new files.
+
+        * WebProcess/mac/WebProcessMainMac.mm:
+        (WebProcessMainDelegate):
+        Add a delegate for the new shared main function that does does WebProcess
+        specific work.
+
+        (WebKit::WebProcessMainDelegate::doPreInitializationWork):
+        Move DYLD_INSERT_LIBRARIES removal to this this pre-initialization hook.
+
+        (WebKit::WebProcessMainDelegate::getConnectionIdentifier):
+        A custom getConnectionIdentifier is necessary for the WebProcess to keep support for having the WebProcess
+        be able to launch the UIProcess (for debugging purposes).
+
+        (WebKit::WebProcessMainDelegate::getClientIdentifier):
+        For the same reasons as about, a custom getClientIdentifier is needed.
+
+        (WebKit::WebProcessMain):
+        Call the ChildProcessMain shared main function with the WebProcess as the process
+        to initialize and WebProcessMainDelegate as the main delegate.
+
+2013-01-07  Simon Fraser  <simon.fraser@apple.com>
+
+        Make WKViews work when layer-backed
+        https://bugs.webkit.org/show_bug.cgi?id=106166
+
+        Reviewed by Sam Weinig.
+        
+        When not in TileCache mode, WebKit2 views had redraw problems on scrolling,
+        if layer-backed.
+        
+        The issue is that the DrawingAreaProxy code tries to optimize scrolling by
+        calling -scrollRect:by: on the WKView (an NSView) to copy bits, rather than
+        repainting the entire view. However, -scrollRect:by: does nothing for NSViews
+        that have layers.
+        
+        Fix by plumbing through a canScrollView() function which PageClientImpl()
+        implements, returning true if the view does not have layer backing.
+        When canScrollView() is false, DrawingAreaProxyImpl::incorporateUpdate()
+        dirties the entire view.
+
+        * UIProcess/API/gtk/PageClientImpl.h:
+        (WebKit::PageClientImpl::canScrollView):
+        * UIProcess/API/mac/PageClientImpl.h:
+        (PageClientImpl):
+        * UIProcess/API/mac/PageClientImpl.mm:
+        (WebKit::PageClientImpl::canScrollView):
+        * UIProcess/API/qt/raw/qrawwebview_p_p.h:
+        (QRawWebViewPrivate::canScrollView):
+        * UIProcess/DrawingAreaProxyImpl.cpp:
+        (WebKit::DrawingAreaProxyImpl::incorporateUpdate):
+        * UIProcess/PageClient.h:
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::canScrollView):
+        * UIProcess/WebPageProxy.h:
+        * UIProcess/efl/PageClientBase.h:
+        (WebKit::PageClientBase::canScrollView):
+        * UIProcess/qt/QtPageClient.h:
+        (WebKit::QtPageClient::canScrollView):
+        * UIProcess/win/WebView.h:
+        (WebKit::WebView::canScrollView):
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Remove WebProcessInitialization and NetworkProcessInitialization by putting the rest of initialization in ChildProcess derived classes
+        https://bugs.webkit.org/show_bug.cgi?id=106163
+
+        Reviewed by Darin Adler.
+
+        Adds ChildProcess::initializeProcessName() and the catchall ChildProcess::initializeProcess()
+        as the last pieces to have all the initialization from WebProcessInitialization and NetworkProcessInitialization
+        captured in ChildProcess and derived classes.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeProcessName):
+        (WebKit::NetworkProcess::initializeSandbox):
+        * NetworkProcess/NetworkProcess.h:
+        (NetworkProcess):
+        * NetworkProcess/mac/NetworkProcessInitialization.h: Removed.
+        * NetworkProcess/mac/NetworkProcessInitialization.mm: Removed.
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::initializeProcessName):
+        (WebKit::NetworkProcess::initializeSandbox):
+        * NetworkProcess/mac/NetworkProcessMainMac.mm:
+        (WebKit::NetworkProcessMain):
+        * PluginProcess/PluginProcess.cpp:
+        (WebKit::PluginProcess::initializeProcess):
+        * PluginProcess/PluginProcess.h:
+        (PluginProcess):
+        * PluginProcess/mac/PluginProcessMac.mm:
+        (WebKit::PluginProcess::platformInitializeProcess):
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (WebKit::PluginProcessMain):
+        * PluginProcess/qt/PluginProcessQt.cpp:
+        (WebKit::PluginProcess::platformInitializeProcess):
+        (WebKit::PluginProcess::platformInitializePluginProcess):
+        * PluginProcess/unix/PluginProcessUnix.cpp:
+        (WebKit::PluginProcess::platformInitializeProcess):
+        * Shared/ChildProcess.cpp:
+        (WebKit::ChildProcess::initialize):
+        (WebKit::ChildProcess::initializeProcess):
+        (WebKit::ChildProcess::initializeProcessName):
+        (WebKit::ChildProcess::initializeSandbox):
+        (WebKit::ChildProcess::initializeConnection):
+        * Shared/ChildProcess.h:
+        (ChildProcess):
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeProcess):
+        (WebKit::WebProcess::initializeProcessName):
+        (WebKit::WebProcess::initializeSandbox):
+        * WebProcess/WebProcess.h:
+        (WebProcess):
+        * WebProcess/mac/WebProcessInitialization.h: Removed.
+        * WebProcess/mac/WebProcessInitialization.mm: Removed.
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::initializeSandbox):
+        (WebKit::WebProcess::initializeProcessName):
+        (WebKit::WebProcess::platformInitializeProcess):
+        * WebProcess/mac/WebProcessMainMac.mm:
+        (WebKit::WebProcessMain):
+        * WebProcess/mac/WebProcessServiceEntryPoints.mm:
+        (WebKit::WebProcessServiceEventHandler):
+        (initializeWebProcessForWebProcessServiceForWebKitDevelopment):
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Fix failing API test.
+
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeConnection):
+        (WebKit::WebProcess::initializeWebProcess):
+        The WebConnectionToUIProcess needs to be initialized before the injected bundle is,
+        so that if the user tries to use it, its there.
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Consolidate all the one time initialization functions into a single InitializeWebKit2() super function
+        https://bugs.webkit.org/show_bug.cgi?id=106161
+
+        Reviewed by Simon Fraser.
+
+        Adds InitializeWebKit2 and uses it.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        * NetworkProcess/mac/NetworkProcessInitialization.mm:
+        (WebKit::initializeNetworkProcess):
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (WebKit::PluginProcessMain):
+        * Shared/WebKit2Initialize.cpp: Copied from Source/WebKit2/NetworkProcess/mac/NetworkProcessInitialization.mm.
+        (WebKit::InitializeWebKit2):
+        * Shared/WebKit2Initialize.h: Copied from Source/WebKit2/NetworkProcess/mac/NetworkProcessInitialization.mm.
+        (WebKit):
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain):
+        * Target.pri:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::WebProcess):
+        * WebProcess/mac/WebProcessInitialization.mm:
+        (WebKit::initializeWebProcess):
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Follow up to https://bugs.webkit.org/show_bug.cgi?id=106144, fixing some
+        of Alexey's review comments.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::downloadProxyConnection):
+        (WebKit::NetworkProcess::createNetworkConnectionToWebProcess):
+        * PluginProcess/PluginProcess.cpp:
+        (WebKit::PluginProcess::createWebProcessConnection):
+        (WebKit::PluginProcess::getSitesWithData):
+        (WebKit::PluginProcess::clearSiteData):
+        * Shared/ChildProcess.h:
+        (WebKit::ChildProcess::parentProcessConnection):
+        * SharedWorkerProcess/SharedWorkerProcess.h:
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::downloadProxyConnection):
+        (WebKit::WebProcess::addVisitedLink):
+        (WebKit::WebProcess::removeWebFrame):
+        (WebKit::WebProcess::getSitesWithPluginData):
+        (WebKit::WebProcess::clearPluginSiteData):
+        (WebKit::WebProcess::addPlugInAutoStartOrigin):
+        (WebKit::WebProcess::plugInDidReceiveUserInteraction):
+        (WebKit::WebProcess::getWebCoreStatistics):
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Consolidate process initialization in ChildProcess
+        https://bugs.webkit.org/show_bug.cgi?id=106144
+
+        Reviewed by Alexey Proskuryakov.
+
+        Consolidate more functionality down into ChildProcess.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::didReceiveMessage):
+        (WebKit::NetworkProcess::didReceiveSyncMessage):
+        (WebKit::NetworkProcess::downloadProxyConnection):
+        (WebKit::NetworkProcess::initializeNetworkProcess):
+        (WebKit::NetworkProcess::createNetworkConnectionToWebProcess):
+        (WebKit::NetworkProcess::initializeSandbox):
+        * NetworkProcess/NetworkProcess.h:
+        * NetworkProcess/mac/NetworkProcessInitialization.h:
+        * NetworkProcess/mac/NetworkProcessInitialization.mm:
+        (WebKit::initializeNetworkProcess):
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::platformInitializeNetworkProcess):
+        * NetworkProcess/mac/NetworkProcessMainMac.mm:
+        (WebKit::NetworkProcessMain):
+        * PluginProcess/PluginProcess.cpp:
+        (WebKit::PluginProcess::PluginProcess):
+        (WebKit::PluginProcess::initializePluginProcess):
+        (WebKit::PluginProcess::createWebProcessConnection):
+        (WebKit::PluginProcess::getSitesWithData):
+        (WebKit::PluginProcess::clearSiteData):
+        * PluginProcess/PluginProcess.h:
+        (PluginProcess):
+        * PluginProcess/mac/PluginProcessMac.mm:
+        (WebKit::initializeShim):
+        (WebKit::initializeCocoaOverrides):
+        (WebKit::PluginProcess::platformInitialize):
+        (WebKit::PluginProcess::platformInitializePluginProcess):
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (WebKit::PluginProcessMain):
+        * PluginProcess/qt/PluginProcessMainQt.cpp:
+        (WebKit::PluginProcessMain):
+        * PluginProcess/qt/PluginProcessQt.cpp:
+        (WebKit::PluginProcess::platformInitializePluginProcess):
+        * PluginProcess/unix/PluginProcessMainUnix.cpp:
+        (WebKit::PluginProcessMainUnix):
+        * PluginProcess/unix/PluginProcessUnix.cpp:
+        (WebKit::PluginProcess::platformInitializePluginProcess):
+        * Shared/ChildProcess.cpp:
+        (WebKit::ChildProcess::ChildProcess):
+        (WebKit::watchdogCallback):
+        (WebKit::didCloseOnConnectionWorkQueue):
+        (WebKit::ChildProcess::initialize):
+        (WebKit::ChildProcess::initializeConnection):
+        (WebKit::ChildProcess::initializeSandbox):
+        (WebKit::ChildProcess::terminate):
+        * Shared/ChildProcess.h:
+        (ChildProcessInitializationParameters):
+        (ChildProcess):
+        (WebKit::ChildProcess::connection):
+        (WebKit::ChildProcess::destinationID):
+        (WebKit::ChildProcess::messageReceiverMap):
+        * SharedWorkerProcess/SharedWorkerProcess.cpp:
+        (WebKit::SharedWorkerProcess::initializeSharedWorkerProcess):
+        * SharedWorkerProcess/SharedWorkerProcess.h:
+        (SharedWorkerProcess):
+        * SharedWorkerProcess/mac/SharedWorkerProcessMac.mm:
+        (WebKit::SharedWorkerProcess::platformInitializeSharedWorkerProcess):
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::initializeConnection):
+        (WebKit::WebProcess::downloadProxyConnection):
+        (WebKit::WebProcess::initializeWebProcess):
+        (WebKit::WebProcess::terminate):
+        (WebKit::WebProcess::didReceiveSyncMessage):
+        (WebKit::WebProcess::didReceiveMessage):
+        (WebKit::WebProcess::removeWebFrame):
+        (WebKit::WebProcess::initializeSandbox):
+        * WebProcess/WebProcess.h:
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+        * WebProcess/gtk/WebProcessMainGtk.cpp:
+        (WebKit::WebProcessMainGtk):
+        * WebProcess/mac/WebProcessInitialization.h:
+        * WebProcess/mac/WebProcessInitialization.mm:
+        (WebKit::initializeWebProcess):
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformInitialize):
+        * WebProcess/mac/WebProcessMainMac.mm:
+        (WebKit::WebProcessMain):
+        * WebProcess/mac/WebProcessServiceEntryPoints.mm:
+        (WebKit::WebProcessServiceEventHandler):
+        (initializeWebProcessForWebProcessServiceForWebKitDevelopment):
+        * WebProcess/qt/WebProcessMainQt.cpp:
+        (WebKit::WebProcessMainQt):
+
+2013-01-04  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Remove non-visible tiles from the layer tree
+        https://bugs.webkit.org/show_bug.cgi?id=106061
+        <rdar://problem/12761821>
+
+        Reviewed by Simon Fraser.
+
+        Add a setting to enable aggressive retention of TileCache tiles. If enabled,
+        TileCache will generally try to keep around all tiles. This setting is off by default.
+
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetAggressiveTileRetentionEnabled):
+        (WKPreferencesGetAggressiveTileRetentionEnabled):
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::updatePreferences): Forward the setting to the TiledBacking.
+
+2013-01-04  Sam Weinig  <sam@webkit.org>
+
+        Make process initialization more uniform by renaming initialization methods and removing extraneous parameters
+        https://bugs.webkit.org/show_bug.cgi?id=106120
+
+        Reviewed by Brady Eidson.
+
+        Rename FooProcess::initialize() -> FooProcess::initializeConnection() and removes
+        the RunLoop parameter since it is always the same the as RunLoop::main().
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::initializeConnection):
+        * NetworkProcess/NetworkProcess.h:
+        (NetworkProcess):
+        * NetworkProcess/mac/NetworkProcessInitialization.mm:
+        (WebKit::initializeNetworkProcess):
+        * PluginProcess/PluginProcess.cpp:
+        (WebKit::PluginProcess::initializeConnection):
+        * PluginProcess/PluginProcess.h:
+        * PluginProcess/mac/PluginProcessMainMac.mm:
+        (WebKit::PluginProcessMain):
+        * PluginProcess/qt/PluginProcessMainQt.cpp:
+        (WebKit::PluginProcessMain):
+        * PluginProcess/unix/PluginProcessMainUnix.cpp:
+        (WebKit::PluginProcessMainUnix):
+        * SharedWorkerProcess/SharedWorkerProcess.cpp:
+        (WebKit::SharedWorkerProcess::initializeConnection):
+        * SharedWorkerProcess/SharedWorkerProcess.h:
+        (SharedWorkerProcess):
+        * SharedWorkerProcess/mac/SharedWorkerProcessMainMac.mm:
+        (WebKit::SharedWorkerProcessMain):
+
 2013-01-04  Adam Klein  <adamk@chromium.org>
 
         Remove ENABLE_MUTATION_OBSERVERS #define

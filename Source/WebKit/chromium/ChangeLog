@@ -1,3 +1,282 @@
+2013-01-08  Keishi Hattori  <keishi@webkit.org>
+
+        [Chromium] Don't confine page popups to root view on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=106315
+
+        Reviewed by Kent Tamura.
+
+        Page popups on Mac no longer get clipped to the web view so we can
+        remove the code to confine to root view.
+
+        * src/ColorChooserPopupUIController.cpp:
+        (WebKit::ColorChooserPopupUIController::writeDocument): Removing parameters confineToRootView and rootViewRectInScreen.
+        * src/DateTimeChooserImpl.cpp:
+        (WebKit::DateTimeChooserImpl::writeDocument): Ditto.
+
+2012-12-20  Antonio Gomes  <a1.gomes@sisa.samsung.com>
+
+        Introduce a compositing trigger for scrollable frames
+        https://bugs.webkit.org/show_bug.cgi?id=105573
+
+        Reviewed by James Robinson.
+
+        Set the newly added scrollable-inner-frames bit to compositing-trigger
+        bitset in accordance to the respective setting value.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::allowedCompositingTriggers):
+
+2013-01-08  Steve Block  <steveblock@chromium.org>
+
+        Rename 'IntSize toSize(const IntPoint&)' to 'toIntSize'
+        https://bugs.webkit.org/show_bug.cgi?id=106307
+
+        This matches other method names which distinguish between sizes and
+        points. See https://bugs.webkit.org/show_bug.cgi?id=105992#c4.
+
+        Reviewed by Kentaro Hara.
+
+        * src/NonCompositedContentHost.cpp:
+        (WebKit::NonCompositedContentHost::setViewport):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::minimumScrollOffset):
+        (WebKit::WebFrameImpl::maximumScrollOffset):
+
+2013-01-08  Yoshifumi Inoue  <yosin@chromium.org>
+
+        Dragging over an element with scrollbars should scroll the element when dragging near edges
+        https://bugs.webkit.org/show_bug.cgi?id=39725
+
+        Reviewed by Hajime Morita.
+
+        This patch removes DragScrollTimer used for automatic scrolling of main
+        frame drag-and-drop which is now implemented in EventHandler.
+
+        Another patch will remove DragScrollTimer.{cpp,h} and update GYP files to
+        make patch size small.
+
+        No tests. Existing test covers this change.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl): Changed to remove m_dragScrollTimer.
+        (WebKit::WebViewImpl::dragSourceEndedAt): ditto
+        (WebKit::WebViewImpl::dragSourceMovedTo): ditto
+        (WebKit::WebViewImpl::dragTargetDrop): ditto
+        (WebKit::WebViewImpl::dragTargetDragEnterOrOver): ditto
+        * src/WebViewImpl.h:
+        (WebKit): Chagned to remove DragScrollTimer.
+
+2013-01-07  Steve Block  <steveblock@chromium.org>
+
+        Use toSize() to convert from Int/FloatPoint to Int/FloatSize
+        https://bugs.webkit.org/show_bug.cgi?id=105992
+
+        Reviewed by Kentaro Hara.
+
+        * src/LinkHighlight.cpp:
+        (WebKit::LinkHighlight::computeHighlightLayerPathAndPosition):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::minimumScrollOffset):
+        (WebKit::WebFrameImpl::maximumScrollOffset):
+
+2013-01-07  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        [Chromium] Expose compositedScrollingForFramesEnabled setting in WebKit API
+        https://bugs.webkit.org/show_bug.cgi?id=106262
+
+        Reviewed by James Robinson.
+
+        * public/WebSettings.h:
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setCompositedScrollingForFramesEnabled):
+        (WebKit):
+        * src/WebSettingsImpl.h:
+        (WebSettingsImpl):
+
+2013-01-07  Stephen White  <senorblanco@chromium.org>
+
+        Add a flag to control canvas antialiasing.
+        https://bugs.webkit.org/show_bug.cgi?id=106255
+
+        Reviewed by Darin Fisher.
+
+        * public/WebSettings.h:
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setAntialiased2dCanvasEnabled):
+        * src/WebSettingsImpl.h:
+
+2013-01-07  Yusuf Ozuysal  <yusufo@google.com>
+
+        Don't use double tap zoom if minimum and maximum page scale is the same
+        https://bugs.webkit.org/show_bug.cgi?id=106272
+
+        Reviewed by James Robinson.
+
+        We should only try to computed relevant scale and scrollOffset and start the animation
+        if the page is zoomable. This now creates an undesired animation for mobile pages which
+        are not zoomable.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::handleGestureEvent):
+
+2013-01-07  Tony Chang  <tony@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2013-01-07  Alok Priyadarshi  <alokp@chromium.org>
+
+        [chromium] Fix PlatformContextSkia::setDrawingToImageBuffer abuse
+        https://bugs.webkit.org/show_bug.cgi?id=104956
+
+        Reviewed by James Robinson.
+
+        Replaced PlatformContextSkia::SetDrawingToImageBuffer with GraphicsContext::setShouldSmoothFonts.
+
+        * src/NonCompositedContentHost.cpp:
+        (WebKit::NonCompositedContentHost::paintContents):
+        (WebKit):
+        (WebKit::NonCompositedContentHost::setShowDebugBorders):
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::paint):
+        * src/WebFontImpl.cpp:
+        (WebKit::WebFontImpl::drawText):
+
+2013-01-07  Mike West  <mkwst@chromium.org>
+
+        Make the IFRAME_SEAMLESS flag runtime-enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=106213
+
+        Reviewed by Ojan Vafai.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableSeamlessIFrames):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::areSeamlessIFramesEnabled):
+            Expose the new runtime feature to the Chromium port.
+
+2013-01-07  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Stub out async IDBDatabaseBackendInterface::createObjectStore
+        https://bugs.webkit.org/show_bug.cgi?id=106148
+
+        Reviewed by Adam Barth.
+
+        Stub out WebKit API for async createObjectStore.
+
+        * public/WebIDBDatabase.h:
+        (WebIDBDatabase):
+        * src/IDBDatabaseBackendProxy.cpp:
+        (WebKit::IDBDatabaseBackendProxy::createObjectStore):
+        (WebKit):
+        (WebKit::IDBDatabaseBackendProxy::deleteObjectStore):
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::createObjectStore):
+        (WebKit):
+        (WebKit::WebIDBDatabaseImpl::deleteObjectStore):
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+
+2013-01-07  Stephen Chenney  <schenney@chromium.org>
+
+        Add comment to WebKit skia gyp
+
+        Unreviewed additon of a comment.
+
+        * skia_webkit.gyp: Some changes should not yet be committed. Commented to that effect.
+
+2013-01-07  Stephen Chenney  <schenney@chromium.org>
+
+        Add Skia build flags to WebKit skia gyp
+
+        Unreviewed change to enable easy layout test rebaselining.
+
+        * skia_webkit.gyp: Added SK_IGNORE_QUAD_STROKE_FIX and SK_IGNORE_TREAT_AS_SPRITE
+
+2013-01-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Migrate backend ObjectStore calls to use transaction id
+        https://bugs.webkit.org/show_bug.cgi?id=102741
+
+        Reviewed by Tony Chang.
+
+        Fix a bug where an array was initialized with a large empty buffer,
+        clean up whitespace, and update to match signatures that changed
+        in WebCore.
+
+        * public/WebIDBDatabase.h:
+        (WebKit::WebIDBDatabase::clear):
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::put):
+        * src/WebIDBIndexImpl.cpp:
+        * tests/IDBDatabaseBackendTest.cpp:
+
+2013-01-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Stub out IDBDatabaseBackendInterface::createIndex/deleteIndex
+        https://bugs.webkit.org/show_bug.cgi?id=106117
+
+        Reviewed by Adam Barth.
+
+        Stubs for migration from WebIDBObjectStore.
+
+        * public/WebIDBDatabase.h:
+        (WebKit::WebIDBDatabase::createIndex):
+        (WebKit::WebIDBDatabase::deleteIndex):
+        (WebIDBDatabase):
+        * src/IDBDatabaseBackendProxy.cpp:
+        (WebKit::IDBDatabaseBackendProxy::createIndex):
+        (WebKit):
+        (WebKit::IDBDatabaseBackendProxy::deleteIndex):
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::createIndex):
+        (WebKit):
+        (WebKit::WebIDBDatabaseImpl::deleteIndex):
+        * src/WebIDBDatabaseImpl.h:
+        (WebIDBDatabaseImpl):
+        * tests/IDBDatabaseBackendTest.cpp:
+
+2013-01-05  Chris Hopman  <cjhopman@google.com>
+
+        Add function to move caret selection towards a point
+        https://bugs.webkit.org/show_bug.cgi?id=105189
+
+        Reviewed by Eric Seidel.
+
+        This function moves the selection to the corresponding point in the
+        rootEditableElement of the current selection. Used on Android for
+        the behavior of insertion handles (i.e. dragging the caret around).
+
+        * public/WebFrame.h:
+        (WebFrame):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::moveCaretSelectionTowardsWindowPoint):
+        (WebKit):
+        * src/WebFrameImpl.h:
+        (WebFrameImpl):
+
+2013-01-04  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Remove WebWidget::layerTreeView(), ownership is the other way around
+        https://bugs.webkit.org/show_bug.cgi?id=106139
+
+        Reviewed by Adrienne Walker.
+
+        This was added with the thought that it would be useful for transitioning code for a world where the
+        WebLayerTreeView for a given widget was owned by the WebWidgetClient instead of the WebWidget, but as it turns
+        out we've transitioned without every adding any callers to this.
+
+        * public/WebWidget.h:
+        (WebWidget):
+        * src/WebViewImpl.cpp:
+
 2013-01-04  Dana Jansens  <danakj@chromium.org>
 
         [chromium] Remove lost-compositor-context layout tests

@@ -14,8 +14,8 @@ webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-cntl-y-001.html [ ImageOnlyF
 webkit.org/b/82097 editing/selection/move-by-word-visually-crash-test-5.html [ Pass Slow ]
 webkit.org/b/79679 [ Debug ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
 webkit.org/b/79679 [ Mac Release ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
-webkit.org/b/92287 [ Linux Mac Win ] fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow ]
-webkit.org/b/92287 [ Linux Mac Win ] platform/chromium/virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow ]
+webkit.org/b/92287 [ Linux Mac Win ] fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow Failure ]
+webkit.org/b/92287 [ Linux Mac Win ] platform/chromium/virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow Failure ]
 crbug.com/24182 [ Debug ] fast/css/large-list-of-rules-crash.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/dom/shadow/tree-scope-crash.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/dom/Window/window-postmessage-clone-deep-array.html [ Pass Slow ]
@@ -1225,9 +1225,12 @@ crbug.com/62433 [ Win ] fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 # -----------------------------------------------------------------
 
 # Reporting translation of -0.00.
-crbug.com/167819 [ XP ] svg/overflow/overflow-on-inner-svg-element.svg [ Failure ]
-crbug.com/167822 [ XP ] svg/dom/css-transforms.xhtml [ Failure ]
+webkit.org/b/106126 [ Win ] svg/overflow/overflow-on-inner-svg-element.svg [ Failure Pass ]
+webkit.org/b/106126 [ Win ] svg/dom/css-transforms.xhtml [ Failure Pass ]
+webkit.org/b/106126 [ Win ] svg/custom/feComponentTransfer-Table.svg [ Failure Pass ]
+webkit.org/b/106126 [ Win ] svg/custom/embedding-external-svgs.xhtml [ Failure Pass ]
 
+#
 # New in WebKit r52559
 crbug.com/18116 svg/custom/global-constructors.html [ Failure ]
 
@@ -2672,6 +2675,7 @@ crbug.com/77574 [ Android Linux ] fast/writing-mode/fallback-orientation.html [ 
 # Regression in r82056.
 webkit.org/b/56519 [ SnowLeopard ] fast/ruby/base-shorter-than-text.html [ Failure ImageOnlyFailure ]
 
+
 # Chrome doesn't load favicons in DRT tests.
 webkit.org/b/57259 http/tests/misc/link-rel-icon-beforeload.html [ Failure ]
 
@@ -3995,7 +3999,6 @@ webkit.org/b/89167 media/track/track-cue-rendering-vertical.html [ Failure ]
 #webkit.org/b/98766 [ Android ] media/track/track-cue-rendering-vertical.html [ Failure ]
 #webkit.org/b/98766 [ Android ] media/track/track-cue-rendering-horizontal.html [ Failure ]
 
-
 webkit.org/b/98686 editing/pasteboard/data-transfer-items.html [ Failure ]
 
 webkit.org/b/23166 [ Android Mac Win ] fast/css/background-clip-radius-values.html [ Pass ImageOnlyFailure ]
@@ -4060,7 +4063,6 @@ webkit.org/b/101255 [ Mac Android ] fast/repaint/block-selection-gap-in-table-ce
 
 # Needs baselines
 Bug(thakis) [ Android Release ] fast/forms/zoomed-controls.html [ ImageOnlyFailure ]
-Bug(leviw) [ Android Win Mac Linux ] platform/chromium/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 
 # Flaky on win7 since at least r162410
 webkit.org/b/99886 [ Win7 ] fast/dom/shadow/input-with-validation.html [ ImageOnlyFailure Pass ]
@@ -4112,9 +4114,11 @@ webkit.org/b/97499 http/tests/security/script-no-crossorigin-onerror-should-be-s
 webkit.org/b/99749 [ MountainLion ] fast/text/midword-break-before-surrogate-pair.html [ Failure ImageOnlyFailure ]
 
 Bug(dpranke) [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
-Bug(dpranke) [ Win ] webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Failure ]
-Bug(dpranke) [ Win ] webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Failure ]
-Bug(dpranke) [ Win ] webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Failure ]
+
+# These tests need a special rebaseline from rtoy@, after which they can be un-skipped.
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Skip ]
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Skip ]
+crbug.com/168425 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Skip ]
 
 webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-offset.html [ Failure ImageOnlyFailure ]
 
@@ -4125,7 +4129,11 @@ webkit.org/b/100475 compositing/tiling/tile-cache-zoomed.html [ Failure ]
 webkit.org/b/100475 platform/chromium/virtual/softwarecompositing/tiling/tile-cache-zoomed.html [ Failure ]
 
 webkit.org/b/100647 [ Win ] webaudio/audiobuffersource-loop-points.html [ Failure ]
-webkit.org/b/105937 [ XP ] webaudio/automatic-pull-node.html [ Pass Timeout ]
+webkit.org/b/105937 [ Win ] webaudio/automatic-pull-node.html [ Timeout ]
+webkit.org/b/106232 [ Win ] webaudio/convolution-mono-mono.html [ Timeout ]
+webkit.org/b/106232 [ Win ] webaudio/oscillator-square.html [ Timeout ]
+webkit.org/b/106232 [ Win ] webaudio/oscillator-basic.html [ Timeout ]
+webkit.org/b/106232 [ Win ] webaudio/oscillator-sawtooth.html [ Timeout ]
 
 webkit.org/b/100806 [ Win ] fast/css/font-face-implicit-local-font.html [ Failure ]
 webkit.org/b/100806 [ Win ] fast/css/font-face-unicode-range.html [ Failure ]
@@ -4288,3 +4296,13 @@ webkit.org/b/105471 [ Win ] platform/chromium/virtual/gpu/compositedscrolling/ov
 webkit.org/b/105471 [ Win ] platform/chromium/virtual/gpu/compositedscrolling/overflow/updating-scrolling-content.html
 
 webkit.org/b/105595 [ Mac ] svg/text/alt-glyph-for-surrogate-pair.svg [ ImageOnlyFailure ]
+webkit.org/b/47975 [ MountainLion ] fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Failure ]
+
+webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106249 [ Win ] fast/speech/scripted/navigate-away.html [ Failure Pass ]
+
+# Needs rebaseline. Reducing yellow box top margin is intentional. Looks good on Chromium Linux.
+webkit.org/b/96597 fast/multicol/vertical-rl/float-multicol.html [ Failure ImageOnlyFailure ]
+# Needs rebaseline. Current expectation is wrong because margin of body don't collapse with margin of 1st child.
+webkit.org/b/96597 fast/text/emphasis-vertical.html [ ImageOnlyFailure ]

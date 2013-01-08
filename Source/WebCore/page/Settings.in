@@ -92,6 +92,7 @@ acceleratedCompositingForOverflowScrollEnabled initial=false
 
 # Works only in conjunction with forceCompositingMode.
 acceleratedCompositingForScrollableFramesEnabled initial=false
+compositedScrollingForFramesEnabled initial=false
 
 experimentalNotificationsEnabled initial=false
 webGLEnabled initial=false
@@ -100,6 +101,7 @@ openGLMultisamplingEnabled initial=true
 privilegedWebGLExtensionsEnabled initial=false
 accelerated2dCanvasEnabled initial=false
 deferred2dCanvasEnabled initial=false
+antialiased2dCanvasEnabled initial=true
 loadDeferringEnabled initial=true
 webAudioEnabled initial=false
 paginateDuringLayoutEnabled initial=false

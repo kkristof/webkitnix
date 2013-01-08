@@ -426,6 +426,10 @@ static void restartedCallback(SoupMessage* message, gpointer data)
     GOwnPtr<SoupURI> newSoupURI(request.soupURI());
     soup_message_set_uri(message, newSoupURI.get());
 
+    // If we sent credentials with this request's URL, we don't want the response to carry them to
+    // the WebKit layer. They were only placed in the URL for the benefit of libsoup.
+    request.removeCredentials();
+
     if (d->client())
         d->client()->willSendRequest(handle, request, redirectResponse);
 
@@ -1170,14 +1174,6 @@ void ResourceHandle::platformSetDefersLoading(bool defersLoading)
 
 bool ResourceHandle::loadsBlocked()
 {
-    return false;
-}
-
-bool ResourceHandle::willLoadFromCache(ResourceRequest&, Frame*)
-{
-    // Not having this function means that we'll ask the user about re-posting a form
-    // even when we go back to a page that's still in the cache.
-    notImplemented();
     return false;
 }
 

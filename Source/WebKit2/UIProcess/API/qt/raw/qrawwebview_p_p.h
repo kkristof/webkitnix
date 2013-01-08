@@ -72,6 +72,7 @@ public:
     virtual void updateTextInputState();
     virtual void handleWillSetInputMethodState();
     virtual void displayView();
+    virtual bool canScrollView() { return false; }
     virtual void scrollView(const WebCore::IntRect& scrollRect, const WebCore::IntSize& scrollOffset);
 
     virtual void flashBackingStoreUpdates(const Vector<WebCore::IntRect>&);

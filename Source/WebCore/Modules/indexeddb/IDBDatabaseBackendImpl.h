@@ -61,7 +61,9 @@ public:
     // IDBDatabaseBackendInterface
     virtual IDBDatabaseMetadata metadata() const;
     virtual PassRefPtr<IDBObjectStoreBackendInterface> createObjectStore(int64_t id, const String& name, const IDBKeyPath&, bool autoIncrement, IDBTransactionBackendInterface*, ExceptionCode&);
+    virtual void createObjectStore(int64_t transactionId, int64_t objectStoreId, const String& name, const IDBKeyPath&, bool autoIncrement) { ASSERT_NOT_REACHED(); }
     virtual void deleteObjectStore(int64_t, IDBTransactionBackendInterface*, ExceptionCode&);
+    virtual void deleteObjectStore(int64_t transactionId, int64_t objectStoreId) { ASSERT_NOT_REACHED(); }
     // FIXME: Remove this method in https://bugs.webkit.org/show_bug.cgi?id=103923.
     virtual PassRefPtr<IDBTransactionBackendInterface> createTransaction(int64_t transactionId, const Vector<int64_t>& objectStoreIds, IDBTransaction::Mode);
     virtual void createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode);
@@ -69,6 +71,9 @@ public:
 
     virtual void commit(int64_t transactionId);
     virtual void abort(int64_t transactionId);
+
+    virtual void createIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId, const String& name, const IDBKeyPath&, bool unique, bool multiEntry) { ASSERT_NOT_REACHED(); }
+    virtual void deleteIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId) { ASSERT_NOT_REACHED(); }
 
     PassRefPtr<IDBObjectStoreBackendImpl> objectStore(int64_t id);
     IDBTransactionCoordinator* transactionCoordinator() const { return m_transactionCoordinator.get(); }

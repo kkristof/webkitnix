@@ -141,7 +141,6 @@ fast/repaint/fixed-to-relative-position-with-absolute-child.html
 fast/repaint/inline-overflow.html
 fast/repaint/inline-relative-positioned.html
 fast/repaint/overflow-flipped-writing-mode-block.html
-fast/repaint/overflow-flipped-writing-mode-table.html
 fast/repaint/text-in-relative-positioned-inline.html
 fast/repaint/trailing-floats-root-line-box-overflow.html
 fast/table/simple_paint.html
@@ -1129,6 +1128,7 @@ webkit.org/b/61540 inspector/extensions/extensions-eval-content-script.html [ Fa
 
 # JSC also doesn't support setIsolatedWorldContentSecurityPolicy
 webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html [ Failure ]
+webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
 #__worldID is undefined in isolated world
 Bug(EFL) http/tests/security/isolatedWorld/didClearWindowObject.html
@@ -1195,8 +1195,6 @@ webkit.org/b/84771 ietestcenter/css3/multicolumn/column-width-applies-to-009.htm
 webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-
-webkit.org/b/72363 fast/dom/Window/window-postmessage-arrays.html [ Failure ]
 
 # Expando properties on attribute nodes disappear
 webkit.org/b/88045 fast/dom/gc-attribute-node.html [ Failure ]
@@ -1615,7 +1613,6 @@ Bug(EFL) compositing/plugins/large-to-small-composited-plugin.html [ Failure ]
 Bug(EFL) animations/negative-delay.html [ Failure Pass ]
 Bug(EFL) compositing/bounds-in-flipped-writing-mode.html [ Failure ]
 Bug(EFL) compositing/iframes/leave-compositing-iframe.html [ Failure ]
-Bug(EFL) compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
 Bug(EFL) compositing/visibility/visibility-composited.html [ Failure ]
 Bug(EFL) editing/selection/caret-rtl.html [ Failure Pass ]
 Bug(EFL) editing/selection/caret-at-bidi-boundary.html [ Crash Pass ]

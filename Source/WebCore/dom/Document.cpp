@@ -339,7 +339,7 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
     // Note: We generalize this to all "blank" URLs and invalid URLs because we
     // treat all of these URLs as about:blank.
     //
-    return !url.isValid() || url.isBlankURL();
+    return url.isEmpty() || url.isBlankURL();
 }
 
 static Widget* widgetForNode(Node* focusedNode)
@@ -688,7 +688,7 @@ void Document::removedLastRef()
         m_docType = 0;
         m_focusedNode = 0;
         m_hoverNode = 0;
-        m_activeNode = 0;
+        m_activeElement = 0;
         m_titleElement = 0;
         m_documentElement = 0;
         m_contextFeatures = ContextFeatures::defaultSwitch();
@@ -2091,7 +2091,7 @@ void Document::detach()
 
     m_hoverNode = 0;
     m_focusedNode = 0;
-    m_activeNode = 0;
+    m_activeElement = 0;
 
     ContainerNode::detach();
 
@@ -2332,8 +2332,8 @@ void Document::close()
 
 void Document::explicitClose()
 {
-    if (m_parser)
-        m_parser->finish();
+    if (RefPtr<DocumentParser> parser = m_parser)
+        parser->finish();
 
     if (!m_frame) {
         // Because we have no frame, we don't know if all loading has completed,
@@ -2359,6 +2359,9 @@ void Document::implicitClose()
     
     if (!doload)
         return;
+
+    // Call to dispatchWindowLoadEvent can blow us from underneath.
+    RefPtr<Document> protect(this);
 
     m_processingLoadEvent = true;
 
@@ -3217,7 +3220,12 @@ void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
 
 void Document::setActiveNode(PassRefPtr<Node> newActiveNode)
 {
-    m_activeNode = newActiveNode;
+    if (!newActiveNode) {
+        m_activeElement.clear();
+        return;
+    }
+
+    m_activeElement = newActiveNode->isElementNode() ? toElement(newActiveNode.get()) : newActiveNode->parentElement();
 }
 
 void Document::focusedNodeRemoved()
@@ -3258,12 +3266,12 @@ void Document::hoveredNodeDetached(Node* node)
 
 void Document::activeChainNodeDetached(Node* node)
 {
-    if (!m_activeNode || (node != m_activeNode && (!m_activeNode->isTextNode() || node != m_activeNode->parentNode())))
+    if (!m_activeElement || (node != m_activeElement && (!m_activeElement->isTextNode() || node != m_activeElement->parentNode())))
         return;
 
-    m_activeNode = node->parentNode();
-    while (m_activeNode && !m_activeNode->renderer())
-        m_activeNode = m_activeNode->parentNode();
+    m_activeElement = node->parentElement();
+    while (m_activeElement && !m_activeElement->renderer())
+        m_activeElement = m_activeElement->parentElement();
 }
 
 #if ENABLE(DASHBOARD_SUPPORT) || ENABLE(DRAGGABLE_REGION)
@@ -4583,7 +4591,7 @@ void Document::initSecurityContext()
 
     // FIXME: What happens if we inherit the security origin? This check may need to be later.
     // <iframe seamless src="about:blank"> likely won't work as-is.
-    m_mayDisplaySeamlessWithParent = isEligibleForSeamless(parentDocument, this);
+    m_mayDisplaySeamlesslyWithParent = isEligibleForSeamless(parentDocument, this);
 
     if (!shouldInheritSecurityOriginFromOwner(m_url))
         return;
@@ -5658,10 +5666,12 @@ HTMLIFrameElement* Document::seamlessParentIFrame() const
 bool Document::shouldDisplaySeamlesslyWithParent() const
 {
 #if ENABLE(IFRAME_SEAMLESS)
+    if (!RuntimeEnabledFeatures::seamlessIFramesEnabled())
+        return false;
     HTMLFrameOwnerElement* ownerElement = this->ownerElement();
     if (!ownerElement)
         return false;
-    return m_mayDisplaySeamlessWithParent && ownerElement->hasTagName(iframeTag) && ownerElement->fastHasAttribute(seamlessAttr);
+    return m_mayDisplaySeamlesslyWithParent && ownerElement->hasTagName(iframeTag) && ownerElement->fastHasAttribute(seamlessAttr);
 #else
     return false;
 #endif
@@ -5788,7 +5798,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResu
     Node* innerNodeInDocument = result.innerNode();
     ASSERT(!innerNodeInDocument || innerNodeInDocument->document() == this);
 
-    Node* oldActiveNode = activeNode();
+    Node* oldActiveNode = activeElement();
     if (oldActiveNode && !request.active()) {
         // We are clearing the :active chain because the mouse has been released.
         for (RenderObject* curr = oldActiveNode->renderer(); curr; curr = curr->parent()) {
@@ -5807,12 +5817,13 @@ void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResu
                 if (curr->node() && !curr->isText())
                     m_userActionElements.setInActiveChain(curr->node(), true);
             }
+
             setActiveNode(newActiveNode);
         }
     }
     // If the mouse has just been pressed, set :active on the chain. Those (and only those)
     // nodes should remain :active until the mouse is released.
-    bool allowActiveChanges = !oldActiveNode && activeNode();
+    bool allowActiveChanges = !oldActiveNode && activeElement();
 
     // If the mouse is down and if this is a mouse move event, we want to restrict changes in
     // :hover/:active to only apply to elements that are in the :active chain that we froze

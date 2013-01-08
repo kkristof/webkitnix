@@ -1,3 +1,405 @@
+2013-01-08  Heikki Paajanen  <heikki.paajanen@palm.com>
+
+        [Qt] Fix libxml2 config test
+        https://bugs.webkit.org/show_bug.cgi?id=106317
+
+        Reviewed by Simon Hausmann.
+
+        Don't assume standard include/libxml2, libxml-2.0.pc should know
+        where it's headers are.
+
+        * qmake/config.tests/libxml2/libxml2.cpp: Fix include
+
+2013-01-08  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Make Tools/gtk/generate-gtkdoc compatible with Python 3
+        https://bugs.webkit.org/show_bug.cgi?id=106195
+
+        Reviewed by Philippe Normand.
+
+        Perform changes in the generate-gtkdoc script and common and gtkdoc modules
+        to make the Python code compatible with Python 3. This includes modifying
+        print statements, exception handling, dictionary iteration and
+        byte-sequence-to-string conversion.
+
+        * gtk/common.py:
+        (get_build_path):
+        (pkg_config_file_variable):
+        (gtk_version_of_pkg_config_file):
+        * gtk/generate-gtkdoc:
+        (print_missing_api):
+        * gtk/gtkdoc.py:
+        (GTKDoc.__init__):
+        (GTKDoc._run_command):
+
+2013-01-02  Steve Block  <steveblock@chromium.org>
+
+        Add chromium.org email address for Steve Block.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-01-07  Filip Pizlo  <fpizlo@apple.com>
+
+        Rationalize closure call heuristics and profiling
+        https://bugs.webkit.org/show_bug.cgi?id=106270
+
+        Reviewed by Oliver Hunt.
+        
+        Add ability to use display-profiler-output via a pipe, and add the ability to dump
+        all generated code ('display *' or 'd *').
+
+        * Scripts/display-profiler-output:
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Sorted more xcodeproj files.
+
+        * MiniBrowser/MiniBrowser.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * WebKitLauncher/WebKitLauncher.xcodeproj/project.pbxproj:
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Sorted xcodeproj files.
+
+        * DumpRenderTree/DumpRenderTree.xcodeproj/project.pbxproj:
+        * WebKitTestRunner/WebKitTestRunner.xcodeproj/project.pbxproj:
+
+2013-01-07  Dan Bernstein  <mitz@apple.com>
+
+        [mac] WebKit1 clients can’t tell when a frame has been removed from the hierarchy
+        https://bugs.webkit.org/show_bug.cgi?id=106261
+
+        Reviewed by Simon Fraser.
+
+        Added a test for -[WebFrameLoadDelegate webView:didRemoveFrameFromHierarchy:].
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/mac/WebViewDidRemoveFrameFromHierarchy.mm: Added.
+        (-[DidRemoveFrameFromHierarchyFrameLoadDelegate webView:didFinishLoadForFrame:]):
+        (-[DidRemoveFrameFromHierarchyFrameLoadDelegate webView:didRemoveFrameFromHierarchy:]):
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST):
+
+2013-01-07  Ojan Vafai  <ojan@chromium.org>
+
+        Add the Apple MountainLion bots to garden-o-matic.
+        Eventually, we really should move away from hardcoding
+        the list of bots.
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/config.js:
+
+2013-01-07  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] move web audio related methods to testrunner library
+        https://bugs.webkit.org/show_bug.cgi?id=106211
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebKit):
+        (WebTestRunner::WebTestRunner::shouldDumpAsAudio):
+        (WebTestRunner::WebTestRunner::audioData):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::shouldDumpAsAudio):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::audioData):
+        (WebTestRunner::TestRunner::setAudioData):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::dump):
+
+2013-01-07  Mike West  <mkwst@chromium.org>
+
+        Make the IFRAME_SEAMLESS flag runtime-enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=106213
+
+        Reviewed by Ojan Vafai.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+        * DumpRenderTree/efl/DumpRenderTreeChrome.cpp:
+        (DumpRenderTreeChrome::resetDefaultsToConsistentValues):
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (resetDefaultsToConsistentValues):
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (resetDefaultsToConsistentValues):
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp:
+        (WebCore::WebPage::resetSettings):
+        * WebKitTestRunner/InjectedBundle/InjectedBundle.cpp:
+        (WTR::InjectedBundle::beginTesting):
+            Ensure that seamless IFrames are enabled for layout tests in each of
+            the ports that support seamless IFrames.
+
+2013-01-07  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] move dumpAsText and friends to the TestRunner library
+        https://bugs.webkit.org/show_bug.cgi?id=106222
+
+        Reviewed by Adam Barth.
+
+        This moves dumpAsText, dumpChildFramesAsText, and dumpChildFrameScrollPositions to the TestRunner library.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner::WebTestRunner::shouldDumpAsText):
+        (WebTestRunner::WebTestRunner::setShouldDumpAsText):
+        (WebTestRunner::WebTestRunner::shouldGeneratePixelResults):
+        (WebTestRunner::WebTestRunner::setShouldGeneratePixelResults):
+        (WebTestRunner::WebTestRunner::shouldDumpChildFrameScrollPositions):
+        (WebTestRunner::WebTestRunner::shouldDumpChildFramesAsText):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::shouldDumpAsText):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::setShouldDumpAsText):
+        (WebTestRunner::TestRunner::shouldGeneratePixelResults):
+        (WebTestRunner::TestRunner::setShouldGeneratePixelResults):
+        (WebTestRunner::TestRunner::shouldDumpChildFrameScrollPositions):
+        (WebTestRunner::TestRunner::shouldDumpChildFramesAsText):
+        (WebTestRunner::TestRunner::dumpAsText):
+        (WebTestRunner::TestRunner::dumpChildFrameScrollPositions):
+        (WebTestRunner::TestRunner::dumpChildFramesAsText):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix attempt after r138810.
+
+        Apparently python 2.6 is really bad at floating point computation.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py:
+        (MainTest.test_run_memory_test):
+
+2013-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Extract a class to represent a test result to simplify PerfTest.parse_output and PageLoadPerfTest._run_with_driver
+        https://bugs.webkit.org/show_bug.cgi?id=106172
+
+        Reviewed by Tony Chang.
+
+        Extracted PerfTestMetric, which represents a test result and knows how to compute statistics and convert itself
+        to a dictionary. A metric is a type of measurement each test makes such as "Time", "Malloc", and "JSHeap".
+        A single test (e.g. html5-full-render.html) may have multiple metrics, each of which is reported as a separate
+        test on perf-o-matic and perf. test's results page.
+
+        Also, use python's compute_statistics instead of reading statistics off of DriverOutput to simplify the code.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTestMetric): Added.
+        (PerfTestMetric.__init__): Added.
+        (PerfTestMetric.metric): Added.
+        (PerfTestMetric.has_values): Added.
+        (PerfTestMetric.legacy_chromium_bot_compatible_test_name): Added. Following the legacy convention, "Malloc" and
+        "JSHeap" will use "test_name:Malloc" whereas "Time" uses "test_name" itself. We should eventually move these
+        conversions to be done on the client side (perf-o-matic and results page).
+        (PerfTestMetric.append): Added.
+        (PerfTestMetric.to_dict): Added. Computes the statistics and generates the dictionary object that represents
+        a result for this metric.
+        (PerfTestMetric.metric_to_unit): Added. Each metric maps to exactly one unit (it's not one-to-one).
+        (PerfTestMetric.compute_statistics): Moved from PerfTest.
+
+        (PerfTest._create_driver): Extracted from PerfTest.run.
+        (PerfTest.run): Given an array of PerfTestMetric, generate the results dictionary. Also print out results
+        as needed.
+        (PerfTest._run_with_driver):
+        (PerfTest): Removed _result_classes and _result_class_regex. "result class" is the old name for "metric".
+        (PerfTest.parse_output): Dramatically simplified. We now just return an array of PerfTestMetric's. Also ignore
+        all keys except "values". We rely on PerfTestMetric to compute the statistics for us.
+
+        (ChromiumStylePerfTest.run): Added and merged _run_with_driver. Since chromium style perf tests are so different
+        from other perf tests, there isn't much point in sharing the code here.
+
+        (PageLoadingPerfTest._run_with_driver): Simplified. Just create an array of PerfTestMetric's without computing
+        statistics for the measured values.
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestPerfTestMetric): Added.
+        (TestPerfTestMetric.test_init_set_missing_unit): Added.
+        (TestPerfTestMetric.test_legacy_chromium_bot_compatible_test_name): Added.
+        (TestPerfTestMetric.test_has_values): Added.
+        (TestPerfTestMetric.test_append): Added.
+        (TestPerfTestMetric.test_compute_statistics.compute_statistics):
+        (TestPerfTestMetric.test_compute_statistics): Added a trivial test case.
+
+        (TestPerfTest._assert_results_are_correct): Updated as needed.
+        (TestPageLoadingPerfTest.test_run): Ditto. Notice that we no longer log anything in _run_with_driver. It's done
+        in PerfTest.run now after generating the results dictionary.
+        (TestPageLoadingPerfTest.test_run_with_memory_output): Ditto.
+
+2013-01-07  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        Support size_t multiplication and division operators on LayoutUnit
+        https://bugs.webkit.org/show_bug.cgi?id=83848
+
+        Reviewed by Emil A Eklund.
+
+        * TestWebKitAPI/Tests/WebCore/LayoutUnit.cpp:
+        Added some simple tests for the new operators using size_t.
+
+2013-01-07  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] run-webkit-tests cleanup for parallel NRWT
+        https://bugs.webkit.org/show_bug.cgi?id=106220
+
+        Reviewed by Dirk Pranke.
+
+        * Scripts/run-webkit-tests:
+        (useNewRunWebKitTests):
+        * Scripts/webkitpy/layout_tests/port/qt.py:
+        (QtPort):
+        (QtPort.default_child_processes):
+
+2013-01-07  Philippe Normand  <pnormand@igalia.com>
+
+        Create a GStreamerAudio watchlist and add myself to it.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-01-05  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add svn:executable to a bunch of scripts in BuildSlaveSupport.
+        Also removed the empty mac directory.
+
+        * BuildSlaveSupport/built-product-archive: Added property svn:executable.
+        * BuildSlaveSupport/download-built-product: Added property svn:executable.
+        * BuildSlaveSupport/mac: Removed.
+        * BuildSlaveSupport/test-result-archive: Added property svn:executable.
+
+2013-01-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Add a script to delete stale zero-byte build files
+        https://bugs.webkit.org/show_bug.cgi?id=106131
+
+        Reviewed by Tony Chang.
+
+        Delete zero-byte build files on Mac port for now. It doesn't do anything on other ports.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (DeleteStaleBuildFiles): Added.
+        (Factory.__init__): Add DeleteStaleBuildFiles step.
+        * BuildSlaveSupport/delete-stale-build-files: Added.
+        (main): Delete zero-byte files except ones intentionally generated by our build process.
+        (webkitBuildDirectory): Copied from build-product-archive.
+
+2013-01-04  Michael Pruett  <michael@68k.org>
+
+        [GTK] Fix build error on GTK due to r138836
+        https://bugs.webkit.org/show_bug.cgi?id=106154
+
+        Reviewed by Kentaro Hara.
+
+        * GNUmakefile.am:
+
+2013-01-04  Dan Bernstein  <mitz@apple.com>
+
+        [mac] WebKit1 has no equivalent of WKBundleNodeHandleCopyHTMLTableCellElementCellAbove
+        https://bugs.webkit.org/show_bug.cgi?id=106121
+
+        Reviewed by Adele Peterson.
+
+        Added test for -[DOMTHMLTableCellElement _cellAbove].
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/mac/DOMHTMLTableCellCellAbove.mm: Added.
+        (-[HTMLTableCellElementCellAboveTest webView:didFinishLoadForFrame:]):
+        (TestWebKitAPI):
+        (TestWebKitAPI::expectCellAboveCell):
+        (TestWebKitAPI::TEST):
+        * TestWebKitAPI/Tests/mac/DOMHTMLTableCellElementCellAbove.html: Added.
+
+2013-01-04  Eric Seidel  <eric@webkit.org>
+
+        FlakyTestReporter should be re-enabled and taught how to post patches
+        https://bugs.webkit.org/show_bug.cgi?id=103839
+
+        Reviewed by Adam Barth.
+
+        This moves LayoutTestResultsReader off of the DeprecatedPort object.
+        It also adds a real Port object to the EWS and CommitQueue objects
+        using a new PatchProcessingQueue superclass.
+        PatchProcessingQueue doesn't seem to be the cleanest insertion point
+        but works for this purpose.
+        I also moved _upload_results_archive_for_patch into PatchProcessingQueue
+        to resolve a FIXME.
+
+        This required some hacks/shiming between the non-specific "old"
+        port names which the EWS system is currently using, and the new
+        port objects.  This shimming is done in PatchProcessingQueue._new_port_name_from_old.
+
+        Hopefully this will fix the flaky test reporter and results uploading.
+        Certainly it's another small step towards getting rid of the old ports.py
+        infrastructure and making the NRWT Port class common webkitpy infrastructure.
+
+        Now that DeprecatedPort is no longer used for the results directory
+        I removed all the explicit results-dir code which webkit-patch was using
+        in --non-interactive mode to tell NRWT to use a results-dir it understood. :)
+
+        * Scripts/webkitpy/common/config/ports.py:
+        (DeprecatedPort.run_perl_unittests_command):
+        * Scripts/webkitpy/common/config/ports_mock.py:
+        (MockPort.name):
+        * Scripts/webkitpy/common/system/outputcapture.py:
+        (OutputCapture.assert_outputs):
+        * Scripts/webkitpy/layout_tests/port/apple.py:
+        (ApplePort.determine_full_port_name):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader.py:
+        (LayoutTestResultsReader.__init__):
+        (LayoutTestResultsReader):
+        (LayoutTestResultsReader._read_file_contents):
+        (LayoutTestResultsReader._create_layout_test_results):
+        (LayoutTestResultsReader._create_unit_test_results):
+        (LayoutTestResultsReader.results):
+        (LayoutTestResultsReader.archive):
+        * Scripts/webkitpy/tool/bot/layouttestresultsreader_unittest.py:
+        (LayoutTestResultsReaderTest.test_missing_layout_test_results):
+        (LayoutTestResultsReaderTest.test_create_unit_test_results):
+        (test_missing_unit_test_results_path):
+        (test_layout_test_results):
+        (test_archive_last_layout_test_results):
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (AbstractEarlyWarningSystem):
+        (AbstractEarlyWarningSystem.__init__):
+        (AbstractEarlyWarningSystem.begin_work_queue):
+        (AbstractEarlyWarningSystem.run_command):
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (AbstractPatchQueue.work_item_log_path):
+        (PatchProcessingQueue):
+        (PatchProcessingQueue._new_port_name_from_old):
+        (PatchProcessingQueue.begin_work_queue):
+        (PatchProcessingQueue._upload_results_archive_for_patch):
+        (CommitQueue):
+        (CommitQueue.begin_work_queue):
+        (CommitQueue.run_command):
+        (AbstractReviewQueue):
+        (AbstractReviewQueue.__init__):
+        (AbstractReviewQueue.begin_work_queue):
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (AbstractPatchQueueTest.test_next_patch):
+        (PatchProcessingQueueTest):
+        (PatchProcessingQueueTest.test_upload_results_archive_for_patch):
+        * Scripts/webkitpy/tool/steps/runtests.py:
+        (RunTests.run):
+        * Scripts/webkitpy/tool/steps/runtests_unittest.py:
+
 2013-01-04  Dana Jansens  <danakj@chromium.org>
 
         [chromium] Remove lost-compositor-context layout tests

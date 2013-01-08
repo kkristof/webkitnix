@@ -83,6 +83,7 @@
 #include "StyleSheetContents.h"
 #include "TextIterator.h"
 #include "TreeScope.h"
+#include "TypeConversions.h"
 #include "ViewportArguments.h"
 #include <wtf/text/StringBuffer.h>
 
@@ -97,6 +98,10 @@
 #if ENABLE(NETWORK_INFO)
 #include "NetworkInfo.h"
 #include "NetworkInfoController.h"
+#endif
+
+#if ENABLE(PROXIMITY_EVENTS)
+#include "DeviceProximityController.h"
 #endif
 
 #if ENABLE(PAGE_POPUP)
@@ -1332,6 +1337,23 @@ void Internals::setNetworkInformation(Document* document, const String& eventTyp
 #endif
 }
 
+void Internals::setDeviceProximity(Document* document, const String& eventType, double value, double min, double max, ExceptionCode& ec)
+{
+    if (!document || !document->page()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+#if ENABLE(PROXIMITY_EVENTS)
+    DeviceProximityController::from(document->page())->didChangeDeviceProximity(value, min, max);
+#else
+    UNUSED_PARAM(eventType);
+    UNUSED_PARAM(value);
+    UNUSED_PARAM(min);
+    UNUSED_PARAM(max);
+#endif
+}
+
 bool Internals::hasSpellingMarker(Document* document, int from, int length, ExceptionCode&)
 {
     if (!document || !document->frame())
@@ -1557,6 +1579,20 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionCode& 
     return page->mainThreadScrollingReasonsAsText();
 }
 
+PassRefPtr<ClientRectList> Internals::nonFastScrollableRects(Document* document, ExceptionCode& ec) const
+{
+    if (!document || !document->frame()) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+
+    Page* page = document->page();
+    if (!page)
+        return 0;
+
+    return page->nonFastScrollableRects(document->frame());
+}
+
 void Internals::garbageCollectDocumentResources(Document* document, ExceptionCode& ec) const
 {
     if (!document) {
@@ -1701,6 +1737,11 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const 
 PassRefPtr<MallocStatistics> Internals::mallocStatistics() const
 {
     return MallocStatistics::create();
+}
+
+PassRefPtr<TypeConversions> Internals::typeConversions() const
+{
+    return TypeConversions::create();
 }
 
 PassRefPtr<DOMStringList> Internals::getReferencedFilePaths() const
