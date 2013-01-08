@@ -237,6 +237,7 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
 
     Frame* frame = m_autoscrollRenderer->frame();
     switch (m_autoscrollType) {
+#if ENABLE(DRAG_SUPPORT)
     case AutoscrollForDragAndDrop:
         if (WTF::currentTime() - m_dragAndDropAutoscrollStartTime > autoscrollDelay)
             m_autoscrollRenderer->autoscroll(m_dragAndDropAutoscrollReferencePosition);
@@ -251,6 +252,7 @@ void AutoscrollController::autoscrollTimerFired(Timer<AutoscrollController>*)
         m_autoscrollRenderer->autoscroll(eventHandler->lastKnownMousePosition());
         break;
     }
+#endif
     case NoAutoscroll:
         break;
 #if ENABLE(PAN_SCROLLING)
