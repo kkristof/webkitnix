@@ -73,7 +73,11 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
     WebCore::ResourceHandle::setIgnoreSSLErrors(true);
 
     int socket = atoi(argv[1]);
-    WebProcess::shared().initializeConnection(socket);
+
+    ChildProcessInitializationParameters parameters;
+    parameters.connectionIdentifier = socket;
+
+    WebProcess::shared().initialize(parameters);
 
     // Set SOUP cache.
     GOwnPtr<char> soupCacheDirectory(g_build_filename(g_get_user_cache_dir(), g_get_prgname(), NULL));
