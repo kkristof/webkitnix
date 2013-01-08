@@ -1546,7 +1546,7 @@ fast/events/mouse-click-events.html [ Failure ]
 fast/events/touch/touch-input-element-change-documents.html [ Failure ]
 transitions/transitions-parsing.html [ Failure ]
 
-# Flakey and failing tests after merge from 2012-01-03
+# Flakey and failing tests after merge from 2013-01-03
 http/tests/navigation/ping-cross-origin-from-https.html [ Failure ]
 http/tests/security/contentSecurityPolicy/block-mixed-content-hides-warning.html [ Failure ]
 http/tests/security/contentSecurityPolicy/script-src-star-cross-scheme.html [ Failure ]
@@ -1582,6 +1582,17 @@ fast/events/autoscroll-nonscrollable-iframe-in-scrollable-div.html [ Failure ]
 fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure ]
 fast/events/drag-and-drop-set-drag-data-arguments.html
 
-
+# Flakey and failing tests after merge from 2013-01-08
+# FAIL No autoscroll
+fast/events/drag-and-drop-autoscroll.html [ Failure ]
+# CONSOLE MESSAGE: line 7: TypeError: 'undefined' is not a function (evaluating 'testRunner.setHandlesAuthenticationChallenges(true)')
+# FAIL: Timed out waiting for notifyDone to be called
+http/tests/misc/authentication-redirect-4/authentication-sent-to-redirect-same-origin-url.html [ Failure ]
+# CONSOLE MESSAGE: line 21: TypeError: 'undefined' is not an object (evaluating 'track.track.mode = "hidden"')
+# FAIL: Timed out waiting for notifyDone to be called
+http/tests/security/contentSecurityPolicy/media-src-track-block.html [ Failure ]
+# CONSOLE MESSAGE: line 25: TypeError: 'undefined' is not a function (evaluating 'testRunner.setIsolatedWorldSecurityOrigin(2, 'http://localhost:8000')')
+# FAIL: Timed out waiting for notifyDone to be called
+http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
 ################################################################################
