@@ -699,6 +699,7 @@ SOURCES += \
     html/WeekInputType.cpp \
     html/canvas/CanvasGradient.cpp \
     html/canvas/CanvasPattern.cpp \
+    html/canvas/CanvasProxy.cpp \
     html/canvas/CanvasRenderingContext.cpp \
     html/canvas/CanvasRenderingContext2D.cpp \
     html/canvas/CanvasStyle.cpp \
@@ -1753,6 +1754,7 @@ HEADERS += \
     history/PageCache.h \
     html/canvas/CanvasGradient.h \
     html/canvas/CanvasPattern.h \
+    html/canvas/CanvasProxy.h \
     html/canvas/CanvasRenderingContext.h \
     html/canvas/CanvasRenderingContext2D.h \
     html/canvas/CanvasStyle.h \
@@ -3042,7 +3044,6 @@ enable?(INDEXED_DATABASE) {
         Modules/indexeddb/IDBFactoryBackendImpl.h \
         Modules/indexeddb/IDBIndex.h \
         Modules/indexeddb/IDBIndexBackendInterface.h \
-        Modules/indexeddb/IDBIndexBackendImpl.h \
         Modules/indexeddb/IDBKey.h \
         Modules/indexeddb/IDBKeyRange.h \
         Modules/indexeddb/IDBObjectStore.h \
@@ -3070,7 +3071,6 @@ enable?(INDEXED_DATABASE) {
         Modules/indexeddb/IDBFactoryBackendInterface.cpp \
         Modules/indexeddb/IDBFactoryBackendImpl.cpp \
         Modules/indexeddb/IDBIndex.cpp \
-        Modules/indexeddb/IDBIndexBackendImpl.cpp \
         Modules/indexeddb/IDBKey.cpp \
         Modules/indexeddb/IDBKeyRange.cpp \
         Modules/indexeddb/IDBObjectStore.cpp \
@@ -4014,6 +4014,14 @@ enable?(WEBGL) {
         html/canvas/WebGLTexture.cpp \
         html/canvas/WebGLUniformLocation.cpp \
         html/canvas/WebGLVertexArrayObjectOES.cpp
+}
+
+enable?(CANVAS_PROXY) {
+    HEADERS += \
+        html/canvas/CanvasProxy.h
+
+    SOURCES += \
+        html/canvas/CanvasProxy.cpp
 }
 
 use?(3D_GRAPHICS) {

@@ -3029,10 +3029,7 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     // 6. paint continuation outlines.
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)) {
         RenderInline* inlineCont = inlineElementContinuation();
-        // FIXME: For now, do not add continuations for outline painting by our containing block if we are a relative positioned
-        // anonymous block (i.e. have our own layer). This is because a block depends on renderers in its continuation table being
-        // in the same layer. 
-        if (inlineCont && inlineCont->hasOutline() && inlineCont->style()->visibility() == VISIBLE && !hasLayer()) {
+        if (inlineCont && inlineCont->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
             RenderInline* inlineRenderer = toRenderInline(inlineCont->node()->renderer());
             RenderBlock* cb = containingBlock();
 
@@ -3044,9 +3041,12 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
                 }
             }
 
-            if (!inlineEnclosedInSelfPaintingLayer)
+            // Do not add continuations for outline painting by our containing block if we are a relative positioned
+            // anonymous block (i.e. have our own layer), paint them straightaway instead. This is because a block depends on renderers in its continuation table being
+            // in the same layer. 
+            if (!inlineEnclosedInSelfPaintingLayer && !hasLayer())
                 cb->addContinuationWithOutline(inlineRenderer);
-            else if (!inlineRenderer->firstLineBox())
+            else if (!inlineRenderer->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && hasLayer()))
                 inlineRenderer->paintOutline(paintInfo.context, paintOffset - locationOffset() + inlineRenderer->containingBlock()->location());
         }
         paintContinuationOutlines(paintInfo, paintOffset);
@@ -5583,7 +5583,7 @@ void RenderBlock::computePreferredLogicalWidths()
 
     RenderStyle* styleToUse = style();
     if (!isTableCell() && styleToUse->logicalWidth().isFixed() && styleToUse->logicalWidth().value() >= 0 
-       && style()->marqueeBehavior() != MALTERNATE && !(isDeprecatedFlexItem() && !styleToUse->logicalWidth().intValue()))
+        && !(isDeprecatedFlexItem() && !styleToUse->logicalWidth().intValue()))
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalWidth().value());
     else {
         m_minPreferredLogicalWidth = 0;
@@ -6558,28 +6558,6 @@ static bool shouldCheckLines(RenderObject* obj)
             && (!obj->isDeprecatedFlexibleBox() || obj->style()->boxOrient() == VERTICAL);
 }
 
-static RootInlineBox* getLineAtIndex(RenderBlock* block, int i, int& count)
-{
-    if (block->style()->visibility() == VISIBLE) {
-        if (block->childrenInline()) {
-            for (RootInlineBox* box = block->firstRootBox(); box; box = box->nextRootBox()) {
-                if (count++ == i)
-                    return box;
-            }
-        }
-        else {
-            for (RenderObject* obj = block->firstChild(); obj; obj = obj->nextSibling()) {
-                if (shouldCheckLines(obj)) {
-                    RootInlineBox *box = getLineAtIndex(toRenderBlock(obj), i, count);
-                    if (box)
-                        return box;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
 static int getHeightForLineCount(RenderBlock* block, int l, bool includeBottom, int& count)
 {
     if (block->style()->visibility() == VISIBLE) {
@@ -6607,13 +6585,30 @@ static int getHeightForLineCount(RenderBlock* block, int l, bool includeBottom, 
     return -1;
 }
 
-RootInlineBox* RenderBlock::lineAtIndex(int i)
+RootInlineBox* RenderBlock::lineAtIndex(int i) const
 {
-    int count = 0;
-    return getLineAtIndex(this, i, count);
+    ASSERT(i >= 0);
+
+    if (style()->visibility() != VISIBLE)
+        return 0;
+
+    if (childrenInline()) {
+        for (RootInlineBox* box = firstRootBox(); box; box = box->nextRootBox())
+            if (!i--)
+                return box;
+    } else {
+        for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+            if (!shouldCheckLines(child))
+                continue;
+            if (RootInlineBox* box = toRenderBlock(child)->lineAtIndex(i))
+                return box;
+        }
+    }
+
+    return 0;
 }
 
-int RenderBlock::lineCount()
+int RenderBlock::lineCount() const
 {
     int count = 0;
     if (style()->visibility() == VISIBLE) {

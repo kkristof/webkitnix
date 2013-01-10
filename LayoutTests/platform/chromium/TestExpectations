@@ -14,8 +14,8 @@ webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-cntl-y-001.html [ ImageOnlyF
 webkit.org/b/82097 editing/selection/move-by-word-visually-crash-test-5.html [ Pass Slow ]
 webkit.org/b/79679 [ Debug ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
 webkit.org/b/79679 [ Mac Release ] platform/chromium/virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Pass Slow ]
-webkit.org/b/92287 [ Linux Mac Win ] fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow Failure ]
-webkit.org/b/92287 [ Linux Mac Win ] platform/chromium/virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Pass Slow Failure ]
+webkit.org/b/92287 [ Linux Mac Win ] fast/canvas/webgl/context-creation-and-destruction.html [ Pass Timeout Failure ]
+webkit.org/b/92287 [ Linux Mac Win ] platform/chromium/virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Pass Timeout Failure ]
 crbug.com/24182 [ Debug ] fast/css/large-list-of-rules-crash.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/dom/shadow/tree-scope-crash.html [ Pass Slow ]
 crbug.com/24182 [ SnowLeopard Debug ] fast/dom/Window/window-postmessage-clone-deep-array.html [ Pass Slow ]
@@ -53,7 +53,7 @@ crbug.com/24182 [ Debug ] jquery/attributes.html [ Pass Timeout ]
 crbug.com/24182 [ Debug ] jquery/core.html [ Pass Timeout ]
 crbug.com/24182 [ Debug ] jquery/data.html [ Pass Slow ]
 crbug.com/24182 [ Debug ] jquery/dimensions.html [ Pass Slow ]
-crbug.com/24182 [ Debug ] jquery/event.html [ Pass Timeout ]
+crbug.com/24182 jquery/event.html [ Pass Timeout ]
 crbug.com/24182 jquery/manipulation.html [ Pass Timeout ]
 crbug.com/24182 [ Debug ] jquery/offset.html [ Pass Slow ]
 crbug.com/24182 [ Linux Win Debug ] jquery/traversing.html [ Pass Timeout ]
@@ -1227,7 +1227,7 @@ crbug.com/62433 [ Win ] fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 # Reporting translation of -0.00.
 webkit.org/b/106126 [ Win ] svg/overflow/overflow-on-inner-svg-element.svg [ Failure Pass ]
 webkit.org/b/106126 [ Win ] svg/dom/css-transforms.xhtml [ Failure Pass ]
-webkit.org/b/106126 [ Win ] svg/custom/feComponentTransfer-Table.svg [ Failure Pass ]
+webkit.org/b/106126 [ Win ] svg/custom/feComponentTransfer-Table.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/106126 [ Win ] svg/custom/embedding-external-svgs.xhtml [ Failure Pass ]
 
 #
@@ -1331,6 +1331,22 @@ webkit.org/b/76557 svg/custom/transform-with-shadow-and-gradient.svg [ ImageOnly
 webkit.org/b/78422 [ Android Linux Win ] svg/animations/animate-text-nested-transforms.html [ Failure ]
 
 webkit.org/b/78830 [ Debug ] svg/custom/mask-invalidation.svg [ ImageOnlyFailure Pass ]
+
+# Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=106461
+webkit.org/b/106461 fast/backgrounds/border-radius-split-background-image.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/border-radius-complex-inner.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/border-radius-inset-outset.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/border-radius-wide-border-05.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/border-styles-split.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/borderRadiusArcs01.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/borders/mixed-border-styles-radius.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/writing-mode/border-styles-vertical-lr.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 fast/writing-mode/border-styles-vertical-rl.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 ietestcenter/css3/bordersbackgrounds/border-top-left-radius-values-004.htm [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 ietestcenter/css3/bordersbackgrounds/border-top-right-radius-values-004.htm [ ImageOnlyFailure Pass ]
+webkit.org/b/106461 svg/custom/svg-fonts-in-html.html [ ImageOnlyFailure Pass ]
 
 # Failing since added by r108699
 webkit.org/b/79454 [ Android Linux Mac ] svg/text/text-rescale.html [ ImageOnlyFailure Pass ]
@@ -1687,9 +1703,6 @@ webkit.org/b/98647 [ Android ] css3/filters/filter-change-repaint.html [ ImageOn
 webkit.org/b/98647 [ Android ] css3/filters/filtered-compositing-descendant.html [ ImageOnlyFailure ]
 
 # [Chromium-Android] Some compositor tests have half a pixel offset
-webkit.org/b/98762 [ Android ] platform/chromium/compositing/lost-compositor-context.html [ ImageOnlyFailure ]
-webkit.org/b/98762 [ Android ] platform/chromium/compositing/lost-compositor-context-twice.html [ ImageOnlyFailure ]
-webkit.org/b/98762 [ Android ] platform/chromium/compositing/lost-compositor-context-permanently.html [ ImageOnlyFailure ]
 webkit.org/b/98762 [ Android ] fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure ]
 webkit.org/b/98762 [ Android ] compositing/absolute-position-changed-with-composited-parent-layer.html [ ImageOnlyFailure ]
 webkit.org/b/98762 [ Android ] compositing/animation/state-at-end-event-transform-layer.html [ ImageOnlyFailure ]
@@ -1781,7 +1794,6 @@ webkit.org/b/98765 [ Android ] compositing/video/video-controls-layer-creation.h
 
 # Crashes related to "[Chromium-Android] Video does not yet work on Android"
 # Many of these are flaky, so I'm marking them as both crashing as passing.
-webkit.org/b/98765 [ Android ] platform/chromium/compositing/lost-compositor-context-with-video.html [ Crash Pass ]
 webkit.org/b/98765 [ Android ] compositing/geometry/video-fixed-scrolling.html [ Crash Pass ]
 webkit.org/b/98765 [ Android ] compositing/geometry/video-opacity-overlay.html [ Crash Pass ]
 webkit.org/b/98765 [ Android ] compositing/layers-inside-overflow-scroll.html [ Crash Pass ]
@@ -2343,6 +2355,7 @@ webkit.org/b/45652 fast/viewport/viewport-128.html [ Timeout ]
 
 webkit.org/b/98900 [ Android Debug ] fast/frames/frame-limit.html [ Timeout Pass ]
 webkit.org/b/45737 [ Win Linux Mac Debug ] fast/frames/frame-limit.html [ Timeout ]
+webkit.org/b/45737 [ Win Linux Release ] fast/frames/frame-limit.html [ Pass Slow ]
 
 # Regressions from webkit roll r67178:t67358
 webkit.org/b/60092 [ Debug ] fast/forms/select-set-length-with-mutation-remove.html [ Crash Pass Timeout ]
@@ -2771,6 +2784,9 @@ webkit.org/b/60136 [ Win ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Failu
 # New test added in r85454. Actual failure.
 webkit.org/b/91676 fast/js/mozilla/strict/assign-to-callee-name.html [ Failure ]
 
+# Test needing new baselines with fix for bug 106373
+webkit.org/b/106373 fast/backgrounds/gradient-background-leakage-hidpi.html [ Pass ImageOnlyFailure ]
+
 # Failure introduced by Chromium r83848.
 crbug.com/137938 [ Mac Android ] fast/url/ipv6.html [ Failure ]
 
@@ -3000,19 +3016,14 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Skip ]
@@ -3028,11 +3039,8 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-b
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
 
-# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
-# At any rate, there is no regression, just a different type of failure.
-webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
+# Started failing upon fixing webkit.org/b/105536
+webkit.org/b/106230 media/video-controls-captions.html [ Failure ]
 
 webkit.org/b/72271 [ SnowLeopard Debug ] fast/dom/node-iterator-reference-node-moved-crash.html [ Crash Pass ]
 
@@ -3048,8 +3056,6 @@ webkit.org/b/66953 [ Debug ] animations/suspend-resume-animation.html [ Failure 
 webkit.org/b/66953 [ Mac Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
 
 webkit.org/b/72761 accessibility/anonymous-render-block-in-continuation-causes-crash.html [ Pass Timeout ]
-
-webkit.org/b/73514 [ Win ] platform/chromium/compositing/lost-compositor-context-permanently.html [ Pass Timeout ]
 
 webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
@@ -3415,9 +3421,9 @@ webkit.org/b/84724 [ SnowLeopard ] platform/chromium/media/video-frame-size-chan
 
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Pass Timeout ]
 
-webkit.org/b/84802 [ Linux Win Debug ] fast/js/random-array-gc-stress.html [ Pass Slow ]
+webkit.org/b/84802 [ Linux Debug ] fast/js/random-array-gc-stress.html [ Pass Slow ]
 webkit.org/b/93631 [ Android ] fast/js/random-array-gc-stress.html [ Pass Slow ]
-webkit.org/b/84802 [ Mac Debug ] fast/js/random-array-gc-stress.html [ Pass Timeout ]
+webkit.org/b/84802 [ Mac Win Debug ] fast/js/random-array-gc-stress.html [ Pass Timeout ]
 
 webkit.org/b/84847 [ Win Release ] inspector/timeline/timeline-start-time.html [ Failure Pass ]
 
@@ -3753,8 +3759,8 @@ webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-clipped.htm
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom.html [ ImageOnlyFailure ]
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-rotated.html [ ImageOnlyFailure ]
 
-webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ Failure Pass ]
-webkit.org/b/106044 [ XP ] css3/filters/effect-invert.html [ Failure ]
+webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106044 [ XP ] css3/filters/effect-invert.html [ ImageOnlyFailure ]
 
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
 webkit.org/b/95581 http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
@@ -4002,7 +4008,7 @@ webkit.org/b/89167 media/track/track-cue-rendering-vertical.html [ Failure ]
 webkit.org/b/98686 editing/pasteboard/data-transfer-items.html [ Failure ]
 
 webkit.org/b/23166 [ Android Mac Win ] fast/css/background-clip-radius-values.html [ Pass ImageOnlyFailure ]
-webkit.org/b/23166 [ Android Mac Win ] ietestcenter/css3/bordersbackgrounds/border-radius-clip-002.htm [ Pass ImageOnlyFailure ]
+webkit.org/b/23166 ietestcenter/css3/bordersbackgrounds/border-radius-clip-002.htm [ Pass ImageOnlyFailure ]
 
 webkit.org/b/98699 [ Lion ] fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Crash ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
@@ -4130,10 +4136,10 @@ webkit.org/b/100475 platform/chromium/virtual/softwarecompositing/tiling/tile-ca
 
 webkit.org/b/100647 [ Win ] webaudio/audiobuffersource-loop-points.html [ Failure ]
 webkit.org/b/105937 [ Win ] webaudio/automatic-pull-node.html [ Timeout ]
-webkit.org/b/106232 [ Win ] webaudio/convolution-mono-mono.html [ Timeout ]
-webkit.org/b/106232 [ Win ] webaudio/oscillator-square.html [ Timeout ]
-webkit.org/b/106232 [ Win ] webaudio/oscillator-basic.html [ Timeout ]
-webkit.org/b/106232 [ Win ] webaudio/oscillator-sawtooth.html [ Timeout ]
+webkit.org/b/106232 [ Win Debug ] webaudio/convolution-mono-mono.html [ Crash ]
+webkit.org/b/106232 [ Win Debug ] webaudio/oscillator-square.html [ Crash ]
+webkit.org/b/106232 [ Win Debug ] webaudio/oscillator-basic.html [ Crash ]
+webkit.org/b/106232 [ Win Debug ] webaudio/oscillator-sawtooth.html [ Crash ]
 
 webkit.org/b/100806 [ Win ] fast/css/font-face-implicit-local-font.html [ Failure ]
 webkit.org/b/100806 [ Win ] fast/css/font-face-unicode-range.html [ Failure ]
@@ -4240,10 +4246,6 @@ webkit.org/b/99800 fast/harness/perftests/runs-per-second-log.html [ Failure Ima
 webkit.org/b/104035 fast/text/orientation-sideways.html [ Missing ]
 webkit.org/b/104172 fast/text/decorations-with-text-combine.html [ Missing ]
 
-# Crash since r136588.
-webkit.org/b/104090 [ Mac Debug ] fast/css-grid-layout/grid-columns-rows-get-set-multiple.html [ Crash ]
-webkit.org/b/104090 [ Mac Debug ] fast/css-grid-layout/grid-columns-rows-get-set.html [ Crash ]
-
 webkit.org/b/104092 fast/frames/paint-iframe-background.html [ Failure Pass ]
 
 webkit.org/b/103487 [ Linux ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
@@ -4306,3 +4308,27 @@ webkit.org/b/106249 [ Win ] fast/speech/scripted/navigate-away.html [ Failure Pa
 webkit.org/b/96597 fast/multicol/vertical-rl/float-multicol.html [ Failure ImageOnlyFailure ]
 # Needs rebaseline. Current expectation is wrong because margin of body don't collapse with margin of 1st child.
 webkit.org/b/96597 fast/text/emphasis-vertical.html [ ImageOnlyFailure ]
+webkit.org/b/106332 http/tests/misc/authentication-redirect-4/authentication-sent-to-redirect-same-origin-url.html [ Skip ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/percent-resolution-grid-item.html [ Timeout ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/place-cell-by-index.html [ Timeout ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/calc-resolution-grid-item.html [ Timeout ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/percent-padding-margin-resolution-grid-item.html [ Timeout ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/breadth-size-resolution-grid.html [ Timeout ]
+webkit.org/b/106378 [ Win Debug ] fast/css-grid-layout/grid-columns-rows-get-set-multiple.html [ Timeout ]
+webkit.org/b/106387 [ Win ] svg/W3C-SVG-1.1/animate-elem-80-t.svg [ Failure Pass ]
+webkit.org/b/106387 [ Win ] svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ ImageOnlyFailure Pass ]
+webkit.org/b/106473 [ Linux ] fast/images/embed-does-not-propagate-dimensions-to-object-ancestor.html [ Crash Pass ]
+webkit.org/b/106487 [ Win ] inspector/geolocation-error.html [ Failure Pass ]
+crbug.com/166932 [ Debug ] plugins/embed-attributes-setting.html [ Crash Pass ]
+
+# Transient. Needs rebaseline.
+webkit.org/b/103955 fast/repaint/4774354.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/4776765.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/caret-outside-block.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/japanese-rl-selection-repaint.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/repaint-across-writing-mode-boundary.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/selection-rl.html [ ImageOnlyFailure ]
+webkit.org/b/103955 fast/repaint/caret-with-transformation.html [ Missing ]

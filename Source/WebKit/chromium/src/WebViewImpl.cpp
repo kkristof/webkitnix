@@ -647,6 +647,12 @@ void WebViewImpl::handleMouseUp(Frame& mainFrame, const WebMouseEvent& event)
 #endif
 }
 
+bool WebViewImpl::handleMouseWheel(Frame& mainFrame, const WebMouseWheelEvent& event)
+{
+    hidePopups();
+    return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
+}
+
 void WebViewImpl::scrollBy(const WebPoint& delta)
 {
     WebMouseWheelEvent syntheticWheel;
@@ -1580,18 +1586,8 @@ void WebViewImpl::resize(const WebSize& newSize)
     m_size = newSize;
 
 #if ENABLE(VIEWPORT)
-    if (settings()->viewportEnabled()) {
-        // Fallback width is used to layout sites designed for desktop. The
-        // conventional size used by all mobile browsers is 980. When a mobile
-        // device has a particularly wide screen (such as a 10" tablet held in
-        // landscape), it can be larger.
-        const int standardFallbackWidth = 980;
-        int dpiIndependentViewportWidth = newSize.width / page()->deviceScaleFactor();
-        settings()->setLayoutFallbackWidth(std::max(standardFallbackWidth, dpiIndependentViewportWidth));
-
-        ViewportArguments viewportArguments = mainFrameImpl()->frame()->document()->viewportArguments();
-        m_page->chrome()->client()->dispatchViewportPropertiesDidChange(viewportArguments);
-    }
+    ViewportArguments viewportArguments = mainFrameImpl()->frame()->document()->viewportArguments();
+    m_page->chrome()->client()->dispatchViewportPropertiesDidChange(viewportArguments);
 #endif
 
     WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
@@ -2518,6 +2514,12 @@ bool WebViewImpl::isAcceleratedCompositingActive() const
 #endif
 }
 
+void WebViewImpl::willCloseLayerTreeView()
+{
+    setIsAcceleratedCompositingActive(false);
+    m_layerTreeView = 0;
+}
+
 void WebViewImpl::didAcquirePointerLock()
 {
 #if ENABLE(POINTER_LOCK)
@@ -3128,6 +3130,15 @@ void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
         return;
 
     frame->view()->setFixedLayoutSize(layoutSize);
+}
+
+WebCore::FloatSize WebViewImpl::dipSize() const
+{
+    if (!page() || m_webSettings->applyDeviceScaleFactorInCompositor())
+        return FloatSize(m_size.width, m_size.height);
+
+    float deviceScaleFactor = page()->deviceScaleFactor();
+    return FloatSize(m_size.width / deviceScaleFactor, m_size.height / deviceScaleFactor);
 }
 
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,

@@ -31,8 +31,8 @@
 #ifndef WebSettings_h
 #define WebSettings_h
 
-#include "platform/WebCommon.h"
-#include "platform/WebSize.h"
+#include <public/WebCommon.h>
+#include <public/WebSize.h>
 #include <unicode/uscript.h>
 
 namespace WebKit {
@@ -161,6 +161,7 @@ public:
     virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() = 0;
     virtual void setTouchDragDropEnabled(bool) = 0;
     virtual void setUnifiedTextCheckerEnabled(bool) = 0;
+    virtual void setUnsafePluginPastingEnabled(bool) = 0;
     virtual void setUserStyleSheetLocation(const WebURL&) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
     virtual void setUsesPageCache(bool) = 0;

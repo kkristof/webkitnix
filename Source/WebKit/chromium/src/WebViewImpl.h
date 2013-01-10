@@ -35,6 +35,7 @@
 #include "ContextMenuClientImpl.h"
 #include "DragClientImpl.h"
 #include "EditorClientImpl.h"
+#include "FloatSize.h"
 #include "GraphicsContext3D.h"
 #include "GraphicsLayer.h"
 #include "InspectorClientImpl.h"
@@ -64,6 +65,7 @@ namespace WebCore {
 class ChromiumDataObject;
 class Color;
 class DocumentLoader;
+class FloatSize;
 class Frame;
 class GraphicsContext3D;
 class HistoryItem;
@@ -174,6 +176,7 @@ public:
     virtual bool caretOrSelectionRange(size_t* location, size_t* length);
     virtual void setTextDirection(WebTextDirection direction);
     virtual bool isAcceleratedCompositingActive() const;
+    virtual void willCloseLayerTreeView();
     virtual void didAcquirePointerLock();
     virtual void didNotAcquirePointerLock();
     virtual void didLosePointerLock();
@@ -238,6 +241,7 @@ public:
     virtual void enableFixedLayoutMode(bool enable);
     virtual WebSize fixedLayoutSize() const;
     virtual void setFixedLayoutSize(const WebSize&);
+    virtual WebCore::FloatSize dipSize() const;
     virtual void enableAutoResizeMode(
         const WebSize& minSize,
         const WebSize& maxSize);
@@ -673,6 +677,7 @@ private:
     virtual void handleMouseLeave(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
     virtual void handleMouseDown(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
     virtual void handleMouseUp(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
+    virtual bool handleMouseWheel(WebCore::Frame&, const WebMouseWheelEvent&) OVERRIDE;
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;

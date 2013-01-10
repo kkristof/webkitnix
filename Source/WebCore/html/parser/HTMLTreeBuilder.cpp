@@ -27,26 +27,19 @@
 #include "config.h"
 #include "HTMLTreeBuilder.h"
 
-#include "Comment.h"
 #include "DocumentFragment.h"
-#include "DocumentType.h"
 #include "HTMLDocument.h"
 #include "HTMLDocumentParser.h"
-#include "HTMLElementFactory.h"
 #include "HTMLFormElement.h"
-#include "HTMLHtmlElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "HTMLScriptElement.h"
 #include "HTMLStackItem.h"
-#include "HTMLTemplateElement.h"
 #include "HTMLToken.h"
 #include "HTMLTokenizer.h"
 #include "LocalizedStrings.h"
 #include "MathMLNames.h"
 #include "NotImplemented.h"
 #include "SVGNames.h"
-#include "Text.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
@@ -818,6 +811,12 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         }
         m_tree.insertFormattingElement(token);
         return;
+    }
+    if (token->name() == appletTag
+        || token->name() == embedTag
+        || token->name() == objectTag) {
+        if (isParsingFragment() && !pluginContentIsAllowed(m_fragmentContext.scriptingPermission()))
+            return;
     }
     if (token->name() == appletTag
         || token->name() == marqueeTag
@@ -2181,7 +2180,7 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
             ASSERT(m_tree.currentStackItem()->hasTagName(scriptTag));
             m_scriptToProcess = m_tree.currentElement();
             m_tree.openElements()->pop();
-            if (isParsingFragment() && m_fragmentContext.scriptingPermission() == DisallowScriptingContent)
+            if (isParsingFragment() && !scriptingContentIsAllowed(m_fragmentContext.scriptingPermission()))
                 m_scriptToProcess->removeAllChildren();
             setInsertionMode(m_originalInsertionMode);
 

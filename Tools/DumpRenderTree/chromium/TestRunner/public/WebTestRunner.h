@@ -41,6 +41,7 @@ namespace WebTestRunner {
 // TestRunner* as ctor argument, and not have default implementations.
 class WebTestRunner {
 public:
+    virtual void setTestIsRunning(bool) { }
     virtual bool shouldDumpEditingCallbacks() const { return false; }
     virtual bool shouldDumpAsText() const { return false; }
     virtual void setShouldDumpAsText(bool) { }
@@ -50,6 +51,16 @@ public:
     virtual bool shouldDumpChildFramesAsText() const { return false; }
     virtual bool shouldDumpAsAudio() const { return false; }
     virtual const WebKit::WebArrayBufferView* audioData() const { return 0; }
+    virtual bool shouldDumpFrameLoadCallbacks() const { return false; }
+    virtual void setShouldDumpFrameLoadCallbacks(bool) { }
+    virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const { return false; }
+    virtual bool stopProvisionalFrameLoads() const { return false; }
+    virtual bool shouldDumpTitleChanges() const { return false; }
+    virtual bool shouldDumpCreateView() const { return false; }
+    virtual bool canOpenWindows() const { return false; }
+    virtual bool shouldDumpResourceLoadCallbacks() const { return false; }
+    virtual bool shouldDumpResourceRequestCallbacks() const { return false; }
+    virtual bool shouldDumpResourceResponseMIMETypes() const { return false; }
 };
 
 }

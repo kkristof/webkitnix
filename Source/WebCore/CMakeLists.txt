@@ -512,6 +512,7 @@ set(WebCore_IDL_FILES
     html/canvas/ArrayBufferView.idl
     html/canvas/CanvasGradient.idl
     html/canvas/CanvasPattern.idl
+    html/canvas/CanvasProxy.idl
     html/canvas/CanvasRenderingContext2D.idl
     html/canvas/CanvasRenderingContext.idl
     html/canvas/DataView.idl
@@ -825,7 +826,6 @@ set(WebCore_SOURCES
     Modules/indexeddb/IDBFactoryBackendImpl.cpp
     Modules/indexeddb/IDBFactoryBackendInterface.cpp
     Modules/indexeddb/IDBIndex.cpp
-    Modules/indexeddb/IDBIndexBackendImpl.cpp
     Modules/indexeddb/IDBKey.cpp
     Modules/indexeddb/IDBKeyRange.cpp
     Modules/indexeddb/IDBKeyPath.cpp
@@ -1490,6 +1490,7 @@ set(WebCore_SOURCES
     html/canvas/CanvasContextAttributes.cpp
     html/canvas/CanvasGradient.cpp
     html/canvas/CanvasPattern.cpp
+    html/canvas/CanvasProxy.cpp
     html/canvas/CanvasRenderingContext.cpp
     html/canvas/CanvasRenderingContext2D.cpp
     html/canvas/CanvasStyle.cpp

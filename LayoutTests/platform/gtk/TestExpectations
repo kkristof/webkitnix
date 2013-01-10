@@ -47,9 +47,10 @@ webkit.org/b/84045 accessibility/image-map2.html [ Missing ]
 webkit.org/b/70606 accessibility/menu-list-sends-change-notification.html [ Missing ]
 webkit.org/b/70606 accessibility/multiselect-list-reports-active-option.html [ Missing ]
 webkit.org/b/70606 accessibility/notification-listeners.html [ Missing ]
-webkit.org/b/105638 accessibility/aria-labelledby-overrides-label.html [ Missing ]
 
 webkit.org/b/105639 fast/inline/justify-emphasis-inline-box.html [ Missing ]
+
+webkit.org/b/103955 fast/repaint/caret-with-transformation.html [ Missing ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # Expected failures
@@ -431,19 +432,14 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Skip ]
@@ -458,12 +454,6 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timest
 webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
-
-# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
-# At any rate, there is no regression, just a different type of failure.
-webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
 
 # No support for exposing in-band text tracks
 webkit.org/b/103771 media/track/track-in-band.html [ Failure ]
@@ -516,8 +506,6 @@ webkit.org/b/100688 editing/text-iterator/backward-textiterator-first-letter-cra
 webkit.org/b/104684 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
 
 webkit.org/b/105042 editing/execCommand/indent-paragraphs.html [ Crash ]
-
-webkit.org/b/105580 media/track/track-prefer-captions.html [ Crash Pass ]
 
 webkit.org/b/105689 [ Debug ] plugins/npruntime/embed-property-iframe-equality.html [ Crash ]
 
@@ -627,6 +615,8 @@ webkit.org/b/104809 media/video-source-type-params.html [ Crash Timeout Pass ]
 webkit.org/b/104809 media/video-src-set.html [ Crash Timeout Pass ]
 webkit.org/b/104809 media/W3C/video/events/event_loadstart_manual.html [ Crash Pass ]
 
+webkit.org/b/106415 fast/workers/worker-close-more.html [ Timeout Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -712,7 +702,6 @@ webkit.org/b/72698 media/audio-garbage-collect.html [ Timeout ]
 webkit.org/b/61826 fast/events/drag-image-filename.html [ Timeout ]
 
 webkit.org/b/98350 accessibility/aria-invalid.html [ Timeout ]
-webkit.org/b/103223 accessibility/file-upload-button-with-axpress.html [ Timeout ]
 
 # Missing DRT AccessibilityController::addNotificationListener implementation
 webkit.org/b/70606 accessibility/aria-checkbox-sends-notification.html [ Timeout ]
@@ -772,7 +761,6 @@ webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFail
 
 webkit.org/b/79757 fast/selectors/selection-window-inactive.html [ ImageOnlyFailure ]
 
-webkit.org/b/98353 accessibility/aria-hidden-with-elements.html [ Failure ]
 webkit.org/b/98355 accessibility/aria-link-supports-press.html [ Failure ]
 webkit.org/b/98357 accessibility/aria-readonly.html [ Failure ]
 webkit.org/b/98358 accessibility/aria-scrollbar-role.html [ Failure ]
@@ -917,7 +905,6 @@ Bug(GTK) fast/loader/api-test-go-to-current-back-forward-item.html [ Failure ]
 
 # Needs to make sure the redirect-chain scenario in https://bugs.webkit.org/show_bug.cgi?id=31410 works
 webkit.org/b/35300 http/tests/loading/307-after-303-after-post.html [ Failure ]
-webkit.org/b/35300 http/tests/navigation/post-307-response.html [ Skip ]
 
 # Paged continuousMouseScrollBy() events are not supported in GTK.
 Bug(GTK) fast/events/platform-wheelevent-paging-x-in-non-scrolling-div.html [ Failure ]
@@ -1241,9 +1228,6 @@ webkit.org/b/86445 fast/multicol/split-in-top-margin.html [ ImageOnlyFailure ]
 # This test is affecting other tests and seems to be behaving incorrectly itself
 webkit.org/b/86771 fast/dom/gc-10.html [ Skip ]
 
-# Failing after r120145 on both GTK and EFL
-webkit.org/b/88961 http/tests/misc/redirect-to-about-blank.html [ Failure ]
-
 webkit.org/b/86971 svg/hittest/svg-shapes-non-scale-stroke.html [ Failure ]
 
 webkit.org/b/87088 fast/js/names.html [ Failure ]
@@ -1378,8 +1362,6 @@ webkit.org/b/87734 svg/dom/viewspec-parser-4.html [ Failure ]
 webkit.org/b/87734 svg/dom/viewspec-parser-5.html [ Failure ]
 webkit.org/b/87734 svg/dom/viewspec-parser-6.html [ Failure ]
 webkit.org/b/87734 svg/dom/viewspec-parser-7.html [ Failure ]
-
-webkit.org/b/105443 accessibility/aria-controls-with-tabs.html [ Failure ]
 
 webkit.org/b/98146 accessibility/svg-bounds.html [ Failure ]
 

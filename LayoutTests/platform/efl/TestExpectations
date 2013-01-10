@@ -96,10 +96,6 @@ http/tests/media/video-play-stall-seek.html
 http/tests/media/video-play-stall.html
 http/tests/security/feed-urls-from-remote.html
 
-# Test times out (via GTK+)
-# https://bugs.webkit.org/show_bug.cgi?id=61122
-http/tests/navigation/post-307-response.html
-
 # ------------------------------
 # Tests which need investigation
 # ------------------------------
@@ -700,6 +696,16 @@ webkit.org/b/105879 editing/spelling/spelling-insert-html.html [ Pass Crash ]
 # Sometimes hit cur || !toRenderInline(prev)->continuation() assertion in WebCore::endOfContinuations().
 webkit.org/b/105880 fast/dom/Range/range-extract-contents.html [ Pass Crash ]
 
+# Tests started to crash after r139141.
+webkit.org/b/106412 editing/execCommand/insert-list-xml.xhtml [ Crash ]
+webkit.org/b/106412 editing/style/justify-without-enclosing-block.xhtml [ Crash ]
+
+# Media regressions after updating to gstreamer 1.0.
+webkit.org/b/104809 media/adopt-node-crash.html [ Crash ]
+webkit.org/b/104809 media/video-src-blob.html [ Crash Failure ]
+webkit.org/b/104809 media/remove-from-document.html [ Crash Pass ]
+webkit.org/b/104809 media/video-timeupdate-during-playback.html [ Crash Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # FLAKY TESTS
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -767,19 +773,14 @@ webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLMediaElement/cr
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/kind.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/HTMLElement/HTMLTrackElement/src.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrack/activeCues.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrack/removeCue.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/constructor.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TrackEvent/createEvent.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/align.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/id.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/getCueAsHTML.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/line.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onenter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/onexit.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/pauseOnExit.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/snapToLines.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/text.html [ Skip ]
-webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/track.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCue/vertical.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackCueList/getter.html [ Skip ]
 webkit.org/b/103926 media/track/opera/interfaces/TextTrackList/getter.html [ Skip ]
@@ -794,12 +795,6 @@ webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/timest
 webkit.org/b/103926 media/track/opera/track/webvtt/parsing-cue-data/tests/tree-building.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/cue_font_size_transition.html [ Skip ]
 webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_evil_timestamp.html [ Skip ]
-
-# After fixing webkit.org/b/103258, these tests fail when they used to simply timeout.
-# At any rate, there is no regression, just a different type of failure.
-webkit.org/b/105536 media/track/opera/interfaces/TextTrack/addCue.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/endTime.html [ Failure ]
-webkit.org/b/105536 media/track/opera/interfaces/TextTrackCue/startTime.html [ Failure ]
 
 webkit.org/b/100636 [ Debug ] jquery/traversing.html [ Failure Crash Pass ]
 
@@ -824,6 +819,11 @@ webkit.org/b/105280 http/tests/xmlhttprequest/simple-cross-origin-denied-events-
 webkit.org/b/105280 http/tests/xmlhttprequest/access-control-preflight-async-not-supported.html [ Failure Pass ]
 
 webkit.org/b/105296 webaudio/delaynode-maxdelay.html [ Failure Pass ]
+
+webkit.org/b/106551 media/video-src-source.html [ Crash Pass ]
+webkit.org/b/106551 media/video-source-moved.html [ Crash Pass ]
+webkit.org/b/106551 media/video-source.html [ Crash Pass ]
+webkit.org/b/106551 fast/dom/beforeload/remove-video-poster-in-beforeload-listener.html [ Crash Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # FAILING TESTS
@@ -902,7 +902,6 @@ webkit.org/b/84333 http/tests/local/fileapi/send-dragged-file.html [ Failure ]
 webkit.org/b/84333 http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure ]
 webkit.org/b/84333 http/tests/local/formdata [ Failure ]
 webkit.org/b/84333 http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
-webkit.org/b/84333 media/video-src-blob.html [ Failure ]
 
 # EFL port needs Pasteboard implementation.
 webkit.org/b/84338 editing/deleting/paste-with-transparent-background-color.html [ Failure ]
@@ -1383,9 +1382,6 @@ webkit.org/b/91341 fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure
 # Failing after r119268 on GTK and EFL
 webkit.org/b/88138 http/tests/media/video-buffered.html [ Failure ]
 
-# Failing after r120145 on both GTK and EFL
-webkit.org/b/88961 http/tests/misc/redirect-to-about-blank.html [ Failure ]
-
 # EFL port does not support hyphenation
 webkit.org/b/89830 fast/text/hyphen-min-preferred-width.html [ ImageOnlyFailure ]
 webkit.org/b/89830 fast/text/hyphenate-locale.html [ Skip ]
@@ -1785,3 +1781,23 @@ webkit.org/b/106015 fast/css-generated-content/pseudo-transition.html [ Failure 
 
 # New test introduced in r138756 is failing.
 webkit.org/b/106086 fast/dom/HTMLTemplateElement/ownerDocument-adoptNode.html [ Failure ]
+
+# [Qt][EFL] New fast/events/drag-and-drop-autoscroll.html fails
+webkit.org/b/106318 fast/events/drag-and-drop-autoscroll.html [ Failure ]
+
+# Fail after r139145 on MAC, EFL, QT, GTK.
+webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ]
+webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ]
+
+# Newly added test at r139002 is failing.
+webkit.org/b/106316 accessibility/render-counter-text.html [ Failure ]
+
+# Newly added test at r139111 is failing.
+webkit.org/b/106439 editing/pasteboard/paste-noplugin.html [ Failure ]
+
+# Failing after r139140.
+webkit.org/b/106441 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure ]
+
+# Mark as missing image result, same as other ports. Test should be updated to text-based repaint test.
+webkit.org/b/103955 fast/repaint/caret-with-transformation.html [ Missing ]
+

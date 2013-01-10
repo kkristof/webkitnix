@@ -1,3 +1,79 @@
+2013-01-10  Yongxin Dai  <yodai@rim.com>
+
+        [BlackBerry] Handle the case that start/end position is out of unclipped selection region
+        https://bugs.webkit.org/show_bug.cgi?id=106486
+
+        Reviewed by Rob Buis.
+
+        PR #270624
+        Unclipped selection region should cover start/end position of the selection.
+        Since we exclude hidden text when calculating unclipped selection region, the
+        start/end position can be out of unclipped selection region if it is for hidden
+        text. If that is the case, start/end handle will be invisible. To avoid invisible
+        handle, we take unclipped selection region as reference rectangle in the case.
+
+        Internally reviewed by Genevieve Mak, Mike Fenton
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::referencePoint):
+
+2013-01-09  Genevieve Mak  <gmak@rim.com>
+
+        [BlackBerry] Useless if statement check
+        https://bugs.webkit.org/show_bug.cgi?id=106113
+
+        Reviewed by Yong Li.
+
+        Remove stray ! in if statement which was mistakenly left in during
+        refactoring. Since Injected events are checked before they are sent to
+        webkit, it didn't have an effect on behaviour.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPage::touchEvent):
+
+2013-01-08  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] Removing the totalusage variable in ChromeClientBB::exceededDatabaseQuota
+        https://bugs.webkit.org/show_bug.cgi?id=106370
+
+        Reviewed by Yong Li.
+
+        Removing totalUsage in ChromeClientBlackBerry as we no longer use that variable.
+
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::exceededDatabaseQuota):
+
+2013-01-08  Jacky Jiang  <zhajiang@rim.com>
+
+        [Blackberry][FullScreen] Create a helper method to adjust the fullscreen renderer dimensions
+        https://bugs.webkit.org/show_bug.cgi?id=91748
+
+        Reviewed by Antonio Gomes.
+
+        PR: 195524
+        The was originally from Antonio Gomes on PR195524. Bug 105488 has
+        partially upstreamed that patch. This patch upstreams the rest of it.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::updateViewportSize):
+        (BlackBerry::WebKit::WebPagePrivate::notifyTransformedScrollChanged):
+        * Api/WebPage_p.h:
+        (WebPagePrivate):
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::fullScreenRendererChanged):
+
+2013-01-08  Mark Lam  <mark.lam@apple.com>
+
+        Removed the need for the ProposedDatabase mechanism.
+        https://bugs.webkit.org/show_bug.cgi?id=106292.
+
+        Reviewed by Sam Weinig.
+
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::exceededDatabaseQuota):
+        * WebCoreSupport/ChromeClientBlackBerry.h:
+        (ChromeClientBlackBerry):
+
 2013-01-08  Sean Wang  <Xuewen.Wang@torchmobile.com.cn>
 
         [BlackBerry] Can't select text out of current focused input

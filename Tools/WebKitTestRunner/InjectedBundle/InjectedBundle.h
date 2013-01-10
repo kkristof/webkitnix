@@ -159,6 +159,7 @@ private:
     bool m_dumpPixels;
     bool m_useWaitToDumpWatchdogTimer;
     bool m_useWorkQueue;
+    int m_timeout;
 
     WKRetainPtr<WKDataRef> m_audioResult;
     WKRetainPtr<WKImageRef> m_pixelResult;
