@@ -35,7 +35,7 @@ from webkitpy.layout_tests.port.base import Port
 from webkitpy.layout_tests.port.pulseaudio_sanitizer import PulseAudioSanitizer
 
 
-class NixPort(Port, PulseAudioSanitizer):
+class NixPort(Port):
     port_name = 'nix'
 
     def _wk2_port_name(self):
@@ -58,11 +58,13 @@ class NixPort(Port, PulseAudioSanitizer):
         self.set_option_default('webkit_test_runner', True)
         self.webprocess_cmd_prefix = self.get_option('webprocess_cmd_prefix')
 
+        self._pulseaudio_sanitizer = PulseAudioSanitizer()
+
     def _port_flag_for_scripts(self):
         return "--nix"
 
     def setup_test_run(self):
-        self._unload_pulseaudio_module()
+        self._pulseaudio_sanitizer.unload_pulseaudio_module()
 
     def setup_environ_for_server(self, server_name=None):
         env = super(NixPort, self).setup_environ_for_server(server_name)
@@ -88,7 +90,7 @@ class NixPort(Port, PulseAudioSanitizer):
 
     def clean_up_test_run(self):
         super(NixPort, self).clean_up_test_run()
-        self._restore_pulseaudio_module()
+        self._pulseaudio_sanitizer.restore_pulseaudio_module()
 
     def _generate_all_test_configurations(self):
         return [TestConfiguration(version=self._version, architecture='x86', build_type=build_type) for build_type in self.ALL_BUILD_TYPES]
