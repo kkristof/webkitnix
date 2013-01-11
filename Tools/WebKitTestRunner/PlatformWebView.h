@@ -126,7 +126,7 @@ private:
 #endif
 #if PLATFORM(NIX)
     unsigned m_scheduledDisplayUpdateID;
-    ToolsNix::GLOffscreenBuffer *m_offscreenBuffer;
+    ToolsNix::GLOffscreenBuffer* m_offscreenBuffer;
 #endif
 };
 

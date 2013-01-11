@@ -105,6 +105,7 @@ PlatformWebView::~PlatformWebView()
     if (m_scheduledDisplayUpdateID)
         g_source_remove(m_scheduledDisplayUpdateID);
     NIXViewRelease(m_view);
+    delete m_offscreenBuffer;
 }
 
 void PlatformWebView::resizeTo(unsigned width, unsigned height)
