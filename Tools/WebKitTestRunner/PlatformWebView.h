@@ -125,7 +125,7 @@ private:
     QEventLoop* m_modalEventLoop;
 #endif
 #if PLATFORM(NIX)
-    bool m_displayUpdateScheduled;
+    unsigned m_scheduledDisplayUpdateID;
     ToolsNix::GLOffscreenBuffer *m_offscreenBuffer;
 #endif
 };

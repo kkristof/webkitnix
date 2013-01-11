@@ -57,19 +57,18 @@ namespace WTR {
 
 void PlatformWebView::scheduleDisplayUpdate()
 {
-    if (m_displayUpdateScheduled)
+    if (m_scheduledDisplayUpdateID)
         return;
 
-    m_displayUpdateScheduled = true;
-    g_timeout_add(0, callUpdateDisplay, this);
+    m_scheduledDisplayUpdateID = g_timeout_add(0, callUpdateDisplay, this);
 }
 
 void PlatformWebView::performDisplayUpdate()
 {
-    if (!m_view || !m_displayUpdateScheduled)
+    if (!m_view || !m_scheduledDisplayUpdateID)
         return;
 
-    m_displayUpdateScheduled = false;
+    m_scheduledDisplayUpdateID = 0;
     bool didMakeCurrent = m_offscreenBuffer->makeCurrent();
     assert(didMakeCurrent);
     glClearColor(0, 0, 0, 0);
@@ -81,7 +80,7 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
 {
     m_view = NIXViewCreate(context, pageGroup);
     m_window = 0;
-    m_displayUpdateScheduled = false;
+    m_scheduledDisplayUpdateID = 0;
 
     WKSize size = WKSizeMake(800, 600);
 
@@ -103,6 +102,8 @@ PlatformWebView::PlatformWebView(WKContextRef context, WKPageGroupRef pageGroup,
 
 PlatformWebView::~PlatformWebView()
 {
+    if (m_scheduledDisplayUpdateID)
+        g_source_remove(m_scheduledDisplayUpdateID);
     NIXViewRelease(m_view);
 }
 
