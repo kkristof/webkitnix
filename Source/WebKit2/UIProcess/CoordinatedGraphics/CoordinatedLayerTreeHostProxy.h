@@ -106,8 +106,6 @@ protected:
     WebCore::FloatPoint m_lastSentTrajectoryVector;
     typedef HashMap<uint32_t /* atlasID */, RefPtr<CoordinatedSurface> > SurfaceMap;
     SurfaceMap m_surfaces;
-    typedef HashMap<uint32_t, WebCore::TextureMapperPlatformLayer*> CustomPlatformLayerMap;
-    CustomPlatformLayerMap m_customPlatformLayers;
 };
 
 }

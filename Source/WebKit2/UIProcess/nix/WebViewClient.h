@@ -27,7 +27,6 @@ public:
     void didChangeContentsSize(WebView*, WKSize size);
     void didFindZoomableArea(WebView*, WKPoint target, WKRect area);
     void updateTextInputState(WebView*, bool isContentEditable, WKRect cursorRect, WKRect editorRect);
-    void compositeCustomLayerToCurrentGLContext(WebView*, uint32_t id, WKRect rect, const float* matrix, float opacity);
 
 private:
     NIXViewClient m_client;

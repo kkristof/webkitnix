@@ -82,11 +82,4 @@ void WebViewClient::updateTextInputState(WebView* view, bool isContentEditable, 
     m_client.updateTextInputState(toAPI(view), isContentEditable, cursorRect, editorRect, m_client.clientInfo);
 }
 
-void WebViewClient::compositeCustomLayerToCurrentGLContext(WebView* view, uint32_t id, WKRect rect, const float* matrix, float opacity)
-{
-    if (!m_client.compositeCustomLayerToCurrentGLContext)
-        return;
-    m_client.compositeCustomLayerToCurrentGLContext(toAPI(view), id, rect, matrix, opacity, m_client.clientInfo);
-}
-
 } // namespace WebKit

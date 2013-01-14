@@ -37,7 +37,6 @@ typedef void (*NIXViewPageDidRequestScrollCallback)(NIXView view, WKPoint positi
 typedef void (*NIXViewPageDidChangeContentsSizeCallback)(NIXView view, WKSize size, const void* clientInfo);
 typedef void (*NIXViewPageDidFindZoomableAreaCallback)(NIXView view, WKPoint target, WKRect area, const void* clientInfo);
 typedef void (*NIXViewPageUpdateTextInputStateCallback)(NIXView view, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
-typedef void (*NIXViewCompositeCustomLayerToCurrentGLContext)(NIXView view, uint32_t id, WKRect rect, const float* matrix, float opacity, const void* clientInfo);
 
 struct NIXViewClient {
     int                                              version;
@@ -53,7 +52,6 @@ struct NIXViewClient {
     NIXViewPageDidChangeContentsSizeCallback         didChangeContentsSize;
     NIXViewPageDidFindZoomableAreaCallback           didFindZoomableArea;
     NIXViewPageUpdateTextInputStateCallback          updateTextInputState;
-    NIXViewCompositeCustomLayerToCurrentGLContext    compositeCustomLayerToCurrentGLContext;
 };
 typedef struct NIXViewClient NIXViewClient;
 
@@ -101,9 +99,6 @@ WK_EXPORT WKSize NIXViewVisibleContentsSize(NIXView view);
 WK_EXPORT void NIXViewPaintToCurrentGLContext(NIXView view);
 
 WK_EXPORT void NIXViewFindZoomableAreaForPoint(NIXView view, WKPoint point, int horizontalRadius, int verticalRadius);
-
-WK_EXPORT uint32_t NIXViewAddCustomLayer(NIXView view, WKStringRef elementID);
-WK_EXPORT void NIXViewRemoveCustomLayer(NIXView view, uint32_t id);
 
 WK_EXPORT WKPageRef NIXViewGetPage(NIXView view);
 
