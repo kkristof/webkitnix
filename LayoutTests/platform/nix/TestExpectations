@@ -495,6 +495,14 @@ fast/events/touch/gesture/right-click-gestures-set-cursor-at-correct-position.ht
 http/tests/xmlhttprequest/access-control-preflight-credential-async.html [ Failure ]
 http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 
+# Regressions: Unexpected text-only failures
+fast/workers/worker-close-more.html [ Failure ]
+http/tests/loading/307-after-303-after-post.html [ Failure ]
+http/tests/loading/basic-auth-resend-wrong-credentials.html [ Failure ]
+http/tests/security/401-logout/401-logout.php [ Failure ]
+http/tests/xmlhttprequest/failed-auth.html [ Failure ]
+http/tests/xmlhttprequest/remember-bad-password.html [ Failure ]
+
 # need more investigation
 transitions/negative-delay.html [ Failure Pass ]
 fast/events/touch/gesture/touch-gesture-scroll-remove-node.html [ Failure ]
