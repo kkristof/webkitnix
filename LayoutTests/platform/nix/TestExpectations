@@ -1581,4 +1581,8 @@ http/tests/security/contentSecurityPolicy/media-src-track-block.html [ Failure ]
 # FAIL: Timed out waiting for notifyDone to be called
 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
+fast/events/touch/multi-touch-inside-iframes.html [ Failure Pass ]
+fast/workers/worker-document-leak.html [ Failure Pass ]
+fast/workers/worker-lifecycle.html [ Failure Pass ]
+
 ################################################################################
