@@ -6,7 +6,7 @@
  * Copyright (C) 2008 Kenneth Rohde Christiansen
  * Copyright (C) 2009-2010 ProFUSION embedded systems
  * Copyright (C) 2009-2010 Samsung Electronics
- * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
+ * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  *
  * All rights reserved.
  *

@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2012 Samsung Electronics Ltd. All Rights Reserved.
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public

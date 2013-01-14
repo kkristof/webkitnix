@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Zan Dobersek <zandobersek@gmail.com>
  * Copyright (C) 2010 Igalia S.L.
- * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
+ * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
