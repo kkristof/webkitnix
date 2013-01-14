@@ -1,17 +1,17 @@
-LIST(APPEND WebKitTestRunner_LINK_FLAGS
+list(APPEND WebKitTestRunner_LINK_FLAGS
 )
 
-ADD_CUSTOM_TARGET(forwarding-headersNixForWebKitTestRunner
+add_custom_target(forwarding-headersNixForWebKitTestRunner
     COMMAND ${PERL_EXECUTABLE} ${WEBKIT2_DIR}/Scripts/generate-forwarding-headers.pl ${WEBKIT_TESTRUNNER_DIR} ${DERIVED_SOURCES_WEBKIT2_DIR}/include nix
 )
-SET(ForwardingHeadersForWebKitTestRunner_NAME forwarding-headersNixForWebKitTestRunner)
+set(ForwardingHeadersForWebKitTestRunner_NAME forwarding-headersNixForWebKitTestRunner)
 
-ADD_CUSTOM_TARGET(forwarding-headersSoupForWebKitTestRunner
+add_custom_target(forwarding-headersSoupForWebKitTestRunner
     COMMAND ${PERL_EXECUTABLE} ${WEBKIT2_DIR}/Scripts/generate-forwarding-headers.pl ${WEBKIT_TESTRUNNER_DIR} ${DERIVED_SOURCES_WEBKIT2_DIR}/include soup
 )
-SET(ForwardingNetworkHeadersForWebKitTestRunner_NAME forwarding-headersSoupForWebKitTestRunner)
+set(ForwardingNetworkHeadersForWebKitTestRunner_NAME forwarding-headersSoupForWebKitTestRunner)
 
-LIST(APPEND WebKitTestRunner_SOURCES
+list(APPEND WebKitTestRunner_SOURCES
     ${WTF_DIR}/wtf/MD5.cpp
     ${WEBKIT_TESTRUNNER_DIR}/cairo/TestInvocationCairo.cpp
 
@@ -22,7 +22,7 @@ LIST(APPEND WebKitTestRunner_SOURCES
     ${WEBKIT_TESTRUNNER_DIR}/nix/main.cpp
 )
 
-LIST(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
+list(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
     ${WEBKIT2_DIR}/UIProcess/API/nix
     "${WTF_DIR}/wtf/gobject"
 
@@ -34,7 +34,7 @@ LIST(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
     "${TOOLS_DIR}/Shared/nix"
 )
 
-SET(WebKitTestRunner_LIBRARIES
+set(WebKitTestRunner_LIBRARIES
     ${WTF_LIBRARY_NAME}
     ${WebKit2_LIBRARY_NAME}
     ${CAIRO_LIBRARIES}
@@ -43,43 +43,43 @@ SET(WebKitTestRunner_LIBRARIES
     ${PNG_LIBRARY}
 )
 
-IF (WTF_USE_EGL)
-  LIST(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesEGL.cpp)
-  LIST(APPEND WebKitTestRunner_LIBRARIES ${EGL_LIBRARY})
-ELSE ()
-  LIST(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesGLX.cpp)
-ENDIF ()
+if (WTF_USE_EGL)
+    list(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesEGL.cpp)
+    list(APPEND WebKitTestRunner_LIBRARIES ${EGL_LIBRARY})
+else ()
+    list(APPEND WebKitTestRunner_SOURCES ${TOOLS_DIR}/Shared/nix/GLUtilitiesGLX.cpp)
+endif ()
 
-IF (WTF_USE_OPENGL_ES_2)
-   LIST(APPEND WebKitTestRunner_LIBRARIES ${OPENGLES2_LIBRARIES})
-   INCLUDE_DIRECTORIES(${OPENGLES2_INCLUDE_DIR})
-ELSE ()
-   LIST(APPEND WebKitTestRunner_LIBRARIES ${OPENGL_LIBRARIES})
-   INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
-ENDIF ()
+if (WTF_USE_OPENGL_ES_2)
+    list(APPEND WebKitTestRunner_LIBRARIES ${OPENGLES2_LIBRARIES})
+    include_directories(${OPENGLES2_INCLUDE_DIR})
+else ()
+    list(APPEND WebKitTestRunner_LIBRARIES ${OPENGL_LIBRARIES})
+    include_directories(${OPENGL_INCLUDE_DIR})
+endif ()
 
-LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES
+list(APPEND WebKitTestRunnerInjectedBundle_SOURCES
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/FontManagement.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/ActivateFontsNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/InjectedBundleNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/TestRunnerNix.cpp
 )
 
-IF (ENABLE_GAMEPAD)
-    LIST(APPEND WebKitTestRunnerInjectedBundle_SOURCES ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/GamepadControllerNix.cpp)
-ENDIF ()
+if (ENABLE_GAMEPAD)
+    list(APPEND WebKitTestRunnerInjectedBundle_SOURCES ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/GamepadControllerNix.cpp)
+endif ()
 
 # FIXME: DOWNLOADED_FONTS_DIR should not hardcode the directory
 # structure. See <https://bugs.webkit.org/show_bug.cgi?id=81475>.
-ADD_DEFINITIONS(-DFONTS_CONF_DIR="${TOOLS_DIR}/DumpRenderTree/gtk/fonts"
+add_definitions(-DFONTS_CONF_DIR="${TOOLS_DIR}/DumpRenderTree/gtk/fonts"
                 -DDOWNLOADED_FONTS_DIR="${CMAKE_SOURCE_DIR}/WebKitBuild/Dependencies/Source/webkitgtk-test-fonts-0.0.3"
                 -DTHEME_DIR="${THEME_BINARY_DIR}"
                 -DLOG_DISABLED=1)
 
-SET(ImageDiff_SOURCES
+set(ImageDiff_SOURCES
     ${WEBKIT_TESTRUNNER_DIR}/nix/ImageDiff.cpp
 )
-INCLUDE_DIRECTORIES(${PNG_INCLUDE_DIRS})
-ADD_EXECUTABLE(ImageDiff ${ImageDiff_SOURCES})
-TARGET_LINK_LIBRARIES(ImageDiff ${PNG_LIBRARY})
-SET_TARGET_PROPERTIES(ImageDiff PROPERTIES FOLDER "Tools")
+include_directories(${PNG_INCLUDE_DIRS})
+add_executable(ImageDiff ${ImageDiff_SOURCES})
+target_link_libraries(ImageDiff ${PNG_LIBRARY})
+set_target_properties(ImageDiff PROPERTIES FOLDER "Tools")

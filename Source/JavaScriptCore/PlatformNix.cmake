@@ -1,13 +1,13 @@
-LIST(APPEND JavaScriptCore_SOURCES
+list(APPEND JavaScriptCore_SOURCES
     jit/ExecutableAllocatorFixedVMPool.cpp
     jit/ExecutableAllocator.cpp
 )
 
-LIST(APPEND JavaScriptCore_LIBRARIES
+list(APPEND JavaScriptCore_LIBRARIES
     ${ICU_I18N_LIBRARIES}
 )
 
-LIST(APPEND JavaScriptCore_INCLUDE_DIRECTORIES
+list(APPEND JavaScriptCore_INCLUDE_DIRECTORIES
     ${ICU_INCLUDE_DIRS}
     ${WTF_DIR}/wtf/gobject
 )

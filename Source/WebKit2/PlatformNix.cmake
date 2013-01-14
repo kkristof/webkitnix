@@ -1,8 +1,8 @@
-LIST(APPEND WebKit2_LINK_FLAGS
+list(APPEND WebKit2_LINK_FLAGS
     ${CAIRO_LDFLAGS}
 )
 
-LIST(APPEND WebKit2_SOURCES
+list(APPEND WebKit2_SOURCES
     Platform/gtk/ModuleGtk.cpp
     Platform/gtk/WorkQueueGtk.cpp
     Platform/unix/SharedMemoryUnix.cpp
@@ -83,12 +83,12 @@ LIST(APPEND WebKit2_SOURCES
     WebProcess/WebCoreSupport/soup/WebFrameNetworkingContext.cpp
 )
 
-LIST(APPEND WebKit2_MESSAGES_IN_FILES
+list(APPEND WebKit2_MESSAGES_IN_FILES
     UIProcess/soup/WebSoupRequestManagerProxy.messages.in
     WebProcess/soup/WebSoupRequestManager.messages.in
 )
 
-LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
+list(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${JAVASCRIPTCORE_DIR}/llint"
     "${WEBCORE_DIR}/platform/nix"
     "${WEBCORE_DIR}/platform/graphics/cairo"
@@ -118,28 +118,28 @@ LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
     ${ICU_INCLUDE_DIRS}
 )
 
-IF (WTF_USE_OPENGL_ES_2)
-  LIST(APPEND WebKit2_LIBRARIES ${OPENGLES2_LIBRARIES})
-  LIST(APPEND WebProcess_LIBRARIES ${OPENGLES2_LIBRARIES})
-  INCLUDE_DIRECTORIES(${OPENGLES2_INCLUDE_DIR})
-ELSE ()
-  LIST(APPEND WebKit2_LIBRARIES ${OPENGL_LIBRARIES})
-  LIST(APPEND WebProcess_LIBRARIES ${OPENGL_LIBRARIES})
-  INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
-ENDIF ()
+if (WTF_USE_OPENGL_ES_2)
+    list(APPEND WebKit2_LIBRARIES ${OPENGLES2_LIBRARIES})
+    list(APPEND WebProcess_LIBRARIES ${OPENGLES2_LIBRARIES})
+    include_directories(${OPENGLES2_INCLUDE_DIR})
+else ()
+    list(APPEND WebKit2_LIBRARIES ${OPENGL_LIBRARIES})
+    list(APPEND WebProcess_LIBRARIES ${OPENGL_LIBRARIES})
+    include_directories(${OPENGL_INCLUDE_DIR})
+endif ()
 
-IF (ENABLE_INSPECTOR_SERVER)
-    LIST(APPEND WebKit2_INCLUDE_DIRECTORIES
+if (ENABLE_INSPECTOR_SERVER)
+    list(APPEND WebKit2_INCLUDE_DIRECTORIES
        "${WEBKIT2_DIR}/UIProcess/InspectorServer"
     )
 
-    LIST(APPEND WebKit2_SOURCES
+    list(APPEND WebKit2_SOURCES
         UIProcess/InspectorServer/nix/WebSocketServerNix.cpp
         UIProcess/InspectorServer/nix/WebInspectorServerNix.cpp
     )
-ENDIF ()
+endif ()
 
-LIST(APPEND WebKit2_LIBRARIES
+list(APPEND WebKit2_LIBRARIES
     ${WebCoreTestSupport_LIBRARY_NAME}
     ${CAIRO_LIBRARIES}
     ${Freetype_LIBRARIES}
@@ -156,36 +156,36 @@ LIST(APPEND WebKit2_LIBRARIES
     rt
 )
 
-LIST (APPEND WebProcess_SOURCES
+list(APPEND WebProcess_SOURCES
     nix/MainNix.cpp
 )
 
-LIST (APPEND WebProcess_LIBRARIES
+list(APPEND WebProcess_LIBRARIES
     ${CAIRO_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${LIBXSLT_LIBRARIES}
     ${SQLITE_LIBRARIES}
 )
 
-ADD_DEFINITIONS(-DDEFAULT_THEME_PATH=\"${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/themes\")
+add_definitions(-DDEFAULT_THEME_PATH=\"${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/themes\")
 
-ADD_CUSTOM_TARGET(forwarding-headerNix
+add_custom_target(forwarding-headerNix
     COMMAND ${PERL_EXECUTABLE} ${WEBKIT2_DIR}/Scripts/generate-forwarding-headers.pl ${WEBKIT2_DIR} ${DERIVED_SOURCES_WEBKIT2_DIR}/include nix
 )
-SET(ForwardingHeaders_NAME forwarding-headerNix)
+set(ForwardingHeaders_NAME forwarding-headerNix)
 
-ADD_CUSTOM_TARGET(forwarding-headerSoup
+add_custom_target(forwarding-headerSoup
     COMMAND ${PERL_EXECUTABLE} ${WEBKIT2_DIR}/Scripts/generate-forwarding-headers.pl ${WEBKIT2_DIR} ${DERIVED_SOURCES_WEBKIT2_DIR}/include soup
 )
-SET(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
+set(ForwardingNetworkHeaders_NAME forwarding-headerSoup)
 
-CONFIGURE_FILE(nix/WebKitNix.pc.in ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc @ONLY)
-SET (WebKitNix_HEADERS
+configure_file(nix/WebKitNix.pc.in ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc @ONLY)
+set(WebKitNix_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NIXEvents.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/UIProcess/API/nix/NIXView.h"
 )
 
-SET(WebKitNix_WebKit2_HEADERS
+set(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKArray.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKBase.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKCertificateInfo.h"
@@ -293,7 +293,7 @@ SET(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/WebProcess/InjectedBundle/API/c/WKBundleScriptWorld.h"
 )
 
-SET(WebKitNix_JavaScriptCore_HEADERS
+set(WebKitNix_JavaScriptCore_HEADERS
     "${JAVASCRIPTCORE_DIR}/API/APICast.h"
     "${JAVASCRIPTCORE_DIR}/API/APIShims.h"
     "${JAVASCRIPTCORE_DIR}/API/JSBase.h"
@@ -321,22 +321,22 @@ SET(WebKitNix_JavaScriptCore_HEADERS
     "${JAVASCRIPTCORE_DIR}/API/WebKitAvailability.h"
 )
 
-INSTALL(FILES ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc DESTINATION lib/pkgconfig)
-INSTALL(FILES ${WebKitNix_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
-INSTALL(FILES ${WebKitNix_WebKit2_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/WebKit2)
-INSTALL(FILES ${WebKitNix_JavaScriptCore_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/JavaScriptCore)
+install(FILES ${CMAKE_BINARY_DIR}/WebKit2/nix/WebKitNix.pc DESTINATION lib/pkgconfig)
+install(FILES ${WebKitNix_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
+install(FILES ${WebKitNix_WebKit2_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/WebKit2)
+install(FILES ${WebKitNix_JavaScriptCore_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/JavaScriptCore)
 
-ADD_DEFINITIONS(-DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
+add_definitions(-DLIBEXECDIR=\"${CMAKE_INSTALL_PREFIX}/${EXEC_INSTALL_DIR}\"
     -DWEBPROCESSNAME=\"${WebProcess_EXECUTABLE_NAME}\"
     -DPLUGINPROCESSNAME=\"${PluginProcess_EXECUTABLE_NAME}\"
 )
 
-IF (ENABLE_INSPECTOR)
-    SET(WK2_WEB_INSPECTOR_DIR ${CMAKE_BINARY_DIR}/WebKit2/nix/webinspector)
-    SET(WK2_WEB_INSPECTOR_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
-    ADD_DEFINITIONS(-DWK2_WEB_INSPECTOR_DIR="${WK2_WEB_INSPECTOR_DIR}")
-    ADD_DEFINITIONS(-DWK2_WEB_INSPECTOR_INSTALL_DIR="${WK2_WEB_INSPECTOR_INSTALL_DIR}/webinspector")
-    ADD_CUSTOM_TARGET(
+if (ENABLE_INSPECTOR)
+    set(WK2_WEB_INSPECTOR_DIR ${CMAKE_BINARY_DIR}/WebKit2/nix/webinspector)
+    set(WK2_WEB_INSPECTOR_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR})
+    add_definitions(-DWK2_WEB_INSPECTOR_DIR="${WK2_WEB_INSPECTOR_DIR}")
+    add_definitions(-DWK2_WEB_INSPECTOR_INSTALL_DIR="${WK2_WEB_INSPECTOR_INSTALL_DIR}/webinspector")
+    add_custom_target(
         wk2-web-inspector-resources ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${WEBCORE_DIR}/inspector/front-end ${WK2_WEB_INSPECTOR_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy ${WEBCORE_DIR}/English.lproj/localizedStrings.js ${WK2_WEB_INSPECTOR_DIR}
@@ -344,12 +344,11 @@ IF (ENABLE_INSPECTOR)
         COMMAND ${CMAKE_COMMAND} -E copy ${WEBKIT2_DIR}/UIProcess/InspectorServer/front-end/inspectorPageIndex.html ${WK2_WEB_INSPECTOR_DIR}
         DEPENDS ${WebCore_LIBRARY_NAME}
     )
-    INSTALL(DIRECTORY ${WK2_WEB_INSPECTOR_DIR}
+    install(DIRECTORY ${WK2_WEB_INSPECTOR_DIR}
         DESTINATION ${WK2_WEB_INSPECTOR_INSTALL_DIR}
         FILES_MATCHING PATTERN "*.js"
                        PATTERN "*.html"
                        PATTERN "*.css"
                        PATTERN "*.gif"
                        PATTERN "*.png")
-ENDIF ()
-
+endif ()
