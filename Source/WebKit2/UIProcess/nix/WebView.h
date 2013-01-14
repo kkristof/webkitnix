@@ -89,7 +89,7 @@ public:
 
     // PageClient not implemented.
     virtual void displayView() { notImplemented(); }
-    virtual bool canScrollView() { notImplemented(); }
+    virtual bool canScrollView() { notImplemented(); return false; }
     virtual void scrollView(const WebCore::IntRect&, const WebCore::IntSize&) { notImplemented(); }
 
     virtual void pageClosed() { notImplemented(); }
