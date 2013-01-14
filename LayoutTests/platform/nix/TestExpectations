@@ -545,6 +545,7 @@ compositing/repaint/shrink-layer.html [ Pass ImageOnlyFailure ]
 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 compositing/rtl/rtl-overflow-invalidation.html [ Pass ImageOnlyFailure ]
 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ Pass ImageOnlyFailure ]
+compositing/overflow/zero-size-overflow.html [ Pass ImageOnlyFailure ]
 
 # Output without "visible rects" entries. Repaint tracking?
 compositing/tiling/tile-cache-zoomed.html [ Failure ]
@@ -785,6 +786,8 @@ compositing/reflections/nested-reflection-opacity.html [ Missing ]
 compositing/reflections/load-video-in-reflection.html [ Missing ]
 compositing/reflections/animation-inside-reflection.html [ Missing ]
 compositing/self-painting-layers.html [ Missing ]
+fast/dom/row-inner-text.html [ Missing ]
+fast/text/zero-font-size.html [ Missing ]
 
 # Missing PNG and failing text (Graphics layer not being rendered).
 compositing/layer-creation/spanOverlapsCanvas.html [ Missing Failure ]
@@ -1584,5 +1587,8 @@ http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 fast/events/touch/multi-touch-inside-iframes.html [ Failure Pass ]
 fast/workers/worker-document-leak.html [ Failure Pass ]
 fast/workers/worker-lifecycle.html [ Failure Pass ]
+
+compositing/background-color/background-color-padding-change.html [ ImageOnlyFailure Pass ]
+compositing/scrollbar-painting.html [ ImageOnlyFailure Crash Pass ]
 
 ################################################################################
