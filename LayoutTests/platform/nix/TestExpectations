@@ -521,22 +521,22 @@ http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
 #############################################################
 
 # Paints red square instead of green one.
-compositing/culling/filter-occlusion-alpha.html [ ImageOnlyFailure ]
+compositing/culling/filter-occlusion-alpha.html [ Pass ImageOnlyFailure ]
 
 # Red square instead of green one. Also the vertical scrollbar is slightly different.
-compositing/culling/filter-occlusion-alpha-large.html [ ImageOnlyFailure ]
+compositing/culling/filter-occlusion-alpha-large.html [ Pass ImageOnlyFailure ]
 
 # Tests that track repaints with a gray overlay.
-compositing/clip-change.html [ ImageOnlyFailure ]
-compositing/geometry/foreground-offset-change.html [ ImageOnlyFailure ]
-compositing/iframes/repaint-after-losing-scrollbars.html [ ImageOnlyFailure ]
-compositing/iframes/scroll-fixed-transformed-element.html [ ImageOnlyFailure ]
-compositing/iframes/scroll-grandchild-iframe.html [ ImageOnlyFailure ]
-compositing/overflow/repaint-after-losing-scrollbars.html [ ImageOnlyFailure ]
-compositing/repaint/shrink-layer.html [ ImageOnlyFailure ]
-compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
-compositing/rtl/rtl-overflow-invalidation.html [ ImageOnlyFailure ]
-fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ ImageOnlyFailure ]
+compositing/clip-change.html [ Pass ImageOnlyFailure ]
+compositing/geometry/foreground-offset-change.html [ Pass ImageOnlyFailure ]
+compositing/iframes/repaint-after-losing-scrollbars.html [ Pass ImageOnlyFailure ]
+compositing/iframes/scroll-fixed-transformed-element.html [ Pass ImageOnlyFailure ]
+compositing/iframes/scroll-grandchild-iframe.html [ Pass ImageOnlyFailure ]
+compositing/overflow/repaint-after-losing-scrollbars.html [ Pass ImageOnlyFailure ]
+compositing/repaint/shrink-layer.html [ Pass ImageOnlyFailure ]
+compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
+compositing/rtl/rtl-overflow-invalidation.html [ Pass ImageOnlyFailure ]
+fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ Pass ImageOnlyFailure ]
 
 # Output without "visible rects" entries. Repaint tracking?
 compositing/tiling/tile-cache-zoomed.html [ Failure ]
@@ -551,10 +551,9 @@ compositing/visible-rect/iframe-and-layers.html [ Failure ]
 compositing/visible-rect/iframe-no-layers.html [ Failure ]
 compositing/visible-rect/nested-transform.html [ Failure ]
 compositing/visible-rect/scrolled.html [ Failure ]
-compositing/repaint/resize-repaint.html [ Failure ]
 
 # Image not scaled and gray overlay
-compositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
+compositing/repaint/page-scale-repaint.html [ Pass ImageOnlyFailure ]
 
 # Gray overlay plus Layers 1 or 2 pixel shorter.
 compositing/iframes/iframe-content-flipping.html [ Failure ]
@@ -578,7 +577,7 @@ compositing/backface-visibility/backface-visibility-webgl.html [ ImageOnlyFailur
 compositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
 
 # Blurry square
-compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
+compositing/culling/tile-occlusion-boundaries.html [ Pass ImageOnlyFailure ]
 
 # Text diff: Graphics Layers that should be hidden are being rendered.
 compositing/geometry/fixed-position-composited-switch.html [ Failure ]
@@ -624,24 +623,24 @@ compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure Fa
 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure Failure ]
 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
-compositing/overflow/scrollbars-with-clipped-owner.html [ ImageOnlyFailure ]
+compositing/overflow/scrollbars-with-clipped-owner.html [ Pass ImageOnlyFailure ]
 
 # Expected uses native scrollbars. Also the green square is slightly darker.
-compositing/geometry/tall-page-composited.html [ ImageOnlyFailure ]
+compositing/geometry/tall-page-composited.html [ Pass ImageOnlyFailure ]
 
 # Layer and render block differs are 1 pixel shorter.
 compositing/iframes/composited-iframe-scroll.html [ Failure ]
 compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
 
 # Slightly shorter page.
-fast/css/background-clip-radius-values.html [ ImageOnlyFailure ]
-fast/css/table-rules-attribute-groups-with-frame.html [ ImageOnlyFailure ]
+fast/css/background-clip-radius-values.html [ Pass ImageOnlyFailure ]
+fast/css/table-rules-attribute-groups-with-frame.html [ Pass ImageOnlyFailure ]
 
 # Graphics layer differ 1 and 2 pixels in different parts.
 # Image diff shows actual image is slightly shorter.
 compositing/geometry/composited-in-columns.html [ ImageOnlyFailure Failure ]
 # Same as above plus image slightly blurry.
-compositing/visibility/visibility-image-layers.html [ ImageOnlyFailure ]
+compositing/visibility/visibility-image-layers.html [ Pass ImageOnlyFailure ]
 
 # Graphics layer differ 1 and 2 pixels in different parts.
 compositing/geometry/preserve-3d-switching.html [ Failure ]
@@ -653,7 +652,7 @@ compositing/iframes/page-cache-layer-tree.html [ Failure ]
 compositing/overflow/automatically-opt-into-composited-scrolling.html [ Failure ]
 
 # Red squares with a gray bar instead of a green rectangle.
-compositing/images/direct-pdf-image.html [ ImageOnlyFailure ]
+compositing/images/direct-pdf-image.html [ Pass ImageOnlyFailure ]
 
 # Requires eventSender.scheduleAsynchronousKeyDown()
 fast/dom/MutationObserver/end-of-task-delivery.html [ Failure ]
@@ -679,13 +678,13 @@ fast/css/sticky/sticky-writing-mode-vertical-lr.html [ ImageOnlyFailure ]
 fast/css/sticky/sticky-writing-mode-vertical-rl.html [ ImageOnlyFailure ]
 
 # Green square slightly darker and not scaled (z-change)
-transforms/3d/general/transform-origin-z-change.html [ ImageOnlyFailure ]
+transforms/3d/general/transform-origin-z-change.html [ Pass ImageOnlyFailure ]
 
 # Green square slightly darker.
-transforms/3d/general/matrix-with-zoom-3d.html [ ImageOnlyFailure ]
-compositing/iframes/nested-iframe-scrolling.html [ ImageOnlyFailure ]
-compositing/reflections/backface-hidden-reflection.html [ ImageOnlyFailure ]
-compositing/z-order/negative-z-index.html [ ImageOnlyFailure ]
+transforms/3d/general/matrix-with-zoom-3d.html [ Pass ImageOnlyFailure ]
+compositing/iframes/nested-iframe-scrolling.html [ Pass ImageOnlyFailure ]
+compositing/reflections/backface-hidden-reflection.html [ Pass ImageOnlyFailure ]
+compositing/z-order/negative-z-index.html [ Pass ImageOnlyFailure ]
 
 # Tests missing expected results when running without --pixel-tests.
 fast/events/touch/gesture/long-press-on-draggable-element-triggers-drag.html [ Missing ]
@@ -1547,24 +1546,6 @@ fast/events/touch/touch-input-element-change-documents.html [ Failure ]
 transitions/transitions-parsing.html [ Failure ]
 
 # Flakey and failing tests after merge from 2013-01-03
-http/tests/navigation/ping-cross-origin-from-https.html [ Failure ]
-http/tests/security/contentSecurityPolicy/block-mixed-content-hides-warning.html [ Failure ]
-http/tests/security/contentSecurityPolicy/script-src-star-cross-scheme.html [ Failure ]
-http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Failure ]
-http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure ]
-http/tests/security/mixedContent/data-url-script-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Failure ]
-http/tests/security/mixedContent/insecure-css-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/insecure-image-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/insecure-script-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure ]
-http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
-http/tests/security/mixedContent/redirect-http-to-https-script-in-iframe.html [ Failure ]
-http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
-http/tests/security/mixedContent/redirect-https-to-http-script-in-iframe.html [ Failure ]
-http/tests/security/originHeader/origin-header-for-https.html [ Failure ]
 http/tests/security/sandboxed-iframe-form-top.html [ Failure ]
 # 0 range(s) selected.
 fast/events/drag-selects-image.html [ Failure ]
@@ -1585,9 +1566,6 @@ fast/events/drag-and-drop-set-drag-data-arguments.html
 # Flakey and failing tests after merge from 2013-01-08
 # FAIL No autoscroll
 fast/events/drag-and-drop-autoscroll.html [ Failure ]
-# CONSOLE MESSAGE: line 7: TypeError: 'undefined' is not a function (evaluating 'testRunner.setHandlesAuthenticationChallenges(true)')
-# FAIL: Timed out waiting for notifyDone to be called
-http/tests/misc/authentication-redirect-4/authentication-sent-to-redirect-same-origin-url.html [ Failure ]
 # CONSOLE MESSAGE: line 21: TypeError: 'undefined' is not an object (evaluating 'track.track.mode = "hidden"')
 # FAIL: Timed out waiting for notifyDone to be called
 http/tests/security/contentSecurityPolicy/media-src-track-block.html [ Failure ]
