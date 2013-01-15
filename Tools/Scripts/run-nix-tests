@@ -35,6 +35,9 @@ use webkitdirs;
 
 setConfiguration();
 
+# Manually add this for jhbuildWrapperPrefixIfNeeded().
+push(@ARGV, "--nix");
+
 # Tell CTest to dump gtest output in case of failure.
 $ENV{CTEST_OUTPUT_ON_FAILURE} = "1";
 

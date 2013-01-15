@@ -26,8 +26,8 @@
 #ifndef WebIDBCallbacks_h
 #define WebIDBCallbacks_h
 
-#include <public/WebCommon.h>
-#include <public/WebVector.h>
+#include "platform/WebCommon.h"
+#include "platform/WebVector.h"
 
 namespace WebKit {
 
@@ -38,7 +38,6 @@ class WebIDBDatabaseError;
 class WebIDBKey;
 class WebIDBKeyPath;
 class WebIDBIndex;
-class WebIDBObjectStore;
 class WebIDBTransaction;
 class WebSerializedScriptValue;
 

@@ -2243,6 +2243,12 @@ static NSString* roleValueToNSString(AccessibilityRole value)
         
         if (m_object->isTabItem())
             return [NSNumber numberWithInt:m_object->isSelected()];
+
+        if (m_object->isColorWell()) {
+            int r, g, b;
+            m_object->colorValue(r, g, b);
+            return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1", r / 255., g / 255., b / 255.];
+        }
         
         return m_object->stringValue();
     }
@@ -2481,8 +2487,13 @@ static NSString* roleValueToNSString(AccessibilityRole value)
         }
     }
 
-    if ([attributeName isEqualToString:NSAccessibilityDisclosureLevelAttribute])
-        return [NSNumber numberWithInt:m_object->hierarchicalLevel()];
+    if ([attributeName isEqualToString:NSAccessibilityDisclosureLevelAttribute]) {
+        // Convert from 1-based level (from aria-level spec) to 0-based level (Mac)
+        int level = m_object->hierarchicalLevel();
+        if (level > 0)
+            level -= 1;
+        return [NSNumber numberWithInt:level];
+    }
     if ([attributeName isEqualToString:NSAccessibilityDisclosingAttribute])
         return [NSNumber numberWithBool:m_object->isExpanded()];
     

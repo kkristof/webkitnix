@@ -1,3 +1,81 @@
+2013-01-14  Nate Chapin  <japhet@chromium.org>
+
+        Enable reuse of cached main resources
+        https://bugs.webkit.org/show_bug.cgi?id=105667
+
+        Reviewed by Antti Koivisto.
+
+        * Source/autotools/symbols.filter: Expose MemoryCache::resourceForURL().
+
+2013-01-14  Alexandre Rostovtsev  <tetromino@gentoo.org>
+
+        Do not hardcode -ldl in OPENGL_LIBS
+        https://bugs.webkit.org/show_bug.cgi?id=96602
+
+        Reviewed by Philippe Normand.
+
+        Some non-Linux systems, e.g. FreeBSD, have dlopen() as part of their
+        libc, and do not use a separate libdl.
+
+        * configure.ac:
+
+2013-01-11  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Update NEWS and configure.ac for 1.11.4 release
+
+        * configure.ac: Bump version numbers.
+
+2013-01-10  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Add API to set the web extensions directory to WebKit2 GTK+
+        https://bugs.webkit.org/show_bug.cgi?id=106462
+
+        Reviewed by Xan Lopez.
+
+        * Source/autotools/symbols.filter: Update
+        WebGtkExtensionManager::initialize symbol.
+
+2013-01-10  Tony Chang  <tony@chromium.org>
+
+        Speed up supplemental dependency computation
+        https://bugs.webkit.org/show_bug.cgi?id=106503
+
+        Reviewed by Adam Barth.
+
+        * Source/cmake/WebKitMacros.cmake: Add --idlAttributesFile to the binding generation step in cmake.
+
+2013-01-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        [Autotools] Add the AM_WEBKIT_FEATURE_CONDITIONAL macro
+        https://bugs.webkit.org/show_bug.cgi?id=106576
+
+        Reviewed by Martin Robinson.
+
+        Replace the AC_CHECK_WEBKIT_FEATURE_ENABLED with the new macro.
+        The former was executing actions based on the passed-in feature being
+        enabled in the (possibly overridden) GNUmakefile.features.am, the actions
+        usually affecting the Automake conditional value that was set up afterwards.
+        The new macro does this directly, setting up an Automake conditional of the
+        same name as the feature that was checked.
+
+        * Source/autotools/webkitfeature.m4:
+
+2013-01-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Remove the ENABLE_ANIMATION_API feature define occurences
+        https://bugs.webkit.org/show_bug.cgi?id=106544
+
+        Reviewed by Simon Fraser.
+
+        The Animation API code was removed in r137243. The ENABLE_ANIMATION_API
+        feature define handling still lingers in various build systems and configurations
+        but is of no use, so it should be removed.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
 2013-01-10  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Add support for loading web process extensions

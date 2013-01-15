@@ -22,6 +22,8 @@
 
 #include "InjectedBundle.h"
 #include "WKBundleAPICast.h"
+#include "WKString.h"
+#include "WKType.h"
 #include "WebKitWebExtensionPrivate.h"
 #include <WebCore/FileSystem.h>
 #include <wtf/OwnPtr.h>
@@ -38,38 +40,31 @@ WebGtkExtensionManager::WebGtkExtensionManager()
 {
 }
 
-void WebGtkExtensionManager::appendModuleDirectories(Vector<String>& directories)
+void WebGtkExtensionManager::scanModules(const String& webExtensionsDirectory, Vector<String>& modules)
 {
-    String extensionPaths(getenv("WEBKIT_WEB_EXTENSIONS_PATH"));
-    if (!extensionPaths.isEmpty()) {
-        Vector<String> paths;
-        extensionPaths.split(UChar(':'), /* allowEmptyEntries */ false, paths);
-        directories.append(paths);
-    }
-
-    static const char* extensionDefaultDirectory = LIBDIR""G_DIR_SEPARATOR_S"webkitgtk-"WEBKITGTK_API_VERSION_STRING""G_DIR_SEPARATOR_S"web-extensions"G_DIR_SEPARATOR_S;
-    directories.append(WebCore::filenameToString(extensionDefaultDirectory));
-}
-
-void WebGtkExtensionManager::scanModules(Vector<String>& modules)
-{
-    Vector<String> moduleDirectories;
-    appendModuleDirectories(moduleDirectories);
-    for (size_t i = 0; i < moduleDirectories.size(); ++i) {
-        Vector<String> modulePaths = WebCore::listDirectory(moduleDirectories[i], String("*.so"));
-        for (size_t j = 0; j < modulePaths.size(); ++j) {
-            if (WebCore::fileExists(modulePaths[j]))
-                modules.append(modulePaths[j]);
-        }
+    Vector<String> modulePaths = WebCore::listDirectory(webExtensionsDirectory, String("*.so"));
+    for (size_t i = 0; i < modulePaths.size(); ++i) {
+        if (WebCore::fileExists(modulePaths[i]))
+            modules.append(modulePaths[i]);
     }
 }
 
-void WebGtkExtensionManager::initialize(WKBundleRef bundle)
+void WebGtkExtensionManager::initialize(WKBundleRef bundle, WKTypeRef userData)
 {
     m_extension = adoptGRef(webkitWebExtensionCreate(toImpl(bundle)));
 
+    String webExtensionsDirectory;
+    if (userData) {
+        ASSERT(WKGetTypeID(userData) == WKStringGetTypeID());
+        webExtensionsDirectory = toImpl(static_cast<WKStringRef>(userData))->string();
+    }
+
+    if (webExtensionsDirectory.isNull())
+        return;
+
     Vector<String> modulePaths;
-    scanModules(modulePaths);
+    scanModules(webExtensionsDirectory, modulePaths);
+
     for (size_t i = 0; i < modulePaths.size(); ++i) {
         OwnPtr<Module> module = adoptPtr(new Module(modulePaths[i]));
         if (!module->load())
@@ -80,7 +75,6 @@ void WebGtkExtensionManager::initialize(WKBundleRef bundle)
         if (!initializeFunction)
             continue;
 
-        // FIXME: check we don't load the same module twice from different paths.
         m_extensionModules.append(module.leakPtr());
         initializeFunction(m_extension.get());
     }

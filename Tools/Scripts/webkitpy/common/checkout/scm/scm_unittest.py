@@ -125,7 +125,7 @@ def _git_diff(*args):
 
 
 # Exists to share svn repository creation code between the git and svn tests
-class SVNTestRepository:
+class SVNTestRepository(object):
     @classmethod
     def _svn_add(cls, path):
         run_command(["svn", "add", path])
@@ -329,8 +329,8 @@ class SCMTest(unittest.TestCase):
             added_files.remove("added_dir")
         self.assertItemsEqual(added_files, ["added_dir/added_file2", "added_file", "added_file3", "added_file4"])
 
-        # Test also to make sure clean_working_directory removes added files
-        self.scm.clean_working_directory()
+        # Test also to make sure discard_working_directory_changes removes added files
+        self.scm.discard_working_directory_changes()
         self.assertItemsEqual(self.scm.added_files(), [])
         self.assertFalse(os.path.exists("added_file"))
         self.assertFalse(os.path.exists("added_file3"))
@@ -626,6 +626,7 @@ class SVNTest(SCMTest):
         SVNTestRepository.setup(self)
         os.chdir(self.svn_checkout_path)
         self.scm = detect_scm_system(self.svn_checkout_path)
+        self.scm.svn_server_realm = None
         # For historical reasons, we test some checkout code here too.
         self.checkout = Checkout(self.scm)
 
@@ -661,9 +662,8 @@ class SVNTest(SCMTest):
         self.assertEqual("%s\n" % os.path.realpath(scm.checkout_root), patch_contents) # Add a \n because echo adds a \n.
 
     def test_detection(self):
-        scm = detect_scm_system(self.svn_checkout_path)
-        self.assertEqual(scm.display_name(), "svn")
-        self.assertEqual(scm.supports_local_commits(), False)
+        self.assertEqual(self.scm.display_name(), "svn")
+        self.assertEqual(self.scm.supports_local_commits(), False)
 
     def test_apply_small_binary_patch(self):
         patch_contents = """Index: test_file.swf
@@ -687,10 +687,9 @@ Q1dTBx0AAAB42itg4GlgYJjGwMDDyODMxMDw34GBgQEAJPQDJA==
         self.assertEqual(actual_contents, expected_contents)
 
     def test_apply_svn_patch(self):
-        scm = detect_scm_system(self.svn_checkout_path)
         patch = self._create_patch(_svn_diff("-r5:4"))
-        self._setup_webkittools_scripts_symlink(scm)
-        Checkout(scm).apply_patch(patch)
+        self._setup_webkittools_scripts_symlink(self.scm)
+        Checkout(self.scm).apply_patch(patch)
 
     def test_commit_logs(self):
         # Commits have dates and usernames in them, so we can't just direct compare.
@@ -716,7 +715,7 @@ Q1dTBx0AAAB42itg4GlgYJjGwMDDyODMxMDw34GBgQEAJPQDJA==
         self._shared_test_commit_with_message("dbates@webkit.org")
 
     def test_commit_without_authorization(self):
-        self.scm.has_authorization_for_realm = lambda realm: False
+        self.scm.svn_server_realm = SVN.svn_server_realm
         self.assertRaises(AuthenticationError, self._shared_test_commit_with_message)
 
     def test_has_authorization_for_realm_using_credentials_with_passtype(self):
@@ -756,13 +755,12 @@ END
         self.assertTrue(self._test_has_authorization_for_realm_using_credentials(SVN.svn_server_realm, credentials))
 
     def _test_has_authorization_for_realm_using_credentials(self, realm, credentials):
-        scm = detect_scm_system(self.svn_checkout_path)
         fake_home_dir = tempfile.mkdtemp(suffix="fake_home_dir")
         svn_config_dir_path = os.path.join(fake_home_dir, ".subversion")
         os.mkdir(svn_config_dir_path)
         fake_webkit_auth_file = os.path.join(svn_config_dir_path, "fake_webkit_auth_file")
         write_into_file_at_path(fake_webkit_auth_file, credentials)
-        result = scm.has_authorization_for_realm(realm, home_directory=fake_home_dir)
+        result = self.scm.has_authorization_for_realm(realm, home_directory=fake_home_dir)
         os.remove(fake_webkit_auth_file)
         os.rmdir(svn_config_dir_path)
         os.rmdir(fake_home_dir)
@@ -783,11 +781,10 @@ END
         self.assertFalse(self._test_has_authorization_for_realm_using_credentials(SVN.svn_server_realm, credentials))
 
     def test_not_have_authorization_for_realm_when_missing_credentials_file(self):
-        scm = detect_scm_system(self.svn_checkout_path)
         fake_home_dir = tempfile.mkdtemp(suffix="fake_home_dir")
         svn_config_dir_path = os.path.join(fake_home_dir, ".subversion")
         os.mkdir(svn_config_dir_path)
-        self.assertFalse(scm.has_authorization_for_realm(SVN.svn_server_realm, home_directory=fake_home_dir))
+        self.assertFalse(self.scm.has_authorization_for_realm(SVN.svn_server_realm, home_directory=fake_home_dir))
         os.rmdir(svn_config_dir_path)
         os.rmdir(fake_home_dir)
 
@@ -892,7 +889,7 @@ END
         write_into_file_at_path(svn_root_lock_path, "", "utf-8")
         # webkit-patch uses a Checkout object and runs update-webkit, just use svn update here.
         self.assertRaises(ScriptError, run_command, ['svn', 'update'])
-        self.scm.clean_working_directory()
+        self.scm.discard_working_directory_changes()
         self.assertFalse(os.path.exists(svn_root_lock_path))
         run_command(['svn', 'update'])  # Should succeed and not raise.
 
@@ -1008,7 +1005,7 @@ class GitTest(SCMTest):
 
     def test_head_svn_revision(self):
         scm = detect_scm_system(self.untracking_checkout_path)
-        # If we cloned a git repo tracking an SVG repo, this would give the same result as
+        # If we cloned a git repo tracking an SVN repo, this would give the same result as
         # self._shared_test_head_svn_revision().
         self.assertEqual(scm.head_svn_revision(), '')
 
@@ -1042,6 +1039,7 @@ class GitSVNTest(SCMTest):
         SVNTestRepository.setup(self)
         self._setup_git_checkout()
         self.scm = detect_scm_system(self.git_checkout_path)
+        self.scm.svn_server_realm = None
         # For historical reasons, we test some checkout code here too.
         self.checkout = Checkout(self.scm)
 
@@ -1050,7 +1048,6 @@ class GitSVNTest(SCMTest):
         self._tear_down_git_checkout()
 
     def test_detection(self):
-        self.scm = detect_scm_system(self.git_checkout_path)
         self.assertEqual(self.scm.display_name(), "git")
         self.assertEqual(self.scm.supports_local_commits(), True)
 
@@ -1114,11 +1111,11 @@ class GitSVNTest(SCMTest):
         self.assertTrue(self.scm.rebase_in_progress())
 
         # Make sure our cleanup works.
-        self.scm.clean_working_directory()
+        self.scm.discard_working_directory_changes()
         self.assertFalse(self.scm.rebase_in_progress())
 
         # Make sure cleanup doesn't throw when no rebase is in progress.
-        self.scm.clean_working_directory()
+        self.scm.discard_working_directory_changes()
 
     def test_commitish_parsing(self):
         # Multiple revisions are cherry-picked.
@@ -1423,7 +1420,6 @@ class GitSVNTest(SCMTest):
 
     def test_changed_files_working_copy_only(self):
         self._one_local_commit_plus_working_copy_changes()
-        scm = detect_scm_system(self.git_checkout_path)
         files = self.scm.changed_files(git_commit="HEAD....")
         self.assertNotIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
@@ -1545,8 +1541,7 @@ class GitSVNTest(SCMTest):
         self.assertIn("-more test content", cached_diff)
 
     def test_exists(self):
-        scm = detect_scm_system(self.git_checkout_path)
-        self._shared_test_exists(scm, scm.commit_locally_with_message)
+        self._shared_test_exists(self.scm, self.scm.commit_locally_with_message)
 
 
 # We need to split off more of these SCM tests to use mocks instead of the filesystem.

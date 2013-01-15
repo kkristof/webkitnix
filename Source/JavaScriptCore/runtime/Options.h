@@ -74,6 +74,8 @@ namespace JSC {
     v(bool, showDisassembly, false) \
     v(bool, showDFGDisassembly, false) \
     v(bool, showAllDFGNodes, false) \
+    v(bool, dumpBytecodeAtDFGTime, false) \
+    v(bool, printEachOSRExit, false) \
     \
     v(bool, enableProfiler, false) \
     \

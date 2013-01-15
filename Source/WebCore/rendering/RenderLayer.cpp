@@ -148,7 +148,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_hasOutOfFlowPositionedDescendant(false)
-    , m_hasOutOfFlowPositionedDescendantDirty(false)
+    , m_hasOutOfFlowPositionedDescendantDirty(true)
     , m_needsCompositedScrolling(false)
     , m_descendantsAreContiguousInStackingOrder(false)
     , m_isRootLayer(renderer->isRenderView())
@@ -166,6 +166,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
 #if USE(ACCELERATED_COMPOSITING)
     , m_hasCompositingDescendant(false)
     , m_indirectCompositingReason(NoIndirectCompositingReason)
+    , m_viewportConstrainedNotCompositedReason(NoNotCompositedReason)
 #endif
     , m_containsDirtyOverlayScrollbars(false)
     , m_updatingMarqueePosition(false)
@@ -989,9 +990,6 @@ void RenderLayer::setAncestorChainHasVisibleDescendant()
 void RenderLayer::updateDescendantDependentFlags(HashSet<const RenderObject*>* outOfFlowDescendantContainingBlocks)
 {
     if (m_visibleDescendantStatusDirty || m_hasSelfPaintingLayerDescendantDirty || m_hasOutOfFlowPositionedDescendantDirty) {
-#if USE(ACCELERATED_COMPOSITING)
-        bool oldHasOutOfFlowPositionedDescendant = m_hasOutOfFlowPositionedDescendant;
-#endif
         m_hasVisibleDescendant = false;
         m_hasSelfPaintingLayerDescendant = false;
         m_hasOutOfFlowPositionedDescendant = false;
@@ -1028,12 +1026,12 @@ void RenderLayer::updateDescendantDependentFlags(HashSet<const RenderObject*>* o
 
         m_visibleDescendantStatusDirty = false;
         m_hasSelfPaintingLayerDescendantDirty = false;
-        m_hasOutOfFlowPositionedDescendantDirty = false;
 
 #if USE(ACCELERATED_COMPOSITING)
-        if (oldHasOutOfFlowPositionedDescendant != m_hasOutOfFlowPositionedDescendant)
+        if (m_hasOutOfFlowPositionedDescendantDirty)
             updateNeedsCompositedScrolling();
 #endif
+        m_hasOutOfFlowPositionedDescendantDirty = false;
     }
 
     if (m_visibleContentStatusDirty) {
@@ -1152,8 +1150,10 @@ bool RenderLayer::updateLayerPosition()
         RenderLayer* positionedParent = enclosingPositionedAncestor();
 
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
-        LayoutSize offset = positionedParent->scrolledContentOffset();
-        localPoint -= offset;
+        if (positionedParent->renderer()->hasOverflowClip()) {
+            LayoutSize offset = positionedParent->scrolledContentOffset();
+            localPoint -= offset;
+        }
         
         if (renderer()->isOutOfFlowPositioned() && positionedParent->renderer()->isInFlowPositioned() && positionedParent->renderer()->isRenderInline()) {
             LayoutSize offset = toRenderInline(positionedParent->renderer())->offsetForInFlowPositionedInline(toRenderBox(renderer()));
@@ -1172,8 +1172,10 @@ bool RenderLayer::updateLayerPosition()
             localPoint += columnOffset;
         }
 
-        IntSize scrollOffset = parent()->scrolledContentOffset();
-        localPoint -= scrollOffset;
+        if (parent()->renderer()->hasOverflowClip()) {
+            IntSize scrollOffset = parent()->scrolledContentOffset();
+            localPoint -= scrollOffset;
+        }
     }
     
     bool positionOrOffsetChanged = false;
@@ -2292,7 +2294,7 @@ LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const Lay
     return LayoutRect(LayoutPoint(x, y), visibleRect.size());
 }
 
-void RenderLayer::autoscroll(const IntPoint& position)
+void RenderLayer::autoscroll()
 {
     Frame* frame = renderer()->frame();
     if (!frame)
@@ -2302,7 +2304,11 @@ void RenderLayer::autoscroll(const IntPoint& position)
     if (!frameView)
         return;
 
-    IntPoint currentDocumentPosition = frameView->windowToContents(position);
+#if ENABLE(DRAG_SUPPORT)
+    frame->eventHandler()->updateSelectionForMouseDrag();
+#endif
+
+    IntPoint currentDocumentPosition = frameView->windowToContents(frame->eventHandler()->lastKnownMousePosition());
     scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
@@ -3355,7 +3361,7 @@ void RenderLayer::clipToRect(RenderLayer* rootLayer, GraphicsContext* context, c
         if (layer->renderer()->hasOverflowClip() && layer->renderer()->style()->hasBorderRadius() && inContainingBlockChain(this, layer)) {
                 LayoutPoint delta;
                 layer->convertToLayerCoords(rootLayer, delta);
-                context->addRoundedRectClip(layer->renderer()->style()->getRoundedInnerBorderFor(LayoutRect(delta, layer->size())));
+                context->clipRoundedRect(layer->renderer()->style()->getRoundedInnerBorderFor(LayoutRect(delta, layer->size())));
         }
 
         if (layer == rootLayer)
@@ -3425,8 +3431,8 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
             // If this RenderLayer should paint into its backing, that will be done via RenderLayerBacking::paintIntoLayer().
             return;
         }
-    } else if (compositor()->fixedPositionLayerNotCompositedReason(this) == RenderLayerCompositor::LayerBoundsOutOfView) {
-        // Don't paint out-of-view fixed position layers (when doing prepainting) because they will never be visible
+    } else if (viewportConstrainedNotCompositedReason() == NotCompositedForBoundsOutOfView) {
+        // Don't paint out-of-view viewport constrained layers (when doing prepainting) because they will never be visible
         // unless their position or viewport size is changed.
         return;
     }
@@ -5537,10 +5543,12 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
     if (HTMLFrameOwnerElement* owner = frame->ownerElement())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
-    if (hasOverflow && isVisibleToHitTest)
-        frameView->addScrollableArea(this);
-    else
-        frameView->removeScrollableArea(this);
+    if (hasOverflow && isVisibleToHitTest ? frameView->addScrollableArea(this) : frameView->removeScrollableArea(this))
+#if USE(ACCELERATED_COMPOSITING)
+        updateNeedsCompositedScrolling();
+#else
+        return;
+#endif
 }
 
 void RenderLayer::updateScrollCornerStyle()

@@ -1,3 +1,95 @@
+2013-01-14  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] FCC appears when switching search engine providers
+        https://bugs.webkit.org/show_bug.cgi?id=106824
+
+        Magnifying glass appears when switching search engine providers
+
+        PR 279178
+
+        Reviewed by Rob Buis.
+        Internal Reviewed by Mike Fenton.
+
+        We need to make sure fatfinger is touching a textfield when we tell notifyCaretChanged
+        to show the FCC.
+
+        This behaviour is accidentally regressed in the fix in PR 267177, causing the FCC to show
+        when the user touches an element that is not a textfield and changes the caret in the inputbar..
+
+        Tested that the behaviour in 267177 isn't reproducible and the FCC isn't invoked when we switch
+        search engine providers.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::caretPositionChanged):
+
+2013-01-14  Jacky Jiang  <zhajiang@rim.com>
+
+        [BlackBerry] Zoom is still possible when user-scalable=no
+        https://bugs.webkit.org/show_bug.cgi?id=106809
+
+        Reviewed by George Staikos.
+
+        PR: 274566
+        On wordpress.com, the contents were rendered at the width 343 which was
+        1 css pixel larger than the expected device-width 342 so that we didn't
+        respect the viewport.
+        There was a RenderBlock on the page which contained "\n" and an
+        inline-block. "\n" took 0.78 width and the inline-block took 342 width
+        and they were unfortunately placed in the same InlineBox which caused
+        the contents width 1 css pixels larger than the device-width.
+        Allow the contents width to be 1 css pixel larger and still respect the
+        viewport in such a special case.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::respectViewport):
+
+2013-01-13  Xiaobo Wang  <xbwang@torchmobile.com.cn>
+
+        [BlackBerry] Add a public function WebPage::isLoading()
+        https://bugs.webkit.org/show_bug.cgi?id=106751
+
+        PR 274392
+
+        Reviewed by George Staikos.
+
+        Need to get the load state in WebPageClient when resolving PR 274392.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPage::isLoading):
+        (WebKit):
+        * Api/WebPage.h:
+
+2013-01-11  Andrew Lo  <anlo@rim.com>
+
+        [BlackBerry] Focus zoom animation doesn't occur on devices with physical keyboard
+        https://bugs.webkit.org/show_bug.cgi?id=106719
+
+        Reviewed by Yong Li.
+        Internally reviewed by Mike Fenton.
+
+        Internal PR 278687
+
+        Always ensureFocusTextElementVisible if an element is focused when
+        the device has a physical keyboard.
+
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::setElementFocused):
+
+2013-01-11  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] Modifying the databaseQuota call to WebPageClient
+        https://bugs.webkit.org/show_bug.cgi?id=106703
+
+        Reviewed by Yong Li.
+
+        The databaseQuota call in WebPageClientImpl is modified to take in
+        BP:Strings directly. Also, we want to use the origin URL from the security origin.
+        Not the database identifier.
+
+        * Api/WebPageClient.h:
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::exceededDatabaseQuota):
+
 2013-01-10  Yongxin Dai  <yodai@rim.com>
 
         [BlackBerry] Handle the case that start/end position is out of unclipped selection region

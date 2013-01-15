@@ -521,8 +521,6 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSMediaStreamTrack.h \
 	DerivedSources/WebCore/JSMediaStreamTrackEvent.cpp \
 	DerivedSources/WebCore/JSMediaStreamTrackEvent.h \
-	DerivedSources/WebCore/JSMediaStreamTrackList.cpp \
-	DerivedSources/WebCore/JSMediaStreamTrackList.h \
 	DerivedSources/WebCore/JSMediaQueryList.cpp \
 	DerivedSources/WebCore/JSMediaQueryList.h \
 	DerivedSources/WebCore/JSMemoryInfo.cpp \
@@ -1243,7 +1241,6 @@ dom_binding_idls += \
 	$(WebCore)/Modules/mediastream/MediaStreamList.idl \
 	$(WebCore)/Modules/mediastream/MediaStreamTrack.idl \
 	$(WebCore)/Modules/mediastream/MediaStreamTrackEvent.idl \
-	$(WebCore)/Modules/mediastream/MediaStreamTrackList.idl \
 	$(WebCore)/Modules/mediastream/NavigatorMediaStream.idl \
 	$(WebCore)/Modules/mediastream/NavigatorUserMediaError.idl \
 	$(WebCore)/Modules/mediastream/NavigatorUserMediaErrorCallback.idl \
@@ -1873,7 +1870,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/indexeddb/IDBFactoryBackendInterface.h \
 	Source/WebCore/Modules/indexeddb/IDBFactory.cpp \
 	Source/WebCore/Modules/indexeddb/IDBFactory.h \
-	Source/WebCore/Modules/indexeddb/IDBIndexBackendInterface.h \
 	Source/WebCore/Modules/indexeddb/IDBIndex.cpp \
 	Source/WebCore/Modules/indexeddb/IDBIndex.h \
 	Source/WebCore/Modules/indexeddb/IDBKey.cpp \
@@ -1887,7 +1883,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/indexeddb/IDBMetadata.h \
 	Source/WebCore/Modules/indexeddb/IDBObjectStoreBackendImpl.cpp \
 	Source/WebCore/Modules/indexeddb/IDBObjectStoreBackendImpl.h \
-	Source/WebCore/Modules/indexeddb/IDBObjectStoreBackendInterface.h \
 	Source/WebCore/Modules/indexeddb/IDBObjectStore.cpp \
 	Source/WebCore/Modules/indexeddb/IDBObjectStore.h \
 	Source/WebCore/Modules/indexeddb/IDBOpenDBRequest.cpp \
@@ -1939,8 +1934,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/mediastream/MediaStreamTrack.h \
 	Source/WebCore/Modules/mediastream/MediaStreamTrackEvent.cpp \
 	Source/WebCore/Modules/mediastream/MediaStreamTrackEvent.h \
-	Source/WebCore/Modules/mediastream/MediaStreamTrackList.cpp \
-	Source/WebCore/Modules/mediastream/MediaStreamTrackList.h \
 	Source/WebCore/Modules/mediastream/NavigatorMediaStream.cpp \
 	Source/WebCore/Modules/mediastream/NavigatorMediaStream.h \
 	Source/WebCore/Modules/mediastream/NavigatorUserMediaError.h \
@@ -1993,7 +1986,7 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/notifications/NotificationPermissionCallback.h \
 	Source/WebCore/Modules/notifications/WorkerContextNotifications.cpp \
 	Source/WebCore/Modules/notifications/WorkerContextNotifications.h \
-	Source/WebCore/Modules/proximity/DeviceProximity.h \
+	Source/WebCore/Modules/proximity/DeviceProximityClient.h \
 	Source/WebCore/Modules/proximity/DeviceProximityController.cpp \
 	Source/WebCore/Modules/proximity/DeviceProximityController.h \
 	Source/WebCore/Modules/proximity/DeviceProximityEvent.cpp \
@@ -2543,6 +2536,8 @@ webcore_sources += \
 	Source/WebCore/css/CSSFunctionValue.h \
 	Source/WebCore/css/CSSGradientValue.cpp \
 	Source/WebCore/css/CSSGradientValue.h \
+	Source/WebCore/css/CSSGroupingRule.cpp \
+	Source/WebCore/css/CSSGroupingRule.h \
 	Source/WebCore/css/CSSHelper.h \
 	Source/WebCore/css/CSSImageGeneratorValue.cpp \
 	Source/WebCore/css/CSSImageGeneratorValue.h \
@@ -2696,9 +2691,12 @@ webcore_sources += \
 	Source/WebCore/css/WebKitCSSViewportRule.h \
 	Source/WebCore/dom/ActiveDOMObject.cpp \
 	Source/WebCore/dom/ActiveDOMObject.h \
+	Source/WebCore/dom/AncestorChainWalker.cpp \
+	Source/WebCore/dom/AncestorChainWalker.h \
 	Source/WebCore/dom/Attr.cpp \
 	Source/WebCore/dom/Attr.h \
 	Source/WebCore/dom/Attribute.h \
+	Source/WebCore/dom/AutocompleteErrorEvent.h \
 	Source/WebCore/dom/BeforeLoadEvent.h \
 	Source/WebCore/dom/BeforeTextInsertedEvent.cpp \
 	Source/WebCore/dom/BeforeTextInsertedEvent.h \
@@ -3557,6 +3555,7 @@ webcore_sources += \
 	Source/WebCore/html/parser/HTMLSourceTracker.h \
 	Source/WebCore/html/parser/HTMLStackItem.h \
 	Source/WebCore/html/parser/HTMLToken.h \
+	Source/WebCore/html/parser/HTMLTokenTypes.h \
 	Source/WebCore/html/parser/HTMLTokenizer.cpp \
 	Source/WebCore/html/parser/HTMLTokenizer.h \
 	Source/WebCore/html/parser/HTMLTreeBuilder.cpp \
@@ -6310,48 +6309,32 @@ webcore_sources += \
 	Source/ThirdParty/ANGLE/src/compiler/PoolAlloc.cpp \
 	Source/ThirdParty/ANGLE/src/compiler/PoolAlloc.h \
 	Source/ThirdParty/ANGLE/src/compiler/Pragma.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/atom.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/atom.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/compile.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/cpp.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/cpp.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/cppstruct.c \
 	Source/ThirdParty/ANGLE/src/compiler/preprocessor/length_limits.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/memory.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/memory.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/DiagnosticsBase.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Diagnostics.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/DirectiveHandlerBase.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/DirectiveHandler.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/DirectiveParser.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/DirectiveParser.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/ExpressionParser.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/ExpressionParser.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Input.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Input.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Lexer.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Lexer.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Macro.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Macro.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/MacroExpander.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/MacroExpander.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Preprocessor.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Preprocessor.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/SourceLocation.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Token.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Token.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Tokenizer.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/Tokenizer.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/new/pp_utils.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/parser.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/preprocess.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/scanner.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/scanner.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/slglobals.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/symbols.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/symbols.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/tokens.c \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/tokens.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/numeric_lex.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DiagnosticsBase.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Diagnostics.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveHandlerBase.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveHandlerBase.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveParser.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveParser.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/ExpressionParser.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/ExpressionParser.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Input.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Input.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Lexer.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Lexer.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Macro.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Macro.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/MacroExpander.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/MacroExpander.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Preprocessor.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Preprocessor.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/SourceLocation.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Token.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Token.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Tokenizer.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Tokenizer.h \
+	Source/ThirdParty/ANGLE/src/compiler/preprocessor/pp_utils.h \
 	Source/ThirdParty/ANGLE/src/compiler/QualifierAlive.cpp \
 	Source/ThirdParty/ANGLE/src/compiler/QualifierAlive.h \
 	Source/ThirdParty/ANGLE/src/compiler/RemoveTree.cpp \

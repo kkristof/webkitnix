@@ -1699,7 +1699,7 @@ double WebPagePrivate::zoomToFitScale() const
 
 bool WebPagePrivate::respectViewport() const
 {
-    return m_forceRespectViewportArguments || contentsSize().width() <= m_virtualViewportSize.width();
+    return m_forceRespectViewportArguments || contentsSize().width() <= m_virtualViewportSize.width() + 1;
 }
 
 double WebPagePrivate::initialScale() const
@@ -3157,6 +3157,11 @@ WebCookieJar* WebPage::cookieJar() const
         d->m_cookieJar = new WebCookieJar();
 
     return d->m_cookieJar;
+}
+
+bool WebPage::isLoading() const
+{
+    return d->isLoading();
 }
 
 bool WebPage::isVisible() const

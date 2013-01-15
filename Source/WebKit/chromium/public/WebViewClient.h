@@ -42,9 +42,9 @@
 #include "WebTextAffinity.h"
 #include "WebTextDirection.h"
 #include "WebWidgetClient.h"
-#include <public/WebColor.h>
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebString.h>
+#include "platform/WebColor.h"
+#include "platform/WebGraphicsContext3D.h"
+#include "platform/WebString.h"
 
 namespace WebKit {
 
@@ -143,9 +143,6 @@ public:
 
     // Called to retrieve the provider of desktop notifications.
     virtual WebNotificationPresenter* notificationPresenter() { return 0; }
-
-    // Called when a gesture event is handled.
-    virtual void didHandleGestureEvent(const WebGestureEvent& event, bool eventSwallowed) { }
 
     // Called to request an icon for the specified filenames.
     // The icon is shown in a file upload control.

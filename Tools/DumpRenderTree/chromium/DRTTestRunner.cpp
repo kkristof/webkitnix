@@ -52,7 +52,6 @@
 #include "WebInputElement.h"
 #include "WebKit.h"
 #include "WebNotificationPresenter.h"
-#include "WebPermissions.h"
 #include "WebPrintParams.h"
 #include "WebScriptSource.h"
 #include "WebSecurityPolicy.h"
@@ -88,10 +87,8 @@ using namespace std;
 DRTTestRunner::DRTTestRunner(TestShell* shell)
     : m_shell(shell)
     , m_closeRemainingWindows(false)
-    , m_deferMainResourceDataLoad(false)
     , m_showDebugLayerTree(false)
     , m_workQueue(this)
-    , m_shouldStayOnPageAfterHandlingBeforeUnload(false)
 {
 
     // Initialize the map that associates methods of this class with the names
@@ -108,22 +105,13 @@ DRTTestRunner::DRTTestRunner(TestShell* shell)
     bindMethod("wasMockSpeechRecognitionAborted", &DRTTestRunner::wasMockSpeechRecognitionAborted);
 #endif
     bindMethod("clearAllDatabases", &DRTTestRunner::clearAllDatabases);
-    bindMethod("closeWebInspector", &DRTTestRunner::closeWebInspector);
 #if ENABLE(POINTER_LOCK)
     bindMethod("didAcquirePointerLock", &DRTTestRunner::didAcquirePointerLock);
     bindMethod("didLosePointerLock", &DRTTestRunner::didLosePointerLock);
     bindMethod("didNotAcquirePointerLock", &DRTTestRunner::didNotAcquirePointerLock);
 #endif
-    bindMethod("disableAutoResizeMode", &DRTTestRunner::disableAutoResizeMode);
     bindMethod("display", &DRTTestRunner::display);
     bindMethod("displayInvalidatedRegion", &DRTTestRunner::displayInvalidatedRegion);
-    bindMethod("dumpBackForwardList", &DRTTestRunner::dumpBackForwardList);
-    bindMethod("dumpProgressFinishedCallback", &DRTTestRunner::dumpProgressFinishedCallback);
-    bindMethod("dumpSelectionRect", &DRTTestRunner::dumpSelectionRect);
-    bindMethod("dumpStatusCallbacks", &DRTTestRunner::dumpWindowStatusChanges);
-    bindMethod("dumpPermissionClientCallbacks", &DRTTestRunner::dumpPermissionClientCallbacks);
-    bindMethod("enableAutoResizeMode", &DRTTestRunner::enableAutoResizeMode);
-    bindMethod("evaluateInWebInspector", &DRTTestRunner::evaluateInWebInspector);
 #if ENABLE(NOTIFICATIONS)
     bindMethod("grantWebNotificationPermission", &DRTTestRunner::grantWebNotificationPermission);
 #endif
@@ -137,14 +125,10 @@ DRTTestRunner::DRTTestRunner(TestShell* shell)
     bindMethod("queueLoadHTMLString", &DRTTestRunner::queueLoadHTMLString);
     bindMethod("queueNonLoadingScript", &DRTTestRunner::queueNonLoadingScript);
     bindMethod("queueReload", &DRTTestRunner::queueReload);
-    bindMethod("repaintSweepHorizontally", &DRTTestRunner::repaintSweepHorizontally);
-    bindMethod("setAllowDisplayOfInsecureContent", &DRTTestRunner::setAllowDisplayOfInsecureContent);
-    bindMethod("setAllowRunningOfInsecureContent", &DRTTestRunner::setAllowRunningOfInsecureContent);
     bindMethod("setAlwaysAcceptCookies", &DRTTestRunner::setAlwaysAcceptCookies);
     bindMethod("setCloseRemainingWindowsWhenComplete", &DRTTestRunner::setCloseRemainingWindowsWhenComplete);
     bindMethod("setCustomPolicyDelegate", &DRTTestRunner::setCustomPolicyDelegate);
     bindMethod("setDatabaseQuota", &DRTTestRunner::setDatabaseQuota);
-    bindMethod("setDeferMainResourceDataLoad", &DRTTestRunner::setDeferMainResourceDataLoad);
     bindMethod("setGeolocationPermission", &DRTTestRunner::setGeolocationPermission);
     bindMethod("setMockDeviceOrientation", &DRTTestRunner::setMockDeviceOrientation);
     bindMethod("setMockGeolocationPositionUnavailableError", &DRTTestRunner::setMockGeolocationPositionUnavailableError);
@@ -154,28 +138,18 @@ DRTTestRunner::DRTTestRunner(TestShell* shell)
     bindMethod("setPointerLockWillFailSynchronously", &DRTTestRunner::setPointerLockWillFailSynchronously);
 #endif
     bindMethod("setPOSIXLocale", &DRTTestRunner::setPOSIXLocale);
-    bindMethod("setPrinting", &DRTTestRunner::setPrinting);
-    bindMethod("setSelectTrailingWhitespaceEnabled", &DRTTestRunner::setSelectTrailingWhitespaceEnabled);
     bindMethod("setBackingScaleFactor", &DRTTestRunner::setBackingScaleFactor);
-    bindMethod("setSmartInsertDeleteEnabled", &DRTTestRunner::setSmartInsertDeleteEnabled);
     bindMethod("setWillSendRequestClearHeader", &DRTTestRunner::setWillSendRequestClearHeader);
     bindMethod("setWillSendRequestReturnsNull", &DRTTestRunner::setWillSendRequestReturnsNull);
     bindMethod("setWillSendRequestReturnsNullOnRedirect", &DRTTestRunner::setWillSendRequestReturnsNullOnRedirect);
     bindMethod("setWindowIsKey", &DRTTestRunner::setWindowIsKey);
-    bindMethod("showWebInspector", &DRTTestRunner::showWebInspector);
 #if ENABLE(NOTIFICATIONS)
     bindMethod("simulateLegacyWebNotificationClick", &DRTTestRunner::simulateLegacyWebNotificationClick);
 #endif
-    bindMethod("testRepaint", &DRTTestRunner::testRepaint);
     bindMethod("waitForPolicyDelegate", &DRTTestRunner::waitForPolicyDelegate);
     bindMethod("waitUntilDone", &DRTTestRunner::waitUntilDone);
     bindMethod("windowCount", &DRTTestRunner::windowCount);
-    bindMethod("setImagesAllowed", &DRTTestRunner::setImagesAllowed);
-    bindMethod("setScriptsAllowed", &DRTTestRunner::setScriptsAllowed);
-    bindMethod("setStorageAllowed", &DRTTestRunner::setStorageAllowed);
-    bindMethod("setPluginsAllowed", &DRTTestRunner::setPluginsAllowed);
 
-    bindMethod("setShouldStayOnPageAfterHandlingBeforeUnload", &DRTTestRunner::setShouldStayOnPageAfterHandlingBeforeUnload);
 
     // Shared properties.
     // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
@@ -234,30 +208,6 @@ void DRTTestRunner::WorkQueue::addWork(WorkItem* work)
         return;
     }
     m_queue.append(work);
-}
-
-void DRTTestRunner::dumpBackForwardList(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpBackForwardList = true;
-    result->setNull();
-}
-
-void DRTTestRunner::dumpProgressFinishedCallback(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpProgressFinishedCallback = true;
-    result->setNull();
-}
-
-void DRTTestRunner::dumpWindowStatusChanges(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpWindowStatusChanges = true;
-    result->setNull();
-}
-
-void DRTTestRunner::dumpPermissionClientCallbacks(const CppArgumentList&, CppVariant* result)
-{
-    m_dumpPermissionClientCallbacks = true;
-    result->setNull();
 }
 
 void DRTTestRunner::waitUntilDone(const CppArgumentList&, CppVariant* result)
@@ -444,19 +394,10 @@ void DRTTestRunner::reset()
     TestRunner::reset();
     if (m_shell)
         m_shell->webViewHost()->setDeviceScaleFactor(1);
-    m_dumpProgressFinishedCallback = false;
-    m_dumpBackForwardList = false;
-    m_dumpWindowStatusChanges = false;
-    m_dumpSelectionRect = false;
-    m_dumpPermissionClientCallbacks = false;
     m_waitUntilDone = false;
-    m_testRepaint = false;
-    m_sweepHorizontally = false;
-    m_deferMainResourceDataLoad = true;
     m_webHistoryItemCount.set(0);
     m_titleTextDirection.set("ltr");
     m_interceptPostMessage.set(false);
-    m_isPrinting = false;
 
     webkit_support::SetAcceptAllCookies(false);
 
@@ -471,7 +412,6 @@ void DRTTestRunner::reset()
         m_closeRemainingWindows = true;
     m_workQueue.reset();
     m_taskList.revokeAll();
-    m_shouldStayOnPageAfterHandlingBeforeUnload = false;
 }
 
 void DRTTestRunner::locationChangeDone()
@@ -511,50 +451,10 @@ void DRTTestRunner::setAlwaysAcceptCookies(const CppArgumentList& arguments, Cpp
     result->setNull();
 }
 
-void DRTTestRunner::showWebInspector(const CppArgumentList&, CppVariant* result)
-{
-    m_shell->showDevTools();
-    result->setNull();
-}
-
-void DRTTestRunner::closeWebInspector(const CppArgumentList& args, CppVariant* result)
-{
-    m_shell->closeDevTools();
-    result->setNull();
-}
-
 void DRTTestRunner::setWindowIsKey(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool())
         m_shell->setFocus(m_shell->webView(), arguments[0].value.boolValue);
-    result->setNull();
-}
-
-void DRTTestRunner::setImagesAllowed(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setImagesAllowed(arguments[0].toBoolean());
-    result->setNull();
-}
-
-void DRTTestRunner::setScriptsAllowed(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setScriptsAllowed(arguments[0].toBoolean());
-    result->setNull();
-}
-
-void DRTTestRunner::setStorageAllowed(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setStorageAllowed(arguments[0].toBoolean());
-    result->setNull();
-}
-
-void DRTTestRunner::setPluginsAllowed(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setPluginsAllowed(arguments[0].toBoolean());
     result->setNull();
 }
 
@@ -639,53 +539,6 @@ void DRTTestRunner::pathToLocalResource(const CppArgumentList& arguments, CppVar
     result->set(webkit_support::RewriteLayoutTestsURL(url).spec());
 }
 
-void DRTTestRunner::setSmartInsertDeleteEnabled(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webViewHost()->setSmartInsertDeleteEnabled(arguments[0].value.boolValue);
-    result->setNull();
-}
-
-void DRTTestRunner::setSelectTrailingWhitespaceEnabled(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webViewHost()->setSelectTrailingWhitespaceEnabled(arguments[0].value.boolValue);
-    result->setNull();
-}
-
-void DRTTestRunner::enableAutoResizeMode(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() != 4) {
-        result->set(false);
-        return;
-    }
-    int minWidth = cppVariantToInt32(arguments[0]);
-    int minHeight = cppVariantToInt32(arguments[1]);
-    WebKit::WebSize minSize(minWidth, minHeight);
-
-    int maxWidth = cppVariantToInt32(arguments[2]);
-    int maxHeight = cppVariantToInt32(arguments[3]);
-    WebKit::WebSize maxSize(maxWidth, maxHeight);
-
-    m_shell->webView()->enableAutoResizeMode(minSize, maxSize);
-    result->set(true);
-}
-
-void DRTTestRunner::disableAutoResizeMode(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() !=2) {
-        result->set(false);
-        return;
-    }
-    int newWidth = cppVariantToInt32(arguments[0]);
-    int newHeight = cppVariantToInt32(arguments[1]);
-    WebKit::WebSize newSize(newWidth, newHeight);
-
-    m_shell->webViewHost()->setWindowRect(WebRect(0, 0, newSize.width, newSize.height));
-    m_shell->webView()->disableAutoResizeMode();
-    m_shell->webView()->resize(newSize);
-    result->set(true);
-}
 
 #if ENABLE(NOTIFICATIONS)
 void DRTTestRunner::grantWebNotificationPermission(const CppArgumentList& arguments, CppVariant* result)
@@ -715,18 +568,6 @@ void DRTTestRunner::simulateLegacyWebNotificationClick(const CppArgumentList& ar
 }
 #endif
 
-void DRTTestRunner::setDeferMainResourceDataLoad(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() == 1)
-        m_deferMainResourceDataLoad = cppVariantToBool(arguments[0]);
-}
-
-void DRTTestRunner::dumpSelectionRect(const CppArgumentList& arguments, CppVariant* result)
-{
-    m_dumpSelectionRect = true;
-    result->setNull();
-}
-
 void DRTTestRunner::display(const CppArgumentList& arguments, CppVariant* result)
 {
     WebViewHost* host = m_shell->webViewHost();
@@ -743,34 +584,6 @@ void DRTTestRunner::displayInvalidatedRegion(const CppArgumentList& arguments, C
     WebViewHost* host = m_shell->webViewHost();
     host->paintInvalidatedRegion();
     host->displayRepaintMask();
-    result->setNull();
-}
-
-void DRTTestRunner::testRepaint(const CppArgumentList&, CppVariant* result)
-{
-    m_testRepaint = true;
-    result->setNull();
-}
-
-void DRTTestRunner::repaintSweepHorizontally(const CppArgumentList&, CppVariant* result)
-{
-    m_sweepHorizontally = true;
-    result->setNull();
-}
-
-void DRTTestRunner::setAllowDisplayOfInsecureContent(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setDisplayingInsecureContentAllowed(arguments[0].toBoolean());
-
-    result->setNull();
-}
-
-void DRTTestRunner::setAllowRunningOfInsecureContent(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool())
-        m_shell->webPermissions()->setRunningInsecureContentAllowed(arguments[0].value.boolValue);
-
     result->setNull();
 }
 
@@ -794,12 +607,6 @@ void DRTTestRunner::setPOSIXLocale(const CppArgumentList& arguments, CppVariant*
         setlocale(LC_ALL, arguments[0].toString().c_str());
 }
 
-void DRTTestRunner::setPrinting(const CppArgumentList& arguments, CppVariant* result)
-{
-    setIsPrinting(true);
-    result->setNull();
-}
-
 void DRTTestRunner::numberOfPendingGeolocationPermissionRequests(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
@@ -808,14 +615,6 @@ void DRTTestRunner::numberOfPendingGeolocationPermissionRequests(const CppArgume
     for (size_t i = 0; i < windowList.size(); i++)
         numberOfRequests += windowList[i]->geolocationClientMock()->numberOfPendingPermissionRequests();
     result->set(numberOfRequests);
-}
-
-void DRTTestRunner::evaluateInWebInspector(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isString())
-        return;
-    m_shell->drtDevToolsAgent()->evaluateInWebInspector(arguments[0].toInt32(), arguments[1].toString());
 }
 
 void DRTTestRunner::setMockDeviceOrientation(const CppArgumentList& arguments, CppVariant* result)
@@ -922,14 +721,6 @@ void DRTTestRunner::wasMockSpeechRecognitionAborted(const CppArgumentList&, CppV
         result->set(recognizer->wasAborted());
 }
 #endif
-
-void DRTTestRunner::setShouldStayOnPageAfterHandlingBeforeUnload(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() == 1 && arguments[0].isBool())
-        m_shouldStayOnPageAfterHandlingBeforeUnload = arguments[0].toBoolean();
-
-    result->setNull();
-}
 
 class InvokeCallbackTask : public WebMethodTask<DRTTestRunner> {
 public:

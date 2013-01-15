@@ -35,6 +35,8 @@
 #include "ShadowRoot.h"
 #include <wtf/text/AtomicString.h>
 
+#if ENABLE(SHADOW_DOM)
+
 namespace WebCore {
 
 class Document;
@@ -54,17 +56,6 @@ HTMLShadowElement::~HTMLShadowElement()
 {
 }
 
-const AtomicString& HTMLShadowElement::select() const
-{
-     return nullAtom;
-}
-
-const CSSSelectorList& HTMLShadowElement::emptySelectorList()
-{
-    DEFINE_STATIC_LOCAL(CSSSelectorList, selectorList, (CSSSelectorList()));
-    return selectorList;
-}
-
 ShadowRoot* HTMLShadowElement::olderShadowRoot()
 {
     if (!treeScope()->rootNode()->isShadowRoot())
@@ -80,3 +71,5 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
 }
 
 } // namespace WebCore
+
+#endif // if ENABLE(SHADOW_DOM)

@@ -91,6 +91,7 @@ class BatteryClientImpl;
 class ContextFeaturesClientImpl;
 class ContextMenuClientImpl;
 class DeviceOrientationClientProxy;
+class DragScrollTimer;
 class GeolocationClientProxy;
 class LinkHighlight;
 class NonCompositedContentHost;
@@ -816,6 +817,7 @@ private:
 
     typedef HashMap<WTF::String, WTF::String> SettingsMap;
     OwnPtr<SettingsMap> m_inspectorSettingsMap;
+    OwnPtr<DragScrollTimer> m_dragScrollTimer;
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     // The provider of desktop notifications;
@@ -886,6 +888,7 @@ private:
 
     bool m_showFPSCounter;
     bool m_showPaintRects;
+    bool m_continuousPaintingEnabled;
 };
 
 } // namespace WebKit

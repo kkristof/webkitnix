@@ -29,11 +29,11 @@
 #include "EventHandler.h"
 
 #include "AXObjectCache.h"
+#include "AncestorChainWalker.h"
 #include "AutoscrollController.h"
 #include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
-#include "ComposedShadowTreeWalker.h"
 #include "Cursor.h"
 #include "CursorList.h"
 #include "Document.h"
@@ -82,7 +82,6 @@
 #include "StyleCachedImage.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
-#include "UserGestureIndicator.h"
 #include "UserTypingGestureIndicator.h"
 #include "WheelEvent.h"
 #include "WindowsKeyboardCodes.h"
@@ -276,18 +275,6 @@ static inline bool scrollNode(float delta, ScrollGranularity granularity, Scroll
     return enclosingBox->scroll(delta < 0 ? negativeDirection : positiveDirection, granularity, absDelta, stopNode);
 }
 
-static Node* closestScrollableNodeInDocumentIfPossible(Node* node)
-{
-    for (Node* scrollableNode = node; scrollableNode; scrollableNode = scrollableNode->parentNode()) {
-        if (scrollableNode->isDocumentNode())
-            break;
-        RenderObject* renderer = scrollableNode->renderer();
-        if (renderer && renderer->isBox() && toRenderBox(renderer)->canBeScrolledAndHasScrollableArea())
-            return scrollableNode;
-    }
-    return node;
-}
-
 #if ENABLE(GESTURE_EVENTS)
 static inline bool shouldGesturesTriggerActive()
 {
@@ -395,6 +382,7 @@ void EventHandler::clear()
     m_mousePositionIsUnknown = true;
     m_lastKnownMousePosition = IntPoint();
     m_lastKnownMouseGlobalPosition = IntPoint();
+    m_lastMouseDownUserGestureToken.clear();
     m_mousePressNode = 0;
     m_mousePressed = false;
     m_capturesDragging = false;
@@ -1434,6 +1422,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 #endif
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+    m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
 
     // FIXME (bug 68185): this call should be made at another abstraction layer
     m_frame->loader()->resetMultipleFormSubmissionProtection();
@@ -1778,7 +1767,12 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         return true;
 #endif
 
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+    OwnPtr<UserGestureIndicator> gestureIndicator;
+
+    if (m_lastMouseDownUserGestureToken)
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_lastMouseDownUserGestureToken.release()));
+    else
+        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
 #if ENABLE(PAN_SCROLLING)
     m_autoscrollController->handleMouseReleaseEvent(mouseEvent);
@@ -1962,8 +1956,6 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     RefPtr<Node> newTarget = mev.targetNode();
     if (newTarget && newTarget->isTextNode())
         newTarget = newTarget->parentNode();
-
-    m_autoscrollController->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
 
     if (m_dragTarget != newTarget) {
         // FIXME: this ordering was explicitly chosen to match WinIE. However,
@@ -2314,7 +2306,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
 
     if (useLatchedWheelEventNode) {
         if (!m_latchedWheelEventNode) {
-            m_latchedWheelEventNode = closestScrollableNodeInDocumentIfPossible(result.innerNode());
+            m_latchedWheelEventNode = result.innerNode();
             m_widgetIsLatched = result.isOverWidget();
         }
 

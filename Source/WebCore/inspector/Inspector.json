@@ -259,9 +259,9 @@
                 "name": "deleteCookie",
                 "parameters": [
                     { "name": "cookieName", "type": "string", "description": "Name of the cookie to remove." },
-                    { "name": "domain", "type": "string", "description": "Domain of the cookie to remove." }
+                    { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
                 ],
-                "description": "Deletes browser cookie with given name for the given domain.",
+                "description": "Deletes browser cookie with given name, domain and path.",
                 "hidden": true
             },
             {
@@ -1707,9 +1707,10 @@
             {
                 "name": "requestChildNodes",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." }
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." },
+                    { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0." }
                 ],
-                "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events."
+                "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth."
             },
             {
                 "name": "querySelector",
@@ -3195,15 +3196,22 @@
                 "description": "Unique context identifier."
             },
             {
+                "id": "CallArgument",
+                "type": "object",
+                "properties": [
+                    { "name": "description", "type": "string" }
+                ]
+            },
+            {
                 "id": "Call",
                 "type": "object",
                 "properties": [
                     { "name": "contextId", "$ref": "ContextId" },
                     { "name": "functionName", "type": "string", "optional": true },
-                    { "name": "arguments", "type": "array", "items": { "type": "string" }, "optional": true },
+                    { "name": "arguments", "type": "array", "items": { "$ref": "CallArgument" }, "optional": true },
+                    { "name": "result", "$ref": "CallArgument", "optional": true },
                     { "name": "property", "type": "string", "optional": true },
-                    { "name": "value", "type": "string", "optional": true },
-                    { "name": "result", "type": "string", "optional": true },
+                    { "name": "value", "$ref": "CallArgument", "optional": true },
                     { "name": "sourceURL", "type": "string", "optional": true },
                     { "name": "lineNumber", "type": "integer", "optional": true },
                     { "name": "columnNumber", "type": "integer", "optional": true }

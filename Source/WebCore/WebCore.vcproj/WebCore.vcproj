@@ -24985,10 +24985,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Modules\indexeddb\IDBIndexBackendInterface.h"
-					>
-				</File>
-				<File
 					RelativePath="..\Modules\indexeddb\IDBKey.cpp"
 					>
 				</File>
@@ -25018,10 +25014,6 @@
 				</File>
 				<File
 					RelativePath="..\Modules\indexeddb\IDBObjectStoreBackendImpl.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Modules\indexeddb\IDBObjectStoreBackendInterface.h"
 					>
 				</File>
 				<File
@@ -36159,6 +36151,62 @@
 			</File>
 			<File
 				RelativePath="..\css\CSSGrammar.y.includes"
+				>
+			</File>
+			<File
+				RelativePath="..\css\CSSGroupingRule.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_All|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Production|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\css\CSSGroupingRule.h"
 				>
 			</File>
 			<File
@@ -64501,6 +64549,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\html\parser\HTMLTokenTypes.h"
+					>
+				</File>
+				<File
 					RelativePath="..\html\parser\HTMLTokenizer.cpp"
 					>
 				</File>
@@ -76665,6 +76717,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\inspector\front-end\FileSystemMapping.js"
+					>
+				</File>
+				<File
 					RelativePath="..\inspector\front-end\FileSystemModel.js"
 					>
 				</File>
@@ -76801,6 +76857,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\inspector\front-end\IsolatedFileSystemModel.js"
+					>
+				</File>
+				<File
 					RelativePath="..\inspector\front-end\cm\javascript.js"
 					>
 				</File>
@@ -76902,10 +76962,6 @@
 				</File>
 				<File
 					RelativePath="..\inspector\front-end\NetworkUISourceCodeProvider.js"
-					>
-				</File>
-				<File
-					RelativePath="..\inspector\front-end\NetworkWorkspaceProvider.js"
 					>
 				</File>
 				<File
@@ -77162,6 +77218,10 @@
 				</File>
 				<File
 					RelativePath="..\inspector\front-end\SidebarView.js"
+					>
+				</File>
+				<File
+					RelativePath="..\inspector\front-end\SimpleWorkspaceProvider.js"
 					>
 				</File>
 				<File

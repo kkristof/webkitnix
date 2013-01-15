@@ -43,7 +43,6 @@
 #include "WebHistoryItem.h"
 #include "WebIDBFactory.h"
 #include "WebTestingSupport.h"
-#include "WebPermissions.h"
 #include "WebRuntimeFeatures.h"
 #include "WebScriptController.h"
 #include "WebSettings.h"
@@ -161,10 +160,11 @@ TestShell::TestShell()
 
 void TestShell::initialize()
 {
-    m_webPermissions = adoptPtr(new WebPermissions(this));
     m_testInterfaces = adoptPtr(new WebTestInterfaces());
+    m_devToolsTestInterfaces = adoptPtr(new WebTestInterfaces());
     m_testRunner = adoptPtr(new DRTTestRunner(this));
     m_testInterfaces->setTestRunner(m_testRunner.get());
+    m_devToolsTestInterfaces->setTestRunner(m_testRunner.get());
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     m_notificationPresenter = adoptPtr(new NotificationPresenter(this));
 #endif
@@ -184,7 +184,7 @@ void TestShell::initialize()
 void TestShell::createMainWindow()
 {
     m_drtDevToolsAgent = adoptPtr(new DRTDevToolsAgent);
-    m_webViewHost = adoptPtr(createNewWindow(WebURL(), m_drtDevToolsAgent.get()));
+    m_webViewHost = adoptPtr(createNewWindow(WebURL(), m_drtDevToolsAgent.get(), m_testInterfaces.get()));
     m_webView = m_webViewHost->webView();
     m_testInterfaces->setDelegate(m_webViewHost.get());
     m_testInterfaces->setWebView(m_webView);
@@ -197,6 +197,8 @@ TestShell::~TestShell()
 {
     m_testInterfaces->setDelegate(0);
     m_testInterfaces->setWebView(0);
+    m_devToolsTestInterfaces->setDelegate(0);
+    m_devToolsTestInterfaces->setWebView(0);
     m_testRunner->setDelegate(0);
     m_testRunner->setWebView(0);
     m_drtDevToolsAgent->setWebView(0);
@@ -215,9 +217,11 @@ void TestShell::showDevTools()
             ASSERT(false);
             return;
         }
-        m_devTools = createNewWindow(url);
+        m_devTools = createNewWindow(url, 0, m_devToolsTestInterfaces.get());
         m_devTools->webView()->settings()->setMemoryInfoEnabled(true);
         m_devTools->setLogConsoleOutput(false);
+        m_devToolsTestInterfaces->setDelegate(m_devTools);
+        m_devToolsTestInterfaces->setWebView(m_devTools->webView());
         ASSERT(m_devTools);
         createDRTDevToolsClient(m_drtDevToolsAgent.get());
     }
@@ -293,6 +297,9 @@ void TestShell::runFileTest(const TestParams& params, bool shouldDumpPixels)
         m_printer.handleTestHeader(testUrl.c_str());
     loadURL(m_params.testUrl);
 
+    if (m_devTools)
+        this->setFocus(m_devTools->webView(), true);
+
     m_testIsPreparing = false;
     waitTestFinished();
 }
@@ -318,8 +325,8 @@ void TestShell::resizeWindowForTest(WebViewHost* window, const WebURL& url)
 void TestShell::resetTestController()
 {
     resetWebSettings(*webView());
-    m_webPermissions->reset();
     m_testInterfaces->resetAll();
+    m_devToolsTestInterfaces->resetAll();
     m_testRunner->reset();
     m_webViewHost->reset();
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
@@ -743,27 +750,30 @@ void TestShell::dumpImage(SkCanvas* canvas) const
 void TestShell::bindJSObjectsToWindow(WebFrame* frame)
 {
     WebTestingSupport::injectInternalsObject(frame);
-    m_testInterfaces->bindTo(frame);
+    if (m_devTools && m_devTools->webView() == frame->view())
+        m_devToolsTestInterfaces->bindTo(frame);
+    else
+        m_testInterfaces->bindTo(frame);
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("testRunner"));
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("layoutTestController"));
 }
 
 WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url)
 {
-    return createNewWindow(url, 0);
+    return createNewWindow(url, 0, m_testInterfaces.get());
 }
 
-WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url, DRTDevToolsAgent* devToolsAgent)
+WebViewHost* TestShell::createNewWindow(const WebKit::WebURL& url, DRTDevToolsAgent* devToolsAgent, WebTestInterfaces *testInterfaces)
 {
     WebTestProxy<WebViewHost, TestShell*>* host = new WebTestProxy<WebViewHost, TestShell*>(this);
-    host->setInterfaces(m_testInterfaces.get());
+    host->setInterfaces(testInterfaces);
     if (m_webViewHost)
         host->setDelegate(m_webViewHost.get());
     else
         host->setDelegate(host);
     host->setProxy(host);
     WebView* view = WebView::create(host);
-    view->setPermissionClient(webPermissions());
+    view->setPermissionClient(testInterfaces->testRunner()->webPermissions());
     view->setDevToolsAgentClient(devToolsAgent);
     host->setWebWidget(view);
     m_prefs.applyTo(view);

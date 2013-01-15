@@ -185,12 +185,6 @@ function handleValidHashParameterWrapper(key, value)
             });
         return true;
 
-    // FIXME: This should probably be stored on g_crossDashboardState like everything else in this function.
-    case 'builder':
-        validateParameter(g_currentState, key, value,
-            function() { return value in currentBuilders(); });
-        return true;
-
     case 'useTestData':
     case 'showAllRuns':
         g_crossDashboardState[key] = value == 'true';
@@ -315,6 +309,7 @@ function parseDashboardSpecificParameters()
         parseParameter(parameters, parameterName);
 }
 
+// @return {boolean} Whether to generate the page.
 function parseParameters()
 {
     var oldCrossDashboardState = g_crossDashboardState;
@@ -327,7 +322,7 @@ function parseParameters()
         for (var key in g_crossDashboardState) {
             if (oldCrossDashboardState[key] != g_crossDashboardState[key] && RELOAD_REQUIRING_PARAMETERS.indexOf(key) != -1) {
                 window.location.reload();
-                return {};
+                return false;
             }
         }
     }
@@ -348,7 +343,10 @@ function parseParameters()
     if (g_currentState.tests)
         delete g_currentState.builder;
 
-    return dashboardSpecificDiffState;
+    var shouldGeneratePage = true;
+    if (Object.keys(dashboardSpecificDiffState).length)
+        shouldGeneratePage = handleQueryParameterChange(dashboardSpecificDiffState);
+    return shouldGeneratePage;
 }
 
 function diffStates(oldState, newState)
@@ -496,8 +494,6 @@ function showErrors()
 
 function resourceLoadingComplete(errorMsgs)
 {
-    g_resourceLoader = null;
-    
     if (errorMsgs)
         addError(errorMsgs)
 
@@ -506,15 +502,10 @@ function resourceLoadingComplete(errorMsgs)
 
 function handleLocationChange()
 {
-    if (g_resourceLoader)
+    if (!g_resourceLoader.isLoadingComplete())
         return;
 
-    var params = parseParameters();
-    var shouldGeneratePage = true;
-    if (Object.keys(params).length)
-        shouldGeneratePage = handleQueryParameterChange(params);
-
-    if (shouldGeneratePage)
+    if (parseParameters())
         generatePage();
 }
 

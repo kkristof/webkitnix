@@ -31,6 +31,7 @@
 #include "JSGlobalObject.h"
 #include "JSFunction.h"
 #include "JSNotAnObject.h"
+#include "JSValueInlines.h"
 #include "NumberObject.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StringExtras.h>
@@ -144,7 +145,7 @@ void JSValue::putToPrimitive(ExecState* exec, PropertyName propertyName, JSValue
                 return;
             }
 
-            JSValue gs = obj->getDirectOffset(offset);
+            JSValue gs = obj->getDirect(offset);
             if (gs.isGetterSetter()) {
                 JSObject* setterFunc = asGetterSetter(gs)->setter();        
                 if (!setterFunc) {

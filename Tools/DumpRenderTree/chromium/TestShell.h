@@ -57,7 +57,6 @@ class DRTDevToolsAgent;
 class DRTDevToolsCallArgs;
 class DRTDevToolsClient;
 class MockWebPrerenderingSupport;
-class WebPermissions;
 
 struct TestParams {
     bool dumpTree;
@@ -95,8 +94,6 @@ public:
 
     WebTestRunner::WebPreferences* preferences() { return &m_prefs; }
     void applyPreferences() { m_prefs.applyTo(m_webView); }
-
-    WebPermissions* webPermissions() { return m_webPermissions.get(); }
 
     void bindJSObjectsToWindow(WebKit::WebFrame*);
     void runFileTest(const TestParams&, bool shouldDumpPixelTests);
@@ -192,7 +189,7 @@ public:
     std::string normalizeLayoutTestURL(const std::string&);
 
 private:
-    WebViewHost* createNewWindow(const WebKit::WebURL&, DRTDevToolsAgent*);
+    WebViewHost* createNewWindow(const WebKit::WebURL&, DRTDevToolsAgent*, WebTestRunner::WebTestInterfaces*);
     void createMainWindow();
     void createDRTDevToolsClient(DRTDevToolsAgent*);
 
@@ -210,10 +207,10 @@ private:
 
     // Be careful of the destruction order of the following objects.
     TestEventPrinter m_printer;
-    OwnPtr<WebPermissions> m_webPermissions;
     OwnPtr<DRTDevToolsAgent> m_drtDevToolsAgent;
     OwnPtr<DRTDevToolsClient> m_drtDevToolsClient;
     OwnPtr<WebTestRunner::WebTestInterfaces> m_testInterfaces;
+    OwnPtr<WebTestRunner::WebTestInterfaces> m_devToolsTestInterfaces;
     OwnPtr<DRTTestRunner> m_testRunner;
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     OwnPtr<NotificationPresenter> m_notificationPresenter;

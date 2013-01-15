@@ -64,11 +64,16 @@
 #include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
 
+#if ENABLE(RESOURCE_TIMING)
+#include "CachedResourceRequestInitiators.h"
+#endif
+
 #if USE(JSC)
 #include "JSDOMBinding.h"
 #include "JSDOMWindow.h"
 #include <heap/Strong.h>
 #include <runtime/JSLock.h>
+#include <runtime/Operations.h>
 #endif
 
 namespace WebCore {
@@ -786,6 +791,9 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
     options.allowCredentials = (m_sameOriginRequest || m_includeCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     options.crossOriginRequestPolicy = UseAccessControl;
     options.securityOrigin = securityOrigin();
+#if ENABLE(RESOURCE_TIMING)
+    options.initiator = cachedResourceRequestInitiators().xmlhttprequest;
+#endif
 
 #if ENABLE(XHR_TIMEOUT)
     if (m_timeoutMilliseconds)

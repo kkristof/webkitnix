@@ -1,3 +1,614 @@
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should not forget that it had proved something to be a constant during a merge just because it's merging against the empty value
+        https://bugs.webkit.org/show_bug.cgi?id=106727
+
+        Reviewed by Oliver Hunt.
+        
+        The problem was this statement:
+        
+        if (m_value != other.m_value)
+            m_value = JSValue();
+        
+        This is well-intentioned, in the sense that if we want our abstract value (i.e. this) to become the superset of the other
+        abstract value, and the two abstract values have proven different constants, then our abstract value should rescind its
+        claim that it has been proven to be constant. But this misses the special case that if the other abstract value is
+        completely clear (meaning that it wishes to contribute zero information and so the superset operation shouldn't change
+        this), it will have a clear m_value. So, the code prior to this patch would rescind the constant proof even though it
+        didn't have to.
+        
+        This comes up rarely and I don't believe it will be a performance win, but it is good to have the CFA been consistently
+        precise as often as possible.
+
+        * dfg/DFGAbstractValue.h:
+        (JSC::DFG::AbstractValue::merge):
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Python implementation reports "MemoryError" instead of doing things
+        https://bugs.webkit.org/show_bug.cgi?id=106690
+
+        Reviewed by Oliver Hunt.
+        
+        The bug was that the CFA was assuming that a variable is dead at the end of a basic block and hence doesn't need to
+        be merged to the next block if the last mention of the variable was dead. This is almost correct, except that it
+        doesn't work if the last mention is a GetLocal - the GetLocal itself may be dead, but that doesn't mean that the
+        variable is dead - it may still be live. The appropriate thing to do is to look at the GetLocal's Phi. If the
+        variable is used in the next block then the next block will have a reference to the last mention in our block unless
+        that last mention is a GetLocal, in which case it will link to the Phi. Doing it this way captures everything that
+        the CFA wants: if the last use is a live GetLocal then the CFA needs to consider the GetLocal itself for possible
+        refinements to the proof of the value in the variable, but if the GetLocal is dead, then this must mean that the
+        variable is not mentioned in the block but may still be "passed through" it, which is what the Phi will tell us.
+        Note that it is not possible for the GetLocal to refer to anything other than a Phi, and it is also not possible
+        for the last mention of a variable to be a dead GetLocal while there are other mentions that aren't dead - if
+        there had been SetLocals or GetLocals prior to the dead one then the dead one wouldn't have been emitted by the
+        parser.
+        
+        This also fixes a similar bug in the handling of captured variables. If a variable is captured, then it doesn't
+        matter if the last mention is dead, or not. Either way, we already know that a captured variable will be live in
+        the next block, so we must merge it no matter what.
+        
+        Finally, this change makes the output of Operands dumping a bit more verbose: it now prints the variable name next
+        to each variable's dump. I've often found the lack of this information confusing particularly for operand dumps
+        that involve a lot of variables.
+
+        * bytecode/Operands.h:
+        (JSC::dumpOperands):
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::mergeStateAtTail):
+
+2013-01-14  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Fix vcproj file. Missing file tag after http://trac.webkit.org/changeset/139541.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+
+2013-01-13  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG phases that store per-node information should store it in Node itself rather than using a secondary vector
+        https://bugs.webkit.org/show_bug.cgi?id=106753
+
+        Reviewed by Geoffrey Garen.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::AbstractState):
+        (JSC::DFG::AbstractState::beginBasicBlock):
+        (JSC::DFG::AbstractState::dump):
+        * dfg/DFGAbstractState.h:
+        (JSC::DFG::AbstractState::forNode):
+        (AbstractState):
+        * dfg/DFGCFGSimplificationPhase.cpp:
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::CSEPhase):
+        (JSC::DFG::CSEPhase::performSubstitution):
+        (JSC::DFG::CSEPhase::setReplacement):
+        (CSEPhase):
+        * dfg/DFGNode.h:
+        (Node):
+
+2013-01-12  Tim Horton  <timothy_horton@apple.com>
+
+        Unreviewed build fix.
+
+        * API/JSBlockAdaptor.mm:
+        * API/JSContext.mm:
+        * API/JSValue.mm:
+
+2013-01-12  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed 64 bit buildfix after r139496.
+
+        * dfg/DFGOperations.cpp:
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed, speculative build fix.
+
+        * API/JSWrapperMap.mm:
+
+2013-01-10  Filip Pizlo  <fpizlo@apple.com>
+
+        JITThunks should not compile only because of luck
+        https://bugs.webkit.org/show_bug.cgi?id=105696
+
+        Rubber stamped by Sam Weinig and Geoffrey Garen.
+        
+        This patch was supposed to just move JITThunks into its own file. But then I
+        realized that there is a horrible circular dependency chain between JSCell,
+        JSGlobalData, CallFrame, and Weak, which only works because of magical include
+        order in JITStubs.h, and the fact that JSGlobalData.h includes JITStubs.h
+        before it includes JSCell or JSValue.
+        
+        I first tried to just get JITThunks.h to just magically do the same pointless
+        includes that JITStubs.h had, but then I decided to actually fix the underflying
+        problem, which was that JSCell needed CallFrame, CallFrame needed JSGlobalData,
+        JSGlobalData needed JITThunks, JITThunks needed Weak, and Weak needed JSCell.
+        Now, all of JSCell's outgoing dependencies are placed in JSCellInlines.h. This
+        also gave me an opportunity to move JSValue inline methods from JSCell.h into
+        JSValueInlines.h. But to make this really work, I needed to remove includes of
+        *Inlines.h from other headers (CodeBlock.h for example included JSValueInlines.h,
+        which defeats the whole entire purpose of having an Inlines.h file), and I needed
+        to add includes of *Inlines.h into a bunch of .cpp files. I did this mostly by
+        having .cpp files include Operations.h. In future, if you're adding a .cpp file
+        to JSC, you'll almost certainly have to include Operations.h unless you enjoy
+        link errors.
+
+        * API/JSBase.cpp:
+        * API/JSCallbackConstructor.cpp:
+        * API/JSCallbackFunction.cpp:
+        * API/JSCallbackObject.cpp:
+        * API/JSClassRef.cpp:
+        * API/JSContextRef.cpp:
+        * API/JSObjectRef.cpp:
+        * API/JSScriptRef.cpp:
+        * API/JSWeakObjectMapRefPrivate.cpp:
+        * JSCTypedArrayStubs.h:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * bytecode/ArrayAllocationProfile.cpp:
+        * bytecode/CodeBlock.cpp:
+        * bytecode/GetByIdStatus.cpp:
+        * bytecode/LazyOperandValueProfile.cpp:
+        * bytecode/ResolveGlobalStatus.cpp:
+        * bytecode/SpeculatedType.cpp:
+        * bytecode/UnlinkedCodeBlock.cpp:
+        * bytecompiler/BytecodeGenerator.cpp:
+        * debugger/Debugger.cpp:
+        * debugger/DebuggerActivation.cpp:
+        * debugger/DebuggerCallFrame.cpp:
+        * dfg/DFGArgumentsSimplificationPhase.cpp:
+        * dfg/DFGArrayMode.cpp:
+        * dfg/DFGByteCodeParser.cpp:
+        * dfg/DFGConstantFoldingPhase.cpp:
+        * dfg/DFGDriver.cpp:
+        * dfg/DFGFixupPhase.cpp:
+        * dfg/DFGGraph.cpp:
+        * dfg/DFGJITCompiler.cpp:
+        * dfg/DFGOSREntry.cpp:
+        * dfg/DFGOSRExitCompiler.cpp:
+        * dfg/DFGOSRExitCompiler32_64.cpp:
+        * dfg/DFGOSRExitCompiler64.cpp:
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::silentSavePlanForGPR):
+        (DFG):
+        (JSC::DFG::SpeculativeJIT::silentSavePlanForFPR):
+        (JSC::DFG::SpeculativeJIT::silentSpill):
+        (JSC::DFG::SpeculativeJIT::silentFill):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        * dfg/DFGSpeculativeJIT64.cpp:
+        * dfg/DFGStructureCheckHoistingPhase.cpp:
+        * dfg/DFGVariableEventStream.cpp:
+        * heap/CopiedBlock.h:
+        * heap/CopiedSpace.cpp:
+        * heap/HandleSet.cpp:
+        * heap/Heap.cpp:
+        * heap/HeapStatistics.cpp:
+        * heap/SlotVisitor.cpp:
+        * heap/WeakBlock.cpp:
+        * interpreter/CallFrame.cpp:
+        * interpreter/CallFrame.h:
+        * jit/ClosureCallStubRoutine.cpp:
+        * jit/GCAwareJITStubRoutine.cpp:
+        * jit/JIT.cpp:
+        * jit/JITArithmetic.cpp:
+        * jit/JITArithmetic32_64.cpp:
+        * jit/JITCall.cpp:
+        * jit/JITCall32_64.cpp:
+        * jit/JITCode.h:
+        * jit/JITExceptions.cpp:
+        * jit/JITStubs.h:
+        * jit/JITThunks.h:
+        * jsc.cpp:
+        * llint/LLIntExceptions.cpp:
+        * profiler/LegacyProfiler.cpp:
+        * profiler/ProfileGenerator.cpp:
+        * profiler/ProfilerBytecode.cpp:
+        * profiler/ProfilerBytecodeSequence.cpp:
+        * profiler/ProfilerBytecodes.cpp:
+        * profiler/ProfilerCompilation.cpp:
+        * profiler/ProfilerCompiledBytecode.cpp:
+        * profiler/ProfilerDatabase.cpp:
+        * profiler/ProfilerOSRExit.cpp:
+        * profiler/ProfilerOSRExitSite.cpp:
+        * profiler/ProfilerOrigin.cpp:
+        * profiler/ProfilerOriginStack.cpp:
+        * profiler/ProfilerProfiledBytecodes.cpp:
+        * runtime/ArgList.cpp:
+        * runtime/Arguments.cpp:
+        * runtime/ArrayConstructor.cpp:
+        * runtime/BooleanConstructor.cpp:
+        * runtime/BooleanObject.cpp:
+        * runtime/BooleanPrototype.cpp:
+        * runtime/CallData.cpp:
+        * runtime/CodeCache.cpp:
+        * runtime/Completion.cpp:
+        * runtime/ConstructData.cpp:
+        * runtime/DateConstructor.cpp:
+        * runtime/DateInstance.cpp:
+        * runtime/DatePrototype.cpp:
+        * runtime/Error.cpp:
+        * runtime/ErrorConstructor.cpp:
+        * runtime/ErrorInstance.cpp:
+        * runtime/ErrorPrototype.cpp:
+        * runtime/ExceptionHelpers.cpp:
+        * runtime/Executable.cpp:
+        * runtime/FunctionConstructor.cpp:
+        * runtime/FunctionPrototype.cpp:
+        * runtime/GetterSetter.cpp:
+        * runtime/Identifier.cpp:
+        * runtime/InternalFunction.cpp:
+        * runtime/JSActivation.cpp:
+        * runtime/JSBoundFunction.cpp:
+        * runtime/JSCell.cpp:
+        * runtime/JSCell.h:
+        (JSC):
+        * runtime/JSCellInlines.h: Added.
+        (JSC):
+        (JSC::JSCell::JSCell):
+        (JSC::JSCell::finishCreation):
+        (JSC::JSCell::structure):
+        (JSC::JSCell::visitChildren):
+        (JSC::allocateCell):
+        (JSC::isZapped):
+        (JSC::JSCell::isObject):
+        (JSC::JSCell::isString):
+        (JSC::JSCell::isGetterSetter):
+        (JSC::JSCell::isProxy):
+        (JSC::JSCell::isAPIValueWrapper):
+        (JSC::JSCell::setStructure):
+        (JSC::JSCell::methodTable):
+        (JSC::JSCell::inherits):
+        (JSC::JSCell::fastGetOwnPropertySlot):
+        (JSC::JSCell::fastGetOwnProperty):
+        (JSC::JSCell::toBoolean):
+        * runtime/JSDateMath.cpp:
+        * runtime/JSFunction.cpp:
+        * runtime/JSFunction.h:
+        (JSC):
+        * runtime/JSGlobalData.h:
+        (JSC):
+        (JSGlobalData):
+        * runtime/JSGlobalObject.cpp:
+        * runtime/JSGlobalObjectFunctions.cpp:
+        * runtime/JSLock.cpp:
+        * runtime/JSNameScope.cpp:
+        * runtime/JSNotAnObject.cpp:
+        * runtime/JSONObject.cpp:
+        * runtime/JSObject.h:
+        (JSC):
+        * runtime/JSProxy.cpp:
+        * runtime/JSScope.cpp:
+        * runtime/JSSegmentedVariableObject.cpp:
+        * runtime/JSString.h:
+        (JSC):
+        * runtime/JSStringJoiner.cpp:
+        * runtime/JSSymbolTableObject.cpp:
+        * runtime/JSValue.cpp:
+        * runtime/JSValueInlines.h:
+        (JSC::JSValue::toInt32):
+        (JSC::JSValue::toUInt32):
+        (JSC):
+        (JSC::JSValue::isUInt32):
+        (JSC::JSValue::asUInt32):
+        (JSC::JSValue::asNumber):
+        (JSC::jsNaN):
+        (JSC::JSValue::JSValue):
+        (JSC::JSValue::encode):
+        (JSC::JSValue::decode):
+        (JSC::JSValue::operator bool):
+        (JSC::JSValue::operator==):
+        (JSC::JSValue::operator!=):
+        (JSC::JSValue::isEmpty):
+        (JSC::JSValue::isUndefined):
+        (JSC::JSValue::isNull):
+        (JSC::JSValue::isUndefinedOrNull):
+        (JSC::JSValue::isCell):
+        (JSC::JSValue::isInt32):
+        (JSC::JSValue::isDouble):
+        (JSC::JSValue::isTrue):
+        (JSC::JSValue::isFalse):
+        (JSC::JSValue::tag):
+        (JSC::JSValue::payload):
+        (JSC::JSValue::asInt32):
+        (JSC::JSValue::asDouble):
+        (JSC::JSValue::asCell):
+        (JSC::JSValue::isNumber):
+        (JSC::JSValue::isBoolean):
+        (JSC::JSValue::asBoolean):
+        (JSC::reinterpretDoubleToInt64):
+        (JSC::reinterpretInt64ToDouble):
+        (JSC::JSValue::isString):
+        (JSC::JSValue::isPrimitive):
+        (JSC::JSValue::isGetterSetter):
+        (JSC::JSValue::isObject):
+        (JSC::JSValue::getString):
+        (JSC::::getString):
+        (JSC::JSValue::getObject):
+        (JSC::JSValue::getUInt32):
+        (JSC::JSValue::toPrimitive):
+        (JSC::JSValue::getPrimitiveNumber):
+        (JSC::JSValue::toNumber):
+        (JSC::JSValue::toObject):
+        (JSC::JSValue::isFunction):
+        (JSC::JSValue::inherits):
+        (JSC::JSValue::toThisObject):
+        (JSC::JSValue::get):
+        (JSC::JSValue::put):
+        (JSC::JSValue::putByIndex):
+        (JSC::JSValue::structureOrUndefined):
+        (JSC::JSValue::equal):
+        (JSC::JSValue::equalSlowCaseInline):
+        (JSC::JSValue::strictEqualSlowCaseInline):
+        (JSC::JSValue::strictEqual):
+        * runtime/JSVariableObject.cpp:
+        * runtime/JSWithScope.cpp:
+        * runtime/JSWrapperObject.cpp:
+        * runtime/LiteralParser.cpp:
+        * runtime/Lookup.cpp:
+        * runtime/NameConstructor.cpp:
+        * runtime/NameInstance.cpp:
+        * runtime/NamePrototype.cpp:
+        * runtime/NativeErrorConstructor.cpp:
+        * runtime/NativeErrorPrototype.cpp:
+        * runtime/NumberConstructor.cpp:
+        * runtime/NumberObject.cpp:
+        * runtime/ObjectConstructor.cpp:
+        * runtime/ObjectPrototype.cpp:
+        * runtime/Operations.h:
+        (JSC):
+        * runtime/PropertySlot.cpp:
+        * runtime/RegExp.cpp:
+        * runtime/RegExpCache.cpp:
+        * runtime/RegExpCachedResult.cpp:
+        * runtime/RegExpConstructor.cpp:
+        * runtime/RegExpMatchesArray.cpp:
+        * runtime/RegExpObject.cpp:
+        * runtime/RegExpPrototype.cpp:
+        * runtime/SmallStrings.cpp:
+        * runtime/SparseArrayValueMap.cpp:
+        * runtime/StrictEvalActivation.cpp:
+        * runtime/StringConstructor.cpp:
+        * runtime/StringObject.cpp:
+        * runtime/StringRecursionChecker.cpp:
+        * runtime/Structure.h:
+        (JSC):
+        * runtime/StructureChain.cpp:
+        * runtime/TimeoutChecker.cpp:
+        * testRegExp.cpp:
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        If you use Phantom to force something to be live across an OSR exit, you should put it after the OSR exit
+        https://bugs.webkit.org/show_bug.cgi?id=106724
+
+        Reviewed by Oliver Hunt.
+        
+        In cases where we were getting it wrong, I think it was benign because we would either already have an
+        OSR exit prior to there, or the operand would be a constant.  But still, it's good to get this right.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Phantom(GetLocal) should be treated as relevant to OSR
+        https://bugs.webkit.org/show_bug.cgi?id=106715
+
+        Reviewed by Mark Hahnenberg.
+
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::performBlockCSE):
+
+2013-01-11  Pratik Solanki  <psolanki@apple.com>
+
+        Fix function name typo ProgramExecutable::initalizeGlobalProperties()
+        https://bugs.webkit.org/show_bug.cgi?id=106701
+
+        Reviewed by Geoffrey Garen.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::execute):
+        * runtime/Executable.cpp:
+        (JSC::ProgramExecutable::initializeGlobalProperties):
+        * runtime/Executable.h:
+
+2013-01-11  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        testapi is failing with a block-related error in the Objc API
+        https://bugs.webkit.org/show_bug.cgi?id=106055
+
+        Reviewed by Filip Pizlo.
+
+        Same bug as in testapi.mm. We need to actually call the static block, rather than casting the block to a bool.
+
+        * API/ObjCCallbackFunction.mm:
+        (blockSignatureContainsClass):
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Add a run-time option to print bytecode at DFG compile time
+        https://bugs.webkit.org/show_bug.cgi?id=106704
+
+        Reviewed by Mark Hahnenberg.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseCodeBlock):
+        * runtime/Options.h:
+        (JSC):
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        It should be possible to enable verbose printing of each OSR exit at run-time (rather than compile-time) and it should print register state
+        https://bugs.webkit.org/show_bug.cgi?id=106700
+
+        Reviewed by Mark Hahnenberg.
+
+        * dfg/DFGAssemblyHelpers.h:
+        (DFG):
+        (JSC::DFG::AssemblyHelpers::debugCall):
+        * dfg/DFGCommon.h:
+        * dfg/DFGOSRExit.h:
+        (DFG):
+        * dfg/DFGOSRExitCompiler32_64.cpp:
+        (JSC::DFG::OSRExitCompiler::compileExit):
+        * dfg/DFGOSRExitCompiler64.cpp:
+        (JSC::DFG::OSRExitCompiler::compileExit):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * runtime/Options.h:
+        (JSC):
+
+2013-01-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed getDirectLocation and offsetForLocation and all their uses
+        https://bugs.webkit.org/show_bug.cgi?id=106692
+
+        Reviewed by Filip Pizlo.
+
+        getDirectLocation() and its associated offsetForLocation() relied on
+        detailed knowledge of the rules of PropertyOffset, JSObject, and
+        Structure, which is a hard thing to reverse-engineer reliably. Luckily,
+        it wasn't needed, and all clients either wanted a true value or a
+        PropertyOffset. So, I refactored accordingly.
+
+        * dfg/DFGOperations.cpp: Renamed putDirectOffset to putDirect, to clarify
+        that we are not putting an offset.
+
+        * runtime/JSActivation.cpp:
+        (JSC::JSActivation::getOwnPropertySlot): Get a value instead of a value
+        pointer, since we never wanted a pointer to begin with.
+
+        * runtime/JSFunction.cpp:
+        (JSC::JSFunction::getOwnPropertySlot): Use a PropertyOffset instead of a pointer,
+        so we don't have to reverse-engineer the offset from the pointer.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::put):
+        (JSC::JSObject::resetInheritorID):
+        (JSC::JSObject::inheritorID):
+        (JSC::JSObject::removeDirect):
+        (JSC::JSObject::fillGetterPropertySlot):
+        (JSC::JSObject::getOwnPropertyDescriptor): Renamed getDirectOffset and
+        putDirectOffset, as explaind above. We want to use the name "getDirectOffset"
+        for when the thing you're getting is the offset.
+
+        * runtime/JSObject.h:
+        (JSC::JSObject::getDirect):
+        (JSC::JSObject::getDirectOffset): Changed getDirectLocation to getDirectOffset,
+        since clients really wants PropertyOffsets and not locations.
+
+        (JSObject::offsetForLocation): Removed this function because it was hard
+        to get right.
+
+        (JSC::JSObject::putDirect):
+        (JSC::JSObject::putDirectUndefined):
+        (JSC::JSObject::inlineGetOwnPropertySlot):
+        (JSC::JSObject::putDirectInternal):
+        (JSC::JSObject::putDirectWithoutTransition):
+        * runtime/JSScope.cpp:
+        (JSC::executeResolveOperations):
+        (JSC::JSScope::resolvePut):
+        * runtime/JSValue.cpp:
+        (JSC::JSValue::putToPrimitive): Updated for renames.
+
+        * runtime/Lookup.cpp:
+        (JSC::setUpStaticFunctionSlot): Use a PropertyOffset instead of a pointer,
+        so we don't have to reverse-engineer the offset from the pointer.
+
+        * runtime/Structure.cpp:
+        (JSC::Structure::flattenDictionaryStructure): Updated for renames.
+
+2013-01-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed an unused version of getDirectLocation
+        https://bugs.webkit.org/show_bug.cgi?id=106691
+
+        Reviewed by Gavin Barraclough.
+
+        getDirectLocation is a weird operation. Removing the unused version is
+        the easy part.
+
+        * runtime/JSObject.h:
+        (JSObject):
+
+2013-01-11  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C objects that are passed to JavaScript leak (until the JSContext is destroyed)
+        https://bugs.webkit.org/show_bug.cgi?id=106056
+
+        Reviewed by Darin Adler.
+
+        * API/APIJSValue.h:
+        * API/JSValue.mm: Make the reference to the JSContext strong.
+        (-[JSValue context]):
+        (-[JSValue initWithValue:inContext:]):
+        (-[JSValue dealloc]):
+        * API/JSWrapperMap.mm: Make the reference back from wrappers to Obj-C objects weak instead of strong.
+        Also add an explicit WeakGCMap in the JSWrapperMap rather than using Obj-C associated object API which 
+        was causing memory leaks.
+        (wrapperClass):
+        (-[JSObjCClassInfo wrapperForObject:]):
+        (-[JSWrapperMap initWithContext:]):
+        (-[JSWrapperMap dealloc]):
+        (-[JSWrapperMap wrapperForObject:]):
+
+2013-01-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Fixed some bogus PropertyOffset ASSERTs
+        https://bugs.webkit.org/show_bug.cgi?id=106686
+
+        Reviewed by Gavin Barraclough.
+
+        The ASSERTs were passing a JSType instead of an inlineCapacity, due to
+        an incomplete refactoring.
+
+        The compiler didn't catch this because both types are int underneath.
+
+        * runtime/JSObject.h:
+        (JSC::JSObject::getDirect):
+        (JSC::JSObject::getDirectLocation):
+        (JSC::JSObject::offsetForLocation):
+        * runtime/Structure.cpp:
+        (JSC::Structure::addPropertyTransitionToExistingStructure): Validate against
+        our inline capacity, as we intended.
+
+2013-01-11  Geoffrey Garen  <ggaren@apple.com>
+
+        Rename propertyOffsetFor => offsetForPropertyNumber
+        https://bugs.webkit.org/show_bug.cgi?id=106685
+
+        Reviewed by Gavin Barraclough.
+
+        Since the argument is just a typedef and not an object, I wanted to clarify the meaning.
+
+        * runtime/PropertyMapHashTable.h:
+        (JSC::PropertyTable::nextOffset): Updated for rename.
+
+        * runtime/PropertyOffset.h:
+        (JSC::offsetForPropertyNumber): Renamed. Also changed some PropertyOffset variables
+        to plain ints, because they're not actually on the PropertyOffsets number line.
+
+        * runtime/Structure.cpp:
+        (JSC::Structure::flattenDictionaryStructure):
+        * runtime/Structure.h:
+        (JSC::Structure::lastValidOffset): Updated for rename.
+
+2013-01-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Remove the ENABLE_ANIMATION_API feature define occurences
+        https://bugs.webkit.org/show_bug.cgi?id=106544
+
+        Reviewed by Simon Fraser.
+
+        The Animation API code was removed in r137243. The ENABLE_ANIMATION_API
+        feature define handling still lingers in various build systems and configurations
+        but is of no use, so it should be removed.
+
+        * Configurations/FeatureDefines.xcconfig:
+
 2013-01-09  Roger Fong  <roger_fong@apple.com>
 
         Unreviewed. Just move the JavaScriptCore exports file around in the vcproj to make things clearer.

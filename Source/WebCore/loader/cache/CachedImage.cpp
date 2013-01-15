@@ -39,6 +39,7 @@
 #include "Settings.h"
 #include "SubresourceLoader.h"
 #include <wtf/CurrentTime.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
@@ -360,14 +361,16 @@ void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
 {
     m_data = data;
 
-    createImage();
+    if (m_data)
+        createImage();
 
     bool sizeAvailable = false;
 
     // Have the image update its data from its internal buffer.
     // It will not do anything now, but will delay decoding until 
     // queried for info (like size or specific image frames).
-    sizeAvailable = m_image->setData(m_data ? m_data->sharedBuffer() : 0, allDataReceived);
+    if (m_image)
+        sizeAvailable = m_image->setData(m_data ? m_data->sharedBuffer() : 0, allDataReceived);
 
     // Go ahead and tell our observers to try to draw if we have either
     // received all the data or the size is known.  Each chunk from the
@@ -375,9 +378,9 @@ void CachedImage::data(PassRefPtr<ResourceBuffer> data, bool allDataReceived)
     // to decode.
     if (sizeAvailable || allDataReceived) {
         size_t maxDecodedImageSize = maximumDecodedImageSize();
-        IntSize s = m_image->size();
+        IntSize s = m_image ? m_image->size() : IntSize();
         size_t estimatedDecodedImageSize = s.width() * s.height() * 4; // no overflow check
-        if (m_image->isNull() || (maxDecodedImageSize > 0 && estimatedDecodedImageSize > maxDecodedImageSize)) {
+        if (!m_image || m_image->isNull() || (maxDecodedImageSize > 0 && estimatedDecodedImageSize > maxDecodedImageSize)) {
             error(errorOccurred() ? status() : DecodeError);
             if (inCache())
                 memoryCache()->remove(this);
@@ -487,6 +490,7 @@ void CachedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceImage);
     memoryObjectInfo->setClassName("CachedImage");
     CachedResource::reportMemoryUsage(memoryObjectInfo);
+    info.addMember(m_pendingContainerSizeRequests);
     info.addMember(m_image, "m_image");
 #if ENABLE(SVG)
     info.addMember(m_svgImageCache);

@@ -300,7 +300,11 @@ PassRefPtr<Element> Internals::createContentElement(Document* document, Exceptio
         return 0;
     }
 
+#if ENABLE(SHADOW_DOM)
     return HTMLContentElement::create(document);
+#else
+    return 0;
+#endif
 }
 
 bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionCode& ec)
@@ -310,7 +314,11 @@ bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionCode& ec)
         return false;
     }
 
-    return toInsertionPoint(insertionPoint)->isSelectValid();
+#if ENABLE(SHADOW_DOM)
+    return isHTMLContentElement(insertionPoint) && toHTMLContentElement(insertionPoint)->isSelectValid();
+#else
+    return false;
+#endif
 }
 
 Node* Internals::treeScopeRootNode(Node* node, ExceptionCode& ec)
@@ -695,37 +703,33 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
 }
 #endif
 
-PassRefPtr<DOMStringList> Internals::formControlStateOfPreviousHistoryItem(ExceptionCode& ec)
+Vector<String> Internals::formControlStateOfPreviousHistoryItem(ExceptionCode& ec)
 {
     HistoryItem* mainItem = frame()->loader()->history()->previousItem();
     if (!mainItem) {
         ec = INVALID_ACCESS_ERR;
-        return 0;
+        return Vector<String>();
     }
     String uniqueName = frame()->tree()->uniqueName();
     if (mainItem->target() != uniqueName && !mainItem->childItemWithTarget(uniqueName)) {
         ec = INVALID_ACCESS_ERR;
-        return 0;
+        return Vector<String>();
     }
-    const Vector<String>& state = mainItem->target() == uniqueName ? mainItem->documentState() : mainItem->childItemWithTarget(uniqueName)->documentState();
-    RefPtr<DOMStringList> stringList = DOMStringList::create();
-    for (unsigned i = 0; i < state.size(); ++i)
-        stringList->append(state[i]);
-    return stringList.release();
+    return mainItem->target() == uniqueName ? mainItem->documentState() : mainItem->childItemWithTarget(uniqueName)->documentState();
 }
 
-void Internals::setFormControlStateOfPreviousHistoryItem(PassRefPtr<DOMStringList> state, ExceptionCode& ec)
+void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& state, ExceptionCode& ec)
 {
     HistoryItem* mainItem = frame()->loader()->history()->previousItem();
-    if (!state || !mainItem) {
+    if (!mainItem) {
         ec = INVALID_ACCESS_ERR;
         return;
     }
     String uniqueName = frame()->tree()->uniqueName();
     if (mainItem->target() == uniqueName)
-        mainItem->setDocumentState(*state.get());
+        mainItem->setDocumentState(state);
     else if (HistoryItem* subItem = mainItem->childItemWithTarget(uniqueName))
-        subItem->setDocumentState(*state.get());
+        subItem->setDocumentState(state);
     else
         ec = INVALID_ACCESS_ERR;
 }
@@ -1640,16 +1644,16 @@ int Internals::pageNumber(Element* element, float pageWidth, float pageHeight)
     return PrintContext::pageNumberForElement(element, FloatSize(pageWidth, pageHeight));
 }
 
-PassRefPtr<DOMStringList> Internals::iconURLs(Document* document) const
+Vector<String> Internals::iconURLs(Document* document) const
 {
     Vector<IconURL> iconURLs = document->iconURLs();
-    RefPtr<DOMStringList> stringList = DOMStringList::create();
+    Vector<String> array;
 
     Vector<IconURL>::const_iterator iter(iconURLs.begin());
     for (; iter != iconURLs.end(); ++iter)
-        stringList->append(iter->m_iconURL.string());
+        array.append(iter->m_iconURL.string());
 
-    return stringList.release();
+    return array;
 }
 
 int Internals::numberOfPages(float pageWidth, float pageHeight)
@@ -1741,14 +1745,10 @@ PassRefPtr<TypeConversions> Internals::typeConversions() const
     return TypeConversions::create();
 }
 
-PassRefPtr<DOMStringList> Internals::getReferencedFilePaths() const
+Vector<String> Internals::getReferencedFilePaths() const
 {
-    RefPtr<DOMStringList> stringList = DOMStringList::create();
     frame()->loader()->history()->saveDocumentAndScrollState();
-    const Vector<String>& filePaths = FormController::getReferencedFilePaths(frame()->loader()->history()->currentItem()->documentState());
-    for (size_t i = 0; i < filePaths.size(); ++i)
-        stringList->append(filePaths[i]);
-    return stringList.release();
+    return FormController::getReferencedFilePaths(frame()->loader()->history()->currentItem()->documentState());
 }
 
 void Internals::startTrackingRepaints(Document* document, ExceptionCode& ec)

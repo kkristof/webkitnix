@@ -89,8 +89,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     WebTestRunner::WebTestProxyBase* proxy() const;
     void setProxy(WebTestRunner::WebTestProxyBase*);
     void reset();
-    void setSelectTrailingWhitespaceEnabled(bool);
-    void setSmartInsertDeleteEnabled(bool);
     void setLogConsoleOutput(bool);
     void waitForPolicyDelegate();
     void setCustomPolicyDelegate(bool, bool);
@@ -149,6 +147,13 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual void setCurrentWebIntentRequest(const WebKit::WebIntentRequest&) OVERRIDE;
     virtual WebKit::WebIntentRequest* currentWebIntentRequest() OVERRIDE;
     virtual std::string makeURLErrorDescription(const WebKit::WebURLError&) OVERRIDE;
+    virtual std::string normalizeLayoutTestURL(const std::string&) OVERRIDE;
+    virtual void setSelectTrailingWhitespaceEnabled(bool) OVERRIDE;
+    virtual void setSmartInsertDeleteEnabled(bool) OVERRIDE;
+    virtual void setClientWindowRect(const WebKit::WebRect&) OVERRIDE;
+    virtual void showDevTools() OVERRIDE;
+    virtual void closeDevTools() OVERRIDE;
+    virtual void evaluateInWebInspector(long, const std::string&) OVERRIDE;
 
     // NavigationHost
     virtual bool navigate(const TestNavigationEntry&, bool reload);
@@ -186,7 +191,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual bool runModalPromptDialog(WebKit::WebFrame*, const WebKit::WebString& message, const WebKit::WebString& defaultValue, WebKit::WebString* actualValue);
     virtual bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
     virtual void showContextMenu(WebKit::WebFrame*, const WebKit::WebContextMenuData&);
-    virtual void setStatusText(const WebKit::WebString&);
     virtual void didUpdateLayout();
     virtual void navigateBackForwardSoon(int offset);
     virtual int historyBackListCount();

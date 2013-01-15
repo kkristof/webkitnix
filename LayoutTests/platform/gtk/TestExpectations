@@ -467,16 +467,10 @@ webkit.org/b/103771 media/track/track-in-band-cues-added-once.html [ Timeout ]
 # Crashing tests
 #////////////////////////////////////////////////////////////////////////////////////////
 
-webkit.org/b/74297 [ Debug ] http/tests/security/cross-origin-xsl-redirect-BLOCKED.html [ Crash Pass ]
-
 webkit.org/b/86443 plugins/npruntime/delete-plugin-within-getProperty.html [ Crash ]
 webkit.org/b/86443 [ Debug ] plugins/npruntime/delete-plugin-within-invoke.html [ Crash ]
 
 webkit.org/b/86176 [ Debug ] ietestcenter/css3/valuesandunits/units-000.htm [ Crash ]
-
-webkit.org/b/89188 [ Release ] storage/websql/quota-tracking.html [ Crash Pass ]
-
-webkit.org/b/90589 [ Release ] fast/css/user-drag-none.html [ Crash Timeout ]
 
 webkit.org/b/93502 [ Debug ] fast/history/nested-visited-test.html [ Crash Pass ]
 webkit.org/b/93502 [ Debug ] fast/history/sibling-visited-test.html [ Crash Pass ]
@@ -617,6 +611,8 @@ webkit.org/b/104809 media/W3C/video/events/event_loadstart_manual.html [ Crash P
 
 webkit.org/b/106415 fast/workers/worker-close-more.html [ Timeout Pass ]
 
+webkit.org/b/106592 fast/regions/firstletter-inside-flowthread.html [ ImageOnlyFailure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -690,7 +686,7 @@ Bug(GTK) http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.h
 
 webkit.org/b/46644 fast/text/large-text-composed-char-dos.html [ Timeout ]
 
-Bug(GTK) [ Debug ] fast/css/user-drag-none.html [ Timeout ]
+Bug(GTK) fast/css/user-drag-none.html [ Timeout ]
 
 webkit.org/b/61118 fullscreen/full-screen-keyboard-enabled.html [ Timeout ]
 
@@ -972,7 +968,7 @@ webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvase
 webkit.org/b/37613 webkit.org/b/20011 printing [ Skip ]
 webkit.org/b/37613 editing/execCommand/print.html [ Skip ]
 
-# Need to dump context menu items on eventSender.contextClick(true).
+# DRT doesn't dispatch an event for the second call eventSender.contextClick().
 webkit.org/b/39102 editing/spelling/context-menu-suggestions.html [ Failure ]
 
 # Some input type=range tests fail because of the size

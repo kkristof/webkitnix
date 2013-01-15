@@ -1081,12 +1081,17 @@ void RenderBlock::removeLeftoverAnonymousBlock(RenderBlock* child)
         if (child->nextSibling())
             child->nextSibling()->setPreviousSibling(child->previousSibling());
     }
+
+    child->children()->setFirstChild(0);
+    child->m_next = 0;
+
+    // Remove all the information in the flow thread associated with the leftover anonymous block.
+    if (child->inRenderFlowThread())
+        child->removeFromRenderFlowThread();
+
     child->setParent(0);
     child->setPreviousSibling(0);
     child->setNextSibling(0);
-    
-    child->children()->setFirstChild(0);
-    child->m_next = 0;
 
     child->destroy();
 }
@@ -5604,14 +5609,8 @@ void RenderBlock::computePreferredLogicalWidths()
                 m_minPreferredLogicalWidth = 0;
         }
 
-        int scrollbarWidth = 0;
-        // FIXME: This should only be done for horizontal writing mode.
-        // For vertical writing mode, this should check overflowX and use the horizontalScrollbarHeight.
-        if (hasOverflowClip() && styleToUse->overflowY() == OSCROLL) {
-            layer()->setHasVerticalScrollbar(true);
-            scrollbarWidth = verticalScrollbarWidth();
-            m_maxPreferredLogicalWidth += scrollbarWidth;
-        }
+        int scrollbarWidth = instrinsicScrollbarLogicalWidth();
+        m_maxPreferredLogicalWidth += scrollbarWidth;
 
         if (isTableCell()) {
             Length w = toRenderTableCell(this)->styleOrColLogicalWidth();

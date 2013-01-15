@@ -1,3 +1,499 @@
+2013-01-14  Dean Jackson  <dino@apple.com>
+
+        [ANGLE] Update ANGLE in WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=106274
+
+        Unreviewed attempted build fix.
+
+        The khrplatform.h file is now a public header without a directory
+        prefix. Update the include path to look in the right place.
+
+        * PlatformEfl.cmake:
+
+2013-01-14  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/12524710> Update sandbox rules after r128003
+        https://bugs.webkit.org/show_bug.cgi?id=106840
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/com.apple.WebProcess.sb.in:
+
+2013-01-14  Huang Dongsung  <luxtella@company100.net>
+
+        [EFL] REGRESSION(r139189): MiniBrowser renders abnormally with -r option.
+        https://bugs.webkit.org/show_bug.cgi?id=106512
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        PageViewportController handles only pageScaleFactor after r139189. So
+        PageViewportControllerClientEFL calls EwkView::setScaleFactor() with
+        pageScaleFactor instead of pageScaleFactor * deviceScaleFactor.
+
+        This patch makes EwkView handle pageScaleFactor.
+        1. EwkView uses pageScaleFactor * deviceScaleFactor when drawing in
+        the device unit.
+        2. EwkView uses pageScaleFactor when notifying the scale to
+        PageViewportController.
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::EwkViewImpl):
+        (EwkViewImpl::deviceScaleFactor):
+        (EwkViewImpl::transformFromScene):
+        (EwkViewImpl::displayTimerFired):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl):
+        (EwkViewImpl::setPageScaleFactor):
+        (EwkViewImpl::pageScaleFactor):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didRenderFrame):
+        * UIProcess/PageViewportControllerClient.h:
+        (PageViewportControllerClient):
+        * UIProcess/efl/PageClientLegacyImpl.cpp:
+        (WebKit::PageClientLegacyImpl::updateViewportSize):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::setViewportPosition):
+        (WebKit::PageViewportControllerClientEfl::setPageScaleFactor):
+        (WebKit::PageViewportControllerClientEfl::didResumeContent):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (PageViewportControllerClientEfl):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::setPageScaleFactor):
+        * UIProcess/qt/PageViewportControllerClientQt.h:
+        (PageViewportControllerClientQt):
+
+2013-01-14  Max Vujovic  <mvujovic@adobe.com>
+
+        [ANGLE] Update ANGLE in WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=106274
+
+        Reviewed by Dean Jackson.
+
+        Update ANGLE to r1641.
+
+        * PlatformEfl.cmake: Add ANGLE/include to the include directories list because ShaderLang.h
+        now includes "KHR/khrplatform.h", which is located in ANGLE/include/KHR/khrplatform.h.
+
+2013-01-14  Alexey Proskuryakov  <ap@apple.com>
+
+        NetworkProcess scheduler never resumes resource loads that were postponed
+        due to connection limit
+        https://bugs.webkit.org/show_bug.cgi?id=106821
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkResourceLoadScheduler.cpp:
+        (WebKit::NetworkResourceLoadScheduler::servePendingRequests):
+        * NetworkProcess/NetworkResourceLoadScheduler.h:
+        Remove an uninitialized variable that could prevent loading.
+
+2013-01-11  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Qt][WK2] plugin tests assert in debug
+        https://bugs.webkit.org/show_bug.cgi?id=106659
+
+        Reviewed by Benjamin Poulain.
+
+        Fixed the misuse of String::split.
+
+        * Shared/Plugins/Netscape/x11/NetscapePluginModuleX11.cpp:
+        (WebKit::truncateToSingleLine):
+        Add an assert to make sure this function works well. I just walked there
+        while debugging the bug, and although it was innocent, adding this assertion
+        is logical.
+        * UIProcess/Plugins/qt/PluginProcessProxyQt.cpp:
+        (WebKit::PluginProcessProxy::scanPlugin):
+        The ASSERT was wrong. We have three lines, each ends in a newline, so split
+        with allowEmptyEntries=true will devide it to 4 substrings.
+
+2013-01-11  Filip Pizlo  <fpizlo@apple.com>
+
+        JITThunks should not compile only because of luck
+        https://bugs.webkit.org/show_bug.cgi?id=105696
+
+        Rubber stamped by Sam Weinig.
+
+        * Shared/APIObject.cpp:
+        * Shared/linux/WebMemorySamplerLinux.cpp:
+        * UIProcess/WebContext.cpp:
+        * WebProcess/WebPage/WebPage.cpp:
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+
+2013-01-11  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Remove the dependency of WebCoordinatedSurface::Handle from Coordinated Graphics.
+        https://bugs.webkit.org/show_bug.cgi?id=104347
+
+        Reviewed by Noam Rosenthal.
+
+        It is a preparation patch for Threaded Coordinated Graphics on WK1.
+
+        Currently, UpdateAtlas and CoordinatedImageBacking use
+        WebCoordinatedSurface::Handle, but WebCoordinatedSurface::Handle can be
+        used only IPC-based Coordinated Graphics. So this patch removes the
+        dependency of WebCoordinatedSurface::Handle from UpdateAtlas and
+        CoordinatedImageBacking. Now CoordinatedLayerTreeHost converts the
+        handle to a WebCoordinatedSurface.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.cpp:
+        (WebKit::CoordinatedImageBacking::update):
+        (WebKit::CoordinatedImageBacking::releaseSurfaceIfNeeded):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedImageBacking.h:
+        (Coordinator):
+        (CoordinatedImageBacking):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::updateImageBacking):
+        (WebKit::CoordinatedLayerTreeHost::createUpdateAtlas):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        (WebKit):
+        (CoordinatedLayerTreeHost):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.cpp:
+        (WebKit::UpdateAtlas::UpdateAtlas):
+        (WebKit::UpdateAtlas::~UpdateAtlas):
+        (WebKit::UpdateAtlas::beginPaintingOnAvailableBuffer):
+        * WebProcess/WebPage/CoordinatedGraphics/UpdateAtlas.h:
+        (UpdateAtlasClient):
+        (UpdateAtlas):
+
+2013-01-11  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Network process unblocks all waiting threads when any sync reply arrives
+        https://bugs.webkit.org/show_bug.cgi?id=106713
+
+        Reviewed by Brady Eidson.
+
+        Switch to sending sync CoreIPC messages, which is now possible.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp: (WebKit::NetworkConnectionToWebProcess::didClose):
+        We no longer have response maps.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::willSendRequest): Just send a sync message.
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpace): Ditto.
+        (WebKit::NetworkResourceLoader::didReceiveDataArray): Added an unrelated assertion.
+
+        * NetworkProcess/NetworkResourceLoader.h:
+        * NetworkProcess/NetworkResourceLoader.messages.in:
+        Removed no longer used reply messages and their handlers.
+
+        * Shared/BlockingResponseMap.h: Removed a bool version, which was not perfectly
+        safe, and only used in NetworkProcess.
+        (BlockingResponseMap::didReceiveResponse): Updated a still valid FIXME to not refer
+        to network process.
+        (BlockingResponseMap::cancel): Ditto.
+
+        * WebProcess/Network/NetworkProcessConnection.h:
+        * WebProcess/Network/NetworkProcessConnection.cpp:
+        (WebKit::NetworkProcessConnection::didReceiveSyncMessage):
+        Plumbing to handle sync messages.
+
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::willSendRequest):
+        (WebKit::WebResourceLoader::canAuthenticateAgainstProtectionSpace):
+        * WebProcess/Network/WebResourceLoader.h:
+        * WebProcess/Network/WebResourceLoader.messages.in:
+        Updated (simplified) sync messages and their handlers.
+
+2013-01-11  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Make it possible to send sync messages from secondary threads
+        https://bugs.webkit.org/show_bug.cgi?id=106708
+
+        Apply another review comment (overlooked a "ditto").
+
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::sendSyncMessage):
+
+2013-01-11  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] Make it possible to send sync messages from secondary threads
+        https://bugs.webkit.org/show_bug.cgi?id=106708
+
+        Reviewed by Anders Carlsson.
+
+        It is hugely beneficial to implement sync messages at Connection level, because
+        ad hoc code that blocks a thread and wakes it up when a reply arrives on main
+        thread can't be made equally performant. A CoreOPC MessageDecoder can be moved across
+        threads, which can't be done with a decoded argument passed by reference to client code.
+
+        Sync messages from secondary threads are tracked in much simpler data structure
+        than client thread ones, because we don't need to be concerned with incoming messages.
+
+        * Platform/CoreIPC/Connection.cpp:
+        (Connection::SecondaryThreadPendingSyncReply):
+        (CoreIPC::Connection::SecondaryThreadPendingSyncReply::SecondaryThreadPendingSyncReply):
+        (CoreIPC::Connection::createSyncMessageEncoder):
+        (CoreIPC::Connection::sendSyncMessage):
+        (CoreIPC::Connection::sendSyncMessageFromSecondaryThread):
+        (CoreIPC::Connection::processIncomingSyncReply):
+        (CoreIPC::Connection::connectionDidClose):
+
+        * Platform/CoreIPC/Connection.h: Also corrected a misleading comment.
+
+2013-01-11  Dan Bernstein  <mitz@apple.com>
+
+        Exclude unused resources.
+
+        Reviewed by Darin Adler.
+
+        * Configurations/WebKit2.xcconfig: Defined EXCLUDED_SOURCE_FILE_NAMES.
+
+2013-01-11  Anders Carlsson  <andersca@apple.com>
+
+        Incoming synchronous messages can sometimes arrive out of order
+        https://bugs.webkit.org/show_bug.cgi?id=106677
+        <rdar://problem/12889499>
+
+        Reviewed by Andreas Kling.
+
+        In cases where synchronous messages come in more than one connection at the same time, we can sometimes deliver
+        the synchronous messages before any pending asynchronous messages on that connection. This breaks FIFO ordering.
+
+        Fix this by separating the "dispatch all incoming synchronous messages" phase out into multiple phases, so we'll
+        schedule one call per connection instead of one call for all connections.
+
+        * Platform/CoreIPC/Connection.cpp:
+        (Connection::SyncMessageState):
+        (CoreIPC::Connection::SyncMessageState::SyncMessageState):
+        (CoreIPC::Connection::SyncMessageState::processIncomingMessage):
+        (CoreIPC::Connection::SyncMessageState::dispatchMessages):
+        (CoreIPC::Connection::SyncMessageState::dispatchMessageAndResetDidScheduleDispatchMessagesForConnection):
+        (CoreIPC::Connection::waitForSyncReply):
+
+2013-01-11  Zan Dobersek  <zandobersek@gmail.com>
+
+        Unreviewed. Build fix for the GTK debug builds of WebKit2 after r139415.
+
+        * WebProcess/gtk/WebGtkExtensionManager.cpp:
+
+2013-01-11  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Remove support for global extensions in WebKit2 GTK+
+        https://bugs.webkit.org/show_bug.cgi?id=106646
+
+        Reviewed by Xan Lopez.
+
+        We have now API to set the web extensions directory. A global web
+        estensions directory doesn't make sense anymore.
+
+        * WebProcess/gtk/WebGtkExtensionManager.cpp:
+        (WebKit::WebGtkExtensionManager::scanModules): Only scan the given
+        directory for modules.
+        (WebKit::WebGtkExtensionManager::initialize): Load modules found
+        in the given directory only.
+        * WebProcess/gtk/WebGtkExtensionManager.h:
+        (WebGtkExtensionManager): Remove appendModuleDirectories().
+
+2013-01-11  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [EFL][WK2] Add ewk_view_page_contents_get() API
+        https://bugs.webkit.org/show_bug.cgi?id=106440
+
+        Reviewed by Gyuyoung Kim.
+
+        Add ewk_view_page_contents_get() API for getting contents of the current page.
+        Currently, it supports only MHTML type.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (Ewk_Page_Contents_Context):
+        (ewkViewPageContentsCallback):
+        (ewk_view_page_contents_get):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (PageContentsCallback):
+        (TEST_F):
+
+2013-01-11  Krzysztof Czech  <k.czech@samsung.com>
+
+        [WK2] Missing HAVE(ACCESSIBILITY) guards to some atk/ accessibility files.
+        https://bugs.webkit.org/show_bug.cgi?id=106447
+
+        Reviewed by Andreas Kling.
+
+        Files do not have HAVE(ACCESSIBILITY) guards.
+        This is source of potential build breakes, when macro is not enabled.
+
+        * WebProcess/WebPage/atk/WebPageAccessibilityObject.h:
+        * WebProcess/WebPage/atk/WebPageAccessibilityObjectAtk.cpp:
+
+2013-01-11  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [EFL] Fix unused parameter build error
+        https://bugs.webkit.org/show_bug.cgi?id=106639
+
+        Reviewed by Kentaro Hara.
+
+        Use UNUSED_PARAM macro to fix build error.
+
+        * UIProcess/API/efl/ewk_color_picker.cpp:
+        (ewk_color_picker_color_set):
+        (ewk_color_picker_color_get):
+        * UIProcess/API/efl/ewk_context.cpp:
+        (ewk_context_additional_plugin_path_set):
+        * UIProcess/API/efl/ewk_settings.cpp:
+        (ewk_settings_fullscreen_enabled_set):
+        (ewk_settings_fullscreen_enabled_get):
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_intent_deliver):
+        (ewk_view_feed_touch_event):
+        (ewk_view_touch_events_enabled_set):
+        (ewk_view_touch_events_enabled_get):
+        (ewk_view_fullscreen_exit):
+
+2013-01-10  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Add API to set the web extensions directory to WebKit2 GTK+
+        https://bugs.webkit.org/show_bug.cgi?id=106462
+
+        Reviewed by Xan Lopez.
+
+        * UIProcess/API/gtk/WebKitWebContext.cpp:
+        (webkit_web_context_set_web_extensions_directory): Set
+        the given directory as injected bundle initialization user data.
+        * UIProcess/API/gtk/WebKitWebContext.h:
+        * UIProcess/API/gtk/docs/webkit2gtk-sections.txt: Add new symbol.
+        * UIProcess/API/gtk/tests/TestWebExtensions.cpp:
+        (beforeAll): Update the test to use
+        webkit_web_context_set_web_extensions_directory()
+        instead of setting the WEBKIT_WEB_EXTENSIONS_PATH env var.
+        * WebProcess/gtk/WebGtkExtensionManager.cpp:
+        (WebKit::WebGtkExtensionManager::scanModules): Append the given
+        additional web extensions directory to the list of directories to
+        scan for modules.
+        (WebKit::WebGtkExtensionManager::initialize): Get the additional
+        web extensions directory from initialization user data and pass it
+        to scanModules().
+        * WebProcess/gtk/WebGtkExtensionManager.h:
+        (WebGtkExtensionManager): Add userData parameter.
+        * WebProcess/gtk/WebGtkInjectedBundleMain.cpp:
+        (WKBundleInitialize): Pass initialization user data to
+        WebGtkExtensionManager.
+
+2013-01-10  Huang Dongsung  <luxtella@company100.net>
+
+        [Qt][EFL] Rename from xxxContentsScale() to xxxScale() in PageViewportController.
+        https://bugs.webkit.org/show_bug.cgi?id=106537
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Rename 3 methods to match the terms of ViewportAttributes.
+
+        * UIProcess/API/qt/qwebkittest.cpp:
+        (QWebKitTest::viewport):
+        (QWebKitTest::contentsScale):
+        * UIProcess/PageViewportController.h:
+        (WebKit::PageViewportController::minimumScale):
+        (WebKit::PageViewportController::maximumScale):
+        (WebKit::PageViewportController::currentScale):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::zoomToAreaGestureEnded):
+
+2013-01-10  Michael Pruett  <michael@68k.org>
+
+        [WK2] Set IndexedDB database path in WK2
+        https://bugs.webkit.org/show_bug.cgi?id=106257
+
+        Reviewed by Benjamin Poulain.
+
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.cpp:
+        (WebKit::WebKeyValueStorageManager::initialize):
+        * WebProcess/KeyValueStorage/WebKeyValueStorageManager.h:
+        (WebKeyValueStorageManager):
+        (WebKit::WebKeyValueStorageManager::indexedDBDatabaseDirectory):
+        * WebProcess/WebPage/WebPageGroupProxy.cpp:
+        (WebKit::WebPageGroupProxy::WebPageGroupProxy):
+
+2013-01-10  Tim Horton  <timothy_horton@apple.com>
+
+        Ensure that WebPageProxy's notion of pageScaleFactor is reset on didCommitLoad
+        https://bugs.webkit.org/show_bug.cgi?id=103290
+        <rdar://problem/12752467>
+
+        Reviewed by Darin Adler.
+
+        When a standard main frame load is committed, we reset the WebPage's
+        pageScaleFactor, if it's not the default. However, if the previous
+        page had a full-main-frame plugin that was handling page scaling itself,
+        WebPageProxy can have a cached pageScaleFactor != 1, while WebPage
+        now (since the plugin that was overriding (set)pageScaleFactor is gone)
+        has a pageScaleFactor of 1, causing us to skip the call to reset the
+        WebPage's pageScaleFactor.
+
+        Therefore, when WebPageProxy is notified that a standard main-frame load
+        is committed, reset its cached notion of the pageScaleFactor.
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::didCommitLoadForFrame): Add a parameter which corresponds to FrameLoadType, so we can
+        determine whether a frame load is of FrameLoadTypeStandard (which matches the check to reset page scale in
+        WebFrameLoaderClient::didCommitLoad), so we can reset m_pageScaleFactor.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Add frameLoadType parameter to didCommitLoadForFrame.
+        * UIProcess/WebPageProxy.messages.in: Add frameLoadType parameter to didCommitLoadForFrame.
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDidCommitLoad): Pass frameLoadType parameter to didCommitLoadForFrame.
+
+2013-01-10  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Cmd-/+ should affect PDF page scale
+        https://bugs.webkit.org/show_bug.cgi?id=103285
+        <rdar://problem/12710469>
+
+        Reviewed by Darin Adler.
+
+        Plugins which support handling page scale themselves should also handle
+        page zoom, as it is a very similar concept.
+
+        This patch disables text zoom in the case of a main-frame plugin which supports
+        page scale factor changes, as it is not needed in the PDFPlugin case
+        (we can't do text-only scale for PDF), but it could be added later if needed.
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::pageZoomFactorDidChange):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/WebPageProxy.messages.in:
+        Add WebPageProxy::pageZoomFactorDidChange, to notify WebPageProxy of
+        out-of-band page zoom factor changes (in this case, from PluginView).
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::setPageScaleFactor):
+        Update WebPageProxy's notion of the current page zoom whenever PluginView
+        is notified of a page scale factor change.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setTextZoomFactor): We don't support text zoom in plugins, but
+        we also don't want it to silently act on the Frame if we have a plugin that
+        purports to handle page scale itself. Return early if this is the case.
+        (WebKit::WebPage::pageZoomFactor): For plugins that support page scale factor,
+        we equate page scale and page zoom. Return the PluginView's page scale factor
+        in place of the Frame's page zoom factor.
+        (WebKit::WebPage::setPageZoomFactor): Make page zoom changes in the aforementioned
+        case affect the PluginView's page scale.
+        (WebKit::WebPage::setPageAndTextZoomFactors): Ditto.
+
+2013-01-10  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Header cleanup
+        https://bugs.webkit.org/show_bug.cgi?id=106540
+
+        Reviewed by Andreas Kling.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm: Remove some unneeded headers.
+
+2013-01-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        Remove the ENABLE_ANIMATION_API feature define occurences
+        https://bugs.webkit.org/show_bug.cgi?id=106544
+
+        Reviewed by Simon Fraser.
+
+        The Animation API code was removed in r137243. The ENABLE_ANIMATION_API
+        feature define handling still lingers in various build systems and configurations
+        but is of no use, so it should be removed.
+
+        * Configurations/FeatureDefines.xcconfig:
+
 2013-01-10  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
 
         [EFL][WK2] Contents gets blurry when page is scrolled down

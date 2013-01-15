@@ -31,9 +31,11 @@
 #include "ArrayConstructor.h"
 #include "CallLinkStatus.h"
 #include "CodeBlock.h"
+#include "CodeBlockWithJITType.h"
 #include "DFGArrayMode.h"
 #include "DFGCapabilities.h"
 #include "GetByIdStatus.h"
+#include "JSValueInlines.h"
 #include "PutByIdStatus.h"
 #include "ResolveGlobalStatus.h"
 #include <wtf/HashMap.h>
@@ -3012,15 +3014,14 @@ bool ByteCodeParser::parseBlock(unsigned limit)
             PutToBaseOperation* putToBase = m_codeBlock->putToBaseOperation(operation);
 
             if (putToBase->m_isDynamic) {
-                addToGraph(Phantom, get(base));
                 addToGraph(PutById, OpInfo(identifier), get(base), get(value));
                 NEXT_OPCODE(op_put_to_base);
             }
 
             switch (putToBase->m_kind) {
             case PutToBaseOperation::Uninitialised:
-                addToGraph(Phantom, get(base));
                 addToGraph(ForceOSRExit);
+                addToGraph(Phantom, get(base));
                 break;
 
             case PutToBaseOperation::GlobalVariablePutChecked: {
@@ -3048,8 +3049,8 @@ bool ByteCodeParser::parseBlock(unsigned limit)
             }
             case PutToBaseOperation::GlobalPropertyPut: {
                 if (!putToBase->m_structure) {
-                    addToGraph(Phantom, get(base));
                     addToGraph(ForceOSRExit);
+                    addToGraph(Phantom, get(base));
                     NEXT_OPCODE(op_put_to_base);
                 }
                 NodeIndex baseNode = get(base);
@@ -3069,7 +3070,6 @@ bool ByteCodeParser::parseBlock(unsigned limit)
             }
             case PutToBaseOperation::Readonly:
             case PutToBaseOperation::Generic:
-                addToGraph(Phantom, get(base));
                 addToGraph(PutById, OpInfo(identifier), get(base), get(value));
             }
             NEXT_OPCODE(op_put_to_base);
@@ -3641,15 +3641,24 @@ void ByteCodeParser::parseCodeBlock()
             *m_globalData->m_perBytecodeProfiler, m_inlineStackTop->m_profiledBlock);
     }
     
+    bool shouldDumpBytecode = Options::dumpBytecodeAtDFGTime();
 #if DFG_ENABLE(DEBUG_VERBOSE)
-    dataLog(
-        "Parsing ", *codeBlock,
-        ": captureCount = ", codeBlock->symbolTable() ? codeBlock->symbolTable()->captureCount() : 0,
-        ", needsFullScopeChain = ", codeBlock->needsFullScopeChain(),
-        ", needsActivation = ", codeBlock->ownerExecutable()->needsActivation(),
-        ", isStrictMode = ", codeBlock->ownerExecutable()->isStrictMode(), "\n");
-    codeBlock->baselineVersion()->dumpBytecode();
+    shouldDumpBytecode |= true;
 #endif
+    if (shouldDumpBytecode) {
+        dataLog("Parsing ", *codeBlock);
+        if (m_inlineStackTop->m_inlineCallFrame) {
+            dataLog(
+                " for inlining at ", CodeBlockWithJITType(m_codeBlock, JITCode::DFGJIT),
+                " ", m_inlineStackTop->m_inlineCallFrame->caller);
+        }
+        dataLog(
+            ": captureCount = ", codeBlock->symbolTable() ? codeBlock->symbolTable()->captureCount() : 0,
+            ", needsFullScopeChain = ", codeBlock->needsFullScopeChain(),
+            ", needsActivation = ", codeBlock->ownerExecutable()->needsActivation(),
+            ", isStrictMode = ", codeBlock->ownerExecutable()->isStrictMode(), "\n");
+        codeBlock->baselineVersion()->dumpBytecode();
+    }
     
     for (unsigned jumpTargetIndex = 0; jumpTargetIndex <= codeBlock->numberOfJumpTargets(); ++jumpTargetIndex) {
         // The maximum bytecode offset to go into the current basicblock is either the next jump target, or the end of the instructions.

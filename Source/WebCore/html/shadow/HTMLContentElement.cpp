@@ -51,6 +51,8 @@ const QualifiedName& HTMLContentElement::contentTagName(Document*)
 #endif
 }
 
+#if ENABLE(SHADOW_DOM)
+
 PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
 {
     return adoptRef(new HTMLContentElement(contentTagName(document), document));
@@ -70,6 +72,15 @@ HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* docu
 
 HTMLContentElement::~HTMLContentElement()
 {
+}
+
+InsertionPoint::MatchType HTMLContentElement::matchTypeFor(Node*)
+{
+    if (select().isNull() || select().isEmpty())
+        return AlwaysMatches;
+    if (!isSelectValid())
+        return NeverMatches;
+    return HasToMatchSelector;
 }
 
 const AtomicString& HTMLContentElement::select() const
@@ -192,5 +203,18 @@ bool HTMLContentElement::validateSelect() const
     return true;
 }
 
+#else
+
+PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document* document)
+{
+    return adoptRef(new HTMLContentElement(contentTagName(document), document));
+}
+
+HTMLContentElement::HTMLContentElement(const QualifiedName& tagName, Document* document)
+    : InsertionPoint(tagName, document)
+{ }
+
+#endif // if ENABLE(SHADOW_DOM)
 
 }
+

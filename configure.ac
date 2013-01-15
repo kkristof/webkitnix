@@ -2,14 +2,14 @@ AC_PREREQ(2.60)
 
 m4_define([webkit_major_version], [1])
 m4_define([webkit_minor_version], [11])
-m4_define([webkit_micro_version], [2])
+m4_define([webkit_micro_version], [4])
 
 # This is the version we'll be using as part of our User-Agent string
 # e.g., AppleWebKit/$(webkit_user_agent_version) ...
 #
 # Sourced from Source/WebCore/Configurations/Version.xcconfig
 m4_define([webkit_user_agent_major_version], [537])
-m4_define([webkit_user_agent_minor_version], [20])
+m4_define([webkit_user_agent_minor_version], [26])
 
 AC_INIT([WebKitGTK],[webkit_major_version.webkit_minor_version.webkit_micro_version],[http://bugs.webkit.org/])
 
@@ -35,13 +35,13 @@ AC_CONFIG_SRCDIR([Source/WebCore/config.h])
 
 dnl # Libtool library version, not to confuse with API version
 dnl # see http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html
-LIBWEBKITGTK_VERSION=17:1:17
+LIBWEBKITGTK_VERSION=18:0:18
 AC_SUBST([LIBWEBKITGTK_VERSION])
 
-LIBJAVASCRIPTCOREGTK_VERSION=13:7:13
+LIBJAVASCRIPTCOREGTK_VERSION=13:8:13
 AC_SUBST([LIBJAVASCRIPTCOREGTK_VERSION])
 
-LIBWEBKIT2GTK_VERSION=19:0:19
+LIBWEBKIT2GTK_VERSION=20:0:20
 AC_SUBST([LIBWEBKIT2GTK_VERSION])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects dist-xz no-dist-gzip tar-ustar])
@@ -279,6 +279,12 @@ fi
 AC_SUBST([WINMM_LIBS])
 AC_SUBST([SHLWAPI_LIBS])
 AC_SUBST([OLE32_LIBS])
+
+
+# check whether dlopen() is in the core libc like on FreeBSD, or in a separate
+# libdl like on GNU/Linux (in which case we want to link to libdl)
+AC_CHECK_FUNC([dlopen], [], [AC_CHECK_LIB([dl], [dlopen], [DLOPEN_LIBS="-ldl"])])
+AC_SUBST([DLOPEN_LIBS])
 
 
 # determine the GTK+ version to use
@@ -1028,7 +1034,7 @@ if test "$with_acceleration_backend" = "opengl"; then
    if test "$enable_glx" = "yes"; then
     acceleration_backend_description+=", glx"
    fi
-   OPENGL_LIBS+=" -ldl"
+   OPENGL_LIBS+=" $DLOPEN_LIBS"
    acceleration_backend_description+=")"
 fi
 AC_SUBST([OPENGL_LIBS])

@@ -32,9 +32,9 @@
 #define WebAccessibilityObject_h
 
 #include "WebAccessibilityRole.h"
-#include <public/WebCommon.h>
-#include <public/WebPrivatePtr.h>
-#include <public/WebVector.h>
+#include "platform/WebCommon.h"
+#include "platform/WebPrivatePtr.h"
+#include "platform/WebVector.h"
 
 #if WEBKIT_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -129,6 +129,7 @@ public:
     WEBKIT_EXPORT WebRect boundingBoxRect() const;
     WEBKIT_EXPORT bool canvasHasFallbackContent() const;
     WEBKIT_EXPORT WebPoint clickPoint() const;
+    WEBKIT_EXPORT void colorValue(int& r, int& g, int& b) const;
     WEBKIT_EXPORT double estimatedLoadingProgress() const;
     WEBKIT_EXPORT WebString helpText() const;
     WEBKIT_EXPORT int headingLevel() const;

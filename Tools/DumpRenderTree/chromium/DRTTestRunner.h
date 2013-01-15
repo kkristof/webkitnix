@@ -75,20 +75,6 @@ public:
 
     virtual ~DRTTestRunner();
 
-    // This function sets a flag that tells the test_shell to print a line of
-    // descriptive text for the progress finished callback. It takes no
-    // arguments, and ignores any that may be present.
-    void dumpProgressFinishedCallback(const CppArgumentList&, CppVariant*);
-
-    // This function sets a flag that tells the test_shell to print out a text
-    // representation of the back/forward list. It ignores all arguments.
-    void dumpBackForwardList(const CppArgumentList&, CppVariant*);
-
-    // This function sets a flag that tells the test_shell to dump all calls
-    // to window.status().
-    // It takes no arguments, and ignores any that may be present.
-    void dumpWindowStatusChanges(const CppArgumentList&, CppVariant*);
-
     // Functions for dealing with windows. By default we block all new windows.
     void windowCount(const CppArgumentList&, CppVariant*);
     void setCloseRemainingWindowsWhenComplete(const CppArgumentList&, CppVariant*);
@@ -110,10 +96,6 @@ public:
 
     // Changes the cookie policy from the default to allow all cookies.
     void setAlwaysAcceptCookies(const CppArgumentList&, CppVariant*);
-
-    // Shows DevTools window.
-    void showWebInspector(const CppArgumentList&, CppVariant*);
-    void closeWebInspector(const CppArgumentList&, CppVariant*);
 
     // Gives focus to the window.
     void setWindowIsKey(const CppArgumentList&, CppVariant*);
@@ -139,15 +121,6 @@ public:
     // Converts a URL starting with file:///tmp/ to the local mapping.
     void pathToLocalResource(const CppArgumentList&, CppVariant*);
 
-    // Enable or disable smart insert/delete. This is enabled by default.
-    void setSmartInsertDeleteEnabled(const CppArgumentList&, CppVariant*);
-
-    // Enable or disable trailing whitespace selection on double click.
-    void setSelectTrailingWhitespaceEnabled(const CppArgumentList&, CppVariant*);
-    void enableAutoResizeMode(const CppArgumentList&, CppVariant*);
-    void disableAutoResizeMode(const CppArgumentList&, CppVariant*);
-    void dumpSelectionRect(const CppArgumentList&, CppVariant*);
-
 #if ENABLE(NOTIFICATIONS)
     // Grants permission for desktop notifications to an origin
     void grantWebNotificationPermission(const CppArgumentList&, CppVariant*);
@@ -155,15 +128,8 @@ public:
     void simulateLegacyWebNotificationClick(const CppArgumentList&, CppVariant*);
 #endif
 
-    void setDeferMainResourceDataLoad(const CppArgumentList&, CppVariant*);
-
     void display(const CppArgumentList&, CppVariant*);
     void displayInvalidatedRegion(const CppArgumentList&, CppVariant*);
-    void testRepaint(const CppArgumentList&, CppVariant*);
-    void repaintSweepHorizontally(const CppArgumentList&, CppVariant*);
-
-    void setAllowDisplayOfInsecureContent(const CppArgumentList&, CppVariant*);
-    void setAllowRunningOfInsecureContent(const CppArgumentList&, CppVariant*);
 
     // Clears all databases.
     void clearAllDatabases(const CppArgumentList&, CppVariant*);
@@ -174,14 +140,8 @@ public:
     // Resets between tests.
     void setPOSIXLocale(const CppArgumentList&, CppVariant*);
 
-    // Causes layout to happen as if targetted to printed pages.
-    void setPrinting(const CppArgumentList&, CppVariant*);
-
     // Gets the number of geolocation permissions requests pending.
     void numberOfPendingGeolocationPermissionRequests(const CppArgumentList&, CppVariant*);
-
-    // Allows layout tests to exec scripts at WebInspector side.
-    void evaluateInWebInspector(const CppArgumentList&, CppVariant*);
 
     // DeviceOrientation related functions
     void setMockDeviceOrientation(const CppArgumentList&, CppVariant*);
@@ -202,15 +162,6 @@ public:
     void wasMockSpeechRecognitionAborted(const CppArgumentList&, CppVariant*);
 #endif
 
-    // WebPermissionClient related.
-    void setImagesAllowed(const CppArgumentList&, CppVariant*);
-    void setScriptsAllowed(const CppArgumentList&, CppVariant*);
-    void setStorageAllowed(const CppArgumentList&, CppVariant*);
-    void setPluginsAllowed(const CppArgumentList&, CppVariant*);
-    void dumpPermissionClientCallbacks(const CppArgumentList&, CppVariant*);
-
-    void setShouldStayOnPageAfterHandlingBeforeUnload(const CppArgumentList&, CppVariant*);
-
 #if ENABLE(POINTER_LOCK)
     void didAcquirePointerLock(const CppArgumentList&, CppVariant*);
     void didNotAcquirePointerLock(const CppArgumentList&, CppVariant*);
@@ -226,13 +177,6 @@ public:
     // The following methods are not exposed to JavaScript.
     void setWorkQueueFrozen(bool frozen) { m_workQueue.setFrozen(frozen); }
 
-    bool shouldDumpProgressFinishedCallback() { return m_dumpProgressFinishedCallback; }
-    void setShouldDumpProgressFinishedCallback(bool value) { m_dumpProgressFinishedCallback = value; }
-    bool shouldDumpStatusCallbacks() { return m_dumpWindowStatusChanges; }
-    bool shouldDumpSelectionRect() { return m_dumpSelectionRect; }
-    bool shouldDumpBackForwardList() { return m_dumpBackForwardList; }
-    bool shouldDumpPermissionClientCallbacks() { return m_dumpPermissionClientCallbacks; }
-    bool deferMainResourceDataLoad() { return m_deferMainResourceDataLoad; }
     void setShowDebugLayerTree(bool value) { m_showDebugLayerTree = value; }
     void setTitleTextDirection(WebKit::WebTextDirection dir)
     {
@@ -243,12 +187,6 @@ public:
     {
         return m_interceptPostMessage.isBool() && m_interceptPostMessage.toBoolean();
     }
-
-    void setIsPrinting(bool value) { m_isPrinting = value; }
-    bool isPrinting() { return m_isPrinting; }
-
-    bool testRepaint() const { return m_testRepaint; }
-    bool sweepHorizontally() const { return m_sweepHorizontally; }
 
     // Called by the webview delegate when the toplevel frame load is done.
     void locationChangeDone();
@@ -271,8 +209,6 @@ public:
     };
 
     WebTaskList* taskList() { return &m_taskList; }
-
-    bool shouldStayOnPageAfterHandlingBeforeUnload() const { return m_shouldStayOnPageAfterHandlingBeforeUnload; }
 
 private:
     friend class WorkItem;
@@ -321,48 +257,16 @@ private:
     // Non-owning pointer. The DRTTestRunner is owned by the host.
     TestShell* m_shell;
 
-    // If true, the test_shell will draw the bounds of the current selection rect
-    // taking possible transforms of the selection rect into account.
-    bool m_dumpSelectionRect;
-
-    // If true, the test_shell will output a descriptive line for the progress
-    // finished callback.
-    bool m_dumpProgressFinishedCallback;
-
-    // If true, the test_shell will produce a dump of the back forward list as
-    // well.
-    bool m_dumpBackForwardList;
-
-    // If true, the test_shell will dump all changes to window.status.
-    bool m_dumpWindowStatusChanges;
-
-    // If true, output a descriptive line each time a permission client
-    // callback is invoked. Currently only implemented for allowImage.
-    bool m_dumpPermissionClientCallbacks;
-
     // When reset is called, go through and close all but the main test shell
     // window. By default, set to true but toggled to false using
     // setCloseRemainingWindowsWhenComplete().
     bool m_closeRemainingWindows;
 
-    // If true, pixel dump will be produced as a series of 1px-tall, view-wide
-    // individual paints over the height of the view.
-    bool m_testRepaint;
-    // If true and test_repaint_ is true as well, pixel dump will be produced as
-    // a series of 1px-wide, view-tall paints across the width of the view.
-    bool m_sweepHorizontally;
-
     // If true, don't dump output until notifyDone is called.
     bool m_waitUntilDone;
 
-    // If false, all new requests will not defer the main resource data load.
-    bool m_deferMainResourceDataLoad;
-
     // If true, we will show extended information in the graphics layer tree.
     bool m_showDebugLayerTree;
-
-    // If true, layout is to target printed pages.
-    bool m_isPrinting;
 
     WorkQueue m_workQueue;
 
@@ -374,8 +278,6 @@ private:
 
     // Bound variable to set whether postMessages should be intercepted or not
     CppVariant m_interceptPostMessage;
-
-    bool m_shouldStayOnPageAfterHandlingBeforeUnload;
 };
 
 #endif // DRTTestRunner_h

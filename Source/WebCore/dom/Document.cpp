@@ -1899,16 +1899,24 @@ void Document::updateStyleForAllDocuments()
 void Document::updateLayout()
 {
     ASSERT(isMainThread());
+
+    FrameView* frameView = view();
+    if (frameView && frameView->isInLayout()) {
+        // View layout should not be re-entrant.
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
     if (Element* oe = ownerElement())
         oe->document()->updateLayout();
 
     updateStyleIfNeeded();
 
     StackStats::LayoutCheckPoint layoutCheckPoint;
+
     // Only do a layout if changes have occurred that make it necessary.      
-    FrameView* v = view();
-    if (v && renderer() && (v->layoutPending() || renderer()->needsLayout()))
-        v->layout();
+    if (frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout()))
+        frameView->layout();
 }
 
 // FIXME: This is a bad idea and needs to be removed eventually.
@@ -2116,6 +2124,11 @@ void Document::detach()
 
     if (render)
         render->destroy();
+
+#if ENABLE(TOUCH_EVENTS)
+    if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
+        parentDocument()->didRemoveEventTargetNode(this);
+#endif
 
     // This is required, as our Frame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -5659,11 +5672,11 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 #if ENABLE(TOUCH_EVENTS)
 void Document::didRemoveEventTargetNode(Node* handler)
 {
-    if (m_touchEventTargets.get())
+    if (m_touchEventTargets) {
         m_touchEventTargets->removeAll(handler);
-    if (handler == this)
-        if (Document* parentDocument = this->parentDocument())
-            parentDocument->didRemoveEventTargetNode(this);
+        if ((handler == this || m_touchEventTargets->isEmpty()) && parentDocument())
+            parentDocument()->didRemoveEventTargetNode(this);
+    }
 }
 #endif
 

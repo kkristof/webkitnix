@@ -1236,7 +1236,12 @@ sub determineIsChromiumNinja()
           $statMake = stat('Makefile.chromium')->mtime;
         }
 
-        $hasUpToDateNinjabuild = $statNinja > $statXcode && $statNinja > $statMake;
+        my $statVisualStudio = 0;
+        if (-e 'Source/WebKit/chromium/All.sln') {
+          $statVisualStudio = stat('Source/WebKit/chromium/All.sln')->mtime;
+        }
+
+        $hasUpToDateNinjabuild = $statNinja > $statXcode && $statNinja > $statMake && $statNinja > $statVisualStudio;
     }
     $isChromiumNinja = $hasUpToDateNinjabuild;
 }
@@ -1979,10 +1984,7 @@ sub runAutogenForAutotoolsProjectIfNecessary($@)
 
     # Prefix the command with jhbuild run.
     unshift(@buildArgs, "$relSourceDir/autogen.sh");
-    my $jhbuildWrapperPrefix = jhbuildWrapperPrefixIfNeeded();
-    if ($jhbuildWrapperPrefix) {
-        unshift(@buildArgs, $jhbuildWrapperPrefix);
-    }
+    unshift(@buildArgs, jhbuildWrapperPrefixIfNeeded());
     if (system(@buildArgs) ne 0) {
         die "Calling autogen.sh failed!\n";
     }
@@ -2111,7 +2113,7 @@ sub buildAutotoolsProject($@)
     my $joinedOverridableFeatures = join(" ", @overridableFeatures);
     runAutogenForAutotoolsProjectIfNecessary($dir, $prefix, $sourceDir, $project, $joinedOverridableFeatures, @buildArgs);
 
-    my $runWithJhbuild = jhbuildWrapperPrefixIfNeeded();
+    my $runWithJhbuild = join(" ", jhbuildWrapperPrefixIfNeeded());
     if (system("$runWithJhbuild $make $makeArgs") ne 0) {
         die "\nFailed to build WebKit using '$make'!\n";
     }
@@ -2122,9 +2124,7 @@ sub buildAutotoolsProject($@)
         my @docGenerationOptions = ("$sourceDir/Tools/gtk/generate-gtkdoc", "--skip-html");
         push(@docGenerationOptions, productDir());
 
-        if ($runWithJhbuild) {
-            unshift(@docGenerationOptions, $runWithJhbuild);
-        }
+        unshift(@docGenerationOptions, jhbuildWrapperPrefixIfNeeded());
 
         if (system(@docGenerationOptions)) {
             die "\n gtkdoc did not build without warnings\n";
@@ -2137,13 +2137,17 @@ sub buildAutotoolsProject($@)
 sub jhbuildWrapperPrefixIfNeeded()
 {
     if (-e getJhbuildPath()) {
+        my @prefix = (File::Spec->catfile(sourceDir(), "Tools", "jhbuild", "jhbuild-wrapper"));
         if (isEfl()) {
-            return File::Spec->catfile(sourceDir(), "Tools", "efl", "run-with-jhbuild");
+            push(@prefix, "--efl");
         } elsif (isGtk()) {
-            return File::Spec->catfile(sourceDir(), "Tools", "gtk", "run-with-jhbuild");
+            push(@prefix, "--gtk");
         } elsif (isNix()) {
-            return File::Spec->catfile(sourceDir(), "Tools", "nix", "run-with-jhbuild");
+            push(@prefix, "--nix");
         }
+        push(@prefix, "run");
+
+        return @prefix;
     }
 
     return "";
@@ -2187,7 +2191,7 @@ sub generateBuildSystemFromCMakeProject
 
     # We call system("cmake @args") instead of system("cmake", @args) so that @args is
     # parsed for shell metacharacters.
-    my $wrapper = jhbuildWrapperPrefixIfNeeded() . " ";
+    my $wrapper = join(" ", jhbuildWrapperPrefixIfNeeded()) . " ";
     my $returnCode = system($wrapper . "cmake @args");
 
     chdir($originalWorkingDirectory);
@@ -2207,7 +2211,7 @@ sub buildCMakeGeneratedProject($)
 
     # We call system("cmake @args") instead of system("cmake", @args) so that @args is
     # parsed for shell metacharacters. In particular, $makeArgs may contain such metacharacters.
-    my $wrapper = jhbuildWrapperPrefixIfNeeded() . " ";
+    my $wrapper = join(" ", jhbuildWrapperPrefixIfNeeded()) . " ";
     return system($wrapper . "cmake @args");
 }
 
@@ -2574,7 +2578,7 @@ sub buildChromium($@)
     if (isDarwin() && !isChromiumAndroid() && !isChromiumMacMake() && !isChromiumNinja()) {
         # Mac build - builds the root xcode project.
         $result = buildXCodeProject("Source/WebKit/chromium/All", $clean, "-configuration", configuration(), @options);
-    } elsif (isCygwin() || isWindows()) {
+    } elsif ((isCygwin() || isWindows()) && !isChromiumNinja()) {
         # Windows build - builds the root visual studio solution.
         $result = buildChromiumVisualStudioProject("Source/WebKit/chromium/All.sln", $clean);
     } elsif (isChromiumNinja()) {

@@ -228,6 +228,27 @@ PassOwnPtr<NodeRareData> Element::createRareData()
     return adoptPtr(new ElementRareData());
 }
 
+void Element::clearTabIndexExplicitlyIfNeeded()
+{
+    if (hasRareData())
+        elementRareData()->clearTabIndexExplicitly();
+}
+
+void Element::setTabIndexExplicitly(short tabIndex)
+{
+    ensureElementRareData()->setTabIndexExplicitly(tabIndex);
+}
+
+bool Element::supportsFocus() const
+{
+    return hasRareData() && elementRareData()->tabIndexSetExplicitly();
+}
+
+short Element::tabIndex() const
+{
+    return hasRareData() ? elementRareData()->tabIndex() : 0;
+}
+
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, blur);
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, error);
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, focus);
@@ -453,7 +474,11 @@ int Element::offsetWidth()
 {
     document()->updateLayoutIgnorePendingStylesheets();
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
+#if ENABLE(SUBPIXEL_LAYOUT)
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer).round();
+#else
         return adjustForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer);
+#endif
     return 0;
 }
 
@@ -461,7 +486,11 @@ int Element::offsetHeight()
 {
     document()->updateLayoutIgnorePendingStylesheets();
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
+#if ENABLE(SUBPIXEL_LAYOUT)
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer).round();
+#else
         return adjustForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer);
+#endif
     return 0;
 }
 
@@ -508,7 +537,11 @@ int Element::clientWidth()
     }
     
     if (RenderBox* renderer = renderBox())
+#if ENABLE(SUBPIXEL_LAYOUT)
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer).round();
+#else
         return adjustForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer);
+#endif
     return 0;
 }
 
@@ -529,7 +562,11 @@ int Element::clientHeight()
     }
     
     if (RenderBox* renderer = renderBox())
+#if ENABLE(SUBPIXEL_LAYOUT)
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer).round();
+#else
         return adjustForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer);
+#endif
     return 0;
 }
 
@@ -1139,7 +1176,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 #endif
 
 #if ENABLE(DIALOG_ELEMENT)
-    setIsInTopLayer(false);
+    document()->removeFromTopLayer(this);
 #endif
 #if ENABLE(FULLSCREEN_API)
     if (containsFullScreenElement())
@@ -2308,24 +2345,14 @@ bool Element::childShouldCreateRenderer(const NodeRenderingContext& childContext
 #endif
 
 #if ENABLE(VIDEO_TRACK)
-bool Element::isWebVTTNode() const
+WebVTTNodeType Element::webVTTNodeType() const
 {
-    return hasRareData() && elementRareData()->isWebVTTNode();
+    return hasRareData() ? elementRareData()->webVTTNodeType() : WebVTTNodeTypeNone;
 }
 
-void Element::setIsWebVTTNode()
+void Element::setWebVTTNodeType(WebVTTNodeType type)
 {
-    ensureElementRareData()->setIsWebVTTNode();
-}
-
-bool Element::isWebVTTFutureNode() const
-{
-    return hasRareData() && elementRareData()->isWebVTTFutureNode();
-}
-
-void Element::setIsWebVTTFutureNode()
-{
-    ensureElementRareData()->setIsWebVTTFutureNode();
+    ensureElementRareData()->setWebVTTNodeType(type);
 }
 #endif
 
@@ -2374,7 +2401,10 @@ bool Element::isInTopLayer() const
 void Element::setIsInTopLayer(bool inTopLayer)
 {
     ensureElementRareData()->setIsInTopLayer(inTopLayer);
-    setNeedsStyleRecalc(SyntheticStyleChange);
+
+    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
+    // top layer position, or in its usual place if not in the top layer.
+    reattachIfAttached();
 }
 #endif
 

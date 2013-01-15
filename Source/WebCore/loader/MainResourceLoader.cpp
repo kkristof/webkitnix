@@ -99,6 +99,11 @@ void MainResourceLoader::receivedError(const ResourceError& error)
     RefPtr<MainResourceLoader> protect(this);
     RefPtr<Frame> protectFrame(m_documentLoader->frame());
 
+    if (m_substituteDataLoadIdentifier) {
+        ASSERT(!loader());
+        frameLoader()->client()->dispatchDidFailLoading(documentLoader(), m_substituteDataLoadIdentifier, error);
+    }
+
     // It is important that we call DocumentLoader::mainReceivedError before calling 
     // ResourceLoadNotifier::didFailToLoad because mainReceivedError clears out the relevant
     // document loaders. Also, mainReceivedError ends up calling a FrameLoadDelegate method
@@ -189,12 +194,10 @@ void MainResourceLoader::continueAfterNavigationPolicy(const ResourceRequest& re
         // However, from an API perspective, this isn't a cancellation. Therefore, sever our relationship with the network load via clearResource(),
         // but prevent the ResourceLoader from sending ResourceLoadNotifier callbacks.
         RefPtr<ResourceLoader> resourceLoader = loader();
-        ASSERT(!resourceLoader || resourceLoader->shouldSendResourceLoadCallbacks());
-        if (resourceLoader)
-            resourceLoader->setSendCallbackPolicy(DoNotSendCallbacks);
+        ASSERT(resourceLoader->shouldSendResourceLoadCallbacks());
+        resourceLoader->setSendCallbackPolicy(DoNotSendCallbacks);
         clearResource();
-        if (resourceLoader)
-            resourceLoader->setSendCallbackPolicy(SendCallbacks);
+        resourceLoader->setSendCallbackPolicy(SendCallbacks);
         handleSubstituteDataLoadSoon(request);
     }
 
@@ -535,8 +538,10 @@ void MainResourceLoader::didFinishLoading(double finishTime)
     RefPtr<MainResourceLoader> protect(this);
     RefPtr<DocumentLoader> dl = documentLoader();
 
-    if (!loader())
+    if (!loader()) {
         frameLoader()->notifier()->dispatchDidFinishLoading(documentLoader(), identifier(), finishTime);
+        m_substituteDataLoadIdentifier = 0;
+    }
 
 #if PLATFORM(MAC) && !PLATFORM(IOS) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
     if (m_filter) {
@@ -597,9 +602,11 @@ void MainResourceLoader::notifyFinished(CachedResource* resource)
 void MainResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
+    info.addMember(m_resource);
     info.addMember(m_initialRequest);
     info.addMember(m_substituteData);
     info.addMember(m_dataLoadTimer);
+    info.addMember(m_documentLoader);
 }
 
 void MainResourceLoader::handleSubstituteDataLoadNow(MainResourceLoaderTimer*)

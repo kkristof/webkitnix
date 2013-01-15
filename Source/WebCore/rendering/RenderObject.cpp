@@ -2370,13 +2370,19 @@ void RenderObject::willBeDestroyed()
     if (frame() && frame()->eventHandler()->autoscrollRenderer() == this)
         frame()->eventHandler()->stopAutoscrollTimer(true);
 
-    if (AXObjectCache::accessibilityEnabled()) {
-        document()->axObjectCache()->childrenChanged(this->parent());
-        document()->axObjectCache()->remove(this);
-    }
     animation()->cancelAnimations(this);
 
+    // For accessibility management, notify the parent of the imminent change to its child set.
+    // We do it now, before remove(), while the parent pointer is still available.
+    if (AXObjectCache::accessibilityEnabled())
+        document()->axObjectCache()->childrenChanged(this->parent());
+
     remove();
+
+    // The remove() call above may invoke axObjectCache()->childrenChanged() on the parent, which may require the AX render
+    // object for this renderer. So we remove the AX render object now, after the renderer is removed.
+    if (AXObjectCache::accessibilityEnabled())
+        document()->axObjectCache()->remove(this);
 
     // Continuation and first-letter can generate several renderers associated with a single node.
     // We only want to clear the node's renderer if we are the associated renderer.
@@ -2522,8 +2528,10 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
     if (destroyRoot->everHadLayout()) {
         if (destroyRoot->isBody())
             destroyRoot->view()->repaint();
-        else
+        else {
             destroyRoot->repaint();
+            destroyRoot->repaintOverhangingFloats(true);
+        }
     }
 
     destroyRoot->destroy();
@@ -2618,11 +2626,19 @@ void RenderObject::updateHitTestResult(HitTestResult& result, const LayoutPoint&
     if (result.innerNode())
         return;
 
-    Node* n = node();
-    if (n) {
-        result.setInnerNode(n);
+    Node* node = this->node();
+
+    // If we hit the anonymous renderers inside generated content we should
+    // actually hit the generated content so walk up to the PseudoElement.
+    if (!node && parent() && parent()->isBeforeOrAfterContent()) {
+        for (RenderObject* renderer = parent(); renderer && !node; renderer = renderer->parent())
+            node = renderer->node();
+    }
+
+    if (node) {
+        result.setInnerNode(node);
         if (!result.innerNonSharedNode())
-            result.setInnerNonSharedNode(n);
+            result.setInnerNonSharedNode(node);
         result.setLocalPoint(point);
     }
 }

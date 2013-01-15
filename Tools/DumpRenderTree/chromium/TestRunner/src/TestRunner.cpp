@@ -41,6 +41,7 @@
 #include "WebInputElement.h"
 #include "WebIntent.h"
 #include "WebIntentRequest.h"
+#include "WebPermissions.h"
 #include "WebPreferences.h"
 #include "WebScriptSource.h"
 #include "WebSecurityPolicy.h"
@@ -82,6 +83,7 @@ TestRunner::TestRunner()
     , m_delegate(0)
     , m_webView(0)
     , m_intentClient(adoptPtr(new EmptyWebDeliveredIntentClient))
+    , m_webPermissions(adoptPtr(new WebPermissions))
 {
     // Methods implemented in terms of chromium's public WebKit API.
     bindMethod("setTabKeyCyclesThroughElements", &TestRunner::setTabKeyCyclesThroughElements);
@@ -116,6 +118,10 @@ TestRunner::TestRunner()
     bindMethod("setPageVisibility", &TestRunner::setPageVisibility);
     bindMethod("setTextDirection", &TestRunner::setTextDirection);
     bindMethod("textSurroundingNode", &TestRunner::textSurroundingNode);
+    bindMethod("disableAutoResizeMode", &TestRunner::disableAutoResizeMode);
+    bindMethod("enableAutoResizeMode", &TestRunner::enableAutoResizeMode);
+    bindMethod("setSmartInsertDeleteEnabled", &TestRunner::setSmartInsertDeleteEnabled);
+    bindMethod("setSelectTrailingWhitespaceEnabled", &TestRunner::setSelectTrailingWhitespaceEnabled);
 
     // The following modify WebPreferences.
     bindMethod("setUserStyleSheetEnabled", &TestRunner::setUserStyleSheetEnabled);
@@ -147,10 +153,31 @@ TestRunner::TestRunner()
     bindMethod("dumpResourceLoadCallbacks", &TestRunner::dumpResourceLoadCallbacks);
     bindMethod("dumpResourceRequestCallbacks", &TestRunner::dumpResourceRequestCallbacks);
     bindMethod("dumpResourceResponseMIMETypes", &TestRunner::dumpResourceResponseMIMETypes);
+    bindMethod("dumpPermissionClientCallbacks", &TestRunner::dumpPermissionClientCallbacks);
+    bindMethod("setImagesAllowed", &TestRunner::setImagesAllowed);
+    bindMethod("setScriptsAllowed", &TestRunner::setScriptsAllowed);
+    bindMethod("setStorageAllowed", &TestRunner::setStorageAllowed);
+    bindMethod("setPluginsAllowed", &TestRunner::setPluginsAllowed);
+    bindMethod("setAllowDisplayOfInsecureContent", &TestRunner::setAllowDisplayOfInsecureContent);
+    bindMethod("setAllowRunningOfInsecureContent", &TestRunner::setAllowRunningOfInsecureContent);
+    bindMethod("dumpStatusCallbacks", &TestRunner::dumpWindowStatusChanges);
+    bindMethod("dumpProgressFinishedCallback", &TestRunner::dumpProgressFinishedCallback);
+    bindMethod("dumpBackForwardList", &TestRunner::dumpBackForwardList);
+    bindMethod("setDeferMainResourceDataLoad", &TestRunner::setDeferMainResourceDataLoad);
+    bindMethod("dumpSelectionRect", &TestRunner::dumpSelectionRect);
+    bindMethod("testRepaint", &TestRunner::testRepaint);
+    bindMethod("repaintSweepHorizontally", &TestRunner::repaintSweepHorizontally);
+    bindMethod("setPrinting", &TestRunner::setPrinting);
+    bindMethod("setShouldStayOnPageAfterHandlingBeforeUnload", &TestRunner::setShouldStayOnPageAfterHandlingBeforeUnload);
 
     // The following methods interact with the WebTestProxy.
     bindMethod("sendWebIntentResponse", &TestRunner::sendWebIntentResponse);
     bindMethod("deliverWebIntent", &TestRunner::deliverWebIntent);
+
+    // The following methods interact with the WebTestDelegate.
+    bindMethod("showWebInspector", &TestRunner::showWebInspector);
+    bindMethod("closeWebInspector", &TestRunner::closeWebInspector);
+    bindMethod("evaluateInWebInspector", &TestRunner::evaluateInWebInspector);
 
     // Properties.
     bindProperty("workerThreadCount", &TestRunner::workerThreadCount);
@@ -193,6 +220,12 @@ TestRunner::~TestRunner()
 {
 }
 
+void TestRunner::setDelegate(WebTestDelegate* delegate)
+{
+    m_delegate = delegate;
+    m_webPermissions->setDelegate(delegate);
+}
+
 void TestRunner::reset()
 {
     if (m_webView) {
@@ -226,11 +259,22 @@ void TestRunner::reset()
     m_dumpResourceLoadCallbacks = false;
     m_dumpResourceRequestCallbacks = false;
     m_dumpResourceResponseMIMETypes = false;
+    m_dumpWindowStatusChanges = false;
+    m_dumpProgressFinishedCallback = false;
+    m_dumpBackForwardList = false;
+    m_deferMainResourceDataLoad = true;
+    m_dumpSelectionRect = false;
+    m_testRepaint = false;
+    m_sweepHorizontally = false;
+    m_isPrinting = false;
+    m_shouldStayOnPageAfterHandlingBeforeUnload = false;
 
     m_globalFlag.set(false);
     m_platformName.set("chromium");
 
     m_userStyleSheetLocation = WebURL();
+
+    m_webPermissions->reset();
 }
 
 void TestRunner::setTestIsRunning(bool running)
@@ -331,6 +375,162 @@ bool TestRunner::shouldDumpResourceRequestCallbacks() const
 bool TestRunner::shouldDumpResourceResponseMIMETypes() const
 {
     return m_testIsRunning && m_dumpResourceResponseMIMETypes;
+}
+
+WebPermissionClient* TestRunner::webPermissions() const
+{
+    return m_webPermissions.get();
+}
+
+bool TestRunner::shouldDumpStatusCallbacks() const
+{
+    return m_dumpWindowStatusChanges;
+}
+
+bool TestRunner::shouldDumpProgressFinishedCallback() const
+{
+    return m_dumpProgressFinishedCallback;
+}
+
+bool TestRunner::shouldDumpBackForwardList() const
+{
+    return m_dumpBackForwardList;
+}
+
+bool TestRunner::deferMainResourceDataLoad() const
+{
+    return m_deferMainResourceDataLoad;
+}
+
+bool TestRunner::shouldDumpSelectionRect() const
+{
+    return m_dumpSelectionRect;
+}
+
+bool TestRunner::testRepaint() const
+{
+    return m_testRepaint;
+}
+
+bool TestRunner::sweepHorizontally() const
+{
+    return m_sweepHorizontally;
+}
+
+bool TestRunner::isPrinting() const
+{
+    return m_isPrinting;
+}
+
+bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const
+{
+    return m_shouldStayOnPageAfterHandlingBeforeUnload;
+}
+
+void TestRunner::dumpPermissionClientCallbacks(const CppArgumentList&, CppVariant* result)
+{
+    m_webPermissions->setDumpCallbacks(true);
+    result->setNull();
+}
+
+void TestRunner::setImagesAllowed(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setImagesAllowed(arguments[0].toBoolean());
+    result->setNull();
+}
+
+void TestRunner::setScriptsAllowed(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setScriptsAllowed(arguments[0].toBoolean());
+    result->setNull();
+}
+
+void TestRunner::setStorageAllowed(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setStorageAllowed(arguments[0].toBoolean());
+    result->setNull();
+}
+
+void TestRunner::setPluginsAllowed(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setPluginsAllowed(arguments[0].toBoolean());
+    result->setNull();
+}
+
+void TestRunner::setAllowDisplayOfInsecureContent(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setDisplayingInsecureContentAllowed(arguments[0].toBoolean());
+
+    result->setNull();
+}
+
+void TestRunner::setAllowRunningOfInsecureContent(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_webPermissions->setRunningInsecureContentAllowed(arguments[0].value.boolValue);
+
+    result->setNull();
+}
+
+void TestRunner::dumpWindowStatusChanges(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpWindowStatusChanges = true;
+    result->setNull();
+}
+
+void TestRunner::dumpProgressFinishedCallback(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpProgressFinishedCallback = true;
+    result->setNull();
+}
+
+void TestRunner::dumpBackForwardList(const CppArgumentList&, CppVariant* result)
+{
+    m_dumpBackForwardList = true;
+    result->setNull();
+}
+
+void TestRunner::setDeferMainResourceDataLoad(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() == 1)
+        m_deferMainResourceDataLoad = cppVariantToBool(arguments[0]);
+}
+
+void TestRunner::dumpSelectionRect(const CppArgumentList& arguments, CppVariant* result)
+{
+    m_dumpSelectionRect = true;
+    result->setNull();
+}
+
+void TestRunner::testRepaint(const CppArgumentList&, CppVariant* result)
+{
+    m_testRepaint = true;
+    result->setNull();
+}
+
+void TestRunner::repaintSweepHorizontally(const CppArgumentList&, CppVariant* result)
+{
+    m_sweepHorizontally = true;
+    result->setNull();
+}
+
+void TestRunner::setPrinting(const CppArgumentList& arguments, CppVariant* result)
+{
+    m_isPrinting = true;
+    result->setNull();
+}
+
+void TestRunner::setShouldStayOnPageAfterHandlingBeforeUnload(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() == 1 && arguments[0].isBool())
+        m_shouldStayOnPageAfterHandlingBeforeUnload = arguments[0].toBoolean();
+
+    result->setNull();
 }
 
 void TestRunner::setTabKeyCyclesThroughElements(const CppArgumentList& arguments, CppVariant* result)
@@ -814,6 +1014,54 @@ void TestRunner::textSurroundingNode(const CppArgumentList& arguments, CppVarian
     result->set(surroundingText.textContent().utf8());
 }
 
+void TestRunner::setSmartInsertDeleteEnabled(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_delegate->setSmartInsertDeleteEnabled(arguments[0].value.boolValue);
+    result->setNull();
+}
+
+void TestRunner::setSelectTrailingWhitespaceEnabled(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() > 0 && arguments[0].isBool())
+        m_delegate->setSelectTrailingWhitespaceEnabled(arguments[0].value.boolValue);
+    result->setNull();
+}
+
+void TestRunner::enableAutoResizeMode(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() != 4) {
+        result->set(false);
+        return;
+    }
+    int minWidth = cppVariantToInt32(arguments[0]);
+    int minHeight = cppVariantToInt32(arguments[1]);
+    WebKit::WebSize minSize(minWidth, minHeight);
+
+    int maxWidth = cppVariantToInt32(arguments[2]);
+    int maxHeight = cppVariantToInt32(arguments[3]);
+    WebKit::WebSize maxSize(maxWidth, maxHeight);
+
+    m_webView->enableAutoResizeMode(minSize, maxSize);
+    result->set(true);
+}
+
+void TestRunner::disableAutoResizeMode(const CppArgumentList& arguments, CppVariant* result)
+{
+    if (arguments.size() !=2) {
+        result->set(false);
+        return;
+    }
+    int newWidth = cppVariantToInt32(arguments[0]);
+    int newHeight = cppVariantToInt32(arguments[1]);
+    WebKit::WebSize newSize(newWidth, newHeight);
+
+    m_delegate->setClientWindowRect(WebRect(0, 0, newSize.width, newSize.height));
+    m_webView->disableAutoResizeMode();
+    m_webView->resize(newSize);
+    result->set(true);
+}
+
 void TestRunner::setUserStyleSheetEnabled(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool()) {
@@ -1025,6 +1273,26 @@ void TestRunner::deliverWebIntent(const CppArgumentList& arguments, CppVariant* 
     WebIntent intent = WebIntent::create(action, type, serializedData.toString(), WebVector<WebString>(), WebVector<WebString>());
 
     m_webView->mainFrame()->deliverIntent(intent, 0, m_intentClient.get());
+}
+
+void TestRunner::showWebInspector(const CppArgumentList&, CppVariant* result)
+{
+    m_delegate->showDevTools();
+    result->setNull();
+}
+
+void TestRunner::closeWebInspector(const CppArgumentList& args, CppVariant* result)
+{
+    m_delegate->closeDevTools();
+    result->setNull();
+}
+
+void TestRunner::evaluateInWebInspector(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isString())
+        return;
+    m_delegate->evaluateInWebInspector(arguments[0].toInt32(), arguments[1].toString());
 }
 
 void TestRunner::dumpEditingCallbacks(const CppArgumentList&, CppVariant* result)
