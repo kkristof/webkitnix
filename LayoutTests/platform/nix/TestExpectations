@@ -787,7 +787,6 @@ compositing/reflections/load-video-in-reflection.html [ Missing ]
 compositing/reflections/animation-inside-reflection.html [ Missing ]
 compositing/self-painting-layers.html [ Missing ]
 fast/dom/row-inner-text.html [ Missing ]
-fast/text/zero-font-size.html [ Missing ]
 
 # Missing PNG and failing text (Graphics layer not being rendered).
 compositing/layer-creation/spanOverlapsCanvas.html [ Missing Failure ]
@@ -1534,7 +1533,6 @@ fast/storage [ Skip ]
 fast/sub-pixel [ Skip ]
 fast/table [ Skip ]
 fast/text [ Skip ]
-fast/text/zero-font-size.html [ Pass ]
 fast/text-autosizing [ Skip ]
 fast/transforms [ Skip ]
 fast/writing-mode [ Skip ]
@@ -1588,7 +1586,10 @@ fast/events/touch/multi-touch-inside-iframes.html [ Failure Pass ]
 fast/workers/worker-document-leak.html [ Failure Pass ]
 fast/workers/worker-lifecycle.html [ Failure Pass ]
 
+# Flakey tests when running pixel tests.
 compositing/background-color/background-color-padding-change.html [ ImageOnlyFailure Pass ]
 compositing/scrollbar-painting.html [ ImageOnlyFailure Crash Pass ]
-
+compositing/backface-visibility/backface-visibility-3d.html [ Crash Pass ]
+compositing/background-color/background-color-alpha.html [ Crash Pass ]
+compositing/background-color/background-color-change-to-text.html [ Crash Pass ]
 ################################################################################

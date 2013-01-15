@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Samsung Electronics
- * Copyright (C) 2012 INdT - Instituto Nokia de Tecnologia
+ * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  *
  * All rights reserved.
  *
