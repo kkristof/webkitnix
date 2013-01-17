@@ -194,6 +194,8 @@
 		1A91010B1268C8CA001842F5 /* FindIndicatorWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A9101091268C8CA001842F5 /* FindIndicatorWindow.mm */; };
 		1A92DC1112F8BA460017AF65 /* LayerTreeContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A92DC1012F8BA460017AF65 /* LayerTreeContext.h */; };
 		1A92DC1312F8BAB90017AF65 /* LayerTreeContextMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A92DC1212F8BAB90017AF65 /* LayerTreeContextMac.mm */; };
+		1A97E07616A5F9E0000BC9E5 /* LayerTreeHostMac.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97E07316A5F578000BC9E5 /* LayerTreeHostMac.h */; };
+		1A97E07716A5F9E0000BC9E5 /* LayerTreeHostMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A97E07416A5F578000BC9E5 /* LayerTreeHostMac.mm */; };
 		1A9FBA8D13FF04E600DEED67 /* PluginComplexTextInputState.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A9FBA8C13FF04E600DEED67 /* PluginComplexTextInputState.h */; };
 		1AA2E51D12E4C05E00BC4966 /* CGUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AA2E51B12E4C05E00BC4966 /* CGUtilities.h */; };
 		1AA2E51E12E4C05E00BC4966 /* CGUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AA2E51C12E4C05E00BC4966 /* CGUtilities.cpp */; };
@@ -468,6 +470,8 @@
 		51795571162877D200FA43B6 /* NetworkProcessCreationParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 51A8A60F1627F2BD000D90E9 /* NetworkProcessCreationParameters.h */; };
 		517CF0E3163A486C00C2950E /* NetworkProcessConnectionMessageReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 517CF0E1163A486C00C2950E /* NetworkProcessConnectionMessageReceiver.cpp */; };
 		517CF0E4163A486C00C2950E /* NetworkProcessConnectionMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = 517CF0E2163A486C00C2950E /* NetworkProcessConnectionMessages.h */; };
+		51815B9F16A622210054501F /* SyncNetworkResourceLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51815B9D16A622210054501F /* SyncNetworkResourceLoader.cpp */; };
+		51815BA016A622210054501F /* SyncNetworkResourceLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 51815B9E16A622210054501F /* SyncNetworkResourceLoader.h */; };
 		51829DA51637C70C000953D6 /* NetworkResourceLoadScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51829DA31637C70C000953D6 /* NetworkResourceLoadScheduler.cpp */; };
 		51829DA61637C70C000953D6 /* NetworkResourceLoadScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 51829DA41637C70C000953D6 /* NetworkResourceLoadScheduler.h */; };
 		51834592134532E90092B696 /* WebIconDatabaseClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51834590134532E80092B696 /* WebIconDatabaseClient.cpp */; };
@@ -566,6 +570,8 @@
 		9F4F59441648B67F00493B7E /* SharedWorkerProcessProxyMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4F59431648B67F00493B7E /* SharedWorkerProcessProxyMac.mm */; };
 		9F54F88F16488E87007DF81A /* ChildProcessMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F54F88E16488E87007DF81A /* ChildProcessMac.mm */; };
 		9F54F8951648AE0F007DF81A /* PluginProcessManagerMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F54F8941648AE0E007DF81A /* PluginProcessManagerMac.mm */; };
+		9FB5F394169E6A80002C25BF /* WKContextPrivateMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9FB5F392169E6A80002C25BF /* WKContextPrivateMac.cpp */; };
+		9FB5F395169E6A80002C25BF /* WKContextPrivateMac.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FB5F393169E6A80002C25BF /* WKContextPrivateMac.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B62E7310143047A60069EC35 /* WKHitTestResult.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B62E730F143047A60069EC35 /* WKHitTestResult.cpp */; };
 		B62E7312143047B00069EC35 /* WKHitTestResult.h in Headers */ = {isa = PBXBuildFile; fileRef = B62E7311143047B00069EC35 /* WKHitTestResult.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B63403F914910D57001070B5 /* APIObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B63403F814910D57001070B5 /* APIObject.cpp */; };
@@ -642,7 +648,6 @@
 		BC111B51112F619200337BAB /* PageClientImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC111B4C112F619200337BAB /* PageClientImpl.mm */; };
 		BC111B5D112F629800337BAB /* WebEventFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = BC111B5B112F629800337BAB /* WebEventFactory.h */; };
 		BC111B5E112F629800337BAB /* WebEventFactory.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC111B5C112F629800337BAB /* WebEventFactory.mm */; };
-		BC131BC911726C2800B69727 /* CoreIPCMessageKinds.h in Headers */ = {isa = PBXBuildFile; fileRef = BC131BC811726C2800B69727 /* CoreIPCMessageKinds.h */; };
 		BC14DF77120B5B7900826C0C /* InjectedBundleScriptWorld.h in Headers */ = {isa = PBXBuildFile; fileRef = BC14DF75120B5B7900826C0C /* InjectedBundleScriptWorld.h */; };
 		BC14DF78120B5B7900826C0C /* InjectedBundleScriptWorld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC14DF76120B5B7900826C0C /* InjectedBundleScriptWorld.cpp */; };
 		BC14DF9E120B635F00826C0C /* WKBundleScriptWorld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC14DF9C120B635F00826C0C /* WKBundleScriptWorld.cpp */; };
@@ -986,18 +991,14 @@
 		C0337DD3127A2A0E008FF4F4 /* WebKeyboardEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0337DD2127A2A0E008FF4F4 /* WebKeyboardEvent.cpp */; };
 		C0337DD8127A51B6008FF4F4 /* WebTouchEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0337DD7127A51B6008FF4F4 /* WebTouchEvent.cpp */; };
 		C0337DDD127A521C008FF4F4 /* WebPlatformTouchPoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0337DDC127A521C008FF4F4 /* WebPlatformTouchPoint.cpp */; };
-		C03A136C133BEBF900D767D1 /* LayerTreeHostCAMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = C03A136B133BEBF900D767D1 /* LayerTreeHostCAMac.mm */; };
-		C064504A133BE709003470E2 /* LayerTreeHostCA.h in Headers */ = {isa = PBXBuildFile; fileRef = C098A053133BE1C500B199A4 /* LayerTreeHostCA.h */; };
 		C06C6095124C144B0001682F /* WebPageCreationParameters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C06C6093124C14430001682F /* WebPageCreationParameters.cpp */; };
 		C09AE5E9125257C20025825D /* WKNativeEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = C09AE5E8125257C20025825D /* WKNativeEvent.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		C0CE72A01247E71D00BC0EC4 /* WebPageMessageReceiver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0CE729E1247E71D00BC0EC4 /* WebPageMessageReceiver.cpp */; };
 		C0CE72A11247E71D00BC0EC4 /* WebPageMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = C0CE729F1247E71D00BC0EC4 /* WebPageMessages.h */; };
 		C0CE72AD1247E78D00BC0EC4 /* HandleMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C0CE72AC1247E78D00BC0EC4 /* HandleMessage.h */; };
-		C0D74DDE133BE2D90089CD44 /* LayerTreeHostCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C098A054133BE1C500B199A4 /* LayerTreeHostCA.cpp */; };
 		C0E3AA7A1209E83000A49D01 /* ModuleMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = C0E3AA481209E45000A49D01 /* ModuleMac.mm */; };
 		C0E3AA7B1209E83500A49D01 /* Module.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C0E3AA451209E2BA00A49D01 /* Module.cpp */; };
 		C0E3AA7C1209E83C00A49D01 /* Module.h in Headers */ = {isa = PBXBuildFile; fileRef = C0E3AA441209E2BA00A49D01 /* Module.h */; };
-		C0FA52431345694A0028E8C2 /* LayerTreeHostCAMac.h in Headers */ = {isa = PBXBuildFile; fileRef = C0FA52421345694A0028E8C2 /* LayerTreeHostCAMac.h */; };
 		C517388112DF8F4F00EE3F47 /* DragControllerAction.h in Headers */ = {isa = PBXBuildFile; fileRef = C517388012DF8F4F00EE3F47 /* DragControllerAction.h */; };
 		C5237F6012441CA300780472 /* WebEditorClientMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = C5237F5F12441CA300780472 /* WebEditorClientMac.mm */; };
 		C574A37712E6099D002DFE98 /* WebDragClientMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = C554FFA212E4E8EA002F22C0 /* WebDragClientMac.mm */; };
@@ -1423,6 +1424,8 @@
 		1A9101091268C8CA001842F5 /* FindIndicatorWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FindIndicatorWindow.mm; sourceTree = "<group>"; };
 		1A92DC1012F8BA460017AF65 /* LayerTreeContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerTreeContext.h; sourceTree = "<group>"; };
 		1A92DC1212F8BAB90017AF65 /* LayerTreeContextMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LayerTreeContextMac.mm; sourceTree = "<group>"; };
+		1A97E07316A5F578000BC9E5 /* LayerTreeHostMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerTreeHostMac.h; sourceTree = "<group>"; };
+		1A97E07416A5F578000BC9E5 /* LayerTreeHostMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LayerTreeHostMac.mm; sourceTree = "<group>"; };
 		1A9FBA8C13FF04E600DEED67 /* PluginComplexTextInputState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PluginComplexTextInputState.h; sourceTree = "<group>"; };
 		1AA1C79A100E7FC50078DEBC /* WebCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AA1C7DE100E846E0078DEBC /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = JavaScriptCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1732,6 +1735,8 @@
 		517A33B4130B308C00F80CB5 /* WKApplicationCacheManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKApplicationCacheManager.h; sourceTree = "<group>"; };
 		517CF0E1163A486C00C2950E /* NetworkProcessConnectionMessageReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkProcessConnectionMessageReceiver.cpp; sourceTree = "<group>"; };
 		517CF0E2163A486C00C2950E /* NetworkProcessConnectionMessages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkProcessConnectionMessages.h; sourceTree = "<group>"; };
+		51815B9D16A622210054501F /* SyncNetworkResourceLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SyncNetworkResourceLoader.cpp; path = NetworkProcess/SyncNetworkResourceLoader.cpp; sourceTree = "<group>"; };
+		51815B9E16A622210054501F /* SyncNetworkResourceLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SyncNetworkResourceLoader.h; path = NetworkProcess/SyncNetworkResourceLoader.h; sourceTree = "<group>"; };
 		51829DA31637C70C000953D6 /* NetworkResourceLoadScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkResourceLoadScheduler.cpp; path = NetworkProcess/NetworkResourceLoadScheduler.cpp; sourceTree = "<group>"; };
 		51829DA41637C70C000953D6 /* NetworkResourceLoadScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkResourceLoadScheduler.h; path = NetworkProcess/NetworkResourceLoadScheduler.h; sourceTree = "<group>"; };
 		51834590134532E80092B696 /* WebIconDatabaseClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebIconDatabaseClient.cpp; sourceTree = "<group>"; };
@@ -1847,6 +1852,8 @@
 		9F4F59431648B67F00493B7E /* SharedWorkerProcessProxyMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SharedWorkerProcessProxyMac.mm; sourceTree = "<group>"; };
 		9F54F88E16488E87007DF81A /* ChildProcessMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ChildProcessMac.mm; sourceTree = "<group>"; };
 		9F54F8941648AE0E007DF81A /* PluginProcessManagerMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PluginProcessManagerMac.mm; sourceTree = "<group>"; };
+		9FB5F392169E6A80002C25BF /* WKContextPrivateMac.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WKContextPrivateMac.cpp; path = mac/WKContextPrivateMac.cpp; sourceTree = "<group>"; };
+		9FB5F393169E6A80002C25BF /* WKContextPrivateMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WKContextPrivateMac.h; path = mac/WKContextPrivateMac.h; sourceTree = "<group>"; };
 		A72D5D7F1236CBA800A88B15 /* WebSerializedScriptValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebSerializedScriptValue.h; sourceTree = "<group>"; };
 		B396EA5512E0ED2D00F4FEB7 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		B62E730F143047A60069EC35 /* WKHitTestResult.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WKHitTestResult.cpp; sourceTree = "<group>"; };
@@ -1929,7 +1936,6 @@
 		BC111B5C112F629800337BAB /* WebEventFactory.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebEventFactory.mm; sourceTree = "<group>"; };
 		BC122FA3132707F300F7EAC1 /* PluginProcess.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PluginProcess.xcconfig; sourceTree = "<group>"; };
 		BC122FA61327087400F7EAC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = PluginProcess/Info.plist; sourceTree = "<group>"; };
-		BC131BC811726C2800B69727 /* CoreIPCMessageKinds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreIPCMessageKinds.h; sourceTree = "<group>"; };
 		BC14DF75120B5B7900826C0C /* InjectedBundleScriptWorld.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InjectedBundleScriptWorld.h; sourceTree = "<group>"; };
 		BC14DF76120B5B7900826C0C /* InjectedBundleScriptWorld.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InjectedBundleScriptWorld.cpp; sourceTree = "<group>"; };
 		BC14DF9C120B635F00826C0C /* WKBundleScriptWorld.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WKBundleScriptWorld.cpp; sourceTree = "<group>"; };
@@ -2284,11 +2290,8 @@
 		C0337DD2127A2A0E008FF4F4 /* WebKeyboardEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebKeyboardEvent.cpp; sourceTree = "<group>"; };
 		C0337DD7127A51B6008FF4F4 /* WebTouchEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebTouchEvent.cpp; sourceTree = "<group>"; };
 		C0337DDC127A521C008FF4F4 /* WebPlatformTouchPoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebPlatformTouchPoint.cpp; sourceTree = "<group>"; };
-		C03A136B133BEBF900D767D1 /* LayerTreeHostCAMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LayerTreeHostCAMac.mm; sourceTree = "<group>"; };
 		C06C6093124C14430001682F /* WebPageCreationParameters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebPageCreationParameters.cpp; sourceTree = "<group>"; };
 		C06C6094124C14430001682F /* WebPageCreationParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebPageCreationParameters.h; sourceTree = "<group>"; };
-		C098A053133BE1C500B199A4 /* LayerTreeHostCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerTreeHostCA.h; sourceTree = "<group>"; };
-		C098A054133BE1C500B199A4 /* LayerTreeHostCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LayerTreeHostCA.cpp; sourceTree = "<group>"; };
 		C09AE5E8125257C20025825D /* WKNativeEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKNativeEvent.h; sourceTree = "<group>"; };
 		C0CE72581247E4DA00BC0EC4 /* WebPage.messages.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WebPage.messages.in; sourceTree = "<group>"; };
 		C0CE729E1247E71D00BC0EC4 /* WebPageMessageReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebPageMessageReceiver.cpp; sourceTree = "<group>"; };
@@ -2300,7 +2303,6 @@
 		C0E3AA441209E2BA00A49D01 /* Module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Module.h; sourceTree = "<group>"; };
 		C0E3AA451209E2BA00A49D01 /* Module.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Module.cpp; sourceTree = "<group>"; };
 		C0E3AA481209E45000A49D01 /* ModuleMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ModuleMac.mm; sourceTree = "<group>"; };
-		C0FA52421345694A0028E8C2 /* LayerTreeHostCAMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LayerTreeHostCAMac.h; sourceTree = "<group>"; };
 		C517388012DF8F4F00EE3F47 /* DragControllerAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DragControllerAction.h; sourceTree = "<group>"; };
 		C5237F5F12441CA300780472 /* WebEditorClientMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebEditorClientMac.mm; sourceTree = "<group>"; };
 		C554FFA212E4E8EA002F22C0 /* WebDragClientMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebDragClientMac.mm; sourceTree = "<group>"; };
@@ -2983,7 +2985,6 @@
 				1AC41AC51263C88300054E94 /* BinarySemaphore.h */,
 				BC032DA210F437D10058C15A /* Connection.cpp */,
 				BC032DA310F437D10058C15A /* Connection.h */,
-				BC131BC811726C2800B69727 /* CoreIPCMessageKinds.h */,
 				1A8EFDFD1253CB6E00F7067F /* DataReference.cpp */,
 				1A8EFDF91253CAA200F7067F /* DataReference.h */,
 				C0CE72AC1247E78D00BC0EC4 /* HandleMessage.h */,
@@ -3193,6 +3194,8 @@
 				515705521657018C00101A90 /* NetworkResourceLoader.messages.in */,
 				51829DA31637C70C000953D6 /* NetworkResourceLoadScheduler.cpp */,
 				51829DA41637C70C000953D6 /* NetworkResourceLoadScheduler.h */,
+				51815B9D16A622210054501F /* SyncNetworkResourceLoader.cpp */,
+				51815B9E16A622210054501F /* SyncNetworkResourceLoader.h */,
 			);
 			name = NetworkProcess;
 			sourceTree = "<group>";
@@ -3346,6 +3349,8 @@
 		6EE849C41368D9040038D481 /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				9FB5F392169E6A80002C25BF /* WKContextPrivateMac.cpp */,
+				9FB5F393169E6A80002C25BF /* WKContextPrivateMac.h */,
 				6EE849C61368D92D0038D481 /* WKInspectorPrivateMac.h */,
 				BCE17B7B1381F1170012A641 /* WKPagePrivateMac.cpp */,
 				BCE17B7C1381F1170012A641 /* WKPagePrivateMac.h */,
@@ -3461,7 +3466,6 @@
 		BC032D5E10F4372B0058C15A /* WebPage */ = {
 			isa = PBXGroup;
 			children = (
-				C098A052133BE1C500B199A4 /* ca */,
 				BC963D6C113DD19500574BE2 /* mac */,
 				93FC679D12D3CC7400A60610 /* DecoderAdapter.cpp */,
 				93FC679E12D3CC7400A60610 /* DecoderAdapter.h */,
@@ -4084,6 +4088,8 @@
 		BC963D6C113DD19500574BE2 /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				1A97E07316A5F578000BC9E5 /* LayerTreeHostMac.h */,
+				1A97E07416A5F578000BC9E5 /* LayerTreeHostMac.mm */,
 				1AB16AEC164B41E400290D62 /* RemoteGraphicsLayer.h */,
 				1AB16AEB164B41E400290D62 /* RemoteGraphicsLayer.mm */,
 				1AB16AE8164B3A8800290D62 /* RemoteLayerTreeContext.h */,
@@ -4276,25 +4282,6 @@
 				C01A260012662F2100C9ED55 /* ShareableBitmapCG.cpp */,
 			);
 			path = cg;
-			sourceTree = "<group>";
-		};
-		C03A136A133BEBF900D767D1 /* mac */ = {
-			isa = PBXGroup;
-			children = (
-				C0FA52421345694A0028E8C2 /* LayerTreeHostCAMac.h */,
-				C03A136B133BEBF900D767D1 /* LayerTreeHostCAMac.mm */,
-			);
-			path = mac;
-			sourceTree = "<group>";
-		};
-		C098A052133BE1C500B199A4 /* ca */ = {
-			isa = PBXGroup;
-			children = (
-				C03A136A133BEBF900D767D1 /* mac */,
-				C098A054133BE1C500B199A4 /* LayerTreeHostCA.cpp */,
-				C098A053133BE1C500B199A4 /* LayerTreeHostCA.h */,
-			);
-			path = ca;
 			sourceTree = "<group>";
 		};
 		C0CE729D1247E71D00BC0EC4 /* Derived Sources */ = {
@@ -4586,7 +4573,6 @@
 				37C4E9F6131C6E7E0029BD5A /* config.h in Headers */,
 				BC032DAB10F437D10058C15A /* Connection.h in Headers */,
 				5136183E163126DA00A99DDE /* ConnectionStack.h in Headers */,
-				BC131BC911726C2800B69727 /* CoreIPCMessageKinds.h in Headers */,
 				B878B615133428DC006888E9 /* CorrectionPanel.h in Headers */,
 				2989A414167D184B004F96D2 /* CustomProtocolManager.h in Headers */,
 				2984F589164BA095004BC0C6 /* CustomProtocolManagerMessages.h in Headers */,
@@ -4650,8 +4636,6 @@
 				BCE0937814FB128C001138D9 /* LayerHostingContext.h in Headers */,
 				1A92DC1112F8BA460017AF65 /* LayerTreeContext.h in Headers */,
 				1A186EEA12EF7618008E5F37 /* LayerTreeHost.h in Headers */,
-				C064504A133BE709003470E2 /* LayerTreeHostCA.h in Headers */,
-				C0FA52431345694A0028E8C2 /* LayerTreeHostCAMac.h in Headers */,
 				51A7F2F3125BF820008AEB1D /* Logging.h in Headers */,
 				BCC56F791159957D001CCAF9 /* MachPort.h in Headers */,
 				1A24B5F311F531E800C38269 /* MachUtilities.h in Headers */,
@@ -4977,6 +4961,7 @@
 				51A555F6128C6C47009ABCEC /* WKContextMenuItem.h in Headers */,
 				51A55601128C6D92009ABCEC /* WKContextMenuItemTypes.h in Headers */,
 				BCC938E11180DE440085E5FE /* WKContextPrivate.h in Headers */,
+				9FB5F395169E6A80002C25BF /* WKContextPrivateMac.h in Headers */,
 				3309345B1315B9980097A7BC /* WKCookieManager.h in Headers */,
 				512F58FA12A88A5400629530 /* WKCredential.h in Headers */,
 				518ACF1112B015F800B04B83 /* WKCredentialTypes.h in Headers */,
@@ -5070,6 +5055,8 @@
 				BC2E6E8E1141971500A63B1E /* WorkQueue.h in Headers */,
 				E179088F169BAA6A006904C7 /* SecItemShim.h in Headers */,
 				E1790891169BAA82006904C7 /* SecItemShimMessages.h in Headers */,
+				1A97E07616A5F9E0000BC9E5 /* LayerTreeHostMac.h in Headers */,
+				51815BA016A622210054501F /* SyncNetworkResourceLoader.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5628,8 +5615,6 @@
 				BCE0937714FB128C001138D9 /* LayerHostingContext.mm in Sources */,
 				1A92DC1312F8BAB90017AF65 /* LayerTreeContextMac.mm in Sources */,
 				1A186EEB12EF7618008E5F37 /* LayerTreeHost.cpp in Sources */,
-				C0D74DDE133BE2D90089CD44 /* LayerTreeHostCA.cpp in Sources */,
-				C03A136C133BEBF900D767D1 /* LayerTreeHostCAMac.mm in Sources */,
 				51A7F2F5125BF8D4008AEB1D /* Logging.cpp in Sources */,
 				5160BFE113381DF900918999 /* Logging.mac.mm in Sources */,
 				1A24B5F211F531E800C38269 /* MachUtilities.cpp in Sources */,
@@ -5975,6 +5960,7 @@
 				BC4A6296147313A0006C681A /* WKConnectionRef.cpp in Sources */,
 				BCB9E24C1120E15C00A137E0 /* WKContext.cpp in Sources */,
 				51A555F5128C6C47009ABCEC /* WKContextMenuItem.cpp in Sources */,
+				9FB5F394169E6A80002C25BF /* WKContextPrivateMac.cpp in Sources */,
 				3309345A1315B9980097A7BC /* WKCookieManager.cpp in Sources */,
 				512F58F912A88A5400629530 /* WKCredential.cpp in Sources */,
 				BC4075F7124FF0270068F20A /* WKData.cpp in Sources */,
@@ -6049,6 +6035,8 @@
 				BC0092F8115837A300E0AE2A /* WorkQueueMac.cpp in Sources */,
 				E179088D169BAA62006904C7 /* SecItemShim.cpp in Sources */,
 				E1790890169BAA7F006904C7 /* SecItemShimMessageReceiver.cpp in Sources */,
+				1A97E07716A5F9E0000BC9E5 /* LayerTreeHostMac.mm in Sources */,
+				51815B9F16A622210054501F /* SyncNetworkResourceLoader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

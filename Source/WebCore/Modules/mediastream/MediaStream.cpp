@@ -48,7 +48,7 @@ static bool containsSource(MediaStreamSourceVector& sourceVector, MediaStreamSou
 
 static void processTrack(MediaStreamTrack* track, MediaStreamSourceVector& sourceVector)
 {
-    if (track->readyState() == MediaStreamTrack::ENDED)
+    if (track->ended())
         return;
 
     MediaStreamSource* source = track->component()->source();
@@ -255,7 +255,7 @@ EventTargetData* MediaStream::ensureEventTargetData()
     return &m_eventTargetData;
 }
 
-void MediaStream::addTrack(MediaStreamComponent* component)
+void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
     if (ended())
         return;
@@ -273,7 +273,7 @@ void MediaStream::addTrack(MediaStreamComponent* component)
     scheduleDispatchEvent(MediaStreamTrackEvent::create(eventNames().addtrackEvent, false, false, track));
 }
 
-void MediaStream::removeTrack(MediaStreamComponent* component)
+void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
 {
     if (ended())
         return;

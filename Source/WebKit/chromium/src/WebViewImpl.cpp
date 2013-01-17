@@ -1224,12 +1224,19 @@ Node* WebViewImpl::bestTouchLinkNode(const WebGestureEvent& touchEvent)
 
     Node* bestTouchNode = 0;
 
-    // FIXME: Should accept a search region from the caller instead of hard-coding the size.
-    IntSize touchEventSearchRegionSize(4, 2);
+    IntSize touchEventSearchRegionSize(touchEvent.data.tapDown.width / 2, touchEvent.data.tapDown.height / 2);
     IntPoint touchEventLocation(touchEvent.x, touchEvent.y);
-    m_page->mainFrame()->eventHandler()->bestClickableNodeForTouchPoint(touchEventLocation, touchEventSearchRegionSize, touchEventLocation, bestTouchNode);
-    // bestClickableNodeForTouchPoint() doesn't always return a node that is a link, so let's try and find
-    // a link to highlight.
+#if ENABLE(TOUCH_ADJUSTMENT)
+    m_page->mainFrame()->eventHandler()->adjustGesturePosition(PlatformGestureEventBuilder(mainFrameImpl()->frameView(), touchEvent), touchEventLocation);
+#endif
+
+    IntPoint hitTestPoint = m_page->mainFrame()->view()->windowToContents(touchEventLocation);
+    HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(
+        hitTestPoint, false, false, DontHitTestScrollbars, HitTestRequest::TouchEvent);
+    bestTouchNode = result.targetNode();
+
+    // Make sure our highlight candidate uses a hand cursor as a heuristic to
+    // choose appropriate targets.
     bool shiftKey = touchEvent.modifiers & WebGestureEvent::ShiftKey;
     while (bestTouchNode && !invokesHandCursor(bestTouchNode, shiftKey, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
@@ -3947,6 +3954,11 @@ void WebViewImpl::setBackgroundColor(const WebCore::Color& color)
     m_layerTreeView->setBackgroundColor(webDocumentBackgroundColor);
 }
 
+WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
+{
+    return m_chromeClientImpl.graphicsLayerFactory();
+}
+
 WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 {
     return m_rootGraphicsLayer;
@@ -4030,7 +4042,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         layerTreeViewSettings.defaultTileSize = settingsImpl()->defaultTileSize();
         layerTreeViewSettings.maxUntiledLayerSize = settingsImpl()->maxUntiledLayerSize();
 
-        m_nonCompositedContentHost = NonCompositedContentHost::create(this);
+        m_nonCompositedContentHost = NonCompositedContentHost::create(this, graphicsLayerFactory());
         m_nonCompositedContentHost->setShowDebugBorders(page()->settings()->showDebugBorders());
         m_nonCompositedContentHost->setOpaque(!isTransparent());
 

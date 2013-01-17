@@ -604,6 +604,8 @@ public:
     void savePDFToTemporaryFolderAndOpenWithNativeApplication(const String& suggestedFilename, const String& originatingURLString, const uint8_t* data, unsigned long size, const String& pdfUUID);
 #endif
 
+    bool mainFrameIsScrollable() const { return m_mainFrameIsScrollable; }
+
 private:
     WebPage(uint64_t pageID, const WebPageCreationParameters&);
 
@@ -724,11 +726,17 @@ private:
     void drawPagesToPDFFromPDFDocument(CGContextRef, PDFDocument *, const PrintInfo&, uint32_t first, uint32_t count);
 #endif
 
+    void viewExposedRectChanged(const WebCore::IntRect& exposedRect);
+    void setMainFrameIsScrollable(bool);
+
     void unapplyEditCommand(uint64_t commandID);
     void reapplyEditCommand(uint64_t commandID);
     void didRemoveEditCommand(uint64_t commandID);
 
     void findString(const String&, uint32_t findOptions, uint32_t maxMatchCount);
+    void findStringMatches(const String&, uint32_t findOptions, uint32_t maxMatchCount);
+    void getImageForFindMatch(uint32_t matchIndex);
+    void selectFindMatch(uint32_t matchIndex);
     void hideFindUI();
     void countStringMatches(const String&, uint32_t findOptions, uint32_t maxMatchCount);
 
@@ -810,6 +818,8 @@ private:
     bool m_artificialPluginInitializationDelayEnabled;
 
     bool m_scrollingPerformanceLoggingEnabled;
+
+    bool m_mainFrameIsScrollable;
 
 #if PLATFORM(MAC)
     bool m_pdfPluginEnabled;

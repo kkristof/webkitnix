@@ -595,7 +595,7 @@ webkit.org/b/98895 perf/accessibility-title-ui-element.html [ Skip ]
 # Taken from Chromium, this test verifies that a mismatch reftest will fail if both results are the
 # same.  Because the whole point is that this test should fail when run, it's
 # not SKIP, just WONTFIX.
-webkit.org/b/66218 fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
+webkit.org/b/66218 fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=105437
 webkit.org/b/105437 svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ ImageOnlyFailure Pass ]
@@ -1558,6 +1558,7 @@ webkit.org/b/99878 css3/flexbox/flexbox-baseline-margins.html [ Missing ImageOnl
 
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
+webkit.org/b/104822 css3/supports-cssom.html
 
 # Occasionally fails if run after right after
 # fast/selectors/unqualified-hover-quirks.html or itself.
@@ -1784,9 +1785,6 @@ webkit.org/b/106015 fast/css-generated-content/pseudo-transition.html [ Failure 
 # New test introduced in r138756 is failing.
 webkit.org/b/106086 fast/dom/HTMLTemplateElement/ownerDocument-adoptNode.html [ Failure ]
 
-# [Qt][EFL] New fast/events/drag-and-drop-autoscroll.html fails
-webkit.org/b/106318 fast/events/drag-and-drop-autoscroll.html [ Failure ]
-
 # Fail after r139145 on MAC, EFL, QT, GTK.
 webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ]
 webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ]
@@ -1810,3 +1808,13 @@ webkit.org/b/106743 media/video-controls-captions.html [ Failure ]
 # https://bugs.webkit.org/show_bug.cgi?id=106883
 inspector/editor/text-editor-formatter.html
 
+# Fail to generate proper pixel results - let's wait with rebaselining.
+webkit.org/b/106992 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
+webkit.org/b/106992 scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
+webkit.org/b/106992 svg/zoom/page/zoom-replaced-intrinsic-ratio-001.htm [ Failure ]
+webkit.org/b/106992 http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
+
+webkit.org/b/106997 fast/dom/MicroData/propertiescollection-crash.html [ Failure ]
+webkit.org/b/106997 fast/dom/MicroData/properties-collection-namedgetter-with-invalid-name.html [ Failure ]
+
+webkit.org/b/107001 compositing/layer-creation/overlap-animation-container.html [ Failure ]

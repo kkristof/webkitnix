@@ -114,12 +114,14 @@ my (
     $notificationsSupport,
     $orientationEventsSupport,
     $pageVisibilityAPISupport,
+    $performanceTimelineSupport,
     $progressTagSupport,
     $proximityEventsSupport,
     $quotaSupport,
     $resolutionMediaQuerySupport,
     $registerProtocolHandlerSupport,
     $requestAnimationFrameSupport,
+    $resourceTimingSupport,
     $scriptedSpeechSupport,
     $shadowDOMSupport,
     $sharedWorkersSupport,
@@ -135,6 +137,7 @@ my (
     $touchEventsSupport,
     $touchSliderSupport,
     $touchIconLoadingSupport,
+    $userTimingSupport,
     $vibrationSupport,
     $videoSupport,
     $videoTrackSupport,
@@ -195,7 +198,7 @@ my @features = (
       define => "ENABLE_CSS_IMAGE_ORIENTATION", default => 0, value => \$cssImageOrientationSupport },
 
     { option => "css-image-resolution", desc => "Toggle CSS image-resolution support",
-      define => "ENABLE_CSS_IMAGE_RESOLUTION", default => isBlackBerry(), value => \$cssImageResolutionSupport },
+      define => "ENABLE_CSS_IMAGE_RESOLUTION", default => (isBlackBerry() || isGtk()), value => \$cssImageResolutionSupport },
 
     { option => "css-regions", desc => "Toggle CSS Regions support",
       define => "ENABLE_CSS_REGIONS", default => 1, value => \$cssRegionsSupport },
@@ -359,6 +362,9 @@ my @features = (
     { option => "page-visibility-api", desc => "Toggle Page Visibility API support",
       define => "ENABLE_PAGE_VISIBILITY_API", default => (isBlackBerry() || isEfl()), value => \$pageVisibilityAPISupport },
 
+    { option => "performance-timeline", desc => "Toggle Performance Timeline support",
+      define => "ENABLE_PERFORMANCE_TIMELINE", default => isGtk(), value => \$performanceTimelineSupport },
+
     { option => "progress-tag", desc => "Toggle Progress Tag support",
       define => "ENABLE_PROGRESS_ELEMENT", default => 1, value => \$progressTagSupport },
 
@@ -370,6 +376,9 @@ my @features = (
 
     { option => "resolution-media-query", desc => "Toggle resolution media query support",
       define => "ENABLE_RESOLUTION_MEDIA_QUERY", default => (isEfl() || isQt()), value => \$resolutionMediaQuerySupport },
+
+    { option => "resource-timing", desc => "Toggle Resource Timing support",
+      define => "ENABLE_RESOURCE_TIMING", default => isGtk(), value => \$resourceTimingSupport },
 
     { option => "request-animation-frame", desc => "Toggle Request Animation Frame support",
       define => "ENABLE_REQUEST_ANIMATION_FRAME", default => (isAppleMacWebKit() || isGtk() || isEfl() || isBlackBerry() || isNix()), value => \$requestAnimationFrameSupport },
@@ -418,6 +427,9 @@ my @features = (
 
     { option => "touch-icon-loading", desc => "Toggle Touch Icon Loading Support",
       define => "ENABLE_TOUCH_ICON_LOADING", default => 0, value => \$touchIconLoadingSupport },
+
+    { option => "user-timing", desc => "Toggle User Timing support",
+      define => "ENABLE_USER_TIMING", default => isGtk(), value => \$userTimingSupport },
 
     { option => "vibration", desc => "Toggle Vibration support",
       define => "ENABLE_VIBRATION", default => (isEfl() || isBlackBerry()), value => \$vibrationSupport },

@@ -965,10 +965,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // so test that again.
     bool isCompositedClippingLayer = canBeComposited(layer) && clipsCompositingDescendants(layer);
 
-    // Turn overlap testing off for later layers if it's already off, or if we have a 3D transform or an animating transform.
+    // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
     // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
     // we know for sure the animation is contained inside the clipping rectangle, which is already added to the overlap map.
-    if ((!childState.m_testingOverlap && !isCompositedClippingLayer) || layer->has3DTransform() || isRunningAcceleratedTransformAnimation(layer->renderer()))
+    if ((!childState.m_testingOverlap && !isCompositedClippingLayer) || isRunningAcceleratedTransformAnimation(layer->renderer()))
         compositingState.m_testingOverlap = false;
     
     if (isCompositedClippingLayer) {
@@ -2222,8 +2222,8 @@ bool RenderLayerCompositor::requiresOverhangAreasLayer() const
     if (m_renderView->document()->ownerElement())
         return false;
 
-    // We do want a layer if we have a scrolling coordinator.
-    if (scrollingCoordinator())
+    // We do want a layer if we have a scrolling coordinator and can scroll.
+    if (scrollingCoordinator() && m_renderView->frameView()->hasOpaqueBackground() && !m_renderView->frameView()->prohibitsScrolling())
         return true;
 
     // Chromium always wants a layer.
@@ -2241,8 +2241,8 @@ bool RenderLayerCompositor::requiresContentShadowLayer() const
         return false;
 
 #if PLATFORM(MAC)
-    // On Mac, we want a content shadow layer if we have a scrolling coordinator.
-    if (scrollingCoordinator())
+    // On Mac, we want a content shadow layer if we have a scrolling coordinator and can scroll.
+    if (scrollingCoordinator() && !m_renderView->frameView()->prohibitsScrolling())
         return true;
 #endif
 
@@ -2626,7 +2626,7 @@ void RenderLayerCompositor::deviceOrPageScaleFactorChanged()
     if (!viewLayer->isComposited())
         return;
 
-    if (GraphicsLayer* rootLayer = viewLayer->backing()->graphicsLayer())
+    if (GraphicsLayer* rootLayer = viewLayer->backing()->childForSuperlayers())
         rootLayer->noteDeviceOrPageScaleFactorChangedIncludingDescendants();
 }
 

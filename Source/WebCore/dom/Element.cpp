@@ -223,11 +223,6 @@ inline ElementRareData* Element::ensureElementRareData()
     return static_cast<ElementRareData*>(ensureRareData());
 }
 
-PassOwnPtr<NodeRareData> Element::createRareData()
-{
-    return adoptPtr(new ElementRareData());
-}
-
 void Element::clearTabIndexExplicitlyIfNeeded()
 {
     if (hasRareData())
@@ -1646,6 +1641,12 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
     strncpy(buffer, result.toString().utf8().data(), length - 1);
 }
 #endif
+
+const Vector<RefPtr<Attr> >& Element::attrNodeList()
+{
+    ASSERT(hasSyntheticAttrChildNodes());
+    return *attrNodeListForElement(this);
+}
 
 PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
 {

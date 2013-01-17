@@ -37,6 +37,7 @@
 #include <string>
 
 namespace WebKit {
+class WebDeviceOrientation;
 class WebGamepads;
 class WebIntentRequest;
 struct WebContextMenuData;
@@ -85,6 +86,14 @@ public:
     virtual void showDevTools() { }
     virtual void closeDevTools() { }
     virtual void evaluateInWebInspector(long, const std::string&) { }
+    virtual void clearAllDatabases() { }
+    virtual void setDatabaseQuota(int) { }
+    virtual void setDeviceScaleFactor(float) { }
+    virtual void setFocus(bool) { }
+    virtual void setAcceptAllCookies(bool) { }
+    virtual std::string pathToLocalResource(const std::string& resource) { return std::string(); }
+    virtual void setLocale(const std::string&) { }
+    virtual void setDeviceOrientation(WebKit::WebDeviceOrientation&) { }
 };
 
 }

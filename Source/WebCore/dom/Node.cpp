@@ -452,17 +452,16 @@ NodeRareData* Node::ensureRareData()
     if (hasRareData())
         return rareData();
 
-    NodeRareData* data = createRareData().leakPtr();
+    NodeRareData* data;
+    if (isElementNode())
+        data = ElementRareData::create(m_data.m_renderer).leakPtr();
+    else
+        data = NodeRareData::create(m_data.m_renderer).leakPtr();
     ASSERT(data);
-    data->setRenderer(m_data.m_renderer);
+
     m_data.m_rareData = data;
     setFlag(HasRareDataFlag);
     return data;
-}
-
-PassOwnPtr<NodeRareData> Node::createRareData()
-{
-    return adoptPtr(new NodeRareData());
 }
 
 void Node::clearRareData()
@@ -471,7 +470,10 @@ void Node::clearRareData()
     ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
     RenderObject* renderer = m_data.m_rareData->renderer();
-    delete m_data.m_rareData;
+    if (isElementNode())
+        delete static_cast<ElementRareData*>(m_data.m_rareData);
+    else
+        delete static_cast<NodeRareData*>(m_data.m_rareData);
     m_data.m_renderer = renderer;
     clearFlag(HasRareDataFlag);
 }
@@ -2079,6 +2081,9 @@ void Node::didMoveToNewDocument(Document* oldDocument)
 {
     TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(oldDocument);
 
+    if (AXObjectCache::accessibilityEnabled() && oldDocument && oldDocument->axObjectCacheExists())
+        oldDocument->axObjectCache()->remove(this);
+
     // FIXME: Event listener types for this node should be set on the new owner document here.
 
     const EventListenerVector& wheelListeners = getEventListeners(eventNames().mousewheelEvent);
@@ -2572,14 +2577,18 @@ void Node::removedLastRef()
 void Node::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    TreeShared<Node, ContainerNode>::reportMemoryUsage(memoryObjectInfo);
     ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
+    info.addMember(m_parentOrHostNode);
     info.addMember(m_treeScope);
     info.addMember(m_next);
     info.addMember(m_previous);
     info.addMember(this->renderer());
-    if (hasRareData())
-        info.addMember(rareData());
+    if (hasRareData()) {
+        if (isElementNode())
+            info.addMember(static_cast<ElementRareData*>(rareData()));
+        else
+            info.addMember(rareData());
+    }
 }
 
 void Node::textRects(Vector<IntRect>& rects) const

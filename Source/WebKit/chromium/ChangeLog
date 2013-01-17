@@ -1,3 +1,203 @@
+2013-01-17  Yury Semikhatsky  <yurys@chromium.org>
+
+        Web Inspector: add WebDeToolsAgentImpl as task observer on reattach
+        https://bugs.webkit.org/show_bug.cgi?id=107106
+
+        Reviewed by Pavel Feldman.
+
+        Register WebDevToolsAgentImpl as task observer when it client is reattached.
+
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::reattach):
+
+2013-01-16  Dominic Cooney   <dominicc@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        Roll Chromium to 177350.
+
+        * DEPS:
+
+2013-01-16  Kristian Monsen  <kristianm@google.com>
+
+        Fix build break for Android webview.
+        https://bugs.webkit.org/show_bug.cgi?id=107072
+
+        Reviewed by Steve Block.
+
+        Add extra guards when checking for OS=="Android" to make sure it is not included
+        for webview.
+
+        * WebKitUnitTests.gyp:
+
+2013-01-16  Dominic Cooney  <dominicc@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        Roll Chromium to 177310.
+
+        * DEPS:
+
+2013-01-16  W. James MacLean  <wjmaclean@chromium.org>
+
+        LinkHighlight should use touch adjustment to match active state on GestureTapDown.
+        https://bugs.webkit.org/show_bug.cgi?id=107032
+
+        Reviewed by Adam Barth.
+
+        LinkHighlight node selection should produce results that match the node marked
+        active during GestureTapDown.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::bestTouchLinkNode):
+        * tests/LinkHighlightTest.cpp:
+        (WebCore::TEST):
+
+2013-01-16  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Make a creationContext parameter of toV8() mandatory
+        https://bugs.webkit.org/show_bug.cgi?id=107020
+
+        Reviewed by Adam Barth.
+
+        We pass Handle<Object>() to a creationContext parameter of
+        toV8() when we do not have a creationContext.
+
+        No tests. No change in behavior.
+
+        * src/InspectorFrontendClientImpl.cpp:
+        (WebKit::InspectorFrontendClientImpl::windowObjectCleared):
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::toV8Value):
+        * src/WebBlob.cpp:
+        (WebKit::WebBlob::toV8Value):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::createFileSystem):
+        (WebKit::WebFrameImpl::createSerializableFileSystem):
+        (WebKit::WebFrameImpl::createFileEntry):
+
+2013-01-16  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Move WebArrayBufferView and WebSerializedScriptValue out of public/platform/
+        https://bugs.webkit.org/show_bug.cgi?id=106863
+
+        Reviewed by Adam Barth.
+
+        These are not being moved into the new top-level Platform
+        directory, so into public they go.
+
+        * WebKit.gyp:
+        * public/WebArrayBufferView.h: Added.
+        (v8):
+        (WebKit):
+        (WebArrayBufferView):
+        (WebKit::WebArrayBufferView::~WebArrayBufferView):
+        (WebKit::WebArrayBufferView::WebArrayBufferView):
+        * public/WebSerializedScriptValue.h: Added.
+        (v8):
+        (WebKit):
+        (WebSerializedScriptValue):
+        (WebKit::WebSerializedScriptValue::~WebSerializedScriptValue):
+        (WebKit::WebSerializedScriptValue::WebSerializedScriptValue):
+        (WebKit::WebSerializedScriptValue::operator=):
+        (WebKit::WebSerializedScriptValue::isNull):
+        * public/platform/WebArrayBufferView.h:
+        * public/platform/WebSerializedScriptValue.h:
+
+2013-01-16  Chris Hopman  <cjhopman@chromium.org>
+
+        [Chromium] Remove hardcoded chromium_*.jar in gyp files
+        https://bugs.webkit.org/show_bug.cgi?id=104049
+
+        Reviewed by Eric Seidel.
+
+        Targets with dependencies (direct/indirect) on a java target receive
+        the chromium_*.jar paths in the variable input_jars_paths. Targets
+        should use that rather than hardcoding where they think the jar will
+        be. These can be passed directly to ant as INPUT_JARS_PATHS rather
+        than as --jars to generate_native_test.py.
+
+        * WebKitUnitTests.gyp:
+
+2013-01-16  Dominic Cooney   <dominicc@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        Roll Chromium to 177117.
+
+        * DEPS:
+
+2013-01-16  Dominic Cooney  <dominicc@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        Roll Chromium to r177080.
+
+        * DEPS:
+
+2013-01-15  Ian Vollick  <vollick@chromium.org>
+
+        [chromium] Create GraphicsLayerChromiums using a factory
+        https://bugs.webkit.org/show_bug.cgi?id=103635
+
+        Reviewed by James Robinson.
+
+        Refactor graphics layer creation for chromium to go through a factory.
+
+        * src/ChromeClientImpl.cpp:
+        (WebCore):
+        (GraphicsLayerFactoryChromium):
+        (WebCore::GraphicsLayerFactoryChromium::~GraphicsLayerFactoryChromium):
+        (WebKit::ChromeClientImpl::ChromeClientImpl):
+        (WebKit::ChromeClientImpl::graphicsLayerFactory):
+        (WebKit):
+        * src/ChromeClientImpl.h:
+        (WebCore):
+        (ChromeClientImpl):
+        * src/NonCompositedContentHost.cpp:
+        (WebKit::NonCompositedContentHost::NonCompositedContentHost):
+        * src/NonCompositedContentHost.h:
+        (WebCore):
+        (WebKit::NonCompositedContentHost::create):
+        (NonCompositedContentHost):
+        * src/PageOverlay.cpp:
+        (WebKit::PageOverlay::update):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::graphicsLayerFactory):
+        (WebKit):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        * src/WebViewImpl.h:
+        (WebCore):
+        (WebViewImpl):
+        * tests/GraphicsLayerChromiumTest.cpp:
+        (WebKit::GraphicsLayerChromiumTest::GraphicsLayerChromiumTest):
+        * tests/ImageLayerChromiumTest.cpp:
+        (WebCore::TEST):
+
+2013-01-15  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Move SocketStreamHandle and SocketStreamHandleInternal to WebCore/platform
+        https://bugs.webkit.org/show_bug.cgi?id=106899
+
+        Reviewed by Adam Barth.
+
+        Part of a larger refactoring series; see tracking bug 106829.
+
+        * WebKit.gyp:
+        * src/SocketStreamHandle.cpp: Removed.
+        * src/SocketStreamHandleInternal.h: Removed.
+
+2013-01-15  Florin Malita  <fmalita@chromium.org>
+
+        [Chromium] Incorrect opaque region tracking for PlatformContextSkia::drawRRect
+        https://bugs.webkit.org/show_bug.cgi?id=106898
+
+        Reviewed by Stephen White.
+
+        * tests/PlatformContextSkiaTest.cpp:
+        (WebCore::TEST):
+        (WebCore):
+
 2012-12-28  Vsevolod Vlasov  <vsevik@chromium.org>
 
         Web Inspector: Support inspector file system access with isolated file system through InspectorFrontendHost.

@@ -76,7 +76,8 @@ private:
     void didReceiveSyncNetworkConnectionToWebProcessMessage(CoreIPC::Connection*, CoreIPC::MessageID, CoreIPC::MessageDecoder&, OwnPtr<CoreIPC::MessageEncoder>&);
     
     void scheduleResourceLoad(const NetworkResourceLoadParameters&, ResourceLoadIdentifier&);
-    void addLoadInProgress(const WebCore::KURL&, ResourceLoadIdentifier&);
+    void performSynchronousLoad(const NetworkResourceLoadParameters&, PassRefPtr<Messages::NetworkConnectionToWebProcess::PerformSynchronousLoad::DelayedReply>);
+
     void removeLoadIdentifier(ResourceLoadIdentifier);
     void crossOriginRedirectReceived(ResourceLoadIdentifier, const WebCore::KURL& redirectURL);
     void servePendingRequests(uint32_t resourceLoadPriority);

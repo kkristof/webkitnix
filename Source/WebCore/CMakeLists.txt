@@ -321,6 +321,7 @@ set(WebCore_IDL_FILES
     css/CSSStyleDeclaration.idl
     css/CSSStyleRule.idl
     css/CSSStyleSheet.idl
+    css/CSSSupportsRule.idl
     css/CSSValue.idl
     css/CSSValueList.idl
     css/MediaList.idl
@@ -1055,6 +1056,7 @@ set(WebCore_SOURCES
     css/CSSSelectorList.cpp
     css/CSSStyleRule.cpp
     css/CSSStyleSheet.cpp
+    css/CSSSupportsRule.cpp
     css/CSSTimingFunctionValue.cpp
     css/CSSToStyleMap.cpp
     css/CSSUnicodeRangeValue.cpp
@@ -1524,7 +1526,9 @@ set(WebCore_SOURCES
     html/canvas/WebGLUniformLocation.cpp
     html/canvas/WebGLVertexArrayObjectOES.cpp
 
+    html/parser/BackgroundHTMLParser.cpp
     html/parser/CSSPreloadScanner.cpp
+    html/parser/CompactHTMLToken.cpp
     html/parser/HTMLConstructionSite.cpp
     html/parser/HTMLDocumentParser.cpp
     html/parser/HTMLElementStack.cpp
@@ -1533,6 +1537,7 @@ set(WebCore_SOURCES
     html/parser/HTMLParserIdioms.cpp
     html/parser/HTMLParserOptions.cpp
     html/parser/HTMLParserScheduler.cpp
+    html/parser/HTMLParserThread.cpp
     html/parser/HTMLFormattingElementList.cpp
     html/parser/HTMLMetaCharsetParser.cpp
     html/parser/HTMLPreloadScanner.cpp

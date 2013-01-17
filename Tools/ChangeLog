@@ -1,3 +1,690 @@
+2013-01-17  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK][EFL] NWRT should check that Xvfb is installed
+        https://bugs.webkit.org/show_bug.cgi?id=71767
+
+        Reviewed by Dirk Pranke.
+
+        EFL and GTK ports now check that Xvfb is installed before running
+        layout tests. The command line used to check whether Xvfb is present
+        is a simple `which Xvfb` that should return 0 as the exit code upon
+        success.
+
+        * Scripts/webkitpy/layout_tests/port/efl.py:
+        (EflPort.show_results_html_file):
+        (EflPort):
+        (EflPort.check_sys_deps):
+        * Scripts/webkitpy/layout_tests/port/gtk.py:
+        (GtkPort.check_sys_deps):
+        * Scripts/webkitpy/layout_tests/port/xvfbdriver.py:
+        (XvfbDriver):
+        (XvfbDriver.check_xvfb):
+
+2013-01-16  Alan Cutter  <alancutter@chromium.org>
+
+        sheriffbot can't tell me who "kov" is
+        https://bugs.webkit.org/show_bug.cgi?id=106184
+
+        Reviewed by Eric Seidel.
+
+        Added glob style searching to the CommitterList contributors_by_search_string function so exact matches are favoured.
+
+        * Scripts/webkitpy/common/config/committers.py:
+        (Account.matches_glob):
+        (CommitterList.contributors_by_search_string):
+        * Scripts/webkitpy/common/config/committers_unittest.py:
+        (CommittersTest.test_committer_lookup):
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Whois):
+
+2013-01-16  David Kilzer  <ddkilzer@apple.com>
+
+        Use xcrun to find path to make for Mac port
+        <http://webkit.org/b/107091>
+
+        Reviewed by Dan Bernstein.
+
+        * Scripts/webkitpy/layout_tests/port/mac.py:
+        (MacPort._build_java_test_support): Call self.make_command().
+        (MacPort.make_command): Add.  Call xcrun_find().
+        (MacPort.nm_command): Use self.xcrun_find().
+        (MacPort.xcrun_find): Add.  Extract from nm_command().
+
+2013-01-16  Sam Weinig  <sam@webkit.org>
+
+        Make debug-safari --target-web-process work again
+        https://bugs.webkit.org/show_bug.cgi?id=107088
+
+        Reviewed by Anders Carlsson.
+
+        * Scripts/webkitdirs.pm:
+        (execMacWebKitAppForDebugging):
+        The shim is now called SecItemShim.
+
+2013-01-16  Alan Cutter  <alancutter@chromium.org>
+
+        GCE build scripts don't take working directory into account when calling findzone.sh
+        https://bugs.webkit.org/show_bug.cgi?id=106962
+
+        Reviewed by Adam Barth.
+
+        * EWSTools/GoogleComputeEngine/build-chromium-ews.sh:
+        * EWSTools/GoogleComputeEngine/build-commit-queue.sh:
+        * EWSTools/GoogleComputeEngine/build-feeder-style-sheriffbot.sh:
+
+2013-01-16  Alan Cutter  <alancutter@chromium.org>
+
+        start-queue.sh does not pass remaining parameters correctly
+        https://bugs.webkit.org/show_bug.cgi?id=107054
+
+        Reviewed by Adam Barth.
+
+        start-queue.sh now passes all remaining params to the webkit-patch command.
+        Previously only one additional queue parameter could be sent.
+
+        * EWSTools/start-queue.sh:
+
+2013-01-16  Xueqing Huang  <huangxueqing@baidu.com>
+
+        check-webkit-style script cannot running in Chinese windows.
+        https://bugs.webkit.org/show_bug.cgi?id=87548
+
+        Reviewed by Darin Adler.
+
+        * Scripts/webkitpy/common/system/platforminfo.py:
+        (PlatformInfo._win_version_tuple_from_cmd):
+
+2013-01-16  Dirk Pranke  <dpranke@chromium.org>
+
+        Delete an extraneous print statement.
+        https://bugs.webkit.org/show_bug.cgi?id=106562
+
+        Delete the extraneous print statement introduced in r139841.
+
+        * Scripts/webkitpy/layout_tests/views/printing.py:
+        (Printer.print_found):
+
+2013-01-16  Zan Dobersek  <zdobersek@igalia.com>
+
+        Please reinstate --pixel
+        https://bugs.webkit.org/show_bug.cgi?id=101995
+
+        Reviewed by Dirk Pranke.
+
+        Add the '--pixel' and '--no-pixel' options for NRWT as aliases for
+        the '--pixel-tests' (or '-p') and '--no-pixel-tests' options respectively.
+        Some developers are still used to these options that were available in the ORWT.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (parse_args):
+
+2013-01-16  Eric Seidel  <eric@webkit.org>
+
+        Remove --shark* support from sunspider/run-sunspider now that Shark is dead
+        https://bugs.webkit.org/show_bug.cgi?id=99512
+
+        Reviewed by Darin Adler.
+
+        * Scripts/run-sunspider:
+
+2013-01-16  Eric Seidel  <eric@webkit.org>
+
+        Remove webkitpy Visual Studio files, as core developers are not interested in maintaining them
+        https://bugs.webkit.org/show_bug.cgi?id=106036
+
+        Reviewed by Darin Adler.
+
+        * Scripts/webkitpy/webkitpy.pyproj: Removed.
+        * Scripts/webkitpy/webkitpy.sln: Removed.
+
+2013-01-16  Chris Hopman  <cjhopman@chromium.org>
+
+        [Chromium] Remove hardcoded chromium_*.jar in gyp files
+        https://bugs.webkit.org/show_bug.cgi?id=104049
+
+        Reviewed by Eric Seidel.
+
+        Targets with dependencies (direct/indirect) on a java target receive
+        the chromium_*.jar paths in the variable input_jars_paths. Targets
+        should use that rather than hardcoding where they think the jar will
+        be. These can be passed directly to ant as INPUT_JARS_PATHS rather
+        than as --jars to generate_native_test.py.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+        * TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:
+
+2013-01-16  Dan Carney  <dcarney@google.com>
+
+        [chromium] move setMockDeviceOrientation to TestRunner library
+        https://bugs.webkit.org/show_bug.cgi?id=106895
+
+        Reviewed by Jochen Eisinger.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebKit):
+        (WebTestRunner::WebTestDelegate::setDeviceOrientation):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::setMockDeviceOrientation):
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::setDeviceOrientation):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-16  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] route more webkit_support and webviewhost callbacks through WebTestDelegate
+        https://bugs.webkit.org/show_bug.cgi?id=106904
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::notifyDone):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestRunner::WebTestDelegate::setDeviceScaleFactor):
+        (WebTestRunner::WebTestDelegate::setFocus):
+        (WebTestRunner::WebTestDelegate::setAcceptAllCookies):
+        (WebTestRunner::WebTestDelegate::pathToLocalResource):
+        (WebTestRunner::WebTestDelegate::setLocale):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::setAlwaysAcceptCookies):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::setWindowIsKey):
+        (WebTestRunner::TestRunner::pathToLocalResource):
+        (WebTestRunner::TestRunner::setBackingScaleFactor):
+        (WebTestRunner::TestRunner::setPOSIXLocale):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (WebTestRunner::TestRunner::taskList):
+        (TestRunner):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::setDeviceScaleFactor):
+        (WebViewHost::setFocus):
+        (WebViewHost::setAcceptAllCookies):
+        (WebViewHost::pathToLocalResource):
+        (WebViewHost::setLocale):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-16  Sergio Villar Senin  <svillar@igalia.com>
+
+        [GTK] build-webkit fails if the jhbuild wrapper is not used
+        https://bugs.webkit.org/show_bug.cgi?id=106769
+
+        Reviewed by Martin Robinson.
+
+        Return an empty array instead of "" in
+        jhbuildWrapperPrefixIfNeeded() because otherwise that empty string
+        will not be recognized as a valid command when the returned array
+        is directly passed to perl's system() call.
+
+        * Scripts/webkitdirs.pm:
+        (jhbuildWrapperPrefixIfNeeded):
+
+2013-01-16  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] add title text direction attribute to TestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=106907
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner::WebTestRunner::setTitleTextDirection):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::setTitleTextDirection):
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::didReceiveTitle):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::didReceiveTitle):
+
+2013-01-16  Jussi Kukkonen  <jussi.kukkonen@intel.com>
+
+        NRWT still confused about test count with --repeat-each and --iterations
+        https://bugs.webkit.org/show_bug.cgi?id=106562
+
+        Reviewed by Dirk Pranke.
+
+        Fix the printed unique test count and skipped count. This
+        seems to have broken in r127688 ("NRWT lies about the number
+        of tests that it's skipping when used with --repeat-each").
+
+        Also add a test for print_found()
+
+        * Scripts/webkitpy/layout_tests/views/printing.py:
+        (Printer.print_found):
+        * Scripts/webkitpy/layout_tests/views/printing_unittest.py:
+        (Testprinter.test_details):
+        (Testprinter):
+        (Testprinter.test_found):
+
+2013-01-15  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed follow-up to r139769.
+
+        Note that omitting the WebKit1 code from the build now
+        works for GTK as well.
+
+        * Scripts/build-webkit:
+
+2013-01-15  Dirk Pranke  <dpranke@chromium.org>
+
+        test-webkitpy: truncate output to the terminal width when necessary
+        https://bugs.webkit.org/show_bug.cgi?id=106973
+
+        Reviewed by Ojan Vafai.
+
+        this implements the same logic for test-webkitpy that we have
+        for run-webkit-tests (and ninja).
+
+        No tests written as this is exercised by running test-webkitpy itself.
+
+        * Scripts/webkitpy/test/printer.py:
+        (Printer.configure):
+        (Printer._test_line):
+
+2013-01-15  Dirk Pranke  <dpranke@chromium.org>
+
+        remove extraneous output in test-webkitpy
+        https://bugs.webkit.org/show_bug.cgi?id=106971
+
+        Reviewed by Ojan Vafai.
+
+        We weren't ignoring or capturing the echoed output from
+        these two tests, and getting noise in the logs as a result.
+
+        * Scripts/webkitpy/common/system/executive_unittest.py:
+        (ExecutiveTest.test_auto_stringify_args):
+        (ExecutiveTest.test_popen_args):
+
+2013-01-15  Dirk Pranke  <dpranke@chromium.org>
+
+        webkitpy.layout_tests.servers.http_server_unittest.TestHttpServer.test_win32_start_and_stop is flaky
+        https://bugs.webkit.org/show_bug.cgi?id=106974
+
+        Reviewed by Ryosuke Niwa.
+
+        I forgot to stub out the call to check to ensure that the ports were
+        available, so this test could fail if something was listening on 8000 or
+        8443 on the machine.
+
+        * Scripts/webkitpy/layout_tests/servers/http_server_unittest.py:
+        (TestHttpServer.test_win32_start_and_stop):
+
+2013-01-15  Levi Weintraub  <leviw@chromium.org>
+
+        Unreviewed, rolling out r139792.
+        http://trac.webkit.org/changeset/139792
+        https://bugs.webkit.org/show_bug.cgi?id=106970
+
+        Broke the windows build.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::notifyDone):
+        (DRTTestRunner::reset):
+        (DRTTestRunner::setAlwaysAcceptCookies):
+        (DRTTestRunner::setWindowIsKey):
+        (DRTTestRunner::pathToLocalResource):
+        (DRTTestRunner::setPOSIXLocale):
+        (InvokeCallbackTask):
+        (InvokeCallbackTask::InvokeCallbackTask):
+        (InvokeCallbackTask::runIfValid):
+        (DRTTestRunner::setBackingScaleFactor):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        (DRTTestRunner::taskList):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestRunner::WebTestDelegate::setDatabaseQuota):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::setDatabaseQuota):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::setPendingExtraData):
+        (WebViewHost::setDeviceScaleFactor):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-15  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix after r139357. The port name of MacWK2EWS should be 'mac-wk2'.
+
+        * Scripts/webkitpy/common/config/ports.py:
+        (MacWK2Port):
+
+2013-01-15  Alan Cutter  <alancutter@chromium.org>
+
+        Extend sheriffbot's "help" command to be able to get help on individual commands
+        https://bugs.webkit.org/show_bug.cgi?id=106629
+
+        Reviewed by Eric Seidel.
+
+        Added a help command to sheriffbot.
+        Fixed some style issues and ordered the commands alphabetically.
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (IRCCommand):
+        (IRCCommand.execute):
+        (IRCCommand.usage):
+        (IRCCommand.help):
+        (CreateBug):
+        (CreateBug.execute):
+        (Help):
+        (Help.execute):
+        (Help._post_command_help):
+        (Hi):
+        (Hi.execute):
+        (Restart):
+        (RollChromiumDEPS):
+        (RollChromiumDEPS._parse_args):
+        (RollChromiumDEPS._expand_irc_nickname):
+        (RollChromiumDEPS.execute):
+        (Rollout):
+        (Rollout._extract_revisions):
+        (Rollout.execute):
+        (Sheriffs):
+        (Sheriffs.execute):
+        (Whois):
+        (Whois.execute):
+        * Scripts/webkitpy/tool/bot/ircbot_unittest.py:
+        (IRCBotTest.test_help):
+
+2013-01-15  Enrica Casucci  <enrica@apple.com>
+
+        Add a new set of WebKit2 APIs for text search and
+        search results management.
+        https://bugs.webkit.org/show_bug.cgi?id=106834.
+        <rdar://problem/12597159>
+
+        Added new test for the new WebKit2 API for
+        text search.
+        
+        Reviewed by Simon Fraser.
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/WebKit2/FindMatches.mm: Added.
+
+2013-01-15  Levi Weintraub  <leviw@chromium.org>
+
+        [chromium] route more webkit_support and webviewhost callbacks through WebTestDelegate
+        https://bugs.webkit.org/show_bug.cgi?id=106904
+
+        Reverting 139794. It broke the build. It appears that a header file,
+        WebTextDirection.h, was left out.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner::setTitleTextDirection):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner::WebTestRunner::shouldStayOnPageAfterHandlingBeforeUnload):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::shouldStayOnPageAfterHandlingBeforeUnload):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::didReceiveTitle):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::didReceiveTitle):
+
+2013-01-15  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] route more webkit_support and webviewhost callbacks through WebTestDelegate
+        https://bugs.webkit.org/show_bug.cgi?id=106904
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::notifyDone):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestRunner::WebTestDelegate::setDeviceScaleFactor):
+        (WebTestRunner::WebTestDelegate::setFocus):
+        (WebTestRunner::WebTestDelegate::setAcceptAllCookies):
+        (WebTestRunner::WebTestDelegate::pathToLocalResource):
+        (WebTestRunner::WebTestDelegate::setLocale):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::setAlwaysAcceptCookies):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::setWindowIsKey):
+        (WebTestRunner::TestRunner::pathToLocalResource):
+        (WebTestRunner::TestRunner::setBackingScaleFactor):
+        (WebTestRunner::TestRunner::setPOSIXLocale):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (WebTestRunner::TestRunner::taskList):
+        (TestRunner):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::setDeviceScaleFactor):
+        (WebViewHost::setFocus):
+        (WebViewHost::setAcceptAllCookies):
+        (WebViewHost::pathToLocalResource):
+        (WebViewHost::setLocale):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-15  Zan Dobersek  <zdobersek@igalia.com>
+
+        Tests with WontFix expectation are (indirectly) skipped
+        https://bugs.webkit.org/show_bug.cgi?id=105860
+
+        Reviewed by Dirk Pranke.
+
+        Only skip the WontFix expectation if there are no other layout test
+        expectations (like Failure, ImageOnlyFailure) listed for the test.
+        This makes it possible to run an expected failure for which there
+        is no reason or interest to fix. There are some ports that would like
+        to exercise this behavior as well as specific test cases that should use
+        such expectations.
+
+        * Scripts/webkitpy/layout_tests/models/test_expectations.py:
+        (TestExpectationParser._tokenize_line): Only add the SKIP modifier for a
+        WONTFIX test if there are no expectations listed. The warning is adjusted
+        to reflect the new behavior.
+        * Scripts/webkitpy/layout_tests/models/test_expectations_unittest.py: Add
+        and adjust test cases for these changes.
+        (ExpectationSyntaxTests.test_wontfix):
+        (SemanticTests.test_skip_and_wontfix):
+
+2013-01-15  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] add title text direction attribute to TestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=106907
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner::WebTestRunner::setTitleTextDirection):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::setTitleTextDirection):
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::didReceiveTitle):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::didReceiveTitle):
+
+2013-01-15  Dirk Pranke  <dpranke@chromium.org>
+
+        nrwt: change the default # of locked shards on chromium_win to 1
+        https://bugs.webkit.org/show_bug.cgi?id=106938
+
+        Reviewed by Eric Seidel.
+
+        It looks like LigHTTPd might be buggy or unstable if we are
+        running multiple http tests in parallel; see
+        http://code.google.com/p/chromium/issues/detail?id=169530 for more
+        context as well. This change will stop running http tests in parallel
+        and we can see if this fixes things.
+
+        * Scripts/webkitpy/layout_tests/port/chromium_win.py:
+        (ChromiumWinPort.default_max_locked_shards):
+        * Scripts/webkitpy/layout_tests/port/chromium_win_unittest.py:
+        (ChromiumWinTest.test_path_to_image_diff):
+        (ChromiumWinTest):
+        (ChromiumWinTest.test_default_max_locked_shards):
+
+2013-01-15  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] move WebDatabase related methods to TestRunner library
+        https://bugs.webkit.org/show_bug.cgi?id=106905
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        (DRTTestRunner::DRTTestRunner):
+        (DRTTestRunner::reset):
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        (DRTTestRunner):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestRunner::WebTestDelegate::clearAllDatabases):
+        (WebTestRunner::WebTestDelegate::setDatabaseQuota):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::clearAllDatabases):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::setDatabaseQuota):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::clearAllDatabases):
+        (WebViewHost::setDatabaseQuota):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-15  Tim 'mithro' Ansell  <mithro@mithis.com>
+
+        Renaming CleanWorkingDirectory step to DiscardLocalChanges to make
+        functionality match the name.
+        https://bugs.webkit.org/show_bug.cgi?id=106870
+
+        Reviewed by Adam Barth.
+
+        * Scripts/webkitpy/tool/commands/download.py:
+        (Clean):
+        (Update):
+        (Build):
+        (BuildAndTest):
+        (CheckStyle):
+        (BuildAttachment):
+        (BuildAndTestAttachment):
+        (AbstractPatchApplyingCommand):
+        (ApplyWatchList):
+        (AbstractPatchLandingCommand):
+        (CreateRollout):
+        * Scripts/webkitpy/tool/steps/__init__.py:
+        * Scripts/webkitpy/tool/steps/cleanworkingdirectory.py:
+        (CleanWorkingDirectory.options):
+        (CleanWorkingDirectory.run):
+        * Scripts/webkitpy/tool/steps/cleanworkingdirectory_unittest.py:
+        * Scripts/webkitpy/tool/steps/discardlocalchanges.py: Copied from Tools/Scripts/webkitpy/tool/steps/cleanworkingdirectory.py.
+        * Scripts/webkitpy/tool/steps/discardlocalchanges_unittest.py: Copied from Tools/Scripts/webkitpy/tool/steps/cleanworkingdirectory_unittest.py.
+
+2013-01-15  Zan Dobersek  <zandobersek@gmail.com>
+
+        [Autotools] Add support for WebKit2-only builds
+        https://bugs.webkit.org/show_bug.cgi?id=106889
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Only build the GtkLauncher and DumpRenderTree if building WebKit1.
+        * Scripts/build-webkit: Pass along the information on whether to build WebKit1 when
+        building the GTK port through build-webkit.
+        * Scripts/webkitdirs.pm:
+        (buildAutotoolsProject): Add the --disable-webkit1 configuration flag to the build
+        arguments when not building WebKit1.
+        (buildGtkProject): Pass along the information on whether to build WebKit1 when building
+        through the Autotools build system.
+
+2013-01-15  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Enable Performance Timeline, Resource Timing, Navigation Timing features
+        https://bugs.webkit.org/show_bug.cgi?id=106197
+
+        Reviewed by Martin Robinson.
+
+        * Scripts/webkitperl/FeatureList.pm: Add the configuration options for all three
+        features. Enable them on GTK, meaning they will be enabled in development builds
+        (i.e. when building with build-webkit).
+
+2013-01-15  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Enable CSS Image Resolution feature
+        https://bugs.webkit.org/show_bug.cgi?id=99038
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Enable the CSS Image Resolution feature for the development
+        builds of the GTK port.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-01-15  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK] Stop passing the unstable features flag to configure script when using build-webkit
+        https://bugs.webkit.org/show_bug.cgi?id=106579
+
+        Reviewed by Gustavo Noronha Silva.
+
+        The --enable-unstable-features flag is not required to be passed anymore
+        to the configure script as it was removed in r138252.
+
+        * Scripts/webkitdirs.pm:
+        (buildAutotoolsProject):
+
+2013-01-15  Tony Chang  <tony@chromium.org>
+
+        [chromium] Unreviewed, fix a bug where we don't properly shutdown lighttpd.
+
+        * Scripts/webkitpy/layout_tests/servers/http_server.py:
+        (Lighttpd._check_and_kill): Pass /pid so taskkill.exe doesn't error out on us.
+        * Scripts/webkitpy/layout_tests/servers/http_server_unittest.py:
+        (TestHttpServer.test_win32_start_and_stop):
+
+2013-01-15  Joshua Bell  <jsbell@chromium.org>
+
+        Unreviewed. Adding Michael Pruett as contributor.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
 2013-01-15  Victor Carbune  <victor@rosedu.org>
 
         Unreviewed. Update my email addresses.

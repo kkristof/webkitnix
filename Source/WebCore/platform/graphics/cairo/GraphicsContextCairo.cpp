@@ -983,15 +983,22 @@ void GraphicsContext::setAlpha(float alpha)
     platformContext()->setGlobalAlpha(alpha);
 }
 
-void GraphicsContext::setPlatformCompositeOperation(CompositeOperator op, BlendMode)
+void GraphicsContext::setPlatformCompositeOperation(CompositeOperator op, BlendMode blendOp)
 {
     if (paintingDisabled())
         return;
 
-    cairo_set_operator(platformContext()->cr(), toCairoOperator(op));
+    cairo_operator_t cairo_op;
+    if (blendOp == BlendModeNormal)
+        cairo_op = toCairoOperator(op);
+    else
+        cairo_op = toCairoOperator(blendOp);
+
+    cairo_set_operator(platformContext()->cr(), cairo_op);
 }
 
-void GraphicsContext::clip(const Path& path)
+// FIXME: don't ignore the winding rule. https://bugs.webkit.org/show_bug.cgi?id=107065
+void GraphicsContext::clip(const Path& path, WindRule)
 {
     if (paintingDisabled())
         return;
@@ -1009,9 +1016,9 @@ void GraphicsContext::clip(const Path& path)
     m_data->clip(path);
 }
 
-void GraphicsContext::canvasClip(const Path& path)
+void GraphicsContext::canvasClip(const Path& path, WindRule fillRule)
 {
-    clip(path);
+    clip(path, fillRule);
 }
 
 void GraphicsContext::clipOut(const Path& path)

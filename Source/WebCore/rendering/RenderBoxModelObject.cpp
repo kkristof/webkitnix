@@ -310,7 +310,7 @@ bool RenderBoxModelObject::shouldPaintAtLowQuality(GraphicsContext* context, Ima
     return imageQualityController()->shouldPaintAtLowQuality(context, this, image, layer, size);
 }
 
-RenderBoxModelObject::RenderBoxModelObject(Node* node)
+RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
     : RenderLayerModelObject(node)
 {
 }
@@ -870,7 +870,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
 
         // Now add the text to the clip.  We do this by painting using a special paint phase that signals to
         // InlineTextBoxes that they should just add their contents to the clip.
-        PaintInfo info(maskImageContext, maskRect, PaintPhaseTextClip, true, 0, paintInfo.renderRegion, 0);
+        PaintInfo info(maskImageContext, maskRect, PaintPhaseTextClip, PaintBehaviorForceBlackText, 0, paintInfo.renderRegion);
         if (box) {
             RootInlineBox* root = box->root();
             box->paint(info, LayoutPoint(scrolledPaintRect.x() - box->x(), scrolledPaintRect.y() - box->y()), root->lineTop(), root->lineBottom());

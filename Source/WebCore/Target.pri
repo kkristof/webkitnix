@@ -287,6 +287,7 @@ SOURCES += \
     css/CSSSegmentedFontFace.cpp \
     css/CSSStyleRule.cpp \
     css/CSSStyleSheet.cpp \
+    css/CSSSupportsRule.cpp \
     css/CSSTimingFunctionValue.cpp \
     css/CSSToStyleMap.cpp \
     css/CSSUnicodeRangeValue.cpp \
@@ -706,7 +707,9 @@ SOURCES += \
     html/canvas/CanvasRenderingContext2D.cpp \
     html/canvas/CanvasStyle.cpp \
     html/canvas/DataView.cpp \
+    html/parser/BackgroundHTMLParser.cpp \
     html/parser/CSSPreloadScanner.cpp \
+    html/parser/CompactHTMLToken.cpp \
     html/parser/HTMLConstructionSite.cpp \
     html/parser/HTMLDocumentParser.cpp \
     html/parser/HTMLElementStack.cpp \
@@ -717,6 +720,7 @@ SOURCES += \
     html/parser/HTMLParserIdioms.cpp \
     html/parser/HTMLParserOptions.cpp \
     html/parser/HTMLParserScheduler.cpp \
+    html/parser/HTMLParserThread.cpp \
     html/parser/HTMLPreloadScanner.cpp \
     html/parser/HTMLScriptRunner.cpp \
     html/parser/HTMLSourceTracker.cpp \
@@ -1498,6 +1502,7 @@ HEADERS += \
     css/CSSStyleDeclaration.h \
     css/CSSStyleRule.h \
     css/CSSStyleSheet.h \
+    css/CSSSupportsRule.h \
     css/CSSTimingFunctionValue.h \
     css/CSSToStyleMap.h \
     css/CSSUnicodeRangeValue.h \
@@ -1879,6 +1884,7 @@ HEADERS += \
     html/TypeAhead.h \
     html/ValidityState.h \
     html/parser/CSSPreloadScanner.h \
+    html/parser/CompactHTMLToken.h \
     html/parser/HTMLConstructionSite.h \
     html/parser/HTMLDocumentParser.h \
     html/parser/HTMLElementStack.h \
@@ -2302,6 +2308,7 @@ HEADERS += \
     platform/network/qt/QNetworkReplyHandler.h \
     platform/network/ResourceErrorBase.h \
     platform/network/ResourceHandle.h \
+    platform/network/ResourceHandleTypes.h \
     platform/network/ResourceLoadInfo.h \
     platform/network/ResourceLoadPriority.h \
     platform/network/ResourceLoadTiming.h \

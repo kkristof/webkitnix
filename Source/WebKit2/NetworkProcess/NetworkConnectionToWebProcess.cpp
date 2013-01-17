@@ -30,6 +30,7 @@
 #include "NetworkProcess.h"
 #include "NetworkResourceLoader.h"
 #include "RemoteNetworkingContext.h"
+#include "SyncNetworkResourceLoader.h"
 #include <WebCore/PlatformCookieJar.h>
 #include <WebCore/ResourceLoaderOptions.h>
 #include <WebCore/ResourceRequest.h>
@@ -120,9 +121,9 @@ void NetworkConnectionToWebProcess::scheduleResourceLoad(const NetworkResourceLo
     resourceLoadIdentifier = NetworkProcess::shared().networkResourceLoadScheduler().scheduleResourceLoad(loadParameters, this);
 }
 
-void NetworkConnectionToWebProcess::addLoadInProgress(const KURL& url, ResourceLoadIdentifier& identifier)
+void NetworkConnectionToWebProcess::performSynchronousLoad(const NetworkResourceLoadParameters& loadParameters, PassRefPtr<Messages::NetworkConnectionToWebProcess::PerformSynchronousLoad::DelayedReply> reply)
 {
-    identifier = NetworkProcess::shared().networkResourceLoadScheduler().addLoadInProgress(url);
+    NetworkProcess::shared().networkResourceLoadScheduler().scheduleSyncNetworkResourceLoader(SyncNetworkResourceLoader::create(loadParameters, reply));
 }
 
 void NetworkConnectionToWebProcess::removeLoadIdentifier(ResourceLoadIdentifier identifier)

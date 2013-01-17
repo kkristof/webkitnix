@@ -34,19 +34,19 @@ class GridTrack;
 
 class RenderGrid : public RenderBlock {
 public:
-    RenderGrid(Node*);
+    RenderGrid(ContainerNode*);
     virtual ~RenderGrid();
 
     virtual const char* renderName() const OVERRIDE;
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
-    virtual void computePreferredLogicalWidths() OVERRIDE;
 
     virtual bool avoidsFloats() const OVERRIDE { return true; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
 
 private:
     virtual bool isRenderGrid() const OVERRIDE { return true; }
+    virtual void computePreferredLogicalWidths() OVERRIDE;
 
     enum TrackSizingDirection { ForColumns, ForRows };
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, Vector<GridTrack>&);

@@ -1,3 +1,502 @@
+2013-01-16  Alexey Proskuryakov  <ap@apple.com>
+
+        Update sandbox rules after r128003
+        https://bugs.webkit.org/show_bug.cgi?id=106840
+
+        Reviewed by Darin Adler.
+
+        * WebProcess/com.apple.WebProcess.sb.in: Additional Lion only fixes.
+
+2013-01-16  Sam Weinig  <sam@webkit.org>
+
+        Make debug-safari --target-web-process work again
+        https://bugs.webkit.org/show_bug.cgi?id=107088
+
+        Reviewed by Anders Carlsson.
+
+        --target-web-process was made harder to use during recent refactoring
+        by requiring users to pass a -ui-process-name parameter in addition to
+        the -client-executable. Instead, we should conjure up that name from
+        the information we already have at our disposal.
+
+        * WebProcess/mac/WebProcessMainMac.mm:
+        (WebKit::WebProcessMainDelegate::getConnectionIdentifier):
+        Simplify by making the non-client-executable path use the base
+        class implementation.
+
+        (WebKit::WebProcessMainDelegate::getClientIdentifier):
+        Ditto.
+
+        (WebKit::WebProcessMainDelegate::getClientProcessName):
+        Added. Create a client process name (its actually not too important what it is, as it
+        is only used to show a name in Activity Monitor) from the passed in client executable
+        path.
+
+2013-01-16  Sam Weinig  <sam@webkit.org>
+
+        Fix crashes on the bots.
+
+        The WebKit LoaderStrategy for loading synchronously was only implemented
+        for the case where you have a network process. When you don't, we should
+        be using the base implementation.
+
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::loadResourceSynchronously):
+
+2013-01-16  Sam Weinig  <sam@webkit.org>
+
+        Update Owners file.
+
+        * Owners:
+
+2013-01-16  Sam Weinig  <sam@webkit.org>
+
+        Remove unused AddLoadInProgress message
+        https://bugs.webkit.org/show_bug.cgi?id=107077
+
+        Reviewed by Dan Bernstein.
+
+        Dead code is dead.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in:
+
+2013-01-16  Anders Carlsson  <andersca@apple.com>
+
+        Fix crash when destroying a plug-in with pending URL requests
+        https://bugs.webkit.org/show_bug.cgi?id=107075
+        <rdar://problem/12513871>
+
+        Reviewed by Sam Weinig.
+
+        In PluginView::destroyPluginAndReset, make sure to cancel any outstanding URL requests since the PluginView
+        object will stay around and would otherwise start loading URLs from stopped plug-ins.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::Stream::start):
+        Assert that the plug-in is alive.
+        
+        (WebKit::PluginView::destroyPluginAndReset):
+        Empty out the pending URL requests vector and stop the timer.
+
+2013-01-16  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [EFL][WK2] PageUIClientEfl should keep in sync with WKPageUIClient
+        https://bugs.webkit.org/show_bug.cgi?id=107060
+
+        Reviewed by Benjamin Poulain.
+
+        Rearrange the order of functions in PageUIClientEfl.
+        Rename closePage() to close().
+
+        * UIProcess/API/efl/EwkViewImpl.cpp:
+        (EwkViewImpl::close):
+        * UIProcess/API/efl/EwkViewImpl.h:
+        (EwkViewImpl):
+        * UIProcess/efl/PageUIClientEfl.cpp:
+        (WebKit::PageUIClientEfl::PageUIClientEfl):
+        (WebKit::PageUIClientEfl::close):
+        (WebKit::PageUIClientEfl::takeFocus):
+        (WebKit::PageUIClientEfl::focus):
+        (WebKit::PageUIClientEfl::unfocus):
+        (WebKit::PageUIClientEfl::getWindowFrame):
+        (WebKit::PageUIClientEfl::setWindowFrame):
+        (WebKit::PageUIClientEfl::createNewPage):
+        (WebKit::PageUIClientEfl::showColorPicker):
+        (WebKit::PageUIClientEfl::hideColorPicker):
+        * UIProcess/efl/PageUIClientEfl.h:
+        (PageUIClientEfl):
+
+2013-01-16  Brady Eidson  <beidson@apple.com>
+
+        Synchronous XMLHTTPRequests need to go to the NetworkProcess.
+        <rdar://problem/12951765> and https://bugs.webkit.org/show_bug.cgi?id=106826
+
+        Reviewed by Sam Weinig and Alexey Proskuryakov.
+
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::loadResourceSynchronously): Entry point for WebCore to get
+          synchronous requests to the NetworkProcess.
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.h:
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::performSynchronousLoad): Create a SyncNetworkResourceLoader
+          and schedule it.
+        * NetworkProcess/NetworkConnectionToWebProcess.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.messages.in:
+
+        * NetworkProcess/NetworkResourceLoadScheduler.cpp:
+        (WebKit::NetworkResourceLoadScheduler::scheduleSyncNetworkResourceLoader):
+        (WebKit::NetworkResourceLoadScheduler::servePendingRequestsForHost): Serve synchronous loaders
+          before async loaders.
+        * NetworkProcess/NetworkResourceLoadScheduler.h:
+
+        A class that encapsulates a synchronous load request and the CoreIPC reply to be made once it is complete:
+        * NetworkProcess/SyncNetworkResourceLoader.cpp: Added.
+        (WebKit::SyncNetworkResourceLoader::SyncNetworkResourceLoader):
+        (WebKit::SyncNetworkResourceLoader::start):
+        * NetworkProcess/SyncNetworkResourceLoader.h: Copied from Source/WebKit2/NetworkProcess/HostRecord.h.
+        (WebKit::SyncNetworkResourceLoader::create):
+        (WebKit::SyncNetworkResourceLoader::setIdentifier):
+        (WebKit::SyncNetworkResourceLoader::identifier):
+        (WebKit::SyncNetworkResourceLoader::loadParameters):
+
+        Add a second queue of sync loaders:
+        * NetworkProcess/HostRecord.h:
+        (WebKit::HostRecord::syncLoadersPending):
+
+        Add comments to explicitly spell out the current reliance on some messages that are currently synchronous:
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::willSendRequest):
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpace):
+
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-16  Alexey Proskuryakov  <ap@apple.com>
+
+        WebProcess should not access ~/Library/Caches/com.apple.WebProcess
+        https://bugs.webkit.org/show_bug.cgi?id=107055
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/com.apple.WebProcess.sb.in: Remove the rule allowing access.
+
+        * WebProcess/mac/WebProcessMac.mm: (WebKit::WebProcess::platformInitializeWebProcess):
+        Use a correct cache directory even if NetworkProcess is in use. Not all loading has
+        moved to this process yet.
+
+2013-01-16  Anders Carlsson  <andersca@apple.com>
+
+        Remove CoreIPCMessageKinds.h
+        https://bugs.webkit.org/show_bug.cgi?id=107048
+
+        Reviewed by Beth Dakin.
+
+        Use named IPC messages instead.
+
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::sendSyncReply):
+        (CoreIPC::Connection::processIncomingMessage):
+        (CoreIPC::Connection::dispatchSyncMessage):
+        * Platform/CoreIPC/CoreIPCMessageKinds.h: Removed.
+        * Platform/CoreIPC/MessageID.h:
+        (MessageID):
+        (CoreIPC::MessageID::stripMostSignificantBit):
+        (CoreIPC::MessageID::operator==):
+        * Platform/CoreIPC/mac/ConnectionMac.cpp:
+        (CoreIPC::Connection::open):
+        (CoreIPC::Connection::receiveSourceEventHandler):
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-15  Jer Noble  <jer.noble@apple.com>
+
+        Add a Setting to disable QTKit media engine.
+        https://bugs.webkit.org/show_bug.cgi?id=106972
+
+        Reviewed by Eric Carlson.
+
+        Add a WebKit2 API to access WebCore QTKitEnabled settings.
+
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetQTKitEnabled): Pass through to WebCore.
+        (WKPreferencesGetQTKitEnabled): Ditto.
+        * UIProcess/API/C/WKPreferences.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences): Synchronize WebKit2/WebCore settings.
+
+2013-01-16  Kiran Muppala  <cmuppala@apple.com>
+
+        Groundwork to enable process suppression by default on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=106513
+
+        Reviewed by Alexey Proskuryakov.
+
+        Process suppression has so far been controlled by a user default and
+        disabled by default.  This patch provides the groundwork to enable it by
+        default and adds a private API to enable/disable it on a per-context
+        basis.
+
+        * Shared/mac/ChildProcessMac.mm:
+        (WebKit::ChildProcess::platformInitialize): Add comment about
+        initilization of application occlusion state.
+        * UIProcess/API/C/mac/WKContextPrivateMac.cpp: Added.
+        (WKContextGetProcessSuppressionEnabled):
+        (WKContextSetProcessSuppressionEnabled):
+        Add private API to enable/disable process suppression on a per-context
+        basis.
+        * UIProcess/API/C/mac/WKContextPrivateMac.h: Added.
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::didFinishLaunching): Check if owning
+        context has process suppression enabled before updating application
+        occlusion state.
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::didFinishLaunching): Ditto.
+        * UIProcess/Plugins/PluginProcessProxy.cpp:
+        (WebKit::PluginProcessProxy::didFinishLaunching): Check if
+        process suppression is enabled for global child processes before
+        updating application occlusion state.
+        * UIProcess/SharedWorkers/SharedWorkerProcessProxy.cpp:
+        (WebKit::SharedWorkerProcessProxy::didFinishLaunching): Ditto.
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::create): Remove call to
+        initializeProcessSuppressionSupport, since platformInitialize has been
+        modified to perform initialization.
+        (WebKit::WebContext::WebContext): Initialize new member variable
+        m_processSuppressionEnabled to false.
+        * UIProcess/WebContext.h:
+        (WebKit::WebContext::processSuppressionEnabled): Remove "Support"
+        from the method name.
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::updateGlobalChildProcessesApplicationOcclusionState):
+        (WebKit::applicationOcclusionStateChanged): Update the application
+        occlusion state of child processes having process suppresion enabled.
+        (WebKit::applicationBecameVisible):
+        (WebKit::applicationBecameOccluded):
+        Simplify by moving code to applicationOcclusionStateChanged.
+        (WebKit::registerOcclusionNotificationHandlers): Fix typos.
+        (WebKit::unregisterOcclusionNotificationHandlers): Add
+        method to unregister occlusion notification handlers when no context
+        has process suppression enabled.
+        (WebKit::enableOcclusionNotifications):
+        (WebKit::disableOcclusionNotifications):
+        (WebKit::enableProcessSuppressionForGlobalChildProcesses):
+        (WebKit::disableProcessSuppressionForGlobalChildProcesses):
+        (WebKit::processSuppressionIsEnabledForAnyContext):
+        (WebKit::processSuppressionIsEnabledForAllContexts):
+        (WebKit::WebContext::platformInitialize): Disable process suppression
+        for global child processes since process suppression is disabled for a
+        context on construction.
+        (WebKit::WebContext::setProcessSuppressionEnabled):
+        (WebKit::WebContext::updateChildProcessesApplicationOcclusionState):
+        (WebKit::WebContext::applicationIsOccluded):
+        (WebKit::WebContext::processSuppressionEnabledForGlobalChildProcesses):
+        (WebKit::WebContext::processSuppressionEnabledChanged): Update child
+        processes application occlusion state, enable/disable occlusion
+        notifications and enable/disable process suppression for global child
+        processes.
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-01-15  Anders Carlsson  <andersca@apple.com>
+
+        Merge LayerTreeHostCA and LayerTreeHostMac
+        https://bugs.webkit.org/show_bug.cgi?id=106967
+
+        Reviewed by Sam Weinig.
+
+        There's no need to have a LayerTreeHostCA base class anymore, just merge it into LayerTreeHostMac.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebPage/ca/LayerTreeHostCA.cpp: Removed.
+        * WebProcess/WebPage/ca/LayerTreeHostCA.h: Removed.
+        * WebProcess/WebPage/mac/LayerTreeHostMac.h:
+        (LayerTreeHostMac):
+        * WebProcess/WebPage/mac/LayerTreeHostMac.mm:
+        (WebKit::LayerTreeHostMac::LayerTreeHostMac):
+        (WebKit::LayerTreeHostMac::~LayerTreeHostMac):
+        (WebKit::LayerTreeHostMac::layerTreeContext):
+        (WebKit::LayerTreeHostMac::setShouldNotifyAfterNextScheduledLayerFlush):
+        (WebKit):
+        (WebKit::LayerTreeHostMac::setRootCompositingLayer):
+        (WebKit::LayerTreeHostMac::invalidate):
+        (WebKit::LayerTreeHostMac::setNonCompositedContentsNeedDisplay):
+        (WebKit::LayerTreeHostMac::scrollNonCompositedContents):
+        (WebKit::LayerTreeHostMac::forceRepaint):
+        (WebKit::LayerTreeHostMac::sizeDidChange):
+        (WebKit::LayerTreeHostMac::deviceScaleFactorDidChange):
+        (WebKit::LayerTreeHostMac::didInstallPageOverlay):
+        (WebKit::LayerTreeHostMac::didUninstallPageOverlay):
+        (WebKit::LayerTreeHostMac::setPageOverlayNeedsDisplay):
+        (WebKit::LayerTreeHostMac::pauseRendering):
+        (WebKit::LayerTreeHostMac::resumeRendering):
+        (WebKit::LayerTreeHostMac::setLayerHostingMode):
+        (WebKit::LayerTreeHostMac::notifyAnimationStarted):
+        (WebKit::LayerTreeHostMac::notifyFlushRequired):
+        (WebKit::LayerTreeHostMac::paintContents):
+        (WebKit::LayerTreeHostMac::deviceScaleFactor):
+        (WebKit::LayerTreeHostMac::flushLayers):
+        (WebKit::LayerTreeHostMac::initialize):
+        (WebKit::LayerTreeHostMac::performScheduledLayerFlush):
+        (WebKit::LayerTreeHostMac::flushPendingLayerChanges):
+        (WebKit::LayerTreeHostMac::createPageOverlayLayer):
+        (WebKit::LayerTreeHostMac::destroyPageOverlayLayer):
+
+2013-01-15  Tim Horton  <timothy_horton@apple.com>
+
+        Clamp TileCache visibleRect to WKView's visibleRect
+        https://bugs.webkit.org/show_bug.cgi?id=106601
+        <rdar://problem/12843164>
+
+        Reviewed by Simon Fraser.
+
+        Some clients expand the WKView to be much larger than what is visible on screen, and
+        control scrolling with their own view. Currently, we will create tiles for the entire
+        view, consuming a great deal of memory, and can sometimes factor scrollbars which can
+        never exist into layout. Piggyback on WKView SPI (the property minimumWidthForAutoLayout,
+        renamed from minimumLayoutWidth) to drop into a mode where we disable main frame scrolling
+        and respect the WKView's visibleRect when creating tiles.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView setFrameSize:]): Update the page's viewExposedRect from our visibleRect.
+        (-[WKView _updateWindowAndViewFrames]): Update the page's viewExposedRect from our visibleRect.
+        (-[WKView initWithFrame:contextRef:pageGroupRef:relatedToPage:]): The main frame is scrollable by default.
+        (-[WKView enableFrameSizeUpdates]): If frame size updates become enabled, update the
+        page's viewExposedRect from our visibleRect.
+        (-[WKView setMinimumLayoutWidth:]): Rename minimumLayoutWidth property to minimumWidthForAutoLayout.
+        Warn once if the old one is used.
+        (-[WKView minimumWidthForAutoLayout]):
+        (-[WKView setMinimumWidthForAutoLayout:]): Adjust the minimum layout width, whether the main frame
+        is scrollable, and update the page's viewExposedRect if needed.
+        * UIProcess/API/mac/WKViewPrivate.h: Added minimumWidthForAutoLayout property.
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Add viewExposedRectChanged/setMainFrameIsScrollable.
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::WebPageProxy::viewExposedRectChanged): Forward viewExposedRectChanged to WebPage.
+        (WebKit::WebPageProxy::setMainFrameIsScrollable): Forward setMainFrameIsScrollable to WebPage.
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::transitionToCommittedForNewPage): Disable scrollbars and scrolling if
+        main frame scrollability is disabled.
+        * WebProcess/WebPage/DrawingArea.h:
+        (WebKit::DrawingArea::setExposedRect): Added empty default implementation.
+        (WebKit::DrawingArea::mainFrameScrollabilityChanged): Added empty default implementation.
+        (DrawingArea):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::windowAndViewFramesChanged): We don't need the WebCore:: namespace.
+        (WebKit::WebPage::viewExposedRectChanged): Forward exposed rect changes to DrawingArea (only TiledCoreAnimationDrawingArea cares, for now).
+        (WebKit::WebPage::setMainFrameIsScrollable): Forward scrollability changes to DrawingArea and the main FrameView.
+        (WebKit::WebPage::drawRectToImage): We don't need the WebCore:: namespace.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Add mainFrameIsScrollable, viewExposedRectChanged, setMainFrameIsScrollable, and storage for m_mainFrameIsScrollable.
+        (WebKit::WebPage::mainFrameIsScrollable):
+        * WebProcess/WebPage/WebPage.messages.in: Add ViewExposedRectChanged and SetMainFrameIsScrollable messages.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::setExposedRect): Forward new exposed rect to TiledBacking (only TileCache cares, for now).
+        (WebKit::TiledCoreAnimationDrawingArea::mainFrameScrollabilityChanged): Ask TiledBacking to clip to the exposedRect if main frame scrolling is disabled.
+        (WebKit::TiledCoreAnimationDrawingArea::updateGeometry): Use size instead of viewSize in case we've changed it because of m_minimumLayoutWidth.
+        (WebKit::TiledCoreAnimationDrawingArea::setRootCompositingLayer): Update exposedRect and clipsToExposedRect.
+
+2013-01-15  Enrica Casucci  <enrica@apple.com>
+
+        Add a new set of WebKit2 APIs for text search and
+        search results management.
+        https://bugs.webkit.org/show_bug.cgi?id=106834.
+        <rdar://problem/12597159>
+
+        Reviewed by Simon Fraser.
+        
+        Adding new API to perform text search in WebKit2 without using
+        the stock UI. The new interface provides all the information
+        necessary to write a custom UI for search. The main logic is
+        implemented in the new functions added to FindController.
+
+        Added new TextWebKitAPI test.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageFindStringMatches): Added.
+        (WKPageGetImageForFindMatch): Added.
+        (WKPageSelectFindMatch): Added.
+        (WKPageSetPageFindMatchesClient): Added.
+        * UIProcess/API/C/WKPage.h: Added the new API definitions.
+        * UIProcess/WebFindClient.cpp: Added new client callbacks.
+        (WebKit::WebFindMatchesClient::didFindStringMatches):
+        (WebKit::WebFindMatchesClient::didGetImageForMatchResult):
+        * UIProcess/WebFindClient.h:
+        (WebFindMatchesClient): Added.
+        * UIProcess/WebPageProxy.cpp: Added proxy methods.
+        (WebKit::WebPageProxy::initializeFindMatchesClient):
+        (WebKit::WebPageProxy::findStringMatches):
+        (WebKit::WebPageProxy::getImageForFindMatch):
+        (WebKit::WebPageProxy::selectFindMatch):
+        (WebKit::WebPageProxy::didGetImageForFindMatch):
+        (WebKit::WebPageProxy::didFindStringMatches):
+        * UIProcess/WebPageProxy.h:
+        * UIProcess/WebPageProxy.messages.in:
+        * WebProcess/WebPage/FindController.cpp:
+        (WebKit::FindController::findStringMatches): Finds all the matching
+        text according to the find options. All the matching text ranges are
+        stored in a vector until the next call to findStringMatches or until
+        hideFindUI is called. The message that is sent back to the UI process
+        contains a vector containing an entry for each find match (i.e. for each
+        range) and each entry is represented by a vector of the corresponding
+        text rects. It also returns the index in the vector of matches corresponding
+        to the first match after the user selection.
+        If there is no selection the index is always 0 and if there are no
+        matches after the user selection, the index returned is -1.
+        (WebKit::FindController::getFindIndicatorBitmapAndRect): Helper function
+        to share code between updateFindIndicator and getImageForFindMatch.
+        (WebKit::FindController::getImageForFindMatch): Creates the image corresponding
+        to the text matched at the given match index.
+        (WebKit::FindController::selectFindMatch): creates a selection for the range
+        corresponding to the given match index.
+        (WebKit::FindController::hideFindUI): Added logic to clear the vector
+        of matched ranges.
+        (WebKit::FindController::updateFindIndicator): Updated to use the
+        new helper function getFindIndicatorBitmapAndRect.
+        * WebProcess/WebPage/FindController.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::findStringMatches):
+        (WebKit::WebPage::getImageForFindMatch):
+        (WebKit::WebPage::selectFindMatch):
+        * WebProcess/WebPage/WebPage.h:
+        * WebProcess/WebPage/WebPage.messages.in:
+
+2013-01-15  Anders Carlsson  <andersca@apple.com>
+
+        Rename LayerTreeHostCAMac to LayerTreeHostMac.
+
+        Rubber-stamped by Deth Bakin.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebPage/LayerTreeHost.cpp:
+        * WebProcess/WebPage/mac/LayerTreeHostMac.h: Renamed from Source/WebKit2/WebProcess/WebPage/ca/mac/LayerTreeHostCAMac.h.
+        * WebProcess/WebPage/mac/LayerTreeHostMac.mm: Renamed from Source/WebKit2/WebProcess/WebPage/ca/mac/LayerTreeHostCAMac.mm.
+
+2013-01-15  Dominik Röttsches  <dominik.rottsches@intel.com>
+
+        [CoordinatedGraphics] Deadlock when running abspos-child-container-changes-from-relative-to-static.html
+        https://bugs.webkit.org/show_bug.cgi?id=106884
+
+        Reviewed by Benjamin Poulain.
+
+        We need to return false if m_waitingForUIProcess is true since otherwise
+        we'll not really repaint in performScheduledLayerFlush() and the
+        UI process will wait forever. Returning false leads to executing the layer flush
+        synchronously and immediately, then acknowledging the
+        callback to the WebProcess - which resolves the deadlock.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::forceRepaintAsync): Return false in order to trigger a synchronous repaint if m_waitingForUIProcess is true.
+
+2013-01-15  Simon Fraser  <simon.fraser@apple.com>
+
+        Allow tiled WKViews to have transparent backgrounds
+        https://bugs.webkit.org/show_bug.cgi?id=106400
+
+        Reviewed by Anders Carlsson.
+
+        When WKViews were set to have transparent backgrounds, they still
+        obscured content behind the view, for several reasons.
+        
+        First, when in tiled scrolling mode, WKView set the background
+        of its layer to opaque white. Fix by using the clearColor (effectively
+        removing the background color) if the view has a non-opaque background.
+        
+        Second, RenderLayerBacking just looked at FrameViews's isTransparent()
+        when deciding to make TileCache tiles non-opaque, but it also needs to
+        consider FrameViews with a non-opaque base background color. The
+        same logic was necessary to avoid setting an opaque white background
+        color on the TileCache layer.
+        
+        Finally, for views with non-opaque backgrounds, we don't want to display
+        linen, so RenderLayerCompositor::requiresOverhangAreasLayer() was changed
+        to return false in that case.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView updateLayer]):
+
 2013-01-14  Dean Jackson  <dino@apple.com>
 
         [ANGLE] Update ANGLE in WebKit

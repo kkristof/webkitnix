@@ -96,7 +96,6 @@ crbug.com/24182 [ Debug ] platform/chromium/virtual/gpu/fast/hidpi/image-set-bac
 webkit.org/b/106606 fast/canvas/webgl/context-release-upon-reload.html [ Pass Slow ]
 webkit.org/b/106606 platform/chromium/virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Pass Slow ]
 webkit.org/b/106853 [ Debug ] media/track/track-css-cue-lifetime.html [ Pass Timeout ]
-webkit.org/b/106855 [ Debug ] fast/images/zoomed-offset-size.html [ Pass Slow ]
 
 # These tests started being slow when we switched to DRT.
 webkit.org/b/90488 [ Debug ] inspector [ Pass Slow ]
@@ -255,7 +254,7 @@ fast/storage/serialized-script-value.html [ WontFix ]
 # This test verifies that a mismatch reftest will fail if both results are the
 # same.  Because the whole point is that this test should fail when run, it's
 # not SKIP, just WONTFIX.
-fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
+fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 
 # Since V8 is more interruptible than other engines, they use the standard
 # long-running-script mechanism to handle very-long-running regexps too.
@@ -3721,6 +3720,7 @@ webkit.org/b/94353 compositing/overflow/overflow-overlay-with-touch.html [ Failu
 webkit.org/b/94353 platform/chromium/virtual/softwarecompositing/overflow/overflow-overlay-with-touch.html [ Failure ]
 
 webkit.org/b/90488 [ Win ] http/tests/inspector/network-preflight-options.html [ Pass Slow ]
+webkit.org/b/90488 [ Win ] inspector/extensions/extensions-reload.html [ Pass Slow ]
 
 webkit.org/b/94521 [ Linux ] fast/loader/loadInProgress.html [ Crash Pass ]
 
@@ -3927,6 +3927,7 @@ webkit.org/b/95121 [ Android ] fast/borders/border-image-side-reduction.html [ I
 
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
+webkit.org/b/104822 css3/supports-cssom.html
 
 # CSS Device Adaptation is not enabled.
 webkit.org/b/95959 css3/device-adapt [ Skip ]
@@ -4264,6 +4265,16 @@ crbug.com/166932 [ Debug ] plugins/embed-attributes-setting.html [ Crash Pass ]
 crbug.com/169550 [ Debug ] fast/lists/big-list-marker.html [ Crash ]
 crbug.com/169550 [ Debug ] platform/chromium/virtual/deferred/fast/images/icon-decoding.html [ Crash ]
 
+# Brightnes filter update needs rebaseline.
+webkit.org/b/106746 css3/filters/effect-brightness-hw.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/effect-combined.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/effect-brightness-clamping.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/multiple-filters-invalidation.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/effect-combined-hw.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/effect-brightness.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/effect-brightness-clamping-hw.html [ ImageOnlyFailure ]
+webkit.org/b/106746 css3/filters/filter-property-parsing.html [ Failure ]
+
 # Transient. Needs rebaseline.
 webkit.org/b/103955 fast/repaint/caret-outside-block.html [ ImageOnlyFailure ]
 webkit.org/b/103955 [ Linux ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
@@ -4366,4 +4377,9 @@ Bug(schenney) svg/W3C-SVG-1.2-Tiny/struct-use-recursion-03-t.svg [ ImageOnlyFail
 
 webkit.org/b/106833 fast/borders/outline-alpha-inline.html [ Pass ImageOnlyFailure ]
 webkit.org/b/106858 [ SnowLeopard Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure ]
-webkit.org/b/106875 [ XP ] svg/dynamic-updates/SVGFESpecularLightingElement-remove-lightSource.html [ ImageOnlyFailure ]
+webkit.org/b/106858 [ Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
+
+webkit.org/b/107033 [ Debug ] fast/frames/valid.html [ Crash ]
+webkit.org/b/107033 [ Debug ] fast/events/form-iframe-target-before-load-crash.html [ Crash ]
+webkit.org/b/107033 [ Debug ] fast/events/before-unload-with-subframes.html [ Crash ]
+webkit.org/b/107033 [ Debug ] fast/css/stylesheet-enable-first-alternate-link.html [ Crash ]

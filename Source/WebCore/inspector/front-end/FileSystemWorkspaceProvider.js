@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,7 +37,11 @@
 WebInspector.FileSystemWorkspaceProvider = function(isolatedFileSystemModel)
 {
     this._isolatedFileSystemModel = isolatedFileSystemModel;
-    //this._populate();
+    this._files = {};
+
+    this._populate();
+    this._isolatedFileSystemModel.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileSystemAdded, this._fileSystemAdded, this);
+    this._isolatedFileSystemModel.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileSystemRemoved, this._fileSystemRemoved, this);
 }
 
 WebInspector.FileSystemWorkspaceProvider.prototype = {
@@ -112,23 +116,73 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
         return WebInspector.resourceTypes.Other;
     },
 
-    _populate: function()
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _fileSystemAdded: function(event)
     {
-        var fileSystemPaths = this._isolatedFileSystemModel.mapping().fileSystemPaths();
-        for (var i = 0; i < fileSystemPaths.length; ++i) {
-            var fileSystemPath = fileSystemPaths[i];
-            WebInspector.FileSystemUtils.requestFilesRecursive(this._isolatedFileSystemModel, fileSystemPath, "", callback.bind(this, fileSystemPath));
-        }
+        var fileSystemPath = /** @type {string} */ (event.data);
+        this._addFileSystem(fileSystemPath);
+    },
 
-        function callback(fileSystemPath, files)
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _fileSystemRemoved: function(event)
+    {
+        var fileSystemPath = /** @type {string} */ (event.data);
+        for (var uri in this._files[fileSystemPath])
+            this._removeFile(fileSystemPath, uri);
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     */
+    _addFileSystem: function(fileSystemPath)
+    {
+        WebInspector.FileSystemUtils.requestFilesRecursive(this._isolatedFileSystemModel, fileSystemPath, "", filesLoaded.bind(this));
+
+        function filesLoaded(files)
         {
             for (var i = 0; i < files.length; ++i) {
                 var uri = this._isolatedFileSystemModel.mapping().uriForFile(new WebInspector.FileSystemMapping.FileDescriptor(fileSystemPath, files[i]));
                 var contentType = this._contentTypeForPath(files[i]);
-                var fileDescriptor = new WebInspector.FileDescriptor(uri, "file://" + fileSystemPath + files[i], contentType, true);
-                this.dispatchEventToListeners(WebInspector.WorkspaceProvider.Events.FileAdded, fileDescriptor);
+                var url = WebInspector.fileMapping.urlForURI(uri);
+                var fileDescriptor = new WebInspector.FileDescriptor(uri, "file://" + fileSystemPath + files[i], url, contentType, true);
+                this._addFile(fileSystemPath, fileDescriptor);
             } 
         }
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {WebInspector.FileDescriptor} fileDescriptor
+     */
+    _addFile: function(fileSystemPath, fileDescriptor)
+    {
+        if (!this._files[fileSystemPath])
+            this._files[fileSystemPath] = {};
+        this._files[fileSystemPath][fileDescriptor.uri] = true;
+        this.dispatchEventToListeners(WebInspector.WorkspaceProvider.Events.FileAdded, fileDescriptor);
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} uri
+     */
+    _removeFile: function(fileSystemPath, uri)
+    {
+        delete this._files[fileSystemPath][uri];
+        if (Object.keys(this._files[fileSystemPath]).length === 0)
+            delete this._files[fileSystemPath];
+        this.dispatchEventToListeners(WebInspector.WorkspaceProvider.Events.FileRemoved, uri);
+    },
+
+    _populate: function()
+    {
+        var fileSystemPaths = this._isolatedFileSystemModel.mapping().fileSystemPaths();
+        for (var i = 0; i < fileSystemPaths.length; ++i)
+             this._addFileSystem(fileSystemPaths[i]);
     },
 
     reset: function()
@@ -152,7 +206,8 @@ WebInspector.FileSystemUtils = function()
 {
 }
 
-WebInspector.FileSystemUtils.errorHandler = function(error) {
+WebInspector.FileSystemUtils.errorHandler = function(error)
+{
     var msg;
     switch (error.code) {
     case FileError.QUOTA_EXCEEDED_ERR:
@@ -308,10 +363,16 @@ WebInspector.FileSystemUtils.setFileContent = function(isolatedFileSystemModel, 
      */
     function fileWriterCreated(fileWriter)
     {
-        fileWriter.onwriteend = writerEnd;
         fileWriter.onerror = WebInspector.FileSystemUtils.errorHandler;
-        var blob = new Blob([content], { type: "text/plain" });
-        fileWriter.write(blob);
+        fileWriter.onwriteend = fileTruncated;
+        fileWriter.truncate(0);
+
+        function fileTruncated()
+        {
+            fileWriter.onwriteend = writerEnd;
+            var blob = new Blob([content], { type: "text/plain" });
+            fileWriter.write(blob);
+        }
     }
 
     function writerEnd()
@@ -363,7 +424,8 @@ WebInspector.FileSystemUtils._readDirectory = function(dirEntry, callback)
         }
     }
 
-    function toArray(list) {
+    function toArray(list)
+    {
         return Array.prototype.slice.call(list || [], 0);
     }    
 

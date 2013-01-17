@@ -1,3 +1,93 @@
+2013-01-16  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG 32_64 backend doesn't check for hasArrayStorage() in NewArrayWithSize
+        https://bugs.webkit.org/show_bug.cgi?id=107081
+
+        Reviewed by Michael Saboff.
+
+        This bug led to the 32_64 backend emitting contiguous allocation code to allocate
+        ArrayStorage arrays. This then led to all manner of heap corruption, since
+        subsequent array accesses would be accessing the contiguous array "as if" it was
+        an arraystorage array.
+
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2013-01-16  Jonathan Liu  <net147@gmail.com>
+
+        Add missing sys/mman.h include on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=98089
+
+        Reviewed by Darin Adler.
+
+        The madvise function and MADV_FREE constant require sys/mman.h.
+
+        * jit/ExecutableAllocatorFixedVMPool.cpp:
+
+2013-01-15  Michael Saboff  <msaboff@apple.com>
+
+        DFG X86: division in the used-as-int case doesn't correctly check for -2^31/-1
+        https://bugs.webkit.org/show_bug.cgi?id=106978
+
+        Reviewed by Filip Pizlo.
+
+        Changed the numerator equal to -2^31 check to just return if we expect an integer
+        result, since the check is after we have determined that the denominator is -1.
+        The int result of -2^31 / -1 is -2^31, so just return the numerator as the result.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileIntegerArithDivForX86):
+
+2013-01-15  Levi Weintraub  <leviw@chromium.org>
+
+        Unreviewed, rolling out r139792.
+        http://trac.webkit.org/changeset/139792
+        https://bugs.webkit.org/show_bug.cgi?id=106970
+
+        Broke the windows build.
+
+        * bytecode/GlobalResolveInfo.h: Removed property svn:mergeinfo.
+
+2013-01-15  Pratik Solanki  <psolanki@apple.com>
+
+        Use MADV_FREE_REUSABLE to return JIT memory to OS
+        https://bugs.webkit.org/show_bug.cgi?id=106830
+        <rdar://problem/11437701>
+
+        Reviewed by Geoffrey Garen.
+
+        Use MADV_FREE_REUSABLE to return JIT memory on OSes that have the underlying madvise bug
+        fixed.
+
+        * jit/ExecutableAllocatorFixedVMPool.cpp:
+        (JSC::FixedVMPoolExecutableAllocator::notifyPageIsFree):
+
+2013-01-15  Levi Weintraub  <leviw@chromium.org>
+
+        Unreviewed, rolling out r139790.
+        http://trac.webkit.org/changeset/139790
+        https://bugs.webkit.org/show_bug.cgi?id=106948
+
+        The patch is failing its own test.
+
+        * bytecode/GlobalResolveInfo.h: Removed property svn:mergeinfo.
+
+2013-01-15  Zan Dobersek  <zandobersek@gmail.com>
+
+        [Autotools] Unify JavaScriptCore sources list, regardless of target OS
+        https://bugs.webkit.org/show_bug.cgi?id=106007
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Include the Source/JavaScriptCore/jit/ExecutableAllocatorFixedVMPool.cpp target
+        in the general sources list as it is guarded by the ENABLE_EXECUTABLE_ALLOCATOR_FIXED
+        feature define. This define is only used on 64-bit architecture and indirectly depends
+        on enabling either JIT or YARR JIT feature. Both of these defines are disabled on
+        Windows OS when using 64-bit architecture so there's no need to add this target to
+        sources only when the target OS is Windows.
+
+        * GNUmakefile.list.am:
+
 2013-01-11  Filip Pizlo  <fpizlo@apple.com>
 
         DFG should not forget that it had proved something to be a constant during a merge just because it's merging against the empty value

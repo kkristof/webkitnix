@@ -133,6 +133,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSCSSStyleRule.h \
 	DerivedSources/WebCore/JSCSSStyleSheet.cpp \
 	DerivedSources/WebCore/JSCSSStyleSheet.h \
+	DerivedSources/WebCore/JSCSSSupportsRule.cpp \
+	DerivedSources/WebCore/JSCSSSupportsRule.h \
 	DerivedSources/WebCore/JSCSSValue.cpp \
 	DerivedSources/WebCore/JSCSSValue.h \
 	DerivedSources/WebCore/JSCSSValueList.cpp \
@@ -603,6 +605,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSPerformanceMeasure.h \
 	DerivedSources/WebCore/JSPerformanceNavigation.cpp \
 	DerivedSources/WebCore/JSPerformanceNavigation.h \
+	DerivedSources/WebCore/JSPerformanceResourceTiming.cpp \
+	DerivedSources/WebCore/JSPerformanceResourceTiming.h \
 	DerivedSources/WebCore/JSPerformanceTiming.cpp \
 	DerivedSources/WebCore/JSPerformanceTiming.h \
 	DerivedSources/WebCore/JSPopStateEvent.cpp \
@@ -1327,6 +1331,7 @@ dom_binding_idls += \
 	$(WebCore)/css/CSSStyleDeclaration.idl \
 	$(WebCore)/css/CSSStyleRule.idl \
 	$(WebCore)/css/CSSStyleSheet.idl \
+	$(WebCore)/css/CSSSupportsRule.idl \
 	$(WebCore)/css/CSSValue.idl \
 	$(WebCore)/css/CSSValueList.idl \
 	$(WebCore)/css/Counter.idl \
@@ -2387,6 +2392,7 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSNodeListCustom.cpp \
 	Source/WebCore/bindings/js/JSOscillatorNodeCustom.cpp \
 	Source/WebCore/bindings/js/JSPannerNodeCustom.cpp \
+	Source/WebCore/bindings/js/JSPerformanceEntryCustom.cpp \
 	Source/WebCore/bindings/js/JSPluginElementFunctions.cpp \
 	Source/WebCore/bindings/js/JSPluginElementFunctions.h \
 	Source/WebCore/bindings/js/JSPopStateEventCustom.cpp \
@@ -2589,6 +2595,8 @@ webcore_sources += \
 	Source/WebCore/css/CSSStyleRule.h \
 	Source/WebCore/css/CSSStyleSheet.cpp \
 	Source/WebCore/css/CSSStyleSheet.h \
+	Source/WebCore/css/CSSSupportsRule.cpp \
+	Source/WebCore/css/CSSSupportsRule.h \
 	Source/WebCore/css/CSSTimingFunctionValue.cpp \
 	Source/WebCore/css/CSSTimingFunctionValue.h \
 	Source/WebCore/css/CSSToStyleMap.cpp \
@@ -3522,8 +3530,12 @@ webcore_sources += \
 	Source/WebCore/html/MonthInputType.h \
 	Source/WebCore/html/NumberInputType.cpp \
 	Source/WebCore/html/NumberInputType.h \
+	Source/WebCore/html/parser/BackgroundHTMLParser.cpp \
+	Source/WebCore/html/parser/BackgroundHTMLParser.h \
 	Source/WebCore/html/parser/CSSPreloadScanner.cpp \
 	Source/WebCore/html/parser/CSSPreloadScanner.h \
+	Source/WebCore/html/parser/CompactHTMLToken.cpp \
+	Source/WebCore/html/parser/CompactHTMLToken.h \
 	Source/WebCore/html/parser/HTMLConstructionSite.cpp \
 	Source/WebCore/html/parser/HTMLConstructionSite.h \
 	Source/WebCore/html/parser/HTMLDocumentParser.cpp \
@@ -3546,6 +3558,8 @@ webcore_sources += \
 	Source/WebCore/html/parser/HTMLParserOptions.h \
 	Source/WebCore/html/parser/HTMLParserScheduler.cpp \
 	Source/WebCore/html/parser/HTMLParserScheduler.h \
+	Source/WebCore/html/parser/HTMLParserThread.cpp \
+	Source/WebCore/html/parser/HTMLParserThread.h \
 	Source/WebCore/html/parser/HTMLPreloadScanner.cpp \
 	Source/WebCore/html/parser/HTMLPreloadScanner.h \
 	Source/WebCore/html/parser/HTMLScriptRunner.cpp \
@@ -5803,6 +5817,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/network/ResourceHandle.cpp \
 	Source/WebCore/platform/network/ResourceHandle.h \
 	Source/WebCore/platform/network/ResourceHandleInternal.h \
+	Source/WebCore/platform/network/ResourceHandleTypes.h \
 	Source/WebCore/platform/network/ResourceLoadInfo.h \
 	Source/WebCore/platform/network/ResourceLoadPriority.h \
 	Source/WebCore/platform/network/ResourceLoadTiming.cpp \
@@ -6346,6 +6361,8 @@ webcore_sources += \
 	Source/ThirdParty/ANGLE/src/compiler/ShHandle.h \
 	Source/ThirdParty/ANGLE/src/compiler/SymbolTable.cpp \
 	Source/ThirdParty/ANGLE/src/compiler/SymbolTable.h \
+	Source/ThirdParty/ANGLE/src/compiler/VariablePacker.cpp \
+	Source/ThirdParty/ANGLE/src/compiler/VariablePacker.h \
 	Source/ThirdParty/ANGLE/src/compiler/VersionGLSL.cpp \
 	Source/ThirdParty/ANGLE/src/compiler/VersionGLSL.h \
 	Source/ThirdParty/ANGLE/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
