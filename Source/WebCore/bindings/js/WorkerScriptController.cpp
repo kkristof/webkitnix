@@ -66,6 +66,11 @@ WorkerScriptController::WorkerScriptController(WorkerContext* workerContext)
 
 WorkerScriptController::~WorkerScriptController()
 {
+#if PLATFORM(NIX)
+    if (terminateScriptCallback())
+        terminateScriptCallback()(m_workerContextWrapper->globalExec(), m_workerContext->isDedicatedWorkerContext());
+#endif
+
     JSLockHolder lock(globalData());
     m_workerContextWrapper.clear();
     m_globalData.clear();
@@ -109,6 +114,11 @@ void WorkerScriptController::initScript()
     }
     ASSERT(m_workerContextWrapper->globalObject() == m_workerContextWrapper);
     ASSERT(asObject(m_workerContextWrapper->prototype())->globalObject() == m_workerContextWrapper);
+
+#if PLATFORM(NIX)
+    if (initScriptCallback())
+        initScriptCallback()(m_workerContextWrapper->globalExec(), m_workerContext->isDedicatedWorkerContext());
+#endif
 }
 
 void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode)
@@ -208,6 +218,31 @@ void WorkerScriptController::detachDebugger(JSC::Debugger* debugger)
 {
     debugger->detach(m_workerContextWrapper->globalObject());
 }
+
+#if PLATFORM(NIX)
+WorkerScriptCallback WorkerScriptController::m_initScriptCallback = 0;
+WorkerScriptCallback WorkerScriptController::m_terminateScriptCallback = 0;
+
+void WorkerScriptController::setInitScriptCallback(WorkerScriptCallback callback)
+{
+    m_initScriptCallback = callback;
+}
+
+WorkerScriptCallback WorkerScriptController::initScriptCallback()
+{
+    return m_initScriptCallback;
+}
+
+void WorkerScriptController::setTerminateScriptCallback(WorkerScriptCallback callback)
+{
+    m_terminateScriptCallback = callback;
+}
+
+WorkerScriptCallback WorkerScriptController::terminateScriptCallback()
+{
+    return m_terminateScriptCallback;
+}
+#endif
 
 } // namespace WebCore
 

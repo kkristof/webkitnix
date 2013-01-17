@@ -1,0 +1,12 @@
+<html>
+    <body>
+        <script>
+            var worker = new SharedWorker("WebWorkerSharedTest.js");
+            worker.port.addEventListener("message", function(event) {
+                document.title = event.data;
+            }, false);
+            worker.port.start();
+            worker.port.postMessage("WebWorkerSharedMessage");
+        </script>
+    </body>
+</html>

@@ -133,6 +133,7 @@ add_dependencies(TestWebKitNixAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeader
 
 list(APPEND bundle_harness_SOURCES
     ${TESTWEBKITAPI_DIR}/Tests/nix/WebViewWebProcessCrashed_Bundle.cpp
+    ${TESTWEBKITAPI_DIR}/Tests/nix/WebWorker_Bundle.cpp
 )
 
 include_directories(
@@ -155,6 +156,7 @@ set(test_webkitnix_api_BINARIES
     WebViewFindZoomableArea
     WebViewTranslatedScaled
     WebViewUpdateTextInputState
+    WebWorker
 )
 
 set(test_webkitnix_api_fail_BINARIES

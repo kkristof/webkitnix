@@ -36,6 +36,11 @@
 #include <WebCore/Frame.h>
 #include <WebCore/FrameView.h>
 
+#if PLATFORM(NIX)
+#include "JavaScriptCore/APICast.h"
+#include <WebCore/WorkerScriptController.h>
+#endif
+
 using namespace WebCore;
 using namespace WebKit;
 
@@ -131,6 +136,44 @@ JSGlobalContextRef WKBundleFrameGetJavaScriptContextForWorld(WKBundleFrameRef fr
 {
     return toImpl(frameRef)->jsContextForWorld(toImpl(worldRef));
 }
+
+#if PLATFORM(NIX)
+static WKBundleFrameWorkerScriptCallback s_localWorkerScriptInitCallback;
+
+static void localWorkerScriptInitCallback(JSC::ExecState* execState, bool isDedicated)
+{
+    s_localWorkerScriptInitCallback(toRef(execState), isDedicated);
+}
+
+void WKBundleFrameSetWorkerInitializeCallback(WKBundleFrameWorkerScriptCallback callback)
+{
+#if ENABLE(WORKERS)
+    if (callback) {
+        s_localWorkerScriptInitCallback = callback;
+        WorkerScriptController::setInitScriptCallback(localWorkerScriptInitCallback);
+    } else
+        WorkerScriptController::setInitScriptCallback(0);
+#endif
+}
+
+static WKBundleFrameWorkerScriptCallback s_localWorkerScriptTerminateCallback;
+
+static void localWorkerScriptTerminateCallback(JSC::ExecState* execState, bool isDedicated)
+{
+    s_localWorkerScriptTerminateCallback(toRef(execState), isDedicated);
+}
+
+void WKBundleFrameSetWorkerTerminateCallback(WKBundleFrameWorkerScriptCallback callback)
+{
+#if ENABLE(WORKERS)
+    if (callback) {
+        s_localWorkerScriptTerminateCallback = callback;
+        WorkerScriptController::setTerminateScriptCallback(localWorkerScriptTerminateCallback);
+    } else
+        WorkerScriptController::setTerminateScriptCallback(0);
+#endif
+}
+#endif
 
 JSValueRef WKBundleFrameGetJavaScriptWrapperForNodeForWorld(WKBundleFrameRef frameRef, WKBundleNodeHandleRef nodeHandleRef, WKBundleScriptWorldRef worldRef)
 {
