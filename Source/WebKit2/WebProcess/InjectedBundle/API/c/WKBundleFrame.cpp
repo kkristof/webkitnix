@@ -36,10 +36,9 @@
 #include <WebCore/Frame.h>
 #include <WebCore/FrameView.h>
 
-#if PLATFORM(NIX)
 #include "JavaScriptCore/APICast.h"
 #include <WebCore/WorkerScriptController.h>
-#endif
+
 
 using namespace WebCore;
 using namespace WebKit;
@@ -137,7 +136,6 @@ JSGlobalContextRef WKBundleFrameGetJavaScriptContextForWorld(WKBundleFrameRef fr
     return toImpl(frameRef)->jsContextForWorld(toImpl(worldRef));
 }
 
-#if PLATFORM(NIX)
 static WKBundleFrameWorkerScriptCallback s_localWorkerScriptInitCallback;
 
 static void localWorkerScriptInitCallback(JSC::ExecState* execState, bool isDedicated)
@@ -173,7 +171,6 @@ void WKBundleFrameSetWorkerTerminateCallback(WKBundleFrameWorkerScriptCallback c
         WorkerScriptController::setTerminateScriptCallback(0);
 #endif
 }
-#endif
 
 JSValueRef WKBundleFrameGetJavaScriptWrapperForNodeForWorld(WKBundleFrameRef frameRef, WKBundleNodeHandleRef nodeHandleRef, WKBundleScriptWorldRef worldRef)
 {

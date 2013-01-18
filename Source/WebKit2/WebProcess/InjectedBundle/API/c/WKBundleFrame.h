@@ -51,11 +51,9 @@ WK_EXPORT WKFrameLoadState WKBundleFrameGetFrameLoadState(WKBundleFrameRef frame
 WK_EXPORT JSGlobalContextRef WKBundleFrameGetJavaScriptContext(WKBundleFrameRef frame);
 WK_EXPORT JSGlobalContextRef WKBundleFrameGetJavaScriptContextForWorld(WKBundleFrameRef frame, WKBundleScriptWorldRef world);
 
-#if PLATFORM(NIX)
 typedef void (*WKBundleFrameWorkerScriptCallback)(JSContextRef context, int isDedicated);
 WK_EXPORT void WKBundleFrameSetWorkerInitializeCallback(WKBundleFrameWorkerScriptCallback callback);
 WK_EXPORT void WKBundleFrameSetWorkerTerminateCallback(WKBundleFrameWorkerScriptCallback callback);
-#endif
 
 WK_EXPORT WKBundleFrameRef WKBundleFrameForJavaScriptContext(JSContextRef context);
 
