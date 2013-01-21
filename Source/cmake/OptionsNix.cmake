@@ -40,6 +40,10 @@ add_definitions(-DBUILDING_NIX__=1)
 add_definitions(-DWTF_PLATFORM_NIX=1)
 set(WTF_PLATFORM_NIX 1)
 
+# We set this because we now use Source/Platform/chromium
+add_definitions(-DWEBKIT_IMPLEMENTATION=1)
+add_definitions(-DWEBKIT_DLL=1)
+
 find_package(Cairo 1.10 REQUIRED)
 find_package(Fontconfig 2.8.0 REQUIRED)
 find_package(Freetype REQUIRED)
@@ -80,6 +84,11 @@ SET_HARDCODED_DEFINE(WTF_USE_TILED_BACKING_STORE)
 
 if (NOT ENABLE_SVG)
     set(ENABLE_SVG_FONTS OFF)
+endif ()
+
+if (ENABLE_WEB_AUDIO)
+    PKG_CHECK_MODULES(LIBAVCODEC libavcodec REQUIRED)
+    add_definitions(-DWTF_USE_WEBAUDIO_FFMPEG=1)
 endif ()
 
 if (WTF_USE_EGL)

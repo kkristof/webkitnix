@@ -1,13 +1,12 @@
 SET (Platform_HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/nix/NixPlatform.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/nix/NixPlatformExportMacros.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nix/public/Platform.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebAudioBus.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebAudioDevice.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebCommon.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebData.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebVector.h"
 )
 
-SET (Platform_SOURCES )
+SET (Platform_SOURCES "nix/public/Platform.cpp")
 
-IF (ENABLE_GAMEPAD)
-   # Nowadays NixPlatform has just the gamepad stuff
-   LIST(APPEND Platform_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/nix/NixPlatform.cpp")
-ENDIF ()
-
-install(FILES ${Platform_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/Platform)
+install(FILES ${Platform_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/NixPlatform)

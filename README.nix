@@ -58,7 +58,8 @@ $ sudo apt-get install cmake \
                        libsqlite3-dev \
                        libxslt1-dev \
                        libicu-dev \
-                       libgl1-mesa-dev
+                       libgl1-mesa-dev \
+                       libavcodec
 
 # Fedora
 $ sudo yum install cmake \
@@ -69,7 +70,8 @@ $ sudo yum install cmake \
                    libxslt-devel \
                    libicu-devel \
                    mesa-libGL-devel \
-                   intltool
+                   intltool \
+                   ffmpeg-devel
 
 
 NOTE: the packages libgl1-mesa-dev or mesa-libGL-devel can be

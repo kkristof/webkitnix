@@ -1,5 +1,5 @@
 WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 
-include_directories()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/chromium)
 ADD_LIBRARY(${Platform_LIBRARY_NAME} STATIC ${Platform_SOURCES})
 SET_TARGET_PROPERTIES(${Platform_LIBRARY_NAME} PROPERTIES FOLDER "Platform")

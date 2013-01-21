@@ -12,6 +12,7 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/mediastream/gstreamer"
     "${WEBCORE_DIR}/platform/network/soup"
     "${PLATFORM_DIR}/nix/"
+    "${PLATFORM_DIR}/chromium/"
 )
 
 list(APPEND WebCore_SOURCES
@@ -137,6 +138,10 @@ list(APPEND WebCore_SOURCES
     platform/text/TextEncodingDetectorICU.cpp
     platform/text/TextBreakIteratorICU.cpp
     platform/text/TextCodecICU.cpp
+
+    platform/chromium/support/WebAudioBus.cpp
+    platform/chromium/support/WebData.cpp
+    platform/nix/WebCommon.cpp
 )
 
 if (WTF_USE_OPENGL_ES_2)
@@ -223,14 +228,13 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
     ${HARFBUZZ_INCLUDE_DIRS}
 )
 
-if (ENABLE_VIDEO OR ENABLE_WEB_AUDIO)
-    list(APPEND WebCore_INCLUDE_DIRECTORIES
-        "${WEBCORE_DIR}/platform/graphics/gstreamer"
+if (ENABLE_VIDEO)
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
+    "${WEBCORE_DIR}/platform/graphics/gstreamer"
 
         ${GSTREAMER_INCLUDE_DIRS}
         ${GSTREAMER_BASE_INCLUDE_DIRS}
         ${GSTREAMER_APP_INCLUDE_DIRS}
-        ${GSTREAMER_INTERFACES_INCLUDE_DIRS}
         ${GSTREAMER_PBUTILS_INCLUDE_DIRS}
     )
     list(APPEND WebCore_SOURCES
@@ -242,12 +246,9 @@ if (ENABLE_VIDEO OR ENABLE_WEB_AUDIO)
         ${GSTREAMER_LIBRARIES}
         ${GSTREAMER_BASE_LIBRARIES}
         ${GSTREAMER_APP_LIBRARIES}
-        ${GSTREAMER_INTERFACES_LIBRARIES}
         ${GSTREAMER_PBUTILS_LIBRARIES}
     )
-endif ()
 
-if (ENABLE_VIDEO)
     list(APPEND WebCore_INCLUDE_DIRECTORIES
         ${GSTREAMER_VIDEO_INCLUDE_DIRS}
     )
@@ -268,27 +269,22 @@ add_definitions(-DWTF_USE_CROSS_PLATFORM_CONTEXT_MENUS=1
                 -DDATA_DIR="${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}")
 
 if (ENABLE_WEB_AUDIO)
-    list(APPEND WebCore_INCLUDE_DIRECTORIES
-        "${WEBCORE_DIR}/platform/audio/gstreamer"
-
-        ${GSTREAMER_AUDIO_INCLUDE_DIRS}
-        ${GSTREAMER_FFT_INCLUDE_DIRS}
-    )
-    list(APPEND WebCore_SOURCES
-        platform/audio/nix/AudioBusNix.cpp
-        platform/audio/gstreamer/AudioDestinationGStreamer.cpp
-        platform/audio/gstreamer/AudioFileReaderGStreamer.cpp
-        platform/audio/gstreamer/FFTFrameGStreamer.cpp
-        platform/audio/gstreamer/WebKitWebAudioSourceGStreamer.cpp
-    )
-    list(APPEND WebCore_LIBRARIES
-        ${GSTREAMER_AUDIO_LIBRARIES}
-        ${GSTREAMER_FFT_LIBRARIES}
-    )
-    set(WEB_AUDIO_DIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/webaudio/resources)
-    file(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")
-    install(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
-    add_definitions(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
+  LIST(APPEND WebCore_INCLUDE_DIRECTORIES
+    "${WEBCORE_DIR}/platform/audio/chromium"
+    ${LIBAVCODEC_INCLUDE_DIRS}
+  )
+  list(APPEND WebCore_LIBRARIES
+    ${LIBAVCODEC_LIBRARIES}
+  )
+  LIST(APPEND WebCore_SOURCES
+    platform/audio/chromium/AudioBusChromium.cpp
+    platform/audio/chromium/AudioDestinationChromium.cpp
+    platform/audio/ffmpeg/FFTFrameFFMPEG.cpp
+  )
+  SET(WEB_AUDIO_DIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/webaudio/resources)
+  FILE(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")
+  INSTALL(FILES ${WEB_AUDIO_DATA} DESTINATION ${WEB_AUDIO_DIR})
+  ADD_DEFINITIONS(-DUNINSTALLED_AUDIO_RESOURCES_DIR="${WEBCORE_DIR}/platform/audio/resources")
 endif ()
 
 if (ENABLE_GAMEPAD)

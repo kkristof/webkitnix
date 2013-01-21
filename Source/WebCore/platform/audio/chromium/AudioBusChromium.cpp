@@ -32,6 +32,8 @@
 #include <public/Platform.h>
 #include <public/WebAudioBus.h>
 #include <wtf/PassOwnPtr.h>
+#include <wtf/text/StringConcatenate.h>
+#include <wtf/text/CString.h>
 
 namespace WebCore {
 
@@ -45,7 +47,12 @@ PassOwnPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double s
 
 PassOwnPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
 {
+#if PLATFORM(NIX)
+    String absoluteFilename(makeString(DATA_DIR, "/webaudio/resources/", name, ".wav"));
+    const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(absoluteFilename.utf8().data());
+#else
     const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(name);
+#endif
     if (resource.isEmpty())
         return nullptr;
 
