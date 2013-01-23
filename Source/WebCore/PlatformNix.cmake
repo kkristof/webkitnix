@@ -91,7 +91,7 @@ list(APPEND WebCore_SOURCES
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
     platform/graphics/texmap/TextureMapperGL.cpp
-    platform/graphics/texmap/TextureMapperShaderManager.cpp
+    platform/graphics/texmap/TextureMapperShaderProgram.cpp
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
 
     platform/image-decoders/ImageDecoder.cpp
