@@ -297,6 +297,9 @@
     attribute EventListener onwebkitanimationiteration;
     attribute EventListener onwebkitanimationstart;
     attribute EventListener onwebkittransitionend;
+#if defined(ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED) && ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED
+    attribute EventListener ontransitionend;
+#endif
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
     attribute EventListener onorientationchange;
 #endif
@@ -348,6 +351,9 @@
     attribute CSSRuleConstructor CSSRule;
     attribute CSSCharsetRuleConstructor CSSCharsetRule;
     attribute CSSFontFaceRuleConstructor CSSFontFaceRule;
+#if defined(ENABLE_SHADOW_DOM) && ENABLE_SHADOW_DOM
+    attribute CSSHostRuleConstructor CSSHostRule;
+#endif
     attribute CSSImportRuleConstructor CSSImportRule;
     attribute CSSMediaRuleConstructor CSSMediaRule;
     attribute CSSPageRuleConstructor CSSPageRule;
@@ -549,6 +555,7 @@
     attribute PageTransitionEventConstructor PageTransitionEvent;
     attribute ProgressEventConstructor ProgressEvent;
     attribute TextEventConstructor TextEvent;
+    [Conditional=CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED] attribute TransitionEventConstructor TransitionEvent;
     attribute UIEventConstructor UIEvent;
     attribute WebKitAnimationEventConstructor WebKitAnimationEvent;
     attribute WebKitTransitionEventConstructor WebKitTransitionEvent;
@@ -626,7 +633,7 @@
     // Expose all implemented SVG 1.1 interfaces, excluding the SVG MI interfaces:
     // SVGAnimatedPathData, SVGAnimatedPoints, SVGExternalResourcesRequired,
     // SVGFilterPrimitiveStandardAttributes, SVGFitToViewBox, SVGLangSpace, SVGLocatable
-    // SVGStylable, SVGTests, SVGTransformable, SVGURIReference, SVGZoomAndPan
+    // SVGTests, SVGTransformable, SVGURIReference, SVGZoomAndPan
     attribute SVGAElementConstructor SVGAElement;
     attribute SVGAngleConstructor SVGAngle;
     attribute SVGAnimatedAngleConstructor SVGAnimatedAngle;

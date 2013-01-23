@@ -1138,6 +1138,12 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 #endif
 
+    if (Element* before = pseudoElement(BEFORE))
+        before->insertedInto(insertionPoint);
+
+    if (Element* after = pseudoElement(AFTER))
+        after->insertedInto(insertionPoint);
+
     if (!insertionPoint->isInTreeScope())
         return InsertionDone;
 
@@ -1170,13 +1176,28 @@ void Element::removedFrom(ContainerNode* insertionPoint)
     bool wasInDocument = insertionPoint->document();
 #endif
 
+    if (Element* before = pseudoElement(BEFORE))
+        before->removedFrom(insertionPoint);
+
+    if (Element* after = pseudoElement(AFTER))
+        after->removedFrom(insertionPoint);
+
+    // FIXME: Fullscreen should be migrated to use the top layer (bug 107617). Then this can just be a single check.
+    // The purpose of the outer if statement is to quickly determine whether we must do the additional
+    // checks in a slow path.
+#if ENABLE(DIALOG_ELEMENT) || ENABLE(FULLSCREEN_API)
+    if (hasRareData() || isInTopLayer()) {
 #if ENABLE(DIALOG_ELEMENT)
-    document()->removeFromTopLayer(this);
+        if (isInTopLayer())
+            document()->removeFromTopLayer(this);
 #endif
 #if ENABLE(FULLSCREEN_API)
-    if (containsFullScreenElement())
-        setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
+        if (containsFullScreenElement())
+            setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 #endif
+    }
+#endif
+
 #if ENABLE(POINTER_LOCK)
     if (document()->page())
         document()->page()->pointerLockController()->elementRemoved(this);
@@ -2345,18 +2366,6 @@ bool Element::childShouldCreateRenderer(const NodeRenderingContext& childContext
 }
 #endif
 
-#if ENABLE(VIDEO_TRACK)
-WebVTTNodeType Element::webVTTNodeType() const
-{
-    return hasRareData() ? elementRareData()->webVTTNodeType() : WebVTTNodeTypeNone;
-}
-
-void Element::setWebVTTNodeType(WebVTTNodeType type)
-{
-    ensureElementRareData()->setWebVTTNodeType(type);
-}
-#endif
-
 #if ENABLE(FULLSCREEN_API)
 void Element::webkitRequestFullscreen()
 {
@@ -2392,22 +2401,6 @@ void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(boo
         element->setContainsFullScreenElement(flag);
 }
 #endif    
-
-#if ENABLE(DIALOG_ELEMENT)
-bool Element::isInTopLayer() const
-{
-    return hasRareData() && elementRareData()->isInTopLayer();
-}
-
-void Element::setIsInTopLayer(bool inTopLayer)
-{
-    ensureElementRareData()->setIsInTopLayer(inTopLayer);
-
-    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
-    // top layer position, or in its usual place if not in the top layer.
-    reattachIfAttached();
-}
-#endif
 
 #if ENABLE(POINTER_LOCK)
 void Element::webkitRequestPointerLock()

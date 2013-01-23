@@ -60,19 +60,9 @@ public:
     bool isInCanvasSubtree() const { return m_isInCanvasSubtree; }
     void setIsInCanvasSubtree(bool value) { m_isInCanvasSubtree = value; }
 
-#if ENABLE(VIDEO_TRACK)
-    void setWebVTTNodeType(WebVTTNodeType type) { m_webVTTNodeType = type; }
-    WebVTTNodeType webVTTNodeType() const { return static_cast<WebVTTNodeType>(m_webVTTNodeType); }
-#endif
-
 #if ENABLE(FULLSCREEN_API)
     bool containsFullScreenElement() { return m_containsFullScreenElement; }
     void setContainsFullScreenElement(bool value) { m_containsFullScreenElement = value; }
-#endif
-
-#if ENABLE(DIALOG_ELEMENT)
-    bool isInTopLayer() const { return m_isInTopLayer; }
-    void setIsInTopLayer(bool value) { m_isInTopLayer = value; }
 #endif
 
     bool childrenAffectedByHover() const { return m_childrenAffectedByHover; }
@@ -140,9 +130,6 @@ private:
 #if ENABLE(FULLSCREEN_API)
     unsigned m_containsFullScreenElement : 1;
 #endif
-#if ENABLE(DIALOG_ELEMENT)
-    unsigned m_isInTopLayer : 1;
-#endif
 #if ENABLE(SVG)
     unsigned m_hasPendingResources : 1;
 #endif
@@ -157,9 +144,6 @@ private:
     unsigned m_childrenAffectedByDirectAdjacentRules : 1;
     unsigned m_childrenAffectedByForwardPositionalRules : 1;
     unsigned m_childrenAffectedByBackwardPositionalRules : 1;
-#if ENABLE(VIDEO_TRACK)
-    unsigned m_webVTTNodeType : 2; // WebVTTNodeType
-#endif
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -193,9 +177,6 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
 #if ENABLE(FULLSCREEN_API)
     , m_containsFullScreenElement(false)
 #endif
-#if ENABLE(DIALOG_ELEMENT)
-    , m_isInTopLayer(false)
-#endif
 #if ENABLE(SVG)
     , m_hasPendingResources(false)
 #endif
@@ -207,9 +188,6 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     , m_childrenAffectedByDirectAdjacentRules(false)
     , m_childrenAffectedByForwardPositionalRules(false)
     , m_childrenAffectedByBackwardPositionalRules(false)
-#if ENABLE(VIDEO_TRACK)
-    , m_webVTTNodeType(WebVTTNodeTypeNone)
-#endif
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
 }

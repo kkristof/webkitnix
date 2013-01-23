@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
@@ -35,6 +35,7 @@
 #include "CSSCursorImageValue.h"
 #include "CSSFontFaceRule.h"
 #include "CSSFontSelector.h"
+#include "CSSHostRule.h"
 #include "CSSImportRule.h"
 #include "CSSLineBoxContainValue.h"
 #include "CSSMediaRule.h"
@@ -175,6 +176,10 @@
 #if ENABLE(CSS_IMAGE_SET)
 #include "CSSImageSetValue.h"
 #include "StyleCachedImageSet.h"
+#endif
+
+#if ENABLE(VIDEO_TRACK)
+#include "WebVTTElement.h"
 #endif
 
 using namespace std;
@@ -592,13 +597,13 @@ static void ensureDefaultStyleSheetsForElement(Element* element)
     ASSERT(mathMLStyleSheet || defaultStyle->features().siblingRules.isEmpty());
 }
 
-void StyleResolver::addMatchedProperties(MatchResult& matchResult, const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, bool inRegionRule)
+void StyleResolver::addMatchedProperties(MatchResult& matchResult, const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
 {
     matchResult.matchedProperties.grow(matchResult.matchedProperties.size() + 1);
     MatchedProperties& newProperties = matchResult.matchedProperties.last();
     newProperties.properties = const_cast<StylePropertySet*>(properties);
     newProperties.linkMatchType = linkMatchType;
-    newProperties.isInRegionRule = inRegionRule;
+    newProperties.whitelistType = propertyWhitelistType;
     matchResult.matchedRules.append(rule);
 }
 
@@ -655,7 +660,7 @@ void StyleResolver::collectMatchingRules(const MatchRequest& matchRequest, int& 
     }
 
 #if ENABLE(VIDEO_TRACK)
-    if (m_element->webVTTNodeType())
+    if (m_element->isWebVTTElement() && toWebVTTElement(m_element)->webVTTNodeType())
         collectMatchingRulesForList(matchRequest.ruleSet->cuePseudoRules(), matchRequest, firstRuleIndex, lastRuleIndex);
 #endif
     // Check whether other types of rules are applicable in the current tree scope. Criteria for this:
@@ -692,7 +697,7 @@ void StyleResolver::collectMatchingRulesForRegion(const MatchRequest& matchReque
 
     unsigned size = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.size();
     for (unsigned i = 0; i < size; ++i) {
-        CSSSelector* regionSelector = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.at(i).selector;
+        const CSSSelector* regionSelector = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.at(i).selector;
         if (checkRegionSelector(regionSelector, static_cast<Element*>(m_regionForStyling->node()))) {
             RuleSet* regionRules = matchRequest.ruleSet->m_regionSelectorsAndRuleSets.at(i).ruleSet.get();
             ASSERT(regionRules);
@@ -717,15 +722,10 @@ void StyleResolver::sortAndTransferMatchedRules(MatchResult& result)
     }
 
     // Now transfer the set of matched rules over to our list of declarations.
-    // FIXME: This sucks, the inspector should get the style from the visited style itself.
-    bool swapVisitedUnvisited = InspectorInstrumentation::forcePseudoState(m_element, CSSSelector::PseudoVisited);
     for (unsigned i = 0; i < m_matchedRules.size(); i++) {
         if (m_style && m_matchedRules[i]->containsUncommonAttributeSelector())
             m_style->setUnique();
-        unsigned linkMatchType = m_matchedRules[i]->linkMatchType();
-        if (swapVisitedUnvisited && linkMatchType && linkMatchType != SelectorChecker::MatchAll)
-            linkMatchType = (linkMatchType == SelectorChecker::MatchVisited) ? SelectorChecker::MatchLink : SelectorChecker::MatchVisited;
-        addMatchedProperties(result, m_matchedRules[i]->rule()->properties(), m_matchedRules[i]->rule(), linkMatchType, m_matchedRules[i]->isInRegionRule());
+        addMatchedProperties(result, m_matchedRules[i]->rule()->properties(), m_matchedRules[i]->rule(), m_matchedRules[i]->linkMatchType(), m_matchedRules[i]->propertyWhitelistType());
     }
 }
 
@@ -1242,7 +1242,11 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
         return false;
 
 #if ENABLE(VIDEO_TRACK)
-    if (element->webVTTNodeType() != m_element->webVTTNodeType())
+    // Deny sharing styles between WebVTT and non-WebVTT nodes.
+    if (element->isWebVTTElement() != m_element->isWebVTTElement())
+        return false;
+
+    if (element->isWebVTTElement() && m_element->isWebVTTElement() && toWebVTTElement(element)->webVTTNodeType() != toWebVTTElement(m_element)->webVTTNodeType())
         return false;
 #endif
 
@@ -1579,7 +1583,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     if (element->isLink()) {
         m_style->setIsLink(true);
-        m_style->setInsideLink(m_elementLinkState);
+        EInsideLink linkState = m_elementLinkState;
+        if (m_elementLinkState != NotInsideLink) {
+            bool forceVisited = InspectorInstrumentation::forcePseudoState(element, CSSSelector::PseudoVisited);
+            if (forceVisited)
+                linkState = InsideVisitedLink;
+        }
+
+        m_style->setInsideLink(linkState);
     }
 
     ensureDefaultStyleSheetsForElement(element);
@@ -2003,6 +2014,14 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
             style->setFloating(NoFloat);
             style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), m_selectorChecker.strictParsing()));
         }
+
+#if ENABLE(DIALOG_ELEMENT)
+        // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
+        if (e && e->isInTopLayer() && (style->position() == StaticPosition || style->position() == RelativePosition)) {
+            style->setPosition(AbsolutePosition);
+            style->setDisplay(BLOCK);
+        }
+#endif
     }
 
     // Make sure our z-index value is only applied if the object is positioned.
@@ -2253,7 +2272,8 @@ inline bool StyleResolver::ruleMatches(const RuleData& ruleData, const Container
         if (ruleData.hasRightmostSelectorMatchingHTMLBasedOnRuleHash() && m_element->isHTMLElement()) {
             if (!ruleData.hasMultipartSelector())
                 return true;
-        } else if (!SelectorChecker::tagMatches(m_element, ruleData.selector()))
+        }
+        if (ruleData.selector()->m_match == CSSSelector::Tag && !SelectorChecker::tagMatches(m_element, ruleData.selector()->tagQName()))
             return false;
         if (!SelectorChecker::fastCheckRightmostAttributeSelector(m_element, ruleData.selector()))
             return false;
@@ -2263,10 +2283,9 @@ inline bool StyleResolver::ruleMatches(const RuleData& ruleData, const Container
     // Slow path.
     SelectorChecker::SelectorCheckingContext context(ruleData.selector(), m_element, SelectorChecker::VisitedMatchEnabled);
     context.elementStyle = style();
-    context.elementParentStyle = m_parentNode ? m_parentNode->renderStyle() : 0;
     context.scope = scope;
     context.pseudoStyle = m_pseudoStyle;
-    SelectorChecker::Match match = m_selectorChecker.match(context, m_dynamicPseudo);
+    SelectorChecker::Match match = m_selectorChecker.match(context, m_dynamicPseudo, DOMSiblingTraversalStrategy());
     if (match != SelectorChecker::SelectorMatches)
         return false;
     if (m_pseudoStyle != NOPSEUDO && m_pseudoStyle != m_dynamicPseudo)
@@ -2274,14 +2293,14 @@ inline bool StyleResolver::ruleMatches(const RuleData& ruleData, const Container
     return true;
 }
 
-bool StyleResolver::checkRegionSelector(CSSSelector* regionSelector, Element* regionElement)
+bool StyleResolver::checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)
 {
     if (!regionSelector || !regionElement)
         return false;
 
     m_pseudoStyle = NOPSEUDO;
 
-    for (CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(s))
+    for (const CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(s))
         if (m_selectorChecker.matches(s, regionElement))
             return true;
 
@@ -2302,9 +2321,9 @@ Length StyleResolver::convertToFloatLength(CSSPrimitiveValue* primitiveValue, Re
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, bool filterRegionProperties)
+void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRule* rule, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
-    ASSERT(!filterRegionProperties || m_regionForStyling);
+    ASSERT((propertyWhitelistType != PropertyWhitelistRegion) || m_regionForStyling);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willProcessRule(document(), rule, this);
 
     unsigned propertyCount = properties->propertyCount();
@@ -2321,9 +2340,12 @@ void StyleResolver::applyProperties(const StylePropertySet* properties, StyleRul
         }
         CSSPropertyID property = current.id();
 
-        if (filterRegionProperties && !StyleResolver::isValidRegionStyleProperty(property))
+        if (propertyWhitelistType == PropertyWhitelistRegion && !StyleResolver::isValidRegionStyleProperty(property))
             continue;
-
+#if ENABLE(VIDEO_TRACK)
+        if (propertyWhitelistType == PropertyWhitelistCue && !StyleResolver::isValidCueStyleProperty(property))
+            continue;
+#endif
         switch (pass) {
 #if ENABLE(CSS_VARIABLES)
         case VariableDefinitions:
@@ -2369,7 +2391,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, bool 
             m_applyPropertyToRegularStyle = linkMatchType & SelectorChecker::MatchLink;
             m_applyPropertyToVisitedLinkStyle = linkMatchType & SelectorChecker::MatchVisited;
 
-            applyProperties<pass>(matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, matchedProperties.isInRegionRule);
+            applyProperties<pass>(matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.whitelistType));
         }
         m_applyPropertyToRegularStyle = true;
         m_applyPropertyToVisitedLinkStyle = false;
@@ -2377,7 +2399,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, bool 
     }
     for (int i = startIndex; i <= endIndex; ++i) {
         const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
-        applyProperties<pass>(matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, matchedProperties.isInRegionRule);
+        applyProperties<pass>(matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.whitelistType));
     }
 }
 
@@ -2579,18 +2601,32 @@ void StyleResolver::matchPageRules(MatchResult& result, RuleSet* rules, bool isL
         addMatchedProperties(result, matchedPageRules[i]->properties());
 }
 
-void StyleResolver::matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>& rules, bool isLeftPage, bool isFirstPage, const String& pageName)
+static bool checkPageSelectorComponents(const CSSSelector* selector, bool isLeftPage, bool isFirstPage, const String& pageName)
 {
-    unsigned size = rules.size();
-    for (unsigned i = 0; i < size; ++i) {
-        StyleRulePage* rule = rules[i];
-        const AtomicString& selectorLocalName = rule->selector()->tag().localName();
-        if (selectorLocalName != starAtom && selectorLocalName != pageName)
-            continue;
-        CSSSelector::PseudoType pseudoType = rule->selector()->pseudoType();
+    for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
+        if (component->m_match == CSSSelector::Tag) {
+            const AtomicString& localName = component->tagQName().localName();
+            if (localName != starAtom && localName != pageName)
+                return false;
+        }
+
+        CSSSelector::PseudoType pseudoType = component->pseudoType();
         if ((pseudoType == CSSSelector::PseudoLeftPage && !isLeftPage)
             || (pseudoType == CSSSelector::PseudoRightPage && isLeftPage)
             || (pseudoType == CSSSelector::PseudoFirstPage && !isFirstPage))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void StyleResolver::matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>& rules, bool isLeftPage, bool isFirstPage, const String& pageName)
+{
+    for (unsigned i = 0; i < rules.size(); ++i) {
+        StyleRulePage* rule = rules[i];
+
+        if (!checkPageSelectorComponents(rule->selector(), isLeftPage, isFirstPage, pageName))
             continue;
 
         // If the rule has no properties to apply, then ignore it.
@@ -2647,6 +2683,11 @@ static void collectCSSOMWrappers(HashMap<StyleRule*, RefPtr<CSSStyleRule> >& wra
 #if ENABLE(CSS_REGIONS)
         case CSSRule::WEBKIT_REGION_RULE:
             collectCSSOMWrappers(wrapperMap, static_cast<WebKitCSSRegionRule*>(cssRule));
+            break;
+#endif
+#if ENABLE(SHADOW_DOM)
+        case CSSRule::HOST_RULE:
+            collectCSSOMWrappers(wrapperMap, static_cast<CSSHostRule*>(cssRule));
             break;
 #endif
         case CSSRule::STYLE_RULE:
@@ -2760,6 +2801,49 @@ inline bool StyleResolver::isValidRegionStyleProperty(CSSPropertyID id)
     return false;
 }
 
+#if ENABLE(VIDEO_TRACK)
+inline bool StyleResolver::isValidCueStyleProperty(CSSPropertyID id)
+{
+    switch (id) {
+    case CSSPropertyBackground:
+    case CSSPropertyBackgroundAttachment:
+    case CSSPropertyBackgroundClip:
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBackgroundImage:
+    case CSSPropertyBackgroundOrigin:
+    case CSSPropertyBackgroundPosition:
+    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyBackgroundRepeat:
+    case CSSPropertyBackgroundRepeatX:
+    case CSSPropertyBackgroundRepeatY:
+    case CSSPropertyBackgroundSize:
+    case CSSPropertyColor:
+    case CSSPropertyFont:
+    case CSSPropertyFontFamily:
+    case CSSPropertyFontSize:
+    case CSSPropertyFontStyle:
+    case CSSPropertyFontVariant:
+    case CSSPropertyFontWeight:
+    case CSSPropertyLineHeight:
+    case CSSPropertyOpacity:
+    case CSSPropertyOutline:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyOutlineOffset:
+    case CSSPropertyOutlineStyle:
+    case CSSPropertyOutlineWidth:
+    case CSSPropertyVisibility:
+    case CSSPropertyWhiteSpace:
+    case CSSPropertyTextDecoration:
+    case CSSPropertyTextShadow:
+    case CSSPropertyBorderStyle:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+#endif
 // SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
 // of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()
 // multiplies each resolved length with the zoom multiplier - so for SVG we need to disable that.

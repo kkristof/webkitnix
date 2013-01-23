@@ -405,8 +405,7 @@ END
     }
 
     if (IsConstructable($interface)) {
-        push(@headerContent, <<END);
-    static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);
+        push(@headerContent, "    static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);\n");
 END
     }
     if (HasCustomConstructor($interface)) {
@@ -530,7 +529,7 @@ END
         die "Must have custom toV8\n" if !$customWrap;
         push(@headerContent, <<END);
 class ${nativeType};
-v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate* = 0);
+v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class HolderContainer, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer& container, Wrappable*)
@@ -561,7 +560,7 @@ END
 
         push(@headerContent, <<END);
 
-inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate = 0)
+inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
         return v8NullWithCheck(isolate);
@@ -592,7 +591,7 @@ inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const Ho
     return toV8Fast(impl.get(), container, wrappable);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate = 0)
+inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
@@ -1757,7 +1756,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    ArrayBufferArray arrayBufferArray$TransferListName;\n";
                 $parameterCheckString .= "    if (args.Length() > $transferListIndex) {\n";
                 $parameterCheckString .= "        if (!extractTransferables(args[$transferListIndex], messagePortArray$TransferListName, arrayBufferArray$TransferListName, args.GetIsolate()))\n";
-                $parameterCheckString .= "            return throwTypeError(\"Could not extract transferables\");\n";
+                $parameterCheckString .= "            return throwTypeError(\"Could not extract transferables\", args.GetIsolate());\n";
                 $parameterCheckString .= "    }\n";
                 $useTransferList = 1;
             }
@@ -2194,7 +2193,7 @@ sub GenerateConstructorHeader
 {
     my $content = <<END;
     if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.");
+        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
         return args.Holder();
@@ -2948,9 +2947,10 @@ END
 END
 
     if (IsConstructable($interface)) {
-        push(@implContent, <<END);
-    desc->SetCallHandler(${v8InterfaceName}::constructorCallback);
-END
+        my $conditionalString = $codeGenerator->GenerateConstructorConditionalString($interface);
+        push(@implContent, "#if $conditionalString\n") if $conditionalString;
+        push(@implContent, "    desc->SetCallHandler(${v8InterfaceName}::constructorCallback);\n");
+        push(@implContent, "#endif // $conditionalString\n") if $conditionalString;
     }
 
     if ($access_check or @enabledAtRuntimeAttributes or @normalFunctions or $has_constants) {
@@ -3545,7 +3545,7 @@ sub GenerateFunctionCallString()
 
         if ($replacements{$paramName}) {
             push @arguments, $replacements{$paramName};
-        } elsif ($parameter->type eq "IDBKey" || $parameter->type eq "NodeFilter" || $parameter->type eq "XPathNSResolver") {
+        } elsif ($parameter->type eq "NodeFilter" || $parameter->type eq "XPathNSResolver") {
             push @arguments, "$paramName.get()";
         } elsif ($codeGenerator->IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
             push @arguments, "$paramName->propertyReference()";
@@ -3695,7 +3695,6 @@ sub GetNativeType
     return "Dictionary" if $type eq "Dictionary";
 
     return "RefPtr<DOMStringList>" if $type eq "DOMStringList";
-    return "RefPtr<IDBKey>" if $type eq "IDBKey";
     return "RefPtr<MediaQueryListListener>" if $type eq "MediaQueryListListener";
     return "RefPtr<NodeFilter>" if $type eq "NodeFilter";
     return "RefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
@@ -3774,12 +3773,6 @@ sub JSValueToNative
         return "SerializedScriptValue::create($value, $getIsolate)";
     }
 
-    if ($type eq "IDBKey") {
-        AddToImplIncludes("IDBBindingUtilities.h");
-        AddToImplIncludes("IDBKey.h");
-        return "createIDBKeyFromValue($value)";
-    }
-
     if ($type eq "Dictionary") {
         AddToImplIncludes("Dictionary.h");
         return "Dictionary($value, $getIsolate)";
@@ -3820,7 +3813,7 @@ sub JSValueToNative
     if ($arrayOrSequenceType) {
         if ($codeGenerator->IsRefPtrType($arrayOrSequenceType)) {
             AddToImplIncludes("V8${arrayOrSequenceType}.h");
-            return "(toRefPtrNativeArray<${arrayOrSequenceType}, V8${arrayOrSequenceType}>($value))";
+            return "(toRefPtrNativeArray<${arrayOrSequenceType}, V8${arrayOrSequenceType}>($value, $getIsolate))";
         }
         return "toNativeArray<" . GetNativeType($arrayOrSequenceType) . ">($value)";
     }
@@ -3937,7 +3930,6 @@ my %non_wrapper_types = (
     # FIXME: When EventTarget is an interface and not a mixin, fix this so that
     # EventTarget is treated as a wrapper type.
     'EventTarget' => 1,
-    'IDBKey' => 1,
     'JSObject' => 1,
     'MediaQueryListListener' => 1,
     'NodeFilter' => 1,

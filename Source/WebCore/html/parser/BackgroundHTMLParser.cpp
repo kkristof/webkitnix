@@ -30,22 +30,43 @@
 #include "BackgroundHTMLParser.h"
 
 #include "HTMLDocumentParser.h"
+#include "HTMLNames.h"
 #include "HTMLParserThread.h"
 #include "HTMLTokenizer.h"
+#include "MathMLNames.h"
+#include "SVGNames.h"
 #include <wtf/MainThread.h>
 #include <wtf/Vector.h>
+#include <wtf/text/TextPosition.h>
 
 namespace WebCore {
 
+using namespace HTMLNames;
+
 #ifndef NDEBUG
 
-static void checkThatTokensAreSafeToSendToAnotherThread(const Vector<CompactHTMLToken>& tokens)
+static void checkThatTokensAreSafeToSendToAnotherThread(const CompactHTMLTokenStream* tokens)
 {
-    for (size_t i = 0; i < tokens.size(); ++i)
-        ASSERT(tokens[i].isSafeToSendToAnotherThread());
+    for (size_t i = 0; i < tokens->size(); ++i)
+        ASSERT(tokens->at(i).isSafeToSendToAnotherThread());
 }
 
 #endif
+
+// FIXME: Tune this constant based on a benchmark. The current value was choosen arbitrarily.
+static const size_t pendingTokenLimit = 4000;
+
+static bool threadSafeEqual(StringImpl* a, StringImpl* b)
+{
+    if (a->hash() != b->hash())
+        return false;
+    return StringHash::equal(a, b);
+}
+
+static bool threadSafeMatch(const String& localName, const QualifiedName& qName)
+{
+    return threadSafeEqual(localName.impl(), qName.localName().impl());
+}
 
 typedef const void* ParserIdentifier;
 class HTMLDocumentParser;
@@ -71,97 +92,83 @@ ParserMap::MainThreadParserMap& ParserMap::mainThreadParsers()
 }
 
 BackgroundHTMLParser::BackgroundHTMLParser(const HTMLParserOptions& options, ParserIdentifier identifier)
-    : m_isPausedWaitingForScripts(false)
-    , m_inForeignContent(false)
+    : m_inForeignContent(false)
     , m_tokenizer(HTMLTokenizer::create(options))
     , m_options(options)
     , m_parserIdentifer(identifier)
+    , m_pendingTokens(adoptPtr(new CompactHTMLTokenStream))
 {
 }
 
 void BackgroundHTMLParser::append(const String& input)
 {
-    m_input.appendToEnd(input);
-    pumpTokenizer();
-}
-
-void BackgroundHTMLParser::continueParsing()
-{
-    m_isPausedWaitingForScripts = false;
+    m_input.append(SegmentedString(input));
     pumpTokenizer();
 }
 
 void BackgroundHTMLParser::finish()
 {
-    ASSERT(!m_input.haveSeenEndOfFile());
-    m_input.markEndOfFile();
+    markEndOfFile();
     pumpTokenizer();
+}
+
+void BackgroundHTMLParser::markEndOfFile()
+{
+    // FIXME: This should use InputStreamPreprocessor::endOfFileMarker
+    // once InputStreamPreprocessor is split off into its own header.
+    const LChar endOfFileMarker = 0;
+
+    ASSERT(!m_input.isClosed());
+    m_input.append(SegmentedString(String(&endOfFileMarker, 1)));
+    m_input.close();
+}
+
+bool BackgroundHTMLParser::simulateTreeBuilder(const CompactHTMLToken& token)
+{
+    if (token.type() == HTMLTokenTypes::StartTag) {
+        const String& tagName = token.data();
+        if (threadSafeMatch(tagName, SVGNames::svgTag)
+            || threadSafeMatch(tagName, MathMLNames::mathTag))
+            m_inForeignContent = true;
+
+        // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
+        if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag))
+            m_tokenizer->setState(HTMLTokenizerState::RCDATAState);
+        else if (threadSafeMatch(tagName, plaintextTag))
+            m_tokenizer->setState(HTMLTokenizerState::PLAINTEXTState);
+        else if (threadSafeMatch(tagName, scriptTag))
+            m_tokenizer->setState(HTMLTokenizerState::ScriptDataState);
+        else if (threadSafeMatch(tagName, styleTag)
+            || threadSafeMatch(tagName, iframeTag)
+            || threadSafeMatch(tagName, xmpTag)
+            || (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled)
+            || threadSafeMatch(tagName, noframesTag)
+            || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
+            m_tokenizer->setState(HTMLTokenizerState::RAWTEXTState);
+    }
+
+    if (token.type() == HTMLTokenTypes::EndTag) {
+        const String& tagName = token.data();
+        if (threadSafeMatch(tagName, SVGNames::svgTag) || threadSafeMatch(tagName, MathMLNames::mathTag))
+            m_inForeignContent = false;
+        if (threadSafeMatch(tagName, scriptTag))
+            return false;
+    }
+
+    // FIXME: Need to set setForceNullCharacterReplacement based on m_inForeignContent as well.
+    m_tokenizer->setShouldAllowCDATA(m_inForeignContent);
+    return true;
 }
 
 void BackgroundHTMLParser::pumpTokenizer()
 {
-    if (m_isPausedWaitingForScripts)
-        return;
-
-    // It's unclear whether we want to use AtomicStrings on the background
-    // thread. We will likely eventually use libdispatch to schedule parsing
-    // in a separate sequenced queue for each HTMLDocumentParser instance.
-    // Once we do that, the code below will be unsafe because libdispatch
-    // might schedule us on many different threads.
-    DEFINE_STATIC_LOCAL(AtomicString, iframeTag, ("iframe", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, mathTag, ("math", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, noembedTag, ("noembed", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, noframesTag, ("noframes", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, noscriptTag, ("noscript", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, plaintextTag, ("plaintext", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, scriptTag, ("script", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, styleTag, ("style", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, svgTag, ("svg", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, textareaTag, ("textarea", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, titleTag, ("title", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, xmpTag, ("xmp", AtomicString::ConstructFromLiteral));
-
-    while (m_tokenizer->nextToken(m_input.current(), m_token)) {
-        m_pendingTokens.append(CompactHTMLToken(m_token));
-
-        if (m_token.type() == HTMLTokenTypes::StartTag) {
-            AtomicString tagName(m_token.name().data(), m_token.name().size());
-            if (tagName == svgTag || tagName == mathTag)
-                m_inForeignContent = true;
-
-            // FIXME: This is just a copy of Tokenizer::updateStateFor which doesn't use HTMLNames.
-            if (tagName == textareaTag || tagName == titleTag)
-                m_tokenizer->setState(HTMLTokenizerState::RCDATAState);
-            else if (tagName == plaintextTag)
-                m_tokenizer->setState(HTMLTokenizerState::PLAINTEXTState);
-            else if (tagName == scriptTag)
-                m_tokenizer->setState(HTMLTokenizerState::ScriptDataState);
-            else if (tagName == styleTag
-                || tagName == iframeTag
-                || tagName == xmpTag
-                || (tagName == noembedTag && m_options.pluginsEnabled)
-                || tagName == noframesTag
-                || (tagName == noscriptTag && m_options.scriptEnabled))
-                m_tokenizer->setState(HTMLTokenizerState::RAWTEXTState);
-        }
-        if (m_token.type() == HTMLTokenTypes::EndTag) {
-            AtomicString tagName(m_token.name().data(), m_token.name().size());
-            if (tagName == svgTag || tagName == mathTag)
-                m_inForeignContent = false;
-            if (tagName == scriptTag) {
-                m_isPausedWaitingForScripts = true;
-                m_token.clear();
-                break;
-            }
-        }
-        // FIXME: Need to set setForceNullCharacterReplacement based on m_inForeignContent as well.
-        m_tokenizer->setShouldAllowCDATA(m_inForeignContent);
+    while (m_tokenizer->nextToken(m_input, m_token)) {
+        m_pendingTokens->append(CompactHTMLToken(m_token, TextPosition(m_input.currentLine(), m_input.currentColumn())));
         m_token.clear();
-    }
 
-#ifndef NDEBUG
-    checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens);
-#endif
+        if (!simulateTreeBuilder(m_pendingTokens->last()) || m_pendingTokens->size() >= pendingTokenLimit)
+            sendTokensToMainThread();
+    }
 
     sendTokensToMainThread();
 }
@@ -169,17 +176,19 @@ void BackgroundHTMLParser::pumpTokenizer()
 class TokenDelivery {
     WTF_MAKE_NONCOPYABLE(TokenDelivery);
 public:
-    TokenDelivery() { }
+    TokenDelivery()
+        : identifier(0)
+    {
+    }
 
     ParserIdentifier identifier;
-    Vector<CompactHTMLToken> tokens;
-
+    OwnPtr<CompactHTMLTokenStream> tokens;
     static void execute(void* context)
     {
         TokenDelivery* delivery = static_cast<TokenDelivery*>(context);
         HTMLDocumentParser* parser = parserMap().mainThreadParsers().get(delivery->identifier);
         if (parser)
-            parser->didReceiveTokensFromBackgroundParser(delivery->tokens);
+            parser->didReceiveTokensFromBackgroundParser(delivery->tokens.release());
         // FIXME: Ideally we wouldn't need to call delete manually. Instead
         // we would like an API where the message queue owns the tasks and
         // takes care of deleting them.
@@ -189,10 +198,19 @@ public:
 
 void BackgroundHTMLParser::sendTokensToMainThread()
 {
+    if (m_pendingTokens->isEmpty())
+        return;
+
+#ifndef NDEBUG
+    checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens.get());
+#endif
+
     TokenDelivery* delivery = new TokenDelivery;
     delivery->identifier = m_parserIdentifer;
-    delivery->tokens.swap(m_pendingTokens);
+    delivery->tokens = m_pendingTokens.release();
     callOnMainThread(TokenDelivery::execute, delivery);
+
+    m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
 }
 
 void BackgroundHTMLParser::createPartial(ParserIdentifier identifier, HTMLParserOptions options)
@@ -211,12 +229,6 @@ void BackgroundHTMLParser::appendPartial(ParserIdentifier identifier, const Stri
     ASSERT(!input.impl() || input.impl()->hasOneRef() || input.isEmpty());
     if (BackgroundHTMLParser* parser = parserMap().backgroundParsers().get(identifier))
         parser->append(input);
-}
-
-void BackgroundHTMLParser::continuePartial(ParserIdentifier identifier)
-{
-    if (BackgroundHTMLParser* parser = parserMap().backgroundParsers().get(identifier))
-        parser->continueParsing();
 }
 
 void BackgroundHTMLParser::finishPartial(ParserIdentifier identifier)

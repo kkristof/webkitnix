@@ -639,12 +639,14 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 {
     ASSERT(position.isNull() || position.anchorType() == Position::PositionIsOffsetInAnchor
-        || position.containerNode() || !position.anchorNode()->shadowHost());
+        || position.containerNode() || !position.anchorNode()->shadowHost()
+        || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
+        
     Node* container = position.containerNode();
     if (!container)
         return 0;
-    Node* ancestor = container->shadowHost();
-    return ancestor ? toTextFormControl(ancestor) : 0;
+    Element* ancestor = container->shadowHost();
+    return ancestor && isHTMLTextFormControlElement(ancestor) ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 
 static const Element* parentHTMLElement(const Element* element)

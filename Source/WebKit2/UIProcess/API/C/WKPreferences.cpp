@@ -1013,3 +1013,13 @@ bool WKPreferencesGetQTKitEnabled(WKPreferencesRef preferencesRef)
 {
     return toImpl(preferencesRef)->isQTKitEnabled();
 }
+
+void WKPreferencesSetLogsPageMessagesToSystemConsoleEnabled(WKPreferencesRef preferencesRef, bool enabled)
+{
+    toImpl(preferencesRef)->setLogsPageMessagesToSystemConsoleEnabled(enabled);
+}
+
+bool WKPreferencesGetLogsPageMessagesToSystemConsoleEnabled(WKPreferencesRef preferencesRef)
+{
+    return toImpl(preferencesRef)->logsPageMessagesToSystemConsoleEnabled();
+}

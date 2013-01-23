@@ -2984,7 +2984,7 @@
                 ]
             },
             {
-                "id": "Profile",
+                "id": "CPUProfile",
                 "type": "object",
                 "description": "Profile.",
                 "properties": [
@@ -3037,13 +3037,18 @@
                 ]
             },
             {
-                "name": "getProfile",
+                "name": "getCPUProfile",
                 "parameters": [
-                    { "name": "type", "type": "string" },
                     { "name": "uid", "type": "integer" }
                 ],
                 "returns": [
-                    { "name": "profile", "$ref": "Profile" }
+                    { "name": "profile", "$ref": "CPUProfile" }
+                ]
+            },
+            {
+                "name": "getHeapSnapshot",
+                "parameters": [
+                    { "name": "uid", "type": "integer" }
                 ]
             },
             {
@@ -3189,9 +3194,26 @@
         "hidden": true,
         "types": [
             {
-                "id": "ContextId",
+                "id": "ResourceId",
                 "type": "string",
-                "description": "Unique context identifier."
+                "description": "Unique resource identifier."
+            },
+            {
+                "id": "ResourceInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "id", "$ref": "ResourceId" },
+                    { "name": "description", "type": "string" }
+                ]
+            },
+            {
+                "id": "ResourceState",
+                "type": "object",
+                "properties": [
+                    { "name": "id", "$ref": "ResourceId" },
+                    { "name": "traceLogId", "$ref": "TraceLogId" },
+                    { "name": "imageURL", "type": "string", "optional": true, "description": "Screenshot image data URL." }
+                ]
             },
             {
                 "id": "CallArgument",
@@ -3204,10 +3226,11 @@
                 "id": "Call",
                 "type": "object",
                 "properties": [
-                    { "name": "contextId", "$ref": "ContextId" },
+                    { "name": "contextId", "$ref": "ResourceId" },
                     { "name": "functionName", "type": "string", "optional": true },
                     { "name": "arguments", "type": "array", "items": { "$ref": "CallArgument" }, "optional": true },
                     { "name": "result", "$ref": "CallArgument", "optional": true },
+                    { "name": "isDrawingCall", "type": "boolean", "optional": true },
                     { "name": "property", "type": "string", "optional": true },
                     { "name": "value", "$ref": "CallArgument", "optional": true },
                     { "name": "sourceURL", "type": "string", "optional": true },
@@ -3288,7 +3311,26 @@
                     { "name": "stepNo", "type": "integer" }
                 ],
                 "returns": [
-                    { "name": "screenshotDataUrl", "type": "string" }
+                    { "name": "resourceState", "$ref": "ResourceState" }
+                ]
+            },
+            {
+                "name": "getResourceInfo",
+                "parameters": [
+                    { "name": "resourceId", "$ref": "ResourceId" }
+                ],
+                "returns": [
+                    { "name": "resourceInfo", "$ref": "ResourceInfo" }
+                ]
+            },
+            {
+                "name": "getResourceState",
+                "parameters": [
+                    { "name": "traceLogId", "$ref": "TraceLogId" },
+                    { "name": "resourceId", "$ref": "ResourceId" }
+                ],
+                "returns": [
+                    { "name": "resourceState", "$ref": "ResourceState" }
                 ]
             }
         ],

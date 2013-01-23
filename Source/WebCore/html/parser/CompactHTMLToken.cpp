@@ -33,18 +33,33 @@
 
 namespace WebCore {
 
-CompactHTMLToken::CompactHTMLToken(const HTMLToken& token)
+struct SameSizeAsCompactHTMLToken  {
+    unsigned bitfields;
+    String name;
+    Vector<CompactAttribute> vector;
+    TextPosition textPosition;
+};
+
+COMPILE_ASSERT(sizeof(CompactHTMLToken) == sizeof(SameSizeAsCompactHTMLToken), CompactHTMLToken_should_stay_small);
+
+CompactHTMLToken::CompactHTMLToken(const HTMLToken& token, const TextPosition& textPosition)
     : m_type(token.type())
+    , m_isAll8BitData(false)
+    , m_textPosition(textPosition)
 {
     switch (m_type) {
     case HTMLTokenTypes::Uninitialized:
         ASSERT_NOT_REACHED();
         break;
-    case HTMLTokenTypes::DOCTYPE:
+    case HTMLTokenTypes::DOCTYPE: {
         m_data = String(token.name().data(), token.name().size());
-        m_publicIdentifier = String(token.publicIdentifier().data(), token.publicIdentifier().size());
-        m_systemIdentifier = String(token.systemIdentifier().data(), token.systemIdentifier().size());
+        // There is only 1 DOCTYPE token per document, so to avoid increasing the
+        // size of CompactHTMLToken, we just use the m_attributes vector.
+        String publicIdentifier(token.publicIdentifier().data(), token.publicIdentifier().size());
+        String systemIdentifier(token.systemIdentifier().data(), token.systemIdentifier().size());
+        m_attributes.append(CompactAttribute(publicIdentifier, systemIdentifier));
         break;
+    }
     case HTMLTokenTypes::EndOfFile:
         break;
     case HTMLTokenTypes::StartTag:
@@ -57,9 +72,10 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken& token)
         // Fall through!
     case HTMLTokenTypes::Comment:
     case HTMLTokenTypes::Character:
-        if (token.isAll8BitData())
+        if (token.isAll8BitData()) {
             m_data = String::make8BitFrom16BitSource(token.data().data(), token.data().size());
-        else
+            m_isAll8BitData = true;
+        } else
             m_data = String(token.data().data(), token.data().size());
         break;
     default:
@@ -88,10 +104,7 @@ bool CompactHTMLToken::isSafeToSendToAnotherThread() const
         if (!isStringSafeToSendToAnotherThread(it->value()))
             return false;
     }
-
-    return isStringSafeToSendToAnotherThread(m_data)
-        && isStringSafeToSendToAnotherThread(m_publicIdentifier)
-        && isStringSafeToSendToAnotherThread(m_systemIdentifier);
+    return isStringSafeToSendToAnotherThread(m_data);
 }
 
 }

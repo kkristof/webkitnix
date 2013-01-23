@@ -236,6 +236,9 @@ public:
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
+#if ENABLE(VIDEO_TRACK)
+    virtual bool isWebVTTElement() const { return false; }
+#endif
     bool isStyledElement() const { return getFlag(IsStyledElementFlag); }
     virtual bool isAttributeNode() const { return false; }
     virtual bool isCharacterDataNode() const { return false; }
@@ -582,6 +585,7 @@ public:
 
     void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = 0, Element* attributeOwnerElement = 0);
     NodeListsNodeData* nodeLists();
+    void clearNodeLists();
 
     PassRefPtr<NodeList> getElementsByTagName(const AtomicString&);
     PassRefPtr<NodeList> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
@@ -674,6 +678,18 @@ public:
 
     void textRects(Vector<IntRect>&) const;
 
+    unsigned connectedSubframeCount() const;
+    void incrementConnectedSubframeCount(unsigned amount = 1);
+    void decrementConnectedSubframeCount(unsigned amount = 1);
+
+#if ENABLE(DIALOG_ELEMENT)
+    bool isInTopLayer() const { return getFlag(IsInTopLayer); }
+    void setIsInTopLayer(bool);
+#else
+    bool isInTopLayer() const { return false; }
+    void setIsInTopLayer(bool) { }
+#endif
+
 private:
     enum NodeFlags {
         IsTextFlag = 1,
@@ -711,11 +727,14 @@ private:
         V8CollectableDuringMinorGCFlag = 1 << 24,
         NeedsShadowTreeWalkerFlag = 1 << 25,
         IsInShadowTreeFlag = 1 << 26,
+#if ENABLE(DIALOG_ELEMENT)
+        IsInTopLayer = 1 << 27,
+#endif
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 5 bits remaining
+    // 4 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 

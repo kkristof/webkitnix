@@ -24,6 +24,7 @@
 
 #include "CSSCharsetRule.h"
 #include "CSSFontFaceRule.h"
+#include "CSSHostRule.h"
 #include "CSSImportRule.h"
 #include "CSSMediaRule.h"
 #include "CSSPageRule.h"
@@ -86,8 +87,8 @@ void StyleRuleBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case Supports:
 #endif
 #if ENABLE(SHADOW_DOM)
-    case Host:
-        static_cast<const StyleRuleBlock*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
+    case HostInternal:
+        static_cast<const StyleRuleHost*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
 #endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
@@ -139,7 +140,7 @@ void StyleRuleBase::destroy()
         delete static_cast<StyleRuleKeyframes*>(this);
         return;
 #if ENABLE(SHADOW_DOM)
-    case Host:
+    case HostInternal:
         delete static_cast<StyleRuleHost*>(this);
         return;
 #endif
@@ -186,7 +187,7 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Keyframes:
         return static_cast<const StyleRuleKeyframes*>(this)->copy();
 #if ENABLE(SHADOW_DOM)
-    case Host:
+    case HostInternal:
         return static_cast<const StyleRuleHost*>(this)->copy();
 #endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
@@ -245,9 +246,8 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         break;
 #endif
 #if ENABLE(SHADOW_DOM)
-    case Host:
-        // FIXME: The current CSSOM editor's draft (http://dev.w3.org/csswg/cssom/) does not handle @host rules (see bug 102344).
-        rule = adoptRef(new CSSUnknownRule());
+    case HostInternal:
+        rule = CSSHostRule::create(static_cast<StyleRuleHost*>(self), parentSheet);
         break;
 #endif
     case Unknown:
@@ -373,13 +373,13 @@ void StyleRuleFontFace::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObje
 }
 
 
-StyleRuleBlock::StyleRuleBlock(Type type, Vector<RefPtr<StyleRuleBase> >& adoptRule)
+StyleRuleGroup::StyleRuleGroup(Type type, Vector<RefPtr<StyleRuleBase> >& adoptRule)
     : StyleRuleBase(type, 0)
 {
     m_childRules.swap(adoptRule);
 }
 
-StyleRuleBlock::StyleRuleBlock(const StyleRuleBlock& o)
+StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& o)
     : StyleRuleBase(o)
     , m_childRules(o.m_childRules.size())
 {
@@ -387,30 +387,30 @@ StyleRuleBlock::StyleRuleBlock(const StyleRuleBlock& o)
         m_childRules[i] = o.m_childRules[i]->copy();
 }
 
-void StyleRuleBlock::wrapperInsertRule(unsigned index, PassRefPtr<StyleRuleBase> rule)
+void StyleRuleGroup::wrapperInsertRule(unsigned index, PassRefPtr<StyleRuleBase> rule)
 {
     m_childRules.insert(index, rule);
 }
     
-void StyleRuleBlock::wrapperRemoveRule(unsigned index)
+void StyleRuleGroup::wrapperRemoveRule(unsigned index)
 {
     m_childRules.remove(index);
 }
 
-void StyleRuleBlock::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void StyleRuleGroup::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_childRules);
 }
 
 StyleRuleMedia::StyleRuleMedia(PassRefPtr<MediaQuerySet> media, Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    : StyleRuleBlock(Media, adoptRules)
+    : StyleRuleGroup(Media, adoptRules)
     , m_mediaQueries(media)
 {
 }
 
 StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& o)
-    : StyleRuleBlock(o)
+    : StyleRuleGroup(o)
 {
     if (o.m_mediaQueries)
         m_mediaQueries = o.m_mediaQueries->copy();
@@ -425,14 +425,14 @@ void StyleRuleMedia::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectI
 
 #if ENABLE(CSS3_CONDITIONAL_RULES)
 StyleRuleSupports::StyleRuleSupports(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    : StyleRuleBlock(Supports, adoptRules)
+    : StyleRuleGroup(Supports, adoptRules)
     , m_conditionText(conditionText)
     , m_conditionIsSupported(conditionIsSupported)
 {
 }
 
 StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
-    : StyleRuleBlock(o)
+    : StyleRuleGroup(o)
     , m_conditionText(o.m_conditionText)
     , m_conditionIsSupported(o.m_conditionIsSupported)
 {
@@ -440,13 +440,13 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
 #endif
 
 StyleRuleRegion::StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >* selectors, Vector<RefPtr<StyleRuleBase> >& adoptRules)
-    : StyleRuleBlock(Region, adoptRules)
+    : StyleRuleGroup(Region, adoptRules)
 {
     m_selectorList.adoptSelectorVector(*selectors);
 }
 
 StyleRuleRegion::StyleRuleRegion(const StyleRuleRegion& o)
-    : StyleRuleBlock(o)
+    : StyleRuleGroup(o)
     , m_selectorList(o.m_selectorList)
 {
 }

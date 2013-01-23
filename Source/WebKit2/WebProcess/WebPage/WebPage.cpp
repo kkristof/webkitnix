@@ -273,6 +273,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     , m_canShortCircuitHorizontalWheelEvents(false)
     , m_numWheelEventHandlers(0)
     , m_cachedPageCount(0)
+    , m_minimumLayoutWidth(0)
 #if ENABLE(CONTEXT_MENUS)
     , m_isShowingContextMenu(false)
 #endif
@@ -2410,6 +2411,8 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setTextAutosizingEnabled(store.getBoolValueForKey(WebPreferencesKey::textAutosizingEnabledKey()));
 #endif
 
+    settings->setLogsPageMessagesToSystemConsoleEnabled(store.getBoolValueForKey(WebPreferencesKey::logsPageMessagesToSystemConsoleEnabledKey()));
+
     platformPreferencesDidChange(store);
 
     if (m_drawingArea)
@@ -3777,6 +3780,21 @@ void WebPage::cancelComposition()
 void WebPage::setMainFrameInViewSourceMode(bool inViewSourceMode)
 {
     m_mainFrame->coreFrame()->setInViewSourceMode(inViewSourceMode);
+}
+
+void WebPage::setMinimumLayoutWidth(double minimumLayoutWidth)
+{
+    if (m_minimumLayoutWidth == minimumLayoutWidth)
+        return;
+
+    m_minimumLayoutWidth = minimumLayoutWidth;
+
+    int maximumSize = std::numeric_limits<int>::max();
+
+    if (minimumLayoutWidth > 0)
+        corePage()->mainFrame()->view()->enableAutoSizeMode(true, IntSize(minimumLayoutWidth, 1), IntSize(maximumSize, maximumSize));
+    else
+        corePage()->mainFrame()->view()->enableAutoSizeMode(false, IntSize(), IntSize());
 }
 
 } // namespace WebKit

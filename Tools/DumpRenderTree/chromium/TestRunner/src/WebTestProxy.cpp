@@ -31,6 +31,7 @@
 #include "config.h"
 #include "WebTestProxy.h"
 
+#include "SpellCheckClient.h"
 #include "WebAccessibilityController.h"
 #include "WebAccessibilityNotification.h"
 #include "WebAccessibilityObject.h"
@@ -180,16 +181,23 @@ string URLDescription(const GURL& url)
     return url.possibly_invalid_spec();
 }
 
+void blockRequest(WebURLRequest& request)
+{
+    request.setURL(WebURL());
+}
+
 }
 
 WebTestProxyBase::WebTestProxyBase()
     : m_testInterfaces(0)
     , m_delegate(0)
+    , m_spellcheck(new SpellCheckClient)
 {
 }
 
 WebTestProxyBase::~WebTestProxyBase()
 {
+    delete m_spellcheck;
 }
 
 void WebTestProxyBase::setInterfaces(WebTestInterfaces* interfaces)
@@ -200,12 +208,18 @@ void WebTestProxyBase::setInterfaces(WebTestInterfaces* interfaces)
 void WebTestProxyBase::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
+    m_spellcheck->setDelegate(delegate);
 }
 
 void WebTestProxyBase::reset()
 {
     m_paintRect = WebRect();
     m_resourceIdentifierMap.clear();
+}
+
+WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
+{
+    return m_spellcheck;
 }
 
 void WebTestProxyBase::setPaintRect(const WebRect& rect)
@@ -709,6 +723,23 @@ void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::W
         m_delegate->printMessage("> redirectResponse ");
         printResponseDescription(m_delegate, redirectResponse);
         m_delegate->printMessage("\n");
+    }
+
+    if (!redirectResponse.isNull() && m_testInterfaces->testRunner() && m_testInterfaces->testRunner()->shouldBlockRedirects()) {
+        m_delegate->printMessage("Returning null for this redirect\n");
+        blockRequest(request);
+        return;
+    }
+
+    if (m_testInterfaces->testRunner() && m_testInterfaces->testRunner()->willSendRequestShouldReturnNull()) {
+        blockRequest(request);
+        return;
+    }
+
+    if (m_testInterfaces->testRunner() && m_testInterfaces->testRunner()->httpHeadersToClear()) {
+        const set<string> *clearHeaders = m_testInterfaces->testRunner()->httpHeadersToClear();
+        for (set<string>::const_iterator header = clearHeaders->begin(); header != clearHeaders->end(); ++header)
+            request.clearHTTPHeaderField(WebString::fromUTF8(*header));
     }
 }
 

@@ -192,7 +192,6 @@ set(WebCore_IDL_FILES
     Modules/indexeddb/IDBDatabase.idl
     Modules/indexeddb/IDBFactory.idl
     Modules/indexeddb/IDBIndex.idl
-    Modules/indexeddb/IDBKey.idl
     Modules/indexeddb/IDBKeyRange.idl
     Modules/indexeddb/IDBObjectStore.idl
     Modules/indexeddb/IDBOpenDBRequest.idl
@@ -312,6 +311,7 @@ set(WebCore_IDL_FILES
     css/Counter.idl
     css/CSSCharsetRule.idl
     css/CSSFontFaceRule.idl
+    css/CSSHostRule.idl
     css/CSSImportRule.idl
     css/CSSMediaRule.idl
     css/CSSPageRule.idl
@@ -401,6 +401,7 @@ set(WebCore_IDL_FILES
     dom/TouchEvent.idl
     dom/Touch.idl
     dom/TouchList.idl
+    dom/TransitionEvent.idl
     dom/TreeWalker.idl
     dom/UIEvent.idl
     dom/WebKitAnimationEvent.idl
@@ -750,6 +751,7 @@ set(WebCore_SVG_IDL_FILES
     svg/SVGStopElement.idl
     svg/SVGStringList.idl
     svg/SVGStyleElement.idl
+    svg/SVGStyledElement.idl
     svg/SVGSwitchElement.idl
     svg/SVGSymbolElement.idl
     svg/SVGTRefElement.idl
@@ -833,11 +835,13 @@ set(WebCore_SOURCES
     Modules/indexeddb/IDBLevelDBCoding.cpp
     Modules/indexeddb/IDBObjectStore.cpp
     Modules/indexeddb/IDBObjectStoreBackendImpl.cpp
+    Modules/indexeddb/IDBOpenDBRequest.cpp
     Modules/indexeddb/IDBPendingTransactionMonitor.cpp
     Modules/indexeddb/IDBRequest.cpp
     Modules/indexeddb/IDBTransaction.cpp
     Modules/indexeddb/IDBTransactionBackendImpl.cpp
     Modules/indexeddb/IDBTransactionCoordinator.cpp
+    Modules/indexeddb/IDBUpgradeNeededEvent.cpp
     Modules/indexeddb/IDBVersionChangeEvent.cpp
     Modules/indexeddb/IDBVersionChangeRequest.cpp
     Modules/indexeddb/PageGroupIndexedDatabase.cpp
@@ -1033,6 +1037,7 @@ set(WebCore_SOURCES
     css/CSSFunctionValue.cpp
     css/CSSGradientValue.cpp
     css/CSSGroupingRule.cpp
+    css/CSSHostRule.cpp
     css/CSSImageGeneratorValue.cpp
     css/CSSImageSetValue.cpp
     css/CSSImageValue.cpp
@@ -1240,6 +1245,7 @@ set(WebCore_SOURCES
     dom/TouchEvent.cpp
     dom/TouchList.cpp
     dom/TransformSourceLibxslt.cpp
+    dom/TransitionEvent.cpp
     dom/Traversal.cpp
     dom/TreeScope.cpp
     dom/TreeScopeAdopter.cpp
@@ -1560,7 +1566,6 @@ set(WebCore_SOURCES
     html/shadow/DetailsMarkerControl.cpp
     html/shadow/HTMLContentElement.cpp
     html/shadow/HTMLShadowElement.cpp
-    html/shadow/ImageInnerElement.cpp
     html/shadow/InsertionPoint.cpp
     html/shadow/MediaControlElementTypes.cpp
     html/shadow/MediaControlElements.cpp
@@ -1577,10 +1582,12 @@ set(WebCore_SOURCES
     html/track/LoadableTextTrack.cpp
     html/track/TextTrack.cpp
     html/track/TextTrackCue.cpp
+    html/track/TextTrackCueGeneric.cpp
     html/track/TextTrackCueList.cpp
     html/track/TextTrackList.cpp
     html/track/TrackBase.cpp
     html/track/TrackEvent.cpp
+    html/track/WebVTTElement.cpp
     html/track/WebVTTParser.cpp
     html/track/WebVTTTokenizer.cpp
 
@@ -2306,6 +2313,7 @@ set(WebCore_SOURCES
     storage/StorageMap.cpp
     storage/StorageNamespace.cpp
     storage/StorageNamespaceImpl.cpp
+    storage/StorageStrategy.cpp
     storage/StorageSyncManager.cpp
     storage/StorageTracker.cpp
 
@@ -2438,7 +2446,6 @@ set(WebCore_SOURCES
     svg/SVGSetElement.cpp
     svg/SVGStopElement.cpp
     svg/SVGStringList.cpp
-    svg/SVGStylable.cpp
     svg/SVGStyleElement.cpp
     svg/SVGStyledElement.cpp
     svg/SVGStyledLocatableElement.cpp

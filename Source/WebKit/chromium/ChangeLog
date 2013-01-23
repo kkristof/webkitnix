@@ -1,3 +1,369 @@
+2013-01-22  Mark Lam  <mark.lam@apple.com>
+
+        Change the Supplementable class to not use AtomicString.
+        https://bugs.webkit.org/show_bug.cgi?id=107535.
+
+        Reviewed by Adam Barth.
+
+        Replaced the use of AtomicString keys with literal const char* keys.
+        This simplifies the SupplementMap and makes it slightly leaner and faster.
+
+        * src/ContextFeaturesClientImpl.cpp:
+        (ContextFeaturesCache):
+        (WebKit::ContextFeaturesCache::supplementName):
+
+2013-01-22  Leandro Gracia Gil  <leandrogracia@chromium.org>
+
+        [Chromium] Expose didCommitCompositorFrame in WebWidgetClient.
+        https://bugs.webkit.org/show_bug.cgi?id=107325
+
+        Reviewed by James Robinson.
+
+        Add a notification on WebWidgetClient called when the compositor commits a frame.
+
+        * public/WebWidgetClient.h:
+        (WebWidgetClient):
+        (WebKit::WebWidgetClient::didCommitCompositorFrame):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::didCommit):
+
+2013-01-21  Kentaro Hara  <haraken@chromium.org>
+
+        Implement UIEvent constructor
+        https://bugs.webkit.org/show_bug.cgi?id=107430
+
+        Reviewed by Adam Barth.
+
+        Editor's draft: https://dvcs.w3.org/hg/d4e/raw-file/tip/source_respec.htm
+
+        UIEvent constructor is implemented under a DOM4_EVENTS_CONSTRUCTOR flag,
+        which is enabled on Safari and Chromium for now.
+
+        * features.gypi:
+
+2013-01-22  Alpha Lam  <hclam@chromium.org>
+
+        REGRESSION(r140392): InjectIDBKeyTest.TopLevelPropertyStringValue is crashing
+        https://bugs.webkit.org/show_bug.cgi?id=107578
+
+        Unreviewed build fix. Disabled 2 tests that are crashing after r140392.
+
+        * tests/IDBBindingUtilitiesTest.cpp:
+        (WebKit::TEST_F):
+
+2013-01-22  Eric Seidel  <eric@webkit.org>
+
+        Turn on ENABLE_THREADED_HTML_PARSER for Chromium (it's still disabled at runtime)
+        https://bugs.webkit.org/show_bug.cgi?id=107519
+
+        Reviewed by Adam Barth.
+
+        This makes our development lives easier, and makes it possible for the bots
+        to run threaded-parser-only tests by toggling the runtime enable
+        via window.internals.settings.
+
+        * features.gypi:
+
+2013-01-22  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Make an Isolate parameter mandatory in toV8()
+        https://bugs.webkit.org/show_bug.cgi?id=107520
+
+        Reviewed by Adam Barth.
+
+        Now it's safe to remove an optional Isolate parameter.
+
+        No tests. No change in behavior.
+
+        * src/InspectorFrontendClientImpl.cpp:
+        (WebKit::InspectorFrontendClientImpl::windowObjectCleared):
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::toV8Value):
+        * src/WebBlob.cpp:
+        (WebKit::WebBlob::toV8Value):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::createFileSystem):
+        (WebKit::WebFrameImpl::createSerializableFileSystem):
+        (WebKit::WebFrameImpl::createFileEntry):
+
+2013-01-21  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r177962.  Requested by
+        "Yoshifumi Inoue" <yosin@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-01-21  Noel Gordon  <noel.gordon@gmail.com>
+
+        [chromium] REGRESSION(r139347) roll chromium deps broke webkit-unit-tests
+        https://bugs.webkit.org/show_bug.cgi?id=106631
+
+        Reviewed by Kent Tamura.
+
+        Fixed in http://crrev.com/177931 and rolled. Renable these tests.
+
+        * tests/WebImageTest.cpp:
+
+2013-01-21  Dirk Schulze  <dschulze@adobe.com>
+
+        Add build flag for Canvas's Path object (disabled by default)
+        https://bugs.webkit.org/show_bug.cgi?id=107473
+
+        Reviewed by Dean Jackson.
+
+        Add CANVAS_PATH build flag to build systems.
+
+        * features.gypi:
+
+2013-01-21  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r177956.  Requested by
+        thakis_ via sheriffbot.
+
+        * DEPS:
+
+2013-01-21  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r177953.  Requested by
+        thakis_ via sheriffbot.
+
+        * DEPS:
+
+2013-01-21  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Update the RTCPeerConnection states to match the latest specification
+        https://bugs.webkit.org/show_bug.cgi?id=107120
+
+        Reviewed by Adam Barth.
+
+        * src/AssertMatchingEnums.cpp:
+
+2013-01-20  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Make SpeechSynthesis compile in the Chromium port
+        https://bugs.webkit.org/show_bug.cgi?id=107382
+
+        Reviewed by Adam Barth.
+
+        Add ENABLE_SPEECH_SYNTHESIS to features.gypi, off by default.
+
+        * features.gypi:
+
+2013-01-20  Yoshifumi Inoue  <yosin@chromium.org>
+
+        Dragging over an element with scrollbars should scroll the element when dragging near edges
+        https://bugs.webkit.org/show_bug.cgi?id=39725
+
+        Reviewed by Hajime Morita.
+
+        This patch removes DragScrollTimer used for automatic scrolling of main
+        frame drag-and-drop which is now implemented in EventHandler.
+
+        Another patch will remove DragScrollTimer.{cpp,h} and update GYP files to
+        make patch size small.
+
+        No tests. Existing test covers this change.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::shouldAutoscrollForDragAndDrop): Added.
+        * src/ChromeClientImpl.h:
+        (ChromeClientImpl): Changed to add shouldAutoscrollForDragAndDrop().
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl): Changed to remove m_dragScrollTimer.
+        (WebKit::WebViewImpl::dragSourceEndedAt): ditto
+        (WebKit::WebViewImpl::dragSourceMovedTo): ditto
+        (WebKit::WebViewImpl::dragTargetDrop): ditto
+        (WebKit::WebViewImpl::dragTargetDragEnterOrOver): ditto
+        * src/WebViewImpl.h:
+        (WebKit): Chagned to remove DragScrollTimer.
+
+2013-01-18  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Switch to new createTransaction call
+        https://bugs.webkit.org/show_bug.cgi?id=107311
+
+        Reviewed by Tony Chang.
+
+        * public/WebIDBTransaction.h:
+
+        Remove an old method that nobody calls.
+
+2013-01-18  Alpha Lam  <hclam@chromium.org>
+
+        [chromium] Roll Chromium DEPS to 177676
+
+        Unreviewed DEPS roll.
+
+        * DEPS:
+
+2013-01-18  Robert Kroeger  <rjkroege@chromium.org>
+
+        [chromium] Use new-style gesture scrolling events for fling and
+        for plugin scrolling: https://bugs.webkit.org/show_bug.cgi?id=106589
+
+        Reviewed by James Robinson.
+
+        https://bugs.webkit.org/show_bug.cgi?id=103952 modified touchscreen
+        scrolling to not use synthetic mouse wheel events. Update the fling facility
+        in WebViewImpl to use these events for touchscreen-initiated flings. Also
+        modify the WebPluginContainerImpl to scroll in response to touchscreen
+        scroll gestures if the plugin does not itself implement gesture events. 
+
+        * src/WebPluginContainerImpl.cpp:
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::scrollBy): Handle fling callback conditionally based
+        on initiating device. Touchpad flings generate wheels. Touchscreen flings
+        use gesture events.
+        (WebKit::WebViewImpl::handleGestureEvent):
+        (WebKit::WebViewImpl::transferActiveWheelFlingAnimation):
+        * src/WebViewImpl.h:
+
+2013-01-18  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        Add explicit keyword to constructors in platform-specific InspectorClient
+        https://bugs.webkit.org/show_bug.cgi?id=107255
+
+        Reviewed by Kentaro Hara.
+
+        Add explicit keyword to constructors that take one argument
+        in platform-specific implementation of InspectorClient.
+
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+
+2013-01-17  Dominic Cooney  <dominicc@chromium.org>
+
+        [Chromium] Unreviewed gardening.
+
+        Roll Chromium to 177561.
+
+        * DEPS:
+
+2013-01-17  Alpha Lam  <hclam@chromium.org>
+
+        [chromium] Disable a unit test
+        https://bugs.webkit.org/show_bug.cgi?id=107206
+
+        Unreviewed. Disable a failing test due to 140025.
+
+        * tests/WebFrameTest.cpp:
+
+2013-01-17  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r140023.
+        http://trac.webkit.org/changeset/140023
+        https://bugs.webkit.org/show_bug.cgi?id=107176
+
+        Broke some tests (Requested by anttik on #webkit).
+
+        * tests/RenderTableCellTest.cpp:
+        * tests/RenderTableRowTest.cpp:
+
+2013-01-17  John Mellor  <johnme@chromium.org>
+
+        [chromium] Double-tap zoom should take into account accessibility fontScaleFactor
+        https://bugs.webkit.org/show_bug.cgi?id=107123
+
+        Reviewed by Adam Barth.
+
+        Platforms which support Text Autosizing (currently just Chrome for
+        Android) may provide a textAutosizingFontScaleFactor (defaults to 1.0).
+
+        This value is intended to be chosen by the user to indicate how large
+        they want text to appear, for example Chrome for Android has a "Text
+        scaling" slider in Settings > Accessibility that lets you choose a value
+        in the range 50% - 200% (defaults to 100%*).
+
+        For text in wide columns that typically gets autosized, this value is
+        applied by multiplying the textAutosizingMultiplier computed for each
+        cluster by the textAutosizingFontScaleFactor. Double-tap zoom will fit
+        the column to the screen (ignoring the textAutosizingFontScaleFactor)
+        since the column is wide. This part already works.
+
+        For text in narrow columns that doesn't get autosized, the
+        textAutosizingFontScaleFactor is not applied through Text Autosizing,
+        and instead needs to be applied by adjusting the double-tap zoom level.
+        When double-tapping on narrow columns, instead of fitting the column to
+        the screen (which would often zoom in excessively far), the existing
+        logic in computeScaleAndScrollForHitRect applies a maximum zoom level
+        called the legibleScale. This value needs to be multiplied by the
+        textAutosizingFontScaleFactor, so that we zoom in proportionately
+        further on non-autosized narrow columns, hence the effective text size
+        (taking into account zoom) will have increased in proportion to the
+        textAutosizingFontScaleFactor as expected.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::computeScaleAndScrollForHitRect):
+            Multiplies legibleScale (the maximum zoom level) by the
+            textAutosizingFontScaleFactor.
+        * tests/WebFrameTest.cpp:
+            Added WebFrameTest.DivAutoZoomScaleFontScaleFactorTest based on
+            WebFrameTest.DivAutoZoomScaleBoundsTest to test the interaction
+            between textAutosizingFontScaleFactor and the double-tap zoom logic.
+            Also did minor cleanup to WebFrameTest.DivAutoZoomScaleBoundsTest.
+
+2013-01-17  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Make new-style page scale work with fixed layout
+        https://bugs.webkit.org/show_bug.cgi?id=106951
+
+        Reviewed by Adam Barth.
+
+        This makes non-CSS-transform page scaling work with fixed-layout mode,
+        including viewport tag support.
+
+        - dispatchViewportPropertiesDidChange() now works entirely with DIP
+        pixels instead of physical pixels, and is made compatible with
+        separating deviceScaleFactor from pageScaleFactor.
+
+        - In this mode, the "layout viewport" size in the pinch-zoom model is
+        made a first-class concept separate from the device size.  This
+        is a viewport with the same aspect ratio as the device but with the
+        layout width of the page.  This viewport is used:
+          - As FrameView::visibleContentRect.
+          - Returned from WebView::size().
+          - Given to the compositor as layoutViewportSize.
+
+        - m_deviceScaleInCompositor is deleted as it's clearer to use the
+        applyDeviceScaleInCompositor setting directly.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::dispatchViewportPropertiesDidChange):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::size):
+        (WebKit):
+        (WebKit::WebViewImpl::resize):
+        (WebKit::WebViewImpl::setPageScaleFactor):
+        (WebKit::WebViewImpl::setDeviceScaleFactor):
+        (WebKit::WebViewImpl::layoutSize):
+        (WebKit::WebViewImpl::computePageScaleFactorLimits):
+        (WebKit::WebViewImpl::dipSize):
+        (WebKit::WebViewImpl::didChangeContentsSize):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        (WebKit::WebViewImpl::updateLayerTreeViewport):
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2013-01-17  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r177369.  Requested by
+        ajuma via sheriffbot.
+
+        * DEPS:
+
+2013-01-17  Eugene Klyuchnikov  <eustas@chromium.org>
+
+        Web Inspector: Profiler: split "getProfile" to "getCPUProfile" and "loadHeapSnapshot"
+        https://bugs.webkit.org/show_bug.cgi?id=104545
+
+        Reviewed by Yury Semikhatsky.
+
+        Adopt changes: mimic old behavior.
+
+        * src/WebDevToolsAgentImpl.cpp: Adopt signature changes.
+
 2013-01-17  Yury Semikhatsky  <yurys@chromium.org>
 
         Web Inspector: add WebDeToolsAgentImpl as task observer on reattach

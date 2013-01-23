@@ -80,7 +80,7 @@
 namespace WebCore {
 
 InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
-    : m_instrumentingAgents(adoptPtr(new InstrumentingAgents()))
+    : m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
@@ -175,12 +175,11 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 #if ENABLE(JAVASCRIPT_DEBUGGER)
     runtimeAgent->setScriptDebugServer(&m_debuggerAgent->scriptDebugServer());
 #endif
-
-    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 InspectorController::~InspectorController()
 {
+    m_instrumentingAgents->reset();
     m_agents.discardAgents();
     ASSERT(!m_inspectorClient);
 }
@@ -193,7 +192,6 @@ PassOwnPtr<InspectorController> InspectorController::create(Page* page, Inspecto
 void InspectorController::inspectedPageDestroyed()
 {
     disconnectFrontend();
-    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
     m_injectedScriptManager->disconnect();
     m_inspectorClient->inspectorDestroyed();
     m_inspectorClient = 0;
@@ -231,6 +229,7 @@ void InspectorController::connectFrontend(InspectorFrontendChannel* frontendChan
 
     m_agents.setFrontend(m_inspectorFrontend.get());
 
+    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
     InspectorInstrumentation::frontendCreated();
 
     ASSERT(m_inspectorClient);
@@ -257,6 +256,7 @@ void InspectorController::disconnectFrontend()
     // relese overlay page resources
     m_overlay->freePage();
     InspectorInstrumentation::frontendDeleted();
+    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 void InspectorController::show()

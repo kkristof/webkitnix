@@ -340,10 +340,14 @@ void RenderLayerCompositor::flushPendingLayerChanges(bool isFlushRoot)
     }
 }
 
-void RenderLayerCompositor::didFlushChangesForLayer(RenderLayer* layer)
+void RenderLayerCompositor::didFlushChangesForLayer(RenderLayer* layer, const GraphicsLayer* graphicsLayer)
 {
     if (m_viewportConstrainedLayers.contains(layer))
         m_viewportConstrainedLayersNeedingUpdate.add(layer);
+
+    RenderLayerBacking* backing = layer->backing();
+    if (backing->backgroundLayerPaintsFixedRootBackground() && graphicsLayer == backing->backgroundLayer())
+        fixedRootBackgroundLayerChanged();
 }
 
 void RenderLayerCompositor::notifyFlushBeforeDisplayRefresh(const GraphicsLayer*)
@@ -1066,7 +1070,9 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
                 reflection->backing()->updateCompositedBounds();
         }
 
-        layerBacking->updateGraphicsLayerConfiguration();
+        if (layerBacking->updateGraphicsLayerConfiguration())
+            layerBacking->updateDebugIndicators(m_showDebugBorders, m_showRepaintCounter);
+        
         layerBacking->updateGraphicsLayerGeometry();
 
         if (!layer->parent())
@@ -1194,6 +1200,9 @@ void RenderLayerCompositor::frameViewDidScroll()
     }
 
     m_scrollLayer->setPosition(FloatPoint(-scrollPosition.x(), -scrollPosition.y()));
+
+    if (GraphicsLayer* fixedBackgroundLayer = fixedRootBackgroundLayer())
+        fixedBackgroundLayer->setPosition(IntPoint(frameView->scrollOffsetForFixedPosition()));
 }
 
 void RenderLayerCompositor::frameViewDidLayout()
@@ -1203,11 +1212,29 @@ void RenderLayerCompositor::frameViewDidLayout()
         renderViewBacking->adjustTileCacheCoverage();
 }
 
+void RenderLayerCompositor::rootFixedBackgroundsChanged()
+{
+    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
+    if (renderViewBacking && renderViewBacking->usingTileCache())
+        setCompositingLayersNeedRebuild();
+}
+
 void RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 {
     RenderLayerBacking* backing = layer->backing();
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer, backing ? backing->scrollingContentsLayer() : 0);
+}
+
+void RenderLayerCompositor::fixedRootBackgroundLayerChanged()
+{
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
+        RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
+        if (!renderViewBacking)
+            return;
+
+        scrollingCoordinator->updateScrollingNode(renderViewBacking->scrollLayerID(), scrollLayer(), fixedRootBackgroundLayer());
+    }
 }
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
@@ -2123,6 +2150,33 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
     }
 }
 
+bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
+{
+    RenderLayerBacking* renderViewBacking = m_renderView->layer()->backing();
+    return renderViewBacking && renderViewBacking->usingTileCache();
+}
+
+bool RenderLayerCompositor::needsFixedRootBackgroundLayer(const RenderLayer* layer) const
+{
+    if (layer != m_renderView->layer())
+        return false;
+
+    return supportsFixedRootBackgroundCompositing() && m_renderView->rootBackgroundIsEntirelyFixed();
+}
+
+GraphicsLayer* RenderLayerCompositor::fixedRootBackgroundLayer() const
+{
+    // Get the fixed root background from the RenderView layer's backing.
+    RenderLayer* viewLayer = m_renderView->layer();
+    if (!viewLayer)
+        return 0;
+    
+    if (viewLayer->isComposited() && viewLayer->backing()->backgroundLayerPaintsFixedRootBackground())
+        return viewLayer->backing()->backgroundLayer();
+
+    return 0;
+}
+
 static void resetTrackedRepaintRectsRecursive(GraphicsLayer* graphicsLayer)
 {
     if (!graphicsLayer)
@@ -2674,9 +2728,7 @@ FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportCons
     ASSERT(layer->isComposited());
 
     FrameView* frameView = m_renderView->frameView();
-
-    LayoutRect viewportRect = frameView->visibleContentRect();
-    viewportRect.setLocation(toPoint(frameView->scrollOffsetForFixedPosition()));
+    LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
 
     FixedPositionViewportConstraints constraints = FixedPositionViewportConstraints();
 
@@ -2714,7 +2766,7 @@ StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportCo
     ASSERT(layer->isComposited());
 
     FrameView* frameView = m_renderView->frameView();
-    LayoutRect viewportRect = frameView->visibleContentRect();
+    LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
 
     StickyPositionViewportConstraints constraints = StickyPositionViewportConstraints();
 

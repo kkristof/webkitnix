@@ -37,7 +37,9 @@
 #include "SegmentedString.h"
 #include "Timer.h"
 #include "XSSAuditor.h"
+#include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/text/TextPosition.h>
 
 namespace WebCore {
 
@@ -79,7 +81,7 @@ public:
     virtual void resumeScheduledTasks();
 
 #if ENABLE(THREADED_HTML_PARSER)
-    void didReceiveTokensFromBackgroundParser(const Vector<CompactHTMLToken>&);
+    void didReceiveTokensFromBackgroundParser(PassOwnPtr<CompactHTMLTokenStream>);
 #endif
 
 protected:
@@ -101,7 +103,6 @@ private:
     // DocumentParser
     virtual void detach();
     virtual bool hasInsertionPoint();
-    virtual bool finishWasCalled();
     virtual bool processingData() const;
     virtual void prepareToStopParsing();
     virtual void stopParsing();
@@ -113,11 +114,17 @@ private:
     virtual void watchForLoad(CachedResource*);
     virtual void stopWatchingForLoad(CachedResource*);
     virtual HTMLInputStream& inputStream() { return m_input; }
-    virtual bool hasPreloadScanner() const { return m_preloadScanner.get(); }
+    virtual bool hasPreloadScanner() const { return m_preloadScanner.get() && !shouldUseThreading(); }
     virtual void appendCurrentInputStreamToPreloadScannerAndScan();
 
     // CachedResourceClient
     virtual void notifyFinished(CachedResource*);
+
+#if ENABLE(THREADED_HTML_PARSER)
+    void startBackgroundParser();
+    void stopBackgroundParser();
+    void processTokensFromBackgroundParser(PassOwnPtr<CompactHTMLTokenStream>);
+#endif
 
     enum SynchronousMode {
         AllowYield,
@@ -139,6 +146,8 @@ private:
     void attemptToRunDeferredScriptsAndEnd();
     void end();
 
+    bool shouldUseThreading() const { return m_options.useThreading && !isParsingFragment(); }
+
     bool isParsingFragment() const;
     bool isScheduledForResume() const;
     bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
@@ -157,9 +166,15 @@ private:
     OwnPtr<HTMLPreloadScanner> m_insertionPreloadScanner;
     OwnPtr<HTMLParserScheduler> m_parserScheduler;
     HTMLSourceTracker m_sourceTracker;
+    TextPosition m_textPosition;
     XSSAuditor m_xssAuditor;
 
+#if ENABLE(THREADED_HTML_PARSER)
+    Deque<OwnPtr<CompactHTMLTokenStream> > m_pendingTokens;
+#endif
+
     bool m_endWasDelayed;
+    bool m_haveBackgroundParser;
     unsigned m_pumpSessionNestingLevel;
 };
 

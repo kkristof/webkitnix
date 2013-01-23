@@ -31,14 +31,12 @@
 #ifndef WebViewHost_h
 #define WebViewHost_h
 
-#include "MockSpellCheck.h"
 #include "TestNavigationController.h"
 #include "WebAccessibilityNotification.h"
 #include "WebCursorInfo.h"
 #include "WebFrameClient.h"
 #include "WebIntentRequest.h"
 #include "WebPrerendererClient.h"
-#include "WebSpellCheckClient.h"
 #include "WebTask.h"
 #include "WebTestDelegate.h"
 #include "WebTestProxy.h"
@@ -77,9 +75,7 @@ class MediaStreamUtil;
 class TestMediaStreamClient;
 }
 
-class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient, public NavigationHost,
-                    public WebKit::WebPrerendererClient, public WebKit::WebSpellCheckClient,
-                    public WebTestRunner::WebTestDelegate {
+class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient, public NavigationHost, public WebKit::WebPrerendererClient, public WebTestRunner::WebTestDelegate {
  public:
     WebViewHost(TestShell*);
     virtual ~WebViewHost();
@@ -93,8 +89,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     void waitForPolicyDelegate();
     void setCustomPolicyDelegate(bool, bool);
     WebKit::WebFrame* topLoadingFrame() { return m_topLoadingFrame; }
-    void setBlockRedirects(bool block) { m_blocksRedirects = block; }
-    void setRequestReturnNull(bool returnNull) { m_requestReturnNull = returnNull; }
     void setPendingExtraData(PassOwnPtr<TestShellExtraData>);
 
     void paintRect(const WebKit::WebRect&);
@@ -106,8 +100,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     void loadURLForFrame(const WebKit::WebURL&, const WebKit::WebString& frameName);
     TestNavigationController* navigationController() { return m_navigationController.get(); }
 
-    void addClearHeader(const WTF::String& header) { m_clearHeaders.add(header); }
-    const HashSet<WTF::String>& clearHeaders() const { return m_clearHeaders; }
     void closeWidget();
 
 #if ENABLE(INPUT_SPEECH)
@@ -118,20 +110,11 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     MockWebSpeechRecognizer* mockSpeechRecognizer() { return m_mockSpeechRecognizer.get(); }
 #endif
 
-#if ENABLE(POINTER_LOCK)
-    void didAcquirePointerLock();
-    void didNotAcquirePointerLock();
-    void didLosePointerLock();
-    void setPointerLockWillRespondAsynchronously() { m_pointerLockPlannedResult = PointerLockWillRespondAsync; }
-    void setPointerLockWillFailSynchronously() { m_pointerLockPlannedResult = PointerLockWillFailSync; }
-#endif
-
     // WebTestDelegate.
     virtual WebKit::WebContextMenuData* lastContextMenuData() const OVERRIDE;
     virtual void clearContextMenuData() OVERRIDE;
     virtual void setEditCommand(const std::string& name, const std::string& value) OVERRIDE;
     virtual void clearEditCommand() OVERRIDE;
-    virtual void fillSpellingSuggestionList(const WebKit::WebString& word, WebKit::WebVector<WebKit::WebString>* suggestions) OVERRIDE;
     virtual void setGamepadData(const WebKit::WebGamepads&) OVERRIDE;
     virtual void printMessage(const std::string& message) OVERRIDE;
     virtual void postTask(WebTestRunner::WebTask*) OVERRIDE;
@@ -161,18 +144,38 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual std::string pathToLocalResource(const std::string& url) OVERRIDE;
     virtual void setLocale(const std::string&) OVERRIDE;
     virtual void setDeviceOrientation(WebKit::WebDeviceOrientation&) OVERRIDE;
+#if ENABLE(POINTER_LOCK)
+    virtual void didAcquirePointerLock() OVERRIDE;
+    virtual void didNotAcquirePointerLock() OVERRIDE;
+    virtual void didLosePointerLock() OVERRIDE;
+    virtual void setPointerLockWillRespondAsynchronously() OVERRIDE { m_pointerLockPlannedResult = PointerLockWillRespondAsync; }
+    virtual void setPointerLockWillFailSynchronously() OVERRIDE { m_pointerLockPlannedResult = PointerLockWillFailSync; }
+#endif
+    virtual int numberOfPendingGeolocationPermissionRequests() OVERRIDE;
+    virtual void setGeolocationPermission(bool) OVERRIDE;
+    virtual void setMockGeolocationPosition(double, double, double) OVERRIDE;
+    virtual void setMockGeolocationPositionUnavailableError(const std::string&) OVERRIDE;
+#if ENABLE(NOTIFICATIONS)
+    virtual void grantWebNotificationPermission(const std::string&) OVERRIDE;
+    virtual bool simulateLegacyWebNotificationClick(const std::string&) OVERRIDE;
+#endif
+#if ENABLE(INPUT_SPEECH)
+    virtual void addMockSpeechInputResult(const std::string&, double, const std::string&) OVERRIDE;
+    virtual void setMockSpeechInputDumpRect(bool) OVERRIDE;
+#endif
+#if ENABLE(SCRIPTED_SPEECH)
+    virtual void addMockSpeechRecognitionResult(const std::string&, double) OVERRIDE;
+    virtual void setMockSpeechRecognitionError(const std::string&, const std::string&) OVERRIDE;
+    virtual bool wasMockSpeechRecognitionAborted() OVERRIDE;
+#endif
+    virtual void display() OVERRIDE;
+    virtual void displayInvalidatedRegion() OVERRIDE;
 
     // NavigationHost
     virtual bool navigate(const TestNavigationEntry&, bool reload);
 
     // WebKit::WebPrerendererClient
     virtual void willAddPrerender(WebKit::WebPrerender*) OVERRIDE;
-
-    // WebKit::WebSpellCheckClient
-    virtual void spellCheck(const WebKit::WebString&, int& offset, int& length, WebKit::WebVector<WebKit::WebString>* optionalSuggestions);
-    virtual void checkTextOfParagraph(const WebKit::WebString&, WebKit::WebTextCheckingTypeMask, WebKit::WebVector<WebKit::WebTextCheckingResult>*);
-    virtual void requestCheckingOfText(const WebKit::WebString&, WebKit::WebTextCheckingCompletion*);
-    virtual WebKit::WebString autoCorrectWord(const WebKit::WebString&);
 
     // WebKit::WebViewClient
     virtual WebKit::WebView* createView(WebKit::WebFrame*, const WebKit::WebURLRequest&, const WebKit::WebWindowFeatures&, const WebKit::WebString&, WebKit::WebNavigationPolicy);
@@ -274,10 +277,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
         WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent);
 
     WebKit::WebDeviceOrientationClientMock* deviceOrientationClientMock();
-    
-    // Spellcheck related helper APIs
-    MockSpellCheck* mockSpellCheck();
-    void finishLastTextCheck();
 
     // Geolocation client mocks for DRTTestRunner
     WebKit::WebGeolocationClientMock* geolocationClientMock();
@@ -384,21 +383,9 @@ private:
     // true if whatever is sent to the console should be logged to stdout.
     bool m_logConsoleOutput;
 
-    // Set of headers to clear in willSendRequest.
-    HashSet<WTF::String> m_clearHeaders;
-
-    // true if we should block any redirects
-    bool m_blocksRedirects;
-
-    // true if we should block (set an empty request for) any requests
-    bool m_requestReturnNull;
-
     // Edit command associated to the current keyboard event.
     std::string m_editCommandName;
     std::string m_editCommandValue;
-
-    // The mock spellchecker used in spellCheck().
-    MockSpellCheck m_spellcheck;
 
     // Painting.
     OwnPtr<SkCanvas> m_canvas;
@@ -425,9 +412,6 @@ private:
 #endif
 
     OwnPtr<TestNavigationController> m_navigationController;
-
-    WebKit::WebString m_lastRequestedTextCheckString;
-    WebKit::WebTextCheckingCompletion* m_lastRequestedTextCheckingCompletion;
 
     WebTestRunner::WebTaskList m_taskList;
     Vector<WebKit::WebWidget*> m_popupmenus;

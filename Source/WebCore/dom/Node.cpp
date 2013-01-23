@@ -981,6 +981,11 @@ NodeListsNodeData* Node::nodeLists()
     return hasRareData() ? rareData()->nodeLists() : 0;
 }
 
+void Node::clearNodeLists()
+{
+    rareData()->clearNodeLists();
+}
+
 void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
 {
     // Perform error checking as required by spec for setting Node.prefix. Used by
@@ -2598,6 +2603,33 @@ void Node::textRects(Vector<IntRect>& rects) const
     range->selectNodeContents(const_cast<Node*>(this), ec);
     range->textRects(rects);
 }
+
+unsigned Node::connectedSubframeCount() const
+{
+    return hasRareData() ? rareData()->connectedSubframeCount() : 0;
+}
+
+void Node::incrementConnectedSubframeCount(unsigned amount)
+{
+    ASSERT(isContainerNode());
+    ensureRareData()->incrementConnectedSubframeCount(amount);
+}
+
+void Node::decrementConnectedSubframeCount(unsigned amount)
+{
+    rareData()->decrementConnectedSubframeCount(amount);
+}
+
+#if ENABLE(DIALOG_ELEMENT)
+void Node::setIsInTopLayer(bool isInTopLayer)
+{
+    setFlag(isInTopLayer, IsInTopLayer);
+
+    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
+    // top layer position, or in its usual place if not in the top layer.
+    reattachIfAttached();
+}
+#endif
 
 void Node::registerScopedHTMLStyleChild()
 {

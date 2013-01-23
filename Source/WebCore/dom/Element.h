@@ -31,9 +31,6 @@
 #include "FragmentScriptingPermission.h"
 #include "HTMLNames.h"
 #include "ScrollTypes.h"
-#if ENABLE(VIDEO_TRACK)
-#include "TextTrack.h"
-#endif
 
 namespace WebCore {
 
@@ -452,11 +449,6 @@ public:
     virtual void buildPendingResource() { };
 #endif
 
-#if ENABLE(VIDEO_TRACK)
-    WebVTTNodeType webVTTNodeType() const;
-    void setWebVTTNodeType(WebVTTNodeType);
-#endif
-
 #if ENABLE(FULLSCREEN_API)
     enum {
         ALLOW_KEYBOARD_INPUT = 1 << 0,
@@ -470,11 +462,6 @@ public:
 
     // W3C API
     void webkitRequestFullscreen();
-#endif
-
-#if ENABLE(DIALOG_ELEMENT)
-    bool isInTopLayer() const;
-    void setIsInTopLayer(bool);
 #endif
 
 #if ENABLE(POINTER_LOCK)

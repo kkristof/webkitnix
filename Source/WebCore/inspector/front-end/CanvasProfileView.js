@@ -49,13 +49,24 @@ WebInspector.CanvasProfileView = function(profile)
     this._debugInfoElement = replayImageContainer.createChild("div");
 
     var replayInfoContainer = this._splitView.secondElement();
-    var controlsContainer = replayInfoContainer.createChild("div", "canvas-replay-controls");
+    var controlsContainer = replayInfoContainer.createChild("div", "status-bar");
     var logGridContainer = replayInfoContainer.createChild("div", "canvas-replay-log");
 
     this._createControlButton(controlsContainer, "canvas-replay-first-step", WebInspector.UIString("First call."), this._onReplayFirstStepClick.bind(this));
     this._createControlButton(controlsContainer, "canvas-replay-prev-step", WebInspector.UIString("Previous call."), this._onReplayStepClick.bind(this, false));
     this._createControlButton(controlsContainer, "canvas-replay-next-step", WebInspector.UIString("Next call."), this._onReplayStepClick.bind(this, true));
+    this._createControlButton(controlsContainer, "canvas-replay-prev-draw", WebInspector.UIString("Previous drawing call."), this._onReplayDrawingCallClick.bind(this, false));
+    this._createControlButton(controlsContainer, "canvas-replay-next-draw", WebInspector.UIString("Next drawing call."), this._onReplayDrawingCallClick.bind(this, true));
     this._createControlButton(controlsContainer, "canvas-replay-last-step", WebInspector.UIString("Last call."), this._onReplayLastStepClick.bind(this));
+
+    this._replayContextSelector = new WebInspector.StatusBarComboBox(this._onReplayContextChanged.bind(this));
+    this._replayContextSelector.createOption("<screenshot auto>", WebInspector.UIString("Show screenshot of the last replayed resource."), "");
+    controlsContainer.appendChild(this._replayContextSelector.element);
+
+    /** @type {!Object.<string, boolean>} */
+    this._replayContexts = {};
+    /** @type {!Object.<string, CanvasAgent.ResourceState>} */
+    this._currentResourceStates = {};
 
     var columns = { 0: {}, 1: {}, 2: {} };
     columns[0].title = "#";
@@ -73,6 +84,9 @@ WebInspector.CanvasProfileView = function(profile)
     this._logGrid.show(logGridContainer);
     this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog.bind(this));
 
+    /** @type {!Array.<WebInspector.DataGridNode>} */
+    this._logGridNodes = [];
+
     this._splitView.show(this.element);
 
     this._enableWaitIcon(true);
@@ -82,6 +96,7 @@ WebInspector.CanvasProfileView = function(profile)
 WebInspector.CanvasProfileView.prototype = {
     dispose: function()
     {
+        this._logGridNodes = [];
         this._linkifier.reset();
         CanvasAgent.dropTraceLog(this._traceLogId);
     },
@@ -113,11 +128,41 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createControlButton: function(parent, className, title, clickCallback)
     {
-        var button = parent.createChild("button", "canvas-control-button");
+        var button = parent.createChild("button", "status-bar-item");
         button.addStyleClass(className);
         button.title = title;
         button.createChild("img");
         button.addEventListener("click", clickCallback, false);
+    },
+
+    _onReplayContextChanged: function()
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.ResourceState} resourceState
+         */
+        function didReceiveResourceState(error, resourceState)
+        {
+            this._enableWaitIcon(false);
+            if (error)
+                return;
+
+            this._currentResourceStates[resourceState.id] = resourceState;
+
+            var selectedContextId = this._replayContextSelector.selectedOption().value;
+            if (selectedContextId === resourceState.id)
+                this._replayImageElement.src = resourceState.imageURL;
+        }
+
+        var selectedContextId = this._replayContextSelector.selectedOption().value || "auto";
+        var resourceState = this._currentResourceStates[selectedContextId];
+        if (resourceState)
+            this._replayImageElement.src = resourceState.imageURL;
+        else {
+            this._enableWaitIcon(true);
+            this._replayImageElement.src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="; // Empty transparent image.
+            CanvasAgent.getResourceState(this._traceLogId, selectedContextId, didReceiveResourceState.bind(this));
+        }
     },
 
     /**
@@ -135,20 +180,37 @@ WebInspector.CanvasProfileView.prototype = {
             selectedNode.reveal();
     },
 
+    /**
+     * @param {boolean} forward
+     */
+    _onReplayDrawingCallClick: function(forward)
+    {
+        var callNode = this._logGrid.selectedNode;
+        if (!callNode)
+            return;
+        var index = callNode.index;
+        do {
+            var nextIndex = forward ? index + 1 : index - 1;
+            var nextCallNode = this._logGridNodes[nextIndex];
+            if (!nextCallNode)
+                break;
+            index = nextIndex;
+            callNode = nextCallNode;
+        } while (!callNode.call.isDrawingCall);
+        callNode.revealAndSelect();
+    },
+
     _onReplayFirstStepClick: function()
     {
-        var rootNode = this._logGrid.rootNode();
-        var children = rootNode && rootNode.children;
-        var firstNode = children && children[0];
+        var firstNode = this._logGrid.rootNode().children[0];
         if (firstNode)
             firstNode.revealAndSelect();
     },
 
     _onReplayLastStepClick: function()
     {
-        var rootNode = this._logGrid.rootNode();
-        var children = rootNode && rootNode.children;
-        var lastNode = children && children[children.length - 1];
+        var children = this._logGrid.rootNode().children;
+        var lastNode = children[children.length - 1];
         if (lastNode)
             lastNode.revealAndSelect();
     },
@@ -161,7 +223,7 @@ WebInspector.CanvasProfileView.prototype = {
         function showWaitIcon()
         {
             this._replayImageElement.addStyleClass("wait");
-            this._debugInfoElement.textContent = "";
+            this._debugInfoElement.addStyleClass("hidden");
             delete this._showWaitIconTimer;
         }
 
@@ -173,7 +235,7 @@ WebInspector.CanvasProfileView.prototype = {
                 delete this._showWaitIconTimer;
             }
             this._replayImageElement.enableStyleClass("wait", enable);
-            this._debugInfoElement.textContent = "";
+            this._debugInfoElement.enableStyleClass("hidden", enable);
         }
     },
 
@@ -183,37 +245,79 @@ WebInspector.CanvasProfileView.prototype = {
         if (!callNode)
             return;
         var time = Date.now();
-        function didReplayTraceLog(error, dataURL)
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.ResourceState} resourceState
+         */
+        function didReplayTraceLog(error, resourceState)
         {
             if (callNode !== this._logGrid.selectedNode)
                 return;
+
             this._enableWaitIcon(false);
             if (error)
                 return;
+
+            this._currentResourceStates = {};
+            this._currentResourceStates["auto"] = resourceState;
+            this._currentResourceStates[resourceState.id] = resourceState;
+
             this._debugInfoElement.textContent = "Replay time: " + (Date.now() - time) + "ms";
-            this._replayImageElement.src = dataURL;
+            this._onReplayContextChanged();
         }
         this._enableWaitIcon(true);
         CanvasAgent.replayTraceLog(this._traceLogId, callNode.index, didReplayTraceLog.bind(this));
     },
 
+    /**
+     * @param {?Protocol.Error} error
+     * @param {CanvasAgent.TraceLog} traceLog
+     */
     _didReceiveTraceLog: function(error, traceLog)
     {
         this._enableWaitIcon(false);
-        this._logGrid.rootNode().removeChildren();
         if (error || !traceLog)
             return;
+        var lastNode = null;
         var calls = traceLog.calls;
-        for (var i = 0, n = calls.length; i < n; ++i)
-            this._logGrid.rootNode().appendChild(this._createCallNode(i, calls[i]));
-        var lastNode = this._logGrid.rootNode().children[calls.length - 1];
+        for (var i = 0, n = calls.length; i < n; ++i) {
+            var call = calls[i];
+            this._requestReplayContextInfo(call.contextId);
+            var gridNode = this._createCallNode(i, call);
+            this._logGrid.rootNode().appendChild(gridNode);
+            lastNode = gridNode;
+        }
         if (lastNode)
             lastNode.revealAndSelect();
     },
 
     /**
+     * @param {string} contextId
+     */
+    _requestReplayContextInfo: function(contextId)
+    {
+        if (this._replayContexts[contextId])
+            return;
+        this._replayContexts[contextId] = true;
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.ResourceInfo} resourceInfo
+         */
+        function didReceiveResourceInfo(error, resourceInfo)
+        {
+            if (error) {
+                delete this._replayContexts[contextId];
+                return;
+            }
+            this._replayContextSelector.createOption(resourceInfo.description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
+        }
+        CanvasAgent.getResourceInfo(contextId, didReceiveResourceInfo.bind(this));
+    },
+
+    /**
      * @param {number} index
-     * @param {Object} call
+     * @param {CanvasAgent.Call} call
+     * @return {!WebInspector.DataGridNode}
      */
     _createCallNode: function(index, call)
     {
@@ -242,6 +346,8 @@ WebInspector.CanvasProfileView.prototype = {
         var node = new WebInspector.DataGridNode(data);
         node.index = index;
         node.selectable = true;
+        node.call = call;
+        this._logGridNodes[index] = node;
         return node;
     },
 

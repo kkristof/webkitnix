@@ -285,7 +285,6 @@ HEADERS += \
     UIProcess/WebPreferences.h \
     UIProcess/WebProcessProxy.h \
     UIProcess/WebResourceCacheManagerProxy.h \
-    UIProcess/WebResourceLoadClient.h \
     UIProcess/WebTextChecker.h \
     UIProcess/WebTextCheckerClient.h \
     UIProcess/WebUIClient.h \
@@ -652,7 +651,6 @@ SOURCES += \
     UIProcess/WebPreferences.cpp \
     UIProcess/WebProcessProxy.cpp \
     UIProcess/WebResourceCacheManagerProxy.cpp \
-    UIProcess/WebResourceLoadClient.cpp \
     UIProcess/WebTextChecker.cpp \
     UIProcess/WebTextCheckerClient.cpp \
     UIProcess/WebUIClient.cpp \
@@ -884,6 +882,9 @@ have?(QTQUICK) {
 mac: {
     use?(QTKIT) {
         DEFINES += NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+        isEqual(QT_ARCH, "i386") {
+            DEFINES+=NS_BUILD_32_LIKE_64
+        }
         INCLUDEPATH += \
             $$PWD/../../WebKitLibraries/
         HEADERS += \

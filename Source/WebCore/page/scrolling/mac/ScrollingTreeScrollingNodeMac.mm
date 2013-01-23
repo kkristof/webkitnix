@@ -53,6 +53,7 @@ PassOwnPtr<ScrollingTreeScrollingNode> ScrollingTreeScrollingNode::create(Scroll
 ScrollingTreeScrollingNodeMac::ScrollingTreeScrollingNodeMac(ScrollingTree* scrollingTree)
     : ScrollingTreeScrollingNode(scrollingTree)
     , m_scrollElasticityController(this)
+    , m_lastScrollHadUnfilledPixels(false)
 {
 }
 
@@ -69,6 +70,9 @@ void ScrollingTreeScrollingNodeMac::update(ScrollingStateNode* stateNode)
 
     if (state->scrollLayerDidChange())
         m_scrollLayer = state->platformScrollLayer();
+
+    if (state->counterScrollingLayerDidChange())
+        m_counterScrollingLayer = state->counterScrollingPlatformLayer();
 
     if (state->changedProperties() & ScrollingStateScrollingNode::RequestedScrollPosition)
         setScrollPosition(state->requestedScrollPosition());
@@ -276,10 +280,13 @@ void ScrollingTreeScrollingNodeMac::setScrollLayerPosition(const IntPoint& posit
     ASSERT(!shouldUpdateScrollLayerPositionOnMainThread());
     m_scrollLayer.get().position = CGPointMake(-position.x() + scrollOrigin().x(), -position.y() + scrollOrigin().y());
 
+    IntSize scrollOffsetForFixedChildren = WebCore::scrollOffsetForFixedPosition(viewportRect(), contentsSize(), position, scrollOrigin(), frameScaleFactor(), false);
+    if (m_counterScrollingLayer)
+        m_counterScrollingLayer.get().position = FloatPoint(scrollOffsetForFixedChildren);
+
     if (!m_children)
         return;
 
-    IntSize scrollOffsetForFixedChildren = WebCore::scrollOffsetForFixedPosition(viewportRect(), contentsSize(), position, scrollOrigin(), frameScaleFactor(), false);
     IntRect viewportRect = this->viewportRect();
     viewportRect.setLocation(IntPoint(scrollOffsetForFixedChildren));
 
@@ -350,8 +357,10 @@ void ScrollingTreeScrollingNodeMac::logExposedUnfilledArea()
     IntPoint scrollPosition = this->scrollPosition();
     unsigned unfilledArea = TileCache::blankPixelCountForTiles(tiles, viewportRect(), IntPoint(-scrollPosition.x(), -scrollPosition.y()));
 
-    if (unfilledArea)
+    if (unfilledArea || m_lastScrollHadUnfilledPixels)
         WTFLogAlways("SCROLLING: Exposed tileless area. Time: %f Unfilled Pixels: %u\n", WTF::monotonicallyIncreasingTime(), unfilledArea);
+
+    m_lastScrollHadUnfilledPixels = unfilledArea;
 }
 
 static void logThreadedScrollingMode(unsigned mainThreadScrollingReasons)
