@@ -325,7 +325,7 @@ sub GenerateHeader
         push(@headerContent, <<END);
 class V8${nativeType}Constructor {
 public:
-    static v8::Persistent<v8::FunctionTemplate> GetTemplate();
+    static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*);
     static WrapperTypeInfo info;
 };
 
@@ -355,8 +355,8 @@ END
 
     push(@headerContent, <<END);
     static bool HasInstance(v8::Handle<v8::Value>);
-    static v8::Persistent<v8::FunctionTemplate> GetRawTemplate();
-    static v8::Persistent<v8::FunctionTemplate> GetTemplate();
+    static v8::Persistent<v8::FunctionTemplate> GetRawTemplate(v8::Isolate* = 0);
+    static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate* = 0);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
         return reinterpret_cast<${nativeType}*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
@@ -371,6 +371,10 @@ END
 
     if ($interface->extendedAttributes->{"ActiveDOMObject"}) {
         push(@headerContent, "    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);\n");
+    }
+
+    if ($codeGenerator->InheritsExtendedAttribute($interface, "EventTarget")) {
+        push(@headerContent, "    static EventTarget* toEventTarget(v8::Handle<v8::Object>);\n");
     }
 
     if ($interfaceName eq "DOMWindow") {
@@ -1264,16 +1268,15 @@ END
             if (!$codeGenerator->IsSubType($interface, "Node")) {
                 push(@implContentDecls, "    transferHiddenDependency(info.Holder(), imp->$attrName(), value, ${v8InterfaceName}::eventListenerCacheIndex);\n");
             }
+            AddToImplIncludes("V8EventListenerList.h");
             if ($interfaceName eq "WorkerContext" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("V8EventListenerList.h");
                 AddToImplIncludes("V8WorkerContextErrorHandler.h");
                 push(@implContentDecls, "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WorkerContextErrorHandler>(value, true)");
             } elsif ($interfaceName eq "DOMWindow" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("V8EventListenerList.h");
                 AddToImplIncludes("V8WindowErrorHandler.h");
                 push(@implContentDecls, "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WindowErrorHandler>(value, true)");
             } else {
-                push(@implContentDecls, "    imp->set$implSetterFunctionName(V8DOMWrapper::getEventListener(value, true, ListenerFindOrCreate)");
+                push(@implContentDecls, "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate)");
             }
             push(@implContentDecls, ", ec") if $useExceptions;
             push(@implContentDecls, ");\n");
@@ -1353,11 +1356,12 @@ sub GenerateEventListenerCallback
     my $lookupType = ($functionName eq "add") ? "OrCreate" : "Only";
     my $passRefPtrHandling = ($functionName eq "add") ? "" : ".get()";
     my $hiddenDependencyAction = ($functionName eq "add") ? "create" : "remove";
- 
+
+    AddToImplIncludes("V8EventListenerList.h");
     push(@implContentDecls, <<END);
 static v8::Handle<v8::Value> ${functionName}EventListenerCallback(const v8::Arguments& args)
 {
-    RefPtr<EventListener> listener = V8DOMWrapper::getEventListener(args[1], false, ListenerFind${lookupType});
+    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
         V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<WithNullCheck>, stringResource, args[0]);
         V8${interfaceName}::toNative(args.Holder())->${functionName}EventListener(stringResource, listener${passRefPtrHandling}, args[2]->BooleanValue());
@@ -2095,10 +2099,15 @@ sub GenerateNamedConstructorCallback
     if ($interface->extendedAttributes->{"ActiveDOMObject"}) {
         $toActiveDOMObject = "${v8InterfaceName}::toActiveDOMObject";
     }
-    AddToImplIncludes("Frame.h");
 
+    my $toEventTarget = "0";
+    if ($codeGenerator->InheritsExtendedAttribute($interface, "EventTarget")) {
+        $toEventTarget = "${v8InterfaceName}::toEventTarget";
+    }
+
+    AddToImplIncludes("Frame.h");
     push(@implContent, <<END);
-WrapperTypeInfo ${v8InterfaceName}Constructor::info = { ${v8InterfaceName}Constructor::GetTemplate, ${v8InterfaceName}::derefObject, ${toActiveDOMObject}, 0, ${v8InterfaceName}::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo ${v8InterfaceName}Constructor::info = { ${v8InterfaceName}Constructor::GetTemplate, ${v8InterfaceName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8InterfaceName}::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 static v8::Handle<v8::Value> ${v8InterfaceName}ConstructorCallback(const v8::Arguments& args)
 {
@@ -2168,8 +2177,10 @@ END
 
     push(@implContent, <<END);
 
-v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}Constructor::GetTemplate()
+v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}Constructor::GetTemplate(v8::Isolate* isolate)
 {
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
     static v8::Persistent<v8::FunctionTemplate> cachedTemplate;
     if (!cachedTemplate.IsEmpty())
         return cachedTemplate;
@@ -2616,7 +2627,8 @@ sub GenerateImplementation
 
     AddIncludesForType($interfaceName);
 
-    my $toActive = $interface->extendedAttributes->{"ActiveDOMObject"} ? "${v8InterfaceName}::toActiveDOMObject" : "0";
+    my $toActiveDOMObject = $interface->extendedAttributes->{"ActiveDOMObject"} ? "${v8InterfaceName}::toActiveDOMObject" : "0";
+    my $toEventTarget = $codeGenerator->InheritsExtendedAttribute($interface, "EventTarget") ? "${v8InterfaceName}::toEventTarget" : "0";
     my $rootForGC = NeedsCustomOpaqueRootForGC($interface) ? "${v8InterfaceName}::opaqueRootForGC" : "0";
 
     # Find the super descriptor.
@@ -2634,7 +2646,7 @@ sub GenerateImplementation
 
     my $WrapperTypePrototype = $interface->isException ? "WrapperTypeErrorPrototype" : "WrapperTypeObjectPrototype";
 
-    push(@implContentDecls, "WrapperTypeInfo ${v8InterfaceName}::info = { ${v8InterfaceName}::GetTemplate, ${v8InterfaceName}::derefObject, $toActive, $rootForGC, ${v8InterfaceName}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n\n");
+    push(@implContentDecls, "WrapperTypeInfo ${v8InterfaceName}::info = { ${v8InterfaceName}::GetTemplate, ${v8InterfaceName}::derefObject, $toActiveDOMObject, $toEventTarget, $rootForGC, ${v8InterfaceName}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n\n");
     push(@implContentDecls, "namespace ${interfaceName}V8Internal {\n\n");
 
     push(@implContentDecls, "template <typename T> void V8_USE(T) { }\n\n");
@@ -3056,9 +3068,11 @@ END
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}::GetRawTemplate()
+v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}::GetRawTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->rawTemplateMap().find(&info);
     if (result != data->rawTemplateMap().end())
         return result->value;
@@ -3069,9 +3083,11 @@ v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}::GetRawTemplate()
     return templ;
 }
 
-v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}::GetTemplate()
+v8::Persistent<v8::FunctionTemplate> ${v8InterfaceName}::GetTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&info);
     if (result != data->templateMap().end())
         return result->value;
@@ -3115,6 +3131,7 @@ END
         }
         push(@implContent, <<END);
 }
+
 END
     }
 
@@ -3148,6 +3165,7 @@ END
 
         push(@implContent, <<END);
 }
+
 END
     }
 
@@ -3158,8 +3176,19 @@ END
         push(@implContent, <<END);
 ActiveDOMObject* ${v8InterfaceName}::toActiveDOMObject(v8::Handle<v8::Object> object)
 {
-    return ${returnValue};
-}      
+    return $returnValue;
+}
+
+END
+    }
+
+    if ($codeGenerator->InheritsExtendedAttribute($interface, "EventTarget")) {
+        push(@implContent, <<END);
+EventTarget* ${v8InterfaceName}::toEventTarget(v8::Handle<v8::Object> object)
+{
+    return toNative(object);
+}
+
 END
     }
 
@@ -3174,13 +3203,13 @@ v8::Persistent<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate()
     }
     return V8DOMWindowShadowObjectCache;
 }
+
 END
     }
 
     GenerateToV8Converters($interface, $v8InterfaceName, $nativeType);
 
     push(@implContent, <<END);
-
 void ${v8InterfaceName}::derefObject(void* object)
 {
     static_cast<${nativeType}*>(object)->deref();
@@ -3379,7 +3408,7 @@ END
             @args = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                push(@implContent, "    v8::Handle<v8::Value> ${paramName}Handle = " . NativeToJSValue($param, $paramName, "v8::Handle<v8::Object>()", "v8::Isolate::GetCurrent()") . ";\n");
+                push(@implContent, "    v8::Handle<v8::Value> ${paramName}Handle = " . NativeToJSValue($param, $paramName, "v8::Handle<v8::Object>()", "v8Context->GetIsolate()") . ";\n");
                 push(@implContent, "    if (${paramName}Handle.IsEmpty()) {\n");
                 push(@implContent, "        if (!isScriptControllerTerminating())\n");
                 push(@implContent, "            CRASH();\n");
@@ -4011,6 +4040,7 @@ sub NativeToJSValue
     my $value = shift;
     my $getCreationContext = shift;
     my $getIsolate = shift;
+    die "An Isolate is mandatory for native value => JS value conversion." unless $getIsolate;
     my $getHolderContainer = shift;
     my $getHolderContainerArg = $getHolderContainer ? ", $getHolderContainer" : "";
     my $getScriptWrappable = shift;
@@ -4020,7 +4050,7 @@ sub NativeToJSValue
 
     my $type = $signature->type;
 
-    return ($getIsolate ? "v8Boolean($value, $getIsolate)" : "v8Boolean($value)") if $type eq "boolean";
+    return "v8Boolean($value, $getIsolate)" if $type eq "boolean";
     return "v8Undefined()" if $type eq "void";     # equivalent to v8Undefined()
 
     # HTML5 says that unsigned reflected attributes should be in the range
@@ -4051,7 +4081,7 @@ sub NativeToJSValue
 
             die "Unknown value for TreatReturnedNullStringAs extended attribute";
         }
-        return $getIsolate ? "v8String($value, $getIsolate$returnHandleTypeArg)" : "deprecatedV8String($value)";
+        return "v8String($value, $getIsolate$returnHandleTypeArg)";
     }
 
     my $arrayType = $codeGenerator->GetArrayType($type);
@@ -4081,12 +4111,12 @@ sub NativeToJSValue
 
     if ($type eq "EventListener") {
         AddToImplIncludes("V8AbstractEventListener.h");
-        return "${value} ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${value})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(" . ($getIsolate ? "v8Null($getIsolate)" : "v8::Null()") . ")";
+        return "${value} ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${value})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null($getIsolate))";
     }
 
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("$type.h");
-        return "$value ? $value->deserialize() : v8::Handle<v8::Value>(" . ($getIsolate ? "v8Null($getIsolate)" : "v8::Null()") . ")";
+        return "$value ? $value->deserialize() : v8::Handle<v8::Value>(v8Null($getIsolate))";
     }
 
     AddToImplIncludes("wtf/RefCounted.h");

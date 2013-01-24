@@ -114,9 +114,9 @@ void InspectorFrontendClientImpl::requestSetDockSide(DockSide side)
     m_client->requestSetDockSide(sideString);
 }
 
-void InspectorFrontendClientImpl::changeAttachedWindowHeight(unsigned)
+void InspectorFrontendClientImpl::changeAttachedWindowHeight(unsigned height)
 {
-    // Do nothing;
+    m_client->changeAttachedWindowHeight(height);
 }
 
 void InspectorFrontendClientImpl::openInNewTab(const String& url)
@@ -174,5 +174,9 @@ void InspectorFrontendClientImpl::removeFileSystem(const String& fileSystemPath)
     m_client->removeFileSystem(fileSystemPath);
 }
 
+bool InspectorFrontendClientImpl::isUnderTest()
+{
+    return m_client->isUnderTest();
+}
 
 } // namespace WebKit

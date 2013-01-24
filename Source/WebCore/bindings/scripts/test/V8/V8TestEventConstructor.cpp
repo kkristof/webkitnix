@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-WrapperTypeInfo V8TestEventConstructor::info = { V8TestEventConstructor::GetTemplate, V8TestEventConstructor::derefObject, 0, 0, V8TestEventConstructor::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestEventConstructor::info = { V8TestEventConstructor::GetTemplate, V8TestEventConstructor::derefObject, 0, 0, 0, V8TestEventConstructor::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestEventConstructorV8Internal {
 
@@ -107,9 +107,11 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventConstructorTempl
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestEventConstructor::GetRawTemplate()
+v8::Persistent<v8::FunctionTemplate> V8TestEventConstructor::GetRawTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->rawTemplateMap().find(&info);
     if (result != data->rawTemplateMap().end())
         return result->value;
@@ -120,9 +122,11 @@ v8::Persistent<v8::FunctionTemplate> V8TestEventConstructor::GetRawTemplate()
     return templ;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestEventConstructor::GetTemplate()
+v8::Persistent<v8::FunctionTemplate> V8TestEventConstructor::GetTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&info);
     if (result != data->templateMap().end())
         return result->value;
@@ -155,7 +159,6 @@ v8::Handle<v8::Object> V8TestEventConstructor::createWrapper(PassRefPtr<TestEven
         wrapperHandle.MarkIndependent();
     return wrapper;
 }
-
 void V8TestEventConstructor::derefObject(void* object)
 {
     static_cast<TestEventConstructor*>(object)->deref();

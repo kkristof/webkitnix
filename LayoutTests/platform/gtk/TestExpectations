@@ -91,6 +91,13 @@ http/tests/xmlhttprequest/default-content-type-dashboard.html [ WontFix ]
 # ENABLE(DRAGGABLE_REGION) is disabled
 fast/css/draggable-region-parser.html [ WontFix ]
 
+# ENABLE(TEMPLATE_ELEMENT) is disabled.
+webkit.org/b/103547 fast/dom/HTMLTemplateElement [ Skip ]
+webkit.org/b/103547 html5lib/run-template.html [ Skip ]
+webkit.org/b/103547 fast/xsl/xslt-xhtml-template.xml [ Skip ]
+webkit.org/b/103547 fast/xpath/xpath-template-element.html [ Skip ]
+webkit.org/b/103547 fast/xsl/xslt-processor-template.html [ Skip ]
+
 # These test -apple- and -khtml- prefixed CSS properties, which we don't support.
 inspector/styles/vendor-prefixes.html [ WontFix ]
 fast/css/apple-prefix.html [ WontFix ]
@@ -366,6 +373,7 @@ webkit.org/b/99057 inspector/styles/variables [ Skip ]
 
 # DOM4_EVENTS_CONSTRUCTOR is not yet enabled.
 webkit.org/b/107428 fast/events/constructors/ui-event-constructor.html [ Skip ]
+webkit.org/b/107428 fast/events/constructors/mouse-event-constructor.html [ Skip ]
 
 # No CORS support for media elements is implemented yet.
 webkit.org/b/99037 http/tests/security/video-cross-origin-readback.html [ Failure ]
@@ -601,9 +609,16 @@ webkit.org/b/106592 fast/regions/firstletter-inside-flowthread.html [ ImageOnlyF
 webkit.org/b/107258 fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
 webkit.org/b/107194 storage/indexeddb/cursor-advance-workers.html [ Failure Pass ]
-webkit.org/b/107194 storage/indexeddb/index-basics-workers.html [ Failure Pass ]
 webkit.org/b/107194 storage/indexeddb/deletedatabase-delayed-by-open-and-versionchange-workers.html  [ Failure Pass ]
 webkit.org/b/107194 storage/indexeddb/factory-basics-workers.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/index-basics-workers.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/index-multientry.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/index-unique.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/intversion-abort-in-initial-upgradeneeded.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/intversion-close-in-oncomplete.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/intversion-close-in-upgradeneeded.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/key-generator.html [ Failure Pass ]
+webkit.org/b/107194 storage/indexeddb/lazy-index-population.html [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
@@ -966,6 +981,7 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.ht
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html [ Failure ]
 webkit.org/b/50485 inspector-protocol/take-heap-snapshot.html [ Skip ]
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html [ Failure ]
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-stack-trace.html [ Failure ]
 
 webkit.org/b/37613 webkit.org/b/20011 printing [ Skip ]
 webkit.org/b/37613 editing/execCommand/print.html [ Skip ]
@@ -1202,7 +1218,6 @@ webkit.org/b/85969 http/tests/loading/post-in-iframe-with-back-navigation.html [
 webkit.org/b/86061 http/tests/security/referrer-policy-redirect-link.html [ Failure ]
 
 webkit.org/b/85308 [ Release ] ietestcenter/css3/valuesandunits/units-000.htm [ ImageOnlyFailure ]
-webkit.org/b/85310 ietestcenter/css3/valuesandunits/units-010.htm [ ImageOnlyFailure ]
 
 # IETC namespace failures
 webkit.org/b/86142 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
@@ -1225,8 +1240,6 @@ Bug(GTK) http/tests/misc/favicon-loads-with-icon-loading-override.html [ Failure
 webkit.org/b/88138 http/tests/media/video-buffered.html [ Failure ]
 
 webkit.org/b/89205 editing/spelling/grammar-edit-word.html [ Failure ]
-
-webkit.org/b/89084 fast/forms/text-input-event.html [ Failure ]
 
 webkit.org/b/83683 editing/pasteboard/pasting-empty-html-falls-back-to-text.html [ Failure ]
 
@@ -1365,20 +1378,11 @@ webkit.org/b/107257 [ Debug ] fast/dom/Window/window-postmessage-clone-deep-arra
 webkit.org/b/107257 [ Debug ] fast/js/large-expressions.html [ Failure ]
 
 webkit.org/b/107194 storage/indexeddb/dont-commit-on-blocked.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/index-multientry.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/index-unique.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/intversion-abort-in-initial-upgradeneeded.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/intversion-close-in-oncomplete.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/intversion-close-in-upgradeneeded.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/key-generator.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/lazy-index-population.html [ Failure ]
 webkit.org/b/107194 storage/indexeddb/objectstore-basics-workers.html [ Failure ]
 webkit.org/b/107194 storage/indexeddb/objectstore-basics.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/open-twice-workers.html [ Failure ]
 webkit.org/b/107194 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Failure ]
 webkit.org/b/107194 storage/indexeddb/pending-version-change-stuck.html [ Failure ]
 webkit.org/b/107194 storage/indexeddb/transaction-abort.html [ Failure ]
-webkit.org/b/107194 storage/indexeddb/transaction-error.html [ Failure ]
 
 webkit.org/b/105574 editing/input/caret-at-the-edge-of-contenteditable.html [ Failure ]
 webkit.org/b/105574 editing/input/reveal-caret-of-multiline-input.html [ Failure ]
@@ -1386,6 +1390,16 @@ webkit.org/b/105574 editing/input/reveal-caret-of-multiline-contenteditable.html
 webkit.org/b/105574 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Failure ]
 
 webkit.org/b/106563 fast/css/image-orientation/image-orientation.html [ Failure ]
+
+webkit.org/b/107832 accessibility/aria-slider-value.html [ Failure ]
+webkit.org/b/107832 accessibility/aria-tables.html [ Failure ]
+webkit.org/b/107832 accessibility/document-attributes.html [ Failure ]
+webkit.org/b/107832 accessibility/language-attribute.html [ Failure ]
+webkit.org/b/107832 accessibility/spinbutton-value.html [ Failure ]
+webkit.org/b/107832 platform/gtk/accessibility/aria-slider-required-attributes.html [ Failure ]
+webkit.org/b/107832 platform/gtk/accessibility/entry-and-password.html [ Failure ]
+webkit.org/b/107832 platform/gtk/accessibility/replaced-objects-in-anonymous-blocks.html [ Failure ]
+webkit.org/b/107832 platform/gtk/accessibility/table-hierarchy.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

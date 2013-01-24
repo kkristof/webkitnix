@@ -58,12 +58,12 @@
 #include "WebPrintParams.h"
 #include "WebRange.h"
 #include "WebScreenInfo.h"
+#include "WebSerializedScriptValue.h"
 #include "WebStorageNamespace.h"
 #include "WebTestPlugin.h"
 #include "WebUserMediaClientMock.h"
 #include "WebView.h"
 #include "WebWindowFeatures.h"
-#include "platform/WebSerializedScriptValue.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/support/test_media_stream_client.h"
 #include "webkit/support/webkit_support.h"
@@ -103,29 +103,6 @@ static const char* otherString = "other";
 static const char* illegalString = "illegal value";
 
 static int nextPageID = 1;
-
-// Used to write a platform neutral file:/// URL by only taking the filename
-// (e.g., converts "file:///tmp/foo.txt" to just "foo.txt").
-static string urlSuitableForTestResult(const string& url)
-{
-    if (url.empty() || string::npos == url.find("file://"))
-        return url;
-
-    size_t pos = url.rfind('/');
-    if (pos == string::npos) {
-#if OS(WINDOWS)
-        pos = url.rfind('\\');
-        if (pos == string::npos)
-            pos = 0;
-#else
-        pos = 0;
-#endif
-    }
-    string filename = url.substr(pos + 1);
-    if (filename.empty())
-        return "file:"; // A WebKit test has this in its expected output.
-    return filename;
-}
 
 // Get a debugging string from a WebNavigationType.
 static const char* webNavigationTypeToString(WebNavigationType type)
@@ -223,22 +200,6 @@ WebCompositorOutputSurface* WebViewHost::createOutputSurface()
 
 void WebViewHost::didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine)
 {
-    // This matches win DumpRenderTree's UIDelegate.cpp.
-    if (!m_logConsoleOutput)
-        return;
-    string newMessage;
-    if (!message.text.isEmpty()) {
-        newMessage = message.text.utf8();
-        size_t fileProtocol = newMessage.find("file://");
-        if (fileProtocol != string::npos) {
-            newMessage = newMessage.substr(0, fileProtocol)
-                + urlSuitableForTestResult(newMessage.substr(fileProtocol));
-        }
-    }
-    printf("CONSOLE MESSAGE: ");
-    if (sourceLine)
-        printf("line %d: ", sourceLine);
-    printf("%s\n", newMessage.data());
 }
 
 void WebViewHost::didStartLoading()
@@ -317,26 +278,21 @@ void WebViewHost::willAddPrerender(WebKit::WebPrerender*)
 
 void WebViewHost::runModalAlertDialog(WebFrame*, const WebString& message)
 {
-    printf("ALERT: %s\n", message.utf8().data());
-    fflush(stdout);
 }
 
 bool WebViewHost::runModalConfirmDialog(WebFrame*, const WebString& message)
 {
-    printf("CONFIRM: %s\n", message.utf8().data());
     return true;
 }
 
 bool WebViewHost::runModalPromptDialog(WebFrame* frame, const WebString& message,
                                        const WebString& defaultValue, WebString*)
 {
-    printf("PROMPT: %s, default text: %s\n", message.utf8().data(), defaultValue.utf8().data());
     return true;
 }
 
 bool WebViewHost::runModalBeforeUnloadDialog(WebFrame*, const WebString& message)
 {
-    printf("CONFIRM NAVIGATION: %s\n", message.utf8().data());
     return !testRunner()->shouldStayOnPageAfterHandlingBeforeUnload();
 }
 
@@ -723,9 +679,6 @@ WebURLError WebViewHost::cancelledError(WebFrame*, const WebURLRequest& request)
 
 void WebViewHost::unableToImplementPolicyWithError(WebFrame* frame, const WebURLError& error)
 {
-    printf("Policy delegate: unable to implement policy with error domain '%s', "
-           "error code %d, in frame '%s'\n",
-            error.domain.utf8().data(), error.reason, frame->uniqueName().utf8().data());
 }
 
 void WebViewHost::didCreateDataSource(WebFrame*, WebDataSource* ds)
@@ -1128,12 +1081,22 @@ WebViewHost::WebViewHost(TestShell* shell)
     : m_shell(shell)
     , m_proxy(0)
     , m_webWidget(0)
+    , m_shutdownWasInvoked(false)
 {
     reset();
 }
 
 WebViewHost::~WebViewHost()
 {
+    ASSERT(m_shutdownWasInvoked);
+    if (m_inModalLoop)
+        webkit_support::QuitMessageLoop();
+}
+
+void WebViewHost::shutdown()
+{
+    ASSERT(!m_shutdownWasInvoked);
+
     // DevTools frontend page is supposed to be navigated only once and
     // loading another URL in that Page is an error.
     if (m_shell->devToolsWebView() != this) {
@@ -1148,8 +1111,8 @@ WebViewHost::~WebViewHost()
 
     m_layerTreeView.clear();
     webWidget()->close();
-    if (m_inModalLoop)
-        webkit_support::QuitMessageLoop();
+    m_webWidget = 0;
+    m_shutdownWasInvoked = true;
 }
 
 void WebViewHost::setWebWidget(WebKit::WebWidget* widget)
@@ -1197,7 +1160,6 @@ void WebViewHost::reset()
     m_hasWindow = false;
     m_inModalLoop = false;
     m_smartInsertDeleteEnabled = true;
-    m_logConsoleOutput = true;
 #if OS(WINDOWS)
     m_selectTrailingWhitespaceEnabled = true;
 #else
@@ -1255,11 +1217,6 @@ void WebViewHost::setSmartInsertDeleteEnabled(bool enabled)
 void WebViewHost::setClientWindowRect(const WebKit::WebRect& rect)
 {
     setWindowRect(rect);
-}
-
-void WebViewHost::setLogConsoleOutput(bool enabled)
-{
-    m_logConsoleOutput = enabled;
 }
 
 void WebViewHost::setCustomPolicyDelegate(bool isCustom, bool isPermissive)

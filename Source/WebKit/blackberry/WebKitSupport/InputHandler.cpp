@@ -70,7 +70,6 @@
 #include <BlackBerryPlatformIMF.h>
 #include <BlackBerryPlatformKeyboardEvent.h>
 #include <BlackBerryPlatformLog.h>
-#include <BlackBerryPlatformMisc.h>
 #include <BlackBerryPlatformScreen.h>
 #include <BlackBerryPlatformSettings.h>
 #include <sys/keycodes.h>
@@ -79,8 +78,6 @@
 #define ENABLE_INPUT_LOG 0
 #define ENABLE_FOCUS_LOG 0
 #define ENABLE_SPELLING_LOG 0
-
-static const unsigned MaxLearnTextDataSize = 500;
 
 using namespace BlackBerry::Platform;
 using namespace WebCore;
@@ -566,7 +563,9 @@ void InputHandler::learnText()
         return;
 
     WTF::String textInField(elementText());
-    textInField = textInField.substring(std::max(0, static_cast<int>(textInField.length() - MaxLearnTextDataSize)), textInField.length());
+    if (textInField.length() >= MaxLearnTextDataSize)
+        textInField = textInField.substring(std::max(0, static_cast<int>(caretPosition() - MaxLearnTextDataSize)), std::min(textInField.length(), MaxLearnTextDataSize));
+
     textInField = textInField.stripWhiteSpace();
 
     // Build up the 500 character strings in word chunks.

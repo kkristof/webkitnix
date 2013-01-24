@@ -1395,7 +1395,7 @@ PassRefPtr<NodeList> Document::handleZeroPadding(const HitTestRequest& request, 
     if (!node)
         return 0;
 
-    node = node->shadowAncestorNode();
+    node = node->deprecatedShadowAncestorNode();
     ListHashSet<RefPtr<Node> > list;
     list.add(node);
     return StaticHashSetNodeList::adopt(list);
@@ -2159,7 +2159,7 @@ AXObjectCache* Document::axObjectCache() const
     Document* topDocument = this->topDocument();
     ASSERT(topDocument == this || !m_axObjectCache);
     if (!topDocument->m_axObjectCache)
-        topDocument->m_axObjectCache = adoptPtr(new AXObjectCache(this));
+        topDocument->m_axObjectCache = adoptPtr(new AXObjectCache(topDocument));
     return topDocument->m_axObjectCache.get();
 }
 

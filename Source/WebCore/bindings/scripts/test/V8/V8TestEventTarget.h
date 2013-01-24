@@ -35,14 +35,15 @@ class V8TestEventTarget {
 public:
     static const bool hasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>);
-    static v8::Persistent<v8::FunctionTemplate> GetRawTemplate();
-    static v8::Persistent<v8::FunctionTemplate> GetTemplate();
+    static v8::Persistent<v8::FunctionTemplate> GetRawTemplate(v8::Isolate* = 0);
+    static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate* = 0);
     static TestEventTarget* toNative(v8::Handle<v8::Object> object)
     {
         return reinterpret_cast<TestEventTarget*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
+    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;

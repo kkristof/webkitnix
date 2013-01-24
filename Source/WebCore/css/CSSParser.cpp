@@ -4310,7 +4310,7 @@ PassRefPtr<CSSValue> CSSParser::parseAnimationPlayState()
     return 0;
 }
 
-PassRefPtr<CSSValue> CSSParser::parseAnimationProperty()
+PassRefPtr<CSSValue> CSSParser::parseAnimationProperty(bool& allowAnimationProperty)
 {
     CSSParserValue* value = m_valueList->current();
     if (value->unit != CSSPrimitiveValue::CSS_IDENT)
@@ -4320,8 +4320,10 @@ PassRefPtr<CSSValue> CSSParser::parseAnimationProperty()
         return cssValuePool().createIdentifierValue(result);
     if (equalIgnoringCase(value->string, "all"))
         return cssValuePool().createIdentifierValue(CSSValueAll);
-    if (equalIgnoringCase(value->string, "none"))
+    if (equalIgnoringCase(value->string, "none")) {
+        allowAnimationProperty = false;
         return cssValuePool().createIdentifierValue(CSSValueNone);
+    }
     return 0;
 }
 
@@ -4434,6 +4436,7 @@ bool CSSParser::parseAnimationProperty(CSSPropertyID propId, RefPtr<CSSValue>& r
     CSSParserValue* val;
     RefPtr<CSSValue> value;
     bool allowComma = false;
+    bool allowAnimationProperty = true;
 
     result = 0;
 
@@ -4485,7 +4488,10 @@ bool CSSParser::parseAnimationProperty(CSSPropertyID propId, RefPtr<CSSValue>& r
                         m_valueList->next();
                     break;
                 case CSSPropertyWebkitTransitionProperty:
-                    currValue = parseAnimationProperty();
+                    if (allowAnimationProperty)
+                        currValue = parseAnimationProperty(allowAnimationProperty);
+                    if (value && !allowAnimationProperty)
+                        return false;
                     if (currValue)
                         m_valueList->next();
                     break;
@@ -6208,19 +6214,18 @@ bool CSSParser::parseReflect(CSSPropertyID propId, bool important)
 
     // Direction comes first.
     CSSParserValue* val = m_valueList->current();
-    CSSReflectionDirection direction;
+    RefPtr<CSSPrimitiveValue> direction;
+#if ENABLE(CSS_VARIABLES)
+    if (val->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
+        direction = createPrimitiveVariableNameValue(val);
+    else
+#endif
     switch (val->id) {
         case CSSValueAbove:
-            direction = ReflectionAbove;
-            break;
         case CSSValueBelow:
-            direction = ReflectionBelow;
-            break;
         case CSSValueLeft:
-            direction = ReflectionLeft;
-            break;
         case CSSValueRight:
-            direction = ReflectionRight;
+            direction = cssValuePool().createIdentifierValue(val->id);
             break;
         default:
             return false;
@@ -6245,7 +6250,7 @@ bool CSSParser::parseReflect(CSSPropertyID propId, bool important)
             return false;
     }
 
-    RefPtr<CSSReflectValue> reflectValue = CSSReflectValue::create(direction, offset.release(), mask.release());
+    RefPtr<CSSReflectValue> reflectValue = CSSReflectValue::create(direction.release(), offset.release(), mask.release());
     addProperty(propId, reflectValue.release(), important);
     m_valueList->next();
     return true;

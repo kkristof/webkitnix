@@ -106,6 +106,7 @@ fast/forms/file/input-file-directory-upload.html
 
 # ENABLE(DOM4_EVENTS_CONSTRUCTOR) is disabled.
 fast/events/constructors/ui-event-constructor.html
+fast/events/constructors/mouse-event-constructor.html
 
 # ENABLE(INDEXED_DATABASE) is disabled.
 storage/indexeddb
@@ -195,6 +196,9 @@ fast/css/cursor-parsing-image-set.html
 # ENABLE(TEMPLATE_ELEMENT) is disabled.
 fast/dom/HTMLTemplateElement
 html5lib/run-template.html
+fast/xsl/xslt-xhtml-template.xml
+fast/xpath/xpath-template-element.html
+fast/xsl/xslt-processor-template.html
 
 # Fail until SUBPIXEL_LAYOUT is enabled
 # https://bugs.webkit.org/show_bug.cgi?id=85532
@@ -2369,7 +2373,6 @@ webkit.org/b/85689 fast/animation/request-animation-frame-disabled.html [ Skip ]
 # ietestcenter/css3/valuesandunits/units-000.htm asserts
 # https://bugs.webkit.org/show_bug.cgi?id=86176
 webkit.org/b/85308 ietestcenter/css3/valuesandunits/units-000.htm [ Skip ]
-webkit.org/b/85310 ietestcenter/css3/valuesandunits/units-010.htm [ ImageOnlyFailure ]
 
 # IETC namespace failures
 webkit.org/b/86142 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
@@ -2437,6 +2440,7 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-stack-trace.html
 
 # [Qt] Unidentified pixel failures
 webkit.org/b/99306 animations/additive-transform-animations.html [ ImageOnlyFailure ]

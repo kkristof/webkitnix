@@ -44,6 +44,8 @@
 namespace WebCore {
 
 static void logThreadedScrollingMode(unsigned mainThreadScrollingReasons);
+static void logWheelEventHandlerCountChanged(unsigned);
+
 
 PassOwnPtr<ScrollingTreeScrollingNode> ScrollingTreeScrollingNode::create(ScrollingTree* scrollingTree)
 {
@@ -96,6 +98,11 @@ void ScrollingTreeScrollingNodeMac::update(ScrollingStateNode* stateNode)
 
         if (scrollingTree()->scrollingPerformanceLoggingEnabled())
             logThreadedScrollingMode(mainThreadScrollingReasons);
+    }
+
+    if ((state->changedProperties() & ScrollingStateScrollingNode::WheelEventHandlerCount)) {
+        if (scrollingTree()->scrollingPerformanceLoggingEnabled())
+            logWheelEventHandlerCountChanged(state->wheelEventHandlerCount());
     }
 }
 
@@ -151,6 +158,13 @@ IntSize ScrollingTreeScrollingNodeMac::stretchAmount()
         stretch.setWidth(scrollPosition().x() - minimumScrollPosition().x());
     else if (scrollPosition().x() > maximumScrollPosition().x())
         stretch.setWidth(scrollPosition().x() - maximumScrollPosition().x());
+
+    if (scrollingTree()->rootNode() == this) {
+        if (stretch.isZero())
+            scrollingTree()->setMainFrameIsRubberBanding(false);
+        else
+            scrollingTree()->setMainFrameIsRubberBanding(true);
+    }
 
     return stretch;
 }
@@ -235,6 +249,8 @@ void ScrollingTreeScrollingNodeMac::stopSnapRubberbandTimer()
 {
     if (!m_snapRubberbandTimer)
         return;
+
+    scrollingTree()->setMainFrameIsRubberBanding(false);
 
     CFRunLoopTimerInvalidate(m_snapRubberbandTimer.get());
     m_snapRubberbandTimer = nullptr;
@@ -385,6 +401,11 @@ static void logThreadedScrollingMode(unsigned mainThreadScrollingReasons)
         WTFLogAlways("SCROLLING: Switching to main-thread scrolling mode. Time: %f Reason(s): %s\n", WTF::monotonicallyIncreasingTime(), reasonsDescriptionTrimmed.ascii().data());
     } else
         WTFLogAlways("SCROLLING: Switching to threaded scrolling mode. Time: %f\n", WTF::monotonicallyIncreasingTime());
+}
+
+void logWheelEventHandlerCountChanged(unsigned count)
+{
+    WTFLogAlways("SCROLLING: Wheel event handler count changed. Time: %f Count: %u\n", WTF::monotonicallyIncreasingTime(), count);
 }
 
 } // namespace WebCore

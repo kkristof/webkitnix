@@ -424,6 +424,7 @@ public:
     LayoutUnit endOffsetForContent() const { return !style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
     
     void setStaticInlinePositionForChild(RenderBox*, LayoutUnit blockOffset, LayoutUnit inlinePosition);
+    void updateStaticInlinePositionForChild(RenderBox*, LayoutUnit logicalTop);
 
     LayoutUnit computeStartPositionDeltaForChildAvoidingFloats(const RenderBox* child, LayoutUnit childMarginStart, RenderRegion* = 0, LayoutUnit offsetFromLogicalTopOfFirstPage = 0);
 
@@ -1235,13 +1236,13 @@ private:
 
 inline RenderBlock* toRenderBlock(RenderObject* object)
 { 
-    ASSERT(!object || object->isRenderBlock());
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlock());
     return static_cast<RenderBlock*>(object);
 }
 
 inline const RenderBlock* toRenderBlock(const RenderObject* object)
 { 
-    ASSERT(!object || object->isRenderBlock());
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderBlock());
     return static_cast<const RenderBlock*>(object);
 }
 

@@ -1229,6 +1229,7 @@ webkit.org/b/95302 fast/events/constructors/speech-recognition-event-constructor
 
 # DOM4_EVENTS_CONSTRUCTOR is not yet enabled.
 webkit.org/b/107428 fast/events/constructors/ui-event-constructor.html [ Skip ]
+webkit.org/b/107428 fast/events/constructors/mouse-event-constructor.html [ Skip ]
 
 # Requires support for Web notifications
 webkit.org/b/73544 fast/notifications [ Skip ]
@@ -1315,7 +1316,6 @@ Bug(EFL) [ Debug ] http/tests/incremental/slow-utf8-html.pl [ Pass Slow ]
 
 # Tests imported in r116658
 webkit.org/b/85308 ietestcenter/css3/valuesandunits/units-000.htm [ Crash ImageOnlyFailure ]
-webkit.org/b/85310 ietestcenter/css3/valuesandunits/units-010.htm [ ImageOnlyFailure ]
 
 # LEGACY_VIEWPORT_ADAPTION flag is not enabled on EFL port
 webkit.org/b/88191 fast/viewport/viewport-legacy-handheldfriendly.html [ Failure ]
@@ -1574,6 +1574,7 @@ webkit.org/b/23166 ietestcenter/css3/bordersbackgrounds/border-radius-clip-002.h
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-stack-trace.html
 
 # EFL port does not support Emacs commands.
 Bug(EFL) editing/pasteboard/emacs-cntl-y-001.html [ Missing ]

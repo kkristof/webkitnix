@@ -178,12 +178,12 @@
 #include "WebRange.h"
 #include "WebScriptSource.h"
 #include "WebSecurityOrigin.h"
+#include "WebSerializedScriptValue.h"
 #include "WebViewImpl.h"
 #include "XPathResult.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include "painting/GraphicsContextBuilder.h"
-#include "platform/WebSerializedScriptValue.h"
 #include <algorithm>
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>
@@ -1682,7 +1682,7 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
                 break;
 
             searchRange->setStartAfter(
-                resultRange->startContainer()->shadowAncestorNode(), ec);
+                resultRange->startContainer()->deprecatedShadowAncestorNode(), ec);
             searchRange->setEnd(originalEndContainer, originalEndOffset, ec);
             continue;
         }
@@ -2336,7 +2336,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // example, focus links if we have found text within the link.
         Node* node = m_activeMatch->firstNode();
         if (node && node->isInShadowTree()) {
-            Node* host = node->shadowAncestorNode();
+            Node* host = node->deprecatedShadowAncestorNode();
             if (host->hasTagName(HTMLNames::inputTag) || host->hasTagName(HTMLNames::textareaTag))
                 node = host;
         }

@@ -192,7 +192,7 @@ function StackTrace()
 StackTrace.prototype = {
     /**
      * @param {number} index
-     * @return {{sourceURL: string, lineNumber: number, columnNumber: number}}
+     * @return {{sourceURL: string, lineNumber: number, columnNumber: number}|undefined}
      */
     callFrame: function(index)
     {
@@ -222,50 +222,45 @@ StackTrace.create = function(stackTraceLimit, topMostFunctionToIgnore)
 function StackTraceV8(stackTraceLimit, topMostFunctionToIgnore)
 {
     StackTrace.call(this);
+
+    var oldPrepareStackTrace = Error.prepareStackTrace;
     var oldStackTraceLimit = Error.stackTraceLimit;
     if (typeof stackTraceLimit === "number")
         Error.stackTraceLimit = stackTraceLimit;
 
-    this._error = /** @type {{stack: Array}} */ ({});
-    Error.captureStackTrace(this._error, topMostFunctionToIgnore || arguments.callee);
+    /**
+     * @param {Object} error
+     * @param {Array.<CallSite>} structuredStackTrace
+     * @return {Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}
+     */
+    Error.prepareStackTrace = function(error, structuredStackTrace)
+    {
+        return structuredStackTrace.map(function(callSite) {
+            return {
+                sourceURL: callSite.getFileName(),
+                lineNumber: callSite.getLineNumber(),
+                columnNumber: callSite.getColumnNumber()
+            };
+        });
+    }
+
+    var holder = /** @type {{stack: Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}} */ ({});
+    Error.captureStackTrace(holder, topMostFunctionToIgnore || arguments.callee);
+    this._stackTrace = holder.stack;
 
     Error.stackTraceLimit = oldStackTraceLimit;
+    Error.prepareStackTrace = oldPrepareStackTrace;
 }
 
 StackTraceV8.prototype = {
     /**
      * @override
      * @param {number} index
-     * @return {{sourceURL: string, lineNumber: number, columnNumber: number}}
+     * @return {{sourceURL: string, lineNumber: number, columnNumber: number}|undefined}
      */
     callFrame: function(index)
     {
-        if (!this._stackTrace)
-            this._prepareStackTrace();
         return this._stackTrace[index];
-    },
-
-    _prepareStackTrace: function()
-    {
-        var oldPrepareStackTrace = Error.prepareStackTrace;
-        /**
-         * @param {Object} error
-         * @param {Array.<CallSite>} structuredStackTrace
-         * @return {Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}
-         */
-        Error.prepareStackTrace = function(error, structuredStackTrace)
-        {
-            return structuredStackTrace.map(function(callSite) {
-                return {
-                    sourceURL: callSite.getFileName(),
-                    lineNumber: callSite.getLineNumber(),
-                    columnNumber: callSite.getColumnNumber()
-                };
-            });
-        }
-        this._stackTrace = this._error.stack;
-        Error.prepareStackTrace = oldPrepareStackTrace;
-        delete this._error; // No longer needed, free memory.
     },
 
     __proto__: StackTrace.prototype
@@ -3053,25 +3048,35 @@ InjectedCanvasModule.prototype = {
     /**
      * @param {CanvasAgent.TraceLogId} id
      * @param {number=} startOffset
+     * @param {number=} maxLength
      * @return {!CanvasAgent.TraceLog|string}
      */
-    traceLog: function(id, startOffset)
+    traceLog: function(id, startOffset, maxLength)
     {
         var traceLog = this._traceLogs[id];
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
-        startOffset = Math.max(0, startOffset || 0);
+
+        var replayableCalls = traceLog.replayableCalls();
+        if (typeof startOffset !== "number")
+            startOffset = 0;
+        if (typeof maxLength !== "number")
+            maxLength = replayableCalls.length;
+
+        var fromIndex = Math.max(0, startOffset);
+        var toIndex = Math.min(replayableCalls.length - 1, fromIndex + maxLength - 1);
+
         var alive = this._manager.capturing() && this._manager.lastTraceLog() === traceLog;
         var result = {
             id: id,
             /** @type {Array.<CanvasAgent.Call>} */
             calls: [],
             alive: alive,
-            startOffset: startOffset
+            startOffset: fromIndex,
+            totalAvailableCalls: replayableCalls.length
         };
-        var calls = traceLog.replayableCalls();
-        for (var i = startOffset, n = calls.length; i < n; ++i) {
-            var call = calls[i];
+        for (var i = fromIndex; i <= toIndex; ++i) {
+            var call = replayableCalls[i];
             var contextResource = call.replayableResource().replayableContextResource();
             var stackTrace = call.stackTrace();
             var callFrame = stackTrace ? stackTrace.callFrame(0) || {} : {};

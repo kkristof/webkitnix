@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-WrapperTypeInfo V8TestOverloadedConstructors::info = { V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, V8TestOverloadedConstructors::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestOverloadedConstructors::info = { V8TestOverloadedConstructors::GetTemplate, V8TestOverloadedConstructors::derefObject, 0, 0, 0, V8TestOverloadedConstructors::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestOverloadedConstructorsV8Internal {
 
@@ -130,9 +130,11 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestOverloadedConstructor
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestOverloadedConstructors::GetRawTemplate()
+v8::Persistent<v8::FunctionTemplate> V8TestOverloadedConstructors::GetRawTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->rawTemplateMap().find(&info);
     if (result != data->rawTemplateMap().end())
         return result->value;
@@ -143,9 +145,11 @@ v8::Persistent<v8::FunctionTemplate> V8TestOverloadedConstructors::GetRawTemplat
     return templ;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestOverloadedConstructors::GetTemplate()
+v8::Persistent<v8::FunctionTemplate> V8TestOverloadedConstructors::GetTemplate(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = V8PerIsolateData::current();
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&info);
     if (result != data->templateMap().end())
         return result->value;
@@ -178,7 +182,6 @@ v8::Handle<v8::Object> V8TestOverloadedConstructors::createWrapper(PassRefPtr<Te
         wrapperHandle.MarkIndependent();
     return wrapper;
 }
-
 void V8TestOverloadedConstructors::derefObject(void* object)
 {
     static_cast<TestOverloadedConstructors*>(object)->deref();

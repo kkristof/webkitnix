@@ -79,13 +79,13 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
  public:
     WebViewHost(TestShell*);
     virtual ~WebViewHost();
+    void shutdown();
     void setWebWidget(WebKit::WebWidget*);
     WebKit::WebView* webView() const;
     WebKit::WebWidget* webWidget() const;
     WebTestRunner::WebTestProxyBase* proxy() const;
     void setProxy(WebTestRunner::WebTestProxyBase*);
     void reset();
-    void setLogConsoleOutput(bool);
     void waitForPolicyDelegate();
     void setCustomPolicyDelegate(bool, bool);
     WebKit::WebFrame* topLoadingFrame() { return m_topLoadingFrame; }
@@ -372,6 +372,9 @@ private:
 
     bool m_hasWindow;
     bool m_inModalLoop;
+
+    bool m_shutdownWasInvoked;
+
     WebKit::WebRect m_windowRect;
 
     // true if we want to enable smart insert/delete.
@@ -379,9 +382,6 @@ private:
 
     // true if we want to enable selection of trailing whitespaces
     bool m_selectTrailingWhitespaceEnabled;
-
-    // true if whatever is sent to the console should be logged to stdout.
-    bool m_logConsoleOutput;
 
     // Edit command associated to the current keyboard event.
     std::string m_editCommandName;

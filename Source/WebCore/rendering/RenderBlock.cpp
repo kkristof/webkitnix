@@ -1674,6 +1674,8 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
         else
             rectToApply = LayoutRect(clientRect.x(), clientRect.y(), max<LayoutUnit>(0, oldClientAfterEdge - clientRect.x()), 1);
         addLayoutOverflow(rectToApply);
+        if (hasRenderOverflow())
+            m_overflow->setLayoutClientAfterEdge(oldClientAfterEdge);
     }
         
     // Add visual overflow from box-shadow and border-image-outset.
@@ -1751,7 +1753,7 @@ void RenderBlock::adjustPositionedBlock(RenderBox* child, const MarginInfo& marg
     bool hasStaticBlockPosition = child->style()->hasStaticBlockPosition(isHorizontal);
     
     LayoutUnit logicalTop = logicalHeight();
-    setStaticInlinePositionForChild(child, logicalTop, startOffsetForContent(logicalTop));
+    updateStaticInlinePositionForChild(child, logicalTop);
 
     if (!marginInfo.canCollapseWithMarginBefore()) {
         // Positioned blocks don't collapse margins, so add the margin provided by
@@ -2606,8 +2608,11 @@ bool RenderBlock::simplifiedLayout()
     // updating our overflow if we either used to have overflow or if the new temporary object has overflow.
     // For now just always recompute overflow.  This is no worse performance-wise than the old code that called rightmostPosition and
     // lowestPosition on every relayout so it's not a regression.
+    // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
+    // simplifiedLayout, we cache the value in m_overflow.
+    LayoutUnit oldClientAfterEdge = hasRenderOverflow() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
     m_overflow.clear();
-    computeOverflow(clientLogicalBottom(), true);
+    computeOverflow(oldClientAfterEdge, true);
 
     statePusher.pop();
     
@@ -3247,8 +3252,9 @@ bool RenderBlock::shouldPaintSelectionGaps() const
 
 bool RenderBlock::isSelectionRoot() const
 {
-    if (!nonPseudoNode())
+    if (isPseudoElement())
         return false;
+    ASSERT(node() || isAnonymous());
         
     // FIXME: Eventually tables should have to learn how to fill gaps between cells, at least in simple non-spanning cases.
     if (isTable())
@@ -7406,6 +7412,14 @@ RenderRegion* RenderBlock::regionAtBlockOffset(LayoutUnit blockOffset) const
         return 0;
 
     return flowThread->regionAtBlockOffset(offsetFromLogicalTopOfFirstPage() + blockOffset, true);
+}
+
+void RenderBlock::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
+{
+    if (child->style()->isOriginalDisplayInlineType())
+        setStaticInlinePositionForChild(child, logicalTop, startAlignedOffsetForLine(logicalTop, false));
+    else
+        setStaticInlinePositionForChild(child, logicalTop, startOffsetForContent(logicalTop));
 }
 
 void RenderBlock::setStaticInlinePositionForChild(RenderBox* child, LayoutUnit blockOffset, LayoutUnit inlinePosition)

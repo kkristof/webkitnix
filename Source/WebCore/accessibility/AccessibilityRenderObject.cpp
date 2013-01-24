@@ -123,9 +123,7 @@ void AccessibilityRenderObject::init()
 
 PassRefPtr<AccessibilityRenderObject> AccessibilityRenderObject::create(RenderObject* renderer)
 {
-    AccessibilityRenderObject* obj = new AccessibilityRenderObject(renderer);
-    obj->init();
-    return adoptRef(obj);
+    return adoptRef(new AccessibilityRenderObject(renderer));
 }
 
 void AccessibilityRenderObject::detach()
@@ -1126,6 +1124,10 @@ AccessibilityObjectInclusion AccessibilityRenderObject::accessibilityIsIgnoredBa
  
 bool AccessibilityRenderObject::accessibilityIsIgnored() const
 {
+#ifndef NDEBUG
+    ASSERT(m_initialized);
+#endif
+
     // Check first if any of the common reasons cause this element to be ignored.
     // Then process other use cases that need to be applied to all the various roles
     // that AccessibilityRenderObjects take on.
@@ -2194,7 +2196,7 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
     layer->hitTest(request, hitTestResult);
     if (!hitTestResult.innerNode())
         return 0;
-    Node* node = hitTestResult.innerNode()->shadowAncestorNode();
+    Node* node = hitTestResult.innerNode()->deprecatedShadowAncestorNode();
 
     if (node->hasTagName(areaTag)) 
         return accessibilityImageMapHitTest(static_cast<HTMLAreaElement*>(node), point);

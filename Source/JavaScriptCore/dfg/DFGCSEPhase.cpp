@@ -30,6 +30,7 @@
 
 #include "DFGGraph.h"
 #include "DFGPhase.h"
+#include "JSCellInlines.h"
 #include <wtf/FastBitVector.h>
 
 namespace JSC { namespace DFG {
@@ -985,7 +986,7 @@ private:
             result.mayExit |= node.canExit();
             result.mayClobberWorld |= m_graph.clobbersWorld(index);
         }
-        ASSERT_NOT_REACHED();
+        RELEASE_ASSERT_NOT_REACHED();
         // Be safe in release mode.
         result.mayBeAccessed = true;
         return result;

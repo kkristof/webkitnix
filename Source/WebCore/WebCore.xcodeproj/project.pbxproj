@@ -737,8 +737,6 @@
 		265541521489B233000DFC5D /* CursorIOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2655414B1489AA2B000DFC5D /* CursorIOS.cpp */; };
 		269239951505E1AA009E57FC /* JSIDBVersionChangeEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 269239911505E1AA009E57FC /* JSIDBVersionChangeEvent.cpp */; };
 		269239961505E1AA009E57FC /* JSIDBVersionChangeEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 269239921505E1AA009E57FC /* JSIDBVersionChangeEvent.h */; };
-		269239971505E1AA009E57FC /* JSIDBVersionChangeRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 269239931505E1AA009E57FC /* JSIDBVersionChangeRequest.cpp */; };
-		269239981505E1AA009E57FC /* JSIDBVersionChangeRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 269239941505E1AA009E57FC /* JSIDBVersionChangeRequest.h */; };
 		26A5034E14F0983600AA730D /* KURLWTFURLImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 26A5034D14F0983600AA730D /* KURLWTFURLImpl.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		26A5035A14F0A2BC00AA730D /* KURLWTFURL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26A5035914F0A2BC00AA730D /* KURLWTFURL.cpp */; };
 		26C17A3E1491D2D400D12BA2 /* FileSystemIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 26C17A3C1491D2D400D12BA2 /* FileSystemIOS.h */; };
@@ -3522,8 +3520,6 @@
 		9712A5FD15004EDA0048AF10 /* IDBTransactionCoordinator.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A415004EDA0048AF10 /* IDBTransactionCoordinator.h */; };
 		9712A5FE15004EDA0048AF10 /* IDBVersionChangeEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A5A515004EDA0048AF10 /* IDBVersionChangeEvent.cpp */; };
 		9712A5FF15004EDA0048AF10 /* IDBVersionChangeEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A615004EDA0048AF10 /* IDBVersionChangeEvent.h */; };
-		9712A60115004EDA0048AF10 /* IDBVersionChangeRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A5A815004EDA0048AF10 /* IDBVersionChangeRequest.cpp */; };
-		9712A60215004EDA0048AF10 /* IDBVersionChangeRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A915004EDA0048AF10 /* IDBVersionChangeRequest.h */; };
 		9712A60415004EDA0048AF10 /* PageGroupIndexedDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A5AB15004EDA0048AF10 /* PageGroupIndexedDatabase.cpp */; };
 		9712A60515004EDA0048AF10 /* PageGroupIndexedDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5AC15004EDA0048AF10 /* PageGroupIndexedDatabase.h */; };
 		9712A611150090CE0048AF10 /* WorkerContextIndexedDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A60E150090CE0048AF10 /* WorkerContextIndexedDatabase.cpp */; };
@@ -6466,6 +6462,11 @@
 		FB49C39A16784932007FFB5D /* CSSHostRule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FB49C39916784932007FFB5D /* CSSHostRule.cpp */; };
 		FB49C39D16784947007FFB5D /* CSSHostRule.h in Headers */ = {isa = PBXBuildFile; fileRef = FB49C39C16784947007FFB5D /* CSSHostRule.h */; };
 		FB78AD2E151BF5E600FE54D3 /* CSSParserMode.h in Headers */ = {isa = PBXBuildFile; fileRef = FB78AD2C151BF5D200FE54D3 /* CSSParserMode.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		FB91392416AE4C17001FE682 /* DOMPath.h in Headers */ = {isa = PBXBuildFile; fileRef = FB91392016AE4B0B001FE682 /* DOMPath.h */; };
+		FB91392616AE4C2F001FE682 /* CanvasPathMethods.h in Headers */ = {isa = PBXBuildFile; fileRef = FB91391F16AE4B0B001FE682 /* CanvasPathMethods.h */; };
+		FB91392716AE4C34001FE682 /* CanvasPathMethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FB91391E16AE4B0B001FE682 /* CanvasPathMethods.cpp */; };
+		FB91392A16AE4FC0001FE682 /* JSDOMPath.h in Headers */ = {isa = PBXBuildFile; fileRef = FB91392816AE4FC0001FE682 /* JSDOMPath.h */; };
+		FB91392B16AE4FC0001FE682 /* JSDOMPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FB91392916AE4FC0001FE682 /* JSDOMPath.cpp */; };
 		FB92DF4B15FED08700994433 /* ClipPathOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = FB92DF4915FED08700994433 /* ClipPathOperation.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		FBC220DF1237FBEB00BCF788 /* GraphicsContext3DOpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FBC220DE1237FBEB00BCF788 /* GraphicsContext3DOpenGL.cpp */; };
 		FBD6AF8815EF25C9008B7110 /* CSSBasicShapes.h in Headers */ = {isa = PBXBuildFile; fileRef = FBD6AF8715EF21D4008B7110 /* CSSBasicShapes.h */; };
@@ -7992,8 +7993,6 @@
 		2655414B1489AA2B000DFC5D /* CursorIOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CursorIOS.cpp; path = ios/CursorIOS.cpp; sourceTree = "<group>"; };
 		269239911505E1AA009E57FC /* JSIDBVersionChangeEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSIDBVersionChangeEvent.cpp; sourceTree = "<group>"; };
 		269239921505E1AA009E57FC /* JSIDBVersionChangeEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSIDBVersionChangeEvent.h; sourceTree = "<group>"; };
-		269239931505E1AA009E57FC /* JSIDBVersionChangeRequest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSIDBVersionChangeRequest.cpp; sourceTree = "<group>"; };
-		269239941505E1AA009E57FC /* JSIDBVersionChangeRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSIDBVersionChangeRequest.h; sourceTree = "<group>"; };
 		26A5034D14F0983600AA730D /* KURLWTFURLImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KURLWTFURLImpl.h; sourceTree = "<group>"; };
 		26A5035914F0A2BC00AA730D /* KURLWTFURL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KURLWTFURL.cpp; sourceTree = "<group>"; };
 		26C17A3C1491D2D400D12BA2 /* FileSystemIOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FileSystemIOS.h; path = ios/FileSystemIOS.h; sourceTree = "<group>"; };
@@ -10895,9 +10894,6 @@
 		9712A5A515004EDA0048AF10 /* IDBVersionChangeEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IDBVersionChangeEvent.cpp; path = Modules/indexeddb/IDBVersionChangeEvent.cpp; sourceTree = "<group>"; };
 		9712A5A615004EDA0048AF10 /* IDBVersionChangeEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBVersionChangeEvent.h; path = Modules/indexeddb/IDBVersionChangeEvent.h; sourceTree = "<group>"; };
 		9712A5A715004EDA0048AF10 /* IDBVersionChangeEvent.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = IDBVersionChangeEvent.idl; path = Modules/indexeddb/IDBVersionChangeEvent.idl; sourceTree = "<group>"; };
-		9712A5A815004EDA0048AF10 /* IDBVersionChangeRequest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IDBVersionChangeRequest.cpp; path = Modules/indexeddb/IDBVersionChangeRequest.cpp; sourceTree = "<group>"; };
-		9712A5A915004EDA0048AF10 /* IDBVersionChangeRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBVersionChangeRequest.h; path = Modules/indexeddb/IDBVersionChangeRequest.h; sourceTree = "<group>"; };
-		9712A5AA15004EDA0048AF10 /* IDBVersionChangeRequest.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = IDBVersionChangeRequest.idl; path = Modules/indexeddb/IDBVersionChangeRequest.idl; sourceTree = "<group>"; };
 		9712A5AB15004EDA0048AF10 /* PageGroupIndexedDatabase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PageGroupIndexedDatabase.cpp; path = Modules/indexeddb/PageGroupIndexedDatabase.cpp; sourceTree = "<group>"; };
 		9712A5AC15004EDA0048AF10 /* PageGroupIndexedDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PageGroupIndexedDatabase.h; path = Modules/indexeddb/PageGroupIndexedDatabase.h; sourceTree = "<group>"; };
 		9712A60E150090CE0048AF10 /* WorkerContextIndexedDatabase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WorkerContextIndexedDatabase.cpp; path = Modules/indexeddb/WorkerContextIndexedDatabase.cpp; sourceTree = "<group>"; };
@@ -14090,6 +14086,12 @@
 		FB49C39C16784947007FFB5D /* CSSHostRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSSHostRule.h; sourceTree = "<group>"; };
 		FB49C39E16784954007FFB5D /* CSSHostRule.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CSSHostRule.idl; sourceTree = "<group>"; };
 		FB78AD2C151BF5D200FE54D3 /* CSSParserMode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSSParserMode.h; sourceTree = "<group>"; };
+		FB91391E16AE4B0B001FE682 /* CanvasPathMethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CanvasPathMethods.cpp; path = canvas/CanvasPathMethods.cpp; sourceTree = "<group>"; };
+		FB91391F16AE4B0B001FE682 /* CanvasPathMethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CanvasPathMethods.h; path = canvas/CanvasPathMethods.h; sourceTree = "<group>"; };
+		FB91392016AE4B0B001FE682 /* DOMPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DOMPath.h; path = canvas/DOMPath.h; sourceTree = "<group>"; };
+		FB91392116AE4B0B001FE682 /* DOMPath.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = DOMPath.idl; path = canvas/DOMPath.idl; sourceTree = "<group>"; };
+		FB91392816AE4FC0001FE682 /* JSDOMPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSDOMPath.h; sourceTree = "<group>"; };
+		FB91392916AE4FC0001FE682 /* JSDOMPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSDOMPath.cpp; sourceTree = "<group>"; };
 		FB92DF4915FED08700994433 /* ClipPathOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClipPathOperation.h; sourceTree = "<group>"; };
 		FBC220DE1237FBEB00BCF788 /* GraphicsContext3DOpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsContext3DOpenGL.cpp; sourceTree = "<group>"; };
 		FBD6AF8215EF21A3008B7110 /* BasicShapes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BasicShapes.cpp; path = style/BasicShapes.cpp; sourceTree = "<group>"; };
@@ -15508,6 +15510,10 @@
 		49484FAE102CF01E00187DD3 /* canvas */ = {
 			isa = PBXGroup;
 			children = (
+				FB91391E16AE4B0B001FE682 /* CanvasPathMethods.cpp */,
+				FB91391F16AE4B0B001FE682 /* CanvasPathMethods.h */,
+				FB91392016AE4B0B001FE682 /* DOMPath.h */,
+				FB91392116AE4B0B001FE682 /* DOMPath.idl */,
 				49EECDCC10503C2300099FAB /* ArrayBuffer.idl */,
 				49EECDC910503C2300099FAB /* ArrayBufferView.idl */,
 				6E4E91A710F7FB3100A2779C /* CanvasContextAttributes.cpp */,
@@ -18286,9 +18292,6 @@
 				9712A5A515004EDA0048AF10 /* IDBVersionChangeEvent.cpp */,
 				9712A5A615004EDA0048AF10 /* IDBVersionChangeEvent.h */,
 				9712A5A715004EDA0048AF10 /* IDBVersionChangeEvent.idl */,
-				9712A5A815004EDA0048AF10 /* IDBVersionChangeRequest.cpp */,
-				9712A5A915004EDA0048AF10 /* IDBVersionChangeRequest.h */,
-				9712A5AA15004EDA0048AF10 /* IDBVersionChangeRequest.idl */,
 				9712A5AB15004EDA0048AF10 /* PageGroupIndexedDatabase.cpp */,
 				9712A5AC15004EDA0048AF10 /* PageGroupIndexedDatabase.h */,
 				9712A60E150090CE0048AF10 /* WorkerContextIndexedDatabase.cpp */,
@@ -18733,6 +18736,8 @@
 				2E97CE6E1293AD6B00C5C8FF /* JSDataView.h */,
 				2E0888D21148848A00AF4265 /* JSDOMFormData.cpp */,
 				2E0888D31148848A00AF4265 /* JSDOMFormData.h */,
+				FB91392916AE4FC0001FE682 /* JSDOMPath.cpp */,
+				FB91392816AE4FC0001FE682 /* JSDOMPath.h */,
 				4ACBC0C812713D0A0094F9B2 /* JSDOMSettableTokenList.cpp */,
 				4ACBC0C912713D0A0094F9B2 /* JSDOMSettableTokenList.h */,
 				7694563A1214D97C0007CBAE /* JSDOMTokenList.cpp */,
@@ -19545,8 +19550,6 @@
 				B656626E120B1227006EA85C /* JSIDBTransaction.h */,
 				269239911505E1AA009E57FC /* JSIDBVersionChangeEvent.cpp */,
 				269239921505E1AA009E57FC /* JSIDBVersionChangeEvent.h */,
-				269239931505E1AA009E57FC /* JSIDBVersionChangeRequest.cpp */,
-				269239941505E1AA009E57FC /* JSIDBVersionChangeRequest.h */,
 				514C76350CE9225E007EF3CD /* JSSQLError.cpp */,
 				BC8243250D0CE8A200460C8F /* JSSQLError.h */,
 				B525A96411CA2340003A23A8 /* JSSQLException.cpp */,
@@ -24371,7 +24374,6 @@
 				9712A5FB15004EDA0048AF10 /* IDBTransactionCallbacks.h in Headers */,
 				9712A5FD15004EDA0048AF10 /* IDBTransactionCoordinator.h in Headers */,
 				9712A5FF15004EDA0048AF10 /* IDBVersionChangeEvent.h in Headers */,
-				9712A60215004EDA0048AF10 /* IDBVersionChangeRequest.h in Headers */,
 				1A71D57C0F33819000F9CE4E /* IdentifierRep.h in Headers */,
 				5913A24213D49EBA00F5B05C /* IdentifiersFactory.h in Headers */,
 				49E911C50EF86D47009D0CAF /* IdentityTransformOperation.h in Headers */,
@@ -24704,7 +24706,6 @@
 				C585A69111D4FB08004C3E4B /* JSIDBRequest.h in Headers */,
 				B6566270120B1227006EA85C /* JSIDBTransaction.h in Headers */,
 				269239961505E1AA009E57FC /* JSIDBVersionChangeEvent.h in Headers */,
-				269239981505E1AA009E57FC /* JSIDBVersionChangeRequest.h in Headers */,
 				BC6C49F40D7DBA0500FFA558 /* JSImageConstructor.h in Headers */,
 				A77979290D6B9E64003851B9 /* JSImageData.h in Headers */,
 				7A0E76DB10BF059800A0276E /* JSInjectedScriptHost.h in Headers */,
@@ -26267,6 +26268,9 @@
 				E1BE512E0CF6C512002EA959 /* XSLTUnicodeSort.h in Headers */,
 				977E2E0F12F0FC9C00C13379 /* XSSAuditor.h in Headers */,
 				FD537353137B651800008DCE /* ZeroPole.h in Headers */,
+				FB91392416AE4C17001FE682 /* DOMPath.h in Headers */,
+				FB91392616AE4C2F001FE682 /* CanvasPathMethods.h in Headers */,
+				FB91392A16AE4FC0001FE682 /* JSDOMPath.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -27639,7 +27643,6 @@
 				9712A5F815004EDA0048AF10 /* IDBTransactionBackendImpl.cpp in Sources */,
 				9712A5FC15004EDA0048AF10 /* IDBTransactionCoordinator.cpp in Sources */,
 				9712A5FE15004EDA0048AF10 /* IDBVersionChangeEvent.cpp in Sources */,
-				9712A60115004EDA0048AF10 /* IDBVersionChangeRequest.cpp in Sources */,
 				1A71D57B0F33819000F9CE4E /* IdentifierRep.cpp in Sources */,
 				5913A24113D49EBA00F5B05C /* IdentifiersFactory.cpp in Sources */,
 				C3CF17A415B0063F00276D39 /* IdTargetObserver.cpp in Sources */,
@@ -28022,7 +28025,6 @@
 				C585A69011D4FB08004C3E4B /* JSIDBRequest.cpp in Sources */,
 				B6566271120B1227006EA85C /* JSIDBTransaction.cpp in Sources */,
 				269239951505E1AA009E57FC /* JSIDBVersionChangeEvent.cpp in Sources */,
-				269239971505E1AA009E57FC /* JSIDBVersionChangeRequest.cpp in Sources */,
 				BC6C49F30D7DBA0500FFA558 /* JSImageConstructor.cpp in Sources */,
 				A77979280D6B9E64003851B9 /* JSImageData.cpp in Sources */,
 				A7D0318E0E93540300E24ACD /* JSImageDataCustom.cpp in Sources */,
@@ -29417,6 +29419,8 @@
 				E1BE512D0CF6C512002EA959 /* XSLTUnicodeSort.cpp in Sources */,
 				977E2E0E12F0FC9C00C13379 /* XSSAuditor.cpp in Sources */,
 				FD537352137B651800008DCE /* ZeroPole.cpp in Sources */,
+				FB91392716AE4C34001FE682 /* CanvasPathMethods.cpp in Sources */,
+				FB91392B16AE4FC0001FE682 /* JSDOMPath.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -197,6 +197,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSDOMMimeType.h \
 	DerivedSources/WebCore/JSDOMNamedFlowCollection.cpp \
 	DerivedSources/WebCore/JSDOMNamedFlowCollection.h \
+	DerivedSources/WebCore/JSDOMPath.cpp \
+	DerivedSources/WebCore/JSDOMPath.h \
 	DerivedSources/WebCore/JSDOMParser.cpp \
 	DerivedSources/WebCore/JSDOMParser.h \
 	DerivedSources/WebCore/JSDOMPluginArray.cpp \
@@ -477,8 +479,6 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSIDBVersionChangeEvent.h \
 	DerivedSources/WebCore/JSIDBUpgradeNeededEvent.cpp \
 	DerivedSources/WebCore/JSIDBUpgradeNeededEvent.h \
-	DerivedSources/WebCore/JSIDBVersionChangeRequest.cpp \
-	DerivedSources/WebCore/JSIDBVersionChangeRequest.h \
 	DerivedSources/WebCore/JSImageData.cpp \
 	DerivedSources/WebCore/JSImageData.h \
 	DerivedSources/WebCore/JSInjectedScriptHost.cpp \
@@ -1235,7 +1235,6 @@ dom_binding_idls += \
 	$(WebCore)/Modules/indexeddb/IDBUpgradeNeededEvent.idl \
 	$(WebCore)/Modules/indexeddb/IDBVersionChangeEvent.idl \
 	$(WebCore)/Modules/indexeddb/IDBUpgradeNeededEvent.idl \
-	$(WebCore)/Modules/indexeddb/IDBVersionChangeRequest.idl \
 	$(WebCore)/Modules/indexeddb/WorkerContextIndexedDatabase.idl \
 	$(WebCore)/Modules/mediasource/MediaSource.idl \
 	$(WebCore)/Modules/mediasource/SourceBuffer.idl \
@@ -1527,6 +1526,7 @@ dom_binding_idls += \
 	$(WebCore)/html/canvas/CanvasRenderingContext.idl \
 	$(WebCore)/html/canvas/CanvasRenderingContext2D.idl \
 	$(WebCore)/html/canvas/DataView.idl \
+	$(WebCore)/html/canvas/DOMPath.idl \
 	$(WebCore)/html/canvas/EXTTextureFilterAnisotropic.idl \
 	$(WebCore)/html/canvas/Float32Array.idl \
 	$(WebCore)/html/canvas/Float64Array.idl \
@@ -1914,8 +1914,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/indexeddb/IDBUpgradeNeededEvent.h \
 	Source/WebCore/Modules/indexeddb/IDBVersionChangeEvent.cpp \
 	Source/WebCore/Modules/indexeddb/IDBVersionChangeEvent.h \
-	Source/WebCore/Modules/indexeddb/IDBVersionChangeRequest.cpp \
-	Source/WebCore/Modules/indexeddb/IDBVersionChangeRequest.h \
 	Source/WebCore/Modules/indexeddb/PageGroupIndexedDatabase.cpp \
 	Source/WebCore/Modules/indexeddb/PageGroupIndexedDatabase.h \
 	Source/WebCore/Modules/indexeddb/WorkerContextIndexedDatabase.cpp \
@@ -3220,6 +3218,8 @@ webcore_sources += \
 	Source/WebCore/html/canvas/CanvasContextAttributes.h \
 	Source/WebCore/html/canvas/CanvasGradient.cpp \
 	Source/WebCore/html/canvas/CanvasGradient.h \
+	Source/WebCore/html/canvas/CanvasPathMethods.cpp \
+	Source/WebCore/html/canvas/CanvasPathMethods.h \
 	Source/WebCore/html/canvas/CanvasPattern.cpp \
 	Source/WebCore/html/canvas/CanvasPattern.h \
 	Source/WebCore/html/canvas/CanvasProxy.cpp \
@@ -3233,6 +3233,7 @@ webcore_sources += \
 	Source/WebCore/html/canvas/CheckedInt.h \
 	Source/WebCore/html/canvas/DataView.cpp \
 	Source/WebCore/html/canvas/DataView.h \
+	Source/WebCore/html/canvas/DOMPath.h \
 	Source/WebCore/html/canvas/EXTTextureFilterAnisotropic.cpp \
 	Source/WebCore/html/canvas/EXTTextureFilterAnisotropic.h \
 	Source/WebCore/html/canvas/OESStandardDerivatives.cpp \

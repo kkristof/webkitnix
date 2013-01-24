@@ -1229,7 +1229,7 @@ Element* Node::shadowHost() const
     return 0;
 }
 
-Node* Node::shadowAncestorNode() const
+Node* Node::deprecatedShadowAncestorNode() const
 {
     if (ShadowRoot* root = containingShadowRoot())
         return root->host();
@@ -2619,17 +2619,6 @@ void Node::decrementConnectedSubframeCount(unsigned amount)
 {
     rareData()->decrementConnectedSubframeCount(amount);
 }
-
-#if ENABLE(DIALOG_ELEMENT)
-void Node::setIsInTopLayer(bool isInTopLayer)
-{
-    setFlag(isInTopLayer, IsInTopLayer);
-
-    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
-    // top layer position, or in its usual place if not in the top layer.
-    reattachIfAttached();
-}
-#endif
 
 void Node::registerScopedHTMLStyleChild()
 {

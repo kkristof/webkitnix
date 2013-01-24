@@ -1,3 +1,262 @@
+2013-01-24  Tim 'mithro' Ansell  <mithro@mithis.com>
+
+        Adding "has-landed" command to webkit-patch which compares a
+        committed patch to the changes which exist locally (ignoring the
+        ChangeLog file).
+
+        https://bugs.webkit.org/show_bug.cgi?id=106402
+
+        Reviewed by Eric Seidel.
+
+        * Scripts/webkitpy/common/checkout/diff_parser.py:
+        (git_diff_to_svn_diff):
+        * Scripts/webkitpy/common/net/bugzilla/bug.py:
+        (Bug.commit_revision):
+        * Scripts/webkitpy/common/net/bugzilla/bug_unittest.py:
+        (BugTest.test_is_in_comments):
+        (BugTest):
+        (BugTest.test_commit_revision):
+        * Scripts/webkitpy/tool/commands/upload.py:
+        (HasLanded):
+        * Scripts/webkitpy/tool/steps/__init__.py:
+        * Scripts/webkitpy/tool/steps/haslanded.py: Added.
+        (HasLanded):
+        (HasLanded.convert_to_svn):
+        (HasLanded.strip_change_log):
+        (run):
+
+        * Scripts/webkitpy/common/net/bugzilla/bug.py:
+        (Bug.commit_revision):
+        * Scripts/webkitpy/common/net/bugzilla/bug_unittest.py:
+        (BugTest.test_is_in_comments):
+        (BugTest):
+        (BugTest.test_commit_revision):
+        * Scripts/webkitpy/tool/commands/upload.py:
+        (HasLanded):
+        * Scripts/webkitpy/tool/steps/__init__.py:
+        * Scripts/webkitpy/tool/steps/haslanded.py: Added.
+        (HasLanded):
+        (HasLanded.convert_to_svn):
+        (HasLanded.strip_change_log):
+        (HasLanded.diff_diff):
+        (HasLanded.run):
+        * Scripts/webkitpy/tool/steps/haslanded_unittest.py: Added.
+        (HasLandedTest):
+        (HasLandedTest.test_run):
+        (test_convert_to_svn_and_strip_change_log):
+
+2013-01-24  Dan Carney  <dcarney@google.com>
+
+        [chromium] move most WebViewHost printf calls to WebTestProxy
+        https://bugs.webkit.org/show_bug.cgi?id=107553
+
+        Reviewed by Jochen Eisinger.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h:
+        (WebKit):
+        (WebTestProxyBase):
+        (WebTestRunner::WebTestProxy::unableToImplementPolicyWithError):
+        (WebTestRunner::WebTestProxy::didAddMessageToConsole):
+        (WebTestRunner::WebTestProxy::runModalAlertDialog):
+        (WebTestRunner::WebTestProxy::runModalConfirmDialog):
+        (WebTestRunner::WebTestProxy::runModalPromptDialog):
+        (WebTestRunner::WebTestProxy::runModalBeforeUnloadDialog):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::WebTestProxyBase):
+        (WebTestRunner::WebTestProxyBase::reset):
+        (WebTestRunner::WebTestProxyBase::setLogConsoleOutput):
+        (WebTestRunner):
+        (WebTestRunner::WebTestProxyBase::unableToImplementPolicyWithError):
+        (WebTestRunner::WebTestProxyBase::didAddMessageToConsole):
+        (WebTestRunner::WebTestProxyBase::runModalAlertDialog):
+        (WebTestRunner::WebTestProxyBase::runModalConfirmDialog):
+        (WebTestRunner::WebTestProxyBase::runModalPromptDialog):
+        (WebTestRunner::WebTestProxyBase::runModalBeforeUnloadDialog):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::showDevTools):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::didAddMessageToConsole):
+        (WebViewHost::runModalAlertDialog):
+        (WebViewHost::runModalConfirmDialog):
+        (WebViewHost::runModalPromptDialog):
+        (WebViewHost::runModalBeforeUnloadDialog):
+        (WebViewHost::unableToImplementPolicyWithError):
+        (WebViewHost::reset):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-23  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Give webkit_support a chance to reset state between layout test runs
+        https://bugs.webkit.org/show_bug.cgi?id=107132
+
+        Reviewed by Adam Barth.
+
+        We currently only have need for this on OS(ANDROID), but now it
+        would be useful to have a hook for resetting state on all
+        platforms. Will soon be using this for IDBFactory initialization.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::resetTestController): Call webkit_support::ResetTestEnvironment()
+
+2013-01-23  Alan Cutter  <alancutter@chromium.org>
+
+        QueueStatusServer crashes in production on next-patch
+        https://bugs.webkit.org/show_bug.cgi?id=107775
+
+        Reviewed by Adam Barth.
+
+        Replaced Python 2.5 incompatible call to timedelta.total_seconds().
+
+        * QueueStatusServer/app.yaml:
+        * QueueStatusServer/model/patchlog.py:
+        (PatchLog.calculate_wait_duration):
+        (PatchLog.calculate_process_duration):
+        (PatchLog):
+        (PatchLog._time_delta_to_seconds):
+
+2013-01-23  Ryosuke Niwa  <rniwa@webkit.org>
+
+        The previous patch wasn't complete. Finish reverting r139998 for real.
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/LeaksViewer/WebInspectorShims.js:
+        (ProfilerAgent.getProfile):
+
+2013-01-23  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Revert r139998 for now since the Leaks Viewer pulls in a specific version of Inspector code.
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/LeaksViewer/WebInspectorShims.js:
+        (ProfilerAgent.getProfile):
+
+2013-01-23  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove unused header files in chromium/public/platform/
+        https://bugs.webkit.org/show_bug.cgi?id=107741
+
+        Reviewed by James Robinson.
+
+        These header files have migrated to the new Platform directory.
+        This patch updates the remaining #include references and removes
+        the old files that did nothing but redirect to the new ones.
+
+        * DumpRenderTree/chromium/TestRunner/src/MockGrammarCheck.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/MockSpellCheck.h:
+
+2013-01-23  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Bump webkitgtk-test-fonts dependency to cover fallbacks for Tamil, Bengali, and others
+        https://bugs.webkit.org/show_bug.cgi?id=107727
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gtk/jhbuild.modules: Update the JHBuild moduleset to point to the new webkitgtk-test-fonts.
+        We are using the git repository now that github has deprecated the downloads feature.
+
+2013-01-23  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, set svn:eol-style to CRLF on Windows .sln files.
+
+        * CLWrapper/CLWrapper.sln: Modified property svn:eol-style.
+        * DumpRenderTree/DumpRenderTree.sln: Modified property svn:eol-style.
+        * MIDLWrapper/MIDLWrapper.sln: Modified property svn:eol-style.
+        * WebKitTestRunner/WebKitTestRunner.sln: Modified property svn:eol-style.
+
+2013-01-23  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Update some #includes in DumpRenderTree for headers in the new Platform directory
+        https://bugs.webkit.org/show_bug.cgi?id=107145
+
+        Reviewed by Adam Barth.
+
+        Part of a larger refactoring series; see tracking bug 82948.
+        
+        * DumpRenderTree/chromium/DRTDevToolsAgent.cpp:
+        * DumpRenderTree/chromium/DRTDevToolsAgent.h:
+        * DumpRenderTree/chromium/DRTDevToolsClient.h:
+        * DumpRenderTree/chromium/DRTTestRunner.cpp:
+        * DumpRenderTree/chromium/DRTTestRunner.h:
+        * DumpRenderTree/chromium/MockWebPrerenderingSupport.h:
+        * DumpRenderTree/chromium/MockWebSpeechInputController.cpp:
+        * DumpRenderTree/chromium/MockWebSpeechInputController.h:
+        * DumpRenderTree/chromium/NotificationPresenter.cpp:
+        * DumpRenderTree/chromium/TestNavigationController.h:
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityControllerChromium.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/CppBoundClass.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.cpp:
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.h:
+        * DumpRenderTree/chromium/TestRunner/src/GamepadController.h:
+        * DumpRenderTree/chromium/TestRunner/src/TestDelegate.h:
+        * DumpRenderTree/chromium/TestRunner/src/TestInterfaces.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        * DumpRenderTree/chromium/TestRunner/src/TextInputController.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/WebPermissions.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/WebTestPlugin.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        * DumpRenderTree/chromium/TestShell.cpp:
+        * DumpRenderTree/chromium/WebThemeEngineDRTMac.h:
+        * DumpRenderTree/chromium/WebThemeEngineDRTMac.mm:
+        * DumpRenderTree/chromium/WebThemeEngineDRTWin.cpp:
+        * DumpRenderTree/chromium/WebThemeEngineDRTWin.h:
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+
+2013-01-23  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] Use after free in plugins/geturlnotify-during-document-teardown.html
+        https://bugs.webkit.org/show_bug.cgi?id=107556
+
+        Reviewed by Tony Chang.
+
+        WebViewHost initiates a navigation to about:blank in its destructor.
+        However, since WebTestProxy inherits from WebViewHost, at this point
+        the WebViewClient and WebFrameClient interfaces are already partially
+        destructed resulting in the use after free.
+
+        This does not affect the chromium implementation since it doesn't
+        invoke WebKit API methods in its destructor.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::~TestShell):
+        (TestShell::closeWindow):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::WebViewHost):
+        (WebViewHost::~WebViewHost):
+        (WebViewHost::shutdown):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-01-23  Andrei Bucur  <abucur@adobe.com>
+
+        [CSS Regions] Create Regions watchlist
+        https://bugs.webkit.org/show_bug.cgi?id=107281
+
+        Reviewed by Adam Barth.
+
+        This patch adds 4 new definitions:
+        - RegionsDevelopment - used to track the development progress for regions
+        - RegionsExpectationsMore and RegionsExpectationsLess - used to track expectations changes for the regions tests
+        - RegionsUsage - used to track changes that make use of regions in all the code base
+
+        For now, the Adobe internal tracker is the only email address listening for these patterns.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-01-22  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: only allow evaluateForTestInFrontend for front-ends under test.
+        https://bugs.webkit.org/show_bug.cgi?id=107523
+
+        Reviewed by Yury Semikhatsky.
+
+        * DumpRenderTree/chromium/DRTDevToolsClient.cpp:
+        (DRTDevToolsClient::isUnderTest):
+        (DRTDevToolsClient::call):
+        * DumpRenderTree/chromium/DRTDevToolsClient.h:
+        (DRTDevToolsClient):
+
 2013-01-23  Tim 'mithro' Ansell  <mithro@mithis.com>
 
         Removing command line shortening as it makes it difficult to see the command during errors.
