@@ -80,27 +80,6 @@ if (NOT ENABLE_SVG)
     set(ENABLE_SVG_FONTS 0)
 endif ()
 
-if (ENABLE_BATTERY_STATUS)
-    find_package(DBus REQUIRED)
-endif ()
-
-if (ENABLE_VIDEO OR ENABLE_WEB_AUDIO)
-    set(GSTREAMER_COMPONENTS app interfaces pbutils)
-    set(WTF_USE_GSTREAMER 1)
-    add_definitions(-DWTF_USE_GSTREAMER=1)
-
-    if (ENABLE_VIDEO)
-        list(APPEND GSTREAMER_COMPONENTS video)
-    endif ()
-
-    if (ENABLE_WEB_AUDIO)
-        list(APPEND GSTREAMER_COMPONENTS audio fft)
-        add_definitions(-DWTF_USE_WEBAUDIO_GSTREAMER=1)
-    endif ()
-
-    find_package(GStreamer REQUIRED COMPONENTS ${GSTREAMER_COMPONENTS})
-endif ()
-
 if (NOT WTF_USE_OPENGL_ES_2)
     SET_HARDCODED_DEFINE(WTF_USE_OPENGL)
 endif ()
@@ -109,7 +88,6 @@ if (WTF_USE_EGL)
     find_package(EGL REQUIRED)
 endif ()
 
-set(CPACK_SOURCE_GENERATOR TBZ2)
 
 macro(PROCESS_WEBKIT_OPTIONS)
     # Show all options on screen
