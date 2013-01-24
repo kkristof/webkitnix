@@ -40,9 +40,7 @@ namespace JSC {
 
 namespace WebCore {
 
-#if PLATFORM(NIX)
     typedef void (*WorkerScriptCallback)(JSC::ExecState*, bool);
-#endif
 
     class JSWorkerContext;
     class ScriptSourceCode;
@@ -86,12 +84,10 @@ namespace WebCore {
         void attachDebugger(JSC::Debugger*);
         void detachDebugger(JSC::Debugger*);
 
-#if PLATFORM(NIX)
         static void setInitScriptCallback(WorkerScriptCallback callback);
         static WorkerScriptCallback initScriptCallback();
         static void setTerminateScriptCallback(WorkerScriptCallback callback);
         static WorkerScriptCallback terminateScriptCallback();
-#endif
     private:
         void initScriptIfNeeded()
         {
@@ -106,10 +102,8 @@ namespace WebCore {
         bool m_executionForbidden;
         mutable Mutex m_scheduledTerminationMutex;
 
-#if PLATFORM(NIX)
         static WorkerScriptCallback m_initScriptCallback;
         static WorkerScriptCallback m_terminateScriptCallback;
-#endif
     };
 
 } // namespace WebCore
