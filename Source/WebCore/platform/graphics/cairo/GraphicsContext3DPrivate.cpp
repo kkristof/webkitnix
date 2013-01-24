@@ -38,14 +38,6 @@
 #include <texmap/TextureMapperGL.h>
 #endif
 
-#if PLATFORM(NIX)
-#if USE(EGL)
-#include "GLContextFromCurrentEGL.h"
-#else
-#include "GLContextFromCurrentGLX.h"
-#endif
-#endif
-
 using namespace std;
 
 namespace WebCore {
@@ -64,17 +56,6 @@ GraphicsContext3DPrivate::GraphicsContext3DPrivate(GraphicsContext3D* context, G
         m_glContext = GLContext::createOffscreenContext(GLContext::sharingContext());
         break;
     case GraphicsContext3D::RenderToCurrentGLContext:
-        // TODO: Move these *::createFromCurrentGLContext to GLContext and remove this ifdef
-        //       when the Nix port goes upstream.
-#if PLATFORM(NIX)
-    #if USE(EGL)
-        m_glContext = GLContextFromCurrentEGL::createFromCurrentGLContext();
-    #else
-        // TODO: Merge implementations of GLContextFromCurrentGLX and GLContextGLX. Currently split to
-        // avoid conflicts.
-        m_glContext = GLContextFromCurrentGLX::createFromCurrentGLContext();
-    #endif
-#endif
         break;
     case GraphicsContext3D::RenderDirectlyToHostWindow:
         ASSERT_NOT_REACHED();

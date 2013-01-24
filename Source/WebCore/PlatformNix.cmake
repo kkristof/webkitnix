@@ -6,6 +6,7 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/graphics/harfbuzz/"
     "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
     "${WEBCORE_DIR}/platform/graphics/opengl"
+    "${WEBCORE_DIR}/platform/graphics/surfaces"
     "${WEBCORE_DIR}/platform/graphics/texmap"
     "${WEBCORE_DIR}/platform/linux"
     "${WEBCORE_DIR}/platform/mediastream/gstreamer"
@@ -82,14 +83,16 @@ list(APPEND WebCore_SOURCES
 
     platform/graphics/ImageSource.cpp
     platform/graphics/cairo/DrawingBufferCairo.cpp
-    platform/graphics/cairo/GLContext.cpp
-    platform/graphics/cairo/GraphicsContext3DCairo.cpp
-    platform/graphics/cairo/GraphicsContext3DPrivate.cpp
+    platform/graphics/efl/GraphicsContext3DEfl.cpp
+    platform/graphics/efl/GraphicsContext3DPrivate.cpp
     platform/graphics/nix/IconNix.cpp
     platform/graphics/nix/ImageNix.cpp
     platform/graphics/OpenGLShims.cpp
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
+    platform/graphics/opengl/GLPlatformContext.cpp
+    platform/graphics/opengl/GLPlatformSurface.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
+    platform/graphics/surfaces/GraphicsSurface.cpp
     platform/graphics/texmap/TextureMapperGL.cpp
     platform/graphics/texmap/TextureMapperShaderProgram.cpp
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
@@ -153,12 +156,27 @@ else ()
 endif ()
 
 if (WTF_USE_EGL)
-    list(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/egl" ${EGL_INCLUDE_DIR})
-    list(APPEND WebCore_SOURCES platform/graphics/egl/GLContextFromCurrentEGL.cpp)
+    list(APPEND WebCore_INCLUDE_DIRECTORIES
+        platform/graphics/egl
+        platform/graphics/surfaces/egl
+        ${EGL_INCLUDE_DIR}
+    )
+    list(APPEND WebCore_SOURCES
+        platform/graphics/surfaces/egl/EGLContext.cpp
+    )
     list(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
 else ()
-    list(APPEND WebCore_INCLUDE_DIRECTORIES "${WEBCORE_DIR}/platform/graphics/glx")
-    list(APPEND WebCore_SOURCES platform/graphics/glx/GLContextFromCurrentGLX.cpp)
+    list(APPEND WebCore_INCLUDE_DIRECTORIES
+        platform/graphics/surfaces/glx
+        ${X11_X11_INCLUDE_PATH}
+    )
+    list(APPEND WebCore_SOURCES
+        platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
+        platform/graphics/surfaces/glx/X11WindowResources.cpp
+        platform/graphics/surfaces/glx/GLXContext.cpp
+        platform/graphics/surfaces/glx/GLXSurface.cpp
+    )
+    list(APPEND WebCore_LIBRARIES ${X11_X11_LIB} ${X11_Xcomposite_LIB} ${X11_Xrender_LIB})
 endif ()
 
 if (ENABLE_BATTERY_STATUS)

@@ -30,7 +30,7 @@
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <qpa/qplatformnativeinterface.h>
-#elif PLATFORM(EFL)
+#elif PLATFORM(EFL) || PLATFORM(NIX)
 #include <GL/gl.h>
 #endif
 

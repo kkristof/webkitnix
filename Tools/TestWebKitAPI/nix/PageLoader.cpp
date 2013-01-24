@@ -32,7 +32,7 @@
 
 #if USE(OPENGL_ES_2)
 #include <GLES2/gl2.h>
-#elif USE(OPENGL)
+#else
 #include <GL/gl.h>
 #endif
 
