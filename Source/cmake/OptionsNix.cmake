@@ -17,7 +17,7 @@ set(WebKit2_LIBRARY_NAME WebKitNix)
 set(_WEBKIT_HARDCODED_DEFINES "")
 macro(SET_HARDCODED_DEFINE _name)
     list(APPEND _WEBKIT_HARDCODED_DEFINES ${_name})
-    set(${_name} 1)
+    set(${_name} ON)
 endmacro()
 
 # Set default values for features based on Features${PORT}.config
@@ -77,7 +77,7 @@ SET_HARDCODED_DEFINE(WTF_USE_TEXTURE_MAPPER_GL)
 SET_HARDCODED_DEFINE(WTF_USE_TILED_BACKING_STORE)
 
 if (NOT ENABLE_SVG)
-    set(ENABLE_SVG_FONTS 0)
+    set(ENABLE_SVG_FONTS OFF)
 endif ()
 
 if (NOT WTF_USE_OPENGL_ES_2)
