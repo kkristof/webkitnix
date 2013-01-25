@@ -60,6 +60,7 @@ typedef void (*NIXViewDoneWithTouchEventCallback)(NIXView view, const NIXTouchEv
 typedef void (*NIXViewDoneWithGestureEventCallback)(NIXView view, const NIXGestureEvent* gestureEvent, bool wasEventHandled, const void* clientInfo);
 typedef void (*NIXViewPageDidRequestScrollCallback)(NIXView view, WKPoint position, const void* clientInfo);
 typedef void (*NIXViewPageDidChangeContentsSizeCallback)(NIXView view, WKSize size, const void* clientInfo);
+typedef void (*NIXViewPageDidChangeViewportAttributesCallback)(NIXView view, float width, float height, float minimumScale, float maximumScale, float initialScale, int userScalable, const void* clientInfo);
 typedef void (*NIXViewPageDidFindZoomableAreaCallback)(NIXView view, WKPoint target, WKRect area, const void* clientInfo);
 typedef void (*NIXViewPageUpdateTextInputStateCallback)(NIXView view, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
 
@@ -75,6 +76,7 @@ struct NIXViewClient {
     NIXViewDoneWithGestureEventCallback              doneWithGestureEvent;
     NIXViewPageDidRequestScrollCallback              pageDidRequestScroll;
     NIXViewPageDidChangeContentsSizeCallback         didChangeContentsSize;
+    NIXViewPageDidChangeViewportAttributesCallback   didChangeViewportAttributes;
     NIXViewPageDidFindZoomableAreaCallback           didFindZoomableArea;
     NIXViewPageUpdateTextInputStateCallback          updateTextInputState;
 };

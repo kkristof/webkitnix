@@ -86,11 +86,19 @@ void WebViewClient::pageDidRequestScroll(WebView* view, WKPoint point)
         return;
     m_client.pageDidRequestScroll(toAPI(view), point, m_client.clientInfo);
 }
+
 void WebViewClient::didChangeContentsSize(WebView* view, WKSize size)
 {
     if (!m_client.didChangeContentsSize)
         return;
     m_client.didChangeContentsSize(toAPI(view), size, m_client.clientInfo);
+}
+
+void WebViewClient::didChangeViewportAttributes(WebView* view, float width, float height, float minimumScale, float maximumScale, float initialScale, int userScalable)
+{
+    if (!m_client.didChangeViewportAttributes)
+        return;
+    m_client.didChangeViewportAttributes(toAPI(view), width, height, minimumScale, maximumScale, initialScale, userScalable, m_client.clientInfo);
 }
 
 void WebViewClient::didFindZoomableArea(WebView* view, WKPoint target, WKRect area)

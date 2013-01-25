@@ -108,6 +108,7 @@ public:
 
     virtual void pageDidRequestScroll(const WebCore::IntPoint& point);
     virtual void didChangeContentsSize(const WebCore::IntSize& size);
+    virtual void didChangeViewportProperties(const WebCore::ViewportAttributes& viewportAttributes);
     virtual void didFindZoomableArea(const WebCore::IntPoint& target, const WebCore::IntRect& area);
 
     virtual void pageTransitionViewportReady();
@@ -123,7 +124,6 @@ public:
 
     virtual void setCursor(const WebCore::Cursor&) { notImplemented(); }
     virtual void setCursorHiddenUntilMouseMoves(bool) { notImplemented(); }
-    virtual void didChangeViewportProperties(const WebCore::ViewportAttributes&) { notImplemented(); }
 
     virtual void registerEditCommand(PassRefPtr<WebEditCommandProxy>, WebPageProxy::UndoOrRedo) { notImplemented(); }
     virtual void clearAllEditCommands() { notImplemented(); }

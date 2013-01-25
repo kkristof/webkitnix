@@ -50,6 +50,7 @@ public:
     void doneWithGestureEvent(WebView*, const NIXGestureEvent&, bool wasEventHandled);
     void pageDidRequestScroll(WebView*, WKPoint position);
     void didChangeContentsSize(WebView*, WKSize size);
+    void didChangeViewportAttributes(WebView*, float width, float height, float minimumScale, float maximumScale, float initialScale, int userScalable);
     void didFindZoomableArea(WebView*, WKPoint target, WKRect area);
     void updateTextInputState(WebView*, bool isContentEditable, WKRect cursorRect, WKRect editorRect);
 
