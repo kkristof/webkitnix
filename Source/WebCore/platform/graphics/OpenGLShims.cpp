@@ -106,7 +106,7 @@ static void* lookupOpenGLFunctionAddress(const char* functionName, bool* success
     return target;
 }
 
-#if (PLATFORM(QT) && defined(QT_OPENGL_ES_2)) || (PLATFORM(NIX) && USE(EGL))
+#if (PLATFORM(QT) && defined(QT_OPENGL_ES_2))
 
 // With Angle only EGL/GLES2 extensions are available through eglGetProcAddress, not the regular standardized functions.
 #define ASSIGN_FUNCTION_TABLE_ENTRY(FunctionName, success) \
