@@ -25,6 +25,7 @@
 
 #include "GestureRecognizer.h"
 #include "LinuxWindow.h"
+#include "Options.h"
 #include "TouchMocker.h"
 #include "XlibEventUtils.h"
 #include <GL/gl.h>
@@ -781,81 +782,15 @@ void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect c
     }
 }
 
-struct Device {
-    enum Type {
-        Default,
-        N9,
-        IPad,
-        IPhone,
-        Android
-    };
-
-    int width;
-    int height;
-    const char* userAgent;
-};
-
-Device deviceList[] = {
-    { 1024, 768, "" },
-    { 854, 480, "Mozilla/5.0 (MeeGo; NokiaN9) AppleWebKit/534.13 (KHTML, like Gecko) NokiaBrowser/8.5.0 Mobile Safari/534.13" },
-    { 1024, 768, "Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3" },
-    { 960, 640, "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3" },
-    { 800, 480, "Mozilla/5.0 (Linux; U; Android 4.0.2; en-us; Galaxy Nexus Build/ICL53F) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30" }
-};
-
 int main(int argc, char* argv[])
 {
+    Options options;
+    if (!options.parse(argc, argv))
+        return 1;
+
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
 
-    int width = 0;
-    int height = 0;
-    int viewportHorizontalDisplacement = 0;
-    int viewportVerticalDisplacement = 0;
-    std::string url;
-    Device::Type device = Device::Default;
-    MiniBrowser::Mode browserMode = MiniBrowser::MobileMode;
-    bool touchEmulationEnabled = false;
-
-    for (int i = 1; i < argc; ++i) {
-        if (!strcmp(argv[i], "--desktop"))
-            browserMode = MiniBrowser::DesktopMode;
-        else if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--touch-emulation"))
-            touchEmulationEnabled = true;
-        else if (!strcmp(argv[i], "--window-size")) {
-            if (i + 1 == argc) {
-                fprintf(stderr, "--window-size requires an argument.\n");
-                return 1;
-            }
-            if (sscanf(argv[++i], "%dx%d", &width, &height) != 2) {
-                fprintf(stderr, "--window-size format is WIDTHxHEIGHT.\n");
-                return 1;
-            }
-        } else if (!strcmp(argv[i], "--viewport-displacement")) {
-            if (i + 1 == argc) {
-                fprintf(stderr, "--viewport-displacement requires an argument.\n");
-                return 1;
-            }
-            if (sscanf(argv[++i], "%dx%d", &viewportHorizontalDisplacement, &viewportVerticalDisplacement) != 2) {
-                fprintf(stderr, "--viewport-displacement format is HORIZDISPLACEMENTxVERTDISPLACEMENT.\n");
-                return 1;
-            }
-        } else if (!strcmp(argv[i], "--n9"))
-            device = Device::N9;
-        else if (!strcmp(argv[i], "--ipad"))
-            device = Device::IPad;
-        else if (!strcmp(argv[i], "--iphone"))
-            device = Device::IPhone;
-        else if (!strcmp(argv[i], "--android"))
-            device = Device::Android;
-        else
-            url = argv[i];
-    }
-
-    if (width == 0 && height == 0) {
-        width = deviceList[device].width;
-        height = deviceList[device].height;
-    }
-
+    std::string url = options.url;
     if (url.empty())
         url = "http://www.google.com";
     else if (url.find("http") != 0 && url.find("file://") != 0) {
@@ -864,17 +799,17 @@ int main(int argc, char* argv[])
     }
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
-    MiniBrowser browser(mainLoop, browserMode, width, height, viewportHorizontalDisplacement, viewportVerticalDisplacement);
+    MiniBrowser browser(mainLoop, options.desktopModeEnabled ? MiniBrowser::DesktopMode : MiniBrowser::MobileMode, options.width, options.height, options.viewportHorizontalDisplacement, options.viewportVerticalDisplacement);
 
-    if (browser.mode() == MiniBrowser::MobileMode || touchEmulationEnabled) {
-        printf("Touch Emulation Mode toggled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
+    if (options.forceTouchEmulationEnabled || !options.desktopModeEnabled) {
+        printf("Touch Emulation Mode enabled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
         browser.setTouchEmulationMode(true);
     }
 
-    if (deviceList[device].userAgent)
-        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(deviceList[device].userAgent));
+    if (!options.userAgent.empty())
+        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(options.userAgent.c_str()));
 
-    if (browser.mode() == MiniBrowser::MobileMode)
+    if (!options.desktopModeEnabled)
         printf("Use Control + mouse wheel to zoom in and out.\n");
 
     WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));

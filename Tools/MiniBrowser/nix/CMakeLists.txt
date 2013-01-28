@@ -6,6 +6,7 @@ SET(MiniBrowser_SOURCES
     ${MiniBrowser_DIR}/main.cpp
     ${MiniBrowser_DIR}/LinuxWindow.cpp
     ${MiniBrowser_DIR}/GestureRecognizer.cpp
+    ${MiniBrowser_DIR}/Options.cpp
     ${MiniBrowser_DIR}/TouchMocker.cpp
     ${MiniBrowser_DIR}/XlibEventSource.cpp
 )
