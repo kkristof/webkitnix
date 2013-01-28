@@ -32,6 +32,7 @@ list(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
 
     "${PLATFORM_DIR}/nix/"
     "${TOOLS_DIR}/Shared/nix"
+    "${PLATFORM_DIR}/chromium/"
 )
 
 set(WebKitTestRunner_LIBRARIES
@@ -63,6 +64,7 @@ list(APPEND WebKitTestRunnerInjectedBundle_SOURCES
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/ActivateFontsNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/InjectedBundleNix.cpp
     ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/TestRunnerNix.cpp
+    ${WEBKIT_TESTRUNNER_INJECTEDBUNDLE_DIR}/nix/PlatformClient.cpp
 )
 
 if (ENABLE_GAMEPAD)

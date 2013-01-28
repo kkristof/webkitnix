@@ -31,6 +31,10 @@
 #include <wtf/Platform.h>
 #include <wtf/RefPtr.h>
 
+#if PLATFORM(NIX)
+#include <public/WebGamepads.h>
+#endif
+
 namespace WTR {
 
 class GamepadController : public JSWrappable {
@@ -50,9 +54,16 @@ public:
     void setAxisCount(int index, int axis);
     void setAxisData(int index, int button, float axisData);
 
+#if PLATFORM(NIX)
+    void sampleGamepads(WebKit::WebGamepads& into);
+#endif
+
 private:
     GamepadController();
 
+#if PLATFORM(NIX)
+    WebKit::WebGamepads m_gamepads;
+#endif
 };
 
 } // namespace WTR

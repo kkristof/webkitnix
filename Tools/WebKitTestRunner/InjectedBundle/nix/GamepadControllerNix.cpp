@@ -25,22 +25,21 @@
 
 #include "config.h"
 #include "GamepadController.h"
-#include "GamepadClient.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "PlatformClient.h"
 #include "StringFunctions.h"
+
 
 namespace WTR {
 
-static WTF::OwnPtr<GamepadClient> s_gamepadClient;
+static bool isValidIndex(int index)
+{
+    return index >= 0 && index < WebKit::WebGamepads::itemsLengthCap;
+}
 
 GamepadController::GamepadController()
 {
-    if (!s_gamepadClient)
-        s_gamepadClient = WTF::adoptPtr(new GamepadClient());
-
-    Nix::Platform::setGamepadClient(s_gamepadClient.get());
+    PlatformClient::current()->registerGamepadController(this);
 }
 
 GamepadController::~GamepadController()
@@ -49,80 +48,88 @@ GamepadController::~GamepadController()
 
 void GamepadController::connect(int index)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
-    s_gamepadClient->m_gamepads[index].connected = true;
+    m_gamepads.items[index].connected = true;
+    m_gamepads.length++;
 }
 
 void GamepadController::disconnect(int index)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (m_gamepads.length == 0)
         return;
 
-    s_gamepadClient->m_gamepads[index].connected = false;
+    if (!isValidIndex(index))
+        return;
+
+    m_gamepads.items[index].connected = false;
+    m_gamepads.length--;
 }
 
 void GamepadController::setId(int index, JSStringRef id)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
-    s_gamepadClient->m_gamepads[index].id = toSTD(toWK(id));
+    char buffer[WebKit::WebGamepad::idLengthCap];
+    size_t size = JSStringGetUTF8CString(id, reinterpret_cast<char*>(&buffer), WebKit::WebGamepad::idLengthCap);
+
+    for (unsigned i = 0; i <= size; ++i) {
+        m_gamepads.items[index].id[i] = buffer[i];
+    }
 }
 
 void GamepadController::setButtonCount(int index, int buttons)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
     if (buttons < 0)
         return;
 
-    std::vector<float> buttonsList(buttons, 0.0);
-    s_gamepadClient->m_gamepads[index].buttons = buttonsList;
+    m_gamepads.items[index].buttonsLength = buttons;
 }
 
 void GamepadController::setButtonData(int index, int button, float buttonData)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
-    if (button < 0 || button >= s_gamepadClient->m_gamepads[index].buttons.size())
+    if (button < 0 || button >= m_gamepads.items[index].buttonsLength)
         return;
 
-    s_gamepadClient->m_gamepads[index].buttons[button] = buttonData;
+    m_gamepads.items[index].buttons[button] = buttonData;
 }
 
 void GamepadController::setAxisCount(int index, int axis)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
     if (axis < 0)
         return;
 
-    std::vector<float> axesList(axis, 0.0);
-    s_gamepadClient->m_gamepads[index].axes = axesList;
+    m_gamepads.items[index].axesLength = axis;
 }
 
 void GamepadController::setAxisData(int index, int axis, float axisData)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
+    if (!isValidIndex(index))
         return;
 
-    if (axis < 0 || axis >= s_gamepadClient->m_gamepads[index].axes.size())
+    if (axis < 0 || axis >= m_gamepads.items[index].axesLength)
         return;
 
-    s_gamepadClient->m_gamepads[index].axes[axis] = axisData;
+    m_gamepads.items[index].axes[axis] = axisData;
 }
 
-Nix::Platform::GamepadDevice* GamepadClient::getGamepad(int index)
+void GamepadController::sampleGamepads(WebKit::WebGamepads& into)
 {
-    if (index < 0 || index >= MAX_GAMEPAD_DEVICES)
-        return 0;
+    for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i)
+        memcpy(&into.items[i], &m_gamepads.items[i], sizeof(m_gamepads.items[i]));
 
-    return &m_gamepads[index];
+    into.length = m_gamepads.length;
 }
 
 } // namespace WTR

@@ -23,24 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GamepadClient_h
-#define GamepadClient_h
+#ifndef PlatformClient_h
+#define PlatformClient_h
 
-#include "NixPlatform.h"
-
-#define MAX_GAMEPAD_DEVICES 4
+#include "GamepadController.h"
+#include <public/Platform.h>
+#include <wtf/PassRefPtr.h>
 
 
 namespace WTR {
 
-class GamepadClient : public Nix::Platform::GamepadClient {
+class PlatformClient : public WebKit::Platform {
 public:
-    GamepadClient() {}
+    static PlatformClient* current();
 
-    virtual Nix::Platform::GamepadDevice* getGamepad(int index);
+    PlatformClient();
 
-    Nix::Platform::GamepadDevice m_gamepads[MAX_GAMEPAD_DEVICES];
+    virtual void sampleGamepads(WebKit::WebGamepads& into);
+    void registerGamepadController(GamepadController* controller);
+
+private:
+    GamepadController* m_gamepadController;
 };
 
 } // namespace WTR
-#endif // GamepadClient_h
+#endif // PlatformClient_h

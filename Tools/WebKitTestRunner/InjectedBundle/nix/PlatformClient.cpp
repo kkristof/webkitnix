@@ -24,31 +24,37 @@
  */
 
 #include "config.h"
-#include "Gamepads.h"
 
-#include "GamepadList.h"
-#include "NixPlatform.h"
+#include "GamepadController.h"
+#include "PlatformClient.h"
 
-namespace WebCore {
 
-void sampleGamepads(GamepadList* into)
+namespace WTR {
+
+PlatformClient::PlatformClient()
+    : m_gamepadController(0)
 {
-    for (unsigned i = 0; i < into->length(); i++) {
-        Nix::Platform::GamepadDevice* gamepadDevice = Nix::Platform::getGamepad(i);
-        if (gamepadDevice && gamepadDevice->connected) {
-            RefPtr<Gamepad> gamepad = into->item(i);
-            if (!gamepad)
-                gamepad = Gamepad::create();
-
-            gamepad->index(i);
-            gamepad->id(String(gamepadDevice->id.c_str()).simplifyWhiteSpace());
-            gamepad->timestamp(gamepadDevice->lastTimestamp);
-            gamepad->axes(gamepadDevice->axes.size(), gamepadDevice->axes.data());
-            gamepad->buttons(gamepadDevice->buttons.size(), gamepadDevice->buttons.data());
-            into->set(i, gamepad);
-        } else
-            into->set(i, 0);
-    }
 }
 
-} // namespace WebCore
+PlatformClient* PlatformClient::current()
+{
+    return static_cast<PlatformClient*>(WebKit::Platform::current());
+}
+
+void PlatformClient::sampleGamepads(WebKit::WebGamepads& into)
+{
+    if (!WebKit::Platform::current())
+        return;
+
+    if (!m_gamepadController)
+        return;
+
+    m_gamepadController->sampleGamepads(into);
+}
+
+void PlatformClient::registerGamepadController(GamepadController* controller)
+{
+    m_gamepadController = controller;
+}
+
+} // namespace WTR

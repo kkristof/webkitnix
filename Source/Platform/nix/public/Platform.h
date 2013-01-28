@@ -34,9 +34,11 @@
 #if WEBKIT_IMPLEMENTATION
 #include <public/WebAudioDevice.h>
 #include <public/WebData.h>
+#include <public/WebGamepads.h>
 #else
 #include "WebAudioDevice.h"
 #include "WebData.h"
+#include "WebGamepads.h"
 #endif
 
 
@@ -52,7 +54,6 @@ public:
     WEBKIT_EXPORT static Platform* current();
 
     // Audio --------------------------------------------------------------
-
     virtual double audioHardwareSampleRate() { return 0; }
     virtual size_t audioHardwareBufferSize() { return 0; }
 
@@ -60,12 +61,12 @@ public:
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
 
+
     // Gamepad -------------------------------------------------------------
-    //virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
+    virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
 
 
     // Resources -----------------------------------------------------------
-
     // Returns a blob of data corresponding to the named resource.
     virtual WebData loadResource(const char* name) { return WebData(); }
 
