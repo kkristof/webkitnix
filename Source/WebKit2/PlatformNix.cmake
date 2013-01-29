@@ -56,8 +56,8 @@ list(APPEND WebKit2_SOURCES
     WebProcess/Cookies/soup/WebCookieManagerSoup.cpp
     WebProcess/Cookies/soup/WebKitSoupCookieJarSqlite.cpp
 
-    WebProcess/Downloads/nix/DownloadSoupErrorsNix.cpp
-    WebProcess/Downloads/soup/DownloadSoup.cpp
+    Shared/Downloads/nix/DownloadSoupErrorsNix.cpp
+    Shared/Downloads/soup/DownloadSoup.cpp
 
     WebProcess/nix/WebProcessMainNix.cpp
 
@@ -81,6 +81,8 @@ list(APPEND WebKit2_SOURCES
     WebProcess/soup/WebKitSoupRequestInputStream.cpp
 
     WebProcess/WebCoreSupport/soup/WebFrameNetworkingContext.cpp
+
+    UIProcess/Storage/StorageManager.cpp
 )
 
 list(APPEND WebKit2_MESSAGES_IN_FILES
@@ -99,7 +101,7 @@ list(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${WEBKIT2_DIR}/UIProcess/API/C/soup"
     "${WEBKIT2_DIR}/UIProcess/soup"
     "${WEBKIT2_DIR}/UIProcess/nix"
-    "${WEBKIT2_DIR}/WebProcess/Downloads/soup"
+    "${WEBKIT2_DIR}/Shared/Downloads/soup"
     "${WEBKIT2_DIR}/WebProcess/nix"
     "${WEBKIT2_DIR}/WebProcess/soup"
     "${WEBKIT2_DIR}/WebProcess/WebCoreSupport/nix"
