@@ -32,7 +32,7 @@
 #include "IDBDatabaseCallbacksImpl.h"
 #include "IDBPendingTransactionMonitor.h"
 #include "IDBTracing.h"
-#include "IDBUpgradeNeededEvent.h"
+#include "IDBVersionChangeEvent.h"
 #include "ScriptExecutionContext.h"
 
 namespace WebCore {
@@ -45,7 +45,7 @@ PassRefPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ScriptExecutionContext* co
 }
 
 IDBOpenDBRequest::IDBOpenDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseCallbacksImpl> callbacks, int64_t transactionId, int64_t version)
-    : IDBRequest(context, IDBAny::createNull(), IDBTransactionBackendInterface::NormalTask, 0)
+    : IDBRequest(context, IDBAny::createNull(), IDBDatabaseBackendInterface::NormalTask, 0)
     , m_databaseCallbacks(callbacks)
     , m_transactionId(transactionId)
     , m_version(version)
@@ -66,7 +66,8 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
 {
     if (!shouldEnqueueEvent())
         return;
-    enqueueEvent(IDBUpgradeNeededEvent::create(oldVersion, m_version, eventNames().blockedEvent));
+    RefPtr<IDBAny> newVersionAny = (m_version == IDBDatabaseMetadata::DefaultIntVersion) ? IDBAny::createNull() : IDBAny::create(m_version);
+    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), newVersionAny.release(), eventNames().blockedEvent));
 }
 
 void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBTransactionBackendInterface>, PassRefPtr<IDBDatabaseBackendInterface> prpDatabaseBackend)
@@ -104,7 +105,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBTransac
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
         m_version = 1;
-    enqueueEvent(IDBUpgradeNeededEvent::create(oldVersion, m_version, eventNames().upgradeneededEvent));
+    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), IDBAny::create(m_version), eventNames().upgradeneededEvent));
 }
 
 void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBackend)

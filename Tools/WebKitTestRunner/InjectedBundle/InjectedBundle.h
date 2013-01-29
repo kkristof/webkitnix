@@ -100,6 +100,9 @@ public:
     // Policy delegate.
     void setCustomPolicyDelegate(bool enabled, bool permissive);
 
+    // Page Visibility.
+    void setVisibilityState(WKPageVisibilityState, bool isInitialState);
+
     // Work queue.
     bool shouldProcessWorkQueue() const;
     void processWorkQueue();

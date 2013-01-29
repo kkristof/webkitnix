@@ -392,6 +392,11 @@ void CoordinatedLayerTreeHost::destroyCanvas(CoordinatedLayerID id)
 }
 #endif
 
+void CoordinatedLayerTreeHost::setLayerRepaintCount(CoordinatedLayerID id, int value)
+{
+    m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::SetLayerRepaintCount(id, value));
+}
+
 #if ENABLE(CSS_FILTERS)
 void CoordinatedLayerTreeHost::syncLayerFilters(CoordinatedLayerID id, const FilterOperations& filters)
 {

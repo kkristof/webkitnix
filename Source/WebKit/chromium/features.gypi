@@ -34,6 +34,7 @@
     'feature_defines': [
       'ENABLE_3D_PLUGIN=1',
       'ENABLE_BATTERY_STATUS=0',
+      'ENABLE_BINDING_INTEGRITY=0',
       'ENABLE_BLOB=1',
       'ENABLE_BLOB_SLICE=1',
       'ENABLE_CANVAS_PATH=0',
@@ -87,7 +88,7 @@
       'ENABLE_LEGACY_WEB_AUDIO=1',
       'ENABLE_LINK_PREFETCH=1',
       'ENABLE_LINK_PRERENDER=1',
-      'ENABLE_MATHML=1',
+      'ENABLE_MATHML=0',
       'ENABLE_MEDIA_SOURCE=1',
       'ENABLE_MEDIA_STATISTICS=1',
       'ENABLE_MEDIA_STREAM=<(enable_webrtc)',

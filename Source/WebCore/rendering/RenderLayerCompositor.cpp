@@ -1169,7 +1169,7 @@ void RenderLayerCompositor::frameViewDidChangeSize()
 {
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->visibleContentRect(false /* exclude scrollbars */).size());
+        m_clipLayer->setSize(frameView->unscaledVisibleContentSize(false /* exclude scrollbars */));
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
@@ -1543,7 +1543,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
     }
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->visibleContentRect(false /* exclude scrollbars */).size());
+        m_clipLayer->setSize(frameView->unscaledVisibleContentSize(false /* exclude scrollbars */));
     }
 
 #if ENABLE(RUBBER_BANDING)
@@ -2065,7 +2065,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
 
     // Fixed position elements that are invisible in the current view don't get their own layer.
     if (FrameView* frameView = m_renderView->frameView()) {
-        IntRect viewBounds = frameView->visibleContentRect();
+        LayoutRect viewBounds = frameView->viewportConstrainedVisibleContentRect();
         LayoutRect layerBounds = layer->calculateLayerBounds(rootRenderLayer(), 0, RenderLayer::DefaultCalculateLayerBoundsFlags
             | RenderLayer::ExcludeHiddenDescendants | RenderLayer::DontConstrainForMask | RenderLayer::IncludeCompositedDescendants);
         layerBounds.scale(frameView->frame()->frameScaleFactor());
@@ -2076,6 +2076,13 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
             m_reevaluateCompositingAfterLayout = true;
             return false;
         }
+    }
+    
+    bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
+    if (!paintsContent) {
+        // isVisuallyNonEmpty() depends on layout.
+        m_reevaluateCompositingAfterLayout = true;
+        return false;
     }
 
     return true;

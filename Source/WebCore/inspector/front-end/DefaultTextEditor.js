@@ -894,6 +894,10 @@ WebInspector.TextEditorChunkedPanel.prototype = {
      */
     findVisibleChunks: function(visibleFrom, visibleTo)
     {
+        var span = (visibleTo - visibleFrom) * 0.5;
+        visibleFrom = Math.max(visibleFrom - span, 0);
+        visibleTo = visibleTo + span;
+
         var from = this._findFirstVisibleChunkNumber(visibleFrom);
         for (var to = from + 1; to < this._textChunks.length; ++to) {
             if (this._textChunks[to].offsetTop >= visibleTo)
@@ -1357,6 +1361,8 @@ WebInspector.TextEditorMainPanel = function(delegate, textModel, url, syncScroll
     this._container.addEventListener("focus", this._handleFocused.bind(this), false);
 
     this._highlightRegexs = {};
+
+    this._tokenHighlighter = new WebInspector.TextEditorMainPanel.TokenHighlighter(this, textModel);
 
     this._freeCachedElements();
     this.buildChunks();
@@ -2618,6 +2624,8 @@ WebInspector.TextEditorMainPanel.prototype = {
         var textRange = this.selection();
         if (textRange)
             this._lastSelection = textRange;
+
+        this._tokenHighlighter.handleSelectionChange(textRange);
         this._delegate.selectionChanged(textRange);
     },
 
@@ -2937,6 +2945,94 @@ WebInspector.TextEditorMainChunk.prototype = {
     lastElement: function()
     {
         return this._expandedLineRows ? this._expandedLineRows[this._expandedLineRows.length - 1] : this.element;
+    }
+}
+
+/**
+ * @constructor
+ * @param {WebInspector.TextEditorMainPanel} mainPanel
+ * @param {WebInspector.TextEditorModel} textModel
+ */
+WebInspector.TextEditorMainPanel.TokenHighlighter = function(mainPanel, textModel)
+{
+    this._mainPanel = mainPanel;
+    this._textModel = textModel;
+}
+
+WebInspector.TextEditorMainPanel.TokenHighlighter._NonWordCharRegex = /[^a-zA-Z0-9_]/;
+WebInspector.TextEditorMainPanel.TokenHighlighter._WordRegex = /^[a-zA-Z0-9_]+$/;
+
+WebInspector.TextEditorMainPanel.TokenHighlighter.prototype = {
+    /**
+     * @param {WebInspector.TextRange} range
+     */
+    handleSelectionChange: function(range)
+    {
+        if (!range) {
+            this._removeHighlight();
+            return;
+        }
+
+        if (range.startLine !== range.endLine) {
+            this._removeHighlight();
+            return;
+        }
+
+        range = range.normalize();
+        var selectedText = this._textModel.copyRange(range);
+        if (selectedText === this._selectedWord)
+            return;
+
+        if (selectedText === "") {
+            this._removeHighlight();
+            return;
+        }
+
+        if (this._isWord(range, selectedText))
+            this._highlight(selectedText);
+        else
+            this._removeHighlight();
+    },
+
+    /**
+     * @param {string} word
+     */
+    _regexString: function(word)
+    {
+        return "\\b" + word + "\\b";
+    },
+
+    /**
+     * @param {string} selectedWord
+     */
+    _highlight: function(selectedWord)
+    {
+        this._removeHighlight();
+        this._selectedWord = selectedWord;
+        this._mainPanel.highlightRegex(this._regexString(selectedWord), "text-editor-token-highlight")
+    },
+
+    _removeHighlight: function()
+    {
+        if (this._selectedWord) {
+            this._mainPanel.removeRegexHighlight(this._regexString(this._selectedWord));
+            delete this._selectedWord;
+        }
+    },
+
+    /**
+     * @param {WebInspector.TextRange} range
+     * @param {string} selectedText
+     * @return {boolean}
+     */
+    _isWord: function(range, selectedText)
+    {
+        const NonWordChar = WebInspector.TextEditorMainPanel.TokenHighlighter._NonWordCharRegex;
+        const WordRegex = WebInspector.TextEditorMainPanel.TokenHighlighter._WordRegex;
+        var line = this._textModel.line(range.startLine);
+        var leftBound = range.startColumn === 0 || NonWordChar.test(line.charAt(range.startColumn - 1));
+        var rightBound = range.endColumn === line.length - 1 || NonWordChar.test(line.charAt(range.endColumn));
+        return leftBound && rightBound && WordRegex.test(selectedText);
     }
 }
 

@@ -1183,7 +1183,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         after->removedFrom(insertionPoint);
 
 #if ENABLE(DIALOG_ELEMENT)
-    setIsInTopLayer(false);
+    document()->removeFromTopLayer(this);
 #endif
 #if ENABLE(FULLSCREEN_API)
     if (containsFullScreenElement())
@@ -1449,7 +1449,7 @@ ElementShadow* Element::ensureShadow()
         return shadow;
 
     ElementRareData* data = elementRareData();
-    data->setShadow(adoptPtr(new ElementShadow()));
+    data->setShadow(ElementShadow::create());
     return data->shadow();
 }
 
@@ -1471,9 +1471,9 @@ ShadowRoot* Element::shadowRoot() const
     if (!elementShadow)
         return 0;
     ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
-    if (!shadowRoot->isAccessible())
-        return 0;
-    return shadowRoot;
+    if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot)
+        return shadowRoot;
+    return 0;
 }
 
 ShadowRoot* Element::userAgentShadowRoot() const
@@ -1486,6 +1486,15 @@ ShadowRoot* Element::userAgentShadowRoot() const
     }
 
     return 0;
+}
+
+ShadowRoot* Element::ensureUserAgentShadowRoot()
+{
+    if (ShadowRoot* shadowRoot = userAgentShadowRoot())
+        return shadowRoot;
+    ShadowRoot* shadowRoot = ShadowRoot::create(this, ShadowRoot::UserAgentShadowRoot, ASSERT_NO_EXCEPTION).get();
+    didAddUserAgentShadowRoot(shadowRoot);
+    return shadowRoot;
 }
 
 const AtomicString& Element::shadowPseudoId() const
@@ -2057,6 +2066,20 @@ void Element::setChildIndex(unsigned index)
     rareData->setChildIndex(index);
 }
 
+bool Element::hasFlagsSetDuringStylingOfChildren() const
+{
+    if (!hasRareData())
+        return false;
+    return rareDataChildrenAffectedByHover()
+        || rareDataChildrenAffectedByActive()
+        || rareDataChildrenAffectedByDrag()
+        || rareDataChildrenAffectedByFirstChildRules()
+        || rareDataChildrenAffectedByLastChildRules()
+        || rareDataChildrenAffectedByDirectAdjacentRules()
+        || rareDataChildrenAffectedByForwardPositionalRules()
+        || rareDataChildrenAffectedByBackwardPositionalRules();
+}
+
 bool Element::rareDataStyleAffectedByEmpty() const
 {
     ASSERT(hasRareData());
@@ -2404,7 +2427,10 @@ void Element::setIsInTopLayer(bool inTopLayer)
     if (isInTopLayer() == inTopLayer)
         return;
     ensureElementRareData()->setIsInTopLayer(inTopLayer);
-    setNeedsStyleRecalc(SyntheticStyleChange);
+
+    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
+    // top layer position, or in its usual place if not in the top layer.
+    reattachIfAttached();
 }
 #endif
 

@@ -5229,10 +5229,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\bindings\js\JSHTMLOutputElementCustom.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\bindings\js\JSHTMLSelectElementCustom.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -6293,6 +6289,7 @@
     <ClInclude Include="..\ForwardingHeaders\runtime\JSAPIValueWrapper.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSArray.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSCell.h" />
+    <ClInclude Include="..\ForwardingHeaders\runtime\JSCJSValue.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSDestructibleObject.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSExportMacros.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSFunction.h" />
@@ -8265,7 +8262,6 @@
     <ClInclude Include="..\ForwardingHeaders\runtime\JSLock.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSObject.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\JSString.h" />
-    <ClInclude Include="..\ForwardingHeaders\runtime\JSValue.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\Lookup.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\Operations.h" />
     <ClInclude Include="..\ForwardingHeaders\runtime\Protect.h" />
@@ -8403,6 +8399,7 @@
     <None Include="..\css\fullscreenQuickTime.css" />
     <None Include="..\css\html.css" />
     <None Include="..\css\mediaControls.css" />
+    <None Include="..\css\plugIns.css" />
     <None Include="..\css\quirks.css" />
     <None Include="..\xml\XPathGrammar.y" />
     <None Include="..\bindings\scripts\CodeGenerator.pm" />
@@ -8667,6 +8664,9 @@
     <None Include="..\inspector\front-end\WorkersSidebarPane.js" />
     <None Include="..\inspector\front-end\Workspace.js" />
     <None Include="..\inspector\front-end\cm\xml.js" />
+    <None Include="WebCorePostBuild.cmd" />
+    <None Include="WebCorePreBuild.cmd" />
+    <None Include="WebCorePreLink.cmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

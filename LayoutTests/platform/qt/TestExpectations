@@ -107,6 +107,7 @@ fast/forms/file/input-file-directory-upload.html
 # ENABLE(DOM4_EVENTS_CONSTRUCTOR) is disabled.
 fast/events/constructors/ui-event-constructor.html
 fast/events/constructors/mouse-event-constructor.html
+fast/events/constructors/composition-event-constructor.html
 
 # ENABLE(INDEXED_DATABASE) is disabled.
 storage/indexeddb
@@ -644,10 +645,6 @@ http/tests/workers/terminate-during-sync-operation.html
 
 # Needs custom policy delegate enhancement to log downloads
 http/tests/download
-
-# [Qt] New http/tests/cache/cancel-multiple-post-xhrs.html introduced in 140174.
-# https://bugs.webkit.org/show_bug.cgi?id=107434
-http/tests/cache/cancel-multiple-post-xhrs.html
 
 # We cannot implement FrameLoaderClient::canHandleRequest() since QNAM doesn't know
 # whether or not a given scheme is supported prior to createRequest().
@@ -1374,6 +1371,8 @@ webkit.org/b/105437 svg/filters/feImage-target-reappend-to-document.svg [ ImageO
 webkit.org/b/105437 svg/filters/feImage-target-remove-from-document.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/105437 svg/filters/feImage-target-style-change.svg [ ImageOnlyFailure Pass ]
 
+webkit.org/b/106957 svg/dom/SVGViewSpec-invalid-ref-crash.html [ Failure ]
+
 
 # ============================================================================= #
 # Failing CSS Tests
@@ -1836,6 +1835,12 @@ fast/images/icon-decoding.html
 # https://bugs.webkit.org/show_bug.cgi?id=105574
 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html
 
+# [Qt] REGRESSION(140685): These tests will only work after upgrading gstreamer 0.10 to 1.0.
+# https://bugs.webkit.org/show_bug.cgi?id=108175
+fast/events/media-focus-in-standalone-media-document.html
+fast/events/tabindex-focus-blur-all.html
+fast/spatial-navigation/snav-media-elements.html
+
 # ============================================================================= #
 # failing security tests
 # ============================================================================= #
@@ -1972,7 +1977,8 @@ svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-userSpaceOnUse.
 css2.1/t100801-c548-ln-ht-01-b-ag.html
 css2.1/20110323/inline-non-replaced-height-003.htm
 css2.1/20110323/inline-non-replaced-height-002.htm
-
+fast/css/resize-corner-tracking-transformed-iframe.html
+fast/css/resize-corner-tracking.html
 
 # ============================================================================= #
 # Regressions occured after Qt version update
@@ -2547,3 +2553,17 @@ inspector/editor/text-editor-formatter.html
 # Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=14664
 webkit.org/b/107476 fast/block/float/024.html [ Failure ]
 webkit.org/b/107476 fast/block/margin-collapse/empty-clear-blocks.html [ Failure ]
+
+# Rebaseline required after https://webkit.org/b/31397
+webkit.org/b/107567 svg/batik/text/xmlSpace.svg [ Failure ] 
+webkit.org/b/107567 fast/text/capitalize-empty-generated-string.html [ Failure ] 
+webkit.org/b/107567 fast/text/whitespace/007.html [ Failure ] 
+webkit.org/b/107567 fast/text/whitespace/006.html [ Failure ] 
+webkit.org/b/107567 fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ] 
+webkit.org/b/107567 tables/mozilla/bugs/bug1318.html [ Failure ] 
+webkit.org/b/107567 fast/inline/drawStyledEmptyInlines.html [ Failure ] 
+webkit.org/b/107567 tables/mozilla/bugs/bug113235-3.html [ Failure ] 
+webkit.org/b/107567 css2.1/t0505-c16-descendant-01-e.html [ Failure ] 
+webkit.org/b/107567 tables/mozilla/bugs/bug1188.html [ Failure ] 
+webkit.org/b/107567 editing/selection/extend-by-sentence-001.html [ Failure ] 
+webkit.org/b/107567 svg/carto.net/combobox.svg [ Failure ] 

@@ -38270,6 +38270,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\css\plugIns.css"
+				>
+			</File>
+			<File
 				RelativePath="..\css\PropertySetCSSStyleDeclaration.cpp"
 				>
 			</File>
@@ -39011,6 +39015,14 @@
 			</File>
 			<File
 				RelativePath="..\rendering\ExclusionShape.h"
+				>
+			</File>
+			<File
+				RelativePath="..\rendering\ExclusionShapeInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\rendering\ExclusionShapeInfo.h"
 				>
 			</File>
 			<File
@@ -64590,6 +64602,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\html\MicroDataAttributeTokenList.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\html\MicroDataAttributeTokenList.h"
+				>
+			</File>
+			<File
 				RelativePath="..\html\MicroDataItemValue.cpp"
 				>
 			</File>
@@ -69410,58 +69430,6 @@
 				</File>
 				<File
 					RelativePath="..\bindings\js\JSHTMLOptionsCollectionCustom.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug_Cairo_CFLite|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release_Cairo_CFLite|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug_All|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Production|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\bindings\js\JSHTMLOutputElementCustom.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -74809,7 +74777,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\ForwardingHeaders\runtime\JSValue.h"
+					RelativePath="..\ForwardingHeaders\runtime\JSCJSValue.h"
 					>
 				</File>
 				<File

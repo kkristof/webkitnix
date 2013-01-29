@@ -46,7 +46,6 @@
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
-class DRTTestRunner;
 class MockWebSpeechInputController;
 class MockWebSpeechRecognizer;
 class SkCanvas;
@@ -75,6 +74,10 @@ class MediaStreamUtil;
 class TestMediaStreamClient;
 }
 
+namespace WebTestRunner {
+class WebTestRunner;
+}
+
 class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient, public NavigationHost, public WebKit::WebPrerendererClient, public WebTestRunner::WebTestDelegate {
  public:
     WebViewHost(TestShell*);
@@ -86,9 +89,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     WebTestRunner::WebTestProxyBase* proxy() const;
     void setProxy(WebTestRunner::WebTestProxyBase*);
     void reset();
-    void waitForPolicyDelegate();
-    void setCustomPolicyDelegate(bool, bool);
-    WebKit::WebFrame* topLoadingFrame() { return m_topLoadingFrame; }
     void setPendingExtraData(PassOwnPtr<TestShellExtraData>);
 
     void paintRect(const WebKit::WebRect&);
@@ -97,7 +97,6 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     SkCanvas* canvas();
     void displayRepaintMask();
 
-    void loadURLForFrame(const WebKit::WebURL&, const WebKit::WebString& frameName);
     TestNavigationController* navigationController() { return m_navigationController.get(); }
 
     void closeWidget();
@@ -170,6 +169,18 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
 #endif
     virtual void display() OVERRIDE;
     virtual void displayInvalidatedRegion() OVERRIDE;
+    virtual void testFinished() OVERRIDE;
+    virtual void testTimedOut() OVERRIDE;
+    virtual bool isBeingDebugged() OVERRIDE;
+    virtual int layoutTestTimeout() OVERRIDE;
+    virtual void closeRemainingWindows() OVERRIDE;
+    virtual int navigationEntryCount() OVERRIDE;
+    virtual int windowCount() OVERRIDE;
+    virtual void setCustomPolicyDelegate(bool, bool) OVERRIDE;
+    virtual void waitForPolicyDelegate() OVERRIDE;
+    virtual void goToOffset(int) OVERRIDE;
+    virtual void reload() OVERRIDE;
+    void loadURLForFrame(const WebKit::WebURL&, const std::string& frameName) OVERRIDE;
 
     // NavigationHost
     virtual bool navigate(const TestNavigationEntry&, bool reload);
@@ -260,14 +271,9 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual WebKit::WebURLError cancelledError(WebKit::WebFrame*, const WebKit::WebURLRequest&);
     virtual void unableToImplementPolicyWithError(WebKit::WebFrame*, const WebKit::WebURLError&);
     virtual void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
-    virtual void didStartProvisionalLoad(WebKit::WebFrame*);
-    virtual void didReceiveServerRedirectForProvisionalLoad(WebKit::WebFrame*);
-    virtual void didFailProvisionalLoad(WebKit::WebFrame*, const WebKit::WebURLError&);
     virtual void didCommitProvisionalLoad(WebKit::WebFrame*, bool isNewNavigation);
     virtual void didClearWindowObject(WebKit::WebFrame*);
     virtual void didReceiveTitle(WebKit::WebFrame*, const WebKit::WebString&, WebKit::WebTextDirection);
-    virtual void didFailLoad(WebKit::WebFrame*, const WebKit::WebURLError&);
-    virtual void didFinishLoad(WebKit::WebFrame*);
     virtual void didNavigateWithinPage(WebKit::WebFrame*, bool isNewNavigation);
     virtual void willSendRequest(WebKit::WebFrame*, unsigned identifier, WebKit::WebURLRequest&, const WebKit::WebURLResponse&);
     virtual void openFileSystem(WebKit::WebFrame*, WebKit::WebFileSystem::Type, long long size, bool create, WebKit::WebFileSystemCallbacks*);
@@ -300,27 +306,14 @@ private:
         CallbackMethodType m_callback;
     };
 
-    DRTTestRunner* testRunner() const;
+    WebTestRunner::WebTestRunner* testRunner() const;
 
     // Called the title of the page changes.
     // Can be used to update the title of the window.
     void setPageTitle(const WebKit::WebString&);
 
-    // Called when the URL of the page changes.
-    // Extracts the URL and forwards on to SetAddressBarURL().
-    void updateAddressBar(WebKit::WebView*);
-
-    // Called when the URL of the page changes.
-    // Should be used to update the text of the URL bar.
-    void setAddressBarURL(const WebKit::WebURL&);
-
     void enterFullScreenNow();
     void exitFullScreenNow();
-
-    // In the Mac code, this is called to trigger the end of a test after the
-    // page has finished loading. From here, we can generate the dump for the
-    // test.
-    void locationChangeDone(WebKit::WebFrame*);
 
     void updateForCommittedLoad(WebKit::WebFrame*, bool isNewNavigation);
     void updateURL(WebKit::WebFrame*);
@@ -358,9 +351,6 @@ private:
 
     // This delegate works for the following widget.
     WebKit::WebWidget* m_webWidget;
-
-    // This is non-0 IFF a load is in progress.
-    WebKit::WebFrame* m_topLoadingFrame;
 
     // For tracking session history. See RenderView.
     int m_pageId;

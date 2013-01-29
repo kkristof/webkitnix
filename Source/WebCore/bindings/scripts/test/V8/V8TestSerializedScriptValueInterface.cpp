@@ -71,7 +71,7 @@ static v8::Handle<v8::Value> cachedValueAttrGetter(v8::Local<v8::String> name, c
     if (!value.IsEmpty())
         return value;
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    SerializedScriptValue* serialized = imp->cachedValue();
+    RefPtr<SerializedScriptValue> serialized = imp->cachedValue();
     value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     return value;
@@ -106,7 +106,7 @@ static v8::Handle<v8::Value> cachedReadonlyValueAttrGetter(v8::Local<v8::String>
     if (!value.IsEmpty())
         return value;
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    SerializedScriptValue* serialized = imp->cachedReadonlyValue();
+    RefPtr<SerializedScriptValue> serialized = imp->cachedReadonlyValue();
     value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     return value;
@@ -227,7 +227,7 @@ v8::Handle<v8::Value> V8TestSerializedScriptValueInterface::constructorCallback(
     return wrapper;
 }
 
-static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInterfaceTemplate(v8::Persistent<v8::FunctionTemplate> desc)
+static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInterfaceTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate)
 {
     desc->ReadOnlyPrototype();
 
@@ -274,7 +274,7 @@ v8::Persistent<v8::FunctionTemplate> V8TestSerializedScriptValueInterface::GetTe
 
     v8::HandleScope handleScope;
     v8::Persistent<v8::FunctionTemplate> templ =
-        ConfigureV8TestSerializedScriptValueInterfaceTemplate(GetRawTemplate());
+        ConfigureV8TestSerializedScriptValueInterfaceTemplate(GetRawTemplate(isolate), isolate);
     data->templateMap().add(&info, templ);
     return templ;
 }

@@ -1,3 +1,122 @@
+2013-01-28  Benjamin Poulain  <benjamin@webkit.org>
+
+        String constructed from Literals should be non-empty
+        https://bugs.webkit.org/show_bug.cgi?id=108103
+
+        Reviewed by Eric Carlson.
+
+        For efficiency, the construction from literal only works with valid non-empty strings.
+        One of the constructor was changed to fix an error from HTMLMediaElement.
+
+        This patch replaces the branch with an assertions.
+
+        * wtf/text/StringImpl.cpp:
+        (WTF::StringImpl::createFromLiteral):
+
+2013-01-28  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX: Platform.h:1212:22: error: '__MAC_OS_X_VERSION_MIN_REQUIRED' is not defined, evaluates to 0 [-Werror,-Wundef]
+
+        This fixes the following build error introduced in r140366 for
+        Bug 107098:
+
+            Platform.h:1212:22: error: '__MAC_OS_X_VERSION_MIN_REQUIRED' is not defined, evaluates to 0 [-Werror,-Wundef]
+            #if PLATFORM(MAC) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080 && !PLATFORM(IOS)
+                                 ^
+            1 error generated.
+
+        * wtf/Platform.h: Check !PLATFORM(IOS) first so that iOS builds
+        do not try to evaluate __MAC_OS_X_VERSION_MIN_REQUIRED.
+
+2013-01-28  Adam Barth  <abarth@webkit.org>
+
+        Remove webkitNotifications.createHTMLNotification
+        https://bugs.webkit.org/show_bug.cgi?id=107598
+
+        Reviewed by Benjamin Poulain.
+
+        * wtf/Platform.h:
+
+2013-01-27  Laszlo Gombos  <l.gombos@samsung.com>
+
+        [ANDROID] Fix a typo
+        https://bugs.webkit.org/show_bug.cgi?id=108046
+
+        Reviewed by Adam Barth.
+
+        HAVE_NMAP -> HAVE_MMAP.
+
+        * wtf/Platform.h:
+
+2013-01-27  Zoltan Arvai  <zarvai@inf.u-szeged.hu>
+
+        Fixing atomicIncrement implementation for Windows by dropping support before XP SP2.
+        https://bugs.webkit.org/show_bug.cgi?id=106740
+
+        Reviewed by Benjamin Poulain.
+
+        Adding int64_t type atomicIncrement and atomicDecrement implementations for Windows
+        into Atomics.h required by WebKit2 after r139514. Separating WinCE implementation
+        that does not support WebKit2 and has no support for 64 bit interlocked methods.
+
+        Increasing WINVER and _WIN32_WINNT to XP SP2, because the 64 bit type interlocked methods
+        are not supported on previous versions on 32 bit target.
+
+        * config.h:
+        * wtf/Atomics.h:
+        (WTF):
+        (WTF::atomicIncrement):
+        (WTF::atomicDecrement):
+
+2013-01-26  Andras Becsi  <andras.becsi@digia.com>
+
+        Unreviewed fix after r140451 to make GIT-SVN repositories happy.
+
+        * WTF.vcproj/WTF.sln:
+
+2013-01-26  Justin Schuh  <jschuh@chromium.org>
+
+        [CHROMIUM] Suppress more c4267 build warnings for Win64 targets
+        https://bugs.webkit.org/show_bug.cgi?id=107993
+
+        Reviewed by Abhishek Arya.
+
+        * WTF.gyp/WTF.gyp:
+
+2013-01-25  Eric Seidel  <eric@webkit.org>
+
+        Support 4 and 5 argument bound static functions
+        https://bugs.webkit.org/show_bug.cgi?id=107973
+
+        Reviewed by Anders Carlsson.
+
+        Yummy copy/paste template code!
+        I'm about to use this in a BackgroundHTMLParser patch, but figured this should be landed separately.
+
+        * wtf/Functional.h:
+        (WTF):
+        (WTF::R):
+
+2013-01-24  Martin Robinson  <mrobinson@igalia.com>
+
+        Abstract the logic for appending a UChar32 onto StringBuilder
+        https://bugs.webkit.org/show_bug.cgi?id=107505
+
+        Reviewed by Darin Adler.
+
+        * wtf/text/StringBuilder.h:
+        (WTF::StringBuilder::append): Added a method for appending a UChar32 to a StringBuilder.
+
+2013-01-24  Brent Fulgham  <bfulgham@webkit.org>
+
+        Stipulate build order between WTFGenerated and WTF
+        https://bugs.webkit.org/show_bug.cgi?id=107844
+
+        Reviewed by Tim Horton.
+
+        * WTF.vcxproj/WTF.vcxproj: Use VS2010 project dependency
+        declaration so WTF depends on a completed WTFGenerated build.
+
 2013-01-23  Abhishek Arya  <inferno@chromium.org>
 
         Add support for ASSERT_WITH_SECURITY_IMPLICATION.

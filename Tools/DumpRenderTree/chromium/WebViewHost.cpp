@@ -32,7 +32,6 @@
 #include "WebViewHost.h"
 
 #include "DRTDevToolsAgent.h"
-#include "DRTTestRunner.h"
 #include "MockWebSpeechInputController.h"
 #include "MockWebSpeechRecognizer.h"
 #include "Task.h"
@@ -688,27 +687,6 @@ void WebViewHost::didCreateDataSource(WebFrame*, WebDataSource* ds)
         ds->setDeferMainResourceDataLoad(false);
 }
 
-void WebViewHost::didStartProvisionalLoad(WebFrame* frame)
-{
-    if (!m_topLoadingFrame)
-        m_topLoadingFrame = frame;
-
-    updateAddressBar(frame->view());
-}
-
-void WebViewHost::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame)
-{
-    updateAddressBar(frame->view());
-}
-
-void WebViewHost::didFailProvisionalLoad(WebFrame* frame, const WebURLError& error)
-{
-    locationChangeDone(frame);
-
-    // Don't display an error page if we're running layout tests, because
-    // DumpRenderTree doesn't.
-}
-
 void WebViewHost::didCommitProvisionalLoad(WebFrame* frame, bool isNewNavigation)
 {
     updateForCommittedLoad(frame, isNewNavigation);
@@ -722,17 +700,6 @@ void WebViewHost::didClearWindowObject(WebFrame* frame)
 void WebViewHost::didReceiveTitle(WebFrame* frame, const WebString& title, WebTextDirection direction)
 {
     setPageTitle(title);
-}
-
-void WebViewHost::didFailLoad(WebFrame* frame, const WebURLError& error)
-{
-    locationChangeDone(frame);
-}
-
-void WebViewHost::didFinishLoad(WebFrame* frame)
-{
-    updateAddressBar(frame->view());
-    locationChangeDone(frame);
 }
 
 void WebViewHost::didNavigateWithinPage(WebFrame* frame, bool isNewNavigation)
@@ -1075,6 +1042,71 @@ void WebViewHost::displayInvalidatedRegion()
     displayRepaintMask();
 }
 
+void WebViewHost::testFinished()
+{
+    m_shell->testFinished();
+}
+
+void WebViewHost::testTimedOut()
+{
+    m_shell->testTimedOut();
+}
+
+bool WebViewHost::isBeingDebugged()
+{
+    return webkit_support::BeingDebugged();
+}
+
+int WebViewHost::layoutTestTimeout()
+{
+    return m_shell->layoutTestTimeout();
+}
+
+void WebViewHost::closeRemainingWindows()
+{
+    m_shell->closeRemainingWindows();
+}
+
+int WebViewHost::navigationEntryCount()
+{
+    return m_shell->navigationEntryCount();
+}
+
+int WebViewHost::windowCount()
+{
+    return m_shell->windowCount();
+}
+
+void WebViewHost::setCustomPolicyDelegate(bool isCustom, bool isPermissive)
+{
+    m_policyDelegateEnabled = isCustom;
+    m_policyDelegateIsPermissive = isPermissive;
+}
+
+void WebViewHost::waitForPolicyDelegate()
+{
+    m_policyDelegateEnabled = true;
+    m_policyDelegateShouldNotifyDone = true;
+}
+
+void WebViewHost::goToOffset(int offset)
+{
+    m_shell->goToOffset(offset);
+}
+
+void WebViewHost::reload()
+{
+    m_shell->reload();
+}
+
+void WebViewHost::loadURLForFrame(const WebURL& url, const string& frameName)
+{
+    if (!url.isValid())
+        return;
+    TestShell::resizeWindowForTest(this, url);
+    navigationController()->loadEntry(TestNavigationEntry::create(-1, url, WebString(), WebString::fromUTF8(frameName)).get());
+}
+
 // Public functions -----------------------------------------------------------
 
 WebViewHost::WebViewHost(TestShell* shell)
@@ -1102,7 +1134,7 @@ void WebViewHost::shutdown()
     if (m_shell->devToolsWebView() != this) {
         // Navigate to an empty page to fire all the destruction logic for the
         // current page.
-        loadURLForFrame(GURL("about:blank"), WebString());
+        loadURLForFrame(GURL("about:blank"), string());
     }
 
     for (Vector<WebKit::WebWidget*>::iterator it = m_popupmenus.begin();
@@ -1154,7 +1186,6 @@ void WebViewHost::reset()
     m_policyDelegateEnabled = false;
     m_policyDelegateIsPermissive = false;
     m_policyDelegateShouldNotifyDone = false;
-    m_topLoadingFrame = 0;
     m_pageId = -1;
     m_lastPageIdUpdated = -1;
     m_hasWindow = false;
@@ -1219,26 +1250,6 @@ void WebViewHost::setClientWindowRect(const WebKit::WebRect& rect)
     setWindowRect(rect);
 }
 
-void WebViewHost::setCustomPolicyDelegate(bool isCustom, bool isPermissive)
-{
-    m_policyDelegateEnabled = isCustom;
-    m_policyDelegateIsPermissive = isPermissive;
-}
-
-void WebViewHost::waitForPolicyDelegate()
-{
-    m_policyDelegateEnabled = true;
-    m_policyDelegateShouldNotifyDone = true;
-}
-
-void WebViewHost::loadURLForFrame(const WebURL& url, const WebString& frameName)
-{
-    if (!url.isValid())
-        return;
-    TestShell::resizeWindowForTest(this, url);
-    navigationController()->loadEntry(TestNavigationEntry::create(-1, url, WebString(), frameName).get());
-}
-
 bool WebViewHost::navigate(const TestNavigationEntry& entry, bool reload)
 {
     // Get the right target frame for the entry.
@@ -1283,29 +1294,9 @@ bool WebViewHost::navigate(const TestNavigationEntry& entry, bool reload)
 
 // Private functions ----------------------------------------------------------
 
-DRTTestRunner* WebViewHost::testRunner() const
+::WebTestRunner::WebTestRunner* WebViewHost::testRunner() const
 {
     return m_shell->testRunner();
-}
-
-void WebViewHost::updateAddressBar(WebView* webView)
-{
-    WebFrame* mainFrame = webView->mainFrame();
-    WebDataSource* dataSource = mainFrame->dataSource();
-    if (!dataSource)
-        dataSource = mainFrame->provisionalDataSource();
-    if (!dataSource)
-        return;
-
-    setAddressBarURL(dataSource->request().url());
-}
-
-void WebViewHost::locationChangeDone(WebFrame* frame)
-{
-    if (frame != m_topLoadingFrame)
-        return;
-    m_topLoadingFrame = 0;
-    testRunner()->locationChangeDone();
 }
 
 void WebViewHost::updateForCommittedLoad(WebFrame* frame, bool isNewNavigation)
@@ -1352,7 +1343,6 @@ void WebViewHost::updateURL(WebFrame* frame)
         entry->setContentState(historyItem);
 
     navigationController()->didNavigateToEntry(entry.get());
-    updateAddressBar(frame->view());
     m_lastPageIdUpdated = max(m_lastPageIdUpdated, m_pageId);
 }
 
@@ -1399,11 +1389,6 @@ void WebViewHost::setPendingExtraData(PassOwnPtr<TestShellExtraData> extraData)
 }
 
 void WebViewHost::setPageTitle(const WebString&)
-{
-    // Nothing to do in layout test.
-}
-
-void WebViewHost::setAddressBarURL(const WebURL&)
 {
     // Nothing to do in layout test.
 }

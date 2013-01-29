@@ -90,16 +90,21 @@ static void collectChildrenAndRemoveFromOldParent(Node* node, NodeVector& nodes,
     toContainerNode(node)->removeChildren();
 }
 
-void ContainerNode::removeAllChildren()
+void ContainerNode::removeDetachedChildren()
 {
-    removeAllChildrenInContainer<Node, ContainerNode>(this);
+    if (connectedSubframeCount()) {
+        for (Node* child = firstChild(); child; child = child->nextSibling())
+            child->updateAncestorConnectedSubframeCountForRemoval();
+    }
+    // FIXME: We should be able to ASSERT(!attached()) here: https://bugs.webkit.org/show_bug.cgi?id=107801
+    removeDetachedChildrenInContainer<Node, ContainerNode>(this);
 }
 
 void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
 {
     NodeVector children;
     getChildNodes(oldParent, children);
-    oldParent->removeAllChildren();
+    oldParent->removeDetachedChildren();
 
     for (unsigned i = 0; i < children.size(); ++i) {
         ExceptionCode ec = 0;
@@ -123,7 +128,7 @@ ContainerNode::~ContainerNode()
     if (AXObjectCache::accessibilityEnabled() && documentInternal() && documentInternal()->axObjectCacheExists())
         documentInternal()->axObjectCache()->remove(this);
 
-    removeAllChildren();
+    removeDetachedChildren();
 }
 
 static inline bool isChildTypeAllowed(ContainerNode* newParent, Node* child)
@@ -331,10 +336,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
 
     insertBeforeCommon(nextChild, newChild.get());
 
-    if (unsigned count = newChild->connectedSubframeCount()) {
-        for (Node* node = newChild->parentOrHostNode(); node; node = node->parentOrHostNode())
-            node->incrementConnectedSubframeCount(count);
-    }
+    newChild->updateAncestorConnectedSubframeCountForInsertion();
 
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
@@ -557,10 +559,7 @@ void ContainerNode::parserRemoveChild(Node* oldChild)
     Node* prev = oldChild->previousSibling();
     Node* next = oldChild->nextSibling();
 
-    if (unsigned count = oldChild->connectedSubframeCount()) {
-        for (Node* node = oldChild->parentOrHostNode(); node; node = node->parentOrHostNode())
-            node->decrementConnectedSubframeCount(count);
-    }
+    oldChild->updateAncestorConnectedSubframeCountForRemoval();
 
     removeBetween(prev, next, oldChild);
 
@@ -706,10 +705,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
         treeScope()->adoptIfNeeded(newChild.get());
     }
 
-    if (unsigned count = newChild->connectedSubframeCount()) {
-        for (Node* node = newChild->parentOrHostNode(); node; node = node->parentOrHostNode())
-            node->incrementConnectedSubframeCount(count);
-    }
+    newChild->updateAncestorConnectedSubframeCountForInsertion();
 
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());

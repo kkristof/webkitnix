@@ -41,8 +41,6 @@
 #include <map>
 #include <string>
 
-#define TEST_RUNNER_MOVED_PRINTING 1
-
 namespace WebKit {
 class WebAccessibilityObject;
 class WebCachedURLRequest;
@@ -148,6 +146,8 @@ protected:
     bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
 
 private:
+    void locationChangeDone(WebKit::WebFrame*);
+
     WebTestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
 

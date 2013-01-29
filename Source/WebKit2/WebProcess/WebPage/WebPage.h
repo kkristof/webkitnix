@@ -56,9 +56,7 @@
 #include <WebCore/FrameLoaderTypes.h>
 #include <WebCore/IntRect.h>
 #include <WebCore/Page.h>
-#if ENABLE(PAGE_VISIBILITY_API)
 #include <WebCore/PageVisibilityState.h>
-#endif
 #include <WebCore/PlatformScreen.h>
 #include <WebCore/ScrollTypes.h>
 #include <WebCore/WebCoreKeyboardUIMode.h>
@@ -180,6 +178,8 @@ public:
     uint64_t destinationID() const { return pageID(); }
 
     void close();
+
+    static WebPage* fromCorePage(WebCore::Page*);
 
     WebCore::Page* corePage() const { return m_page.get(); }
     uint64_t pageID() const { return m_pageID; }
@@ -357,8 +357,8 @@ public:
 
     bool windowIsFocused() const;
     bool windowAndWebPageAreFocused() const;
-    void installPageOverlay(PassRefPtr<PageOverlay>);
-    void uninstallPageOverlay(PageOverlay*, bool fadeOut);
+    void installPageOverlay(PassRefPtr<PageOverlay>, bool shouldFadeIn = false);
+    void uninstallPageOverlay(PageOverlay*, bool shouldFadeOut = false);
     bool hasPageOverlay() const { return m_pageOverlay; }
     WebCore::IntPoint screenToWindow(const WebCore::IntPoint&);
     WebCore::IntRect windowToScreen(const WebCore::IntRect&);
@@ -576,7 +576,7 @@ public:
     bool willGoToBackForwardItemCallbackEnabled() const { return m_willGoToBackForwardItemCallbackEnabled; }
 
 #if ENABLE(PAGE_VISIBILITY_API) || ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-    void setVisibilityState(int visibilityState, bool isInitialState);
+    void setVisibilityState(uint32_t /* WebCore::PageVisibilityState */, bool isInitialState);
 #endif
 
 #if PLATFORM(GTK) && USE(TEXTURE_MAPPER_GL)
