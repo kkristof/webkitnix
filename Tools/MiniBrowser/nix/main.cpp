@@ -188,6 +188,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
     WKPreferencesSetFrameFlatteningEnabled(preferences, true);
     WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
+    WKPreferencesSetWebGLEnabled(preferences, true);
 
     m_view = NIXViewCreate(m_context.get(), m_pageGroup.get());
 
