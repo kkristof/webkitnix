@@ -22,8 +22,26 @@ fast/js/sparse-array.html [ Pass Crash ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
 
-# sometimes crashes
+# sometimes crash
+fast/spatial-navigation/snav-1st-stop.html [ Pass Crash ]
+fast/spatial-navigation/snav-clipped-overflowed-content.html [ Pass Crash ]
+fast/spatial-navigation/snav-container-only-white-space.html [ Pass Crash ]
+fast/spatial-navigation/snav-multiple-select-focusring.html [ Pass Crash ]
+fast/storage/serialized-script-value.html [ Pass Crash ]
+fast/storage/storage-detached-iframe.html [ Pass Crash ]
+fast/sub-pixel/auto-table-layout-should-avoid-text-wrapping.html [ Pass Crash ]
+fast/sub-pixel/block-preferred-widths-with-sub-pixel-floats.html [ Pass Crash ]
+fast/sub-pixel/client-and-offset-width.html [ Pass Crash ]
+fast/sub-pixel/column-clipping.html [ Pass Crash ]
+fast/sub-pixel/ellipsis-table.html [ Pass Crash ]
+fast/sub-pixel/ellipsis-zoom.html [ Pass Crash ]
+fast/sub-pixel/float-containing-block-with-margin.html [ Pass Crash ]
 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Crash ]
+
+# some test crash from the runned ones
+fast/speech [ Skip ]
+fast/runin [ Skip ]
+fast/text [ Skip ]
 
 ################################################################################
 # FAILURES
@@ -290,8 +308,33 @@ fast/profiler/dead-time.html [ Skip ]
 fast/profiler/stop-profiling-after-setTimeout.html [ Skip ]
 fast/reflections [ Skip ]
 
-# text-autosizing is disabled
+fast/spatial-navigation/snav-container-white-space.html [ Skip ]
+fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Skip ]
+fast/spatial-navigation/snav-fully-aligned-horizontally.html [ Skip ]
+fast/spatial-navigation/snav-iframe-no-scrollable-content.html [ Skip ]
+fast/spatial-navigation/snav-media-elements.html [ Skip ]
+fast/spatial-navigation/snav-radio-group.html [ Skip ]
+fast/spatial-navigation/snav-radio.html [ Skip ]
+fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Skip ]
 
+fast/sub-pixel/block-with-margin-overflow.html
+fast/sub-pixel/client-width-height-snapping.html [ Skip ]
+fast/sub-pixel/client-rect-has-subpixel-precision.html  [ Skip ]
+fast/sub-pixel/file-upload-control-at-fractional-offset.html
+fast/sub-pixel/inline-block-with-padding.html [ Skip ]
+fast/sub-pixel/input-caret-on-subpixel-bound.html [ Skip ]
+fast/sub-pixel/layout-boxes-with-zoom.html [ Skip ]
+fast/sub-pixel/position-right-aligns-with-container.html [ Skip ]
+fast/sub-pixel/scaled-background-image.html
+fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Skip ]
+fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html [ Skip ]
+fast/sub-pixel/size-of-box-with-zoom.html [ Skip ]
+fast/sub-pixel/snap-negative-location.html
+fast/sub-pixel/sub-pixel-accumulates-to-layers.html [ Skip ]
+fast/sub-pixel/sub-pixel-root-layer.html
+fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Skip ]
+
+# text-autosizing is disabled
 fast/text-autosizing/cluster-inline-block-or-table.html [ Skip ]
 fast/text-autosizing/cluster-inline-grid-flex-box.html [ Skip ]
 fast/text-autosizing/cluster-list-item.html [ Skip ]
@@ -984,7 +1027,6 @@ fast/filesystem [ Skip ]
 fast/media [ Skip ]
 fast/mediastream [ Skip ]
 fast/notifications [ Skip ]
-fast/speech [ Skip ]
 fullscreen [ Skip ]
 java [ Skip ]
 media [ Skip ]
@@ -1636,12 +1678,7 @@ fast/css/style-scoped [ Skip ]
 
 fast/replaced [ Skip ]
 fast/ruby [ Skip ]
-fast/runin [ Skip ]
-fast/spatial-navigation [ Skip ]
-fast/storage [ Skip ]
-fast/sub-pixel [ Skip ]
 fast/table [ Skip ]
-fast/text [ Skip ]
 http/tests/appcache [ Failure Pass ]
 http/tests/local/blob/send-data-blob.html [ Failure Pass ]
 http/tests/local/blob/send-sliced-data-blob.html [ Failure Pass ]
