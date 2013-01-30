@@ -207,6 +207,7 @@ set(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKMutableDictionary.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKNumber.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPageLoadTypes.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPageVisibilityTypes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKRenderLayer.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKRenderObject.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSecurityOrigin.h"
