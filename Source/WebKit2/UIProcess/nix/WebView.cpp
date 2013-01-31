@@ -92,6 +92,9 @@ void WebView::setScale(float scale)
         return;
 
     m_scale = scale;
+    // FIXME commitViewportChanges will not change the scale of the page anymore.
+    // Potential candidate is WebPageProxy::scalePage. Its second argument is the origin
+    // of the scale in content coordinates.
     if (!m_isSuspended)
         commitViewportChanges();
 }
@@ -126,7 +129,7 @@ void WebView::setScrollPosition(const WKPoint& position)
         return;
 
     if (!m_isSuspended)
-        drawingArea->setVisibleContentsRect(visibleRect(), m_scale, trajectoryVector);
+        drawingArea->setVisibleContentsRect(visibleRect(), trajectoryVector);
 }
 
 WKPoint WebView::userViewportToContents(WKPoint point)
@@ -280,7 +283,7 @@ void WebView::commitViewportChanges()
     } else {
         drawingArea->setSize(m_size, IntSize());
     }
-    drawingArea->setVisibleContentsRect(visibleRect(), m_scale, FloatPoint());
+    drawingArea->setVisibleContentsRect(visibleRect(), FloatPoint());
 }
 
 void WebView::findZoomableAreaForPoint(const WKPoint& point, int horizontalRadius, int verticalRadius)
