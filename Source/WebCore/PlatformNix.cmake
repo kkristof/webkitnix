@@ -78,9 +78,9 @@ list(APPEND WebCore_SOURCES
     platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
     platform/graphics/freetype/SimpleFontDataFreeType.cpp
     platform/graphics/harfbuzz/HarfBuzzShaperBase.cpp
-    platform/graphics/harfbuzz/ng/HarfBuzzNGFace.cpp
-    platform/graphics/harfbuzz/ng/HarfBuzzNGFaceCairo.cpp
-    platform/graphics/harfbuzz/ng/HarfBuzzShaper.cpp
+    platform/graphics/harfbuzz/HarfBuzzFace.cpp
+    platform/graphics/harfbuzz/HarfBuzzFaceCairo.cpp
+    platform/graphics/harfbuzz/HarfBuzzShaper.cpp
 
     platform/graphics/ImageSource.cpp
     platform/graphics/cairo/DrawingBufferCairo.cpp
