@@ -1218,6 +1218,9 @@ void WebPage::scalePage(double scale, const IntPoint& origin)
     for (HashSet<PluginView*>::const_iterator it = m_pluginViews.begin(), end = m_pluginViews.end(); it != end; ++it)
         (*it)->pageScaleFactorDidChange();
 
+    if (m_drawingArea->layerTreeHost())
+        m_drawingArea->layerTreeHost()->deviceOrPageScaleFactorChanged();
+
     send(Messages::WebPageProxy::PageScaleFactorDidChange(scale));
 }
 
@@ -1248,6 +1251,9 @@ void WebPage::setDeviceScaleFactor(float scaleFactor)
         layoutIfNeeded();
         m_findController.deviceScaleFactorDidChange();
     }
+
+    if (m_drawingArea->layerTreeHost())
+        m_drawingArea->layerTreeHost()->deviceOrPageScaleFactorChanged();
 }
 
 float WebPage::deviceScaleFactor() const
@@ -1266,6 +1272,8 @@ void WebPage::setUseFixedLayout(bool fixed)
 #if USE(COORDINATED_GRAPHICS)
     m_page->settings()->setAcceleratedCompositingForFixedPositionEnabled(fixed);
     m_page->settings()->setFixedPositionCreatesStackingContext(fixed);
+    m_page->settings()->setApplyDeviceScaleFactorInCompositor(fixed);
+    m_page->settings()->setApplyPageScaleFactorInCompositor(fixed);
 #endif
 
 #if USE(TILED_BACKING_STORE) && ENABLE(SMOOTH_SCROLLING)
@@ -2978,43 +2986,43 @@ bool WebPage::windowAndWebPageAreFocused() const
     return m_page->focusController()->isFocused() && m_page->focusController()->isActive();
 }
 
-void WebPage::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder)
+void WebPage::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder)
 {
-    if (messageID.is<CoreIPC::MessageClassDrawingArea>()) {
+    if (decoder.messageReceiverName() == Messages::DrawingArea::messageReceiverName()) {
         if (m_drawingArea)
-            m_drawingArea->didReceiveDrawingAreaMessage(connection, messageID, decoder);
+            m_drawingArea->didReceiveDrawingAreaMessage(connection, decoder);
         return;
     }
 
 #if USE(TILED_BACKING_STORE) && USE(ACCELERATED_COMPOSITING)
-    if (messageID.is<CoreIPC::MessageClassCoordinatedLayerTreeHost>()) {
+    if (decoder.messageReceiverName() == Messages::CoordinatedLayerTreeHost::messageReceiverName()) {
         if (m_drawingArea)
-            m_drawingArea->didReceiveCoordinatedLayerTreeHostMessage(connection, messageID, decoder);
+            m_drawingArea->didReceiveCoordinatedLayerTreeHostMessage(connection, decoder);
         return;
     }
 #endif
     
 #if ENABLE(INSPECTOR)
-    if (messageID.is<CoreIPC::MessageClassWebInspector>()) {
+    if (decoder.messageReceiverName() == Messages::WebInspector::messageReceiverName()) {
         if (WebInspector* inspector = this->inspector())
-            inspector->didReceiveWebInspectorMessage(connection, messageID, decoder);
+            inspector->didReceiveWebInspectorMessage(connection, decoder);
         return;
     }
 #endif
 
 #if ENABLE(FULLSCREEN_API)
-    if (messageID.is<CoreIPC::MessageClassWebFullScreenManager>()) {
-        fullScreenManager()->didReceiveMessage(connection, messageID, decoder);
+    if (decoder.messageReceiverName() == Messages::WebFullScreenManager::messageReceiverName()) {
+        fullScreenManager()->didReceiveMessage(connection, decoder);
         return;
     }
 #endif
 
-    didReceiveWebPageMessage(connection, messageID, decoder);
+    didReceiveWebPageMessage(connection, decoder);
 }
 
-void WebPage::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
+void WebPage::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
 {   
-    didReceiveSyncWebPageMessage(connection, messageID, decoder, replyEncoder);
+    didReceiveSyncWebPageMessage(connection, decoder, replyEncoder);
 }
     
 InjectedBundleBackForwardList* WebPage::backForwardList()

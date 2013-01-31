@@ -194,11 +194,7 @@ Element::~Element()
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
         data->setPseudoElement(AFTER, 0);
-    }
-
-    if (ElementShadow* elementShadow = shadow()) {
-        elementShadow->removeAllShadowRoots();
-        elementRareData()->setShadow(nullptr);
+        data->clearShadow();
     }
 
     if (hasSyntheticAttrChildNodes())
@@ -1437,20 +1433,12 @@ void Element::recalcStyle(StyleChange change)
 
 ElementShadow* Element::shadow() const
 {
-    if (!hasRareData())
-        return 0;
-
-    return elementRareData()->shadow();
+    return hasRareData() ? elementRareData()->shadow() : 0;
 }
 
 ElementShadow* Element::ensureShadow()
 {
-    if (ElementShadow* shadow = ensureElementRareData()->shadow())
-        return shadow;
-
-    ElementRareData* data = elementRareData();
-    data->setShadow(ElementShadow::create());
-    return data->shadow();
+    return ensureElementRareData()->ensureShadow();
 }
 
 void Element::didAffectSelector(AffectedSelectorMask mask)
@@ -1462,7 +1450,22 @@ void Element::didAffectSelector(AffectedSelectorMask mask)
 
 PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionCode& ec)
 {
-    return ShadowRoot::create(this, ec);
+    if (alwaysCreateUserAgentShadowRoot())
+        ensureUserAgentShadowRoot();
+
+#if ENABLE(SHADOW_DOM)
+    if (RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
+        return ensureShadow()->addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
+#endif
+
+    // Since some elements recreates shadow root dynamically, multiple shadow
+    // subtrees won't work well in that element. Until they are fixed, we disable
+    // adding author shadow root for them.
+    if (!areAuthorShadowsAllowed()) {
+        ec = HIERARCHY_REQUEST_ERR;
+        return 0;
+    }
+    return ensureShadow()->addShadowRoot(this, ShadowRoot::AuthorShadowRoot);
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -1492,7 +1495,7 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
 {
     if (ShadowRoot* shadowRoot = userAgentShadowRoot())
         return shadowRoot;
-    ShadowRoot* shadowRoot = ShadowRoot::create(this, ShadowRoot::UserAgentShadowRoot, ASSERT_NO_EXCEPTION).get();
+    ShadowRoot* shadowRoot = ensureShadow()->addShadowRoot(this, ShadowRoot::UserAgentShadowRoot);
     didAddUserAgentShadowRoot(shadowRoot);
     return shadowRoot;
 }

@@ -1438,6 +1438,7 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     if (index != notFound)
         m_currentlyActiveCues.remove(index);
 
+    cue->removeDisplayTree();
     updateActiveTextTrackCues(currentTime());
 }
 
@@ -1978,12 +1979,6 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
         m_sentStalledEvent = true;
         setShouldDelayLoadEvent(false);
     }
-}
-
-void HTMLMediaElement::willAddAuthorShadowRoot()
-{
-    if (!userAgentShadowRoot())
-        ensureUserAgentShadowRoot();
 }
 
 void HTMLMediaElement::rewind(float timeDelta)

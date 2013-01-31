@@ -374,7 +374,6 @@ set(WebCore_IDL_FILES
     dom/MessageEvent.idl
     dom/MessagePort.idl
     dom/MouseEvent.idl
-    dom/MutationCallback.idl
     dom/MutationEvent.idl
     dom/MutationObserver.idl
     dom/MutationRecord.idl
@@ -944,18 +943,18 @@ set(WebCore_SOURCES
     Modules/webaudio/WaveShaperProcessor.cpp
     Modules/webaudio/WaveTable.cpp
 
-    Modules/webdatabase/AbstractDatabase.cpp
     Modules/webdatabase/ChangeVersionWrapper.cpp
     Modules/webdatabase/DOMWindowWebDatabase.cpp
     Modules/webdatabase/Database.cpp
     Modules/webdatabase/DatabaseAuthorizer.cpp
+    Modules/webdatabase/DatabaseBackend.cpp
     Modules/webdatabase/DatabaseContext.cpp
     Modules/webdatabase/DatabaseManager.cpp
+    Modules/webdatabase/DatabaseServer.cpp
     Modules/webdatabase/DatabaseSync.cpp
     Modules/webdatabase/DatabaseTask.cpp
     Modules/webdatabase/DatabaseThread.cpp
     Modules/webdatabase/DatabaseTracker.cpp
-    Modules/webdatabase/DBBackendServer.cpp
     Modules/webdatabase/OriginQuotaManager.cpp
     Modules/webdatabase/OriginUsageRecord.cpp
     Modules/webdatabase/SQLException.cpp
@@ -1533,6 +1532,7 @@ set(WebCore_SOURCES
     html/canvas/WebGLUniformLocation.cpp
     html/canvas/WebGLVertexArrayObjectOES.cpp
 
+    html/parser/BackgroundHTMLInputStream.cpp
     html/parser/BackgroundHTMLParser.cpp
     html/parser/CSSPreloadScanner.cpp
     html/parser/CompactHTMLToken.cpp

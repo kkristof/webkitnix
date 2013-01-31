@@ -340,6 +340,8 @@ public:
     {
         return m_documentElement.get();
     }
+
+    bool hasManifest() const;
     
     virtual PassRefPtr<Element> createElement(const AtomicString& tagName, ExceptionCode&);
     PassRefPtr<DocumentFragment> createDocumentFragment();
@@ -1196,6 +1198,8 @@ public:
 #endif
 
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0);
+
+    virtual const SecurityOrigin* topOrigin() const OVERRIDE;
 
 protected:
     Document(Frame*, const KURL&, bool isXHTML, bool isHTML);

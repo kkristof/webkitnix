@@ -327,7 +327,7 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
 
     int prevLayoutCount = webViewImpl->mainFrameImpl()->frameView()->layoutCount();
     webViewImpl->setPageScaleFactor(3, WebPoint());
-    EXPECT_EQ(false, webViewImpl->mainFrameImpl()->frameView()->needsLayout());
+    EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
 }
 
@@ -355,7 +355,8 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
     EXPECT_EQ(3, webViewImpl->pageScaleFactor());
 }
 
-TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
+// Disabled, pending investigation after http://trac.webkit.org/changeset/141053
+TEST_F(WebFrameTest, DISABLED_pageScaleFactorShrinksViewport)
 {
     registerMockedHttpURLLoad("fixed_layout.html");
 
@@ -927,22 +928,21 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTestCompositorScaling)
 }
 #endif
 
-// This test depends on code that is compiled conditionally. We likely need to
-// add the proper ifdef when re-enabling it. See
-// https://bugs.webkit.org/show_bug.cgi?id=98558
-TEST_F(WebFrameTest, DISABLED_DivScrollIntoEditableTest)
+TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 {
     registerMockedHttpURLLoad("get_scale_for_zoom_into_editable_test.html");
 
-    int viewportWidth = 640;
-    int viewportHeight = 480;
+    int viewportWidth = 450;
+    int viewportHeight = 300;
     float leftBoxRatio = 0.3f;
     int caretPadding = 10;
-    int minReadableCaretHeight = 18;
+    float minReadableCaretHeight = 18.0f;
     WebKit::WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "get_scale_for_zoom_into_editable_test.html");
+    webView->settings()->setApplyDeviceScaleFactorInCompositor(true);
+    webView->settings()->setApplyPageScaleFactorInCompositor(true);
     webView->enableFixedLayoutMode(true);
     webView->resize(WebSize(viewportWidth, viewportHeight));
-    webView->setPageScaleFactorLimits(1, 10);
+    webView->setPageScaleFactorLimits(1, 4);
     webView->layout();
     webView->setDeviceScaleFactor(1.5f);
     webView->settings()->setAutoZoomFocusedNodeToLegibleScale(true);
@@ -955,46 +955,60 @@ TEST_F(WebFrameTest, DISABLED_DivScrollIntoEditableTest)
 
     // Test scrolling the focused node
     // The edit box is shorter and narrower than the viewport when legible.
+    webView->advanceFocus(false);
+    // Set the caret to the end of the input box.
+    webView->mainFrame()->document().getElementById("EditBoxWithText").to<WebInputElement>().setSelectionRange(1000, 1000);
     setScaleAndScrollAndLayout(webView, WebPoint(0, 0), 1);
     WebRect rect, caret;
     webViewImpl->selectionBounds(caret, rect);
-    webView->scrollFocusedNodeIntoRect(rect);
+
+    float scale;
+    WebCore::IntPoint scroll;
+    bool needAnimation;
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned with a margin for possible label.
-    int hScroll = editBoxWithText.x * webView->pageScaleFactor() - leftBoxRatio * viewportWidth;
-    EXPECT_EQ(hScroll, webView->mainFrame()->scrollOffset().width);
-    int vScroll = editBoxWithText.y * webView->pageScaleFactor() - (viewportHeight - editBoxWithText.height * webView->pageScaleFactor()) / 2;
-    EXPECT_EQ(vScroll, webView->mainFrame()->scrollOffset().height);
-    EXPECT_FLOAT_EQ(webView->deviceScaleFactor() * minReadableCaretHeight / caret.height, webView->pageScaleFactor());
+    int hScroll = editBoxWithText.x - leftBoxRatio * viewportWidth / scale;
+    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    int vScroll = editBoxWithText.y - (viewportHeight / scale - editBoxWithText.height) / 2;
+    EXPECT_NEAR(vScroll, scroll.y(), 1);
+    EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);
 
     // The edit box is wider than the viewport when legible.
-    webView->setDeviceScaleFactor(4);
+    viewportWidth = 200;
+    viewportHeight = 150;
+    webView->resize(WebSize(viewportWidth, viewportHeight));
     setScaleAndScrollAndLayout(webView, WebPoint(0, 0), 1);
     webViewImpl->selectionBounds(caret, rect);
-    webView->scrollFocusedNodeIntoRect(rect);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    EXPECT_TRUE(needAnimation);
     // The caret should be right aligned since the caret would be offscreen when the edit box is left aligned.
-    hScroll = (caret.x + caret.width) * webView->pageScaleFactor() + caretPadding - viewportWidth;
-    EXPECT_EQ(hScroll, webView->mainFrame()->scrollOffset().width);
-    EXPECT_FLOAT_EQ(webView->deviceScaleFactor() * minReadableCaretHeight / caret.height, webView->pageScaleFactor());
+    hScroll = caret.x + caret.width + caretPadding - viewportWidth / scale;
+    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);
 
     setScaleAndScrollAndLayout(webView, WebPoint(0, 0), 1);
     // Move focus to edit box with text.
     webView->advanceFocus(false);
     webViewImpl->selectionBounds(caret, rect);
-    webView->scrollFocusedNodeIntoRect(rect);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned.
-    hScroll = editBoxWithNoText.x * webView->pageScaleFactor();
-    EXPECT_EQ(hScroll, webView->mainFrame()->scrollOffset().width);
-    vScroll = editBoxWithNoText.y * webView->pageScaleFactor() - (viewportHeight - editBoxWithNoText.height * webView->pageScaleFactor()) / 2;
-    EXPECT_EQ(vScroll, webView->mainFrame()->scrollOffset().height);
-    EXPECT_FLOAT_EQ(webView->deviceScaleFactor() * minReadableCaretHeight / caret.height, webView->pageScaleFactor());
+    hScroll = editBoxWithNoText.x;
+    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    vScroll = editBoxWithNoText.y - (viewportHeight / scale - editBoxWithNoText.height) / 2;
+    EXPECT_NEAR(vScroll, scroll.y(), 1);
+    EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);
+
+    setScaleAndScrollAndLayout(webViewImpl, scroll, scale);
 
     // Move focus back to the first edit box.
     webView->advanceFocus(true);
-    webViewImpl->selectionBounds(caret, rect);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
     // The position should have stayed the same since this box was already on screen with the right scale.
-    EXPECT_EQ(vScroll, webView->mainFrame()->scrollOffset().height);
-    EXPECT_EQ(hScroll, webView->mainFrame()->scrollOffset().width);
+    EXPECT_FALSE(needAnimation);
 }
+
 #endif
 
 class TestReloadDoesntRedirectWebFrameClient : public WebFrameClient {
@@ -1335,6 +1349,14 @@ TEST_F(WebFrameTest, FindInPage)
     // "bar4" is surrounded by <span>, but the focusable node should be the parent <div>.
     EXPECT_EQ(WebString::fromUTF8("DIV"), frame->document().focusedNode().nodeName());
 
+    // Find in <select> content.
+    EXPECT_FALSE(frame->find(findIdentifier, WebString::fromUTF8("bar5"), options, false, 0));
+    // If there are any matches, stopFinding will set the selection on the found text.
+    // However, we do not expect any matches, so check that the selection is null.
+    frame->stopFinding(false);
+    range = frame->selectionRange();
+    ASSERT_TRUE(range.isNull());
+
     webView->close();
 }
 
@@ -1503,9 +1525,10 @@ TEST_F(WebFrameTest, FindInPageMatchRects)
     webView->layout();
     webkit_support::RunAllPendingMessages();
 
+    // Note that the 'result 19' in the <select> element is not expected to produce a match.
     static const char* kFindString = "result";
     static const int kFindIdentifier = 12345;
-    static const int kNumResults = 16;
+    static const int kNumResults = 19;
 
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
@@ -1595,6 +1618,13 @@ TEST_F(WebFrameTest, FindInPageMatchRects)
     // and vertical-align: middle by default.
     EXPECT_TRUE(webMatchRects[13].y < webMatchRects[12].y);
     EXPECT_TRUE(webMatchRects[12].y < webMatchRects[14].y);
+
+    // Result 16 should be below result 15.
+    EXPECT_TRUE(webMatchRects[15].y > webMatchRects[14].y);
+
+    // Result 18 should be normalized with respect to the position:relative div, and not it's
+    // immediate containing div. Consequently, result 18 should be above result 17.
+    EXPECT_TRUE(webMatchRects[17].y > webMatchRects[18].y);
 
     // Resizing should update the rects version.
     webView->resize(WebSize(800, 600));

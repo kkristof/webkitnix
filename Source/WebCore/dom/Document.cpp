@@ -813,6 +813,11 @@ DOMImplementation* Document::implementation()
     return m_implementation.get();
 }
 
+bool Document::hasManifest() const
+{
+    return documentElement() && documentElement()->hasTagName(htmlTag) && documentElement()->hasAttribute(manifestAttr);
+}
+
 void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
@@ -4769,6 +4774,11 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
         if (Console* console = window->console())
             console->addMessage(source, level, message, sourceURL, lineNumber, callStack, state, requestIdentifier);
     }
+}
+
+const SecurityOrigin* Document::topOrigin() const
+{
+    return topDocument()->securityOrigin();
 }
 
 struct PerformTaskContext {

@@ -377,6 +377,9 @@ void TestRunner::reset()
     }
     m_topLoadingFrame = 0;
     m_waitUntilDone = false;
+    m_policyDelegateEnabled = false;
+    m_policyDelegateIsPermissive = false;
+    m_policyDelegateShouldNotifyDone = false;
 
     WebSecurityPolicy::resetOriginAccessWhitelists();
 #if OS(LINUX) || OS(ANDROID)
@@ -415,6 +418,12 @@ void TestRunner::reset()
     m_shouldStayOnPageAfterHandlingBeforeUnload = false;
     m_shouldBlockRedirects = false;
     m_willSendRequestShouldReturnNull = false;
+    m_smartInsertDeleteEnabled = true;
+#if OS(WINDOWS)
+    m_selectTrailingWhitespaceEnabled = true;
+#else
+    m_selectTrailingWhitespaceEnabled = false;
+#endif
 
     m_httpHeadersToClear.clear();
 
@@ -631,9 +640,34 @@ void TestRunner::policyDelegateDone()
     m_waitUntilDone = false;
 }
 
+bool TestRunner::policyDelegateEnabled() const
+{
+    return m_policyDelegateEnabled;
+}
+
+bool TestRunner::policyDelegateIsPermissive() const
+{
+    return m_policyDelegateIsPermissive;
+}
+
+bool TestRunner::policyDelegateShouldNotifyDone() const
+{
+    return m_policyDelegateShouldNotifyDone;
+}
+
 bool TestRunner::shouldInterceptPostMessage() const
 {
     return m_interceptPostMessage.isBool() && m_interceptPostMessage.toBoolean();
+}
+
+bool TestRunner::isSmartInsertDeleteEnabled() const
+{
+    return m_smartInsertDeleteEnabled;
+}
+
+bool TestRunner::isSelectTrailingWhitespaceEnabled() const
+{
+    return m_selectTrailingWhitespaceEnabled;
 }
 
 void TestRunner::waitUntilDone(const CppArgumentList&, CppVariant* result)
@@ -841,18 +875,18 @@ void TestRunner::setCloseRemainingWindowsWhenComplete(const CppArgumentList& arg
 void TestRunner::setCustomPolicyDelegate(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool()) {
-        bool enable = arguments[0].value.boolValue;
-        bool permissive = false;
+        m_policyDelegateEnabled = arguments[0].value.boolValue;
+        m_policyDelegateIsPermissive = false;
         if (arguments.size() > 1 && arguments[1].isBool())
-            permissive = arguments[1].value.boolValue;
-        m_delegate->setCustomPolicyDelegate(enable, permissive);
+            m_policyDelegateIsPermissive = arguments[1].value.boolValue;
     }
     result->setNull();
 }
 
 void TestRunner::waitForPolicyDelegate(const CppArgumentList&, CppVariant* result)
 {
-    m_delegate->waitForPolicyDelegate();
+    m_policyDelegateEnabled = true;
+    m_policyDelegateShouldNotifyDone = true;
     m_waitUntilDone = true;
     result->setNull();
 }
@@ -1471,14 +1505,14 @@ void TestRunner::textSurroundingNode(const CppArgumentList& arguments, CppVarian
 void TestRunner::setSmartInsertDeleteEnabled(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool())
-        m_delegate->setSmartInsertDeleteEnabled(arguments[0].value.boolValue);
+        m_smartInsertDeleteEnabled = arguments[0].value.boolValue;
     result->setNull();
 }
 
 void TestRunner::setSelectTrailingWhitespaceEnabled(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool())
-        m_delegate->setSelectTrailingWhitespaceEnabled(arguments[0].value.boolValue);
+        m_selectTrailingWhitespaceEnabled = arguments[0].value.boolValue;
     result->setNull();
 }
 

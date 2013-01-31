@@ -83,20 +83,29 @@ void ProcessLauncher::launchProcess()
         return;
     }
 
-    String executablePath = m_launchOptions.processType == WebProcess ?
-                            executablePathOfWebProcess() : executablePathOfPluginProcess();
-    CString binaryPath = fileSystemRepresentation(executablePath);
+    String executablePath, pluginPath;
+    CString realExecutablePath, realPluginPath;
+    if (m_launchOptions.processType == WebProcess)
+        executablePath = executablePathOfWebProcess();
+    else {
+        executablePath = executablePathOfPluginProcess();
+        pluginPath = m_launchOptions.extraInitializationData.get("plugin-path");
+        realPluginPath = fileSystemRepresentation(pluginPath);
+    }
+
+    realExecutablePath = fileSystemRepresentation(executablePath);
     GOwnPtr<gchar> socket(g_strdup_printf("%d", sockets[0]));
-    char* argv[3];
-    argv[0] = const_cast<char*>(binaryPath.data());
+    char* argv[4];
+    argv[0] = const_cast<char*>(realExecutablePath.data());
     argv[1] = socket.get();
-    argv[2] = 0;
+    argv[2] = const_cast<char*>(realPluginPath.data());
+    argv[3] = 0;
     gchar** args = argv;
 
 #ifndef NDEBUG
     const gchar* prefixToUse = g_getenv("WEB_PROCESS_CMD_PREFIX");
     if (prefixToUse) {
-        GOwnPtr<gchar> commandLine(g_strjoin(" ", prefixToUse, argv[0], argv[1], NULL));
+        GOwnPtr<gchar> commandLine(g_strjoin(" ", prefixToUse, argv[0], argv[1], argv[2], NULL));
         args = g_strsplit(commandLine.get(), " ", 0);
     }
 #endif

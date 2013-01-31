@@ -123,6 +123,7 @@ public:
     virtual void setNeedsDisplay() OVERRIDE;
     virtual void setNeedsDisplayInRect(const FloatRect&) OVERRIDE;
     virtual void setContentsNeedsDisplay() OVERRIDE;
+    virtual void deviceOrPageScaleFactorChanged() OVERRIDE;
     virtual void flushCompositingState(const FloatRect&) OVERRIDE;
     virtual void flushCompositingStateForThisLayerOnly() OVERRIDE;
 #if ENABLE(CSS_FILTERS)
@@ -137,7 +138,6 @@ public:
     FloatPoint computePositionRelativeToBase();
     void computePixelAlignment(FloatPoint& position, FloatSize&, FloatPoint3D& anchorPoint, FloatSize& alignmentOffset);
 
-    void setContentsScale(float);
     void setVisibleContentRectTrajectoryVector(const FloatPoint&);
 
     void setRootLayer(bool);
@@ -170,6 +170,21 @@ public:
     bool hasPendingVisibleChanges();
 
 private:
+#if USE(GRAPHICS_SURFACE)
+    enum PendingCanvasOperation {
+        None = 0x00,
+        CreateCanvas = 0x01,
+        DestroyCanvas = 0x02,
+        SyncCanvas = 0x04,
+        CreateAndSyncCanvas = CreateCanvas | SyncCanvas,
+        RecreateCanvas = CreateAndSyncCanvas | DestroyCanvas
+    };
+
+    void syncCanvas();
+    void destroyCanvasIfNeeded();
+    void createCanvasIfNeeded();
+#endif
+
     virtual void setDebugBorder(const Color&, float width) OVERRIDE;
 
     bool fixedToViewport() const { return m_fixedToViewport; }
@@ -190,7 +205,6 @@ private:
     void syncFilters();
 #endif
     void syncImageBacking();
-    void syncCanvas();
     void computeTransformedVisibleRect();
     void updateContentBuffers();
 
@@ -199,10 +213,6 @@ private:
 
     // CoordinatedImageBacking::Host
     virtual bool imageBackingVisible() OVERRIDE;
-
-    void destroyCanvasIfNeeded();
-    void createCanvasIfNeeded();
-
     bool shouldHaveBackingStore() const;
     bool selfOrAncestorHasActiveTransformAnimation() const;
     bool selfOrAncestorHaveNonAffineTransforms();
@@ -232,16 +242,16 @@ private:
     bool m_shouldSyncImageBacking: 1;
     bool m_shouldSyncAnimations: 1;
     bool m_fixedToViewport : 1;
-    bool m_canvasNeedsDisplay : 1;
-    bool m_canvasNeedsCreate : 1;
-    bool m_canvasNeedsDestroy : 1;
     bool m_pendingContentsScaleAdjustment : 1;
     bool m_pendingVisibleRectAdjustment : 1;
+#if USE(GRAPHICS_SURFACE)
+    bool m_isValidCanvas : 1;
+    unsigned m_pendingCanvasOperation : 3;
+#endif
 
     WebKit::CoordinatedGraphicsLayerClient* m_coordinator;
     OwnPtr<TiledBackingStore> m_mainBackingStore;
     OwnPtr<TiledBackingStore> m_previousBackingStore;
-    float m_contentsScale;
 
     RefPtr<Image> m_compositedImage;
     NativeImagePtr m_compositedNativeImagePtr;

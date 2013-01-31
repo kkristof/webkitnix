@@ -881,70 +881,66 @@ void WebContext::removeMessageReceiver(CoreIPC::StringReference messageReceiverN
     m_messageReceiverMap.removeMessageReceiver(messageReceiverName, destinationID);
 }
 
-bool WebContext::dispatchMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder)
+bool WebContext::dispatchMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder)
 {
-    return m_messageReceiverMap.dispatchMessage(connection, messageID, decoder);
+    return m_messageReceiverMap.dispatchMessage(connection, decoder);
 }
 
-bool WebContext::dispatchSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
+bool WebContext::dispatchSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
 {
-    return m_messageReceiverMap.dispatchSyncMessage(connection, messageID, decoder, replyEncoder);
+    return m_messageReceiverMap.dispatchSyncMessage(connection, decoder, replyEncoder);
 }
 
-void WebContext::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder)
+void WebContext::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder)
 {
-    if (messageID.is<CoreIPC::MessageClassWebContext>()) {
-        didReceiveWebContextMessage(connection, messageID, decoder);
+    if (decoder.messageReceiverName() == Messages::WebContext::messageReceiverName()) {
+        didReceiveWebContextMessage(connection, decoder);
         return;
     }
 
-    switch (messageID.get<WebContextLegacyMessage::Kind>()) {
-        case WebContextLegacyMessage::PostMessage: {
-            String messageName;
-            RefPtr<APIObject> messageBody;
-            WebContextUserMessageDecoder messageBodyDecoder(messageBody, WebProcessProxy::fromConnection(connection));
-            if (!decoder.decode(messageName))
-                return;
-            if (!decoder.decode(messageBodyDecoder))
-                return;
-            
-            didReceiveMessageFromInjectedBundle(messageName, messageBody.get());
+    if (decoder.messageReceiverName() == WebContextLegacyMessage::messageReceiverName()
+        && decoder.messageName() == WebContextLegacyMessage::postMessageMessageName()) {
+        String messageName;
+        RefPtr<APIObject> messageBody;
+        WebContextUserMessageDecoder messageBodyDecoder(messageBody, WebProcessProxy::fromConnection(connection));
+        if (!decoder.decode(messageName))
             return;
-        }
-        case WebContextLegacyMessage::PostSynchronousMessage:
-            ASSERT_NOT_REACHED();
+        if (!decoder.decode(messageBodyDecoder))
+            return;
+
+        didReceiveMessageFromInjectedBundle(messageName, messageBody.get());
+        return;
     }
 
     ASSERT_NOT_REACHED();
 }
 
-void WebContext::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageID messageID, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
+void WebContext::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder, OwnPtr<CoreIPC::MessageEncoder>& replyEncoder)
 {
-    if (messageID.is<CoreIPC::MessageClassWebContext>()) {
-        didReceiveSyncWebContextMessage(connection, messageID, decoder, replyEncoder);
+    if (decoder.messageReceiverName() == Messages::WebContext::messageReceiverName()) {
+        didReceiveSyncWebContextMessage(connection, decoder, replyEncoder);
         return;
     }
 
-    switch (messageID.get<WebContextLegacyMessage::Kind>()) {
-        case WebContextLegacyMessage::PostSynchronousMessage: {
-            // FIXME: We should probably encode something in the case that the arguments do not decode correctly.
+    if (decoder.messageReceiverName() == WebContextLegacyMessage::messageReceiverName()
+        && decoder.messageName() == WebContextLegacyMessage::postSynchronousMessageMessageName()) {
+        // FIXME: We should probably encode something in the case that the arguments do not decode correctly.
 
-            String messageName;
-            RefPtr<APIObject> messageBody;
-            WebContextUserMessageDecoder messageBodyDecoder(messageBody, WebProcessProxy::fromConnection(connection));
-            if (!decoder.decode(messageName))
-                return;
-            if (!decoder.decode(messageBodyDecoder))
-                return;
-
-            RefPtr<APIObject> returnData;
-            didReceiveSynchronousMessageFromInjectedBundle(messageName, messageBody.get(), returnData);
-            replyEncoder->encode(WebContextUserMessageEncoder(returnData.get()));
+        String messageName;
+        RefPtr<APIObject> messageBody;
+        WebContextUserMessageDecoder messageBodyDecoder(messageBody, WebProcessProxy::fromConnection(connection));
+        if (!decoder.decode(messageName))
             return;
-        }
-        case WebContextLegacyMessage::PostMessage:
-            ASSERT_NOT_REACHED();
+        if (!decoder.decode(messageBodyDecoder))
+            return;
+
+        RefPtr<APIObject> returnData;
+        didReceiveSynchronousMessageFromInjectedBundle(messageName, messageBody.get(), returnData);
+        replyEncoder->encode(WebContextUserMessageEncoder(returnData.get()));
+        return;
     }
+
+    ASSERT_NOT_REACHED();
 }
 
 void WebContext::setEnhancedAccessibility(bool flag)
