@@ -1,0 +1,502 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderFieldSet {FIELDSET} at (2,0) size 780x352 [border: (2px groove #C0C0C0)]
+        RenderBlock {DIV} at (14,7) size 752x333
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,0) size 50x34
+              RenderText {#text} at (50,19) size 4x19
+                text run at (50,19) width 4: " "
+              RenderBlock {INPUT} at (58,34) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (62,19) size 45x19
+                  text run at (62,19) width 45: "Classic"
+              RenderText {#text} at (107,19) size 4x19
+                text run at (107,19) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 106x19
+            RenderInline {DIV} at (0,0) size 106x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (111,0) size 50x34
+              RenderText {#text} at (161,19) size 4x19
+                text run at (161,19) width 4: " "
+              RenderBlock {INPUT} at (169,34) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (173,19) size 40x19
+                  text run at (173,19) width 40: "Africa"
+              RenderText {#text} at (213,19) size 4x19
+                text run at (213,19) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (217,0) size 50x34
+              RenderText {#text} at (267,19) size 4x19
+                text run at (267,19) width 4: " "
+              RenderBlock {INPUT} at (275,34) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (279,19) size 125x19
+                  text run at (279,19) width 125: "Alexander's Empire"
+              RenderText {#text} at (404,19) size 4x19
+                text run at (404,19) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (408,0) size 50x34
+              RenderText {#text} at (458,19) size 4x19
+                text run at (458,19) width 4: " "
+              RenderBlock {INPUT} at (466,34) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (470,19) size 99x19
+                  text run at (470,19) width 99: "Ancient Greece"
+              RenderText {#text} at (569,19) size 4x19
+                text run at (569,19) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 107x19
+            RenderInline {DIV} at (0,0) size 107x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (573,0) size 50x34
+              RenderText {#text} at (623,19) size 4x19
+                text run at (623,19) width 4: " "
+              RenderBlock {INPUT} at (631,34) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (635,19) size 45x19
+                  text run at (635,19) width 45: "Classic"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 106x19
+            RenderInline {DIV} at (0,0) size 106x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,37) size 50x34
+              RenderText {#text} at (50,56) size 4x19
+                text run at (50,56) width 4: " "
+              RenderBlock {INPUT} at (58,71) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (62,56) size 40x19
+                  text run at (62,56) width 40: "Africa"
+              RenderText {#text} at (102,56) size 4x19
+                text run at (102,56) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (106,37) size 50x34
+              RenderText {#text} at (156,56) size 4x19
+                text run at (156,56) width 4: " "
+              RenderBlock {INPUT} at (164,71) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (168,56) size 125x19
+                  text run at (168,56) width 125: "Alexander's Empire"
+              RenderText {#text} at (293,56) size 4x19
+                text run at (293,56) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (297,37) size 50x34
+              RenderText {#text} at (347,56) size 4x19
+                text run at (347,56) width 4: " "
+              RenderBlock {INPUT} at (355,71) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (359,56) size 99x19
+                  text run at (359,56) width 99: "Ancient Greece"
+              RenderText {#text} at (458,56) size 4x19
+                text run at (458,56) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (462,37) size 50x34
+              RenderText {#text} at (512,56) size 4x19
+                text run at (512,56) width 4: " "
+              RenderBlock {INPUT} at (520,71) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (524,56) size 45x19
+                  text run at (524,56) width 45: "Classic"
+              RenderText {#text} at (569,56) size 4x19
+                text run at (569,56) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (573,37) size 50x34
+              RenderText {#text} at (623,56) size 4x19
+                text run at (623,56) width 4: " "
+              RenderBlock {INPUT} at (631,71) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (635,56) size 40x19
+                  text run at (635,56) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,74) size 50x34
+              RenderText {#text} at (50,93) size 4x19
+                text run at (50,93) width 4: " "
+              RenderBlock {INPUT} at (58,108) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,93) size 125x19
+                  text run at (62,93) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,93) size 4x19
+                text run at (187,93) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,74) size 50x34
+              RenderText {#text} at (241,93) size 4x19
+                text run at (241,93) width 4: " "
+              RenderBlock {INPUT} at (249,108) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,93) size 99x19
+                  text run at (253,93) width 99: "Ancient Greece"
+              RenderText {#text} at (352,93) size 4x19
+                text run at (352,93) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,74) size 50x34
+              RenderText {#text} at (406,93) size 4x19
+                text run at (406,93) width 4: " "
+              RenderBlock {INPUT} at (414,108) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,93) size 45x19
+                  text run at (418,93) width 45: "Classic"
+              RenderText {#text} at (463,93) size 4x19
+                text run at (463,93) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,74) size 50x34
+              RenderText {#text} at (517,93) size 4x19
+                text run at (517,93) width 4: " "
+              RenderBlock {INPUT} at (525,108) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,93) size 40x19
+                  text run at (529,93) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,111) size 50x34
+              RenderText {#text} at (50,130) size 4x19
+                text run at (50,130) width 4: " "
+              RenderBlock {INPUT} at (58,145) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,130) size 125x19
+                  text run at (62,130) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,130) size 4x19
+                text run at (187,130) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,111) size 50x34
+              RenderText {#text} at (241,130) size 4x19
+                text run at (241,130) width 4: " "
+              RenderBlock {INPUT} at (249,145) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,130) size 99x19
+                  text run at (253,130) width 99: "Ancient Greece"
+              RenderText {#text} at (352,130) size 4x19
+                text run at (352,130) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,111) size 50x34
+              RenderText {#text} at (406,130) size 4x19
+                text run at (406,130) width 4: " "
+              RenderBlock {INPUT} at (414,145) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,130) size 45x19
+                  text run at (418,130) width 45: "Classic"
+              RenderText {#text} at (463,130) size 4x19
+                text run at (463,130) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,111) size 50x34
+              RenderText {#text} at (517,130) size 4x19
+                text run at (517,130) width 4: " "
+              RenderBlock {INPUT} at (525,145) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,130) size 40x19
+                  text run at (529,130) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,148) size 50x34
+              RenderText {#text} at (50,167) size 4x19
+                text run at (50,167) width 4: " "
+              RenderBlock {INPUT} at (58,182) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,167) size 125x19
+                  text run at (62,167) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,167) size 4x19
+                text run at (187,167) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,148) size 50x34
+              RenderText {#text} at (241,167) size 4x19
+                text run at (241,167) width 4: " "
+              RenderBlock {INPUT} at (249,182) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,167) size 99x19
+                  text run at (253,167) width 99: "Ancient Greece"
+              RenderText {#text} at (352,167) size 4x19
+                text run at (352,167) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,148) size 50x34
+              RenderText {#text} at (406,167) size 4x19
+                text run at (406,167) width 4: " "
+              RenderBlock {INPUT} at (414,182) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,167) size 45x19
+                  text run at (418,167) width 45: "Classic"
+              RenderText {#text} at (463,167) size 4x19
+                text run at (463,167) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,148) size 50x34
+              RenderText {#text} at (517,167) size 4x19
+                text run at (517,167) width 4: " "
+              RenderBlock {INPUT} at (525,182) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,167) size 40x19
+                  text run at (529,167) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,185) size 50x34
+              RenderText {#text} at (50,204) size 4x19
+                text run at (50,204) width 4: " "
+              RenderBlock {INPUT} at (58,219) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,204) size 125x19
+                  text run at (62,204) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,204) size 4x19
+                text run at (187,204) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,185) size 50x34
+              RenderText {#text} at (241,204) size 4x19
+                text run at (241,204) width 4: " "
+              RenderBlock {INPUT} at (249,219) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,204) size 99x19
+                  text run at (253,204) width 99: "Ancient Greece"
+              RenderText {#text} at (352,204) size 4x19
+                text run at (352,204) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,185) size 50x34
+              RenderText {#text} at (406,204) size 4x19
+                text run at (406,204) width 4: " "
+              RenderBlock {INPUT} at (414,219) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,204) size 45x19
+                  text run at (418,204) width 45: "Classic"
+              RenderText {#text} at (463,204) size 4x19
+                text run at (463,204) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,185) size 50x34
+              RenderText {#text} at (517,204) size 4x19
+                text run at (517,204) width 4: " "
+              RenderBlock {INPUT} at (525,219) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,204) size 40x19
+                  text run at (529,204) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,222) size 50x34
+              RenderText {#text} at (50,241) size 4x19
+                text run at (50,241) width 4: " "
+              RenderBlock {INPUT} at (58,256) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,241) size 125x19
+                  text run at (62,241) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,241) size 4x19
+                text run at (187,241) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,222) size 50x34
+              RenderText {#text} at (241,241) size 4x19
+                text run at (241,241) width 4: " "
+              RenderBlock {INPUT} at (249,256) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,241) size 99x19
+                  text run at (253,241) width 99: "Ancient Greece"
+              RenderText {#text} at (352,241) size 4x19
+                text run at (352,241) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,222) size 50x34
+              RenderText {#text} at (406,241) size 4x19
+                text run at (406,241) width 4: " "
+              RenderBlock {INPUT} at (414,256) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,241) size 45x19
+                  text run at (418,241) width 45: "Classic"
+              RenderText {#text} at (463,241) size 4x19
+                text run at (463,241) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,222) size 50x34
+              RenderText {#text} at (517,241) size 4x19
+                text run at (517,241) width 4: " "
+              RenderBlock {INPUT} at (525,256) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,241) size 40x19
+                  text run at (529,241) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,259) size 50x34
+              RenderText {#text} at (50,278) size 4x19
+                text run at (50,278) width 4: " "
+              RenderBlock {INPUT} at (58,293) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,278) size 125x19
+                  text run at (62,278) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,278) size 4x19
+                text run at (187,278) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 165x19
+            RenderInline {DIV} at (0,0) size 165x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,259) size 50x34
+              RenderText {#text} at (241,278) size 4x19
+                text run at (241,278) width 4: " "
+              RenderBlock {INPUT} at (249,293) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,278) size 99x19
+                  text run at (253,278) width 99: "Ancient Greece"
+              RenderText {#text} at (352,278) size 4x19
+                text run at (352,278) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 111x19
+            RenderInline {DIV} at (0,0) size 111x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (356,259) size 50x34
+              RenderText {#text} at (406,278) size 4x19
+                text run at (406,278) width 4: " "
+              RenderBlock {INPUT} at (414,293) size 0x0
+              RenderInline {LABEL} at (0,0) size 45x19
+                RenderText {#text} at (418,278) size 45x19
+                  text run at (418,278) width 45: "Classic"
+              RenderText {#text} at (463,278) size 4x19
+                text run at (463,278) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 102x19
+            RenderInline {DIV} at (0,0) size 102x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (467,259) size 50x34
+              RenderText {#text} at (517,278) size 4x19
+                text run at (517,278) width 4: " "
+              RenderBlock {INPUT} at (525,293) size 0x0
+              RenderInline {LABEL} at (0,0) size 40x19
+                RenderText {#text} at (529,278) size 40x19
+                  text run at (529,278) width 40: "Africa"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 191x19
+            RenderInline {DIV} at (0,0) size 191x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (0,296) size 50x34
+              RenderText {#text} at (50,315) size 4x19
+                text run at (50,315) width 4: " "
+              RenderBlock {INPUT} at (58,330) size 0x0
+              RenderInline {LABEL} at (0,0) size 125x19
+                RenderText {#text} at (62,315) size 125x19
+                  text run at (62,315) width 125: "Alexander's Empire"
+              RenderText {#text} at (187,315) size 4x19
+                text run at (187,315) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderInline {DIV} at (0,0) size 161x19
+            RenderInline {DIV} at (0,0) size 161x19
+              RenderText {#text} at (0,0) size 0x0
+              RenderInline {A} at (0,0) size 50x19 [color=#0000EE]
+                RenderImage {IMG} at (191,296) size 50x34
+              RenderText {#text} at (241,315) size 4x19
+                text run at (241,315) width 4: " "
+              RenderBlock {INPUT} at (249,330) size 0x0
+              RenderInline {LABEL} at (0,0) size 99x19
+                RenderText {#text} at (253,315) size 99x19
+                  text run at (253,315) width 99: "Ancient Greece"
+              RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
