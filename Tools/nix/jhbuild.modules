@@ -43,10 +43,10 @@
 
   <autotools id="pixman" autogen-sh="configure"
              autogenargs="--enable-gtk=no">
-    <branch module="releases/pixman-0.24.0.tar.gz" version="0.24.0"
+    <branch module="snapshots/pixman-0.29.2.tar.gz" version="0.29.2"
             repo="cairographics.org"
-            hash="sha256:a5647c7158f103eedff5fba799018f4169f6b26b573ab7685812ebc9a1c5d2e4"
-            md5sum="a2d0b120509bdccb10aa7f4bec3730e4">
+            hash="sha256:4c4e92143a4557a4617b80caf0a58ccb012d8293741e75389037cd5133b335db"
+            md5sum="8f5795ea98cadd7b7f12e4b373500eef">
     </branch>
   </autotools>
 
