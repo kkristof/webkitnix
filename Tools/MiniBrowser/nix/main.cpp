@@ -88,6 +88,9 @@ public:
     static void doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo);
     static void updateTextInputState(NIXView, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
 
+    // WKPageLoadClient.
+    static void didStartProgress(WKPageRef, const void* clientInfo);
+
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const NIXTouchPoint&);
     virtual void handleDoubleTap(double timestamp, const NIXTouchPoint&);
@@ -143,6 +146,7 @@ private:
     bool m_shouldRestoreViewportWhenLosingFocus;
     double m_scaleBeforeFocus;
     WKPoint m_scrollPositionBeforeFocus;
+    bool m_pageHandlesTouchEvents;
 
     float m_viewportWidth;
     float m_viewportHeight;
@@ -172,6 +176,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     , m_postponeTextInputUpdates(true)
     , m_shouldFocusEditableArea(false)
     , m_shouldRestoreViewportWhenLosingFocus(false)
+    , m_pageHandlesTouchEvents(false)
     , m_viewportMinScale(0.25)
     , m_viewportMaxScale(5)
     , m_viewportUserScalable(true)
@@ -203,6 +208,13 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     NIXViewSetViewClient(m_view, &viewClient);
 
     NIXViewInitialize(m_view);
+
+    WKPageLoaderClient loaderClient;
+    memset(&loaderClient, 0, sizeof(loaderClient));
+    loaderClient.version = kWKPageLoaderClientCurrentVersion;
+    loaderClient.clientInfo = this;
+    loaderClient.didStartProgress = MiniBrowser::didStartProgress;
+    WKPageSetPageLoaderClient(pageRef(), &loaderClient);
 
     if (m_mode == MobileMode)
         WKPageSetUseFixedLayout(pageRef(), true);
@@ -650,10 +662,14 @@ void MiniBrowser::didFindZoomableArea(NIXView, WKPoint target, WKRect area, cons
 
 void MiniBrowser::doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo)
 {
-    if (wasEventHandled)
-        return;
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
-    mb->m_gestureRecognizer.handleTouchEvent(*event);
+    if (mb->m_pageHandlesTouchEvents)
+        return;
+
+    if (wasEventHandled)
+        mb->m_pageHandlesTouchEvents = true;
+    else
+        mb->m_gestureRecognizer.handleTouchEvent(*event);
 }
 
 void MiniBrowser::doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo)
@@ -844,6 +860,13 @@ void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect c
         mb->m_cursorRect = WKRectMake(0, 0, 0, 0);
         mb->m_editorRect = WKRectMake(0, 0, 0, 0);
     }
+}
+
+void MiniBrowser::didStartProgress(WKPageRef, const void* clientInfo)
+{
+    MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
+    mb->m_pageHandlesTouchEvents = false;
+    mb->m_gestureRecognizer.reset();
 }
 
 int main(int argc, char* argv[])
