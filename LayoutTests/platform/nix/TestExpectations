@@ -50,6 +50,9 @@ fast/selectors [ Pass Crash ]
 fast/runin [ Pass Crash ]
 fast/text [ Pass Crash ]
 
+# WebAudio
+webaudio/codec-tests/mp3/128kbps-44khz.html [ Crash ]
+
 ################################################################################
 # FAILURES
 ################################################################################
@@ -728,9 +731,6 @@ http/tests/xmlhttprequest/remember-bad-password.html [ Failure ]
 
 # need more investigation
 transitions/negative-delay.html [ Failure Pass ]
-# cant find variable: webkitAudioContext
-inspector-protocol/nmi-webaudio.html [ Failure ]
-inspector-protocol/nmi-webaudio-leak-test.html [ Failure Crash ]
 
 # need to turn on HTMLTemplateElement - ENABLE(TEMPLATE_ELEMENT)
 fast/dom/HTMLTemplateElement/cloneNode.html [ Failure ]
@@ -1104,7 +1104,6 @@ plugins [ Skip ]
 proximity [ Skip ]
 touchadjustment [ Skip ]
 webarchive [ Skip ]
-webaudio [ Skip ]
 
 # WebGL
 compositing/webgl [ Skip ]
@@ -1125,6 +1124,16 @@ webintents [ Skip ]
 ################################################################################
 # MISSING RESULTS
 ################################################################################
+
+# WebAudio
+# Missing because we would need to decode data for running these
+webaudio/audiobuffersource.html [ Missing ]
+webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Missing ]
+webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Missing ]
+webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Missing ]
+webaudio/codec-tests/wav/24bit-22khz-resample.html [ Missing ]
+webaudio/codec-tests/wav/24bit-44khz.html [ Missing ]
+webaudio/mixing.html [ Missing ]
 
 css1 [ Skip ]
 css2.1 [ Skip ]
