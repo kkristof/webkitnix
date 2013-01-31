@@ -53,7 +53,7 @@ endif ()
 
 if (WTF_USE_OPENGL_ES_2)
     list(APPEND WebKitTestRunner_LIBRARIES ${OPENGLES2_LIBRARIES})
-    include_directories(${OPENGLES2_INCLUDE_DIR})
+    include_directories(${OPENGLES2_INCLUDE_DIRS})
 else ()
     list(APPEND WebKitTestRunner_LIBRARIES ${OPENGL_LIBRARIES})
     include_directories(${OPENGL_INCLUDE_DIR})
