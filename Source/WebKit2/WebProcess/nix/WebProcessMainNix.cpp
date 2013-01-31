@@ -54,7 +54,9 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
     if (argc != 2)
         return 1;
 
+#if !GLIB_CHECK_VERSION(2, 35, 0)
     g_type_init();
+#endif
 
     JSC::initializeThreading();
     WTF::initializeMainThread();

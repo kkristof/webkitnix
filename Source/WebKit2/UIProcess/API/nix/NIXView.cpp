@@ -38,7 +38,9 @@ using namespace WebKit;
 
 NIXView NIXViewCreate(WKContextRef context, WKPageGroupRef pageGroup)
 {
+#if !GLIB_CHECK_VERSION(2, 35, 0)
     g_type_init();
+#endif
     return toAPI(new WebKit::WebView(toImpl(context), toImpl(pageGroup)));
 }
 
