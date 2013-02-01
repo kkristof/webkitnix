@@ -92,9 +92,7 @@ void WebView::setScale(float scale)
         return;
 
     m_scale = scale;
-    // FIXME commitViewportChanges will not change the scale of the page anymore.
-    // Potential candidate is WebPageProxy::scalePage. Its second argument is the origin
-    // of the scale in content coordinates.
+    m_webPageProxy->scalePage(scale, roundedViewportPosition());
     if (!m_isSuspended)
         commitViewportChanges();
 }
