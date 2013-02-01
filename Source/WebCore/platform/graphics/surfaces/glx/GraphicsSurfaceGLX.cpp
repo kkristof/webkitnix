@@ -555,6 +555,7 @@ uint32_t GraphicsSurface::platformFrontBuffer() const
 
 uint32_t GraphicsSurface::platformSwapBuffers()
 {
+#if !PLATFORM(NIX)
     if (m_private->isReceiver() && platformGetTextureID()) {
         glBindTexture(GL_TEXTURE_2D, platformGetTextureID());
         // Release previous lock and rebind texture to surface to get frame update.
@@ -563,6 +564,7 @@ uint32_t GraphicsSurface::platformSwapBuffers()
 
         return 0;
     }
+#endif
 
     m_private->swapBuffers();
     return 0;

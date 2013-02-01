@@ -26,15 +26,26 @@
 #include "config.h"
 #include "InjectedBundle.h"
 
+#include "PlatformClient.h"
+
 #include <wtf/Assertions.h>
 #include <wtf/Threading.h>
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
+
 
 namespace WTR {
+
+static OwnPtr<PlatformClient> s_platformClient;
 
 void InjectedBundle::platformInitialize(WKTypeRef)
 {
     WTF::initializeThreading();
     WTFInstallReportBacktraceOnCrashHook();
+
+    if (!s_platformClient)
+        s_platformClient = WTF::adoptPtr(new PlatformClient());
+    WebKit::Platform::initialize(s_platformClient.get());
 }
 
 }

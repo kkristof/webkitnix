@@ -289,6 +289,6 @@ endif ()
 
 if (ENABLE_GAMEPAD)
     list(APPEND WebCore_SOURCES
-        platform/nix/GamepadsNix.cpp
+        platform/chromium/GamepadsChromium.cpp
     )
 endif ()

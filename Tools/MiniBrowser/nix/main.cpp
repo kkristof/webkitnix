@@ -53,7 +53,6 @@ static gboolean callUpdateDisplay(gpointer);
 extern void glUseProgram(GLuint);
 }
 
-
 class MiniBrowser : public LinuxWindowClient, public GestureRecognizerClient {
 public:
 
@@ -83,10 +82,14 @@ public:
     static void webProcessRelaunched(NIXView, const void* clientInfo);
     static void pageDidRequestScroll(NIXView, WKPoint position, const void* clientInfo);
     static void didChangeContentsSize(NIXView, WKSize size, const void* clientInfo);
+    static void didChangeViewportAttributes(NIXView, float width, float height, float minimumScale, float maximumScale, float initialScale, int userScalable, const void* clientInfo);
     static void didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void* clientInfo);
     static void doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo);
     static void doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo);
     static void updateTextInputState(NIXView, bool isContentEditable, WKRect cursorRect, WKRect editorRect, const void* clientInfo);
+
+    // WKPageLoadClient.
+    static void didStartProgress(WKPageRef, const void* clientInfo);
 
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const NIXTouchPoint&);
@@ -143,6 +146,14 @@ private:
     bool m_shouldRestoreViewportWhenLosingFocus;
     double m_scaleBeforeFocus;
     WKPoint m_scrollPositionBeforeFocus;
+    bool m_pageHandlesTouchEvents;
+
+    float m_viewportWidth;
+    float m_viewportHeight;
+    float m_viewportMinScale;
+    float m_viewportMaxScale;
+    float m_viewportInitScale;
+    bool m_viewportUserScalable;
 
     friend gboolean callUpdateDisplay(gpointer);
 };
@@ -165,6 +176,11 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     , m_postponeTextInputUpdates(true)
     , m_shouldFocusEditableArea(false)
     , m_shouldRestoreViewportWhenLosingFocus(false)
+    , m_pageHandlesTouchEvents(false)
+    , m_viewportMinScale(0.25)
+    , m_viewportMaxScale(5)
+    , m_viewportUserScalable(true)
+    , m_viewportInitScale(1)
 {
     g_main_loop_ref(m_mainLoop);
 
@@ -172,6 +188,7 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     WKPreferencesSetAcceleratedCompositingEnabled(preferences, true);
     WKPreferencesSetFrameFlatteningEnabled(preferences, true);
     WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
+    WKPreferencesSetWebGLEnabled(preferences, true);
 
     m_view = NIXViewCreate(m_context.get(), m_pageGroup.get());
 
@@ -186,11 +203,19 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     viewClient.doneWithGestureEvent = MiniBrowser::doneWithGestureEvent;
     viewClient.pageDidRequestScroll = MiniBrowser::pageDidRequestScroll;
     viewClient.didChangeContentsSize = MiniBrowser::didChangeContentsSize;
+    viewClient.didChangeViewportAttributes = MiniBrowser::didChangeViewportAttributes;
     viewClient.didFindZoomableArea = MiniBrowser::didFindZoomableArea;
     viewClient.updateTextInputState = MiniBrowser::updateTextInputState;
     NIXViewSetViewClient(m_view, &viewClient);
 
     NIXViewInitialize(m_view);
+
+    WKPageLoaderClient loaderClient;
+    memset(&loaderClient, 0, sizeof(loaderClient));
+    loaderClient.version = kWKPageLoaderClientCurrentVersion;
+    loaderClient.clientInfo = this;
+    loaderClient.didStartProgress = MiniBrowser::didStartProgress;
+    WKPageSetPageLoaderClient(pageRef(), &loaderClient);
 
     if (m_mode == MobileMode)
         WKPageSetUseFixedLayout(pageRef(), true);
@@ -582,10 +607,34 @@ void MiniBrowser::didChangeContentsSize(NIXView, WKSize size, const void* client
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     mb->m_contentsSize = size;
 
-    if (mb->m_mode == MiniBrowser::MobileMode) {
-        NIXViewSetScale(mb->m_view, mb->scaleToFitContents());
+    if (mb->m_mode == MiniBrowser::MobileMode)
         mb->adjustScrollPosition();
+}
+
+void MiniBrowser::didChangeViewportAttributes(NIXView, float width, float height, float minimumScale, float maximumScale, float initialScale, int userScalable, const void* clientInfo)
+{
+    MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
+
+    mb->m_viewportWidth = width;
+    mb->m_viewportHeight = height;
+    mb->m_viewportMinScale = minimumScale;
+    mb->m_viewportMaxScale = maximumScale;
+    mb->m_viewportInitScale = initialScale;
+    mb->m_viewportUserScalable = userScalable;
+
+    if (mb->m_viewportInitScale < 0) {
+        double scale = mb->scaleToFitContents();
+        if (scale < minimumScale)
+            scale = minimumScale;
+        else if (scale > maximumScale)
+            scale = maximumScale;
+        mb->m_viewportInitScale = scale;
     }
+
+    if (!mb->m_viewportUserScalable)
+        mb->m_viewportMaxScale = mb->m_viewportMinScale = mb->m_viewportInitScale;
+
+    NIXViewSetScale(mb->m_view, mb->m_viewportInitScale);
 }
 
 void MiniBrowser::didFindZoomableArea(NIXView, WKPoint target, WKRect area, const void* clientInfo)
@@ -614,10 +663,14 @@ void MiniBrowser::didFindZoomableArea(NIXView, WKPoint target, WKRect area, cons
 
 void MiniBrowser::doneWithTouchEvent(NIXView, const NIXTouchEvent* event, bool wasEventHandled, const void* clientInfo)
 {
-    if (wasEventHandled)
-        return;
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
-    mb->m_gestureRecognizer.handleTouchEvent(*event);
+    if (mb->m_pageHandlesTouchEvents)
+        return;
+
+    if (wasEventHandled)
+        mb->m_pageHandlesTouchEvents = true;
+    else
+        mb->m_gestureRecognizer.handleTouchEvent(*event);
 }
 
 void MiniBrowser::doneWithGestureEvent(NIXView, const NIXGestureEvent* event, bool wasEventHandled, const void* clientInfo)
@@ -661,6 +714,8 @@ void MiniBrowser::handleSingleTap(double timestamp, const NIXTouchPoint& touchPo
 
 void MiniBrowser::handleDoubleTap(double timestamp, const NIXTouchPoint& touchPoint)
 {
+    if (!m_viewportUserScalable)
+        return;
     WKPoint contentsPoint = WKPointMake(touchPoint.x, touchPoint.y);
     NIXViewFindZoomableAreaForPoint(m_view, contentsPoint, touchPoint.verticalRadius, touchPoint.horizontalRadius);
 }
@@ -685,6 +740,9 @@ void MiniBrowser::handlePanningFinished(double timestamp)
 
 void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKPoint contentCenter)
 {
+    if (!m_viewportUserScalable)
+        return;
+
     // Scaling: The page should be scaled proportionally to the distance of the pinch.
     // Scrolling: If the center of the pinch initially was position (120,120) in content
     //            coordinates, them during the page must be scrolled to keep the pinch center
@@ -698,15 +756,38 @@ void MiniBrowser::handlePinch(double timestamp, WKPoint delta, double scale, WKP
 
 void MiniBrowser::handlePinchFinished(double timestamp)
 {
+    double scale = NIXViewScale(m_view);
+    bool needsScale = false;
+    double minimumScale = double(NIXViewSize(m_view).width) / m_contentsSize.width;
+
+    if (scale > m_viewportMaxScale) {
+        scale = m_viewportMaxScale;
+        needsScale = true;
+    } else if (scale < m_viewportMinScale) {
+        scale = m_viewportMinScale;
+        needsScale = true;
+    } else if (scale < minimumScale) {
+        scale = minimumScale;
+        needsScale = true;
+    }
+
+    if (needsScale)
+        NIXViewSetScale(m_view, scale);
+
     adjustScrollPosition();
     NIXViewResumeActiveDOMObjectsAndAnimations(m_view);
 }
 
 void MiniBrowser::scaleAtPoint(const WKPoint& point, double scale, ScaleBehavior scaleBehavior)
 {
+    if (!m_viewportUserScalable)
+        return;
+
     double minimumScale = double(NIXViewSize(m_view).width) / m_contentsSize.width;
-    if(scaleBehavior & LowerMinimumScale)
+
+    if (scaleBehavior & LowerMinimumScale)
         minimumScale *= 0.5;
+
     if (scale < minimumScale)
         scale = minimumScale;
 
@@ -780,6 +861,13 @@ void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect c
         mb->m_cursorRect = WKRectMake(0, 0, 0, 0);
         mb->m_editorRect = WKRectMake(0, 0, 0, 0);
     }
+}
+
+void MiniBrowser::didStartProgress(WKPageRef, const void* clientInfo)
+{
+    MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
+    mb->m_pageHandlesTouchEvents = false;
+    mb->m_gestureRecognizer.reset();
 }
 
 int main(int argc, char* argv[])

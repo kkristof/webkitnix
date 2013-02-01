@@ -313,6 +313,11 @@ void WebView::didChangeContentsSize(const IntSize& size)
     commitViewportChanges();
 }
 
+void WebView::didChangeViewportProperties(const WebCore::ViewportAttributes& viewportAttributes)
+{
+    m_viewClient.didChangeViewportAttributes(this, viewportAttributes.layoutSize.width(), viewportAttributes.layoutSize.height(), viewportAttributes.minimumScale, viewportAttributes.maximumScale, viewportAttributes.initialScale, !!viewportAttributes.userScalable);
+}
+
 void WebView::didFindZoomableArea(const IntPoint& target, const IntRect& area)
 {
     m_viewClient.didFindZoomableArea(this, WKPointMake(target.x(), target.y()), WKRectMake(area.x(), area.y(), area.width(), area.height()));
