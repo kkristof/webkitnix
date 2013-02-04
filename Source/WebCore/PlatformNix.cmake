@@ -280,7 +280,7 @@ if (ENABLE_WEB_AUDIO)
   LIST(APPEND WebCore_SOURCES
     platform/audio/chromium/AudioBusChromium.cpp
     platform/audio/chromium/AudioDestinationChromium.cpp
-    platform/audio/ffmpeg/FFTFrameFFMPEG.cpp
+    platform/audio/nix/FFTFrameNix.cpp
   )
   SET(WEB_AUDIO_DIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/webaudio/resources)
   FILE(GLOB WEB_AUDIO_DATA "${WEBCORE_DIR}/platform/audio/resources/*.wav")

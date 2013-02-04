@@ -34,10 +34,12 @@
 #if WEBKIT_IMPLEMENTATION
 #include <public/WebAudioDevice.h>
 #include <public/WebData.h>
+#include <public/WebFFTFrame.h>
 #include <public/WebGamepads.h>
 #else
 #include "WebAudioDevice.h"
 #include "WebData.h"
+#include "WebFFTFrame.h"
 #include "WebGamepads.h"
 #endif
 
@@ -65,6 +67,10 @@ public:
     // Gamepad -------------------------------------------------------------
     virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
 
+
+    // FFTFrame
+    virtual WebFFTFrame* createFFTFrame(unsigned fftsize) { return 0; }
+    virtual WebFFTFrame* createFFTFrame(const WebFFTFrame* frame) { return 0; }
 
     // Resources -----------------------------------------------------------
     // Returns a blob of data corresponding to the named resource.

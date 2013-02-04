@@ -91,11 +91,6 @@ if (NOT ENABLE_SVG)
     set(ENABLE_SVG_FONTS OFF)
 endif ()
 
-if (ENABLE_WEB_AUDIO)
-    PKG_CHECK_MODULES(LIBAVCODEC libavcodec REQUIRED)
-    add_definitions(-DWTF_USE_WEBAUDIO_FFMPEG=1)
-endif ()
-
 if (WTF_USE_EGL)
     find_package(EGL REQUIRED)
     SET_HARDCODED_DEFINE(WTF_USE_EGL)

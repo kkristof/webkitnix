@@ -1,5 +1,8 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/nix)
+
 SET (Platform_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/nix/public/Platform.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nix/public/WebFFTFrame.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebAudioBus.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebAudioDevice.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebCommon.h"
