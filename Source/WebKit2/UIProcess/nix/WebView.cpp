@@ -29,7 +29,6 @@
 
 #include "DrawingAreaProxyImpl.h"
 #include "CoordinatedLayerTreeHostProxy.h"
-#include "LayerTreeRenderer.h"
 #include "NativeWebGestureEvent.h"
 #include "NativeWebKeyboardEvent.h"
 #include "NativeWebMouseEvent.h"
@@ -37,6 +36,7 @@
 #include "WebContext.h"
 #include "WebPageGroup.h"
 #include "WebPreferences.h"
+#include <WebCore/CoordinatedGraphicsScene.h>
 #include <WebCore/TextureMapperGL.h>
 
 using namespace WebCore;
@@ -63,7 +63,7 @@ void WebView::setViewClient(const NIXViewClient* viewClient)
 void WebView::initialize()
 {
     m_webPageProxy->initializeWebPage();
-    layerTreeRenderer()->setActive(true);
+    coordinatedGraphicsScene()->setActive(true);
 }
 
 void WebView::setTransparentBackground(bool value)
@@ -210,7 +210,7 @@ void WebView::sendGestureEvent(const NIXGestureEvent& event)
     m_webPageProxy->handleGestureEvent(NativeWebGestureEvent(event));
 }
 
-LayerTreeRenderer* WebView::layerTreeRenderer()
+CoordinatedGraphicsScene* WebView::coordinatedGraphicsScene()
 {
     DrawingAreaProxy* drawingArea = m_webPageProxy->drawingArea();
     if (!drawingArea)
@@ -220,11 +220,11 @@ LayerTreeRenderer* WebView::layerTreeRenderer()
     if (!coordinatorProxy)
         return 0;
 
-    LayerTreeRenderer* renderer = coordinatorProxy->layerTreeRenderer();
-    if (!renderer)
+    CoordinatedGraphicsScene* scene = coordinatorProxy->coordinatedGraphicsScene();
+    if (!scene)
         return 0;
 
-    return renderer;
+    return scene;
 }
 
 FloatRect WebView::visibleRect() const
@@ -260,13 +260,13 @@ TransformationMatrix WebView::contentToUserViewportTransformation() const
 
 void WebView::paintToCurrentGLContext()
 {
-    LayerTreeRenderer* renderer = layerTreeRenderer();
-    if (!renderer)
+    CoordinatedGraphicsScene* scene = coordinatedGraphicsScene();
+    if (!scene)
         return;
 
     FloatRect viewport = m_userViewportTransformation.mapRect(FloatRect(FloatPoint(), m_size));
 
-    renderer->paintToCurrentGLContext(contentToUserViewportTransformation(), m_opacity, viewport);
+    scene->paintToCurrentGLContext(contentToUserViewportTransformation(), m_opacity, viewport);
 }
 
 void WebView::commitViewportChanges()

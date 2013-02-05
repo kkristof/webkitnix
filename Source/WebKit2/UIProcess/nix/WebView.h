@@ -35,9 +35,11 @@
 #include "WebViewClient.h"
 #include <WebCore/TransformationMatrix.h>
 
-namespace WebKit {
+namespace WebCore {
+class CoordinatedGraphicsScene;
+}
 
-class LayerTreeRenderer;
+namespace WebKit {
 
 class WebView : public PageClient {
 public:
@@ -178,7 +180,7 @@ public:
 
 private:
     WebCore::IntPoint roundedViewportPosition() const;
-    LayerTreeRenderer* layerTreeRenderer();
+    WebCore::CoordinatedGraphicsScene* coordinatedGraphicsScene();
     void updateVisibleContents();
 
     WebCore::TransformationMatrix userViewportToContentTransformation() const;

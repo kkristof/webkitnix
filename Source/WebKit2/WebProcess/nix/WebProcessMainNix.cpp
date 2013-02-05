@@ -29,9 +29,9 @@
 
 #define LIBSOUP_USE_UNSTABLE_REQUEST_API
 
-#include "CoordinatedGraphicsLayer.h"
 #include "ProxyResolverSoup.h"
 #include "WKBase.h"
+#include <WebCore/CoordinatedGraphicsLayer.h>
 #include <WebCore/ResourceHandle.h>
 #include <WebCore/RunLoop.h>
 #include <WebKit2/WebProcess.h>
