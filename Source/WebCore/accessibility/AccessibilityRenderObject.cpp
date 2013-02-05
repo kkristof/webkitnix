@@ -1121,13 +1121,36 @@ AccessibilityObjectInclusion AccessibilityRenderObject::accessibilityIsIgnoredBa
         
     return DefaultBehavior;
 }  
- 
+
 bool AccessibilityRenderObject::accessibilityIsIgnored() const
 {
 #ifndef NDEBUG
     ASSERT(m_initialized);
 #endif
 
+    AXComputedObjectAttributeCache* attributeCache = axObjectCache()->computedObjectAttributeCache();
+    if (attributeCache) {
+        AccessibilityObjectInclusion ignored = attributeCache->getIgnored(axObjectID());
+        switch (ignored) {
+        case IgnoreObject:
+            return true;
+        case IncludeObject:
+            return false;
+        case DefaultBehavior:
+            break;
+        }
+    }
+
+    bool result = computeAccessibilityIsIgnored();
+
+    if (attributeCache)
+        attributeCache->setIgnored(axObjectID(), result ? IgnoreObject : IncludeObject);
+
+    return result;
+}
+
+bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
+{
     // Check first if any of the common reasons cause this element to be ignored.
     // Then process other use cases that need to be applied to all the various roles
     // that AccessibilityRenderObjects take on.
@@ -1846,7 +1869,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForIndex(int index) co
     range->selectNodeContents(node, ec);
     CharacterIterator it(range.get());
     it.advance(index - 1);
-    return VisiblePosition(Position(it.range()->endContainer(ec), it.range()->endOffset(ec), Position::PositionIsOffsetInAnchor), UPSTREAM);
+    return VisiblePosition(Position(it.range()->endContainer(), it.range()->endOffset(), Position::PositionIsOffsetInAnchor), UPSTREAM);
 }
     
 int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
@@ -2226,11 +2249,20 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
     return result;
 }
 
+bool AccessibilityRenderObject::shouldNotifyActiveDescendant() const
+{
+    // We want to notify that the combo box has changed its active descendant,
+    // but we do not want to change the focus, because focus should remain with the combo box.
+    if (isComboBox())
+        return true;
+    
+    return shouldFocusActiveDescendant();
+}
+
 bool AccessibilityRenderObject::shouldFocusActiveDescendant() const
 {
     switch (ariaRoleAttribute()) {
     case GroupRole:
-    case ComboBoxRole:
     case ListBoxRole:
     case MenuRole:
     case MenuBarRole:
@@ -2323,7 +2355,7 @@ void AccessibilityRenderObject::handleActiveDescendantChanged()
         return; 
     AccessibilityRenderObject* activedescendant = static_cast<AccessibilityRenderObject*>(activeDescendant());
     
-    if (activedescendant && shouldFocusActiveDescendant())
+    if (activedescendant && shouldNotifyActiveDescendant())
         doc->axObjectCache()->postNotification(m_renderer, AXObjectCache::AXActiveDescendantChanged, true);
 }
 

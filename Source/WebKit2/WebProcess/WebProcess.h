@@ -67,10 +67,6 @@ QT_END_NAMESPACE
 namespace WebCore {
     class ResourceRequest;
     struct PluginInfo;
-
-#if ENABLE(WEB_INTENTS)
-    class PlatformMessagePortChannel;
-#endif
 }
 
 namespace WebKit {
@@ -113,7 +109,7 @@ public:
     template <typename T>
     void addSupplement()
     {
-        m_supplements.add(T::supplementName(), new T(this));
+        m_supplements.add(T::supplementName(), adoptPtr<WebProcessSupplement>(new T(this)));
     }
 
     WebConnectionToUIProcess* webConnectionToUIProcess() const { return m_webConnection.get(); }
@@ -122,12 +118,6 @@ public:
     void createWebPage(uint64_t pageID, const WebPageCreationParameters&);
     void removeWebPage(uint64_t pageID);
     WebPage* focusedWebPage() const;
-
-#if ENABLE(WEB_INTENTS) 
-    uint64_t addMessagePortChannel(PassRefPtr<WebCore::PlatformMessagePortChannel>);
-    WebCore::PlatformMessagePortChannel* messagePortChannel(uint64_t);
-    void removeMessagePortChannel(uint64_t);
-#endif
 
     InjectedBundle* injectedBundle() const { return m_injectedBundle.get(); }
 
@@ -282,11 +272,12 @@ private:
     virtual void didReceiveInvalidMessage(CoreIPC::Connection*, CoreIPC::StringReference messageReceiverName, CoreIPC::StringReference messageName) OVERRIDE;
 
     // CoreIPC::Connection::QueueClient
-    virtual void didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection*, CoreIPC::MessageDecoder&, bool& didHandleMessage) OVERRIDE;
+    virtual void didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection*, OwnPtr<CoreIPC::MessageDecoder>&) OVERRIDE;
+    virtual void didCloseOnConnectionWorkQueue(CoreIPC::Connection*) OVERRIDE;
 
     // Implemented in generated WebProcessMessageReceiver.cpp
     void didReceiveWebProcessMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&);
-    void didReceiveWebProcessMessageOnConnectionWorkQueue(CoreIPC::Connection*, CoreIPC::MessageDecoder&, bool& didHandleMessage);
+    void didReceiveWebProcessMessageOnConnectionWorkQueue(CoreIPC::Connection*, OwnPtr<CoreIPC::MessageDecoder>&);
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
     void didGetPlugins(CoreIPC::Connection*, uint64_t requestID, const Vector<WebCore::PluginInfo>&);
@@ -328,11 +319,7 @@ private:
 
     HashMap<uint64_t, WebFrame*> m_frameMap;
 
-#if ENABLE(WEB_INTENTS)
-    HashMap<uint64_t, RefPtr<WebCore::PlatformMessagePortChannel> > m_messagePortChannels;
-#endif
-
-    typedef HashMap<AtomicString, WebProcessSupplement*> WebProcessSupplementMap;
+    typedef HashMap<const char*, OwnPtr<WebProcessSupplement>, PtrHash<const char*> > WebProcessSupplementMap;
     WebProcessSupplementMap m_supplements;
 
     TextCheckerState m_textCheckerState;

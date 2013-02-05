@@ -38,57 +38,55 @@
 namespace WebKit {
 class WebArrayBufferView;
 class WebPermissionClient;
+class WebFrame;
 }
 
 namespace WebTestRunner {
 
-// FIXME: Once the TestRunner class is complete, this class should take a
-// TestRunner* as ctor argument, and not have default implementations.
 class WebTestRunner {
 public:
-    virtual void setTestIsRunning(bool) { }
-    virtual bool shouldDumpEditingCallbacks() const { return false; }
-    virtual bool shouldDumpAsText() const { return false; }
-    virtual void setShouldDumpAsText(bool) { }
-    virtual bool shouldGeneratePixelResults() const { return false; }
-    virtual void setShouldGeneratePixelResults(bool) { }
-    virtual bool shouldDumpChildFrameScrollPositions() const { return false; }
-    virtual bool shouldDumpChildFramesAsText() const { return false; }
-    virtual bool shouldDumpAsAudio() const { return false; }
-    virtual const WebKit::WebArrayBufferView* audioData() const { return 0; }
-    virtual bool shouldDumpFrameLoadCallbacks() const { return false; }
-    virtual void setShouldDumpFrameLoadCallbacks(bool) { }
-    virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const { return false; }
-    virtual bool stopProvisionalFrameLoads() const { return false; }
-    virtual bool shouldDumpTitleChanges() const { return false; }
-    virtual bool shouldDumpCreateView() const { return false; }
-    virtual bool canOpenWindows() const { return false; }
-    virtual bool shouldDumpResourceLoadCallbacks() const { return false; }
-    virtual bool shouldDumpResourceRequestCallbacks() const { return false; }
-    virtual bool shouldDumpResourceResponseMIMETypes() const { return false; }
-    virtual WebKit::WebPermissionClient* webPermissions() const { return 0; }
-    virtual bool shouldDumpStatusCallbacks() const { return false; }
-    virtual bool shouldDumpProgressFinishedCallback() const { return false; }
-    virtual bool shouldDumpBackForwardList() const { return false; }
-    virtual bool deferMainResourceDataLoad() const { return false; }
-    virtual bool shouldDumpSelectionRect() const { return false; }
-    virtual bool testRepaint() const { return false; }
-    virtual bool sweepHorizontally() const { return false; }
-    virtual bool isPrinting() const { return false; }
-    virtual bool shouldStayOnPageAfterHandlingBeforeUnload() const { return false; }
-    virtual void setTitleTextDirection(WebKit::WebTextDirection) { }
-    virtual const std::set<std::string>* httpHeadersToClear() const { return 0; }
-    virtual bool shouldBlockRedirects() const { return false; }
-    virtual bool willSendRequestShouldReturnNull() const { return false; }
-    virtual void setTopLoadingFrame(WebKit::WebFrame*, bool) { }
-    virtual WebKit::WebFrame* topLoadingFrame() const { return 0; }
-    virtual void policyDelegateDone() { }
-    virtual bool policyDelegateEnabled() const { return false; }
-    virtual bool policyDelegateIsPermissive() const { return false; }
-    virtual bool policyDelegateShouldNotifyDone() const { return false; }
-    virtual bool shouldInterceptPostMessage() const { return false; }
-    virtual bool isSmartInsertDeleteEnabled() const { return true; }
-    virtual bool isSelectTrailingWhitespaceEnabled() const { return false; }
+    virtual bool shouldDumpEditingCallbacks() const = 0;
+    virtual bool shouldDumpAsText() const = 0;
+    virtual void setShouldDumpAsText(bool) = 0;
+    virtual bool shouldGeneratePixelResults() const = 0;
+    virtual void setShouldGeneratePixelResults(bool) = 0;
+    virtual bool shouldDumpChildFrameScrollPositions() const = 0;
+    virtual bool shouldDumpChildFramesAsText() const = 0;
+    virtual bool shouldDumpAsAudio() const = 0;
+    virtual const WebKit::WebArrayBufferView* audioData() const = 0;
+    virtual bool shouldDumpFrameLoadCallbacks() const = 0;
+    virtual void setShouldDumpFrameLoadCallbacks(bool) = 0;
+    virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const = 0;
+    virtual bool stopProvisionalFrameLoads() const = 0;
+    virtual bool shouldDumpTitleChanges() const = 0;
+    virtual bool shouldDumpCreateView() const = 0;
+    virtual bool canOpenWindows() const = 0;
+    virtual bool shouldDumpResourceLoadCallbacks() const = 0;
+    virtual bool shouldDumpResourceRequestCallbacks() const = 0;
+    virtual bool shouldDumpResourceResponseMIMETypes() const = 0;
+    virtual WebKit::WebPermissionClient* webPermissions() const = 0;
+    virtual bool shouldDumpStatusCallbacks() const = 0;
+    virtual bool shouldDumpProgressFinishedCallback() const = 0;
+    virtual bool shouldDumpBackForwardList() const = 0;
+    virtual bool deferMainResourceDataLoad() const = 0;
+    virtual bool shouldDumpSelectionRect() const = 0;
+    virtual bool testRepaint() const = 0;
+    virtual bool sweepHorizontally() const = 0;
+    virtual bool isPrinting() const = 0;
+    virtual bool shouldStayOnPageAfterHandlingBeforeUnload() const = 0;
+    virtual void setTitleTextDirection(WebKit::WebTextDirection) = 0;
+    virtual const std::set<std::string>* httpHeadersToClear() const = 0;
+    virtual bool shouldBlockRedirects() const = 0;
+    virtual bool willSendRequestShouldReturnNull() const = 0;
+    virtual void setTopLoadingFrame(WebKit::WebFrame*, bool) = 0;
+    virtual WebKit::WebFrame* topLoadingFrame() const = 0;
+    virtual void policyDelegateDone() = 0;
+    virtual bool policyDelegateEnabled() const = 0;
+    virtual bool policyDelegateIsPermissive() const = 0;
+    virtual bool policyDelegateShouldNotifyDone() const = 0;
+    virtual bool shouldInterceptPostMessage() const = 0;
+    virtual bool isSmartInsertDeleteEnabled() const = 0;
+    virtual bool isSelectTrailingWhitespaceEnabled() const = 0;
 };
 
 }

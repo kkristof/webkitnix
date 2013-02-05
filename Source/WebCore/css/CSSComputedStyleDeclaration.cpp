@@ -275,6 +275,7 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitFontKerning,
     CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitFontVariantLigatures,
+    CSSPropertyWebkitGridAutoFlow,
     CSSPropertyWebkitGridColumns,
     CSSPropertyWebkitGridRows,
     CSSPropertyWebkitGridColumn,
@@ -1901,12 +1902,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             return list.release();
         }
-        case CSSPropertyWebkitGridColumns: {
+        case CSSPropertyWebkitGridAutoFlow:
+            return cssValuePool().createValue(style->gridAutoFlow());
+        case CSSPropertyWebkitGridColumns:
             return valueForGridTrackList(style->gridColumns(), style.get(), m_node->document()->renderView());
-        }
-        case CSSPropertyWebkitGridRows: {
+        case CSSPropertyWebkitGridRows:
             return valueForGridTrackList(style->gridRows(), style.get(), m_node->document()->renderView());
-        }
 
         case CSSPropertyWebkitGridColumn:
             return valueForGridPosition(style->gridItemColumn());
@@ -2910,7 +2911,7 @@ PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(co
 void CSSComputedStyleDeclaration::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_node);
+    info.addMember(m_node, "node");
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const

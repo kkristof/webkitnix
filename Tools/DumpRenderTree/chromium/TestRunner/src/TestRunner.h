@@ -38,10 +38,15 @@
 #include "WebDeliveredIntentClient.h"
 #include "WebTask.h"
 #include "WebTestRunner.h"
+#include "WebTextDirection.h"
 #include <public/WebURL.h>
+#include <set>
+#include <string>
 #include <wtf/Deque.h>
 
 namespace WebKit {
+class WebArrayBufferView;
+class WebPermissionClient;
 class WebView;
 }
 
@@ -50,12 +55,11 @@ namespace WebTestRunner {
 class WebPermissions;
 class WebTestDelegate;
 
-class TestRunner : public CppBoundClass, public WebTestRunner {
+class TestRunner : public WebTestRunner, public CppBoundClass {
 public:
     TestRunner();
     virtual ~TestRunner();
 
-    // FIXME: change this method to take a TestDelegate* instead.
     void setDelegate(WebTestDelegate*);
     void setWebView(WebKit::WebView* webView) { m_webView = webView; }
 
@@ -63,8 +67,9 @@ public:
 
     WebTaskList* taskList() { return &m_taskList; }
 
+    void setTestIsRunning(bool);
+
     // WebTestRunner implementation.
-    virtual void setTestIsRunning(bool) OVERRIDE;
     virtual bool shouldDumpEditingCallbacks() const OVERRIDE;
     virtual bool shouldDumpAsText() const OVERRIDE;
     virtual void setShouldDumpAsText(bool) OVERRIDE;
@@ -197,7 +202,6 @@ private:
     void pauseAnimationAtTimeOnElementWithId(const CppArgumentList&, CppVariant*);
     void pauseTransitionAtTimeOnElementWithId(const CppArgumentList&, CppVariant*);
     void elementDoesAutoCompleteForElementWithId(const CppArgumentList&, CppVariant*);
-    void numberOfActiveAnimations(const CppArgumentList&, CppVariant*);
     void callShouldCloseOnWebView(const CppArgumentList&, CppVariant*);
     void setDomainRelaxationForbiddenForURLScheme(const CppArgumentList&, CppVariant*);
     void evaluateScriptInIsolatedWorldAndReturnValue(const CppArgumentList&, CppVariant*);
@@ -414,12 +418,14 @@ private:
     ///////////////////////////////////////////////////////////////////////////
     // Methods interacting with the WebTestProxy
 
+#if ENABLE(WEB_INTENTS)
     // Expects one string argument for sending successful result, zero
     // arguments for sending a failure result.
     void sendWebIntentResponse(const CppArgumentList&, CppVariant*);
 
     // Cause the web intent to be delivered to this context.
     void deliverWebIntent(const CppArgumentList&, CppVariant*);
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // Methods forwarding to the WebTestDelegate
@@ -510,7 +516,6 @@ private:
     bool pauseAnimationAtTimeOnElementWithId(const WebKit::WebString& animationName, double time, const WebKit::WebString& elementId);
     bool pauseTransitionAtTimeOnElementWithId(const WebKit::WebString& propertyName, double time, const WebKit::WebString& elementId);
     bool elementDoesAutoCompleteForElementWithId(const WebKit::WebString&);
-    int numberOfActiveAnimations();
     bool cppVariantToBool(const CppVariant&);
     int32_t cppVariantToInt32(const CppVariant&);
     WebKit::WebString cppVariantToWebString(const CppVariant&);

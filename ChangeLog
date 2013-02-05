@@ -1,3 +1,87 @@
+2013-02-05  Martin Robinson  <mrobinson@igalia.com>
+
+        Update the NEWS and configuration in preparation for 1.11.5.
+
+        Reviewed by Philippe Normand.
+
+        * configure.ac:
+
+2013-02-04  Benjamin Poulain  <bpoulain@apple.com>
+
+        Kill suspendAnimation(), resumeAnimation() and numberOfActiveAnimations() from DRT/WTR; use Internals
+        https://bugs.webkit.org/show_bug.cgi?id=108741
+
+        Reviewed by Tony Chang.
+
+        * Source/autotools/symbols.filter:
+
+2013-02-02  Patrick Gansterer  <paroga@webkit.org>
+
+        [CMake] Adopt the WinCE port to new CMake
+        https://bugs.webkit.org/show_bug.cgi?id=108754
+
+        Reviewed by Laszlo Gombos.
+
+        Remove the entry point hack which isn't required in the new
+        CMake version with offical WindowsCE support.
+
+        * Source/cmake/OptionsWindows.cmake:
+
+2013-02-01  Benjamin Poulain  <bpoulain@apple.com>
+
+        Clean the String->AtomicString conversion for AnimationController::pauseAnimationAtTime
+        https://bugs.webkit.org/show_bug.cgi?id=108558
+
+        Reviewed by Dean Jackson.
+
+        * Source/autotools/symbols.filter:
+
+2013-02-01  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Add WTFURL source files to the build
+        https://bugs.webkit.org/show_bug.cgi?id=108215
+
+        Reviewed by Benjamin Poulain.
+
+        * Source/autotools/symbols.filter: Force the export of the KURL::string() symbol.
+        This is required when using the WTFURL backend but otherwise doesn't affect the build.
+
+2013-02-01  Alexis Menard  <alexis@webkit.org>
+
+        Enable unprefixed CSS transitions by default.
+        https://bugs.webkit.org/show_bug.cgi?id=108216
+
+        Reviewed by Dean Jackson.
+
+        Rename the flag CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED
+        to CSS_TRANSFORMS_ANIMATIONS_UNPREFIXED which will be used later to
+        guard the unprefixing work for CSS Transforms and animations.
+
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2013-01-31  Christophe Dumez  <dchris@gmail.com>
+
+        [EFL] Disable Web Intents
+        https://bugs.webkit.org/show_bug.cgi?id=108457
+
+        Reviewed by Alexey Proskuryakov.
+
+        Turn off WEB_INTENTS flag in EFL CMake project.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2013-01-31  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Make it possible to compile WebKit2 Qt related files without access to internal WK2 C++ API
+        https://bugs.webkit.org/show_bug.cgi?id=108472
+
+        Reviewed by Andreas Kling.
+
+        When linking WebKit2, also link the WebKit2QML module.
+
+        * Source/api.pri:
+
 2013-01-30  Dominik Röttsches  <dominik.rottsches@intel.com>
 
         [HarfBuzz] Remove the HarfBuzz-old code

@@ -900,13 +900,13 @@ int HTMLSelectElement::listToOptionIndex(int listIndex) const
     return optionIndex;
 }
 
-void HTMLSelectElement::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode)
+void HTMLSelectElement::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection direction)
 {
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during blur event dispatch.
     if (usesMenuList())
         saveLastSelection();
-    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedNode);
+    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedNode, direction);
 }
 
 void HTMLSelectElement::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
@@ -1161,9 +1161,9 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             if (keyCode == ' ' || keyCode == '\r') {
                 focus();
 
-                // Calling focus() may cause us to lose our renderer, in which case
-                // do not want to handle the event.
-                if (!renderer())
+                // Calling focus() may remove the renderer or change the
+                // renderer type.
+                if (!renderer() || !renderer()->isMenuList())
                     return;
 
                 // Save the selection so it can be compared to the new selection
@@ -1179,9 +1179,9 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             if (keyCode == ' ') {
                 focus();
 
-                // Calling focus() may cause us to lose our renderer, in which case
-                // do not want to handle the event.
-                if (!renderer())
+                // Calling focus() may remove the renderer or change the
+                // renderer type.
+                if (!renderer() || !renderer()->isMenuList())
                     return;
 
                 // Save the selection so it can be compared to the new selection

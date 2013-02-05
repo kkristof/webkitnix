@@ -182,13 +182,12 @@ text-underline-mode
 text-underline-style
 text-underline-width
 top
-#if defined(ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED) && ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED
 transition = -webkit-transition
 transition-delay = -webkit-transition-delay
 transition-duration = -webkit-transition-duration
 transition-property = -webkit-transition-property
 transition-timing-function = -webkit-transition-timing-function
-#endif
+
 unicode-bidi
 unicode-range
 vertical-align
@@ -294,6 +293,7 @@ z-index
 -webkit-grid-rows
 -webkit-grid-column
 -webkit-grid-row
+-webkit-grid-auto-flow
 -webkit-highlight
 -webkit-hyphenate-character
 -webkit-hyphenate-limit-after

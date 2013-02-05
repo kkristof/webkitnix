@@ -1,3 +1,131 @@
+2013-02-05  Martin Robinson  <mrobinson@igalia.com>
+
+        Update the NEWS and configuration in preparation for 1.11.5.
+
+        Reviewed by Philippe Normand.
+
+        * NEWS:
+
+2013-02-04  Benjamin Poulain  <bpoulain@apple.com>
+
+        Kill suspendAnimation(), resumeAnimation() and numberOfActiveAnimations() from DRT/WTR; use Internals
+        https://bugs.webkit.org/show_bug.cgi?id=108741
+
+        Reviewed by Tony Chang.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        * WebCoreSupport/DumpRenderTreeSupportGtk.h:
+        (DumpRenderTreeSupportGtk):
+
+2013-02-04  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Made the documentation on the confirmed argument for the
+        WebView::script-confirm signal clearer about its type.
+
+        Reviewed by Martin Robinson.
+
+        * webkit/webkitwebview.cpp:
+        (webkit_web_view_class_init):
+
+2013-02-04  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [Soup] Wrap SoupSession by NetworkStorageSession
+        https://bugs.webkit.org/show_bug.cgi?id=108615
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebCoreSupport/FrameNetworkingContextGtk.cpp:
+        (WebKit::FrameNetworkingContextGtk::storageSession):
+        * WebCoreSupport/FrameNetworkingContextGtk.h:
+        (FrameNetworkingContextGtk):
+
+2013-02-03  KwangYong Choi  <ky0.choi@samsung.com>
+
+        Fix build warning after r141473
+        https://bugs.webkit.org/show_bug.cgi?id=108782
+
+        Reviewed by Kentaro Hara.
+
+        Fix -Wunused-parameter build warning.
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit::EditorClient::getClientPasteboardDataForRange):
+
+2013-02-01  Philippe Normand  <pnormand@igalia.com>
+
+        [GTK][GStreamer] FullscreenVideoControllerGtk implementation
+        https://bugs.webkit.org/show_bug.cgi?id=107398
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Remove the FullscreenVideoController as it moved to
+        FullscreenVideoControllerGStreamer and its Gtk subclass in
+        WebCore. Hook in NATIVE_FULLSCREEN_VIDEO in the ChromeClient in
+        the two possible scenarios, wether FULLSCREEN_API is enabled or not.
+
+        * GNUmakefile.am: Remove FullscreenVideoController.
+        * WebCoreSupport/ChromeClientGtk.cpp:
+        (WebKit):
+        (WebKit::ChromeClient::enterFullscreenForNode): Hook
+        NATIVE_FULLSCREEN_VIDEO support.
+        (WebKit::ChromeClient::exitFullscreenForNode): Ditto
+        (WebKit::ChromeClient::enterFullScreenForElement): Ditto
+        (WebKit::ChromeClient::exitFullScreenForElement): Ditto
+        * WebCoreSupport/ChromeClientGtk.h:
+        (ChromeClient):
+        * WebCoreSupport/FullscreenVideoController.cpp: Removed.
+        * WebCoreSupport/FullscreenVideoController.h: Removed.
+        * webkit/webkitwebview.cpp: Remove FullscreenVideoController support.
+        * webkit/webkitwebviewprivate.h: Ditto
+
+2013-01-31  Aurimas Liutikas  <aurimas@chromium.org>
+
+        Editor::m_compositionNode not updated on HTMLInputElement::setValue()
+        https://bugs.webkit.org/show_bug.cgi?id=107737
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit::EditorClient::respondToChangedSelection):
+            Adding a call to the newly refactored Editor method.
+
+2013-01-31  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r141479.
+        http://trac.webkit.org/changeset/141479
+        https://bugs.webkit.org/show_bug.cgi?id=108564
+
+        breaks chromium test (Requested by morrita on #webkit).
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit::EditorClient::respondToChangedSelection):
+
+2013-01-31  Aurimas Liutikas  <aurimas@chromium.org>
+
+        Editor::m_compositionNode not updated on HTMLInputElement::setValue()
+        https://bugs.webkit.org/show_bug.cgi?id=107737
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit::EditorClient::respondToChangedSelection):
+            Adding a call to the newly refactored Editor method.
+
+2013-01-31  Enrica Casucci  <enrica@apple.com>
+
+        WebKit2: provide new bundle APIs to allow bundle clients to be notified of pasteboard access.
+        https://bugs.webkit.org/show_bug.cgi?id=108396.
+        <rdar://problem/12920461>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Adds stub implementation for WebKit of the new EditorClient methods.
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit::EditorClient::willWriteSelectionToPasteboard):
+        (WebKit::EditorClient::getClientPasteboardDataForRange):
+        * WebCoreSupport/EditorClientGtk.h:
+
 2013-01-30  Huang Dongsung  <luxtella@company100.net>
 
         [TexMap] Remove GraphicsLayer in TextureMapperLayer.

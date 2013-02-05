@@ -156,7 +156,7 @@ static void addImplicitReferencesForNodeWithEventListeners(Node* node, v8::Persi
     v8::V8::AddImplicitReferences(wrapper, listeners.data(), listeners.size());
 }
 
-Node* V8GCController::opaqueRootForGC(Node* node)
+Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
 {
     // FIXME: Remove the special handling for image elements.
     // The same special handling is in V8GCController::gcTree().
@@ -172,7 +172,7 @@ Node* V8GCController::opaqueRootForGC(Node* node)
         node = ownerElement;
     }
 
-    while (Node* parent = node->parentOrHostNode())
+    while (Node* parent = node->parentOrShadowHostNode())
         node = parent;
 
     return node;
@@ -180,6 +180,11 @@ Node* V8GCController::opaqueRootForGC(Node* node)
 
 class WrapperVisitor : public v8::PersistentHandleVisitor {
 public:
+    explicit WrapperVisitor(v8::Isolate* isolate)
+        : m_isolate(isolate)
+    {
+    }
+
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
     {
         ASSERT(value->IsObject());
@@ -208,7 +213,7 @@ public:
             MutationObserver* observer = static_cast<MutationObserver*>(object);
             HashSet<Node*> observedNodes = observer->getObservedNodes();
             for (HashSet<Node*>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it)
-                m_grouper.addNodeToGroup(V8GCController::opaqueRootForGC(*it), wrapper);
+                m_grouper.addNodeToGroup(V8GCController::opaqueRootForGC(*it, m_isolate), wrapper);
         } else {
             ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
             if (activeDOMObject && activeDOMObject->hasPendingActivity())
@@ -216,7 +221,8 @@ public:
         }
 
         if (classId == v8DOMNodeClassId) {
-            ASSERT(V8Node::HasInstance(wrapper));
+            UNUSED_PARAM(m_isolate);
+            ASSERT(V8Node::HasInstance(wrapper, m_isolate));
             ASSERT(!wrapper.IsIndependent());
 
             Node* node = static_cast<Node*>(object);
@@ -224,9 +230,9 @@ public:
             if (node->hasEventListeners())
                 addImplicitReferencesForNodeWithEventListeners(node, wrapper);
 
-            m_grouper.addNodeToGroup(V8GCController::opaqueRootForGC(node), wrapper);
+            m_grouper.addNodeToGroup(V8GCController::opaqueRootForGC(node, m_isolate), wrapper);
         } else if (classId == v8DOMObjectClassId) {
-            m_grouper.addObjectToGroup(type->opaqueRootForGC(object, wrapper), wrapper);
+            m_grouper.addObjectToGroup(type->opaqueRootForGC(object, wrapper, m_isolate), wrapper);
         } else {
             ASSERT_NOT_REACHED();
         }
@@ -239,6 +245,7 @@ public:
 
 private:
     WrapperGrouper m_grouper;
+    v8::Isolate* m_isolate;
 };
 
 // Regarding a minor GC algorithm for DOM nodes, see this document:
@@ -348,14 +355,14 @@ void V8GCController::majorGCPrologue()
 {
     TRACE_EVENT_BEGIN0("v8", "GC");
 
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope;
 
-    WrapperVisitor visitor;
+    WrapperVisitor visitor(isolate);
     v8::V8::VisitHandlesWithClassIds(&visitor);
     visitor.notifyFinished();
 
-    V8PerIsolateData* data = V8PerIsolateData::current();
-    data->stringCache()->clearOnGC();
+    V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
 }
 
 static int workingSetEstimateMB = 0;

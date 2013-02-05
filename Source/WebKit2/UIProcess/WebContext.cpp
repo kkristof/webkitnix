@@ -134,6 +134,7 @@ WebContext::WebContext(ProcessModel processModel, const String& injectedBundlePa
     , m_cacheModel(CacheModelDocumentViewer)
     , m_memorySamplerEnabled(false)
     , m_memorySamplerInterval(1400.0)
+    , m_storageManager(StorageManager::create())
 #if USE(SOUP)
     , m_initialHTTPCookieAcceptPolicy(HTTPCookieAcceptPolicyOnlyFromMainDocumentDomain)
 #endif
@@ -151,7 +152,7 @@ WebContext::WebContext(ProcessModel processModel, const String& injectedBundlePa
     platformInitialize();
 
     addMessageReceiver(Messages::WebContext::messageReceiverName(), this);
-    addMessageReceiver(CoreIPC::MessageKindTraits<WebContextLegacyMessage::Kind>::messageReceiverName(), this);
+    addMessageReceiver(WebContextLegacyMessages::messageReceiverName(), this);
 
     // NOTE: These sub-objects must be initialized after m_messageReceiverMap..
 #if ENABLE(BATTERY_STATUS)
@@ -587,6 +588,16 @@ bool WebContext::shouldTerminate(WebProcessProxy* process)
     return true;
 }
 
+void WebContext::processWillOpenConnection(WebProcessProxy* process)
+{
+    m_storageManager->processWillOpenConnection(process);
+}
+
+void WebContext::processWillCloseConnection(WebProcessProxy* process)
+{
+    m_storageManager->processWillCloseConnection(process);
+}
+
 void WebContext::processDidFinishLaunching(WebProcessProxy* process)
 {
     ASSERT(m_processes.contains(process));
@@ -898,8 +909,8 @@ void WebContext::didReceiveMessage(CoreIPC::Connection* connection, CoreIPC::Mes
         return;
     }
 
-    if (decoder.messageReceiverName() == WebContextLegacyMessage::messageReceiverName()
-        && decoder.messageName() == WebContextLegacyMessage::postMessageMessageName()) {
+    if (decoder.messageReceiverName() == WebContextLegacyMessages::messageReceiverName()
+        && decoder.messageName() == WebContextLegacyMessages::postMessageMessageName()) {
         String messageName;
         RefPtr<APIObject> messageBody;
         WebContextUserMessageDecoder messageBodyDecoder(messageBody, WebProcessProxy::fromConnection(connection));
@@ -922,8 +933,8 @@ void WebContext::didReceiveSyncMessage(CoreIPC::Connection* connection, CoreIPC:
         return;
     }
 
-    if (decoder.messageReceiverName() == WebContextLegacyMessage::messageReceiverName()
-        && decoder.messageName() == WebContextLegacyMessage::postSynchronousMessageMessageName()) {
+    if (decoder.messageReceiverName() == WebContextLegacyMessages::messageReceiverName()
+        && decoder.messageName() == WebContextLegacyMessages::postSynchronousMessageMessageName()) {
         // FIXME: We should probably encode something in the case that the arguments do not decode correctly.
 
         String messageName;

@@ -112,7 +112,7 @@ v8::Persistent<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTempl
     v8::Local<v8::ObjectTemplate> instance = result->InstanceTemplate();
     instance->SetInternalFieldCount(V8TestNamedConstructor::internalFieldCount);
     result->SetClassName(v8::String::NewSymbol("TestNamedConstructor"));
-    result->Inherit(V8TestNamedConstructor::GetTemplate());
+    result->Inherit(V8TestNamedConstructor::GetTemplate(isolate));
 
     cachedTemplate = v8::Persistent<v8::FunctionTemplate>::New(result);
     return cachedTemplate;
@@ -125,7 +125,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTempl
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestNamedConstructor", v8::Persistent<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
         0, 0,
-        0, 0);
+        0, 0, isolate);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     
 
@@ -165,9 +165,11 @@ v8::Persistent<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Iso
     return templ;
 }
 
-bool V8TestNamedConstructor::HasInstance(v8::Handle<v8::Value> value)
+bool V8TestNamedConstructor::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    return GetRawTemplate()->HasInstance(value);
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    return GetRawTemplate(isolate)->HasInstance(value);
 }
 
 ActiveDOMObject* V8TestNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> object)
@@ -189,7 +191,7 @@ v8::Handle<v8::Object> V8TestNamedConstructor::createWrapper(PassRefPtr<TestName
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get());
+    installPerContextProperties(wrapper, impl.get(), isolate);
     v8::Persistent<v8::Object> wrapperHandle = V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate);
     if (!hasDependentLifetime)
         wrapperHandle.MarkIndependent();

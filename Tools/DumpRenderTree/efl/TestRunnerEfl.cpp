@@ -665,11 +665,6 @@ bool TestRunner::pauseTransitionAtTimeOnElementWithId(JSStringRef propertyName, 
     return DumpRenderTreeSupportEfl::pauseTransition(browser->mainFrame(), propertyName->string().utf8().data(), elementId->string().utf8().data(), time);
 }
 
-unsigned TestRunner::numberOfActiveAnimations() const
-{
-    return DumpRenderTreeSupportEfl::activeAnimationsCount(browser->mainFrame());
-}
-
 static inline bool toBool(JSStringRef value)
 {
     return equals(value, "true") || equals(value, "1");
@@ -901,18 +896,18 @@ void TestRunner::setAutomaticLinkDetectionEnabled(bool)
     notImplemented();
 }
 
-void TestRunner::sendWebIntentResponse(JSStringRef response)
+void TestRunner::sendWebIntentResponse(JSStringRef)
 {
-    Ewk_Intent_Request* request = browser->currentIntentRequest();
-    if (!request)
-        return;
-
-    DumpRenderTreeSupportEfl::sendWebIntentResponse(request, response);
+    // No plan to support Web Intents. The feature will likely
+    // be removed from WebKit.
+    notImplemented();
 }
 
-void TestRunner::deliverWebIntent(JSStringRef action, JSStringRef type, JSStringRef data)
+void TestRunner::deliverWebIntent(JSStringRef, JSStringRef, JSStringRef)
 {
-    DumpRenderTreeSupportEfl::deliverWebIntent(browser->mainFrame(), action, type, data);
+    // No plan to support Web Intents. The feature will likely
+    // be removed from WebKit.
+    notImplemented();
 }
 
 void TestRunner::setStorageDatabaseIdleInterval(double)

@@ -1,3 +1,94 @@
+2013-02-02  Michael Nordman  <michaeln@google.com>
+
+        [chromium] FileSystem mods: Changes to snapshot file creation to reduce dependencies on blobs.
+        This patch just alters the WebKitAPI in advance of coding to the new API in chromium and webkit
+        sources, defining two new virtual methods (unimplemented and uncalled). The existing API remains
+        in place and in use.
+        https://bugs.webkit.org/show_bug.cgi?id=108736
+
+        Reviewed by Darin Fisher.
+
+        * chromium/public/WebFileSystem.h:
+        (WebFileSystem):
+        (WebKit::WebFileSystem::createSnapshotFileAndReadMetadata):
+
+2013-02-01  James Simonsen  <simonjam@chromium.org>
+
+        Add didChangePriority() to ResourceHandle
+        https://bugs.webkit.org/show_bug.cgi?id=107995
+
+        Reviewed by Darin Fisher.
+
+        * chromium/public/WebURLLoader.h:
+        (WebKit):
+        (WebURLLoader):
+        (WebKit::WebURLLoader::didChangePriority): Added.
+
+2013-02-01  Kevin Ellis  <kevers@chromium.org>
+
+        [chromium] Fat scrollbars on Windows in high-DPI mode.
+        https://bugs.webkit.org/show_bug.cgi?id=108637
+
+        Updates mechanism for retrieving scrollbar metrics on the
+        Windows port of Chromium.  Previously, GetSystemMetrics calls
+        were used, which fetches prescaled sizes in pixel rather than
+        logical units, resulting in a double scaling when a device
+        scale factor is set.  With the patch, the size is retrieved
+        from the theme engine in DIP.
+
+        Reviewed by Adam Barth.
+
+        * chromium/public/win/WebThemeEngine.h:
+        (WebThemeEngine):
+
+2013-01-31  Tommy Widenflycht  <tommyw@google.com>
+
+        [chromium] MediaStream API: Rename WebMediaStreamDescriptor and WebMediaStreamComponent to WebMediaStream and WebMediaStreamTrack
+        https://bugs.webkit.org/show_bug.cgi?id=108458
+
+        Only renames, no other code changes.
+
+        Reviewed by Adam Barth.
+
+        * Platform.gypi:
+        * chromium/public/WebMediaStream.h: Copied from Source/Platform/chromium/public/WebMediaStreamDescriptor.h.
+        (WebCore):
+        (WebKit):
+        (WebMediaStream):
+        (ExtraData):
+        (WebKit::WebMediaStream::ExtraData::~ExtraData):
+        (WebKit::WebMediaStream::WebMediaStream):
+        (WebKit::WebMediaStream::~WebMediaStream):
+        (WebKit::WebMediaStream::operator=):
+        (WebKit::WebMediaStream::isNull):
+        * chromium/public/WebMediaStreamCenter.h:
+        (WebKit):
+        (WebMediaStreamCenter):
+        (WebKit::WebMediaStreamCenter::didAddMediaStreamTrack):
+        (WebKit::WebMediaStreamCenter::didRemoveMediaStreamTrack):
+        * chromium/public/WebMediaStreamCenterClient.h:
+        (WebKit):
+        (WebMediaStreamCenterClient):
+        * chromium/public/WebMediaStreamComponent.h:
+        * chromium/public/WebMediaStreamDescriptor.h:
+        * chromium/public/WebMediaStreamTrack.h: Added.
+        (WebCore):
+        (WebKit):
+        (WebMediaStreamTrack):
+        (WebKit::WebMediaStreamTrack::WebMediaStreamTrack):
+        (WebKit::WebMediaStreamTrack::~WebMediaStreamTrack):
+        (WebKit::WebMediaStreamTrack::operator=):
+        (WebKit::WebMediaStreamTrack::isNull):
+        * chromium/public/WebRTCPeerConnectionHandler.h:
+        (WebKit):
+        (WebRTCPeerConnectionHandler):
+        * chromium/public/WebRTCPeerConnectionHandlerClient.h:
+        (WebKit):
+        (WebRTCPeerConnectionHandlerClient):
+        * chromium/public/WebRTCStatsRequest.h:
+        (WebKit):
+        (WebRTCStatsRequest):
+
 2013-01-30  Yusuf Ozuysal  <yusufo@google.com>
 
         Start sending scrollType as NonBubblingGesture for flings

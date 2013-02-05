@@ -63,7 +63,7 @@ WebInspector.SourceFrame = function(contentProvider)
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
     this._sourcePositionElement = document.createElement("div");
-    this._sourcePositionElement.className = "source-frame-position";
+    this._sourcePositionElement.className = "source-frame-cursor-position";
 }
 
 /**
@@ -640,6 +640,7 @@ WebInspector.SourceFrame.prototype = {
             this._sourcePositionElement.textContent = WebInspector.UIString("Line %d, Column %d", textRange.endLine + 1, textRange.endColumn + 1);
             return;
         }
+        textRange = textRange.normalize();
 
         var selectedText = this._textEditor.copyRange(textRange);
         if (textRange.startLine === textRange.endLine)

@@ -85,10 +85,6 @@ public:
     void removeWebPage(uint64_t pageID);
     Vector<WebPageProxy*> pages() const;
 
-#if ENABLE(WEB_INTENTS)
-    void removeMessagePortChannel(uint64_t channelID);
-#endif
-
     WebBackForwardListItem* webBackForwardItem(uint64_t itemID) const;
 
     ResponsivenessTimer* responsivenessTimer() { return &m_responsivenessTimer; }
@@ -125,8 +121,11 @@ public:
 private:
     explicit WebProcessProxy(PassRefPtr<WebContext>);
 
-    void getLaunchOptions(ProcessLauncher::LaunchOptions&);
+    // From ChildProcessProxy
+    virtual void getLaunchOptions(ProcessLauncher::LaunchOptions&) OVERRIDE;
     void platformGetLaunchOptions(ProcessLauncher::LaunchOptions&);
+    virtual void connectionWillOpen(CoreIPC::Connection*) OVERRIDE;
+    virtual void connectionWillClose(CoreIPC::Connection*) OVERRIDE;
 
     // Called when the web process has crashed or we know that it will terminate soon.
     // Will potentially cause the WebProcessProxy object to be freed.
@@ -141,7 +140,6 @@ private:
     // Plugins
 #if ENABLE(NETSCAPE_PLUGIN_API)
     void getPlugins(CoreIPC::Connection*, uint64_t requestID, bool refresh);
-    void getPluginPath(const String& mimeType, const String& urlString, String& pluginPath, uint32_t& pluginLoadPolicy);
     void handleGetPlugins(uint64_t requestID, bool refresh);
     void sendDidGetPlugins(uint64_t requestID, PassOwnPtr<Vector<WebCore::PluginInfo> >);
 #endif // ENABLE(NETSCAPE_PLUGIN_API)
@@ -166,7 +164,8 @@ private:
     virtual void didReceiveInvalidMessage(CoreIPC::Connection*, CoreIPC::StringReference messageReceiverName, CoreIPC::StringReference messageName) OVERRIDE;
 
     // CoreIPC::Connection::QueueClient
-    virtual void didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection*, CoreIPC::MessageDecoder&, bool& didHandleMessage) OVERRIDE;
+    virtual void didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection*, OwnPtr<CoreIPC::MessageDecoder>&) OVERRIDE;
+    virtual void didCloseOnConnectionWorkQueue(CoreIPC::Connection*) OVERRIDE;
 
     // ResponsivenessTimer::Client
     void didBecomeUnresponsive(ResponsivenessTimer*) OVERRIDE;
@@ -185,7 +184,7 @@ private:
     // Implemented in generated WebProcessProxyMessageReceiver.cpp
     void didReceiveWebProcessProxyMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&);
     void didReceiveSyncWebProcessProxyMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&, OwnPtr<CoreIPC::MessageEncoder>&);
-    void didReceiveWebProcessProxyMessageOnConnectionWorkQueue(CoreIPC::Connection*, CoreIPC::MessageDecoder&, bool& didHandleMessage);
+    void didReceiveWebProcessProxyMessageOnConnectionWorkQueue(CoreIPC::Connection*, OwnPtr<CoreIPC::MessageDecoder>&);
 
     ResponsivenessTimer m_responsivenessTimer;
     

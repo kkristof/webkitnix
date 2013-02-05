@@ -1767,7 +1767,7 @@ void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
 
 void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
-    ASSERT(index < attributeCount());
+    ASSERT_WITH_SECURITY_IMPLICATION(index < attributeCount());
 
     ElementAttributeData* attributeData = mutableAttributeData();
 
@@ -1864,7 +1864,7 @@ CSSStyleDeclaration *Element::style()
     return 0;
 }
 
-void Element::focus(bool restorePreviousSelection)
+void Element::focus(bool restorePreviousSelection, FocusDirection direction)
 {
     if (!inDocument())
         return;
@@ -1891,7 +1891,7 @@ void Element::focus(bool restorePreviousSelection)
         // If a focus event handler changes the focus to a different node it
         // does not make sense to continue and update appearence.
         protect = this;
-        if (!page->focusController()->setFocusedNode(this, doc->frame()))
+        if (!page->focusController()->setFocusedNode(this, doc->frame(), direction))
             return;
     }
 
@@ -2460,7 +2460,7 @@ SpellcheckAttributeState Element::spellcheckAttributeState() const
 
 bool Element::isSpellCheckingEnabled() const
 {
-    for (const Element* element = this; element; element = element->parentOrHostElement()) {
+    for (const Element* element = this; element; element = element->parentOrShadowHostElement()) {
         switch (element->spellcheckAttributeState()) {
         case SpellcheckAttributeTrue:
             return true;
@@ -2799,8 +2799,8 @@ void Element::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
     ContainerNode::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_tagName);
-    info.addMember(m_attributeData);
+    info.addMember(m_tagName, "tagName");
+    info.addMember(m_attributeData, "attributeData");
 }
 
 #if ENABLE(SVG)

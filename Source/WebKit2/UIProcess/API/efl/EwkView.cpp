@@ -27,7 +27,6 @@
 #include "FindClientEfl.h"
 #include "FormClientEfl.h"
 #include "InputMethodContextEfl.h"
-#include "LayerTreeRenderer.h"
 #include "PageClientBase.h"
 #include "PageClientDefaultImpl.h"
 #include "PageClientLegacyImpl.h"
@@ -38,7 +37,9 @@
 #include "WKDictionary.h"
 #include "WKGeometry.h"
 #include "WKNumber.h"
+#include "WKPageGroup.h"
 #include "WKString.h"
+#include "WKView.h"
 #include "WebContext.h"
 #include "WebImage.h"
 #include "WebPageGroup.h"
@@ -62,6 +63,7 @@
 #include <Ecore_X.h>
 #include <Edje.h>
 #include <WebCore/CairoUtilitiesEfl.h>
+#include <WebCore/CoordinatedGraphicsScene.h>
 #include <WebCore/Cursor.h>
 #include <WebKit2/WKImageCairo.h>
 
@@ -110,14 +112,14 @@ const Evas_Object* EwkView::viewFromPageViewMap(const WKPageRef page)
     return pageViewMap().get(page);
 }
 
-EwkView::EwkView(Evas_Object* evasObject, PassRefPtr<EwkContext> context, PassRefPtr<WebPageGroup> pageGroup, ViewBehavior behavior)
-    : m_evasObject(evasObject)
+EwkView::EwkView(Evas_Object* view, PassRefPtr<EwkContext> context, WebPageGroup* pageGroup, ViewBehavior behavior)
+    : m_evasObject(view)
     , m_context(context)
 #if USE(ACCELERATED_COMPOSITING)
     , m_pendingSurfaceResize(false)
 #endif
     , m_pageClient(behavior == DefaultBehavior ? PageClientDefaultImpl::create(this) : PageClientLegacyImpl::create(this))
-    , m_pageProxy(m_context->webContext()->createWebPage(m_pageClient.get(), pageGroup.get()))
+    , m_webView(adoptRef(new WebView(toImpl(m_context->wkContext()), m_pageClient.get(), pageGroup, view)))
     , m_pageLoadClient(PageLoadClientEfl::create(this))
     , m_pagePolicyClient(PagePolicyClientEfl::create(this))
     , m_pageUIClient(PageUIClientEfl::create(this))
@@ -127,7 +129,7 @@ EwkView::EwkView(Evas_Object* evasObject, PassRefPtr<EwkContext> context, PassRe
 #if ENABLE(VIBRATION)
     , m_vibrationClient(VibrationClientEfl::create(this))
 #endif
-    , m_backForwardList(EwkBackForwardList::create(toAPI(m_pageProxy->backForwardList())))
+    , m_backForwardList(EwkBackForwardList::create(WKPageGetBackForwardList(wkPage())))
 #if USE(TILED_BACKING_STORE)
     , m_pageScaleFactor(1)
 #endif
@@ -144,33 +146,18 @@ EwkView::EwkView(Evas_Object* evasObject, PassRefPtr<EwkContext> context, PassRe
 {
     ASSERT(m_evasObject);
     ASSERT(m_context);
-    ASSERT(m_pageProxy);
 
-#if USE(COORDINATED_GRAPHICS)
-    m_pageProxy->pageGroup()->preferences()->setAcceleratedCompositingEnabled(true);
-    m_pageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
-    char* debugVisualsEnvironment = getenv("WEBKIT_SHOW_COMPOSITING_DEBUG_VISUALS");
-    bool showDebugVisuals = debugVisualsEnvironment && !strcmp(debugVisualsEnvironment, "1");
-    m_pageProxy->pageGroup()->preferences()->setCompositingBordersVisible(showDebugVisuals);
-    m_pageProxy->pageGroup()->preferences()->setCompositingRepaintCountersVisible(showDebugVisuals);
-#if ENABLE(WEBGL)
-    m_pageProxy->pageGroup()->preferences()->setWebGLEnabled(true);
-#endif
-    if (behavior == DefaultBehavior)
-        m_pageProxy->setUseFixedLayout(true);
-#endif
+    WKViewInitialize(wkView());
 
-    m_pageProxy->initializeWebPage();
+    WKPageSetUseFixedLayout(wkPage(), behavior == DefaultBehavior);
 
-#if ENABLE(FULLSCREEN_API)
-    m_pageProxy->fullScreenManager()->setWebView(m_evasObject);
-    m_pageProxy->pageGroup()->preferences()->setFullScreenEnabled(true);
-#endif
-#if ENABLE(WEB_AUDIO)
-    m_pageProxy->pageGroup()->preferences()->setWebAudioEnabled(true);
-#endif
+    WKPageGroupRef wkPageGroup = WKPageGetPageGroup(wkPage());
+    WKPreferencesRef wkPreferences = WKPageGroupGetPreferences(wkPageGroup);
 
-    m_pageProxy->pageGroup()->preferences()->setOfflineWebApplicationCacheEnabled(true);
+    WKPreferencesSetWebGLEnabled(wkPreferences, true);
+    WKPreferencesSetFullScreenEnabled(wkPreferences, true);
+    WKPreferencesSetWebAudioEnabled(wkPreferences, true);
+    WKPreferencesSetOfflineWebApplicationCacheEnabled(wkPreferences, true);
 
     // Enable mouse events by default
     setMouseEventsEnabled(true);
@@ -186,8 +173,6 @@ EwkView::EwkView(Evas_Object* evasObject, PassRefPtr<EwkContext> context, PassRe
 
 EwkView::~EwkView()
 {
-    m_pageProxy->close();
-
     // Unregister icon change callback.
     EwkFaviconDatabase* iconDatabase = m_context->faviconDatabase();
     ASSERT(iconDatabase);
@@ -211,13 +196,9 @@ EwkView* EwkView::fromEvasObject(const Evas_Object* view)
     return sd->priv;
 }
 
-/**
- * @internal
- * Retrieves the internal WKPage for this view.
- */
-WKPageRef EwkView::wkPage()
+WKPageRef EwkView::wkPage() const
 {
-    return toAPI(m_pageProxy.get());
+    return WKViewGetPage(wkView());
 }
 
 void EwkView::setCursor(const Cursor& cursor)
@@ -301,7 +282,7 @@ void EwkView::setDeviceScaleFactor(float scale)
 
 float EwkView::deviceScaleFactor() const
 {
-    return m_pageProxy->deviceScaleFactor();
+    return WKPageGetBackingScaleFactor(wkPage());
 }
 
 AffineTransform EwkView::transformFromScene() const
@@ -362,7 +343,7 @@ AffineTransform EwkView::transformToScreen() const
 }
 
 #if USE(COORDINATED_GRAPHICS)
-LayerTreeRenderer* EwkView::layerTreeRenderer()
+CoordinatedGraphicsScene* EwkView::coordinatedGraphicsScene()
 {
     DrawingAreaProxy* drawingArea = page()->drawingArea();
     if (!drawingArea)
@@ -372,7 +353,7 @@ LayerTreeRenderer* EwkView::layerTreeRenderer()
     if (!coordinatedLayerTreeHostProxy)
         return 0;
 
-    return coordinatedLayerTreeHostProxy->layerTreeRenderer();
+    return coordinatedLayerTreeHostProxy->coordinatedGraphicsScene();
 }
 #endif
 
@@ -394,14 +375,14 @@ void EwkView::displayTimerFired(Timer<EwkView>*)
     // We are supposed to clip to the actual viewport, nothing less.
     IntRect viewport(sd->view.x, sd->view.y, sd->view.w, sd->view.h);
 
-    LayerTreeRenderer* renderer = layerTreeRenderer();
-    if (!renderer)
+    CoordinatedGraphicsScene* scene = coordinatedGraphicsScene();
+    if (!scene)
         return;
 
-    renderer->setActive(true);
-    renderer->setDrawsBackground(m_setDrawsBackground);
+    scene->setActive(true);
+    scene->setDrawsBackground(m_setDrawsBackground);
     if (m_isHardwareAccelerated) {
-        renderer->paintToCurrentGLContext(transformToScene().toTransformationMatrix(), /* opacity */ 1, viewport);
+        scene->paintToCurrentGLContext(transformToScene().toTransformationMatrix(), /* opacity */ 1, viewport);
         // sd->image is tied to a native surface. The native surface is in the parent's coordinates,
         // so we need to account for the viewport position when calling evas_object_image_data_update_add.
         evas_object_image_data_update_add(sd->image, viewport.x(), viewport.y(), viewport.width(), viewport.height());
@@ -414,7 +395,7 @@ void EwkView::displayTimerFired(Timer<EwkView>*)
         cairo_translate(graphicsContext.get(), - pagePosition().x(), - pagePosition().y());
         cairo_scale(graphicsContext.get(), pageScaleFactor(), pageScaleFactor());
         cairo_scale(graphicsContext.get(), deviceScaleFactor(), deviceScaleFactor());
-        renderer->paintToGraphicsContext(graphicsContext.get());
+        scene->paintToGraphicsContext(graphicsContext.get());
         evas_object_image_data_update_add(sd->image, 0, 0, viewport.width(), viewport.height());
     }
 #endif
@@ -527,7 +508,7 @@ bool EwkView::isVisible() const
 
 const char* EwkView::title() const
 {
-    m_title = m_pageProxy->pageTitle().utf8().data();
+    m_title = WKEinaSharedString(AdoptWK, WKPageCopyTitle(wkPage()));
 
     return m_title;
 }
@@ -550,24 +531,26 @@ void EwkView::setThemePath(const char* theme)
 {
     if (m_theme != theme) {
         m_theme = theme;
-        m_pageProxy->setThemePath(theme);
+        WKRetainPtr<WKStringRef> wkTheme = adoptWK(WKStringCreateWithUTF8CString(theme));
+        WKViewSetThemePath(wkView(), wkTheme.get());
     }
 }
 
 const char* EwkView::customTextEncodingName() const
 {
-    String customEncoding = m_pageProxy->customTextEncodingName();
-    if (customEncoding.isEmpty())
+    WKRetainPtr<WKStringRef> customEncoding = adoptWK(WKPageCopyCustomTextEncodingName(wkPage()));
+    if (WKStringIsEmpty(customEncoding.get()))
         return 0;
 
-    m_customEncoding = customEncoding.utf8().data();
+    m_customEncoding = WKEinaSharedString(customEncoding.get());
 
     return m_customEncoding;
 }
 
 void EwkView::setCustomTextEncodingName(const String& encoding)
 {
-    m_pageProxy->setCustomTextEncodingName(encoding);
+    WKRetainPtr<WKStringRef> wkEncoding = adoptWK(toCopiedAPI(encoding));
+    WKPageSetCustomTextEncodingName(wkPage(), wkEncoding.get());
 }
 
 void EwkView::setMouseEventsEnabled(bool enabled)
@@ -649,9 +632,6 @@ bool EwkView::createGLSurface(const IntSize& viewSize)
         if (!m_evasGL) {
             WARN("Failed to create Evas_GL, falling back to software mode.");
             m_isHardwareAccelerated = false;
-#if ENABLE(WEBGL)
-            m_pageProxy->pageGroup()->preferences()->setWebGLEnabled(false);
-#endif
             return false;
         }
     }
@@ -695,7 +675,7 @@ bool EwkView::createGLSurface(const IntSize& viewSize)
 
 bool EwkView::enterAcceleratedCompositingMode()
 {
-    layerTreeRenderer()->setActive(true);
+    coordinatedGraphicsScene()->setActive(true);
 
     if (!m_isHardwareAccelerated)
         return true;
@@ -894,15 +874,13 @@ unsigned long long EwkView::informDatabaseQuotaReached(const String& databaseNam
  */
 void EwkView::informURLChange()
 {
-    String activeURL = m_pageProxy->activeURL();
-    if (activeURL.isEmpty())
+    WKRetainPtr<WKURLRef> wkActiveURL = adoptWK(WKPageCopyActiveURL(wkPage()));
+    WKRetainPtr<WKStringRef> wkURLString = wkActiveURL ? adoptWK(WKURLCopyString(wkActiveURL.get())) : adoptWK(WKStringCreateWithUTF8CString(""));
+
+    if (WKStringIsEqualToUTF8CString(wkURLString.get(), m_url))
         return;
 
-    CString rawActiveURL = activeURL.utf8();
-    if (m_url == rawActiveURL.data())
-        return;
-
-    m_url = rawActiveURL.data();
+    m_url = WKEinaSharedString(wkURLString.get());
     smartCallback<URLChanged>().call(m_url);
 
     // Update the view's favicon.
@@ -1034,7 +1012,7 @@ void EwkView::onFaviconChanged(const char* pageURL, void* eventInfo)
 PassRefPtr<cairo_surface_t> EwkView::takeSnapshot()
 {
     // Suspend all animations before taking the snapshot.
-    m_pageProxy->suspendActiveDOMObjectsAndAnimations();
+    WKViewSuspendActiveDOMObjectsAndAnimations(wkView());
 
     // Wait for the pending repaint events to be processed.
     while (m_displayTimer.isActive())
@@ -1046,7 +1024,7 @@ PassRefPtr<cairo_surface_t> EwkView::takeSnapshot()
 #endif
         RefPtr<cairo_surface_t> snapshot = createSurfaceForImage(sd->image);
         // Resume all animations.
-        m_pageProxy->resumeActiveDOMObjectsAndAnimations();
+        WKViewResumeActiveDOMObjectsAndAnimations(wkView());
 
         return snapshot.release();
 #if USE(ACCELERATED_COMPOSITING)
@@ -1054,7 +1032,7 @@ PassRefPtr<cairo_surface_t> EwkView::takeSnapshot()
 
     RefPtr<cairo_surface_t> snapshot = getImageSurfaceFromFrameBuffer(0, 0, sd->view.w, sd->view.h);
     // Resume all animations.
-    m_pageProxy->resumeActiveDOMObjectsAndAnimations();
+    WKViewResumeActiveDOMObjectsAndAnimations(wkView());
 
     return snapshot.release();
 #endif

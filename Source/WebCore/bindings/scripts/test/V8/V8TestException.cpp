@@ -80,7 +80,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8:
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestException", v8::Persistent<v8::FunctionTemplate>(), V8TestException::internalFieldCount,
         V8TestExceptionAttrs, WTF_ARRAY_LENGTH(V8TestExceptionAttrs),
-        0, 0);
+        0, 0, isolate);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     
 
@@ -120,9 +120,11 @@ v8::Persistent<v8::FunctionTemplate> V8TestException::GetTemplate(v8::Isolate* i
     return templ;
 }
 
-bool V8TestException::HasInstance(v8::Handle<v8::Value> value)
+bool V8TestException::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    return GetRawTemplate()->HasInstance(value);
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    return GetRawTemplate(isolate)->HasInstance(value);
 }
 
 
@@ -139,7 +141,7 @@ v8::Handle<v8::Object> V8TestException::createWrapper(PassRefPtr<TestException> 
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get());
+    installPerContextProperties(wrapper, impl.get(), isolate);
     v8::Persistent<v8::Object> wrapperHandle = V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate);
     if (!hasDependentLifetime)
         wrapperHandle.MarkIndependent();

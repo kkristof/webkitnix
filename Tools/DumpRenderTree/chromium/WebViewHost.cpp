@@ -45,7 +45,6 @@
 #include "WebDeviceOrientationClientMock.h"
 #include "WebDocument.h"
 #include "WebElement.h"
-#include "WebEventSender.h"
 #include "WebFrame.h"
 #include "WebGeolocationClientMock.h"
 #include "WebHistoryItem.h"
@@ -59,7 +58,6 @@
 #include "WebScreenInfo.h"
 #include "WebSerializedScriptValue.h"
 #include "WebStorageNamespace.h"
-#include "WebTestPlugin.h"
 #include "WebUserMediaClientMock.h"
 #include "WebView.h"
 #include "WebWindowFeatures.h"
@@ -349,6 +347,8 @@ void WebViewHost::didAutoResize(const WebSize& newSize)
 void WebViewHost::initializeLayerTreeView(WebLayerTreeViewClient* client, const WebLayer& rootLayer, const WebLayerTreeView::Settings& settings)
 {
     m_layerTreeView = adoptPtr(Platform::current()->compositorSupport()->createLayerTreeView(client, rootLayer, settings));
+    if (m_layerTreeView)
+        m_layerTreeView->setSurfaceReady();
 }
 
 WebLayerTreeView* WebViewHost::layerTreeView()
@@ -534,9 +534,6 @@ void WebViewHost::exitFullScreen()
 
 WebPlugin* WebViewHost::createPlugin(WebFrame* frame, const WebPluginParams& params)
 {
-    if (params.mimeType == WebTestPlugin::mimeType())
-        return WebTestPlugin::create(frame, params, this);
-
     return webkit_support::CreateWebPlugin(frame, params);
 }
 
@@ -718,6 +715,7 @@ void WebViewHost::applyPreferences()
     m_shell->applyPreferences();
 }
 
+#if ENABLE(WEB_INTENTS)
 void WebViewHost::setCurrentWebIntentRequest(const WebIntentRequest& request)
 {
     m_currentRequest = request;
@@ -727,6 +725,7 @@ WebIntentRequest* WebViewHost::currentWebIntentRequest()
 {
     return &m_currentRequest;
 }
+#endif
 
 std::string WebViewHost::makeURLErrorDescription(const WebKit::WebURLError& error)
 {
@@ -911,7 +910,7 @@ void WebViewHost::displayInvalidatedRegion()
 
 void WebViewHost::testFinished()
 {
-    m_shell->testFinished();
+    m_shell->testFinished(this);
 }
 
 void WebViewHost::testTimedOut()
@@ -1001,6 +1000,7 @@ void WebViewHost::shutdown()
          it < m_popupmenus.end(); ++it)
         (*it)->close();
 
+    webWidget()->willCloseLayerTreeView();
     m_layerTreeView.clear();
     webWidget()->close();
     m_webWidget = 0;
@@ -1012,7 +1012,6 @@ void WebViewHost::setWebWidget(WebKit::WebWidget* widget)
     m_webWidget = widget;
     webView()->setSpellCheckClient(proxy()->spellCheckClient());
     webView()->setPrerendererClient(this);
-    webView()->setCompositorSurfaceReady();
 }
 
 WebView* WebViewHost::webView() const

@@ -3,7 +3,7 @@
  * Copyright (C) 2007 Collabora Ltd.  All rights reserved.
  * Copyright (C) 2007 Alp Toker <alp@atoker.com>
  * Copyright (C) 2009 Gustavo Noronha Silva <gns@gnome.org>
- * Copyright (C) 2009, 2010 Igalia S.L
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013 Igalia S.L
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -30,6 +30,7 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
+#include "FullscreenVideoControllerGStreamer.h"
 #include "GStreamerGWorld.h"
 #include "GStreamerUtilities.h"
 #include "GStreamerVersioning.h"
@@ -269,6 +270,9 @@ MediaPlayerPrivateGStreamer::~MediaPlayerPrivateGStreamer()
     }
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
+    if (m_fullscreenVideoController)
+        exitFullscreen();
+
     if (m_videoSinkBin) {
         gst_object_unref(m_videoSinkBin);
         m_videoSinkBin = 0;
@@ -300,17 +304,36 @@ MediaPlayerPrivateGStreamer::~MediaPlayerPrivateGStreamer()
         g_source_remove(m_audioTimerHandler);
 }
 
+KURL MediaPlayerPrivateGStreamer::convertPlaybinURL(const gchar* uri)
+{
+    KURL url(KURL(), uri);
+
+    ASSERT(url.protocol().substring(0, 7) == "webkit+");
+    url.setProtocol(url.protocol().substring(7));
+    return url;
+}
+
+void MediaPlayerPrivateGStreamer::setPlaybinURL(KURL& url)
+{
+    // Clean out everything after file:// url path.
+    if (url.isLocalFile()) {
+        url.setQuery(String());
+        url.removeFragmentIdentifier();
+    }
+
+    m_url = url;
+
+    if (url.protocolIsInHTTPFamily())
+        url.setProtocol("webkit+" + url.protocol());
+
+    LOG_MEDIA_MESSAGE("Load %s", url.string().utf8().data());
+    g_object_set(m_playBin.get(), "uri", url.string().utf8().data(), NULL);
+}
+
 void MediaPlayerPrivateGStreamer::load(const String& url)
 {
     if (!initializeGStreamerAndRegisterWebKitElements())
         return;
-
-    KURL kurl(KURL(), url);
-    String cleanUrl(url);
-
-    // Clean out everything after file:// url path.
-    if (kurl.isLocalFile())
-        cleanUrl = cleanUrl.substring(0, kurl.pathEnd());
 
     if (!m_playBin) {
         createGSTPlayBin();
@@ -319,10 +342,8 @@ void MediaPlayerPrivateGStreamer::load(const String& url)
 
     ASSERT(m_playBin);
 
-    m_url = KURL(KURL(), cleanUrl);
-    g_object_set(m_playBin.get(), "uri", cleanUrl.utf8().data(), NULL);
-
-    LOG_MEDIA_MESSAGE("Load %s", cleanUrl.utf8().data());
+    KURL kurl(KURL(), url);
+    setPlaybinURL(kurl);
 
     if (m_preload == MediaPlayer::None) {
         LOG_MEDIA_MESSAGE("Delaying load.");
@@ -1411,20 +1432,13 @@ bool MediaPlayerPrivateGStreamer::loadNextLocation()
         // though. We need to take the base of the current url and
         // append the value of new-location to it.
 
-        gchar* currentLocation = 0;
-        g_object_get(m_playBin.get(), "uri", &currentLocation, NULL);
-
-        KURL currentUrl(KURL(), currentLocation);
-        g_free(currentLocation);
-
         KURL newUrl;
-
         if (gst_uri_is_valid(newLocation))
             newUrl = KURL(KURL(), newLocation);
         else
-            newUrl = KURL(KURL(), currentUrl.baseAsString() + newLocation);
+            newUrl = KURL(KURL(), m_url.baseAsString() + newLocation);
 
-        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(currentUrl);
+        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(m_url);
         if (securityOrigin->canRequest(newUrl)) {
             LOG_MEDIA_MESSAGE("New media url: %s", newUrl.string().utf8().data());
 
@@ -1442,7 +1456,7 @@ bool MediaPlayerPrivateGStreamer::loadNextLocation()
             gst_element_get_state(m_playBin.get(), &state, 0, 0);
             if (state <= GST_STATE_READY) {
                 // Set the new uri and start playing.
-                g_object_set(m_playBin.get(), "uri", newUrl.string().utf8().data(), NULL);
+                setPlaybinURL(newUrl);
                 gst_element_set_state(m_playBin.get(), GST_STATE_PLAYING);
                 return true;
             }
@@ -1761,12 +1775,18 @@ bool MediaPlayerPrivateGStreamer::hasSingleSecurityOrigin() const
 #if USE(NATIVE_FULLSCREEN_VIDEO)
 void MediaPlayerPrivateGStreamer::enterFullscreen()
 {
-    notImplemented();
+    ASSERT(!m_fullscreenVideoController);
+    m_fullscreenVideoController = FullscreenVideoControllerGStreamer::create(this);
+    if (m_fullscreenVideoController)
+        m_fullscreenVideoController->enterFullscreen();
 }
 
 void MediaPlayerPrivateGStreamer::exitFullscreen()
 {
-    notImplemented();
+    if (!m_fullscreenVideoController)
+        return;
+    m_fullscreenVideoController->exitFullscreen();
+    m_fullscreenVideoController.release();
 }
 #endif
 

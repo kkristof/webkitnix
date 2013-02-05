@@ -91,7 +91,6 @@
 namespace CoreIPC {
     class ArgumentDecoder;
     class Connection;
-    class MessageID;
 }
 
 namespace WebCore {
@@ -127,10 +126,6 @@ typedef GtkWidget* PlatformWidget;
 typedef Evas_Object* PlatformWidget;
 #elif PLATFORM(NIX)
 typedef void* PlatformWidget;
-#endif
-
-#if ENABLE(WEB_INTENTS)
-class WebIntentData;
 #endif
 
 namespace WebKit {
@@ -170,14 +165,6 @@ class WebGestureEvent;
 
 #if ENABLE(VIBRATION)
 class WebVibrationProxy;
-#endif
-
-#if ENABLE(WEB_INTENTS)
-struct IntentData;
-#endif
-
-#if ENABLE(WEB_INTENTS_TAG)
-struct IntentServiceInfo;
 #endif
 
 typedef GenericCallback<WKStringRef, StringImpl*> StringCallback;
@@ -568,10 +555,6 @@ public:
     void runJavaScriptInMainFrame(const String&, PassRefPtr<ScriptValueCallback>);
     void forceRepaint(PassRefPtr<VoidCallback>);
 
-#if ENABLE(WEB_INTENTS)
-    void deliverIntentToFrame(WebFrameProxy*, WebIntentData*);
-#endif
-
     float headerHeight(WebFrameProxy*);
     float footerHeight(WebFrameProxy*);
     void drawHeader(WebFrameProxy*, const WebCore::FloatRect&);
@@ -789,9 +772,7 @@ private:
     void didReceiveSyncWebPageProxyMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&, OwnPtr<CoreIPC::MessageEncoder>&);
 
     void didCreateMainFrame(uint64_t frameID);
-    void didCreateSubframe(uint64_t frameID, uint64_t parentFrameID);
-    void didSaveFrameToPageCache(uint64_t frameID);
-    void didRestoreFrameFromPageCache(uint64_t frameID, uint64_t parentFrameID);
+    void didCreateSubframe(uint64_t frameID);
 
     void didStartProvisionalLoadForFrame(uint64_t frameID, const String& url, const String& unreachableURL, CoreIPC::MessageDecoder&);
     void didReceiveServerRedirectForProvisionalLoadForFrame(uint64_t frameID, const String&, CoreIPC::MessageDecoder&);
@@ -815,13 +796,6 @@ private:
     void didChangeProgress(double);
     void didFinishProgress();
 
-#if ENABLE(WEB_INTENTS)
-    void didReceiveIntentForFrame(uint64_t frameID, const IntentData&, CoreIPC::MessageDecoder&);
-#endif
-#if ENABLE(WEB_INTENTS_TAG)
-    void registerIntentServiceForFrame(uint64_t frameID, const IntentServiceInfo&, CoreIPC::MessageDecoder&);
-#endif
-    
     void decidePolicyForNavigationAction(uint64_t frameID, uint32_t navigationType, uint32_t modifiers, int32_t mouseButton, const WebCore::ResourceRequest&, uint64_t listenerID, CoreIPC::MessageDecoder&, bool& receivedPolicyAction, uint64_t& policyAction, uint64_t& downloadID);
     void decidePolicyForNewWindowAction(uint64_t frameID, uint32_t navigationType, uint32_t modifiers, int32_t mouseButton, const WebCore::ResourceRequest&, const String& frameName, uint64_t listenerID, CoreIPC::MessageDecoder&);
     void decidePolicyForResponse(uint64_t frameID, const WebCore::ResourceResponse&, const WebCore::ResourceRequest&, uint64_t listenerID, CoreIPC::MessageDecoder&, bool& receivedPolicyAction, uint64_t& policyAction, uint64_t& downloadID);
@@ -1043,6 +1017,10 @@ private:
 
     void processNextQueuedWheelEvent();
     void sendWheelEvent(const WebWheelEvent&);
+
+#if ENABLE(NETSCAPE_PLUGIN_API)
+    void getPluginPath(const String& mimeType, const String& urlString, String& pluginPath, uint32_t& pluginLoadPolicy);
+#endif
 
     PageClient* m_pageClient;
     WebLoaderClient m_loaderClient;

@@ -34,6 +34,7 @@
 #include "DOMTimeStamp.h"
 #include "DocumentEventQueue.h"
 #include "DocumentTiming.h"
+#include "FocusDirection.h"
 #include "IconURL.h"
 #include "InspectorCounters.h"
 #include "IntRect.h"
@@ -686,7 +687,7 @@ public:
     String selectedStylesheetSet() const;
     void setSelectedStylesheetSet(const String&);
 
-    bool setFocusedNode(PassRefPtr<Node>);
+    bool setFocusedNode(PassRefPtr<Node>, FocusDirection = FocusDirectionNone);
     Node* focusedNode() const { return m_focusedNode.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
@@ -1592,7 +1593,7 @@ inline bool Node::isDocumentNode() const
 
 inline Node::Node(Document* document, ConstructionType type)
     : m_nodeFlags(type)
-    , m_parentOrHostNode(0)
+    , m_parentOrShadowHostNode(0)
     , m_treeScope(document)
     , m_previous(0)
     , m_next(0)

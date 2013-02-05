@@ -112,7 +112,7 @@ static v8::Handle<v8::Value> dispatchEventCallback(const v8::Arguments& args)
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     ExceptionCode ec = 0;
     {
-    V8TRYCATCH(Event*, evt, V8Event::HasInstance(MAYBE_MISSING_PARAMETER(args, 0, DefaultIsUndefined)) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(MAYBE_MISSING_PARAMETER(args, 0, DefaultIsUndefined))) : 0);
+    V8TRYCATCH(Event*, evt, V8Event::HasInstance(MAYBE_MISSING_PARAMETER(args, 0, DefaultIsUndefined), args.GetIsolate()) ? V8Event::toNative(v8::Handle<v8::Object>::Cast(MAYBE_MISSING_PARAMETER(args, 0, DefaultIsUndefined))) : 0);
     bool result = imp->dispatchEvent(evt, ec);
     if (UNLIKELY(ec))
         goto fail;
@@ -137,7 +137,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestEventTarget", v8::Persistent<v8::FunctionTemplate>(), V8TestEventTarget::internalFieldCount,
         0, 0,
-        V8TestEventTargetCallbacks, WTF_ARRAY_LENGTH(V8TestEventTargetCallbacks));
+        V8TestEventTargetCallbacks, WTF_ARRAY_LENGTH(V8TestEventTargetCallbacks), isolate);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
@@ -190,9 +190,11 @@ v8::Persistent<v8::FunctionTemplate> V8TestEventTarget::GetTemplate(v8::Isolate*
     return templ;
 }
 
-bool V8TestEventTarget::HasInstance(v8::Handle<v8::Value> value)
+bool V8TestEventTarget::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    return GetRawTemplate()->HasInstance(value);
+    if (!isolate)
+        isolate = v8::Isolate::GetCurrent();
+    return GetRawTemplate(isolate)->HasInstance(value);
 }
 
 EventTarget* V8TestEventTarget::toEventTarget(v8::Handle<v8::Object> object)
@@ -214,7 +216,7 @@ v8::Handle<v8::Object> V8TestEventTarget::createWrapper(PassRefPtr<TestEventTarg
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get());
+    installPerContextProperties(wrapper, impl.get(), isolate);
     v8::Persistent<v8::Object> wrapperHandle = V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate);
     if (!hasDependentLifetime)
         wrapperHandle.MarkIndependent();

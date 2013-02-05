@@ -33,7 +33,6 @@
 
 #include "NotificationPresenter.h"
 #include "TestEventPrinter.h"
-#include "TestRunner/src/TestRunner.h"
 #include "WebPreferences.h"
 #include "WebTestInterfaces.h"
 #include "WebViewHost.h"
@@ -84,9 +83,7 @@ public:
     WebKit::WebView* webView() const { return m_webView; }
     // Returns the host for the main WebView.
     WebViewHost* webViewHost() const { return m_webViewHost.get(); }
-    WebTestRunner::WebTestRunner* testRunner() const { return m_testRunner.get(); }
-    WebTestRunner::WebEventSender* eventSender() const { return m_testInterfaces->eventSender(); }
-    WebTestRunner::WebAccessibilityController* accessibilityController() const { return m_testInterfaces->accessibilityController(); }
+    WebTestRunner::WebTestRunner* testRunner() const { return m_testInterfaces->testRunner(); }
 #if ENABLE(NOTIFICATIONS)
     NotificationPresenter* notificationPresenter() const { return m_notificationPresenter.get(); }
 #endif
@@ -108,12 +105,9 @@ public:
     int navigationEntryCount() const;
 
     void setFocus(WebKit::WebWidget*, bool enable);
-    bool shouldDumpResourceRequestCallbacks() const { return (m_testIsPreparing || m_testIsPending) && testRunner()->shouldDumpResourceRequestCallbacks(); }
-    bool shouldDumpResourceLoadCallbacks() const  { return (m_testIsPreparing || m_testIsPending) && testRunner()->shouldDumpResourceLoadCallbacks(); }
-    bool shouldDumpResourceResponseMIMETypes() const  { return (m_testIsPreparing || m_testIsPending) && testRunner()->shouldDumpResourceResponseMIMETypes(); }
 
     // Called by the DRTTestRunner to signal test completion.
-    void testFinished();
+    void testFinished(WebViewHost*);
     // Called by DRTTestRunner when a test hits the timeout, but does not
     // cause a hang. We can avoid killing TestShell in this case and still dump
     // the test results.
@@ -209,7 +203,6 @@ private:
     OwnPtr<DRTDevToolsClient> m_drtDevToolsClient;
     OwnPtr<WebTestRunner::WebTestInterfaces> m_testInterfaces;
     OwnPtr<WebTestRunner::WebTestInterfaces> m_devToolsTestInterfaces;
-    OwnPtr<WebTestRunner::TestRunner> m_testRunner;
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     OwnPtr<NotificationPresenter> m_notificationPresenter;
 #endif

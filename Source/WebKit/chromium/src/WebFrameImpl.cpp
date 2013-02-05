@@ -83,8 +83,6 @@
 #include "DOMWindow.h"
 #include "DOMWindowIntents.h"
 #include "DOMWrapperWorld.h"
-#include "DeliveredIntent.h"
-#include "DeliveredIntentClientImpl.h"
 #include "DirectoryEntry.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -196,6 +194,11 @@
 #include <public/WebVector.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/HashMap.h>
+
+#if ENABLE(WEB_INTENTS)
+#include "DeliveredIntent.h"
+#include "DeliveredIntentClientImpl.h"
+#endif
 
 using namespace WebCore;
 
@@ -1383,8 +1386,14 @@ bool WebFrameImpl::selectWordAroundCaret()
 
 void WebFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
 {
-    VisiblePosition basePosition = visiblePositionForWindowPoint(base);
-    VisiblePosition extentPosition = visiblePositionForWindowPoint(extent);
+    IntPoint unscaledBase = base;
+    IntPoint unscaledExtent = extent;
+    if (frame()->page()->settings()->applyPageScaleFactorInCompositor()) {
+        unscaledExtent.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
+        unscaledBase.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
+    }
+    VisiblePosition basePosition = visiblePositionForWindowPoint(unscaledBase);
+    VisiblePosition extentPosition = visiblePositionForWindowPoint(unscaledExtent);
     VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
     if (frame()->selection()->shouldChangeSelection(newSelection))
         frame()->selection()->setSelection(newSelection, CharacterGranularity);
@@ -1398,8 +1407,12 @@ void WebFrameImpl::selectRange(const WebRange& webRange)
 
 void WebFrameImpl::moveCaretSelectionTowardsWindowPoint(const WebPoint& point)
 {
+    IntPoint unscaledPoint(point);
+    if (frame()->page()->settings()->applyPageScaleFactorInCompositor())
+        unscaledPoint.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
+
     Element* editable = frame()->selection()->rootEditableElement();
-    IntPoint contentsPoint = frame()->view()->windowToContents(IntPoint(point));
+    IntPoint contentsPoint = frame()->view()->windowToContents(unscaledPoint);
     LayoutPoint localPoint(editable->convertFromPage(contentsPoint));
     VisiblePosition position = editable->renderer()->positionForPoint(localPoint);
     if (frame()->selection()->shouldChangeSelection(position))
@@ -2023,7 +2036,7 @@ int WebFrameImpl::nearestFindMatch(const FloatPoint& point, float& distanceSquar
 
 int WebFrameImpl::selectFindMatch(unsigned index, WebRect* selectionRect)
 {
-    ASSERT(index < m_findMatchesCache.size());
+    ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
 
     RefPtr<Range> range = m_findMatchesCache[index].m_range;
     if (!range->boundaryPointsValid() || !range->startContainer()->inDocument())

@@ -256,6 +256,7 @@ SOURCES += \
     css/CSSCrossfadeValue.cpp \
     css/CSSCursorImageValue.cpp \
     css/CSSFontFace.cpp \
+    css/CSSDefaultStyleSheets.cpp \
     css/CSSFontFaceRule.cpp \
     css/CSSFontFaceSrcValue.cpp \
     css/CSSFontSelector.cpp \
@@ -296,6 +297,7 @@ SOURCES += \
     css/CSSValuePool.cpp \
     css/FontFeatureValue.cpp \
     css/FontValue.cpp \
+    css/InspectorCSSOMWrappers.cpp \
     css/LengthFunctions.cpp \
     css/MediaFeatureNames.cpp \
     css/MediaList.cpp \
@@ -735,6 +737,7 @@ SOURCES += \
     html/parser/TextDocumentParser.cpp \
     html/parser/TextViewSourceParser.cpp \
     html/parser/XSSAuditor.cpp \
+    html/parser/XSSAuditorDelegate.cpp \
     html/shadow/ContentDistributor.cpp \
     html/shadow/ContentSelectorQuery.cpp \
     html/shadow/DateTimeEditElement.cpp \
@@ -1911,6 +1914,7 @@ HEADERS += \
     html/parser/HTMLTreeBuilder.h \
     html/parser/HTMLViewSourceParser.h \
     html/parser/XSSAuditor.h \
+    html/parser/XSSAuditorDelegate.h \
     html/shadow/ContentDistributor.h \
     html/shadow/ContentSelectorQuery.h \
     html/shadow/HTMLContentElement.h \
@@ -3057,14 +3061,14 @@ enable?(INDEXED_DATABASE) {
         Modules/indexeddb/IDBFactory.h \
         Modules/indexeddb/IDBFactoryBackendInterface.h \
         Modules/indexeddb/IDBFactoryBackendImpl.h \
+        Modules/indexeddb/IDBHistograms.h \
         Modules/indexeddb/IDBIndex.h \
         Modules/indexeddb/IDBKey.h \
         Modules/indexeddb/IDBKeyRange.h \
         Modules/indexeddb/IDBObjectStore.h \
         Modules/indexeddb/IDBObjectStoreBackendImpl.h \
         Modules/indexeddb/IDBRequest.h \
-        Modules/indexeddb/IDBTransaction.h \
-        Modules/indexeddb/IDBTransactionBackendInterface.h
+        Modules/indexeddb/IDBTransaction.h
 
     SOURCES += \
         bindings/js/IDBBindingUtilities.cpp \
@@ -4046,7 +4050,19 @@ use?(3D_GRAPHICS) {
         platform/graphics/gpu/TilingData.h \
         platform/graphics/opengl/Extensions3DOpenGL.h \
         platform/graphics/texmap/TextureMapperGL.h \
-        platform/graphics/texmap/TextureMapperShaderProgram.h
+        platform/graphics/texmap/TextureMapperShaderProgram.h \
+        platform/graphics/texmap/coordinated/AreaAllocator.h \
+        platform/graphics/texmap/coordinated/CoordinatedBackingStore.h \
+        platform/graphics/texmap/coordinated/CoordinatedCustomFilterOperation.h \
+        platform/graphics/texmap/coordinated/CoordinatedCustomFilterProgram.h \
+        platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h \
+        platform/graphics/texmap/coordinated/CoordinatedGraphicsScene.h \
+        platform/graphics/texmap/coordinated/CoordinatedImageBacking.h \
+        platform/graphics/texmap/coordinated/CoordinatedLayerInfo.h \
+        platform/graphics/texmap/coordinated/CoordinatedSurface.h \
+        platform/graphics/texmap/coordinated/CoordinatedTile.h \
+        platform/graphics/texmap/coordinated/SurfaceUpdateInfo.h \
+        platform/graphics/texmap/coordinated/UpdateAtlas.h
 
     SOURCES += \
         platform/graphics/ANGLEWebKitBridge.cpp \
@@ -4059,7 +4075,15 @@ use?(3D_GRAPHICS) {
         platform/graphics/opengl/Extensions3DOpenGLCommon.cpp \
         platform/graphics/qt/GraphicsContext3DQt.cpp \
         platform/graphics/texmap/TextureMapperGL.cpp \
-        platform/graphics/texmap/TextureMapperShaderProgram.cpp
+        platform/graphics/texmap/TextureMapperShaderProgram.cpp \
+        platform/graphics/texmap/coordinated/AreaAllocator.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedGraphicsScene.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedImageBacking.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedSurface.cpp \
+        platform/graphics/texmap/coordinated/CoordinatedTile.cpp \
+        platform/graphics/texmap/coordinated/UpdateAtlas.cpp
 
     INCLUDEPATH += $$PWD/platform/graphics/gpu
 

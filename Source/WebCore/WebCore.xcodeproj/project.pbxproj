@@ -1446,6 +1446,10 @@
 		4A6E9FC713C17D570046A7F8 /* FontFeatureSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6E9FC513C17D570046A7F8 /* FontFeatureSettings.cpp */; };
 		4A6E9FC813C17D570046A7F8 /* FontFeatureSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6E9FC613C17D570046A7F8 /* FontFeatureSettings.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4A8C96EB0BE69032004EEFF0 /* FrameSelectionMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C96EA0BE69032004EEFF0 /* FrameSelectionMac.mm */; };
+		4A9CC81716BB9AC600EC645A /* CSSDefaultStyleSheets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A9CC81516BB9AC600EC645A /* CSSDefaultStyleSheets.cpp */; };
+		4A9CC81816BB9AC600EC645A /* CSSDefaultStyleSheets.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A9CC81616BB9AC600EC645A /* CSSDefaultStyleSheets.h */; };
+		4A9CC82016BF9BB400EC645A /* InspectorCSSOMWrappers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A9CC81E16BF9BB400EC645A /* InspectorCSSOMWrappers.cpp */; };
+		4A9CC82116BF9BB400EC645A /* InspectorCSSOMWrappers.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A9CC81F16BF9BB400EC645A /* InspectorCSSOMWrappers.h */; };
 		4ABDFF0B14DBE385004D117D /* HTMLShadowElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4ABDFF0714DBE312004D117D /* HTMLShadowElement.cpp */; };
 		4ABDFF0C14DBE385004D117D /* HTMLShadowElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 4ABDFF0814DBE312004D117D /* HTMLShadowElement.h */; };
 		4ACBC0BE12713CBD0094F9B2 /* ClassList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4ACBC0BC12713CBD0094F9B2 /* ClassList.cpp */; };
@@ -1471,6 +1475,7 @@
 		4B6FA6F40C39E48C00087011 /* SmartReplace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4B6FA6F20C39E48C00087011 /* SmartReplace.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4B6FA6F50C39E48C00087011 /* SmartReplace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B6FA6F30C39E48C00087011 /* SmartReplace.cpp */; };
 		4B6FA6F70C39E4A100087011 /* SmartReplaceCF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4B6FA6F60C39E4A100087011 /* SmartReplaceCF.cpp */; };
+		4B61737379636F616E277368 /* IDBHistograms.h in Headers */ = {isa = PBXBuildFile; fileRef = 4B61737379636F616E277368 /* IDBHistograms.h */; };
 		4B8AF4AA0B1CE02B00687690 /* ClipboardAccessPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 4B8AF4A90B1CE02B00687690 /* ClipboardAccessPolicy.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4BAE95B10B2FA9CE00AED8A0 /* EditorDeleteAction.h in Headers */ = {isa = PBXBuildFile; fileRef = 4BAE95B00B2FA9CE00AED8A0 /* EditorDeleteAction.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4D273CF91669420800259CA1 /* InspectorInputAgent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D273CF71669420800259CA1 /* InspectorInputAgent.cpp */; };
@@ -3517,7 +3522,6 @@
 		9712A5F615004EDA0048AF10 /* IDBTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A59D15004EDA0048AF10 /* IDBTransaction.h */; };
 		9712A5F815004EDA0048AF10 /* IDBTransactionBackendImpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A59F15004EDA0048AF10 /* IDBTransactionBackendImpl.cpp */; };
 		9712A5F915004EDA0048AF10 /* IDBTransactionBackendImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A015004EDA0048AF10 /* IDBTransactionBackendImpl.h */; };
-		9712A5FA15004EDA0048AF10 /* IDBTransactionBackendInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A115004EDA0048AF10 /* IDBTransactionBackendInterface.h */; };
 		9712A5FB15004EDA0048AF10 /* IDBTransactionCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A215004EDA0048AF10 /* IDBTransactionCallbacks.h */; };
 		9712A5FC15004EDA0048AF10 /* IDBTransactionCoordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9712A5A315004EDA0048AF10 /* IDBTransactionCoordinator.cpp */; };
 		9712A5FD15004EDA0048AF10 /* IDBTransactionCoordinator.h in Headers */ = {isa = PBXBuildFile; fileRef = 9712A5A415004EDA0048AF10 /* IDBTransactionCoordinator.h */; };
@@ -3643,6 +3647,8 @@
 		977E2DCE12F0E28300C13379 /* HTMLSourceTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 977E2DCC12F0E28300C13379 /* HTMLSourceTracker.h */; };
 		977E2E0E12F0FC9C00C13379 /* XSSAuditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 977E2E0B12F0FC9C00C13379 /* XSSAuditor.cpp */; };
 		977E2E0F12F0FC9C00C13379 /* XSSAuditor.h in Headers */ = {isa = PBXBuildFile; fileRef = 977E2E0C12F0FC9C00C13379 /* XSSAuditor.h */; };
+		977E2E0E12F0FC9C00C13380 /* XSSAuditorDelegate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 977E2E0B12F0FC9C00C13380 /* XSSAuditorDelegate.cpp */; };
+		977E2E0F12F0FC9C00C13380 /* XSSAuditorDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 977E2E0C12F0FC9C00C13380 /* XSSAuditorDelegate.h */; };
 		978AD67414130A8D00C7CAE3 /* HTMLSpanElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978AD67114130A8D00C7CAE3 /* HTMLSpanElement.cpp */; };
 		978AD67514130A8D00C7CAE3 /* HTMLSpanElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 978AD67214130A8D00C7CAE3 /* HTMLSpanElement.h */; };
 		978D07B6145A0F030096908D /* FileException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 978D07B5145A0F030096908D /* FileException.cpp */; };
@@ -8812,6 +8818,10 @@
 		4A6E9FC513C17D570046A7F8 /* FontFeatureSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FontFeatureSettings.cpp; sourceTree = "<group>"; };
 		4A6E9FC613C17D570046A7F8 /* FontFeatureSettings.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = FontFeatureSettings.h; sourceTree = "<group>"; };
 		4A8C96EA0BE69032004EEFF0 /* FrameSelectionMac.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; name = FrameSelectionMac.mm; path = mac/FrameSelectionMac.mm; sourceTree = "<group>"; };
+		4A9CC81516BB9AC600EC645A /* CSSDefaultStyleSheets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CSSDefaultStyleSheets.cpp; sourceTree = "<group>"; };
+		4A9CC81616BB9AC600EC645A /* CSSDefaultStyleSheets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSSDefaultStyleSheets.h; sourceTree = "<group>"; };
+		4A9CC81E16BF9BB400EC645A /* InspectorCSSOMWrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InspectorCSSOMWrappers.cpp; sourceTree = "<group>"; };
+		4A9CC81F16BF9BB400EC645A /* InspectorCSSOMWrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InspectorCSSOMWrappers.h; sourceTree = "<group>"; };
 		4ABDFF0714DBE312004D117D /* HTMLShadowElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTMLShadowElement.cpp; sourceTree = "<group>"; };
 		4ABDFF0814DBE312004D117D /* HTMLShadowElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTMLShadowElement.h; sourceTree = "<group>"; };
 		4ABDFF0914DBE312004D117D /* HTMLShadowElement.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = HTMLShadowElement.idl; sourceTree = "<group>"; };
@@ -10905,7 +10915,6 @@
 		9712A59E15004EDA0048AF10 /* IDBTransaction.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = IDBTransaction.idl; path = Modules/indexeddb/IDBTransaction.idl; sourceTree = "<group>"; };
 		9712A59F15004EDA0048AF10 /* IDBTransactionBackendImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IDBTransactionBackendImpl.cpp; path = Modules/indexeddb/IDBTransactionBackendImpl.cpp; sourceTree = "<group>"; };
 		9712A5A015004EDA0048AF10 /* IDBTransactionBackendImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBTransactionBackendImpl.h; path = Modules/indexeddb/IDBTransactionBackendImpl.h; sourceTree = "<group>"; };
-		9712A5A115004EDA0048AF10 /* IDBTransactionBackendInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBTransactionBackendInterface.h; path = Modules/indexeddb/IDBTransactionBackendInterface.h; sourceTree = "<group>"; };
 		9712A5A215004EDA0048AF10 /* IDBTransactionCallbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBTransactionCallbacks.h; path = Modules/indexeddb/IDBTransactionCallbacks.h; sourceTree = "<group>"; };
 		9712A5A315004EDA0048AF10 /* IDBTransactionCoordinator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IDBTransactionCoordinator.cpp; path = Modules/indexeddb/IDBTransactionCoordinator.cpp; sourceTree = "<group>"; };
 		9712A5A415004EDA0048AF10 /* IDBTransactionCoordinator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IDBTransactionCoordinator.h; path = Modules/indexeddb/IDBTransactionCoordinator.h; sourceTree = "<group>"; };
@@ -11043,6 +11052,8 @@
 		977E2DCC12F0E28300C13379 /* HTMLSourceTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTMLSourceTracker.h; path = parser/HTMLSourceTracker.h; sourceTree = "<group>"; };
 		977E2E0B12F0FC9C00C13379 /* XSSAuditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XSSAuditor.cpp; path = parser/XSSAuditor.cpp; sourceTree = "<group>"; };
 		977E2E0C12F0FC9C00C13379 /* XSSAuditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XSSAuditor.h; path = parser/XSSAuditor.h; sourceTree = "<group>"; };
+		977E2E0B12F0FC9C00C13380 /* XSSAuditorDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XSSAuditorDelegate.cpp; path = parser/XSSAuditorDelegate.cpp; sourceTree = "<group>"; };
+		977E2E0C12F0FC9C00C13380 /* XSSAuditorDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XSSAuditorDelegate.h; path = parser/XSSAuditorDelegate.h; sourceTree = "<group>"; };
 		978AD67114130A8D00C7CAE3 /* HTMLSpanElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTMLSpanElement.cpp; sourceTree = "<group>"; };
 		978AD67214130A8D00C7CAE3 /* HTMLSpanElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTMLSpanElement.h; sourceTree = "<group>"; };
 		978AD67314130A8D00C7CAE3 /* HTMLSpanElement.idl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = HTMLSpanElement.idl; sourceTree = "<group>"; };
@@ -15538,10 +15549,6 @@
 		49484FAE102CF01E00187DD3 /* canvas */ = {
 			isa = PBXGroup;
 			children = (
-				FB91391E16AE4B0B001FE682 /* CanvasPathMethods.cpp */,
-				FB91391F16AE4B0B001FE682 /* CanvasPathMethods.h */,
-				FB91392016AE4B0B001FE682 /* DOMPath.h */,
-				FB91392116AE4B0B001FE682 /* DOMPath.idl */,
 				49EECDCC10503C2300099FAB /* ArrayBuffer.idl */,
 				49EECDC910503C2300099FAB /* ArrayBufferView.idl */,
 				6E4E91A710F7FB3100A2779C /* CanvasContextAttributes.cpp */,
@@ -15549,6 +15556,8 @@
 				49484FB3102CF23C00187DD3 /* CanvasGradient.cpp */,
 				49484FB4102CF23C00187DD3 /* CanvasGradient.h */,
 				49484FB5102CF23C00187DD3 /* CanvasGradient.idl */,
+				FB91391E16AE4B0B001FE682 /* CanvasPathMethods.cpp */,
+				FB91391F16AE4B0B001FE682 /* CanvasPathMethods.h */,
 				49484FB6102CF23C00187DD3 /* CanvasPattern.cpp */,
 				49484FB7102CF23C00187DD3 /* CanvasPattern.h */,
 				49484FB8102CF23C00187DD3 /* CanvasPattern.idl */,
@@ -15567,6 +15576,8 @@
 				2E97CCE712939CB800C5C8FF /* DataView.cpp */,
 				2E97CCE812939CB800C5C8FF /* DataView.h */,
 				2E97CCE912939CB800C5C8FF /* DataView.idl */,
+				FB91392016AE4B0B001FE682 /* DOMPath.h */,
+				FB91392116AE4B0B001FE682 /* DOMPath.idl */,
 				7728694B14F8882500F484DC /* EXTTextureFilterAnisotropic.cpp */,
 				7728694C14F8882500F484DC /* EXTTextureFilterAnisotropic.h */,
 				7728694D14F8882500F484DC /* EXTTextureFilterAnisotropic.idl */,
@@ -18319,7 +18330,6 @@
 				9712A59E15004EDA0048AF10 /* IDBTransaction.idl */,
 				9712A59F15004EDA0048AF10 /* IDBTransactionBackendImpl.cpp */,
 				9712A5A015004EDA0048AF10 /* IDBTransactionBackendImpl.h */,
-				9712A5A115004EDA0048AF10 /* IDBTransactionBackendInterface.h */,
 				9712A5A215004EDA0048AF10 /* IDBTransactionCallbacks.h */,
 				9712A5A315004EDA0048AF10 /* IDBTransactionCoordinator.cpp */,
 				9712A5A415004EDA0048AF10 /* IDBTransactionCoordinator.h */,
@@ -18636,6 +18646,8 @@
 				97BC84A312370DC8000C6161 /* TextViewSourceParser.h */,
 				977E2E0B12F0FC9C00C13379 /* XSSAuditor.cpp */,
 				977E2E0C12F0FC9C00C13379 /* XSSAuditor.h */,
+				977E2E0B12F0FC9C00C13380 /* XSSAuditorDelegate.cpp */,
+				977E2E0C12F0FC9C00C13380 /* XSSAuditorDelegate.h */,
 			);
 			name = parser;
 			sourceTree = "<group>";
@@ -19544,8 +19556,8 @@
 				5189F01C10B37BD900F3C739 /* JSPopStateEvent.h */,
 				933A14B60B7D1D5200A53FFD /* JSTextEvent.cpp */,
 				933A14B70B7D1D5200A53FFD /* JSTextEvent.h */,
-				E17B491F16A9B8FF001C8839 /* JSTransitionEvent.h */,
 				E17B492016A9B8FF001C8839 /* JSTransitionEvent.cpp */,
+				E17B491F16A9B8FF001C8839 /* JSTransitionEvent.h */,
 				A86629CA09DA2B47009633A5 /* JSUIEvent.cpp */,
 				A86629C909DA2B47009633A5 /* JSUIEvent.h */,
 				31C0FF390E4CEFAC007D6FE5 /* JSWebKitAnimationEvent.cpp */,
@@ -21699,6 +21711,8 @@
 				2D8FEBDB143E3EF70072502B /* CSSCrossfadeValue.h */,
 				AA0978ED0ABAA6E100874480 /* CSSCursorImageValue.cpp */,
 				AA0978EE0ABAA6E100874480 /* CSSCursorImageValue.h */,
+				4A9CC81516BB9AC600EC645A /* CSSDefaultStyleSheets.cpp */,
+				4A9CC81616BB9AC600EC645A /* CSSDefaultStyleSheets.h */,
 				BC64B4CD0CB4298A005F2B62 /* CSSFontFace.cpp */,
 				BC64B4CE0CB4298A005F2B62 /* CSSFontFace.h */,
 				A80E6CBD0A1989CA007FB8C5 /* CSSFontFaceRule.cpp */,
@@ -21811,6 +21825,8 @@
 				CD4E0AFA11F7BC27009D3811 /* fullscreen.css */,
 				CDBD93BA1333BD4B002570E3 /* fullscreenQuickTime.css */,
 				93CA4C9909DF93FA00DF8677 /* html.css */,
+				4A9CC81E16BF9BB400EC645A /* InspectorCSSOMWrappers.cpp */,
+				4A9CC81F16BF9BB400EC645A /* InspectorCSSOMWrappers.h */,
 				E55F4979151B888000BB67DB /* LengthFunctions.cpp */,
 				E5BA7D62151437CA00FE1E3F /* LengthFunctions.h */,
 				93CA4C9A09DF93FA00DF8677 /* make-css-file-arrays.pl */,
@@ -23043,6 +23059,7 @@
 				BCA8C81E11E3D36900812FB7 /* BackForwardController.h in Headers */,
 				51741D0F0B07259A00ED442C /* BackForwardList.h in Headers */,
 				BCA8CA6011E4E6D100812FB7 /* BackForwardListImpl.h in Headers */,
+				97DC69ED16B9F52C008CFD6F /* BackgroundHTMLInputStream.h in Headers */,
 				979DC03816A7993300807794 /* BackgroundHTMLParser.h in Headers */,
 				BC124EE80C2641CD009E2349 /* BarInfo.h in Headers */,
 				379E61CA126CA5C400B63E8D /* BaseButtonInputType.h in Headers */,
@@ -23117,6 +23134,7 @@
 				B1D5ECB5134B58DA0087C78F /* CallbackFunction.h in Headers */,
 				6E4E91AD10F7FB3100A2779C /* CanvasContextAttributes.h in Headers */,
 				49484FC2102CF23C00187DD3 /* CanvasGradient.h in Headers */,
+				FB91392616AE4C2F001FE682 /* CanvasPathMethods.h in Headers */,
 				49484FC5102CF23C00187DD3 /* CanvasPattern.h in Headers */,
 				49484FC5102CF23C00188DD3 /* CanvasProxy.h in Headers */,
 				49C7B9DD1042D32F0009D447 /* CanvasRenderingContext.h in Headers */,
@@ -23176,6 +23194,7 @@
 				E1A1470811102B1500EEC0F3 /* ContainerNodeAlgorithms.h in Headers */,
 				BC5EB9810E82072500B25965 /* ContentData.h in Headers */,
 				57B791A414C6A62900F202D1 /* ContentDistributor.h in Headers */,
+				2919A1E916B3376600787213 /* ContentFilter.h in Headers */,
 				59102FBC14327D3B003C9D04 /* ContentSearchUtils.h in Headers */,
 				97C471DC12F925BD0086354B /* ContentSecurityPolicy.h in Headers */,
 				57B791A614C6A62900F202D1 /* ContentSelectorQuery.h in Headers */,
@@ -23217,6 +23236,7 @@
 				BCEA4790097CAAC80094C9E4 /* CSSComputedStyleDeclaration.h in Headers */,
 				2D8FEBDD143E3EF70072502B /* CSSCrossfadeValue.h in Headers */,
 				AA21ECCD0ABF0FC6002B834C /* CSSCursorImageValue.h in Headers */,
+				4A9CC81816BB9AC600EC645A /* CSSDefaultStyleSheets.h in Headers */,
 				BC64B4D60CB4298A005F2B62 /* CSSFontFace.h in Headers */,
 				A80E6CFD0A1989CA007FB8C5 /* CSSFontFaceRule.h in Headers */,
 				BC64B4D80CB4298A005F2B62 /* CSSFontFaceSource.h in Headers */,
@@ -23635,6 +23655,7 @@
 				E1284BD61044A01E00EAEB52 /* DOMPageTransitionEvent.h in Headers */,
 				1ACE53E80A8D18E70022947D /* DOMParser.h in Headers */,
 				7A54881714E432A1006AE05A /* DOMPatchSupport.h in Headers */,
+				FB91392416AE4C17001FE682 /* DOMPath.h in Headers */,
 				A9C6E4EC0D745E2B006442E9 /* DOMPlugin.h in Headers */,
 				A9C6E4F00D745E38006442E9 /* DOMPluginArray.h in Headers */,
 				BC1A37BB097C715F0019F3D8 /* DOMPrivate.h in Headers */,
@@ -24416,7 +24437,6 @@
 				9712A5F415004EDA0048AF10 /* IDBTracing.h in Headers */,
 				9712A5F615004EDA0048AF10 /* IDBTransaction.h in Headers */,
 				9712A5F915004EDA0048AF10 /* IDBTransactionBackendImpl.h in Headers */,
-				9712A5FA15004EDA0048AF10 /* IDBTransactionBackendInterface.h in Headers */,
 				9712A5FB15004EDA0048AF10 /* IDBTransactionCallbacks.h in Headers */,
 				9712A5FD15004EDA0048AF10 /* IDBTransactionCoordinator.h in Headers */,
 				9712A5FF15004EDA0048AF10 /* IDBVersionChangeEvent.h in Headers */,
@@ -24479,6 +24499,7 @@
 				1C81B95A0E97330800266E07 /* InspectorController.h in Headers */,
 				F325A40B14EE36FA007324E2 /* InspectorCounters.h in Headers */,
 				82AB1744124B99EC00C5069D /* InspectorCSSAgent.h in Headers */,
+				4A9CC82116BF9BB400EC645A /* InspectorCSSOMWrappers.h in Headers */,
 				7AB0B1C11211A62200A76940 /* InspectorDatabaseAgent.h in Headers */,
 				F3F5CF1312ED81B30084C569 /* InspectorDatabaseInstrumentation.h in Headers */,
 				41F062140F5F192600A07EAC /* InspectorDatabaseResource.h in Headers */,
@@ -24521,7 +24542,6 @@
 				B27535760B053814002CE64F /* IntSizeHash.h in Headers */,
 				1C81BA0A0E97348300266E07 /* JavaScriptCallFrame.h in Headers */,
 				418F88050FF957AF0080F045 /* JSAbstractWorker.h in Headers */,
-				1AB09DB516AF5F6C008538E7 /* StorageStrategy.h in Headers */,
 				FDA15ECA12B03F50003A583A /* JSAnalyserNode.h in Headers */,
 				49EECF01105070C400099FAB /* JSArrayBuffer.h in Headers */,
 				49EECF1C105072F300099FAB /* JSArrayBufferView.h in Headers */,
@@ -24607,6 +24627,7 @@
 				A9D248090D757E7D00FDF959 /* JSDOMMimeTypeArray.h in Headers */,
 				52CCA9E315E3F62C0053C77F /* JSDOMNamedFlowCollection.h in Headers */,
 				1ACE53E00A8D18810022947D /* JSDOMParser.h in Headers */,
+				FB91392A16AE4FC0001FE682 /* JSDOMPath.h in Headers */,
 				A9D247FF0D757E6900FDF959 /* JSDOMPlugin.h in Headers */,
 				A9D248010D757E6900FDF959 /* JSDOMPluginArray.h in Headers */,
 				BC5A86B60C3367E800EEA649 /* JSDOMSelection.h in Headers */,
@@ -25174,6 +25195,7 @@
 				A78E52701346BD1700AD9C31 /* MeterShadowElement.h in Headers */,
 				37DDCDA51384501C0008B793 /* MHTMLArchive.h in Headers */,
 				37DDCDA71384501C0008B793 /* MHTMLParser.h in Headers */,
+				2E07753416B1BD4C004D9936 /* MicroDataAttributeTokenList.h in Headers */,
 				9B375EDB14478A0100F3CAE5 /* MicroDataItemList.h in Headers */,
 				37DDCD9513844FD50008B793 /* MIMEHeader.h in Headers */,
 				BC772C4F0C4EB3040083285F /* MIMETypeRegistry.h in Headers */,
@@ -25741,6 +25763,7 @@
 				51E0BB380DA5ACB600A9E417 /* StorageMap.h in Headers */,
 				C50D0E830FF4272900AC2644 /* StorageNamespace.h in Headers */,
 				C55E38BF10040D5D00A56BDB /* StorageNamespaceImpl.h in Headers */,
+				1AB09DB516AF5F6C008538E7 /* StorageStrategy.h in Headers */,
 				C5102D940FD9AA2D00FAFF04 /* StorageSyncManager.h in Headers */,
 				511F23180DC160DA004F0032 /* StorageTask.h in Headers */,
 				511F231A0DC160DA004F0032 /* StorageThread.h in Headers */,
@@ -26207,7 +26230,6 @@
 				31288E750E3005D6003619AE /* WebKitCSSKeyframesRule.h in Headers */,
 				498391590F1E776900C23782 /* WebKitCSSMatrix.h in Headers */,
 				A24BF77B15CC3BAF003191F2 /* WebKitCSSMixFunctionValue.h in Headers */,
-				A24BF77B15CC3BAF003191F2 /* WebKitCSSMixFunctionValue.h in Headers */,
 				8AA61D00144D595B00F37350 /* WebKitCSSRegionRule.h in Headers */,
 				29CD61DE146D02890068E82A /* WebKitCSSShaderValue.h in Headers */,
 				0562F9471573ECEB0031CA16 /* WebKitCSSSVGDocumentValue.h in Headers */,
@@ -26315,13 +26337,8 @@
 				93F199ED08245E59001E9ABC /* XSLTProcessor.h in Headers */,
 				E1BE512E0CF6C512002EA959 /* XSLTUnicodeSort.h in Headers */,
 				977E2E0F12F0FC9C00C13379 /* XSSAuditor.h in Headers */,
+				977E2E0F12F0FC9C00C13380 /* XSSAuditorDelegate.h in Headers */,
 				FD537353137B651800008DCE /* ZeroPole.h in Headers */,
-				FB91392416AE4C17001FE682 /* DOMPath.h in Headers */,
-				FB91392616AE4C2F001FE682 /* CanvasPathMethods.h in Headers */,
-				FB91392A16AE4FC0001FE682 /* JSDOMPath.h in Headers */,
-				2E07753416B1BD4C004D9936 /* MicroDataAttributeTokenList.h in Headers */,
-				2919A1E916B3376600787213 /* ContentFilter.h in Headers */,
-				97DC69ED16B9F52C008CFD6F /* BackgroundHTMLInputStream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -26733,6 +26750,7 @@
 				29A8124B0FBB9CA900510293 /* AXObjectCacheMac.mm in Sources */,
 				BCA8C81F11E3D36900812FB7 /* BackForwardController.cpp in Sources */,
 				BCA8CA5F11E4E6D100812FB7 /* BackForwardListImpl.cpp in Sources */,
+				97DC69EC16B9F529008CFD6F /* BackgroundHTMLInputStream.cpp in Sources */,
 				979DC03916A7993900807794 /* BackgroundHTMLParser.cpp in Sources */,
 				BC124EE70C2641CD009E2349 /* BarInfo.cpp in Sources */,
 				379E61C9126CA5C300B63E8D /* BaseButtonInputType.cpp in Sources */,
@@ -26792,6 +26810,7 @@
 				B1827493134CA4C100B98C2D /* CallbackFunction.cpp in Sources */,
 				6E4E91AC10F7FB3100A2779C /* CanvasContextAttributes.cpp in Sources */,
 				49484FC1102CF23C00187DD3 /* CanvasGradient.cpp in Sources */,
+				FB91392716AE4C34001FE682 /* CanvasPathMethods.cpp in Sources */,
 				49484FC4102CF23C00187DD3 /* CanvasPattern.cpp in Sources */,
 				49484FC4102CF23C00188DD3 /* CanvasProxy.cpp in Sources */,
 				49C7B9DC1042D32F0009D447 /* CanvasRenderingContext.cpp in Sources */,
@@ -26840,6 +26859,7 @@
 				A7A78CD51532BA62006C21E4 /* ContainerNodeAlgorithms.cpp in Sources */,
 				BC5EB9800E82072500B25965 /* ContentData.cpp in Sources */,
 				57B791A314C6A62900F202D1 /* ContentDistributor.cpp in Sources */,
+				2919A1EB16B3378900787213 /* ContentFilterMac.mm in Sources */,
 				59102FBB14327D3B003C9D04 /* ContentSearchUtils.cpp in Sources */,
 				97C471DB12F925BD0086354B /* ContentSecurityPolicy.cpp in Sources */,
 				57B791A514C6A62900F202D1 /* ContentSelectorQuery.cpp in Sources */,
@@ -26878,6 +26898,7 @@
 				BCEA478F097CAAC80094C9E4 /* CSSComputedStyleDeclaration.cpp in Sources */,
 				2D8FEBDC143E3EF70072502B /* CSSCrossfadeValue.cpp in Sources */,
 				AA21ECCA0ABF0FBA002B834C /* CSSCursorImageValue.cpp in Sources */,
+				4A9CC81716BB9AC600EC645A /* CSSDefaultStyleSheets.cpp in Sources */,
 				BC64B4D50CB4298A005F2B62 /* CSSFontFace.cpp in Sources */,
 				A80E6CE70A1989CA007FB8C5 /* CSSFontFaceRule.cpp in Sources */,
 				BC64B4D70CB4298A005F2B62 /* CSSFontFaceSource.cpp in Sources */,
@@ -27746,6 +27767,7 @@
 				1C81B95B0E97330800266E07 /* InspectorController.cpp in Sources */,
 				F325A40A14EE36FA007324E2 /* InspectorCounters.cpp in Sources */,
 				82AB1743124B99EC00C5069D /* InspectorCSSAgent.cpp in Sources */,
+				4A9CC82016BF9BB400EC645A /* InspectorCSSOMWrappers.cpp in Sources */,
 				7AB0B1C01211A62200A76940 /* InspectorDatabaseAgent.cpp in Sources */,
 				41F062150F5F192600A07EAC /* InspectorDatabaseResource.cpp in Sources */,
 				F33F053D120B0DA500E5743A /* InspectorDebuggerAgent.cpp in Sources */,
@@ -27901,6 +27923,7 @@
 				A9C6E6470D7465CA006442E9 /* JSDOMMimeTypeArrayCustom.cpp in Sources */,
 				52CCA9E215E3F62C0053C77F /* JSDOMNamedFlowCollection.cpp in Sources */,
 				1ACE53DF0A8D18810022947D /* JSDOMParser.cpp in Sources */,
+				FB91392B16AE4FC0001FE682 /* JSDOMPath.cpp in Sources */,
 				A9D247FE0D757E6900FDF959 /* JSDOMPlugin.cpp in Sources */,
 				A9D248000D757E6900FDF959 /* JSDOMPluginArray.cpp in Sources */,
 				A9C6E64C0D7465E7006442E9 /* JSDOMPluginArrayCustom.cpp in Sources */,
@@ -28127,7 +28150,6 @@
 				A9D247F70D757E3400FDF959 /* JSNavigator.cpp in Sources */,
 				14DC0D3709FED073007B0235 /* JSNode.cpp in Sources */,
 				BCD9C2640C17AA67005C90A2 /* JSNodeCustom.cpp in Sources */,
-				1AB09DB416AF5F6C008538E7 /* StorageStrategy.cpp in Sources */,
 				14115B7209F84CD600CA4FC1 /* JSNodeFilter.cpp in Sources */,
 				BCB773610C17853D00132BA4 /* JSNodeFilterCondition.cpp in Sources */,
 				BCB773630C17853D00132BA4 /* JSNodeFilterCustom.cpp in Sources */,
@@ -28545,6 +28567,7 @@
 				A78E526F1346BD1700AD9C31 /* MeterShadowElement.cpp in Sources */,
 				37DDCDA41384501C0008B793 /* MHTMLArchive.cpp in Sources */,
 				37DDCDA61384501C0008B793 /* MHTMLParser.cpp in Sources */,
+				2E07753116B1BD13004D9936 /* MicroDataAttributeTokenList.cpp in Sources */,
 				9B375EDA14478A0100F3CAE5 /* MicroDataItemList.cpp in Sources */,
 				9B2B7AC11509850A008932CC /* MicroDataItemValue.cpp in Sources */,
 				37DDCD9413844FD50008B793 /* MIMEHeader.cpp in Sources */,
@@ -29008,6 +29031,7 @@
 				51E0BB390DA5ACB600A9E417 /* StorageMap.cpp in Sources */,
 				C50D0E820FF4272900AC2644 /* StorageNamespace.cpp in Sources */,
 				C55E38C010040D5D00A56BDB /* StorageNamespaceImpl.cpp in Sources */,
+				1AB09DB416AF5F6C008538E7 /* StorageStrategy.cpp in Sources */,
 				C5102D950FD9AA2D00FAFF04 /* StorageSyncManager.cpp in Sources */,
 				511F23170DC160DA004F0032 /* StorageTask.cpp in Sources */,
 				511F23190DC160DA004F0032 /* StorageThread.cpp in Sources */,
@@ -29293,8 +29317,8 @@
 				49E911CF0EF86D47009D0CAF /* TransformOperations.cpp in Sources */,
 				5DB1BC6B10715A6400EFAA49 /* TransformSourceLibxslt.cpp in Sources */,
 				4945BFD313CF809000CC3B38 /* TransformState.cpp in Sources */,
-				49E911D10EF86D47009D0CAF /* TranslateTransformOperation.cpp in Sources */,
 				E17B491516A9B094001C8839 /* TransitionEvent.cpp in Sources */,
+				49E911D10EF86D47009D0CAF /* TranslateTransformOperation.cpp in Sources */,
 				854FE7360A2297BE0058D7AD /* Traversal.cpp in Sources */,
 				14D64B5C134A5B6B00E58FDA /* TreeScope.cpp in Sources */,
 				A77E1FEF14AACB6E005B7CB6 /* TreeScopeAdopter.cpp in Sources */,
@@ -29471,12 +29495,8 @@
 				93F19B0508245E59001E9ABC /* XSLTProcessorLibxslt.cpp in Sources */,
 				E1BE512D0CF6C512002EA959 /* XSLTUnicodeSort.cpp in Sources */,
 				977E2E0E12F0FC9C00C13379 /* XSSAuditor.cpp in Sources */,
+				977E2E0E12F0FC9C00C13380 /* XSSAuditorDelegate.cpp in Sources */,
 				FD537352137B651800008DCE /* ZeroPole.cpp in Sources */,
-				FB91392716AE4C34001FE682 /* CanvasPathMethods.cpp in Sources */,
-				FB91392B16AE4FC0001FE682 /* JSDOMPath.cpp in Sources */,
-				2E07753116B1BD13004D9936 /* MicroDataAttributeTokenList.cpp in Sources */,
-				2919A1EB16B3378900787213 /* ContentFilterMac.mm in Sources */,
-				97DC69EC16B9F529008CFD6F /* BackgroundHTMLInputStream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

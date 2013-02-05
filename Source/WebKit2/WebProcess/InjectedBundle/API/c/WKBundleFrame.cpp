@@ -96,29 +96,14 @@ WKArrayRef WKBundleFrameCopyChildFrames(WKBundleFrameRef frameRef)
     return toAPI(toImpl(frameRef)->childFrames().leakRef());    
 }
 
-unsigned WKBundleFrameGetNumberOfActiveAnimations(WKBundleFrameRef frameRef)
-{
-    return toImpl(frameRef)->numberOfActiveAnimations();
-}
-
 bool WKBundleFramePauseAnimationOnElementWithId(WKBundleFrameRef frameRef, WKStringRef animationName, WKStringRef elementID, double time)
 {
-    return toImpl(frameRef)->pauseAnimationOnElementWithId(toWTFString(animationName), toWTFString(elementID), time);
+    return toImpl(frameRef)->pauseAnimationOnElementWithId(AtomicString(toWTFString(animationName)), toWTFString(elementID), time);
 }
 
 bool WKBundleFramePauseTransitionOnElementWithId(WKBundleFrameRef frameRef, WKStringRef propertyName, WKStringRef elementID, double time)
 {
     return toImpl(frameRef)->pauseTransitionOnElementWithId(toWTFString(propertyName), toWTFString(elementID), time);
-}
-
-void WKBundleFrameSuspendAnimations(WKBundleFrameRef frameRef)
-{
-    toImpl(frameRef)->suspendAnimations();
-}
-
-void WKBundleFrameResumeAnimations(WKBundleFrameRef frameRef)
-{
-    toImpl(frameRef)->resumeAnimations();
 }
 
 JSGlobalContextRef WKBundleFrameGetJavaScriptContext(WKBundleFrameRef frameRef)

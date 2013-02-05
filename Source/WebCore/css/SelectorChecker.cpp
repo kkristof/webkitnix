@@ -819,7 +819,13 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             break;
         case CSSSelector::PseudoLang:
             {
-                AtomicString value = element->computeInheritedLanguage();
+                AtomicString value;
+#if ENABLE(VIDEO_TRACK)
+                if (element->isWebVTTElement())
+                    value = element->getAttribute(langAttr);
+                else
+#endif
+                    value = element->computeInheritedLanguage();
                 const AtomicString& argument = selector->argument();
                 if (value.isEmpty() || !value.startsWith(argument, false))
                     break;
@@ -869,9 +875,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             return element->isOutOfRange();
 #if ENABLE(VIDEO_TRACK)
         case CSSSelector::PseudoFutureCue:
-            return (element->isWebVTTElement() && toWebVTTElement(element)->webVTTNodeType() == WebVTTNodeTypeFuture);
+            return (element->isWebVTTElement() && !toWebVTTElement(element)->isPastNode());
         case CSSSelector::PseudoPastCue:
-            return (element->isWebVTTElement() && toWebVTTElement(element)->webVTTNodeType() == WebVTTNodeTypePast);
+            return (element->isWebVTTElement() && toWebVTTElement(element)->isPastNode());
 #endif
 
         case CSSSelector::PseudoHorizontal:

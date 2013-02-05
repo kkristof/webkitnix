@@ -132,10 +132,8 @@ public:
     void display();
 
     // Animation testing.
-    unsigned numberOfActiveAnimations() const;
     bool pauseAnimationAtTimeOnElementWithId(JSStringRef animationName, double time, JSStringRef elementId);
     bool pauseTransitionAtTimeOnElementWithId(JSStringRef propertyName, double time, JSStringRef elementId);
-    void suspendAnimations();
     
     // UserContent testing.
     void addUserScript(JSStringRef source, bool runAtStart, bool allFrames);
@@ -244,10 +242,6 @@ public:
     void callSetBackingScaleFactorCallback();
 
     void overridePreference(JSStringRef preference, JSStringRef value);
-
-    // Web intents testing.
-    void sendWebIntentResponse(JSStringRef reply);
-    void deliverWebIntent(JSStringRef action, JSStringRef type, JSStringRef data);
 
     // Cookies testing
     void setAlwaysAcceptCookies(bool);

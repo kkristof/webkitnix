@@ -62,13 +62,8 @@ typedef struct OpaqueNIXView* NIXView;
 typedef NIXView PlatformWKView;
 typedef int PlatformWindow;
 #elif PLATFORM(EFL)
-#if USE(EO)
-typedef struct _Eo Evas_Object;
-#else
-typedef struct _Evas_Object Evas_Object;
-#endif
 typedef struct _Ecore_Evas Ecore_Evas;
-typedef Evas_Object* PlatformWKView;
+typedef WKViewRef PlatformWKView;
 typedef Ecore_Evas* PlatformWindow;
 #endif
 

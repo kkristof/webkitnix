@@ -31,12 +31,9 @@
 #include "CoordinatedLayerTreeHost.h"
 
 #include "CoordinatedGraphicsArgumentCoders.h"
-#include "CoordinatedGraphicsLayer.h"
 #include "CoordinatedLayerTreeHostProxyMessages.h"
 #include "DrawingAreaImpl.h"
 #include "GraphicsContext.h"
-#include "MessageID.h"
-#include "SurfaceUpdateInfo.h"
 #include "WebCoordinatedSurface.h"
 #include "WebCoreArgumentCoders.h"
 #include "WebPage.h"
@@ -51,6 +48,7 @@
 #include <WebCore/RenderLayerCompositor.h>
 #include <WebCore/RenderView.h>
 #include <WebCore/Settings.h>
+#include <WebCore/SurfaceUpdateInfo.h>
 #include <WebCore/TextureMapperPlatformLayer.h>
 #include <wtf/TemporaryChange.h>
 
@@ -439,6 +437,7 @@ void CoordinatedLayerTreeHost::checkCustomFilterProgramProxies(const FilterOpera
 
         if (!customFilterProgramProxy->client()) {
             customFilterProgramProxy->setClient(this);
+            m_customFilterPrograms.add(customFilterProgramProxy.get());
             m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::CreateCustomFilterProgram(customFilterProgramProxy->id(), customOperation->validatedProgram()->validatedProgramInfo()));
         } else {
             // If the client was not disconnected then this coordinator must be the client for it.
@@ -712,13 +711,13 @@ bool LayerTreeHost::supportsAcceleratedCompositing()
     return true;
 }
 
-void CoordinatedLayerTreeHost::createTile(CoordinatedLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
+void CoordinatedLayerTreeHost::createTile(CoordinatedLayerID layerID, uint32_t tileID, const WebCore::SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::CreateTileForLayer(layerID, tileID, tileRect, updateInfo));
 }
 
-void CoordinatedLayerTreeHost::updateTile(CoordinatedLayerID layerID, uint32_t tileID, const SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
+void CoordinatedLayerTreeHost::updateTile(CoordinatedLayerID layerID, uint32_t tileID, const WebCore::SurfaceUpdateInfo& updateInfo, const WebCore::IntRect& tileRect)
 {
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::UpdateTileForLayer(layerID, tileID, tileRect, updateInfo));

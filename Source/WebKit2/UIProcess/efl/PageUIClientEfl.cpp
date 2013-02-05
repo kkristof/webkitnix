@@ -72,6 +72,7 @@ PageUIClientEfl::PageUIClientEfl(EwkView* view)
     uiClient.setIsResizable = setIsResizable;
     uiClient.getWindowFrame = getWindowFrame;
     uiClient.setWindowFrame = setWindowFrame;
+    uiClient.runBeforeUnloadConfirmPanel = runBeforeUnloadConfirmPanel;
 #if ENABLE(SQL_DATABASE)
     uiClient.exceededDatabaseQuota = exceededDatabaseQuota;
 #endif
@@ -189,6 +190,11 @@ void PageUIClientEfl::setWindowFrame(WKPageRef, WKRect frame, const void* client
     toPageUIClientEfl(clientInfo)->m_view->setWindowGeometry(frame);
 }
 
+bool PageUIClientEfl::runBeforeUnloadConfirmPanel(WKPageRef, WKStringRef message, WKFrameRef, const void* clientInfo)
+{
+    return toPageUIClientEfl(clientInfo)->m_view->requestJSConfirmPopup(WKEinaSharedString(message));
+}
+
 #if ENABLE(SQL_DATABASE)
 unsigned long long PageUIClientEfl::exceededDatabaseQuota(WKPageRef, WKFrameRef, WKSecurityOriginRef, WKStringRef databaseName, WKStringRef displayName, unsigned long long currentQuota, unsigned long long currentOriginUsage, unsigned long long currentDatabaseUsage, unsigned long long expectedUsage, const void* clientInfo)
 {
@@ -200,7 +206,7 @@ unsigned long long PageUIClientEfl::exceededDatabaseQuota(WKPageRef, WKFrameRef,
 void PageUIClientEfl::runOpenPanel(WKPageRef, WKFrameRef, WKOpenPanelParametersRef parameters, WKOpenPanelResultListenerRef listener, const void* clientInfo)
 {
     EwkView* view = toPageUIClientEfl(clientInfo)->m_view;
-    RefPtr<EwkFileChooserRequest> fileChooserRequest = EwkFileChooserRequest::create(toImpl(parameters), toImpl(listener));
+    RefPtr<EwkFileChooserRequest> fileChooserRequest = EwkFileChooserRequest::create(parameters, listener);
     view->smartCallback<FileChooserRequest>().call(fileChooserRequest.get());
 }
 

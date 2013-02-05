@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -132,7 +132,9 @@ public:
     // Sends the message to WebProcess or NetworkProcess as approporiate for current process model.
     template<typename U> void sendToNetworkingProcess(const U& message);
     template<typename U> void sendToNetworkingProcessRelaunchingIfNecessary(const U& message);
-    
+
+    void processWillOpenConnection(WebProcessProxy*);
+    void processWillCloseConnection(WebProcessProxy*);
     void processDidFinishLaunching(WebProcessProxy*);
 
     // Disconnect the process from the context.
@@ -422,9 +424,9 @@ private:
     RefPtr<WebPluginSiteDataManager> m_pluginSiteDataManager;
 #endif
 
-    StorageManager m_storageManager;
+    RefPtr<StorageManager> m_storageManager;
 
-    typedef HashMap<AtomicString, RefPtr<WebContextSupplement> > WebContextSupplementMap;
+    typedef HashMap<const char*, RefPtr<WebContextSupplement>, PtrHash<const char*> > WebContextSupplementMap;
     WebContextSupplementMap m_supplements;
 
 #if USE(SOUP)

@@ -51,7 +51,7 @@
       'ENABLE_CSS_IMAGE_RESOLUTION=0',
       'ENABLE_CSS_REGIONS=1',
       'ENABLE_CSS_SHADERS=1',
-      'ENABLE_CSS_TRANSFORMS_ANIMATIONS_TRANSITIONS_UNPREFIXED=0',
+      'ENABLE_CSS_TRANSFORMS_ANIMATIONS_UNPREFIXED=0',
       'ENABLE_CSS_VARIABLES=1',
       'ENABLE_CSS_STICKY_POSITION=1',
       'ENABLE_CUSTOM_SCHEME_HANDLER=0',
@@ -130,7 +130,6 @@
       'ENABLE_VIDEO_TRACK=1',
       'ENABLE_VIEWPORT=1',
       'ENABLE_WEBGL=1',
-      'ENABLE_WEB_INTENTS=1',
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WEB_TIMING=1',
       'ENABLE_WORKERS=1',
@@ -164,7 +163,6 @@
     'conditions': [
       ['OS=="android"', {
         'feature_defines': [
-          'ENABLE_ACCELERATED_OVERFLOW_SCROLLING=1',
           'ENABLE_CALENDAR_PICKER=0',
           'ENABLE_DATALIST_ELEMENT=0',
           'ENABLE_FAST_MOBILE_SCROLLING=1',
@@ -187,7 +185,6 @@
         'enable_touch_icon_loading': 1,
       }, { # OS!="android"
         'feature_defines': [
-          'ENABLE_ACCELERATED_OVERFLOW_SCROLLING=0',
           'ENABLE_CALENDAR_PICKER=1',
           'ENABLE_DATALIST_ELEMENT=1',
           'ENABLE_INPUT_SPEECH=1',
@@ -204,7 +201,7 @@
           'ENABLE_WEB_AUDIO=1',
         ],
       }],
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="mac"', {
         'feature_defines': [
           'ENABLE_BINDING_INTEGRITY=1',
         ],

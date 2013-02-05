@@ -406,6 +406,42 @@ bool Internals::hasSelectorForPseudoClassInShadow(Element* host, const String& p
     return false;
 }
 
+unsigned Internals::numberOfActiveAnimations() const
+{
+    Frame* contextFrame = frame();
+    if (AnimationController* controller = contextFrame->animation())
+        return controller->numberOfActiveAnimations(contextFrame->document());
+    return 0;
+}
+
+void Internals::suspendAnimations(Document* document, ExceptionCode& ec) const
+{
+    if (!document || !document->frame()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+    AnimationController* controller = document->frame()->animation();
+    if (!controller)
+        return;
+
+    controller->suspendAnimations();
+}
+
+void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
+{
+    if (!document || !document->frame()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+    AnimationController* controller = document->frame()->animation();
+    if (!controller)
+        return;
+
+    controller->resumeAnimations();
+}
+
 bool Internals::pauseAnimationAtTimeOnPseudoElement(const String& animationName, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
 {
     if (!element || pauseTime < 0) {
@@ -424,7 +460,7 @@ bool Internals::pauseAnimationAtTimeOnPseudoElement(const String& animationName,
         return false;
     }
 
-    return frame()->animation()->pauseAnimationAtTime(pseudoElement->renderer(), animationName, pauseTime);
+    return frame()->animation()->pauseAnimationAtTime(pseudoElement->renderer(), AtomicString(animationName), pauseTime);
 }
 
 bool Internals::pauseTransitionAtTimeOnPseudoElement(const String& property, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
@@ -1500,34 +1536,6 @@ bool Internals::isPageBoxVisible(Document* document, int pageNumber, ExceptionCo
     }
 
     return document->isPageBoxVisible(pageNumber);
-}
-
-void Internals::suspendAnimations(Document* document, ExceptionCode& ec) const
-{
-    if (!document || !document->frame()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    AnimationController* controller = document->frame()->animation();
-    if (!controller)
-        return;
-
-    controller->suspendAnimations();
-}
-
-void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
-{
-    if (!document || !document->frame()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    AnimationController* controller = document->frame()->animation();
-    if (!controller)
-        return;
-
-    controller->resumeAnimations();
 }
 
 String Internals::layerTreeAsText(Document* document, ExceptionCode& ec) const

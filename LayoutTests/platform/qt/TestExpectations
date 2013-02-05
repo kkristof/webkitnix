@@ -90,6 +90,10 @@ fast/forms/input-in-table-cell-no-value.html
 # ENABLE_GAMEPAD not enabled.
 gamepad/
 
+# Remove from list after enabling CANVAS_PATH
+fast/canvas/canvas-currentPath.html
+fast/canvas/canvas-path-constructors.html
+
 # ENABLE(INPUT_SPEECH) is disabled.
 fast/speech
 
@@ -118,6 +122,7 @@ http/tests/security/cross-origin-indexeddb-allowed.html
 http/tests/security/cross-origin-indexeddb.html
 http/tests/security/cross-origin-worker-indexeddb-allowed.html
 http/tests/security/cross-origin-worker-indexeddb.html
+http/tests/security/no-indexeddb-from-sandbox.html
 
 inspector/timeline/timeline-animation-frame.html
 
@@ -286,6 +291,10 @@ inspector/debugger/live-edit-breakpoints.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=89652
 inspector/debugger/debugger-compile-and-run.html
+
+# [Qt] New inspector-protocol/page/javascriptDialogEvents.html started to fail r141555.
+# https://bugs.webkit.org/show_bug.cgi?id=108609
+inspector-protocol/page/javascriptDialogEvents.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=53003
 http/tests/inspector/compiler-source-mapping-debug.html
@@ -1192,6 +1201,8 @@ css3/filters/custom/effect-custom-parameters.html
 css3/filters/custom/filter-repaint-custom-clipped.html
 css3/filters/custom/filter-repaint-custom-rotated.html
 css3/filters/custom/filter-repaint-custom.html
+css3/filters/custom-with-at-rule-syntax/parsing-custom-function-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-custom-function-valid.html
 
 # The following tests need further investigation:
 # https://bugs.webkit.org/show_bug.cgi?id=101531
@@ -1208,6 +1219,9 @@ css3/filters/custom/custom-filter-array-blending.html
 # https://bugs.webkit.org/show_bug.cgi?id=100072
 fast/canvas/canvas-blend-image.html
 fast/canvas/canvas-blend-solid.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=107118
+fast/canvas/canvas-quadratic-same-endpoint.html
 
 # ReferenceError: Can't find variable: MediaKeyError
 # http://trac.webkit.org/changeset/114067
@@ -1337,12 +1351,13 @@ svg/animations/animate-elem-08-t-drt.html
 # https://bugs.webkit.org/show_bug.cgi?id=82601
 fast/repaint/moving-shadow-on-container.html
 fast/repaint/moving-shadow-on-path.html
+ietestcenter/css3/valuesandunits/units-010.htm
+inspector/audits/audits-panel-functional.html
 svg/W3C-SVG-1.1/paths-data-03-f.svg
 svg/css/stars-with-shadow.html
 svg/custom/use-on-symbol-inside-pattern.svg
 svg/batik/text/longTextOnPath.svg
 svg/carto.net/tabgroup.svg
-ietestcenter/css3/valuesandunits/units-010.htm
 
 # [Qt] New inspector/console/console-filter-test.html fails on 32bit since r141269.
 # https://bugs.webkit.org/show_bug.cgi?id=108481
@@ -2431,6 +2446,9 @@ webkit.org/b/99870 svg/custom/pattern-with-transformation.svg [ Pass ImageOnlyFa
 webkit.org/b/99870 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 webkit.org/b/99870 svg/custom/pattern-scaling.svg [ Pass ImageOnlyFailure Missing ]
 
+# Needs a rebaseline after WK108429 lands.
+webkit.org/b/108429 svg/custom/text-ctm.svg [ Pass Failure ]
+
 # Disable webaudio codec tests, including proprietary codecs.
 webkit.org/b/88794 webaudio/codec-tests
 
@@ -2606,3 +2624,9 @@ webkit.org/b/107567 css2.1/t0505-c16-descendant-01-e.html [ Failure ]
 webkit.org/b/107567 tables/mozilla/bugs/bug1188.html [ Failure ] 
 webkit.org/b/107567 editing/selection/extend-by-sentence-001.html [ Failure ] 
 webkit.org/b/107567 svg/carto.net/combobox.svg [ Failure ] 
+
+# [Qt] REGRESSION(r141634) test failing
+webkit.org/b/108813 compositing/visibility/visibility-image-layers-dynamic.html [ Skip ]
+
+# [Qt] different result from other platforms
+webkit.org/b/108676 svg/custom/svg-fonts-in-text-controls.html [ Skip ]

@@ -224,6 +224,7 @@ namespace WTF {
 using WTF::fastCalloc;
 using WTF::fastFree;
 using WTF::fastMalloc;
+using WTF::fastMallocGoodSize;
 using WTF::fastMallocSize;
 using WTF::fastRealloc;
 using WTF::fastStrDup;

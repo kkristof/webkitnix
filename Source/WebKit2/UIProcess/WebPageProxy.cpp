@@ -38,7 +38,6 @@
 #include "FindIndicator.h"
 #include "ImmutableArray.h"
 #include "Logging.h"
-#include "MessageID.h"
 #include "NativeWebKeyboardEvent.h"
 #include "NativeWebMouseEvent.h"
 #include "NativeWebWheelEvent.h"
@@ -92,13 +91,6 @@
 #include <WebCore/TextCheckerClient.h>
 #include <WebCore/WindowFeatures.h>
 #include <stdio.h>
-
-#if ENABLE(WEB_INTENTS)
-#include "IntentData.h"
-#include "IntentServiceInfo.h"
-#include "WebIntentData.h"
-#include "WebIntentServiceInfo.h"
-#endif
 
 #if USE(COORDINATED_GRAPHICS)
 #include "CoordinatedLayerTreeHostProxyMessages.h"
@@ -1229,6 +1221,32 @@ void WebPageProxy::handleKeyboardEvent(const NativeWebKeyboardEvent& event)
         m_process->send(Messages::WebPage::KeyEvent(event), m_pageID);
 }
 
+#if ENABLE(NETSCAPE_PLUGIN_API)
+void WebPageProxy::getPluginPath(const String& mimeType, const String& urlString, String& pluginPath, uint32_t& pluginLoadPolicy)
+{
+    MESSAGE_CHECK_URL(urlString);
+
+    String newMimeType = mimeType.lower();
+
+    pluginLoadPolicy = PluginModuleLoadNormally;
+    PluginModuleInfo plugin = m_process->context()->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), urlString));
+    if (!plugin.path)
+        return;
+
+    pluginLoadPolicy = PluginInfoStore::policyForPlugin(plugin);
+    if (pluginLoadPolicy != PluginModuleLoadNormally)
+        return;
+
+#if PLATFORM(MAC)
+    pluginLoadPolicy = m_uiClient.shouldInstantiatePlugin(this, plugin.bundleIdentifier, plugin.info.name) ? PluginModuleLoadNormally : PluginModuleBlocked;
+    if (pluginLoadPolicy != PluginModuleLoadNormally)
+        return;
+#endif
+
+    pluginPath = plugin.path;
+}
+#endif // ENABLE(NETSCAPE_PLUGIN_API)
+
 #if ENABLE(GESTURE_EVENTS)
 void WebPageProxy::handleGestureEvent(const NativeWebGestureEvent& event)
 {
@@ -1825,16 +1843,6 @@ void WebPageProxy::getSourceForFrame(WebFrameProxy* frame, PassRefPtr<StringCall
     m_process->send(Messages::WebPage::GetSourceForFrame(frame->frameID(), callbackID), m_pageID);
 }
 
-#if ENABLE(WEB_INTENTS)
-void WebPageProxy::deliverIntentToFrame(WebFrameProxy* frame, WebIntentData* webIntentData)
-{
-    if (!isValid())
-        return;
-
-    m_process->send(Messages::WebPage::DeliverIntentToFrame(frame->frameID(), webIntentData->store()), m_pageID);
-}
-#endif
-
 void WebPageProxy::getContentsAsString(PassRefPtr<StringCallback> prpCallback)
 {
     RefPtr<StringCallback> callback = prpCallback;
@@ -2027,62 +2035,16 @@ void WebPageProxy::didCreateMainFrame(uint64_t frameID)
     m_process->frameCreated(frameID, m_mainFrame.get());
 }
 
-void WebPageProxy::didCreateSubframe(uint64_t frameID, uint64_t parentFrameID)
+void WebPageProxy::didCreateSubframe(uint64_t frameID)
 {
     MESSAGE_CHECK(m_mainFrame);
-
-    WebFrameProxy* parentFrame = m_process->webFrame(parentFrameID);
-    MESSAGE_CHECK(parentFrame);
-    MESSAGE_CHECK(parentFrame->isDescendantOf(m_mainFrame.get()));
-
     MESSAGE_CHECK(m_process->canCreateFrame(frameID));
     
     RefPtr<WebFrameProxy> subFrame = WebFrameProxy::create(this, frameID);
 
     // Add the frame to the process wide map.
     m_process->frameCreated(frameID, subFrame.get());
-
-    // Insert the frame into the frame hierarchy.
-    parentFrame->appendChild(subFrame.get());
 }
-
-static bool isDisconnectedFrame(WebFrameProxy* frame)
-{
-    return !frame->page() || !frame->page()->mainFrame() || !frame->isDescendantOf(frame->page()->mainFrame());
-}
-
-void WebPageProxy::didSaveFrameToPageCache(uint64_t frameID)
-{
-    MESSAGE_CHECK(m_mainFrame);
-
-    WebFrameProxy* subframe = m_process->webFrame(frameID);
-    MESSAGE_CHECK(subframe);
-
-    if (isDisconnectedFrame(subframe))
-        return;
-
-    MESSAGE_CHECK(subframe->isDescendantOf(m_mainFrame.get()));
-
-    subframe->didRemoveFromHierarchy();
-}
-
-void WebPageProxy::didRestoreFrameFromPageCache(uint64_t frameID, uint64_t parentFrameID)
-{
-    MESSAGE_CHECK(m_mainFrame);
-
-    WebFrameProxy* subframe = m_process->webFrame(frameID);
-    MESSAGE_CHECK(subframe);
-    MESSAGE_CHECK(!subframe->parentFrame());
-    MESSAGE_CHECK(subframe->page() == m_mainFrame->page());
-
-    WebFrameProxy* parentFrame = m_process->webFrame(parentFrameID);
-    MESSAGE_CHECK(parentFrame);
-    MESSAGE_CHECK(parentFrame->isDescendantOf(m_mainFrame.get()));
-
-    // Insert the frame into the frame hierarchy.
-    parentFrame->appendChild(subframe);
-}
-
 
 // Always start progress at initialProgressValue. This helps provide feedback as
 // soon as a load starts.
@@ -2116,22 +2078,6 @@ void WebPageProxy::didFinishProgress()
 
     m_loaderClient.didFinishProgress(this);
 }
-
-#if ENABLE(WEB_INTENTS_TAG)
-void WebPageProxy::registerIntentServiceForFrame(uint64_t frameID, const IntentServiceInfo& serviceInfo, CoreIPC::MessageDecoder& decoder)
-{
-    RefPtr<APIObject> userData;
-    WebContextUserMessageDecoder messageDecoder(userData, m_process.get());
-    if (!decoder.decode(messageDecoder))
-        return;
-
-    WebFrameProxy* frame = m_process->webFrame(frameID);
-    MESSAGE_CHECK(frame);
-
-    RefPtr<WebIntentServiceInfo> webIntentServiceInfo = WebIntentServiceInfo::create(serviceInfo);
-    m_loaderClient.registerIntentServiceForFrame(this, frame, webIntentServiceInfo.get(), userData.get());
-}
-#endif
 
 void WebPageProxy::didStartProvisionalLoadForFrame(uint64_t frameID, const String& url, const String& unreachableURL, CoreIPC::MessageDecoder& decoder)
 {
@@ -2376,8 +2322,6 @@ void WebPageProxy::didRemoveFrameFromHierarchy(uint64_t frameID, CoreIPC::Messag
     WebFrameProxy* frame = m_process->webFrame(frameID);
     MESSAGE_CHECK(frame);
 
-    frame->didRemoveFromHierarchy();
-
     m_loaderClient.didRemoveFrameFromHierarchy(this, frame, userData.get());
 }
 
@@ -2419,22 +2363,6 @@ void WebPageProxy::didDetectXSSForFrame(uint64_t frameID, CoreIPC::MessageDecode
 
     m_loaderClient.didDetectXSSForFrame(this, frame, userData.get());
 }
-
-#if ENABLE(WEB_INTENTS)
-void WebPageProxy::didReceiveIntentForFrame(uint64_t frameID, const IntentData& intentData, CoreIPC::MessageDecoder& decoder)
-{
-    RefPtr<APIObject> userData;
-    WebContextUserMessageDecoder messageDecoder(userData, m_process.get());
-    if (!decoder.decode(messageDecoder))
-        return;
-
-    WebFrameProxy* frame = m_process->webFrame(frameID);
-    MESSAGE_CHECK(frame);
-
-    RefPtr<WebIntentData> webIntentData = WebIntentData::create(intentData, m_process.get());
-    m_loaderClient.didReceiveIntentForFrame(this, frame, webIntentData.get(), userData.get());
-}
-#endif
 
 void WebPageProxy::frameDidBecomeFrameSet(uint64_t frameID, bool value)
 {

@@ -40,6 +40,7 @@ namespace WebCore {
 
 DOMDataStore::DOMDataStore(Type type)
     : m_type(type)
+    , m_wrapperMap(v8::Isolate::GetCurrent()) // FIXME Don't call GetCurrent twice.
 {
     V8PerIsolateData::current()->registerDOMDataStore(this);
 }
@@ -76,10 +77,10 @@ DOMDataStore* DOMDataStore::current(v8::Isolate* isolate)
 void DOMDataStore::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Binding);
-    info.addMember(m_wrapperMap);
+    info.addMember(m_wrapperMap, "wrapperMap");
 }
 
-void DOMDataStore::weakCallback(v8::Persistent<v8::Value> value, void* context)
+void DOMDataStore::weakCallback(v8::Isolate* isolate, v8::Persistent<v8::Value> value, void* context)
 {
     ScriptWrappable* key = static_cast<ScriptWrappable*>(context);
     ASSERT(value->IsObject());

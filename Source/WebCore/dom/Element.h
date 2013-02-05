@@ -345,7 +345,7 @@ public:
     virtual const QualifiedName& imageSourceAttributeName() const;
     virtual String target() const { return String(); }
 
-    virtual void focus(bool restorePreviousSelection = true);
+    virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
 
@@ -617,13 +617,13 @@ private:
     
 inline Element* toElement(Node* node)
 {
-    ASSERT(!node || node->isElementNode());
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isElementNode());
     return static_cast<Element*>(node);
 }
 
 inline const Element* toElement(const Node* node)
 {
-    ASSERT(!node || node->isElementNode());
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isElementNode());
     return static_cast<const Element*>(node);
 }
 
@@ -859,7 +859,7 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
     ASSERT(insertionPoint->inDocument() || isContainerNode());
     if (insertionPoint->inDocument())
         setFlag(InDocumentFlag);
-    if (parentOrHostNode()->isInShadowTree())
+    if (parentOrShadowHostNode()->isInShadowTree())
         setFlag(IsInShadowTreeFlag);
     return InsertionDone;
 }

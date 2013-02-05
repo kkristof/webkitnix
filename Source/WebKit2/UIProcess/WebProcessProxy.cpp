@@ -89,10 +89,10 @@ static WebProcessProxy::WebPageProxyMap& globalPageMap()
 }
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
-static WorkQueue& pluginWorkQueue()
+static WorkQueue* pluginWorkQueue()
 {
-    DEFINE_STATIC_LOCAL(WorkQueue, queue, ("com.apple.CoreIPC.PluginQueue"));
-    return queue;
+    static WorkQueue* pluginWorkQueue = WorkQueue::create("com.apple.WebKit.PluginQueue").leakRef();
+    return pluginWorkQueue;
 }
 #endif // ENABLE(NETSCAPE_PLUGIN_API)
 
@@ -102,8 +102,7 @@ PassRefPtr<WebProcessProxy> WebProcessProxy::create(PassRefPtr<WebContext> conte
 }
 
 WebProcessProxy::WebProcessProxy(PassRefPtr<WebContext> context)
-    : ChildProcessProxy(this)
-    , m_responsivenessTimer(this)
+    : m_responsivenessTimer(this)
     , m_context(context)
     , m_mayHaveUniversalFileReadSandboxExtension(false)
 #if ENABLE(CUSTOM_PROTOCOLS)
@@ -126,6 +125,22 @@ void WebProcessProxy::getLaunchOptions(ProcessLauncher::LaunchOptions& launchOpt
 {
     launchOptions.processType = ProcessLauncher::WebProcess;
     platformGetLaunchOptions(launchOptions);
+}
+
+void WebProcessProxy::connectionWillOpen(CoreIPC::Connection* connection)
+{
+    ASSERT(this->connection() == connection);
+
+    m_context->processWillOpenConnection(this);
+    connection->addQueueClient(this);
+}
+
+void WebProcessProxy::connectionWillClose(CoreIPC::Connection* connection)
+{
+    ASSERT(this->connection() == connection);
+
+    m_context->processWillCloseConnection(this);
+    connection->removeQueueClient(this);
 }
 
 void WebProcessProxy::disconnect()
@@ -213,16 +228,6 @@ Vector<WebPageProxy*> WebProcessProxy::pages() const
     copyValuesToVector(m_pageMap, result);
     return result;
 }
-
-#if ENABLE(WEB_INTENTS)
-void WebProcessProxy::removeMessagePortChannel(uint64_t channelID)
-{
-    if (!isValid())
-        return;
-
-    send(Messages::WebProcess::RemoveMessagePortChannel(channelID), /* destinationID */ 0);
-}
-#endif
 
 WebBackForwardListItem* WebProcessProxy::webBackForwardItem(uint64_t itemID) const
 {
@@ -358,26 +363,9 @@ void WebProcessProxy::handleGetPlugins(uint64_t requestID, bool refresh)
 
 void WebProcessProxy::getPlugins(CoreIPC::Connection*, uint64_t requestID, bool refresh)
 {
-    pluginWorkQueue().dispatch(bind(&WebProcessProxy::handleGetPlugins, this, requestID, refresh));
+    pluginWorkQueue()->dispatch(bind(&WebProcessProxy::handleGetPlugins, this, requestID, refresh));
 }
 
-void WebProcessProxy::getPluginPath(const String& mimeType, const String& urlString, String& pluginPath, uint32_t& pluginLoadPolicy)
-{
-    MESSAGE_CHECK_URL(urlString);
-
-    String newMimeType = mimeType.lower();
-
-    pluginLoadPolicy = PluginModuleLoadNormally;
-    PluginModuleInfo plugin = m_context->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), urlString));
-    if (!plugin.path)
-        return;
-
-    pluginLoadPolicy = PluginInfoStore::policyForPlugin(plugin);
-    if (pluginLoadPolicy != PluginModuleLoadNormally)
-        return;
-
-    pluginPath = plugin.path;
-}
 #endif // ENABLE(NETSCAPE_PLUGIN_API)
 
 #if ENABLE(PLUGIN_PROCESS)
@@ -473,10 +461,16 @@ void WebProcessProxy::didReceiveSyncMessage(CoreIPC::Connection* connection, Cor
     pageProxy->didReceiveSyncMessage(connection, decoder, replyEncoder);
 }
 
-void WebProcessProxy::didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection* connection, CoreIPC::MessageDecoder& decoder, bool& didHandleMessage)
+void WebProcessProxy::didReceiveMessageOnConnectionWorkQueue(CoreIPC::Connection* connection, OwnPtr<CoreIPC::MessageDecoder>& decoder)
 {
-    if (decoder.messageReceiverName() == Messages::WebProcessProxy::messageReceiverName())
-        didReceiveWebProcessProxyMessageOnConnectionWorkQueue(connection, decoder, didHandleMessage);
+    if (decoder->messageReceiverName() == Messages::WebProcessProxy::messageReceiverName()) {
+        didReceiveWebProcessProxyMessageOnConnectionWorkQueue(connection, decoder);
+        return;
+    }
+}
+
+void WebProcessProxy::didCloseOnConnectionWorkQueue(CoreIPC::Connection*)
+{
 }
 
 void WebProcessProxy::didClose(CoreIPC::Connection*)
@@ -543,7 +537,6 @@ void WebProcessProxy::didFinishLaunching(ProcessLauncher* launcher, CoreIPC::Con
 
     m_webConnection = WebConnectionToWebProcess::create(this);
 
-    // Tell the context that we finished launching.
     m_context->processDidFinishLaunching(this);
 
 #if PLATFORM(MAC)

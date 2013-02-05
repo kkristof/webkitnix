@@ -453,19 +453,19 @@ extern "C" WTF_EXPORT_PRIVATE const int jscore_fastmalloc_introspection = 0;
 #include <wtf/Vector.h>
 #endif
 
-#if HAVE(HEADER_DETECTION_H)
-#include "HeaderDetection.h"
-#endif
-
 #if HAVE(DISPATCH_H)
 #include <dispatch/dispatch.h>
 #endif
 
-#if HAVE(PTHREAD_MACHDEP_H)
+#ifdef __has_include
+#if __has_include(<System/pthread_machdep.h>)
+
 #include <System/pthread_machdep.h>
 
 #if defined(__PTK_FRAMEWORK_JAVASCRIPTCORE_KEY0)
 #define WTF_USE_PTHREAD_GETSPECIFIC_DIRECT 1
+#endif
+
 #endif
 #endif
 
@@ -1034,11 +1034,6 @@ static size_t AllocationSize(size_t bytes) {
     // Small object: find the size class to which it belongs
     return ByteSizeForClass(SizeClass(bytes));
   }
-}
-
-size_t fastMallocGoodSize(size_t bytes)
-{
-    return AllocationSize(bytes);
 }
 
 // Information kept for a span (a contiguous run of pages).
@@ -2570,6 +2565,13 @@ static inline TCMalloc_PageHeap* getPageHeap()
 }
 
 #define pageheap getPageHeap()
+
+size_t fastMallocGoodSize(size_t bytes)
+{
+    if (!phinited)
+        TCMalloc_ThreadCache::InitModule();
+    return AllocationSize(bytes);
+}
 
 #if USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY
 

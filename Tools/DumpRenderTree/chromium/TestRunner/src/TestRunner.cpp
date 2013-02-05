@@ -153,11 +153,9 @@ void TestRunner::WorkQueue::addWork(WorkItem* work)
 
 TestRunner::TestRunner()
     : m_testIsRunning(false)
-    , m_closeRemainingWindows(true)
     , m_workQueue(this)
     , m_delegate(0)
     , m_webView(0)
-    , m_topLoadingFrame(0)
     , m_intentClient(adoptPtr(new EmptyWebDeliveredIntentClient))
     , m_webPermissions(adoptPtr(new WebPermissions))
 {
@@ -187,7 +185,6 @@ TestRunner::TestRunner()
     bindMethod("pauseAnimationAtTimeOnElementWithId", &TestRunner::pauseAnimationAtTimeOnElementWithId);
     bindMethod("pauseTransitionAtTimeOnElementWithId", &TestRunner::pauseTransitionAtTimeOnElementWithId);
     bindMethod("elementDoesAutoCompleteForElementWithId", &TestRunner::elementDoesAutoCompleteForElementWithId);
-    bindMethod("numberOfActiveAnimations", &TestRunner::numberOfActiveAnimations);
     bindMethod("callShouldCloseOnWebView", &TestRunner::callShouldCloseOnWebView);
     bindMethod("setDomainRelaxationForbiddenForURLScheme", &TestRunner::setDomainRelaxationForbiddenForURLScheme);
     bindMethod("evaluateScriptInIsolatedWorldAndReturnValue", &TestRunner::evaluateScriptInIsolatedWorldAndReturnValue);
@@ -276,9 +273,11 @@ TestRunner::TestRunner()
     bindMethod("setWillSendRequestReturnsNull", &TestRunner::setWillSendRequestReturnsNull);
     bindMethod("setWillSendRequestReturnsNullOnRedirect", &TestRunner::setWillSendRequestReturnsNullOnRedirect);
 
+#if ENABLE(WEB_INTENTS)
     // The following methods interact with the WebTestProxy.
     bindMethod("sendWebIntentResponse", &TestRunner::sendWebIntentResponse);
     bindMethod("deliverWebIntent", &TestRunner::deliverWebIntent);
+#endif
 
     // The following methods interact with the WebTestDelegate.
     bindMethod("showWebInspector", &TestRunner::showWebInspector);
@@ -386,11 +385,13 @@ void TestRunner::reset()
     WebFontRendering::setSubpixelPositioning(false);
 #endif
 
-    // Reset the default quota for each origin to 5MB
-    m_delegate->setDatabaseQuota(5 * 1024 * 1024);
-    m_delegate->setDeviceScaleFactor(1);
-    m_delegate->setAcceptAllCookies(false);
-    m_delegate->setLocale("");
+    if (m_delegate) {
+        // Reset the default quota for each origin to 5MB
+        m_delegate->setDatabaseQuota(5 * 1024 * 1024);
+        m_delegate->setDeviceScaleFactor(1);
+        m_delegate->setAcceptAllCookies(false);
+        m_delegate->setLocale("");
+    }
 
     m_dumpEditingCallbacks = false;
     m_dumpAsText = false;
@@ -440,7 +441,7 @@ void TestRunner::reset()
     m_taskList.revokeAll();
     m_workQueue.reset();
 
-    if (m_closeRemainingWindows)
+    if (m_closeRemainingWindows && m_delegate)
         m_delegate->closeRemainingWindows();
     else
         m_closeRemainingWindows = true;
@@ -1103,19 +1104,6 @@ bool TestRunner::elementDoesAutoCompleteForElementWithId(const WebString& elemen
     return inputElement.autoComplete();
 }
 
-int TestRunner::numberOfActiveAnimations()
-{
-    WebFrame* webFrame = m_webView->mainFrame();
-    if (!webFrame)
-        return -1;
-
-    WebAnimationController* controller = webFrame->animationController();
-    if (!controller)
-        return -1;
-
-    return controller->numberOfActiveAnimations();
-}
-
 void TestRunner::pauseAnimationAtTimeOnElementWithId(const CppArgumentList& arguments, CppVariant* result)
 {
     result->set(false);
@@ -1146,11 +1134,6 @@ void TestRunner::elementDoesAutoCompleteForElementWithId(const CppArgumentList& 
     }
     WebString elementId = cppVariantToWebString(arguments[0]);
     result->set(elementDoesAutoCompleteForElementWithId(elementId));
-}
-
-void TestRunner::numberOfActiveAnimations(const CppArgumentList&, CppVariant* result)
-{
-    result->set(numberOfActiveAnimations());
 }
 
 void TestRunner::callShouldCloseOnWebView(const CppArgumentList&, CppVariant* result)
@@ -1742,6 +1725,7 @@ void TestRunner::setTouchDragDropEnabled(const CppArgumentList& arguments, CppVa
     result->setNull();
 }
 
+#if ENABLE(WEB_INTENTS)
 void TestRunner::sendWebIntentResponse(const CppArgumentList& arguments, CppVariant* result)
 {
     v8::HandleScope scope;
@@ -1783,6 +1767,7 @@ void TestRunner::deliverWebIntent(const CppArgumentList& arguments, CppVariant* 
 
     m_webView->mainFrame()->deliverIntent(intent, 0, m_intentClient.get());
 }
+#endif
 
 void TestRunner::showWebInspector(const CppArgumentList&, CppVariant* result)
 {

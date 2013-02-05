@@ -455,7 +455,7 @@ InlineFlowBox* RenderBlock::createLineBoxes(RenderObject* obj, const LineInfo& l
     InlineFlowBox* result = 0;
     bool hasDefaultLineBoxContain = style()->lineBoxContain() == RenderStyle::initialLineBoxContain();
     do {
-        ASSERT(obj->isRenderInline() || obj == this);
+        ASSERT_WITH_SECURITY_IMPLICATION(obj->isRenderInline() || obj == this);
 
         RenderInline* inlineFlow = (obj != this) ? toRenderInline(obj) : 0;
 
@@ -475,7 +475,7 @@ InlineFlowBox* RenderBlock::createLineBoxes(RenderObject* obj, const LineInfo& l
             // We need to make a new box for this render object.  Once
             // made, we need to place it at the end of the current line.
             InlineBox* newBox = createInlineBoxForRenderer(obj, obj == this);
-            ASSERT(newBox->isInlineFlowBox());
+            ASSERT_WITH_SECURITY_IMPLICATION(newBox->isInlineFlowBox());
             parentBox = toInlineFlowBox(newBox);
             parentBox->setFirstLineStyleBit(lineInfo.isFirstLine());
             parentBox->setIsHorizontal(isHorizontalWritingMode());
@@ -2656,6 +2656,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 trailingObjects.appendBoxIfNeeded(box);
             } else
                 m_positionedObjects.append(box);
+            width.addUncommittedWidth(inlineLogicalWidth(current.m_obj));
         } else if (current.m_obj->isFloating()) {
             RenderBox* floatBox = toRenderBox(current.m_obj);
             FloatingObject* f = m_block->insertFloatingObject(floatBox);
@@ -2700,7 +2701,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 }
             }
 
-            width.addUncommittedWidth(borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox));
+            width.addUncommittedWidth(inlineLogicalWidth(current.m_obj) + borderPaddingMarginStart(flowBox) + borderPaddingMarginEnd(flowBox));
         } else if (current.m_obj->isReplaced()) {
             RenderBox* replacedBox = toRenderBox(current.m_obj);
 

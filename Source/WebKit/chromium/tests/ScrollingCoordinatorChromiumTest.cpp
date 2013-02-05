@@ -43,21 +43,33 @@
 #include <public/WebLayer.h>
 #include <webkit/support/webkit_support.h>
 
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
 #include "GraphicsLayerChromium.h"
-#endif
 
 using namespace WebCore;
 using namespace WebKit;
 
 namespace {
 
-class MockWebViewClient : public WebViewClient {
+class FakeWebViewClient : public WebViewClient {
 public:
     virtual WebCompositorOutputSurface* createOutputSurface() OVERRIDE
     {
         return Platform::current()->compositorSupport()->createOutputSurfaceFor3D(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()).leakPtr());
     }
+
+    virtual void initializeLayerTreeView(WebLayerTreeViewClient* client, const WebLayer& rootLayer, const WebLayerTreeView::Settings& settings)
+    {
+        m_layerTreeView = adoptPtr(Platform::current()->compositorSupport()->createLayerTreeView(client, rootLayer, settings));
+        ASSERT(m_layerTreeView);
+    }
+
+    virtual WebLayerTreeView* layerTreeView()
+    {
+        return m_layerTreeView.get();
+    }
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
 };
 
 class MockWebFrameClient : public WebFrameClient {
@@ -67,7 +79,6 @@ class ScrollingCoordinatorChromiumTest : public testing::Test {
 public:
     ScrollingCoordinatorChromiumTest()
         : m_baseURL("http://www.test.com/")
-        , m_webCompositorInitializer(0)
     {
         Platform::current()->compositorSupport()->initialize(0);
 
@@ -78,6 +89,7 @@ public:
         m_webViewImpl->settings()->setForceCompositingMode(true);
         m_webViewImpl->settings()->setAcceleratedCompositingEnabled(true);
         m_webViewImpl->settings()->setAcceleratedCompositingForFixedPositionEnabled(true);
+        m_webViewImpl->settings()->setAcceleratedCompositingForOverflowScrollEnabled(true);
         m_webViewImpl->settings()->setFixedPositionCreatesStackingContext(true);
         m_webViewImpl->initializeMainFrame(&m_mockWebFrameClient);
         m_webViewImpl->resize(IntSize(320, 240));
@@ -115,8 +127,7 @@ public:
 protected:
     std::string m_baseURL;
     MockWebFrameClient m_mockWebFrameClient;
-    MockWebViewClient m_mockWebViewClient;
-    WebKitTests::WebCompositorInitializer m_webCompositorInitializer;
+    FakeWebViewClient m_mockWebViewClient;
     WebViewImpl* m_webViewImpl;
 };
 
@@ -196,11 +207,10 @@ TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
     ASSERT_EQ(0u, rootScrollLayer->nonFastScrollableRegion().size());
 }
 
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-TEST_F(ScrollingCoordinatorChromiumTest, touchOverflowScrolling)
+TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
 {
-    registerMockedHttpURLLoad("touch-overflow-scrolling.html");
-    navigateTo(m_baseURL + "touch-overflow-scrolling.html");
+    registerMockedHttpURLLoad("overflow-scrolling.html");
+    navigateTo(m_baseURL + "overflow-scrolling.html");
 
     // Verify the properties of the accelerated scrolling element starting from the RenderObject
     // all the way to the WebLayer.
@@ -225,6 +235,5 @@ TEST_F(ScrollingCoordinatorChromiumTest, touchOverflowScrolling)
     WebLayer* webScrollLayer = static_cast<WebLayer*>(layerBacking->scrollingContentsLayer()->platformLayer());
     ASSERT_TRUE(webScrollLayer->scrollable());
 }
-#endif // ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
 
 } // namespace

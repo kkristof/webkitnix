@@ -863,12 +863,16 @@ unsigned CachedResource::overheadSize() const
     static const int kAverageClientsHashMapSize = 384;
     return sizeof(CachedResource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().string().length() * 2;
 }
-    
-void CachedResource::setLoadPriority(ResourceLoadPriority loadPriority) 
-{ 
+
+void CachedResource::setLoadPriority(ResourceLoadPriority loadPriority)
+{
     if (loadPriority == ResourceLoadPriorityUnresolved)
+        loadPriority = defaultPriorityForResourceType(type());
+    if (loadPriority == m_loadPriority)
         return;
     m_loadPriority = loadPriority;
+    if (m_loader && m_loader->handle())
+        m_loader->handle()->didChangePriority(loadPriority);
 }
 
 
@@ -895,28 +899,28 @@ void CachedResource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResource);
     memoryObjectInfo->setName(url().string());
-    info.addMember(m_resourceRequest);
-    info.addMember(m_fragmentIdentifierForRequest);
-    info.addMember(m_clients);
-    info.addMember(m_accept);
-    info.addMember(m_loader);
-    info.addMember(m_response);
-    info.addMember(m_data);
-    info.addMember(m_cachedMetadata);
-    info.addMember(m_nextInAllResourcesList);
-    info.addMember(m_prevInAllResourcesList);
-    info.addMember(m_nextInLiveResourcesList);
-    info.addMember(m_prevInLiveResourcesList);
-    info.addMember(m_owningCachedResourceLoader);
-    info.addMember(m_resourceToRevalidate);
-    info.addMember(m_proxyResource);
-    info.addMember(m_handlesToRevalidate);
-    info.addMember(m_options);
-    info.addMember(m_decodedDataDeletionTimer);
+    info.addMember(m_resourceRequest, "resourceRequest");
+    info.addMember(m_fragmentIdentifierForRequest, "fragmentIdentifierForRequest");
+    info.addMember(m_clients, "clients");
+    info.addMember(m_accept, "accept");
+    info.addMember(m_loader, "loader");
+    info.addMember(m_response, "response");
+    info.addMember(m_data, "data");
+    info.addMember(m_cachedMetadata, "cachedMetadata");
+    info.addMember(m_nextInAllResourcesList, "nextInAllResourcesList");
+    info.addMember(m_prevInAllResourcesList, "prevInAllResourcesList");
+    info.addMember(m_nextInLiveResourcesList, "nextInLiveResourcesList");
+    info.addMember(m_prevInLiveResourcesList, "prevInLiveResourcesList");
+    info.addMember(m_owningCachedResourceLoader, "owningCachedResourceLoader");
+    info.addMember(m_resourceToRevalidate, "resourceToRevalidate");
+    info.addMember(m_proxyResource, "proxyResource");
+    info.addMember(m_handlesToRevalidate, "handlesToRevalidate");
+    info.addMember(m_options, "options");
+    info.addMember(m_decodedDataDeletionTimer, "decodedDataDeletionTimer");
     info.ignoreMember(m_clientsAwaitingCallback);
 
     if (m_purgeableData && !m_purgeableData->wasPurged())
-        info.addRawBuffer(m_purgeableData.get(), m_purgeableData->size());
+        info.addRawBuffer(m_purgeableData.get(), m_purgeableData->size(), "PurgeableData", "purgeableData");
 }
 
 }

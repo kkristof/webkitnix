@@ -55,6 +55,8 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/graphics/harfbuzz"
     "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
     "${WEBCORE_DIR}/platform/graphics/opentype"
+    "${WEBCORE_DIR}/platform/graphics/texmap"
+    "${WEBCORE_DIR}/platform/graphics/texmap/coordinated"
     "${WEBCORE_DIR}/platform/graphics/transforms"
     "${WEBCORE_DIR}/platform/image-decoders"
     "${WEBCORE_DIR}/platform/image-decoders/bmp"
@@ -214,7 +216,6 @@ set(WebCore_IDL_FILES
     Modules/mediastream/LocalMediaStream.idl
     Modules/mediastream/MediaStream.idl
     Modules/mediastream/MediaStreamEvent.idl
-    Modules/mediastream/MediaStreamList.idl
     Modules/mediastream/MediaStreamTrack.idl
     Modules/mediastream/MediaStreamTrackEvent.idl
     Modules/mediastream/NavigatorMediaStream.idl
@@ -858,7 +859,6 @@ set(WebCore_SOURCES
     Modules/mediastream/MediaConstraintsImpl.cpp
     Modules/mediastream/MediaStream.cpp
     Modules/mediastream/MediaStreamEvent.cpp
-    Modules/mediastream/MediaStreamList.cpp
     Modules/mediastream/MediaStreamRegistry.cpp
     Modules/mediastream/MediaStreamTrack.cpp
     Modules/mediastream/MediaStreamTrackEvent.cpp
@@ -1026,6 +1026,7 @@ set(WebCore_SOURCES
     css/CSSComputedStyleDeclaration.cpp
     css/CSSCrossfadeValue.cpp
     css/CSSCursorImageValue.cpp
+    css/CSSDefaultStyleSheets.cpp
     css/CSSFontFace.cpp
     css/CSSFontFaceRule.cpp
     css/CSSFontFaceSource.cpp
@@ -1067,6 +1068,7 @@ set(WebCore_SOURCES
     css/CSSValuePool.cpp
     css/FontFeatureValue.cpp
     css/FontValue.cpp
+    css/InspectorCSSOMWrappers.cpp
     css/LengthFunctions.cpp
     css/MediaFeatureNames.cpp
     css/MediaList.cpp
@@ -1556,6 +1558,7 @@ set(WebCore_SOURCES
     html/parser/TextDocumentParser.cpp
     html/parser/TextViewSourceParser.cpp
     html/parser/XSSAuditor.cpp
+    html/parser/XSSAuditorDelegate.cpp
 
     html/shadow/ContentDistributor.cpp
     html/shadow/ContentSelectorQuery.cpp
@@ -1988,6 +1991,14 @@ set(WebCore_SOURCES
     platform/graphics/filters/SourceGraphic.cpp
     platform/graphics/filters/SpotLightSource.cpp
 
+    platform/graphics/texmap/coordinated/AreaAllocator.cpp
+    platform/graphics/texmap/coordinated/CoordinatedBackingStore.cpp
+    platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.cpp
+    platform/graphics/texmap/coordinated/CoordinatedGraphicsScene.cpp
+    platform/graphics/texmap/coordinated/CoordinatedImageBacking.cpp
+    platform/graphics/texmap/coordinated/CoordinatedSurface.cpp
+    platform/graphics/texmap/coordinated/CoordinatedTile.cpp
+    platform/graphics/texmap/coordinated/UpdateAtlas.cpp
     platform/graphics/texmap/TextureMapper.cpp
     platform/graphics/texmap/TextureMapperBackingStore.cpp
     platform/graphics/texmap/TextureMapperImageBuffer.cpp
@@ -2048,7 +2059,6 @@ set(WebCore_SOURCES
     platform/network/HTTPValidation.cpp
     platform/network/MIMEHeader.cpp
     platform/network/NetworkStateNotifier.cpp
-    platform/network/NetworkStorageSessionStub.cpp
     platform/network/ParsedContentType.cpp
     platform/network/ProtectionSpace.cpp
     platform/network/ProxyServer.cpp

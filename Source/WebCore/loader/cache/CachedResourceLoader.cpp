@@ -465,7 +465,9 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
     if (!resource)
         return 0;
 
-    resource->setLoadPriority(request.priority());
+    if (!request.forPreload() || policy != Use)
+        resource->setLoadPriority(request.priority());
+
     if ((policy != Use || resource->stillNeedsLoad()) && CachedResourceRequest::NoDefer == request.defer()) {
         resource->load(this, request.options());
 
@@ -962,13 +964,13 @@ void CachedResourceLoader::printPreloadStats()
 void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_documentResources);
-    info.addMember(m_document);
-    info.addMember(m_documentLoader);
-    info.addMember(m_validatedURLs);
-    info.addMember(m_preloads);
-    info.addMember(m_pendingPreloads);
-    info.addMember(m_garbageCollectDocumentResourcesTimer);
+    info.addMember(m_documentResources, "documentResources");
+    info.addMember(m_document, "document");
+    info.addMember(m_documentLoader, "documentLoader");
+    info.addMember(m_validatedURLs, "validatedURLs");
+    info.addMember(m_preloads, "preloads");
+    info.addMember(m_pendingPreloads, "pendingPreloads");
+    info.addMember(m_garbageCollectDocumentResourcesTimer, "garbageCollectDocumentResourcesTimer");
 #if ENABLE(RESOURCE_TIMING)
     // FIXME: m_initiatorMap has pointers to already deleted CachedResources
     info.ignoreMember(m_initiatorMap);

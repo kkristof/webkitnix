@@ -27,6 +27,7 @@
 #include "WKEinaSharedString.h"
 #include "WKGeometry.h"
 #include "WKRetainPtr.h"
+#include "WebView.h"
 #include "ewk_url_request_private.h"
 #include <Evas.h>
 #include <WebCore/FloatPoint.h>
@@ -49,6 +50,10 @@
 #include "EvasGLSurface.h"
 #endif
 
+#include "WebContext.h"
+#include "WebPageGroup.h"
+#include "WebPreferences.h"
+
 namespace WebKit {
 class ContextMenuClientEfl;
 class FindClientEfl;
@@ -68,10 +73,6 @@ class WebPopupMenuProxyEfl;
 #if ENABLE(VIBRATION)
 class VibrationClientEfl;
 #endif
-
-#if USE(COORDINATED_GRAPHICS)
-class LayerTreeRenderer;
-#endif
 }
 
 namespace WebCore {
@@ -79,6 +80,9 @@ class AffineTransform;
 class Color;
 class Cursor;
 class IntSize;
+#if USE(COORDINATED_GRAPHICS)
+class CoordinatedGraphicsScene;
+#endif
 }
 
 class EwkContext;
@@ -103,14 +107,16 @@ public:
         LegacyBehavior,
         DefaultBehavior
     };
-    EwkView(Evas_Object* view, PassRefPtr<EwkContext> context, PassRefPtr<WebKit::WebPageGroup> pageGroup, ViewBehavior);
+    EwkView(Evas_Object* view, PassRefPtr<EwkContext> context, WebKit::WebPageGroup* pageGroup, ViewBehavior);
     ~EwkView();
 
     static EwkView* fromEvasObject(const Evas_Object* view);
     Evas_Object* view() { return m_evasObject; }
 
-    WKPageRef wkPage();
-    WebKit::WebPageProxy* page() { return m_pageProxy.get(); }
+    WKViewRef wkView() const { return toAPI(m_webView.get()); }
+    WKPageRef wkPage() const;
+
+    WebKit::WebPageProxy* page() { return m_webView->page(); }
     EwkContext* ewkContext() { return m_context.get(); }
     EwkSettings* settings() { return m_settings.get(); }
     EwkBackForwardList* backForwardList() { return m_backForwardList.get(); }
@@ -219,7 +225,7 @@ private:
     void displayTimerFired(WebCore::Timer<EwkView>*);
 
 #if USE(COORDINATED_GRAPHICS)
-    WebKit::LayerTreeRenderer* layerTreeRenderer();
+    WebCore::CoordinatedGraphicsScene* coordinatedGraphicsScene();
 #endif
 
     void informIconChange();
@@ -245,7 +251,7 @@ private:
     bool m_pendingSurfaceResize;
 #endif
     OwnPtr<WebKit::PageClientBase> m_pageClient;
-    RefPtr<WebKit::WebPageProxy> m_pageProxy;
+    RefPtr<WebKit::WebView> m_webView;
     OwnPtr<WebKit::PageLoadClientEfl> m_pageLoadClient;
     OwnPtr<WebKit::PagePolicyClientEfl> m_pagePolicyClient;
     OwnPtr<WebKit::PageUIClientEfl> m_pageUIClient;
