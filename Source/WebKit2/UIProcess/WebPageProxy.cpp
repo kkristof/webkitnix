@@ -1490,7 +1490,7 @@ void WebPageProxy::restoreFromSessionStateData(WebData* data)
     OwnPtr<CoreIPC::ArgumentDecoder> decoder = CoreIPC::ArgumentDecoder::create(data->bytes(), data->size());
 
     SessionState state;
-    if (!SessionState::decode(decoder.get(), state))
+    if (!SessionState::decode(*(decoder.get()), state))
         return;
 
     const BackForwardListItemVector& entries = state.list();
