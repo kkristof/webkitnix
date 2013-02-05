@@ -115,6 +115,9 @@
   </autotools>
 
  <autotools id="harfbuzz" autogen-sh="configure">
+   <dependencies>
+     <dep package="glib"/>
+   </dependencies>
    <branch module="software/harfbuzz/release/harfbuzz-0.9.6.tar.bz2" version="0.9.6"
            checkoutdir="harfbuzz-0.9.6"
            repo="freedesktop.org"
