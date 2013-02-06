@@ -72,8 +72,6 @@ WK_EXPORT int WebProcessMainNix(int argc, char* argv[])
         g_object_unref(resolverNix);
     }
 
-    WebCore::ResourceHandle::setIgnoreSSLErrors(true);
-
     int socket = atoi(argv[1]);
 
     ChildProcessInitializationParameters parameters;
