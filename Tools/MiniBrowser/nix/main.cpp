@@ -190,6 +190,14 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     WKPreferencesSetDeveloperExtrasEnabled(preferences, true);
     WKPreferencesSetWebGLEnabled(preferences, true);
 
+    char* debugVisualsEnvironment = getenv("WEBKIT_SHOW_COMPOSITING_DEBUG_VISUALS");
+    bool showDebugVisuals = debugVisualsEnvironment && !strcmp(debugVisualsEnvironment, "1");
+    if (showDebugVisuals) {
+        printf("Showing debug visuals...\n");
+        WKPreferencesSetCompositingBordersVisible(preferences, true);
+        WKPreferencesSetCompositingRepaintCountersVisible(preferences, true);
+    }
+
     m_view = NIXViewCreate(m_context.get(), m_pageGroup.get());
 
     NIXViewClient viewClient;
