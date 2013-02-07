@@ -30,6 +30,7 @@
 #include <WebCore/GraphicsLayerClient.h>
 #include <WebCore/GraphicsLayerFactory.h>
 #include <WebCore/UpdateAtlas.h>
+#include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 
 #if ENABLE(CSS_SHADERS)
