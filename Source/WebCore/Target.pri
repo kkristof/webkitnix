@@ -14,6 +14,18 @@ WEBKIT += javascriptcore
 
 CONFIG += staticlib
 
+# Do it in the WebCore static lib to support force_static_libs_as_shared
+# since the QtWebKitWidgets lib wouldn't load QtWebKit in that case.
+# This should match the opposite statement in api.pri for the QtWebKit lib.
+!win* {
+    RESOURCES += $$PWD/WebCore.qrc
+    include_webinspector {
+        RESOURCES += \
+            $$PWD/inspector/front-end/WebKit.qrc \
+            $${WEBCORE_GENERATED_SOURCES_DIR}/InspectorBackendCommands.qrc
+    }
+}
+
 SOURCES += \
     Modules/geolocation/Geolocation.cpp \
     Modules/geolocation/GeolocationController.cpp \
@@ -402,6 +414,7 @@ SOURCES += \
     dom/EventTarget.cpp \
     dom/ExceptionBase.cpp \
     dom/ExceptionCodePlaceholder.cpp \
+    dom/FocusEvent.cpp \
     dom/GenericEventQueue.cpp \
     dom/GestureEvent.cpp \
     dom/IconURL.cpp \
@@ -1445,6 +1458,11 @@ HEADERS += \
     Modules/webdatabase/DatabaseAuthorizer.h \
     Modules/webdatabase/Database.h \
     Modules/webdatabase/DatabaseBackend.h \
+    Modules/webdatabase/DatabaseBackendAsync.h \
+    Modules/webdatabase/DatabaseBackendContext.h \
+    Modules/webdatabase/DatabaseBackendSync.h \
+    Modules/webdatabase/DatabaseBase.h \
+    Modules/webdatabase/DatabaseBasicTypes.h \
     Modules/webdatabase/DatabaseCallback.h \
     Modules/webdatabase/DatabaseError.h \
     Modules/webdatabase/DatabaseManager.h \
@@ -1615,6 +1633,7 @@ HEADERS += \
     dom/EventTarget.h \
     dom/ExceptionBase.h \
     dom/ExceptionCode.h \
+    dom/FocusEvent.h \
     dom/FragmentScriptingPermission.h \
     dom/GestureEvent.h \
     dom/IdTargetObserver.h \
@@ -3019,6 +3038,10 @@ use?(PLUGIN_BACKEND_XLIB) {
 enable?(SQL_DATABASE) {
     SOURCES += \
         Modules/webdatabase/ChangeVersionWrapper.cpp \
+        Modules/webdatabase/DatabaseBackendAsync.cpp \
+        Modules/webdatabase/DatabaseBackendContext.cpp \
+        Modules/webdatabase/DatabaseBackendSync.cpp \
+        Modules/webdatabase/DatabaseBase.cpp \
         Modules/webdatabase/DatabaseManager.cpp \
         Modules/webdatabase/DatabaseTask.cpp \
         Modules/webdatabase/DatabaseThread.cpp \
@@ -3330,6 +3353,7 @@ enable?(VIDEO) {
     } else: use?(GSTREAMER) {
         HEADERS += \
             platform/graphics/gstreamer/GStreamerGWorld.h \
+            platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.h \
             platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h \
             platform/graphics/gstreamer/VideoSinkGStreamer.h \
             platform/graphics/gstreamer/WebKitWebSourceGStreamer.h \
@@ -3338,6 +3362,7 @@ enable?(VIDEO) {
             platform/graphics/gstreamer/ImageGStreamer.h
         SOURCES += \
             platform/graphics/gstreamer/GStreamerGWorld.cpp \
+            platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp \
             platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp \
             platform/graphics/gstreamer/VideoSinkGStreamer.cpp \
             platform/graphics/gstreamer/WebKitWebSourceGStreamer.cpp \
@@ -4041,6 +4066,7 @@ enable?(CANVAS_PROXY) {
 
 use?(3D_GRAPHICS) {
     HEADERS += \
+        page/scrolling/coordinatedgraphics/ScrollingCoordinatorCoordinatedGraphics.h \
         platform/graphics/cpu/arm/GraphicsContext3DNEON.h \
         platform/graphics/ANGLEWebKitBridge.h \
         platform/graphics/Extensions3D.h \
@@ -4065,6 +4091,7 @@ use?(3D_GRAPHICS) {
         platform/graphics/texmap/coordinated/UpdateAtlas.h
 
     SOURCES += \
+        page/scrolling/coordinatedgraphics/ScrollingCoordinatorCoordinatedGraphics.cpp \
         platform/graphics/ANGLEWebKitBridge.cpp \
         platform/graphics/GraphicsContext3D.cpp \
         platform/graphics/gpu/DrawingBuffer.cpp \

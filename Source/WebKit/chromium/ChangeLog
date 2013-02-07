@@ -1,3 +1,335 @@
+2013-02-07  Eberhard Graether  <egraether@google.com>
+
+        Web Inspector: Add settings checkbox for composited layer borders
+        https://bugs.webkit.org/show_bug.cgi?id=109096
+
+        Reviewed by Pavel Feldman.
+
+        This change adds a checkbox to show composited layer borders to the WebInspector's
+        rendering settings and plumbs the setting to Chromium's WebLayerTreeView. The setting
+        is visible if InspectorClient::canShowDebugBorders() returns true.
+
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::canShowDebugBorders):
+        (WebKit):
+        (WebKit::InspectorClientImpl::setShowDebugBorders):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::setShowDebugBorders):
+        (WebKit):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        * src/WebViewImpl.h:
+
+2013-02-07  Stephen White  <senorblanco@chromium.org>
+
+        Unreviewed.  Rolled DEPS.
+
+        * DEPS:
+
+2013-02-07  David Trainor  <dtrainor@chromium.org>
+
+        Add null check to editable in moveCaretSelectionTowardsWindowPoint
+        https://bugs.webkit.org/show_bug.cgi?id=108962
+
+        Reviewed by Eric Seidel.
+
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::moveCaretSelectionTowardsWindowPoint):
+        * tests/WebFrameTest.cpp:
+
+2013-02-07  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r180752.  Requested by
+        thakis_ via sheriffbot.
+
+        * DEPS:
+
+2013-02-06  Terry Anderson  <tdanderson@chromium.org>
+
+        Add support for gesture scroll events that do not propagate to enclosing scrollables
+        https://bugs.webkit.org/show_bug.cgi?id=108849
+
+        Reviewed by Antonio Gomes.
+
+        Define the new event type GestureScrollUpdateWithoutPropagation.
+
+        * public/WebInputEvent.h:
+        (WebKit::WebInputEvent::isGestureEventType):
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::handleInputEvent):
+        * src/WebInputEventConversion.cpp:
+        (WebKit::PlatformGestureEventBuilder::PlatformGestureEventBuilder):
+        * src/WebPluginContainerImpl.cpp:
+        * src/WebPopupMenuImpl.cpp:
+        (WebKit::WebPopupMenuImpl::handleInputEvent):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::handleGestureEvent):
+
+2013-02-06  Alexandre Elias  <aelias@chromium.org>
+
+        Make ScrollView::paint() clip by visibleContentRect
+        https://bugs.webkit.org/show_bug.cgi?id=108888
+
+        Reviewed by Levi Weintraub.
+
+        When applyPageScaleFactorInCompositor or fixedVisibleContentRect
+        are used, frameRect() and visibleContentRect(true).size() are
+        no longer synonyms, and the latter is the one that should be
+        used for clipping paints.
+
+        New WebFrameTest: pageScaleFactorScalesPaintClip.
+
+        * tests/WebFrameTest.cpp:
+
+2013-02-06  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r142025.
+        http://trac.webkit.org/changeset/142025
+        https://bugs.webkit.org/show_bug.cgi?id=109091
+
+        broke the build (Requested by tdanderson on #webkit).
+
+        * public/WebInputEvent.h:
+        (WebKit::WebInputEvent::isGestureEventType):
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::handleInputEvent):
+        * src/WebInputEventConversion.cpp:
+        (WebKit::PlatformGestureEventBuilder::PlatformGestureEventBuilder):
+        * src/WebPluginContainerImpl.cpp:
+        * src/WebPopupMenuImpl.cpp:
+        (WebKit::WebPopupMenuImpl::handleInputEvent):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::handleGestureEvent):
+
+2013-02-06  Daniel Cheng  <dcheng@google.com>
+
+        [chromium] Remove "config.h" header from WebUnitTests.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=108966
+
+        Reviewed by Tony Chang.
+
+        This file includes headers from base/ in Chromium, and config.h
+        conflicts with base/logging.h. Rather than teaching certain files in
+        base/ not to #include base/logging.h, remove the config.h include
+        here. The ASSERT isn't really necessary, as attempting to run a null
+        test suite won't go very far anyway.
+
+        * tests/WebUnitTests.cpp:
+        (WebKit::RunAllUnitTests):
+
+2013-02-06  Terry Anderson  <tdanderson@chromium.org>
+
+        Add support for gesture scroll events that do not propagate to enclosing scrollables
+        https://bugs.webkit.org/show_bug.cgi?id=108849
+
+        Reviewed by Antonio Gomes.
+
+        Define the new event type GestureScrollUpdateWithoutPropagation.
+
+        * public/WebInputEvent.h:
+        (WebKit::WebInputEvent::isGestureEventType):
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::handleInputEvent):
+        * src/WebInputEventConversion.cpp:
+        (WebKit::PlatformGestureEventBuilder::PlatformGestureEventBuilder):
+        * src/WebPluginContainerImpl.cpp:
+        * src/WebPopupMenuImpl.cpp:
+        (WebKit::WebPopupMenuImpl::handleInputEvent):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::handleGestureEvent):
+
+2013-02-06  Chris Hopman  <cjhopman@chromium.org>
+
+        [Chromium] WebWidget should expose a way to determine the start/end of the selection bounds
+        https://bugs.webkit.org/show_bug.cgi?id=108667
+
+        Reviewed by Darin Fisher.
+
+        WebWidget::selectionBounds() returns the anchor and focus of the
+        selection. This matches the arguments to WebFrame::selectRange().
+        Add WebWidget::isSelectionAnchorFirst so that a caller can convert the
+        anchor/focus to start/end.
+
+        * public/WebWidget.h:
+        (WebWidget):
+        (WebKit::WebWidget::isSelectionAnchorFirst):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::isSelectionAnchorFirst):
+        (WebKit):
+        * src/WebViewImpl.h:
+        * tests/WebViewTest.cpp:
+
+2013-02-06  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Stub out SharedBuffer version of put()
+        https://bugs.webkit.org/show_bug.cgi?id=108986
+
+        Reviewed by Darin Fisher.
+
+        This is part 1 of 3 to replace Vector<uint8_t> with SharedBuffer.
+
+        * public/WebIDBDatabase.h:
+        (WebKit):
+        (WebKit::WebIDBDatabase::put):
+
+2013-02-06  Stephen Chenney  <schenney@chromium.org>
+
+        Add Skia code suppression flags to WebKit skia.gyp
+
+        Unreviewed.
+
+        This is step one in removing these flags. First we get them into
+        WebKit, then we can remove them from Chrome.
+
+        * skia_webkit.gyp:
+
+2013-02-06  Mike West  <mkwst@chromium.org>
+
+        Add an ENABLE_NOSNIFF feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=109029
+
+        Reviewed by Jochen Eisinger.
+
+        This new flag will control the behavior of 'X-Content-Type-Options: nosniff'
+        when processing script and other resource types.
+
+        * features.gypi:
+
+2013-02-05  David Dorwin  <ddorwin@chromium.org>
+
+        [chromium] Explicitly destroy the WebMediaPlayer in WebMediaPlayerClientImpl's destructor
+        https://bugs.webkit.org/show_bug.cgi?id=108989
+
+        Reviewed by Kent Tamura.
+
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl):
+
+2013-02-04  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Reduce usage of deprecatedString() and deprecatedInteger()
+        https://bugs.webkit.org/show_bug.cgi?id=108909
+
+        Reviewed by Adam Barth.
+
+        No tests. No change in behavior.
+
+        * src/WebBindings.cpp:
+        (WebKit::WebBindings::toV8Value):
+
+2013-02-05  Kentaro Hara  <haraken@chromium.org>
+
+        [V8] Make an Isolate parameter mandatory in HasInstance()
+        https://bugs.webkit.org/show_bug.cgi?id=108917
+
+        Reviewed by Adam Barth.
+
+        Because these methods do not have an Isolate, we have to call
+        v8::Isolate::GetCurrent().
+
+        No tests. No change in behavior.
+
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::createFromV8Value):
+        * src/WebArrayBufferView.cpp:
+        (WebKit::WebArrayBufferView::createFromV8Value):
+        * src/WebBindings.cpp:
+        (WebKit::getRangeImpl):
+        (WebKit::getNodeImpl):
+        (WebKit::getElementImpl):
+        (WebKit::getArrayBufferImpl):
+        (WebKit::getArrayBufferViewImpl):
+        (WebKit::WebBindings::getRange):
+        (WebKit::WebBindings::getArrayBuffer):
+        (WebKit::WebBindings::getArrayBufferView):
+        (WebKit::WebBindings::getNode):
+        (WebKit::WebBindings::getElement):
+
+2013-02-05  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Provide compositor offscreen context through the WebLayerTreeViewClient interface
+        https://bugs.webkit.org/show_bug.cgi?id=107776
+
+        Reviewed by James Robinson.
+
+        * WebKit.gyp:
+        * src/WebGraphicsContext3D.cpp: Removed.
+
+2013-02-05  Mark Lam  <mark.lam@apple.com>
+
+        Introduced back-end database classes + a few small fixes.
+        https://bugs.webkit.org/show_bug.cgi?id=108759.
+
+        Reviewed by Brady Eidson.
+
+        * src/DatabaseObserver.cpp:
+        (WebCore::DatabaseObserver::databaseOpened):
+        (WebCore::DatabaseObserver::databaseModified):
+        (WebCore::DatabaseObserver::databaseClosed):
+
+2013-02-05  Adam Barth  <abarth@webkit.org>
+
+        DumpRenderTree should be able to enable the threaded parser
+        https://bugs.webkit.org/show_bug.cgi?id=108970
+
+        Reviewed by Eric Seidel.
+
+        * public/WebSettings.h:
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setThreadedHTMLParser):
+        (WebKit):
+        * src/WebSettingsImpl.h:
+        (WebSettingsImpl):
+
+2013-02-05  Sami Kyostila  <skyostil@chromium.org>
+
+        [chromium] Make overlay layers slow-scrolling
+        https://bugs.webkit.org/show_bug.cgi?id=108957
+
+        Reviewed by James Robinson.
+
+        Since overlay layers get inserted on top of everything else, we must
+        mark them slow-scrolling to prevent all scroll input events to the rest
+        of the page from getting blocked. This is also more correct because
+        generally the overlay contents need to be repainted whenever the scroll
+        offset changes, and with this patch the painting happens in sync with
+        page scrolling.
+
+2013-02-05  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r141896.
+        http://trac.webkit.org/changeset/141896
+        https://bugs.webkit.org/show_bug.cgi?id=108956
+
+        crashes indexdb security tests (Requested by gavinp on
+        #webkit).
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        (WebKitPlatformSupport):
+        (WebKit::WebKitPlatformSupport::idbFactory):
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit::IDBFactoryBackendProxy::IDBFactoryBackendProxy):
+
+2013-02-05  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove idbFactory from WebKitPlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=106457
+
+        Reviewed by Adam Barth.
+
+        Now that https://codereview.chromium.org/12181010/ has landed, the
+        idbFactory method is no longer needed. (Embedders must now call
+        the new setIDBFactory method upon initialization.) Part of a
+        larger refactoring series; see tracking bug 82948.
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit::IDBFactoryBackendProxy::IDBFactoryBackendProxy):
+
 2013-02-05  Kentaro Hara  <haraken@chromium.org>
 
         Unreviewed, rolling out r141865.

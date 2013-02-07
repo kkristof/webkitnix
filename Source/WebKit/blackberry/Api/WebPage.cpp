@@ -3221,6 +3221,7 @@ void WebPagePrivate::setVisible(bool visible)
         }
 
         m_visible = visible;
+        m_backingStore->d->updateSuspendScreenUpdateState();
     }
 
 #if ENABLE(PAGE_VISIBILITY_API)
@@ -4272,7 +4273,7 @@ void WebPage::setForcedTextEncoding(const BlackBerry::Platform::String& encoding
         return d->focusedOrMainFrame()->loader()->reloadWithOverrideEncoding(encoding);
 }
 
-static void handleScrolling(unsigned short character, WebPagePrivate* scroller)
+static void handleScrolling(unsigned character, WebPagePrivate* scroller)
 {
     const int scrollFactor = 20;
     int dx = 0, dy = 0;
@@ -5343,6 +5344,7 @@ void WebPagePrivate::setCompositorDrawsRootLayer(bool compositorDrawsRootLayer)
     // When the BlackBerry port forces compositing mode, the root layer stops
     // painting to window and starts painting to layer instead.
     m_page->settings()->setForceCompositingMode(compositorDrawsRootLayer);
+    m_backingStore->d->updateSuspendScreenUpdateState();
 
     if (!m_mainFrame)
         return;

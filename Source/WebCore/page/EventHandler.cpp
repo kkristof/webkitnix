@@ -282,7 +282,7 @@ static inline bool shouldGesturesTriggerActive()
     // If the platform we're on supports GestureTapDown and GestureTapCancel then we'll
     // rely on them to set the active state. Unfortunately there's no generic way to
     // know in advance what event types are supported.
-#if PLATFORM(CHROMIUM) && !OS(ANDROID)
+#if PLATFORM(CHROMIUM)
     return true;
 #else
     return false;
@@ -2435,7 +2435,9 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 
     Node* eventTarget = 0;
     Scrollbar* scrollbar = 0;
-    if (gestureEvent.type() == PlatformEvent::GestureScrollEnd || gestureEvent.type() == PlatformEvent::GestureScrollUpdate) {
+    if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
+        || gestureEvent.type() == PlatformEvent::GestureScrollUpdate
+        || gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
         scrollbar = m_scrollbarHandlingScrollGesture.get();
         eventTarget = m_scrollGestureHandlingNode.get();
     }
@@ -2497,6 +2499,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GestureScrollBegin:
         return handleGestureScrollBegin(gestureEvent);
     case PlatformEvent::GestureScrollUpdate:
+    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         return handleGestureScrollUpdate(gestureEvent);
     case PlatformEvent::GestureTap:
         return handleGestureTap(gestureEvent);
@@ -2705,10 +2708,14 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     if (!latchedRenderer)
         return false;
 
+    RenderLayer::ScrollPropagation shouldPropagate = RenderLayer::ShouldPropagateScroll;
+    if (gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation)
+        shouldPropagate = RenderLayer::DontPropagateScroll;
+
     const float scaleFactor = m_frame->pageZoomFactor() * m_frame->frameScaleFactor();
     delta.scale(1 / scaleFactor, 1 / scaleFactor);
 
-    bool result = latchedRenderer->enclosingLayer()->scrollByRecursively(delta, RenderLayer::ScrollOffsetClamped);
+    bool result = latchedRenderer->enclosingLayer()->scrollBy(delta, RenderLayer::ScrollOffsetClamped, shouldPropagate);
 
     if (result)
         setFrameWasScrolledByUser();

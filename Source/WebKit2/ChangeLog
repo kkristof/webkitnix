@@ -1,3 +1,500 @@
+2013-02-07  Gavin Peters  <gavinp@chromium.org>
+
+        Unreviewed, rolling out r142141.
+        http://trac.webkit.org/changeset/142141
+        https://bugs.webkit.org/show_bug.cgi?id=108990
+
+        Reland r142112, will update Chromium expectations and create a
+        Chromium bug instead for the crash.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::DrawingAreaImpl):
+
+2013-02-07  Gavin Peters  <gavinp@chromium.org>
+
+        Unreviewed, rolling out r142112.
+        http://trac.webkit.org/changeset/142112
+        https://bugs.webkit.org/show_bug.cgi?id=108990
+
+        The new test scrollingcoordinator/non-fast-scrollable-region-transformed- iframe.html crashes on Lion.
+
+        See http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=scrollingcoordinator%2Fnon-fast-scrollable-region-transformed-iframe.html
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::updateOffsetFromViewportForSelf):
+        (WebKit):
+        (WebKit::updateOffsetFromViewportForLayer):
+        (WebKit::CoordinatedLayerTreeHost::syncFixedLayers):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::DrawingAreaImpl):
+
+2013-02-07  Caio Marcelo de Oliveira Filho  <caio.oliveira@openbossa.org>
+
+        [CoordinatedGraphics] Use ScrollingCoordinator to track fixed layers
+        https://bugs.webkit.org/show_bug.cgi?id=108990
+
+        Reviewed by Noam Rosenthal.
+        Signed off for WebKit2 by Simon Fraser.
+
+        WebCore keeps ScrollingCoordinator up-to-date about whether layers are fixed or not, so we
+        don't need to traverse the tree every frame to get this information.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp: remove
+        syncFixedLayers() and its helper functions. Those were used to identify the fixed layers
+        and are not needed anymore.
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::DrawingAreaImpl): enable the scrolling coordinator usage for
+        Coordinated Graphics.
+
+2013-02-07  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] Fold QtWebPageLoadClient into QQuickWebViewPrivate and move to C API.
+        https://bugs.webkit.org/show_bug.cgi?id=108473
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        This patch removes the QtWebPageLoadClient and moves the functionality into the
+        QQuickWebViewPrivate as most callback methods are calling the private webview
+        indirectly anyway.
+
+        The patch also moves as much of the functionality to the C API as is possible with
+        the current C API.
+
+        * Target.pri:
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+        (QQuickWebViewPrivate::didStartProvisionalLoadForFrame):
+        (QQuickWebViewPrivate::didReceiveServerRedirectForProvisionalLoadForFrame):
+        (QQuickWebViewPrivate::didFailLoad):
+        (QQuickWebViewPrivate::didCommitLoadForFrame):
+        (QQuickWebViewPrivate::didFinishLoadForFrame):
+        (QQuickWebViewPrivate::didSameDocumentNavigationForFrame):
+        (QQuickWebViewPrivate::didReceiveTitleForFrame):
+        (QQuickWebViewPrivate::didStartProgress):
+        (QQuickWebViewPrivate::didChangeProgress):
+        (QQuickWebViewPrivate::didFinishProgress):
+        (QQuickWebViewPrivate::didChangeBackForwardList):
+        (QQuickWebViewPrivate::setTransparentBackground):
+        (QQuickWebViewPrivate::transparentBackground):
+        (QQuickWebViewPrivate::loadProgressDidChange):
+        * UIProcess/API/qt/qquickwebview_p.h:
+        (WebKit):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (WebKit):
+        (QQuickWebViewPrivate):
+        * UIProcess/qt/QtWebError.cpp:
+        (WebKit::QtWebError::url):
+        * UIProcess/qt/QtWebPageLoadClient.cpp: Removed.
+        * UIProcess/qt/QtWebPageLoadClient.h: Removed.
+
+2013-02-05  Eunmi Lee  <eunmi15.lee@samsung.com> and Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL][WK2] Refactoring initialization and shutdown codes of EFL libraries.
+        https://bugs.webkit.org/show_bug.cgi?id=97173
+
+        Reviewed by Kenneth Rohde Christiansen, signed-off by Benjamin Poulain.
+
+        Initialize and shutdown the EFL libraries in the ewk_main.cpp for
+        UIProcess and WebProcessMainEfl.cpp for WebProcess.
+
+        This allows us to shut down the libraries in a proper way, since
+        RunLoop persist until the process exits.
+
+        * UIProcess/API/efl/ewk_main.cpp:
+        (ewk_init):
+        (ewk_shutdown):
+        * WebProcess/efl/WebProcessMainEfl.cpp:
+        (WebKit::WebProcessMainEfl):
+
+2013-02-07  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        Unreviewed build fix.
+
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::processDidClose):
+        m_process can't be initialized nullptr yet. Use 0 instead of nullptr.
+
+2013-02-07  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt][WK2] Fold QtWebPageFindClient into QQuickWebViewPrivate
+        https://bugs.webkit.org/show_bug.cgi?id=108920
+
+        Reviewed by Jocelyn Turcotte, signed off for WK2 by Benjamin.
+
+        Employ the pattern suggested by Jocelyn to simply implement the C
+        callbacks directly using static functions.
+
+        * Target.pri:
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (toQQuickWebViewPrivate):
+        (QQuickWebViewPrivate::initialize):
+        (QQuickWebViewPrivate::didFindString):
+        (QQuickWebViewPrivate::didFailToFindString):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+        * UIProcess/qt/QtWebPageFindClient.cpp: Removed.
+        * UIProcess/qt/QtWebPageFindClient.h: Removed.
+
+2013-02-03  Sam Weinig  <sam@webkit.org>
+
+        Make CustomProtocolManagerProxy a MessageReceiver
+        https://bugs.webkit.org/show_bug.cgi?id=108787
+
+        Reviewed by Anders Carlsson.
+
+        * Shared/ChildProcessProxy.cpp:
+        (WebKit::ChildProcessProxy::addMessageReceiver):
+        (WebKit::ChildProcessProxy::removeMessageReceiver):
+        (WebKit::ChildProcessProxy::dispatchMessage):
+        (WebKit::ChildProcessProxy::dispatchSyncMessage):
+        * Shared/ChildProcessProxy.h:
+        Sink the MessageReceiverMap down into the ChildProcessProxy.
+
+        * UIProcess/Downloads/DownloadProxyMap.cpp:
+        (WebKit::DownloadProxyMap::DownloadProxyMap):
+        (WebKit::DownloadProxyMap::createDownloadProxy):
+        (WebKit::DownloadProxyMap::downloadFinished):
+        (WebKit::DownloadProxyMap::processDidClose):
+        * UIProcess/Downloads/DownloadProxyMap.h:
+        Pass the ChildProcessProxy rather than the MessageReceiverMap to the constructor.
+
+        * UIProcess/Network/CustomProtocols/CustomProtocolManagerProxy.h:
+        * UIProcess/Network/CustomProtocols/CustomProtocolManagerProxy.messages.in:
+        * UIProcess/Network/CustomProtocols/mac/CustomProtocolManagerProxyMac.mm:
+        (WebKit::CustomProtocolManagerProxy::CustomProtocolManagerProxy):
+        Convert to a MessageReceiver.
+
+        * UIProcess/Network/NetworkProcessProxy.cpp:
+        (WebKit::NetworkProcessProxy::createDownloadProxy):
+        (WebKit::NetworkProcessProxy::didReceiveMessage):
+        (WebKit::NetworkProcessProxy::didReceiveSyncMessage):
+        * UIProcess/Network/NetworkProcessProxy.h:
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::didReceiveMessage):
+        (WebKit::WebProcessProxy::didReceiveSyncMessage):
+        (WebKit::WebProcessProxy::createDownloadProxy):
+        * UIProcess/WebProcessProxy.h:
+        (WebProcessProxy):
+        Remove direct chaining to CustomProtocolManagerProxy.
+
+2013-02-06  Enrica Casucci  <enrica@apple.com>
+
+        ASSERT(!m_findPageOverlay) in FindController.cpp after r140769.
+        https://bugs.webkit.org/show_bug.cgi?id=109105.
+
+        Reviewed by Tim Horton.
+
+        In r140769 we changed the way the overlay is destroyed,
+        therefore the assert is no longer valid and should be removed.
+
+        * WebProcess/WebPage/FindController.cpp:
+        (WebKit::FindController::updateFindUIAfterPageScroll):
+
+2013-02-06  Anders Carlsson  <andersca@apple.com>
+
+        Dispatch storage manager messages to the storage work queue
+        https://bugs.webkit.org/show_bug.cgi?id=109099
+
+        Reviewed by Andreas Kling.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::didReceiveMessageOnConnectionWorkQueue):
+        (WebKit::StorageManager::dispatchMessageOnStorageManagerQueue):
+        (WebKit):
+        * UIProcess/Storage/StorageManager.h:
+        (StorageManager):
+
+2013-02-06  Anders Carlsson  <andersca@apple.com>
+
+        Pass the document source URL to the pluginLoadPolicy callback
+        https://bugs.webkit.org/show_bug.cgi?id=109084
+        <rdar://problem/13154516>
+
+        Reviewed by Andreas Kling.
+
+        * UIProcess/API/C/WKPage.h:
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::getPluginPath):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/WebPageProxy.messages.in:
+        * UIProcess/WebUIClient.cpp:
+        (WebKit::WebUIClient::pluginLoadPolicy):
+        * UIProcess/WebUIClient.h:
+        (WebUIClient):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::createPlugin):
+        (WebKit::WebPage::canPluginHandleResponse):
+
+2013-02-06  Alexey Proskuryakov  <ap@apple.com>
+
+        Get rid of unneeded writeable preferences.
+
+        Reviewed by Anders Carlsson.
+
+        com.apple.HIToolbox.plist and com.apple.WebProcess.plist were made writeable very
+        early in WebKit2 development, before we moved a lot of functionality to UI process.
+        They don't appear to be needed any more.
+
+        Note that we do not even need to allow reading for com.apple.WebProcess.plist -
+        it's read at process initialization before we enter the sandbox, and services
+        have a different plist anyway.
+
+        * WebProcess/com.apple.WebProcess.sb.in:
+
+2013-02-06  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        [EFL][WK2] Assertion failure on MiniBrowser exit
+        https://bugs.webkit.org/show_bug.cgi?id=108932
+
+        Reviewed by Anders Carlsson.
+
+        WorkQueue is now refcounted after r141497, so increase ref
+        count when a new job is scheduled and unref it when it finishes.
+
+        * Platform/efl/WorkQueueEfl.cpp:
+        (WorkQueue::performWork):
+        (WorkQueue::performTimerWork):
+        (WorkQueue::dispatch):
+        (WorkQueue::dispatchAfterDelay):
+
+2013-02-06  Simon Hausmann  <simon.hausmann@digia.com>, Zoltan Arvai  <zarvai@inf.u-szeged.hu>
+
+        [WK2][Win] Fix build after MessageID.h related changes and after r141619.
+        https://bugs.webkit.org/show_bug.cgi?id=108612
+
+        Reviewed by Anders Carlsson.
+
+        * Platform/CoreIPC/win/ConnectionWin.cpp:
+        (CoreIPC::Connection::platformInvalidate):
+        (CoreIPC::Connection::readEventHandler):
+        (CoreIPC::Connection::open):
+        (CoreIPC::Connection::sendOutgoingMessage):
+        * Platform/WorkQueue.h:
+        (WorkQueue::WorkItemWin::queue):
+        (WorkItemWin):
+        * Platform/win/SharedMemoryWin.cpp:
+        (WebKit::SharedMemory::Handle::decode):
+        * Platform/win/WorkQueueWin.cpp:
+        (WorkQueue::handleCallback):
+        (WorkQueue::performWorkOnRegisteredWorkThread):
+
+2013-02-06  Mike West  <mkwst@chromium.org>
+
+        Add an ENABLE_NOSNIFF feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=109029
+
+        Reviewed by Jochen Eisinger.
+
+        This new flag will control the behavior of 'X-Content-Type-Options: nosniff'
+        when processing script and other resource types.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-02-06  Marja Hölttä  <marja@chromium.org>
+
+        Take referrer policy into account when clearing the referrer header
+        https://bugs.webkit.org/show_bug.cgi?id=86000
+
+        Reviewed by Alexey Proskuryakov.
+
+        The referrer should only be cleared when doing a https -> http redirect,
+        if the policy is "default". Otherwise the referrer should be left intact.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::start):
+        * NetworkProcess/SchedulableLoader.cpp:
+        (WebKit::SchedulableLoader::SchedulableLoader):
+        * NetworkProcess/SchedulableLoader.h:
+        (WebKit::SchedulableLoader::shouldClearReferrerOnHTTPSToHTTPRedirect):
+        (SchedulableLoader):
+        * NetworkProcess/SyncNetworkResourceLoader.cpp:
+        (WebKit::SyncNetworkResourceLoader::start):
+        * NetworkProcess/mac/RemoteNetworkingContext.h:
+        (WebKit::RemoteNetworkingContext::create):
+        (RemoteNetworkingContext):
+        * NetworkProcess/mac/RemoteNetworkingContext.mm:
+        (WebKit::RemoteNetworkingContext::shouldClearReferrerOnHTTPSToHTTPRedirect):
+        (WebKit):
+        (WebKit::RemoteNetworkingContext::RemoteNetworkingContext):
+        * Shared/Network/NetworkResourceLoadParameters.cpp:
+        (WebKit::NetworkResourceLoadParameters::NetworkResourceLoadParameters):
+        (WebKit::NetworkResourceLoadParameters::encode):
+        (WebKit::NetworkResourceLoadParameters::decode):
+        * Shared/Network/NetworkResourceLoadParameters.h:
+        (NetworkResourceLoadParameters):
+        (WebKit::NetworkResourceLoadParameters::shouldClearReferrerOnHTTPSToHTTPRedirect):
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::scheduleSubresourceLoad):
+        (WebKit::WebResourceLoadScheduler::schedulePluginStreamLoad):
+        (WebKit::WebResourceLoadScheduler::scheduleLoad):
+        * WebProcess/Network/WebResourceLoadScheduler.h:
+        (WebResourceLoadScheduler):
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::loadResourceSynchronously):
+
+2013-02-06  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][WK2] Encapsulate Ewk View evas smart object code inside EwkView class
+        https://bugs.webkit.org/show_bug.cgi?id=108062
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        The Ewk View implementation is encapsulated within EwkView class.
+        Besides multiple refactoring of Ewk View evas smart object code was made.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (createWKView): 
+
+            Aux function to share WKView creation implementation.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        (smartDataChanged):
+        (defaultSmartClassInstance):
+        (toSmartData):
+        (EwkView::initSmartClassInterface):
+        (EwkView::toEvasObject):
+        (EwkView::smartData):
+
+            Renamed and moved here from ewk_view.
+
+        (EwkViewEventHandler):
+        (EwkViewEventHandler::subscribe):
+        (EwkViewEventHandler::unsubscribe):
+        (::handleEvent):
+
+            Added a new template class to encapsulate Ewk View Evas events handling.
+
+        (EwkView::EwkView):
+        (EwkView::~EwkView):
+
+            Constructor and desctructor are private.
+
+        (EwkView::createEvasObject):
+
+            Added factory function for ewk view evas objects creation.
+
+        (EwkView::handleEvasObjectAdd):
+        (EwkView::handleEvasObjectDelete):
+        (EwkView::handleEvasObjectResize):
+        (EwkView::handleEvasObjectMove):
+        (EwkView::handleEvasObjectCalculate):
+        (EwkView::handleEvasObjectShow):
+        (EwkView::handleEvasObjectHide):
+        (EwkView::handleEvasObjectColorSet):
+
+            Evas_Smart_Class interface callbacks moved into the EwkView class.
+
+        (EwkView::handleEwkViewFocusIn):
+        (EwkView::handleEwkViewFocusOut):
+        (EwkView::handleEwkViewMouseWheel):
+        (EwkView::handleEwkViewMouseDown):
+        (EwkView::handleEwkViewMouseUp):
+        (EwkView::handleEwkViewMouseMove):
+        (EwkView::handleEwkViewKeyDown):
+        (EwkView::handleEwkViewKeyUp):
+
+            Ewk_View_Smart_Class interface callback moved into the EwkView class.
+
+        (EwkView::handleTouchDown):
+        (EwkView::handleTouchUp):
+        (EwkView::handleTouchMove):
+
+            Renamed.
+
+        (toEwkView): 
+
+            Aux function to get the EwkView instance fromevas object.
+
+        (isViewEvasObject):
+
+            Aux function to check that given evas object is ewk view.
+
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView::evasObject):
+        (EwkView):
+        * UIProcess/API/efl/ewk_view.cpp:
+        (ewk_view_smart_class_set):
+        (ewk_view_smart_add):
+        (ewk_view_add_with_context):
+        (ewk_view_feed_touch_event):
+        (Ewk_Page_Contents_Context):
+
+        * UIProcess/API/efl/ewk_view_private.h: Removed.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewCreate):
+        (WKViewCreateWithFixedLayout):
+        (WKViewCreateSnapshot):
+        * UIProcess/cairo/BackingStoreCairo.cpp:
+        (WebKit::BackingStore::incorporateUpdate):
+        * UIProcess/efl/ContextHistoryClientEfl.cpp:
+        (WebKit::ContextHistoryClientEfl::didNavigateWithNavigationData):
+        (WebKit::ContextHistoryClientEfl::didPerformClientRedirect):
+        (WebKit::ContextHistoryClientEfl::didPerformServerRedirect):
+        (WebKit::ContextHistoryClientEfl::didUpdateHistoryTitle):
+        * UIProcess/efl/PageClientBase.cpp:
+        (WebKit::PageClientBase::processDidCrash):
+        * UIProcess/efl/PageLoadClientEfl.cpp:
+        (WebKit::PageLoadClientEfl::didChangeBackForwardList):
+        * UIProcess/efl/PageUIClientEfl.cpp:
+        (WebKit::PageUIClientEfl::takeFocus):
+        (WebKit::PageUIClientEfl::focus):
+        (WebKit::PageUIClientEfl::unfocus):
+        * UIProcess/efl/WebFullScreenManagerProxyEfl.cpp:
+        (WebKit::WebFullScreenManagerProxy::enterFullScreen):
+        (WebKit::WebFullScreenManagerProxy::exitFullScreen):
+        * UIProcess/efl/WebInspectorProxyEfl.cpp:
+        (WebKit::WebInspectorProxy::platformCreateInspectorPage):
+        * UIProcess/efl/WebPageProxyEfl.cpp:
+        (WebKit::WebPageProxy::viewWidget):
+
+             Updated due to changes in EwkView interface.
+
+2013-02-05  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] TiledCoreAnimationDrawingArea has one more layer in its CAContext when we're in the background
+        https://bugs.webkit.org/show_bug.cgi?id=108992
+        <rdar://problem/13087365>
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea): Add storage for m_isInWindow.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::updateLayerHostingContext): Only set the root layer on our layer
+        hosting context if we're in the window when swapping out contexts.
+        (WebKit::TiledCoreAnimationDrawingArea::setRootCompositingLayer): Update m_isInWindow, and set the root layer
+        of the layer hosting context (or unset it if we're out of the window).
+
+2013-02-05  Anders Carlsson  <andersca@apple.com>
+
+        WebKit clients should be able to override loading of blocked plug-ins
+        https://bugs.webkit.org/show_bug.cgi?id=108968
+        <rdar://problem/13154516>
+
+        Reviewed by Sam Weinig.
+
+        Replace the shouldInstantiatePlugin callback with a new pluginLoadPolicy which is called regardless
+        of whether the plug-in is blocked or not. This lets clients override the plug-in load policy and
+        force loading of blacklisted plug-ins (and vice versa).
+
+        * UIProcess/API/C/WKPage.h:
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::getPluginPath):
+        * UIProcess/WebUIClient.cpp:
+        (WebKit::toWKPluginLoadPolicy):
+        (WebKit):
+        (WebKit::toPluginModuleLoadPolicy):
+        (WebKit::WebUIClient::pluginLoadPolicy):
+        * UIProcess/WebUIClient.h:
+        (WebUIClient):
+
 2013-02-05  Simon Hausmann  <simon.hausmann@digia.com>
 
         [Qt][WK2] Replace more uses of WebPageProxy with WKPage in QQuickWebView

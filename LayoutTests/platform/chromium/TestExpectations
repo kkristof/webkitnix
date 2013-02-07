@@ -936,6 +936,9 @@ fast/dom/timer-throttling-hidden-page.html [ WontFix ]
 # Chromium disabled MATHML
 crbug.com/22554 mathml [ Skip ]
 
+# Chromium disabled web intents
+crbug.com/173194 webintents [ Skip ]
+
 # Skipping rules for ANDROID are in platform/chromium-android/TestExpectations.
 
 # -----------------------------------------------------------------
@@ -1410,6 +1413,7 @@ crbug.com/10322 accessibility/visible-elements.html [ Skip ]
 webkit.org/b/96529 accessibility/hidden-legend.html [ Skip ]
 webkit.org/b/73912 accessibility/aria-checkbox-text.html [ Skip ]
 webkit.org/b/99665 accessibility/loading-iframe-sends-notification.html [ Skip ]
+webkit.org/b/109056 accessibility/html-html-element-is-ignored.html [ Skip ]
 
 webkit.org/b/73912 accessibility/aria-checkbox-sends-notification.html [ Failure Pass ]
 #webkit.org/b/98787 accessibility/aria-hidden-negates-no-visibility.html [ Skip ]
@@ -1427,6 +1431,13 @@ webkit.org/b/64876 [ Linux Win ] platform/chromium/virtual/gpu/fast/canvas/canva
 webkit.org/b/75276 [ Android ] fast/repaint/shadow-multiple-horizontal.html [ ImageOnlyFailure ]
 webkit.org/b/75276 [ Android ] fast/repaint/shadow-multiple-strict-horizontal.html [ ImageOnlyFailure ]
 webkit.org/b/75276 [ Android ] fast/repaint/shadow-multiple-strict-vertical.html [ ImageOnlyFailure ]
+
+# -----------------------------------------------------------------
+# WebGL Tests
+# -----------------------------------------------------------------
+crbug.com/174268 webgl/conformance/attribs/gl-vertex-attrib-zero-issues.html [ Skip ]
+
+webkit.org/b/108901 webgl/conformance/attribs/gl-vertexattribpointer.html [ Slow ]
 
 # -----------------------------------------------------------------
 # Other failures
@@ -4005,9 +4016,6 @@ webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-006.html [ 
 webkit.org/b/99749 [ MountainLion ] fast/repaint/positioned-document-element.html [ ImageOnlyFailure ]
 webkit.org/b/96430 [ MountainLion ] fast/text/fallback-traits-fixup.html [ Failure ]
 webkit.org/b/99749 [ MountainLion ] fast/writing-mode/broken-ideograph-small-caps.html [ Failure ]
-webkit.org/b/99749 [ MountainLion ] fast/writing-mode/japanese-lr-text.html [ Failure ]
-webkit.org/b/99749 [ MountainLion ] fast/writing-mode/japanese-rl-selection.html [ Failure ]
-webkit.org/b/99749 [ MountainLion ] fast/writing-mode/japanese-rl-text.html [ Failure ]
 
 webkit.org/b/101897 [ MountainLion ] fast/regions/region-style-inline-background-color.html [ ImageOnlyFailure ]
 
@@ -4225,6 +4233,12 @@ webkit.org/b/107508 platform/chromium/fast/forms/calendar-picker/month-picker-ap
 webkit.org/b/107508 platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-step.html [ ImageOnlyFailure Pass ]
 webkit.org/b/107508 platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance.html [ ImageOnlyFailure Pass ]
 
+# Rebaseline after currentPath
+webkit.org/b/108246 fast/canvas/canvas-currentPath.html [ Failure ]
+webkit.org/b/108246 platform/chromium/virtual/gpu/fast/canvas/canvas-currentPath.html [ Failure ]
+webkit.org/b/108246 fast/canvas/canvas-currentPath-crash.html [ Failure ]
+webkit.org/b/108246 platform/chromium/virtual/gpu/fast/canvas/canvas-currentPath-crash.html [ Failure ]
+
 # Broken by Skia flag changes in r139445
 crbug.com/169550 [ Debug ] fast/lists/big-list-marker.html [ Crash ]
 crbug.com/169550 [ Debug ] platform/chromium/virtual/deferred/fast/images/icon-decoding.html [ Crash ]
@@ -4328,7 +4342,6 @@ webkit.org/b/108286 platform/chromium/virtual/softwarecompositing/geometry/fixed
 webkit.org/b/108286 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ ImageOnlyFailure ]
 
 webkit.org/b/108424 media/video-error-does-not-exist.html [ Failure Crash ]
-webkit.org/b/108594 [ Debug ] tables/table-section-overflow-clip-crash.html [ Crash ]
 
 webkit.org/b/108781 [ Win ] fast/css-grid-layout/grid-preferred-logical-widths.html [ Timeout ]
 webkit.org/b/108789 [ Win Mac ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]

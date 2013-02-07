@@ -79,15 +79,15 @@ void V8DOMWrapper::setNamedHiddenReference(v8::Handle<v8::Object> parent, const 
     parent->SetHiddenValue(V8HiddenPropertyName::hiddenReferenceName(name, strlen(name)), child);
 }
 
-v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, WrapperTypeInfo* type, void* impl)
+v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, WrapperTypeInfo* type, void* impl, v8::Isolate* isolate)
 {
     V8WrapperInstantiationScope scope(creationContext);
 
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
-    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate()->GetFunction());
+    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->getTemplate(isolate)->GetFunction());
 
     if (type == &V8HTMLDocument::info && !wrapper.IsEmpty())
-        wrapper = V8HTMLDocument::wrapInShadowObject(wrapper, static_cast<Node*>(impl));
+        wrapper = V8HTMLDocument::wrapInShadowObject(wrapper, static_cast<Node*>(impl), isolate);
 
     return wrapper;
 }

@@ -415,22 +415,7 @@ WebInspector.DefaultTextEditor.prototype = {
 
         this._shortcuts = {};
 
-        var handleEnterKey = this._mainPanel.handleEnterKey.bind(this._mainPanel);
-        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Enter.code, WebInspector.KeyboardShortcut.Modifiers.None)] = handleEnterKey;
-
-        this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.CtrlOrMeta)] = this._mainPanel.handleUndoRedo.bind(this._mainPanel, false);
         this._shortcuts[WebInspector.KeyboardShortcut.SelectAll] = this._handleSelectAll.bind(this);
-
-        var handleRedo = this._mainPanel.handleUndoRedo.bind(this._mainPanel, true);
-        this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.Shift | modifiers.CtrlOrMeta)] = handleRedo;
-        if (!WebInspector.isMac())
-            this._shortcuts[WebInspector.KeyboardShortcut.makeKey("y", modifiers.CtrlOrMeta)] = handleRedo;
-
-        var handleTabKey = this._mainPanel.handleTabKeyPress.bind(this._mainPanel, false);
-        var handleShiftTabKey = this._mainPanel.handleTabKeyPress.bind(this._mainPanel, true);
-        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Tab.code)] = handleTabKey;
-        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Tab.code, modifiers.Shift)] = handleShiftTabKey;
-
         this._wordMovementController._registerShortcuts(this._shortcuts);
     },
 
@@ -454,7 +439,7 @@ WebInspector.DefaultTextEditor.prototype = {
             e.consume(true);
             return;
         }
-        this._mainPanel.handleKeyDown(e);
+        this._mainPanel.handleKeyDown(shortcutKey, e);
     },
 
     _contextMenu: function(event)
@@ -1384,12 +1369,65 @@ WebInspector.TextEditorMainPanel = function(delegate, textModel, url, syncScroll
     this._highlightDescriptors = [];
 
     this._tokenHighlighter = new WebInspector.TextEditorMainPanel.TokenHighlighter(this, textModel);
+    this._braceMatcher = new WebInspector.TextEditorModel.BraceMatcher(textModel);
+    this._braceHighlighter = new WebInspector.TextEditorMainPanel.BraceHighlightController(this, textModel, this._braceMatcher);
 
     this._freeCachedElements();
     this.buildChunks();
+    this._registerShortcuts();
 }
 
 WebInspector.TextEditorMainPanel.prototype = {
+    _registerShortcuts: function()
+    {
+        var keys = WebInspector.KeyboardShortcut.Keys;
+        var modifiers = WebInspector.KeyboardShortcut.Modifiers;
+
+        this._shortcuts = {};
+
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Enter.code, WebInspector.KeyboardShortcut.Modifiers.None)] = this._handleEnterKey.bind(this);
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.CtrlOrMeta)] = this._handleUndoRedo.bind(this, false);
+
+        var handleRedo = this._handleUndoRedo.bind(this, true);
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey("z", modifiers.Shift | modifiers.CtrlOrMeta)] = handleRedo;
+        if (!WebInspector.isMac())
+            this._shortcuts[WebInspector.KeyboardShortcut.makeKey("y", modifiers.CtrlOrMeta)] = handleRedo;
+
+        var handleTabKey = this._handleTabKeyPress.bind(this, false);
+        var handleShiftTabKey = this._handleTabKeyPress.bind(this, true);
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Tab.code)] = handleTabKey;
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Tab.code, modifiers.Shift)] = handleShiftTabKey;
+
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Home.code, modifiers.None)] = this._handleHomeKey.bind(this, false);
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey(keys.Home.code, modifiers.Shift)] = this._handleHomeKey.bind(this, true);
+    },
+
+    /**
+     * @param {boolean} shift
+     */
+    _handleHomeKey: function(shift)
+    {
+        var selection = this.selection();
+
+        var line = this._textModel.line(selection.endLine);
+        var firstNonBlankCharacter = 0;
+        while (firstNonBlankCharacter < line.length) {
+            var char = line.charAt(firstNonBlankCharacter);
+            if (char === " " || char === "\t")
+                ++firstNonBlankCharacter;
+            else
+                break;
+        }
+        if (firstNonBlankCharacter >= line.length || selection.endColumn === firstNonBlankCharacter)
+            return false;
+
+        selection.endColumn = firstNonBlankCharacter;
+        if (!shift)
+            selection = selection.collapseToEnd();
+        this._restoreSelection(selection);
+        return true;
+    },
+
     /**
      * @param {string} regex
      * @param {string} cssClass
@@ -1668,7 +1706,7 @@ WebInspector.TextEditorMainPanel.prototype = {
      * @param {boolean} redo
      * @return {boolean}
      */
-    handleUndoRedo: function(redo)
+    _handleUndoRedo: function(redo)
     {
         if (this.readOnly())
             return false;
@@ -1690,7 +1728,7 @@ WebInspector.TextEditorMainPanel.prototype = {
      * @param {boolean} shiftKey
      * @return {boolean}
      */
-    handleTabKeyPress: function(shiftKey)
+    _handleTabKeyPress: function(shiftKey)
     {
         if (this.readOnly())
             return false;
@@ -1721,7 +1759,7 @@ WebInspector.TextEditorMainPanel.prototype = {
         return true;
     },
 
-    handleEnterKey: function()
+    _handleEnterKey: function()
     {
         if (this.readOnly())
             return false;
@@ -2059,6 +2097,9 @@ WebInspector.TextEditorMainPanel.prototype = {
         // Selection may be outside of the editor.
         if (!this._container.isAncestor(selection.anchorNode) || !this._container.isAncestor(selection.focusNode))
             return null;
+        // Selection may be inside one of decorations.
+        if (selection.focusNode.enclosingNodeOrSelfWithClass("webkit-line-decorations", this._container))
+            return null;
         var start = this._selectionToPosition(selection.anchorNode, selection.anchorOffset, lastUndamagedLineRow);
         var end = selection.isCollapsed ? start : this._selectionToPosition(selection.focusNode, selection.focusOffset, lastUndamagedLineRow);
         return new WebInspector.TextRange(start.line, start.column, end.line, end.column);
@@ -2394,7 +2435,7 @@ WebInspector.TextEditorMainPanel.prototype = {
 
         // Unindent after block
         if (editInfo.text === "}" && editInfo.range.isEmpty() && selection.isEmpty() && !this._textModel.line(editInfo.range.endLine).trim()) {
-            var offset = this._closingBlockOffset(editInfo.range, selection);
+            var offset = this._closingBlockOffset(editInfo.range);
             if (offset >= 0) {
                 editInfo.range.startColumn = offset;
                 selection.startColumn = offset + 1;
@@ -2484,30 +2525,15 @@ WebInspector.TextEditorMainPanel.prototype = {
 
     /**
      * @param {WebInspector.TextRange} oldRange
-     * @param {WebInspector.TextRange} selection
      * @return {number}
      */
-    _closingBlockOffset: function(oldRange, selection)
+    _closingBlockOffset: function(oldRange)
     {
-        var nestingLevel = 1;
-        for (var i = oldRange.endLine; i >= 0; --i) {
-            var attribute = this._textModel.getAttribute(i, "highlight");
-            if (!attribute)
-                continue;
-            var ranges = attribute.ranges;
-            for (var j = ranges.length - 1; j >= 0; j--) {
-                var token = ranges[j].token;
-                if (token === "block-start") {
-                    if (!(--nestingLevel)) {
-                        var lineContent = this._textModel.line(i);
-                        return lineContent.length - lineContent.trimLeft().length;
-                    }
-                }
-                if (token === "block-end")
-                    ++nestingLevel;
-            }
-        }
-        return -1;
+        var leftBrace = this._braceMatcher.findLeftCandidate(oldRange.startLine, oldRange.startColumn);
+        if (!leftBrace || leftBrace.token !== "block-start")
+            return -1;
+        var lineContent = this._textModel.line(leftBrace.lineNumber);
+        return lineContent.length - lineContent.trimLeft().length;
     },
 
     /**
@@ -2673,6 +2699,7 @@ WebInspector.TextEditorMainPanel.prototype = {
             this._lastSelection = textRange;
 
         this._tokenHighlighter.handleSelectionChange(textRange);
+        this._braceHighlighter.handleSelectionChange(textRange);
         this._delegate.selectionChanged(textRange);
     },
 
@@ -2685,10 +2712,17 @@ WebInspector.TextEditorMainPanel.prototype = {
     },
 
     /**
+     * @param {number} shortcutKey
      * @param {Event} event
      */
-    handleKeyDown: function(event)
+    handleKeyDown: function(shortcutKey, event)
     {
+        var handler = this._shortcuts[shortcutKey];
+        if (handler && handler()) {
+            event.consume(true);
+            return;
+        }
+
         this._keyDownCode = event.keyCode;
     },
 
@@ -3342,6 +3376,63 @@ WebInspector.DefaultTextEditor.WordMovementController.prototype = {
 
         this._textEditor.setSelection(newSelection.collapseToEnd());
         return true;
+    }
+}
+
+/**
+ * @constructor
+ * @param {WebInspector.TextEditorMainPanel} textEditor
+ * @param {WebInspector.TextEditorModel} textModel
+ * @param {WebInspector.TextEditorModel.BraceMatcher} braceMatcher
+ */
+WebInspector.TextEditorMainPanel.BraceHighlightController = function(textEditor, textModel, braceMatcher)
+{
+    this._textEditor = textEditor;
+    this._textModel = textModel;
+    this._braceMatcher = braceMatcher;
+    this._highlightDescriptors = [];
+}
+
+WebInspector.TextEditorMainPanel.BraceHighlightController.prototype = {
+    /**
+     * @param {WebInspector.TextRange} selectionRange
+     */
+    handleSelectionChange: function(selectionRange)
+    {
+        if (!selectionRange || !selectionRange.isEmpty()) {
+            this._removeHighlight();
+            return;
+        }
+
+        if (this._highlightedRange && this._highlightedRange.compareTo(selectionRange) === 0)
+            return;
+
+        this._removeHighlight();
+        var lineNumber = selectionRange.startLine;
+        var column = selectionRange.startColumn;
+        var line = this._textModel.line(lineNumber);
+        if (column > 0 && /[)}]/.test(line.charAt(column - 1)))
+            --column;
+
+        var enclosingBraces = this._braceMatcher.enclosingBraces(lineNumber, column);
+        if (!enclosingBraces)
+            return;
+
+        this._highlightedRange = selectionRange;
+        this._highlightDescriptors.push(this._textEditor.highlightRange(WebInspector.TextRange.createFromLocation(enclosingBraces.leftBrace.lineNumber, enclosingBraces.leftBrace.column), "text-editor-brace-match"));
+        this._highlightDescriptors.push(this._textEditor.highlightRange(WebInspector.TextRange.createFromLocation(enclosingBraces.rightBrace.lineNumber, enclosingBraces.rightBrace.column), "text-editor-brace-match"));
+    },
+
+    _removeHighlight: function()
+    {
+        if (!this._highlightDescriptors.length)
+            return;
+
+        for(var i = 0; i < this._highlightDescriptors.length; ++i)
+            this._textEditor.removeHighlight(this._highlightDescriptors[i]);
+
+        this._highlightDescriptors = [];
+        delete this._highlightedRange;
     }
 }
 

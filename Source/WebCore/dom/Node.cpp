@@ -59,6 +59,7 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
+#include "FocusEvent.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
@@ -378,6 +379,11 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
 
     // When the region thread has changed, we need to prepare a separate render region object.
     if ((s1 && s2) && (s1->regionThread() != s2->regionThread()))
+        ch = Detach;
+
+    // Re-attach the renderer when either the element changes from position:static to position:absolute/fixed, vice-versa
+    // or float:none to floating, vice-versa.
+    if ((s1 && s2 ) && (s1->isFloating() != s2->isFloating() || s1->hasOutOfFlowPosition() != s2->hasOutOfFlowPosition()))
         ch = Detach;
 
     return ch;
@@ -2351,14 +2357,14 @@ void Node::dispatchFocusInEvent(const AtomicString& eventType, PassRefPtr<Node> 
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusinEvent || eventType == eventNames().DOMFocusInEvent);
-    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(UIEvent::create(eventType, true, false, document()->defaultView(), 0), oldFocusedNode));
+    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, 0), oldFocusedNode));
 }
 
 void Node::dispatchFocusOutEvent(const AtomicString& eventType, PassRefPtr<Node> newFocusedNode)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusoutEvent || eventType == eventNames().DOMFocusOutEvent);
-    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(UIEvent::create(eventType, true, false, document()->defaultView(), 0), newFocusedNode));
+    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, 0), newFocusedNode));
 }
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)

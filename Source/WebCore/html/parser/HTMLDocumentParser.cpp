@@ -30,6 +30,7 @@
 #include "CompactHTMLToken.h"
 #include "ContentSecurityPolicy.h"
 #include "DocumentFragment.h"
+#include "DocumentLoader.h"
 #include "Element.h"
 #include "Frame.h"
 #include "HTMLNames.h"
@@ -82,7 +83,6 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors
     , m_scriptRunner(HTMLScriptRunner::create(document, this))
     , m_treeBuilder(HTMLTreeBuilder::create(this, document, reportErrors, m_options))
     , m_parserScheduler(HTMLParserScheduler::create(this))
-    , m_xssAuditor(this)
     , m_xssAuditorDelegate(document)
 #if ENABLE(THREADED_HTML_PARSER)
     , m_weakFactory(this)
@@ -102,7 +102,6 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_token(adoptPtr(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(m_options))
     , m_treeBuilder(HTMLTreeBuilder::create(this, fragment, contextElement, scriptingPermission, m_options))
-    , m_xssAuditor(this)
     , m_xssAuditorDelegate(fragment->document())
 #if ENABLE(THREADED_HTML_PARSER)
     , m_weakFactory(this)
@@ -302,7 +301,7 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 {
     ASSERT(shouldUseThreading());
 
-    // didReceiveTokensFromBackgroundParser can cause this parser to be detached from the Document,
+    // This method can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
 
@@ -316,8 +315,10 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
     for (Vector<CompactHTMLToken>::const_iterator it = tokens->begin(); it != tokens->end(); ++it) {
         ASSERT(!isWaitingForScripts());
 
-        // FIXME: Call m_xssAuditorDelegate.didBlockScript() with DidBlockScriptRequest from the CompactHTMLToken.
         m_textPosition = it->textPosition();
+
+        if (XSSInfo* xssInfo = it->xssInfo())
+            m_xssAuditorDelegate.didBlockScript(*xssInfo);
         constructTreeFromCompactHTMLToken(*it);
 
         if (isStopped())
@@ -368,19 +369,18 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 
     while (canTakeNextToken(mode, session) && !session.needsYield) {
         if (!isParsingFragment())
-            m_sourceTracker.start(m_input, m_tokenizer.get(), token());
+            m_sourceTracker.start(m_input.current(), m_tokenizer.get(), token());
 
         if (!m_tokenizer->nextToken(m_input.current(), token()))
             break;
 
         if (!isParsingFragment()) {
-            m_sourceTracker.end(m_input, m_tokenizer.get(), token());
+            m_sourceTracker.end(m_input.current(), m_tokenizer.get(), token());
 
             // We do not XSS filter innerHTML, which means we (intentionally) fail
             // http/tests/security/xssAuditor/dom-write-innerHTML.html
-            OwnPtr<DidBlockScriptRequest> request = m_xssAuditor.filterToken(token());
-            if (request)
-                m_xssAuditorDelegate.didBlockScript(request.release());
+            if (OwnPtr<XSSInfo> xssInfo = m_xssAuditor.filterToken(FilterTokenRequest(token(), m_sourceTracker, m_tokenizer->shouldAllowCDATA())))
+                m_xssAuditorDelegate.didBlockScript(*xssInfo);
         }
 
         constructTreeFromHTMLToken(token());
@@ -512,9 +512,12 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(!m_haveBackgroundParser);
     m_haveBackgroundParser = true;
 
-    ParserIdentifier identifier = ParserMap::identifierForParser(this);
     WeakPtr<HTMLDocumentParser> parser = m_weakFactory.createWeakPtr();
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::createPartial, identifier, m_options, parser));
+    OwnPtr<XSSAuditor> xssAuditor = adoptPtr(new XSSAuditor);
+    xssAuditor->init(document());
+    ASSERT(xssAuditor->isSafeToSendToAnotherThread());
+    ParserIdentifier identifier = ParserMap::identifierForParser(this);
+    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::createPartial, identifier, m_options, parser, xssAuditor.release()));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
@@ -663,11 +666,6 @@ bool HTMLDocumentParser::isExecutingScript() const
     if (!m_scriptRunner)
         return false;
     return m_scriptRunner->isExecutingScript();
-}
-
-String HTMLDocumentParser::sourceForToken(const HTMLToken& token)
-{
-    return m_sourceTracker.sourceForToken(token);
 }
 
 OrdinalNumber HTMLDocumentParser::lineNumber() const

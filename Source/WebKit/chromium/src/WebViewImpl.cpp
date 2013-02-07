@@ -451,6 +451,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_suppressInvalidations(false)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
+    , m_showDebugBorders(false)
     , m_continuousPaintingEnabled(false)
 {
     // WebKit/win/WebView.cpp does the same thing, except they call the
@@ -811,6 +812,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_client->cancelScheduledContentIntents();
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate: {
@@ -874,6 +876,13 @@ void WebViewImpl::setShowPaintRects(bool show)
         m_layerTreeView->setShowPaintRects(show);
     }
     m_showPaintRects = show;
+}
+
+void WebViewImpl::setShowDebugBorders(bool show)
+{
+    if (isAcceleratedCompositingActive())
+        m_layerTreeView->setShowDebugBorders(show);
+    m_showDebugBorders = show;
 }
 
 void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
@@ -2416,6 +2425,17 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirecti
     start = selection->start().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
     end = selection->end().primaryDirection() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
     return true;
+}
+
+bool WebViewImpl::isSelectionAnchorFirst() const
+{
+    const Frame* frame = focusedWebCoreFrame();
+    if (!frame)
+        return false;
+    FrameSelection* selection = frame->selection();
+    if (!selection)
+        return false;
+    return selection->selection().isBaseFirst();
 }
 
 bool WebViewImpl::setEditableSelectionOffsets(int start, int end)
@@ -4139,6 +4159,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
                 m_pageOverlays->update();
             m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
             m_layerTreeView->setShowPaintRects(m_showPaintRects);
+            m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
             m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
         } else {
             m_nonCompositedContentHost.clear();

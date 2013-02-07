@@ -1,3 +1,203 @@
+2013-02-07  Zoltan Herczeg  <zherczeg@webkit.org>
+
+        Invalid code is generated for storing constants with baseindex addressing modes on ARM traditional.
+        https://bugs.webkit.org/show_bug.cgi?id=109050
+
+        Reviewed by Oliver Hunt.
+
+        The S! scratch register is reused, but it should contain the constant value.
+
+        * assembler/ARMAssembler.cpp:
+        (JSC::ARMAssembler::baseIndexTransfer32):
+        (JSC::ARMAssembler::baseIndexTransfer16):
+
+2013-02-07  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt] Use GNU ar's thin archive format for intermediate static libs
+        https://bugs.webkit.org/show_bug.cgi?id=109052
+
+        Reviewed by Jocelyn Turcotte.
+
+        Adjust project files that used activeBuildConfig()
+        to use targetSubDir().
+
+        * JavaScriptCore.pri:
+        * LLIntOffsetsExtractor.pro:
+        * Target.pri:
+
+2013-02-06  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Touchups to VS2010 WebKit solution.
+        Fix an export generator script, modify some property sheets, add resouce file.
+
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorDebug.props:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorPostBuild.cmd:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorRelease.props:
+        * JavaScriptCore.vcxproj/resource.h: Added.
+
+2013-02-06  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation: assign class name to the heap graph node automatically
+        https://bugs.webkit.org/show_bug.cgi?id=107262
+
+        Reviewed by Yury Semikhatsky.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+
+2013-02-06  Mike West  <mkwst@chromium.org>
+
+        Add an ENABLE_NOSNIFF feature flag.
+        https://bugs.webkit.org/show_bug.cgi?id=109029
+
+        Reviewed by Jochen Eisinger.
+
+        This new flag will control the behavior of 'X-Content-Type-Options: nosniff'
+        when processing script and other resource types.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-02-05  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        put_to_base should emit a Phantom for "value" across the ForceOSRExit
+        https://bugs.webkit.org/show_bug.cgi?id=108998
+
+        Reviewed by Oliver Hunt.
+
+        Otherwise, the OSR exit compiler could clobber it, which would lead to badness.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::tallyFrequentExitSites): Build fixes for when DFG debug logging is enabled.
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock): Added extra Phantoms for the "value" field where needed.
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compile): Ditto.
+
+2013-02-05  Michael Saboff  <msaboff@apple.com>
+
+        Crash at JSC::call when loading www.gap.com with JSVALUE32_64 Enabled
+        https://bugs.webkit.org/show_bug.cgi?id=108991
+
+        Reviewed by Oliver Hunt.
+
+        Changed the restoration from calleeGPR to nonArgGPR0 because the restoration of the return location
+        may step on calleeGPR is it happen to be nonArgGPR2.
+
+        * dfg/DFGRepatch.cpp:
+        (JSC::DFG::dfgLinkClosureCall):
+
+2013-02-05  Roger Fong  <roger_fong@apple.com>
+
+        Add a JavaScriptCore Export Generator project.
+        https://bugs.webkit.org/show_bug.cgi?id=108971.
+
+        Reviewed by Brent Fulgham.
+
+        * JavaScriptCore.vcxproj/JavaScriptCore.sln:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters:
+        * JavaScriptCore.vcxproj/JavaScriptCoreCommon.props:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGenerator.vcxproj: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGenerator.vcxproj.filters: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGenerator.vcxproj.user: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorBuildCmd.cmd: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorCommon.props: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorDebug.props: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorPostBuild.cmd: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorPreBuild.cmd: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorRelease.props: Added.
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in: Added.
+
+2013-02-04  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should have a precise view of jump targets
+        https://bugs.webkit.org/show_bug.cgi?id=108868
+
+        Reviewed by Oliver Hunt.
+        
+        Previously, the DFG relied entirely on the CodeBlock's jump targets list for
+        determining when to break basic blocks. This worked great, except sometimes it
+        would be too conservative since the CodeBlock just says where the bytecode
+        generator inserted labels.
+        
+        This change keeps the old jump target list in CodeBlock since it is still
+        valuable to the baseline JIT, but switches the DFG to use its own jump target
+        calculator. This ought to reduce pressure on the DFG simplifier, which would
+        previously do a lot of work to try to merge redundantly created basic blocks.
+        It appears to be a 1% progression on SunSpider.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * bytecode/PreciseJumpTargets.cpp: Added.
+        (JSC):
+        (JSC::addSimpleSwitchTargets):
+        (JSC::computePreciseJumpTargets):
+        * bytecode/PreciseJumpTargets.h: Added.
+        (JSC):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseCodeBlock):
+
+2013-02-01  Roger Fong  <roger_fong@apple.com>
+
+        Make ConfigurationBuildDir include directories precede WebKitLibraries in JSC.
+        https://bugs.webkit.org/show_bug.cgi?id=108693.
+
+        Rubberstamped by Timothy Horton.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreCommon.vsprops:
+
+2013-02-04  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Structure::m_outOfLineCapacity is unnecessary
+        https://bugs.webkit.org/show_bug.cgi?id=108206
+
+        Reviewed by Darin Adler.
+
+        Simplifying the utility functions that we use since we don't need a 
+        bunch of fancy templates for this one specific call site.
+
+        * runtime/Structure.h:
+        (JSC::Structure::outOfLineCapacity):
+
+2013-02-05  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: testapi.mm should use ARC
+        https://bugs.webkit.org/show_bug.cgi?id=107838
+
+        Reviewed by Oliver Hunt.
+
+        In ToT testapi.mm uses the Obj-C garbage collector, which hides a lot of our object lifetime bugs.
+        We should enable ARC, since that is what most of our clients will be using. We use Xcode project 
+        settings to make sure we don't try to compile ARC on 32-bit.
+
+        * API/tests/testapi.mm:
+        (+[TestObject testObject]):
+        (testObjectiveCAPI):
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+
+2013-02-05  Brent Fulgham  <bfulgham@webkit.org>
+
+        [Windows] Unreviewed VS2010 Build Correction after r141651
+
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj: Add missing
+        StructureRareData.h and StructureRareData.cpp files.
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters: Ditto.
+
+2013-02-05  Michael Saboff  <msaboff@apple.com>
+
+        r141788 won't build due to not having all changes needed by Node* change
+        https://bugs.webkit.org/show_bug.cgi?id=108944
+
+        Reviewed by David Kilzer.
+
+        Fixed three instances of integerResult(..., m_compileIndex) to be integerResult(..., node).
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileSoftModulo):
+        (JSC::DFG::SpeculativeJIT::compileIntegerArithDivForARMv7s):
+
 2013-02-04  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r141809.

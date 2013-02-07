@@ -371,6 +371,7 @@ WebInspector.doLoadedDone = function()
     ProfilerAgent.hasHeapProfiler(WebInspector._initializeCapability.bind(WebInspector, "heapProfilerPresent", null));
     TimelineAgent.supportsFrameInstrumentation(WebInspector._initializeCapability.bind(WebInspector, "timelineSupportsFrameInstrumentation", null));
     TimelineAgent.canMonitorMainThread(WebInspector._initializeCapability.bind(WebInspector, "timelineCanMonitorMainThread", null));
+    PageAgent.canShowDebugBorders(WebInspector._initializeCapability.bind(WebInspector, "canShowDebugBorders", null));
     PageAgent.canShowFPSCounter(WebInspector._initializeCapability.bind(WebInspector, "canShowFPSCounter", null));
     PageAgent.canContinuouslyPaint(WebInspector._initializeCapability.bind(WebInspector, "canContinuouslyPaint", null));
     PageAgent.canOverrideDeviceMetrics(WebInspector._initializeCapability.bind(WebInspector, "canOverrideDeviceMetrics", null));
@@ -492,6 +493,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (WebInspector.settings.showPaintRects.get())
         PageAgent.setShowPaintRects(true);
 
+    if (WebInspector.settings.showDebugBorders.get())
+        PageAgent.setShowDebugBorders(true);
+
     if (WebInspector.settings.continuousPainting.get())
         PageAgent.setContinuousPaintingEnabled(true);
 
@@ -576,7 +580,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || anchor.target === "_blank")
+    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfileURLRegExp.exec(anchor.href)))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.

@@ -874,10 +874,9 @@ void MediaControlClosedCaptionsTrackListElement::rebuildTrackListMenu()
     Document* doc = document();
     CaptionUserPreferences* captionsUserPreferences = doc->page()->group().captionPreferences();
 
-    RefPtr<Element> captionsSection = doc->createElement(sectionTag, ASSERT_NO_EXCEPTION);
     RefPtr<Element> captionsHeader = doc->createElement(h3Tag, ASSERT_NO_EXCEPTION);
     captionsHeader->appendChild(doc->createTextNode(textTrackSubtitlesText()));
-    captionsSection->appendChild(captionsHeader);
+    appendChild(captionsHeader);
     RefPtr<Element> captionsMenuList = doc->createElement(ulTag, ASSERT_NO_EXCEPTION);
 
     RefPtr<Element> trackItem;
@@ -907,8 +906,7 @@ void MediaControlClosedCaptionsTrackListElement::rebuildTrackListMenu()
         m_menuItems.append(trackItem);
     }
 
-    captionsSection->appendChild(captionsMenuList);
-    appendChild(captionsSection);
+    appendChild(captionsMenuList);
 
     updateDisplay();
 #endif
@@ -1306,7 +1304,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
     }
 }
 
-void MediaControlTextTrackContainerElement::updateSizes()
+void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(this);
     if (!mediaElement)
@@ -1325,7 +1323,7 @@ void MediaControlTextTrackContainerElement::updateSizes()
         videoBox = toRenderVideo(mediaElement->renderer())->videoBox();
     }
 
-    if (m_videoDisplaySize == videoBox)
+    if (!forceUpdate && m_videoDisplaySize == videoBox)
         return;
     m_videoDisplaySize = videoBox;
 

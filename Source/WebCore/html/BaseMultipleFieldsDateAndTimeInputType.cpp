@@ -241,6 +241,11 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
     BaseDateAndTimeInputType::destroyShadowSubtree();
 }
 
+bool BaseMultipleFieldsDateAndTimeInputType::willCancelFocus(bool restorePreviousSelection, FocusDirection direction)
+{
+    return direction == FocusDirectionNone && m_dateTimeEditElement && m_dateTimeEditElement->hasFocusedField();
+}
+
 void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(FocusDirection direction)
 {
     if (!m_dateTimeEditElement)
@@ -291,8 +296,7 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
 
 bool BaseMultipleFieldsDateAndTimeInputType::isKeyboardFocusable(KeyboardEvent*) const
 {
-    // FIXME: This should be focusable even if readOnly(). webkit.org/b/108795.
-    return element()->isTextFormControlFocusable() && !element()->readOnly();
+    return element()->isTextFormControlFocusable();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::isMouseFocusable() const

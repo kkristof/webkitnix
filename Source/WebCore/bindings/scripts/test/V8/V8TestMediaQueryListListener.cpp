@@ -100,8 +100,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListene
 
 v8::Persistent<v8::FunctionTemplate> V8TestMediaQueryListListener::GetRawTemplate(v8::Isolate* isolate)
 {
-    if (!isolate)
-        isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->rawTemplateMap().find(&info);
     if (result != data->rawTemplateMap().end())
@@ -115,8 +113,6 @@ v8::Persistent<v8::FunctionTemplate> V8TestMediaQueryListListener::GetRawTemplat
 
 v8::Persistent<v8::FunctionTemplate> V8TestMediaQueryListListener::GetTemplate(v8::Isolate* isolate)
 {
-    if (!isolate)
-        isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&info);
     if (result != data->templateMap().end())
@@ -131,8 +127,6 @@ v8::Persistent<v8::FunctionTemplate> V8TestMediaQueryListListener::GetTemplate(v
 
 bool V8TestMediaQueryListListener::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    if (!isolate)
-        isolate = v8::Isolate::GetCurrent();
     return GetRawTemplate(isolate)->HasInstance(value);
 }
 
@@ -146,7 +140,7 @@ v8::Handle<v8::Object> V8TestMediaQueryListListener::createWrapper(PassRefPtr<Te
     checkTypeOrDieTrying(impl.get());
 #endif
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get());
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 

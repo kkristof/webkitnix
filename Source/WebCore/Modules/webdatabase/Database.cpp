@@ -33,6 +33,7 @@
 
 #include "ChangeVersionWrapper.h"
 #include "CrossThreadTask.h"
+#include "DatabaseBackendContext.h"
 #include "DatabaseCallback.h"
 #include "DatabaseContext.h"
 #include "DatabaseManager.h"
@@ -49,7 +50,6 @@
 #include "SQLTransactionCoordinator.h"
 #include "SQLTransactionErrorCallback.h"
 #include "SQLiteStatement.h"
-#include "ScriptController.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "VoidCallback.h"
@@ -66,15 +66,22 @@
 
 namespace WebCore {
 
-Database::Database(PassRefPtr<DatabaseContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
-    : DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize, AsyncDatabase)
+PassRefPtr<Database> Database::create(ScriptExecutionContext*, PassRefPtr<DatabaseBackend> backend)
+{
+    return static_cast<Database*>(backend.get());
+}
+
+Database::Database(PassRefPtr<DatabaseBackendContext> databaseContext,
+    const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+    : DatabaseBase(databaseContext->scriptExecutionContext())
+    , DatabaseBackendAsync(databaseContext, name, expectedVersion, displayName, estimatedSize)
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)
     , m_deleted(false)
 {
     m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
+    setFrontend(this);
 
-    ScriptController::initializeThreading();
     ASSERT(m_databaseContext->databaseThread());
 }
 
@@ -114,28 +121,21 @@ Database::~Database()
     }
 }
 
+Database* Database::from(DatabaseBackendAsync* backend)
+{
+    return static_cast<Database*>(backend->m_frontend);
+}
+
+PassRefPtr<DatabaseBackendAsync> Database::backend()
+{
+    return this;
+}
+
 String Database::version() const
 {
     if (m_deleted)
         return String();
     return DatabaseBackend::version();
-}
-
-bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
-{
-    DatabaseTaskSynchronizer synchronizer;
-    if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
-        return false;
-
-#if PLATFORM(CHROMIUM)
-    DatabaseTracker::tracker().prepareToOpenDatabase(this);
-#endif
-    bool success = false;
-    OwnPtr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, setVersionInNewDatabase, &synchronizer, error, errorMessage, success);
-    databaseContext()->databaseThread()->scheduleImmediateTask(task.release());
-    synchronizer.waitForTaskCompletion();
-
-    return success;
 }
 
 void Database::markAsDeletedAndClose()
@@ -190,18 +190,6 @@ void Database::closeImmediately()
 unsigned long long Database::maximumSize() const
 {
     return DatabaseManager::manager().getMaxSizeForDatabase(this);
-}
-
-bool Database::performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
-{
-    if (DatabaseBackend::performOpenAndVerify(setVersionInNewDatabase, error, errorMessage)) {
-        if (databaseContext()->databaseThread())
-            databaseContext()->databaseThread()->recordDatabaseOpen(this);
-
-        return true;
-    }
-
-    return false;
 }
 
 void Database::changeVersion(const String& oldVersion, const String& newVersion,
