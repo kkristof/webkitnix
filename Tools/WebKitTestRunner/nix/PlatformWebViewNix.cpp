@@ -41,6 +41,18 @@ static gboolean callUpdateDisplay(gpointer);
 using namespace WebKit;
 using namespace WTR;
 
+#if USE(OPENGL_ES_2)
+static GLuint rgba_to_bgra(GLuint rgba)
+{
+    GLuint r = (rgba & 0xFF000000) >> 16;
+    GLuint g = rgba & 0x00FF0000;
+    GLuint b = (rgba & 0x0000FF00) << 16;
+    GLuint a = rgba & 0x000000FF;
+
+    return b | g | r | a;
+}
+#endif
+
 static void pageDidRequestScroll(NIXView view, WKPoint position, const void* clientInfo)
 {
     NIXViewSetScrollPosition(view, position);
@@ -156,6 +168,11 @@ WKRetainPtr<WKImageRef> PlatformWebView::windowSnapshotImage()
     int width = NIXViewSize(m_view).width;
     int height = NIXViewSize(m_view).height;
     cairo_format_t format = CAIRO_FORMAT_ARGB32;
+#if USE(OPENGL_ES_2)
+    GLuint pixelFormat = GL_RGBA;
+#else
+    GLuint pixelFormat = GL_BGRA;
+#endif
 
     WKImageOptions options;
     int stride = 0;
@@ -174,7 +191,14 @@ WKRetainPtr<WKImageRef> PlatformWebView::windowSnapshotImage()
 
     // Read line by line using the Cairo internal format.
     for (int y = 0; y < height; y++)
-        glReadPixels(0, (height - (y + 1)), width, 1, GL_BGRA, GL_UNSIGNED_BYTE, data.get()+(y*stride));
+        glReadPixels(0, (height - (y + 1)), width, 1, pixelFormat, GL_UNSIGNED_BYTE, data.get()+(y*stride));
+
+#if USE(OPENGL_ES_2)
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++)
+            data.get()[y * stride + x] = rgba_to_bgra(data.get()[y * stride + x]);
+    }
+#endif
 
     cairo_surface_t* surface = cairo_image_surface_create_for_data(data.get(), format, width, height, stride);
 
