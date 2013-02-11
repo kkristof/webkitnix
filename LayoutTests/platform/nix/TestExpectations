@@ -1613,6 +1613,17 @@ fast/box-shadow [ Skip ]
 fast/box-sizing [ Skip ]
 fast/css-generated-content [ Skip ]
 
+
+# failing fast/block tests that need further investigation
+fast/block/float/float-not-removed-from-next-sibling.html
+fast/block/float/float-not-removed-from-next-sibling2.html
+fast/block/positioning/hittest-on-relative-positioned-children.html
+fast/block/float/dynamic-unfloat-pref-width.html
+fast/block/line-layout/selection-highlight-overlap.html
+
+# failing fast/block tests:
+fast/block/float/float-in-float-hit-testing.html
+
 fast/css/001.html [ Skip ]
 fast/css/002.html [ Skip ]
 fast/css/003.html [ Skip ]
@@ -2009,7 +2020,6 @@ fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Skip ]
 editing [ Skip ]
 fast/animation [ Skip ]
 fast/backgrounds [ Skip ]
-fast/block [ Skip ]
 fast/css/sticky [ Skip ]
 fast/dom/DeviceMotion [ Skip ]
 fast/dom/DeviceOrientation [ Skip ]
