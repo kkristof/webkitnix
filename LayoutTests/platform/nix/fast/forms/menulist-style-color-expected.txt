@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  RenderBlock {HTML} at (0,0) size 800x600
+    RenderBody {BODY} at (8,8) size 784x584
+      RenderMenuList {SELECT} at (2,2) size 49x20 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        RenderBlock (anonymous) at (1,1) size 47x18
+          RenderText at (0,0) size 47x19
+            text run at (0,0) width 47: "Default"
+      RenderText {#text} at (53,3) size 4x19
+        text run at (53,3) width 4: " "
+      RenderMenuList {SELECT} at (59,2) size 28x20 [color=#FF0000] [bgcolor=#FFFFFF] [border: (1px solid #FF0000)]
+        RenderBlock (anonymous) at (1,1) size 26x18
+          RenderText at (0,0) size 26x19
+            text run at (0,0) width 26: "Red"
+      RenderText {#text} at (89,3) size 4x19
+        text run at (89,3) width 4: " "
+      RenderMenuList {SELECT} at (95,2) size 108x20 [bgcolor=#008000] [border: (1px solid #000000)]
+        RenderBlock (anonymous) at (1,1) size 106x18
+          RenderText at (0,0) size 106x19
+            text run at (0,0) width 106: "Default on green"
+      RenderText {#text} at (205,3) size 4x19
+        text run at (205,3) width 4: " "
+      RenderMenuList {SELECT} at (211,2) size 87x20 [color=#FF0000] [bgcolor=#008000] [border: (1px solid #FF0000)]
+        RenderBlock (anonymous) at (1,1) size 85x18
+          RenderText at (0,0) size 85x19
+            text run at (0,0) width 85: "Red on green"
+      RenderText {#text} at (0,0) size 0x0

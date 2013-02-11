@@ -97,7 +97,7 @@ bool SQLiteDatabase::open(const String& filename, bool forWebSQLDatabase)
 
     if (!SQLiteStatement(*this, ASCIILiteral("PRAGMA temp_store = MEMORY;")).executeCommand())
         LOG_ERROR("SQLite database could not set temp_store to memory");
-
+    setSynchronous(SyncOff);
     return isOpen();
 }
 
