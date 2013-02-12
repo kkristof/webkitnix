@@ -83,12 +83,50 @@ fast/animation/request-animation-frame-disabled.html [ Skip ]
 fast/autoresize [ Skip ]
 
 # need further investigation
-fast/backgrounds/repeat/noRepeatCorrectClip.html
-fast/backgrounds/animated-svg-as-mask.html
-fast/backgrounds/size/backgroundSize16.html
+fast/backgrounds/repeat/noRepeatCorrectClip.html [ Skip ]
+fast/backgrounds/animated-svg-as-mask.html [ Skip ]
+fast/backgrounds/size/backgroundSize16.html [ Skip ]
+
+# flakey test
+fast/body-propagation/background-image/006.html [ Skip ]
+
+fast/borders/double-1px-border-assert.html [ Skip ]
+fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Skip ]
+fast/borders/inline-mask-overlay-image-outset.html [ Skip ]
+fast/borders/inline-mask-overlay-image.html [ Skip ]
+fast/borders/outline-alpha-inline.html [ Skip ]
+# flakey test
+fast/borders/borderRadiusDashed03.html [ Skip ]
+
+fast/box-shadow/box-shadow-transformed.html [ Skip ]
+fast/box-shadow/transform-fringing.html [ Skip ]
+
+fast/canvas/canvas-as-image-hidpi.html [ Skip ]
+fast/canvas/canvas-as-image-incremental-repaint.html [ Skip ]
+fast/canvas/canvas-blend-image.html [ Skip ]
+fast/canvas/canvas-blend-solid.html [ Skip ]
+fast/canvas/canvas-composite-fill-repaint.html [ Skip ]
+fast/canvas/canvas-currentPath.html [ Skip ]
+fast/canvas/canvas-drawImage-incomplete.html [ Skip ]
+fast/canvas/canvas-fillPath-shadow.html [ Skip ]
+fast/canvas/canvas-incremental-repaint-2.html [ Skip ]
+fast/canvas/canvas-incremental-repaint.html [ Skip ]
+fast/canvas/canvas-path-constructors.html [ Skip ]
+fast/canvas/canvas-quadratic-same-endpoint.html [ Skip ]
+fast/canvas/canvas-resize-after-paint-without-layout.html [ Skip ]
+fast/canvas/canvas-resize-reset-pixelRatio.html [ Skip ]
+fast/canvas/canvas-toDataURL-case-insensitive-mimetype.html [ Skip ]
+fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+fast/canvas/DrawImageSinglePixelStretch.html [ Skip ]
+fast/canvas/fallback-content.html [ Skip ]
+fast/canvas/set-colors.html [ Skip ]
+fast/canvas/setWidthResetAfterForcedRender.html [ Skip ]
+fast/canvas/toDataURL-supportedTypes.html [ Skip ]
 
 fast/encoding/denormalised-voiced-japanese-chars.html [ Skip ]
 fast/encoding/idn-security.html [ Skip ]
+
+fast/compact/002.html [ Skip ]
 
 fast/css/absolute-child-with-percent-height-inside-relative-parent.html [ Skip ]
 fast/css/acid2-pixel.html [ Skip ]
@@ -142,8 +180,10 @@ fast/dom/navigator-vibration.html [ Failure ]
 fast/dom/timer-throttling-hidden-page.html [ Failure ]
 fast/dom/title-directionality-removeChild.html [ Failure ]
 fast/dom/title-directionality.html [ Failure ]
+fast/dom/Range/getClientRects.html [ Skip ]
 fast/dom/register-protocol-handler.html [ Crash ]
 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Skip ]
+fast/dom/tabindex-clamp.html [ Skip ]
 fast/dom/URL-attribute-reflection.html [ Failure ]
 fast/dom/vertical-scrollbar-in-rtl.html [ Failure ]
 
@@ -781,6 +821,8 @@ fast/frames/seamless/seamless-percent-height.html [ Skip ]
 fast/frames/seamless/seamless-quirks.html [ Skip ]
 fast/frames/seamless/seamless-sandbox-flag.html [ Skip ]
 fast/frames/seamless/seamless-sandbox-srcdoc.html [ Skip ]
+fast/frames/seamless/seamless-srcdoc.html [ Skip ]
+fast/frames/transparent-scrollbar.html [ Skip ]
 fast/frames/take-focus-from-iframe.html [ Skip ]
 fast/frames/unload-reparent-sibling-frame.html [ Skip ]
 
@@ -794,6 +836,7 @@ fast/harness/show-modal-dialog.html [ Skip ]
 
 fast/hidpi/image-set-border-image-simple.html [ Skip ]
 fast/hidpi/image-set-border-image-dynamic.html [ Skip ]
+fast/hidpi/image-set-in-content-dynamic.html [ Skip ]
 
 fast/history/back-forward-reset-after-error-handling.html [ Skip ]
 fast/history/multiple-classes-visited.html [ Skip ]
@@ -1789,9 +1832,6 @@ http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Missing Failure
 accessibility [ Skip ]
 animations [ Skip ]
 batterystatus [ Skip ]
-fast/canvas [ Skip ]
-fast/clip [ Skip ]
-fast/compact [ Skip ]
 fast/filesystem [ Skip ]
 fast/mediastream [ Skip ]
 fast/notifications [ Skip ]
@@ -1804,6 +1844,7 @@ touchadjustment [ Skip ]
 webarchive [ Skip ]
 
 # WebGL
+fast/canvas/webgl [ Skip ]
 webgl/
 compositing/webgl [ Skip ]
 http/tests/canvas/webgl [ Skip ]
@@ -1837,10 +1878,6 @@ css1 [ Skip ]
 css2.1 [ Skip ]
 css3 [ Skip ]
 dom/xhtml/level3 [ Skip ]
-fast/body-propagation [ Skip ]
-fast/borders [ Skip ]
-fast/box-shadow [ Skip ]
-fast/box-sizing [ Skip ]
 fast/css-generated-content [ Skip ]
 
 
