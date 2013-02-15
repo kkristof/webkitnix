@@ -42,9 +42,6 @@ fast/sub-pixel/ellipsis-table.html [ Pass Crash ]
 fast/sub-pixel/ellipsis-zoom.html [ Pass Crash ]
 fast/sub-pixel/float-containing-block-with-margin.html [ Pass Crash ]
 
-# WebAudio
-webaudio/codec-tests/mp3/128kbps-44khz.html [ Crash ]
-
 ################################################################################
 # FAILURES
 ################################################################################
@@ -2134,6 +2131,20 @@ compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ Mis
 # Failing due to missing setUseDeferredFrameLoading
 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Missing Failure ]
 
+# WebAudio
+webaudio/audiobuffersource-channels.html [ Skip ]
+webaudio/biquad-getFrequencyResponse.html [ Skip ]
+webaudio/convolution-mono-mono.html [ Skip ]
+webaudio/decode-audio-data-basic.html [ Skip ]
+webaudio/delaynode-max-nondefault-delay.html [ Skip ]
+webaudio/delaynode-max-default-delay.html [ Skip ]
+webaudio/delaynode-maxdelay.html [ Skip ]
+webaudio/delaynode-scheduling.html [ Skip ]
+webaudio/mediaelementaudiosourcenode-gc.html [ Skip ]
+webaudio/mediaelementaudiosourcenode.html [ Skip ]
+webaudio/mediastreamaudiodestinationnode.html [ Skip ]
+webaudio/mediastreamaudiosourcenode.html [ Skip ]
+
 #############################################################
 # DISABLED APIS
 #############################################################
@@ -2174,13 +2185,9 @@ webintents [ Skip ]
 
 # WebAudio
 # Missing because we would need to decode data for running these
-webaudio/audiobuffersource.html [ Missing ]
-webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html [ Missing ]
-webaudio/codec-tests/vorbis/vbr-70kbps-44khz.html [ Missing ]
-webaudio/codec-tests/vorbis/vbr-96kbps-44khz.html [ Missing ]
-webaudio/codec-tests/wav/24bit-22khz-resample.html [ Missing ]
-webaudio/codec-tests/wav/24bit-44khz.html [ Missing ]
-webaudio/mixing.html [ Missing ]
+webaudio/audiobuffersource.html [ Skip ]
+webaudio/codec-tests [ Skip ]
+webaudio/mixing.html [ Skip ]
 
 css1 [ Skip ]
 css2.1 [ Skip ]
