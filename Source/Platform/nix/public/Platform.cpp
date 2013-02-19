@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Nokia Corporation and/or its subsidiary(-ies).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,9 +32,18 @@
 #include "config.h"
 #include "Platform.h"
 
+#include <wtf/PassOwnPtr.h>
+#include <wtf/OwnPtr.h>
+
 namespace WebKit {
 
-static Platform* s_platform = 0;
+class EmptyPlatform : public Platform {
+public:
+    ~EmptyPlatform() { }
+};
+static WTF::OwnPtr<EmptyPlatform> s_emptyPlatform = WTF::adoptPtr(new EmptyPlatform());
+
+static Platform* s_platform = s_emptyPlatform.get();
 
 void Platform::initialize(Platform* platform)
 {
