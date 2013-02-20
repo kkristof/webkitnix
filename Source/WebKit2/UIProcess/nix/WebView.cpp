@@ -126,8 +126,7 @@ void WebView::setScrollPosition(const WKPoint& position)
     if (!drawingArea)
         return;
 
-    if (!m_isSuspended)
-        drawingArea->setVisibleContentsRect(visibleRect(), trajectoryVector);
+    drawingArea->setVisibleContentsRect(visibleRect(), trajectoryVector);
 }
 
 WKPoint WebView::userViewportToContents(WKPoint point)
