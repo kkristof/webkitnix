@@ -167,7 +167,7 @@ static VisiblePosition visiblePositionForPointIgnoringClipping(const Frame& fram
     // outside the visible rect. To work around the bug, this is a copy of
     // visiblePositionAtPoint which which passes ignoreClipping=true.
     // See RIM Bug #4315.
-    HitTestResult result = frame.eventHandler()->hitTestResultAtPoint(framePoint, true /* allowShadowContent */, true /* ignoreClipping */);
+    HitTestResult result = frame.eventHandler()->hitTestResultAtPoint(framePoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowShadowContent | HitTestRequest::IgnoreClipping);
 
     Node* node = result.innerNode();
     if (!node || node->document() != frame.document())
@@ -892,6 +892,12 @@ bool SelectionHandler::inputNodeOverridesTouch() const
     return DOMSupport::elementAttributeState(element, selectionTouchOverrideAttr) == DOMSupport::On;
 }
 
+RequestedHandlePosition SelectionHandler::requestedSelectionHandlePosition(const VisibleSelection& selection) const
+{
+    Element* element = DOMSupport::selectionContainerElement(selection);
+    return DOMSupport::elementHandlePositionAttribute(element);
+}
+
 // Note: This is the only function in SelectionHandler in which the coordinate
 // system is not entirely WebKit.
 void SelectionHandler::selectionPositionChanged(bool forceUpdateWithoutChange)
@@ -1013,7 +1019,7 @@ void SelectionHandler::selectionPositionChanged(bool forceUpdateWithoutChange)
     if (m_webPage->m_selectionOverlay)
         m_webPage->m_selectionOverlay->draw(visibleSelectionRegion);
 
-    m_webPage->m_client->notifySelectionDetailsChanged(startCaret, endCaret, visibleSelectionRegion, inputNodeOverridesTouch());
+    m_webPage->m_client->notifySelectionDetailsChanged(startCaret, endCaret, visibleSelectionRegion, inputNodeOverridesTouch(), requestedSelectionHandlePosition(frame->selection()->selection()));
     SelectionTimingLog(Platform::LogLevelInfo,
         "SelectionHandler::selectionPositionChanged completed at %f",
         m_timer.elapsed());

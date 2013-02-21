@@ -38,11 +38,9 @@
 
 namespace WebCore {
 
-class Color;
 class Element;
 class Event;
 class FloatSize;
-class Frame;
 class FrameActionScheduler;
 class KURL;
 class Node;
@@ -78,6 +76,8 @@ public:
 
     Frame* frame() const { return m_frame.get(); }
     void clearFrame();
+
+    RenderView* renderView() const { return m_frame ? m_frame->contentRenderer() : 0; }
 
     int mapFromLayoutToCSSUnits(LayoutUnit);
     LayoutUnit mapFromCSSToLayoutUnits(int);
@@ -153,6 +153,7 @@ public:
 
     void didMoveOnscreen();
     void willMoveOffscreen();
+    void setIsInWindow(bool);
 
     void resetScrollbars();
     void resetScrollbarsAndClearContentsSize();
@@ -222,6 +223,8 @@ public:
     // Functions for querying the current scrolled position, negating the effects of overhang
     // and adjusting for page scale.
     IntSize scrollOffsetForFixedPosition() const;
+    // Static function can be called from another thread.
+    static IntSize scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, float frameScaleFactor, bool fixedElementsLayoutRelativeToFrame);
 
     bool fixedElementsLayoutRelativeToFrame() const;
 
@@ -254,8 +257,8 @@ public:
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
 
-    void addWidgetToUpdate(RenderEmbeddedObject*);
-    void removeWidgetToUpdate(RenderEmbeddedObject*);
+    void addWidgetToUpdate(RenderObject*);
+    void removeWidgetToUpdate(RenderObject*);
 
     virtual void paintContents(GraphicsContext*, const IntRect& damageRect);
     void setPaintBehavior(PaintBehavior);
@@ -470,7 +473,7 @@ private:
     double adjustedDeferredRepaintDelay() const;
 
     bool updateWidgets();
-    void updateWidget(RenderEmbeddedObject*);
+    void updateWidget(RenderObject*);
     void scrollToAnchor();
     void scrollPositionChanged();
 
@@ -493,8 +496,8 @@ private:
     LayoutSize m_size;
     LayoutSize m_margins;
     
-    typedef HashSet<RenderEmbeddedObject*> RenderEmbeddedObjectSet;
-    OwnPtr<RenderEmbeddedObjectSet> m_widgetUpdateSet;
+    typedef HashSet<RenderObject*> RenderObjectSet;
+    OwnPtr<RenderObjectSet> m_widgetUpdateSet;
     RefPtr<Frame> m_frame;
 
     bool m_doFullRepaint;

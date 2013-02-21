@@ -306,6 +306,7 @@ WebInspector.ProfilesPanel = function()
         this._registerProfileType(new WebInspector.CanvasProfileType());
 
     InspectorBackend.registerProfilerDispatcher(new WebInspector.ProfilerDispatcher(this));
+    InspectorBackend.registerHeapProfilerDispatcher(new WebInspector.HeapProfilerDispatcher(this));
     InspectorBackend.registerMemoryDispatcher(new WebInspector.MemoryDispatcher(this));
 
     this._createFileSelectorElement();
@@ -339,7 +340,7 @@ WebInspector.ProfilesPanel.prototype = {
         }
 
         var profileType = this.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
-        var temporaryProfile = profileType.createTemporaryProfile(UserInitiatedProfileName + "." + file.name);
+        var temporaryProfile = profileType.createTemporaryProfile(WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName + "." + file.name);
         this.addProfileHeader(temporaryProfile);
 
         temporaryProfile._fromFile = true;
@@ -471,12 +472,13 @@ WebInspector.ProfilesPanel.prototype = {
     _clearProfiles: function()
     {
         ProfilerAgent.clearProfiles();
+        HeapProfilerAgent.clearProfiles();
         this._reset();
     },
 
     _garbageCollectButtonClicked: function()
     {
-        ProfilerAgent.collectGarbage();
+        HeapProfilerAgent.collectGarbage();
     },
 
     /**
@@ -554,7 +556,7 @@ WebInspector.ProfilesPanel.prototype = {
         this._profiles.push(profile);
         this._profilesIdMap[this._makeKey(profile.uid, typeId)] = profile;
 
-        if (!profile.title.startsWith(UserInitiatedProfileName)) {
+        if (!WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(profile.title)) {
             var profileTitleKey = this._makeTitleKey(profile.title, typeId);
             if (!(profileTitleKey in this._profileGroups))
                 this._profileGroups[profileTitleKey] = [];
@@ -629,8 +631,12 @@ WebInspector.ProfilesPanel.prototype = {
 
         sidebarParent.removeChild(profile._profilesTreeElement);
 
-        if (!profile.isTemporary)
-            ProfilerAgent.removeProfile(profile.profileType().id, profile.uid);
+        if (!profile.isTemporary) {
+            if (profile.profileType().id == WebInspector.HeapSnapshotProfileType.TypeId)
+                HeapProfilerAgent.removeProfile(profile.uid);
+            else
+                ProfilerAgent.removeProfile(profile.profileType().id, profile.uid);
+        }
 
         // No other item will be selected if there aren't any other profiles, so
         // make sure that view gets cleared when the last profile is removed.
@@ -688,7 +694,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {ProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
+     * @param {HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
      * @param {string} viewName
      */
     showObject: function(snapshotObjectId, viewName)
@@ -783,7 +789,7 @@ WebInspector.ProfilesPanel.prototype = {
      */
     showProfileForURL: function(url)
     {
-        var match = url.match(WebInspector.ProfileURLRegExp);
+        var match = url.match(WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp);
         if (!match)
             return;
         this.showProfile(this._profilesIdMap[this._makeKey(Number(match[3]), match[1])]);
@@ -1091,22 +1097,24 @@ WebInspector.ProfilesPanel.prototype = {
             return;
 
         /**
+         * @param {?string} type
          * @param {?string} error
          * @param {Array.<ProfilerAgent.ProfileHeader>} profileHeaders
          */
-        function populateCallback(error, profileHeaders) {
+        function populateCallback(type, error, profileHeaders) {
             if (error)
                 return;
             profileHeaders.sort(function(a, b) { return a.uid - b.uid; });
             var profileHeadersLength = profileHeaders.length;
             for (var i = 0; i < profileHeadersLength; ++i) {
                 var profileHeader = profileHeaders[i];
-                var profileType = this.getProfileType(profileHeader.typeId);
+                var profileType = this.getProfileType(type || profileHeader.typeId);
                 this.addProfileHeader(profileType.createProfile(profileHeader));
             }
         }
 
-        ProfilerAgent.getProfileHeaders(populateCallback.bind(this));
+        ProfilerAgent.getProfileHeaders(populateCallback.bind(this, null));
+        HeapProfilerAgent.getProfileHeaders(populateCallback.bind(this, WebInspector.HeapSnapshotProfileType.TypeId));
 
         this._profilesWereRequested = true;
     },
@@ -1168,7 +1176,7 @@ WebInspector.ProfilesPanel.prototype = {
         function done() {
             this._launcherView.profileFinished();
         }
-        ProfilerAgent.takeHeapSnapshot(true, done.bind(this));
+        HeapProfilerAgent.takeHeapSnapshot(true, done.bind(this));
         WebInspector.userMetrics.ProfilesHeapProfileTaken.record();
     },
 
@@ -1207,7 +1215,7 @@ WebInspector.ProfilesPanel.prototype = {
 
         function revealInView(viewName)
         {
-            ProfilerAgent.getHeapObjectId(objectId, didReceiveHeapObjectId.bind(this, viewName));
+            HeapProfilerAgent.getHeapObjectId(objectId, didReceiveHeapObjectId.bind(this, viewName));
         }
 
         function didReceiveHeapObjectId(viewName, error, result)
@@ -1239,8 +1247,7 @@ WebInspector.MemoryDispatcher.prototype = {
 
     /**
      * @override
-     * @param {number} uid
-     * @param {string} chunk
+     * @param {MemoryAgent.HeapSnapshotChunk} chunk
      */
     addNativeSnapshotChunk: function(chunk)
     {
@@ -1320,6 +1327,64 @@ WebInspector.ProfilerDispatcher.prototype = {
 
 /**
  * @constructor
+ * @implements {HeapProfilerAgent.Dispatcher}
+ * @param {WebInspector.ProfilesPanel} profilesPanel
+ */
+WebInspector.HeapProfilerDispatcher = function(profilesPanel)
+{
+    this._profilesPanel = profilesPanel;
+}
+
+WebInspector.HeapProfilerDispatcher.prototype = {
+    /**
+     * @param {HeapProfilerAgent.ProfileHeader} profile
+     */
+    addProfileHeader: function(profile)
+    {
+        var profileType = this._profilesPanel.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
+        this._profilesPanel.addProfileHeader(profileType.createProfile(profile));
+    },
+
+    /**
+     * @override
+     * @param {number} uid
+     * @param {string} chunk
+     */
+    addHeapSnapshotChunk: function(uid, chunk)
+    {
+        this._profilesPanel._addHeapSnapshotChunk(uid, chunk);
+    },
+
+    /**
+     * @override
+     * @param {number} uid
+     */
+    finishHeapSnapshot: function(uid)
+    {
+        this._profilesPanel._finishHeapSnapshot(uid);
+    },
+
+    /**
+     * @override
+     */
+    resetProfiles: function()
+    {
+        this._profilesPanel._reset();
+    },
+
+    /**
+     * @override
+     * @param {number} done
+     * @param {number} total
+     */
+    reportHeapSnapshotProgress: function(done, total)
+    {
+        this._profilesPanel._reportHeapSnapshotProgress(done, total);
+    }
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.SidebarTreeElement}
  * @param {!WebInspector.ProfileHeader} profile
  * @param {string} titleFormat
@@ -1330,8 +1395,8 @@ WebInspector.ProfileSidebarTreeElement = function(profile, titleFormat, classNam
     this.profile = profile;
     this._titleFormat = titleFormat;
 
-    if (this.profile.title.startsWith(UserInitiatedProfileName))
-        this._profileNumber = this.profile.title.substring(UserInitiatedProfileName.length + 1);
+    if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(this.profile.title))
+        this._profileNumber = WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(this.profile.title);
 
     WebInspector.SidebarTreeElement.call(this, className, "", "", profile, false);
 
@@ -1355,7 +1420,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
     {
         if (this._mainTitle)
             return this._mainTitle;
-        if (this.profile.title.startsWith(UserInitiatedProfileName))
+        if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(this.profile.title))
             return WebInspector.UIString(this._titleFormat, this._profileNumber);
         return this.profile.title;
     },

@@ -337,6 +337,7 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_enabled(false)
     , m_isFirstLayoutAfterOnLoad(false)
     , m_geolocationOverridden(false)
+    , m_ignoreScriptsEnabledNotification(false)
 {
 }
 
@@ -550,11 +551,10 @@ void InspectorPageAgent::getCookies(ErrorString*, RefPtr<TypeBuilder::Array<Type
             rawCookiesImplemented = getRawCookies(document, KURL(ParsedURLString, *it), docCookiesList);
             if (!rawCookiesImplemented) {
                 // FIXME: We need duplication checking for the String representation of cookies.
-                ExceptionCode ec = 0;
-                stringCookiesList.append(document->cookie(ec));
+                //
                 // Exceptions are thrown by cookie() in sandboxed frames. That won't happen here
                 // because "document" is the document of the main frame of the page.
-                ASSERT(!ec);
+                stringCookiesList.append(document->cookie(ASSERT_NO_EXCEPTION));
             } else {
                 int cookiesSize = docCookiesList.size();
                 for (int i = 0; i < cookiesSize; i++) {
@@ -813,8 +813,11 @@ void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
         return;
 
     Settings* settings = mainFrame()->settings();
-    if (settings)
+    if (settings) {
+        m_ignoreScriptsEnabledNotification = true;
         settings->setScriptEnabled(!value);
+        m_ignoreScriptsEnabledNotification = false;
+    }
 }
 
 void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
@@ -1030,6 +1033,14 @@ void InspectorPageAgent::didRecalculateStyle()
         m_overlay->update();
 }
 
+void InspectorPageAgent::scriptsEnabled(bool isEnabled)
+{
+    if (m_ignoreScriptsEnabledNotification)
+        return;
+
+    m_frontend->scriptsEnabled(isEnabled);
+}
+
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Frame* frame)
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
@@ -1046,7 +1057,7 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Fra
         frameObject->setName(name);
     }
     // FIXME: Make this field non-optional. https://bugs.webkit.org/show_bug.cgi?id=80857
-    frameObject->setSecurityOrigin(frame->document()->securityOrigin()->toString());
+    frameObject->setSecurityOrigin(frame->document()->securityOrigin()->toRawString());
 
     return frameObject;
 }

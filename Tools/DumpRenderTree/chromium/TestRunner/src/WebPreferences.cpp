@@ -40,7 +40,7 @@ namespace WebTestRunner {
 
 void WebPreferences::reset()
 {
-#if OS(MAC_OS_X)
+#ifdef __APPLE__
     cursiveFontFamily = WebString::fromUTF8("Apple Chancery");
     fantasyFontFamily = WebString::fromUTF8("Papyrus");
     WebString serif = WebString::fromUTF8("Times");
@@ -106,7 +106,7 @@ void WebPreferences::reset()
     // LayoutTests/http/tests/local, to access http server.
     allowUniversalAccessFromFileURLs = true;
 
-#if OS(DARWIN)
+#ifdef __APPLE__
     editingBehavior = WebSettings::EditingBehaviorMac;
 #else
     editingBehavior = WebSettings::EditingBehaviorWin;
@@ -131,7 +131,6 @@ void WebPreferences::reset()
     cssCustomFilterEnabled = false;
     shouldRespectImageOrientation = false;
     asynchronousSpellCheckingEnabled = false;
-    minimumTimerInterval = 0.010; // 10 milliseconds.
     touchDragDropEnabled = false;
 }
 
@@ -202,7 +201,6 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setMockScrollbarsEnabled(mockScrollbarsEnabled);
     settings->setShouldRespectImageOrientation(shouldRespectImageOrientation);
     settings->setAsynchronousSpellCheckingEnabled(asynchronousSpellCheckingEnabled);
-    settings->setMinimumTimerInterval(minimumTimerInterval);
     settings->setTouchDragDropEnabled(touchDragDropEnabled);
 
     // Fixed values.

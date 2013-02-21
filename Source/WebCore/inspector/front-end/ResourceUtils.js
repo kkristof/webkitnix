@@ -58,8 +58,7 @@ WebInspector.displayNameForURL = function(url)
     if (resource)
         return resource.displayName;
 
-    var uri = WebInspector.fileMapping.uriForURL(url);
-    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURI(uri);
+    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
     if (uiSourceCode)
         return uiSourceCode.parsedURL.displayName;
 
@@ -75,7 +74,11 @@ WebInspector.displayNameForURL = function(url)
             return url.substring(index);
     }
 
-    return parsedURL ? url.trimURL(parsedURL.host) : url;
+    if (!parsedURL)
+        return url;
+
+    var displayName = url.trimURL(parsedURL.host);
+    return displayName === "/" ? parsedURL.host + "/" : displayName;
 }
 
 /**

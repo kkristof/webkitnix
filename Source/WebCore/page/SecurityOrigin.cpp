@@ -56,6 +56,7 @@ static bool schemeRequiresAuthority(const KURL& url)
 bool SecurityOrigin::shouldUseInnerURL(const KURL& url)
 {
 #if ENABLE(BLOB)
+    // FIXME: Blob URLs don't have inner URLs. Their form is "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL is incorrect.
     if (url.protocolIs("blob"))
         return true;
 #endif
@@ -84,6 +85,8 @@ static PassRefPtr<SecurityOrigin> getCachedOrigin(const KURL& url)
 #if ENABLE(BLOB)
     if (url.protocolIs("blob"))
         return ThreadableBlobRegistry::getCachedOrigin(url);
+#else
+    UNUSED_PARAM(url);
 #endif
     return 0;
 }

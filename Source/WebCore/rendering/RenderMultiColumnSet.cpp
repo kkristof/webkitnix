@@ -28,8 +28,8 @@
 
 #include "HitTestResult.h"
 #include "PaintInfo.h"
-#include "RenderMultiColumnFlowThread.h"
 #include "RenderMultiColumnBlock.h"
+#include "RenderMultiColumnFlowThread.h"
 
 using std::min;
 using std::max;
@@ -119,7 +119,7 @@ LayoutRect RenderMultiColumnSet::columnRectAt(unsigned index) const
     LayoutUnit colLogicalHeight = computedColumnHeight();
     LayoutUnit colLogicalTop = borderBefore() + paddingBefore();
     LayoutUnit colLogicalLeft = borderAndPaddingLogicalLeft();
-    int colGap = columnGap();
+    LayoutUnit colGap = columnGap();
     if (style()->isLeftToRightDirection())
         colLogicalLeft += index * (colLogicalWidth + colGap);
     else
@@ -170,16 +170,18 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
     // This problem applies to regions and pages as well and is not unique to columns.
     bool isFirstColumn = !index;
     bool isLastColumn = index == colCount - 1;
+    bool isLeftmostColumn = style()->isLeftToRightDirection() ? isFirstColumn : isLastColumn;
+    bool isRightmostColumn = style()->isLeftToRightDirection() ? isLastColumn : isFirstColumn;
     LayoutRect overflowRect(portionRect);
     if (isHorizontalWritingMode()) {
-        if (isFirstColumn) {
+        if (isLeftmostColumn) {
             // Shift to the logical left overflow of the flow thread to make sure it's all covered.
             overflowRect.shiftXEdgeTo(min(flowThread()->visualOverflowRect().x(), portionRect.x()));
         } else {
             // Expand into half of the logical left column gap.
             overflowRect.shiftXEdgeTo(portionRect.x() - colGap / 2);
         }
-        if (isLastColumn) {
+        if (isRightmostColumn) {
             // Shift to the logical right overflow of the flow thread to ensure content can spill out of the column.
             overflowRect.shiftMaxXEdgeTo(max(flowThread()->visualOverflowRect().maxX(), portionRect.maxX()));
         } else {
@@ -187,14 +189,14 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
             overflowRect.shiftMaxXEdgeTo(portionRect.maxX() + colGap / 2);
         }
     } else {
-        if (isFirstColumn) {
+        if (isLeftmostColumn) {
             // Shift to the logical left overflow of the flow thread to make sure it's all covered.
             overflowRect.shiftYEdgeTo(min(flowThread()->visualOverflowRect().y(), portionRect.y()));
         } else {
             // Expand into half of the logical left column gap.
             overflowRect.shiftYEdgeTo(portionRect.y() - colGap / 2);
         }
-        if (isLastColumn) {
+        if (isRightmostColumn) {
             // Shift to the logical right overflow of the flow thread to ensure content can spill out of the column.
             overflowRect.shiftMaxYEdgeTo(max(flowThread()->visualOverflowRect().maxY(), portionRect.maxY()));
         } else {
@@ -205,14 +207,21 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
     return overflowRectForFlowThreadPortion(overflowRect, isFirstRegion() && isFirstColumn, isLastRegion() && isLastColumn);
 }
 
-void RenderMultiColumnSet::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // FIXME: RenderRegions are replaced elements right now and so they only paint in the foreground phase.
+    if (style()->visibility() != VISIBLE)
+        return;
+
+    RenderBlock::paintObject(paintInfo, paintOffset);
+
+    // FIXME: Right now we're only painting in the foreground phase.
     // Columns should technically respect phases and allow for background/float/foreground overlap etc., just like
-    // RenderBlocks do. We can't correct this, however, until RenderRegions are changed to actually be
-    // RenderBlocks. Note this is a pretty minor issue, since the old column implementation clipped columns
+    // RenderBlocks do. Note this is a pretty minor issue, since the old column implementation clipped columns
     // anyway, thus making it impossible for them to overlap one another. It's also really unlikely that the columns
     // would overlap another block.
+    if (!m_flowThread || !isValid() || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
+        return;
+
     setRegionObjectsRegionStyle();
     paintColumnRules(paintInfo, paintOffset);
     paintColumnContents(paintInfo, paintOffset);
@@ -230,7 +239,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
     EBorderStyle ruleStyle = blockStyle->columnRuleStyle();
     LayoutUnit ruleThickness = blockStyle->columnRuleWidth();
     LayoutUnit colGap = columnGap();
-    bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent && ruleThickness <= colGap;
+    bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
     if (!renderRule)
         return;
 
@@ -258,7 +267,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
             ruleLogicalLeft -= (inlineDirectionSize + colGap / 2);
             currLogicalLeftOffset -= (inlineDirectionSize + colGap);
         }
-       
+
         // Now paint the column rule.
         if (i < colCount - 1) {
             LayoutUnit ruleLeft = isHorizontalWritingMode() ? paintOffset.x() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd : paintOffset.x() + borderLeft() + paddingLeft();

@@ -370,7 +370,6 @@ InjectedBundlePage::InjectedBundlePage(WKBundlePageRef page)
         0, /*toolbarsAreVisible*/
         didReachApplicationCacheOriginQuota,
         didExceedDatabaseQuota,
-        0, /*plugInStartLabelImage*/
         0, /*plugInStartLabelTitle*/
         0, /*plugInStartLabelSubtitle*/
         0, /*plugInExtraStyleSheet*/

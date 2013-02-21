@@ -377,6 +377,8 @@ public:
     bool hasBorder() const { return surround->border.hasBorder(); }
     bool hasPadding() const { return surround->padding.nonZero(); }
     bool hasOffset() const { return surround->offset.nonZero(); }
+    bool isMarginBeforeQuirk() const { return marginBefore().quirk(); }
+    bool isMarginAfterQuirk() const { return marginAfter().quirk(); }
 
     bool hasBackgroundImage() const { return m_background->background().hasImage(); }
     bool hasFixedBackgroundImage() const { return m_background->background().hasFixedImage(); }
@@ -409,20 +411,8 @@ public:
     }
 
 #if ENABLE(CSS_FILTERS)
-    void getFilterOutsets(int& top, int& right, int& bottom, int& left) const
-    {
-        if (hasFilter())
-            filter().getOutsets(top, right, bottom, left);
-        else {
-            top = 0;
-            right = 0;
-            bottom = 0;
-            left = 0;
-        }
-    }
     bool hasFilterOutsets() const { return hasFilter() && filter().hasOutsets(); }
-#else
-    bool hasFilterOutsets() const { return false; }
+    FilterOutsets filterOutsets() const { return hasFilter() ? filter().outsets() : FilterOutsets(); }
 #endif
 
     Order rtlOrdering() const { return static_cast<Order>(inherited_flags.m_rtlOrdering); }
@@ -433,6 +423,7 @@ public:
     bool hasAnyPublicPseudoStyles() const;
     bool hasPseudoStyle(PseudoId pseudo) const;
     void setHasPseudoStyle(PseudoId pseudo);
+    bool hasUniquePseudoStyle() const;
 
     // attribute getter methods
 
@@ -460,6 +451,14 @@ public:
     EPosition position() const { return static_cast<EPosition>(noninherited_flags._position); }
     bool hasOutOfFlowPosition() const { return position() == AbsolutePosition || position() == FixedPosition; }
     bool hasInFlowPosition() const { return position() == RelativePosition || position() == StickyPosition; }
+    bool hasPaintOffset() const
+    {
+        bool paintOffset = hasInFlowPosition();
+#if ENABLE(CSS_EXCLUSIONS)
+        paintOffset = paintOffset || (isFloating() && shapeOutside());
+#endif
+        return paintOffset;
+    }
     bool hasViewportConstrainedPosition() const { return position() == FixedPosition || position() == StickyPosition; }
     EFloat floating() const { return static_cast<EFloat>(noninherited_flags._floating); }
 
@@ -1020,10 +1019,10 @@ public:
     void setBackgroundSizeLength(LengthSize s) { SET_VAR(m_background, m_background.m_sizeLength, s); }
     
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
-    void setBorderImageSource(PassRefPtr<StyleImage> v) { surround.access()->border.m_image.setImage(v); }
-    void setBorderImageSlices(LengthBox slices) { surround.access()->border.m_image.setImageSlices(slices); }
-    void setBorderImageWidth(LengthBox slices) { surround.access()->border.m_image.setBorderSlices(slices); }
-    void setBorderImageOutset(LengthBox outset) { surround.access()->border.m_image.setOutset(outset); }
+    void setBorderImageSource(PassRefPtr<StyleImage>);
+    void setBorderImageSlices(LengthBox);
+    void setBorderImageWidth(LengthBox);
+    void setBorderImageOutset(LengthBox);
 
     void setBorderTopLeftRadius(LengthSize s) { SET_VAR(surround, border.m_topLeft, s); }
     void setBorderTopRightRadius(LengthSize s) { SET_VAR(surround, border.m_topRight, s); }
@@ -1423,6 +1422,13 @@ public:
         rareNonInheritedData.access()->m_shapeInside = value;
     }
     ExclusionShapeValue* shapeInside() const { return rareNonInheritedData->m_shapeInside.get(); }
+    ExclusionShapeValue* resolvedShapeInside() const
+    {
+        ExclusionShapeValue* shapeInside = this->shapeInside();
+        if (shapeInside && shapeInside->type() == ExclusionShapeValue::OUTSIDE)
+            return shapeOutside();
+        return shapeInside;
+    }
 
     void setShapeOutside(PassRefPtr<ExclusionShapeValue> value)
     {
@@ -1432,7 +1438,7 @@ public:
     }
     ExclusionShapeValue* shapeOutside() const { return rareNonInheritedData->m_shapeOutside.get(); }
 
-    static ExclusionShapeValue* initialShapeInside() { return 0; }
+    static ExclusionShapeValue* initialShapeInside();
     static ExclusionShapeValue* initialShapeOutside() { return 0; }
 
     void setClipPath(PassRefPtr<ClipPathOperation> operation)

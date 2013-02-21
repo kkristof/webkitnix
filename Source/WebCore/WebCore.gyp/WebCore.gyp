@@ -56,7 +56,6 @@
       '../Modules/filesystem/chromium',
       '../Modules/gamepad',
       '../Modules/geolocation',
-      '../Modules/intents',
       '../Modules/indexeddb',
       '../Modules/indexeddb/chromium',
       '../Modules/mediasource',
@@ -82,6 +81,7 @@
       '../css',
       '../dom',
       '../dom/default',
+      '../dom/default/chromium',
       '../editing',
       '../fileapi',
       '../history',
@@ -1180,7 +1180,6 @@
             'generator_include_dirs': [
               '--include', '../Modules/filesystem',
               '--include', '../Modules/indexeddb',
-              '--include', '../Modules/intents',
               '--include', '../Modules/mediasource',
               '--include', '../Modules/mediastream',
               '--include', '../Modules/navigatorcontentutils',
@@ -2165,17 +2164,6 @@
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
-        }],
-        ['clang==1', {
-          # FIXME: Remove once this warning has been tweaked in Clang.
-          'cflags': [
-            '-Wno-return-type-c-linkage',
-          ],
-          'xcode_settings': {
-            'WARNING_CFLAGS': [
-              '-Wno-return-type-c-linkage',
-            ],
-          }
         }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.

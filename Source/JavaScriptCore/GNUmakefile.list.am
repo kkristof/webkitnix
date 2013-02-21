@@ -105,7 +105,6 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/bytecode/CodeBlockWithJITType.h \
 	Source/JavaScriptCore/bytecode/CodeOrigin.cpp \
 	Source/JavaScriptCore/bytecode/CodeOrigin.h \
-	Source/JavaScriptCore/bytecode/Comment.h \
 	Source/JavaScriptCore/bytecode/DataFormat.h \
 	Source/JavaScriptCore/bytecode/DFGExitProfile.cpp \
 	Source/JavaScriptCore/bytecode/DFGExitProfile.h \
@@ -131,6 +130,7 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/bytecode/Opcode.cpp \
 	Source/JavaScriptCore/bytecode/Opcode.h \
 	Source/JavaScriptCore/bytecode/Operands.h \
+	Source/JavaScriptCore/bytecode/PolymorphicAccessStructureList.h \
 	Source/JavaScriptCore/bytecode/PolymorphicPutByIdList.cpp \
 	Source/JavaScriptCore/bytecode/PolymorphicPutByIdList.h \
 	Source/JavaScriptCore/bytecode/PreciseJumpTargets.cpp \
@@ -195,6 +195,8 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/dfg/DFGCapabilities.h \
 	Source/JavaScriptCore/dfg/DFGCFAPhase.cpp \
 	Source/JavaScriptCore/dfg/DFGCFAPhase.h \
+	Source/JavaScriptCore/dfg/DFGCPSRethreadingPhase.cpp \
+	Source/JavaScriptCore/dfg/DFGCPSRethreadingPhase.h \
 	Source/JavaScriptCore/dfg/DFGCommon.cpp \
 	Source/JavaScriptCore/dfg/DFGCommon.h \
 	Source/JavaScriptCore/dfg/DFGConstantFoldingPhase.cpp \
@@ -249,6 +251,8 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/dfg/DFGPhase.h \
 	Source/JavaScriptCore/dfg/DFGPredictionPropagationPhase.cpp \
 	Source/JavaScriptCore/dfg/DFGPredictionPropagationPhase.h \
+	Source/JavaScriptCore/dfg/DFGPredictionInjectionPhase.cpp \
+	Source/JavaScriptCore/dfg/DFGPredictionInjectionPhase.h \
 	Source/JavaScriptCore/dfg/DFGRegisterBank.h \
 	Source/JavaScriptCore/dfg/DFGRegisterSet.h \
 	Source/JavaScriptCore/dfg/DFGRepatch.cpp \
@@ -266,6 +270,8 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/dfg/DFGStructureCheckHoistingPhase.h \
 	Source/JavaScriptCore/dfg/DFGThunks.cpp \
 	Source/JavaScriptCore/dfg/DFGThunks.h \
+	Source/JavaScriptCore/dfg/DFGUnificationPhase.cpp \
+	Source/JavaScriptCore/dfg/DFGUnificationPhase.h \
 	Source/JavaScriptCore/dfg/DFGValueRecoveryOverride.h \
 	Source/JavaScriptCore/dfg/DFGValueSource.cpp \
 	Source/JavaScriptCore/dfg/DFGValueSource.h \
@@ -487,12 +493,14 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/parser/Nodes.h \
 	Source/JavaScriptCore/parser/ParserArena.cpp \
 	Source/JavaScriptCore/parser/ParserArena.h \
+	Source/JavaScriptCore/parser/ParserError.h \
 	Source/JavaScriptCore/parser/ParserTokens.h \
 	Source/JavaScriptCore/parser/Parser.cpp \
 	Source/JavaScriptCore/parser/Parser.h \
 	Source/JavaScriptCore/parser/ParserModes.h \
 	Source/JavaScriptCore/parser/ResultType.h \
 	Source/JavaScriptCore/parser/SourceCode.h \
+	Source/JavaScriptCore/parser/SourceProvider.cpp \
 	Source/JavaScriptCore/parser/SourceProvider.h \
 	Source/JavaScriptCore/parser/SourceProviderCache.cpp \
 	Source/JavaScriptCore/parser/SourceProviderCache.h \
@@ -754,6 +762,7 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/runtime/StructureChain.h \
 	Source/JavaScriptCore/runtime/Structure.cpp \
 	Source/JavaScriptCore/runtime/Structure.h \
+	Source/JavaScriptCore/runtime/StructureInlines.h \
 	Source/JavaScriptCore/runtime/StructureRareData.cpp \
 	Source/JavaScriptCore/runtime/StructureRareData.h \
 	Source/JavaScriptCore/runtime/StructureRareDataInlines.h \

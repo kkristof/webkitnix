@@ -32,15 +32,6 @@
 #include "DrawingAreaProxy.h"
 #include "EditorState.h"
 #include "GeolocationPermissionRequestManagerProxy.h"
-#if ENABLE(TOUCH_EVENTS)
-#include "NativeWebTouchEvent.h"
-#endif
-#if ENABLE(GESTURE_EVENTS)
-#include "NativeWebGestureEvent.h"
-#endif
-#if PLATFORM(QT)
-#include "QtNetworkRequestData.h"
-#endif
 #include "LayerTreeContext.h"
 #include "NotificationPermissionRequestManagerProxy.h"
 #include "PlatformProcessIdentifier.h"
@@ -84,8 +75,26 @@
 #include <WebCore/DragSession.h>
 #endif
 
+#if ENABLE(TOUCH_EVENTS)
+#include "NativeWebTouchEvent.h"
+#endif
+
 #if PLATFORM(EFL)
+#include "WKPageEfl.h"
+#include "WebUIPopupMenuClient.h"
 #include <Evas.h>
+#endif
+
+#if PLATFORM(QT)
+#include "QtNetworkRequestData.h"
+#endif
+
+#if ENABLE(TOUCH_EVENTS)
+#include "NativeWebTouchEvent.h"
+#endif
+ 
+#if ENABLE(GESTURE_EVENTS)
+#include "NativeWebGestureEvent.h"
 #endif
 
 namespace CoreIPC {
@@ -235,7 +244,8 @@ class WebPageProxy
 #if ENABLE(INPUT_TYPE_COLOR)
     , public WebColorChooserProxy::Client
 #endif
-    , public WebPopupMenuProxy::Client {
+    , public WebPopupMenuProxy::Client
+    , public CoreIPC::MessageReceiver {
 public:
     static const Type APIType = TypePage;
 
@@ -273,6 +283,9 @@ public:
     void initializeLoaderClient(const WKPageLoaderClient*);
     void initializePolicyClient(const WKPagePolicyClient*);
     void initializeUIClient(const WKPageUIClient*);
+#if PLATFORM(EFL)
+    void initializeUIPopupMenuClient(const WKPageUIPopupMenuClient*);
+#endif
 
     void initializeWebPage();
 
@@ -499,6 +512,11 @@ public:
     bool isPinnedToTopSide() const { return m_mainFrameIsPinnedToTopSide; }
     bool isPinnedToBottomSide() const { return m_mainFrameIsPinnedToBottomSide; }
 
+    bool rubberBandsAtBottom() const { return m_rubberBandsAtBottom; }
+    void setRubberBandsAtBottom(bool);
+    bool rubberBandsAtTop() const { return m_rubberBandsAtTop; }
+    void setRubberBandsAtTop(bool);
+
     void setPaginationMode(WebCore::Pagination::Mode);
     WebCore::Pagination::Mode paginationMode() const { return m_paginationMode; }
     void setPaginationBehavesLikeColumns(bool);
@@ -587,9 +605,6 @@ public:
     void startDrag(const WebCore::DragData&, const ShareableBitmap::Handle& dragImage);
 #endif
 #endif
-
-    void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&);
-    void didReceiveSyncMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&, OwnPtr<CoreIPC::MessageEncoder>&);
 
     void processDidBecomeUnresponsive();
     void interactionOccurredWhileProcessUnresponsive();
@@ -756,6 +771,10 @@ private:
 
     virtual Type type() const { return APIType; }
 
+    // CoreIPC::MessageReceiver
+    virtual void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&) OVERRIDE;
+    virtual void didReceiveSyncMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&, OwnPtr<CoreIPC::MessageEncoder>&) OVERRIDE;
+
     // WebPopupMenuProxy::Client
     virtual void valueChangedForPopupMenu(WebPopupMenuProxy*, int32_t newSelectedIndex);
     virtual void setTextFromItemForPopupMenu(WebPopupMenuProxy*, int32_t index);
@@ -801,7 +820,7 @@ private:
     void decidePolicyForResponse(uint64_t frameID, const WebCore::ResourceResponse&, const WebCore::ResourceRequest&, uint64_t listenerID, CoreIPC::MessageDecoder&, bool& receivedPolicyAction, uint64_t& policyAction, uint64_t& downloadID);
     void unableToImplementPolicy(uint64_t frameID, const WebCore::ResourceError&, CoreIPC::MessageDecoder&);
 
-    void willSubmitForm(uint64_t frameID, uint64_t sourceFrameID, const StringPairVector& textFieldValues, uint64_t listenerID, CoreIPC::MessageDecoder&);
+    void willSubmitForm(uint64_t frameID, uint64_t sourceFrameID, const Vector<std::pair<String, String> >& textFieldValues, uint64_t listenerID, CoreIPC::MessageDecoder&);
 
     // UI client
     void createNewPage(const WebCore::ResourceRequest&, const WebCore::WindowFeatures&, uint32_t modifiers, int32_t mouseButton, uint64_t& newPageID, WebPageCreationParameters&);
@@ -1027,6 +1046,9 @@ private:
     WebPolicyClient m_policyClient;
     WebFormClient m_formClient;
     WebUIClient m_uiClient;
+#if PLATFORM(EFL)
+    WebUIPopupMenuClient m_uiPopupMenuClient;
+#endif
     WebFindClient m_findClient;
     WebFindMatchesClient m_findMatchesClient;
 #if ENABLE(CONTEXT_MENUS)
@@ -1203,6 +1225,9 @@ private:
     bool m_mainFrameIsPinnedToRightSide;
     bool m_mainFrameIsPinnedToTopSide;
     bool m_mainFrameIsPinnedToBottomSide;
+
+    bool m_rubberBandsAtBottom;
+    bool m_rubberBandsAtTop;
 
     bool m_mainFrameInViewSourceMode;
 

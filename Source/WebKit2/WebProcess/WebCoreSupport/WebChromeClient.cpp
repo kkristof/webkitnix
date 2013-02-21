@@ -404,10 +404,10 @@ void WebChromeClient::invalidateContentsForSlowScroll(const IntRect& rect, bool)
     m_page->drawingArea()->setNeedsDisplay(rect);
 }
 
-void WebChromeClient::scroll(const IntSize& scrollOffset, const IntRect& scrollRect, const IntRect& clipRect)
+void WebChromeClient::scroll(const IntSize& scrollDelta, const IntRect& scrollRect, const IntRect& clipRect)
 {
     m_page->pageDidScroll();
-    m_page->drawingArea()->scroll(intersection(scrollRect, clipRect), scrollOffset);
+    m_page->drawingArea()->scroll(intersection(scrollRect, clipRect), scrollDelta);
 }
 
 #if USE(TILED_BACKING_STORE)
@@ -446,7 +446,7 @@ void WebChromeClient::contentsSizeChanged(Frame* frame, const IntSize& size) con
     if (frame->page()->mainFrame() != frame)
         return;
 
-#if PLATFORM(QT) || PLATFORM(NIX) || (PLATFORM(EFL) && USE(TILED_BACKING_STORE))
+#if PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX)
     if (m_page->useFixedLayout()) {
         // The below method updates the size().
         m_page->resizeToContentsIfNeeded();
@@ -454,8 +454,6 @@ void WebChromeClient::contentsSizeChanged(Frame* frame, const IntSize& size) con
     }
 
     m_page->send(Messages::WebPageProxy::DidChangeContentsSize(m_page->size()));
-#elif PLATFORM(EFL)
-    m_page->send(Messages::WebPageProxy::DidChangeContentsSize(size));
 #endif
 
     m_page->drawingArea()->mainFrameContentSizeChanged(size);
@@ -798,11 +796,6 @@ void WebChromeClient::logDiagnosticMessage(const String& message, const String& 
         return;
 
     m_page->injectedBundleDiagnosticLoggingClient().logDiagnosticMessage(m_page, message, description, success);
-}
-
-PassRefPtr<Image> WebChromeClient::plugInStartLabelImage(RenderSnapshottedPlugIn::LabelSize size) const
-{
-    return m_page->injectedBundleUIClient().plugInStartLabelImage(size)->bitmap()->createImage();
 }
 
 String WebChromeClient::plugInStartLabelTitle() const

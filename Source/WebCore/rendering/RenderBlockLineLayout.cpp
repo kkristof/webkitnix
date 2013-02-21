@@ -29,6 +29,7 @@
 #include "Logging.h"
 #include "RenderArena.h"
 #include "RenderCombineText.h"
+#include "RenderCounter.h"
 #include "RenderFlowThread.h"
 #include "RenderInline.h"
 #include "RenderLayer.h"
@@ -426,11 +427,20 @@ static inline InlineBox* createInlineBoxForRenderer(RenderObject* obj, bool isRo
     return toRenderInline(obj)->createAndAppendInlineFlowBox();
 }
 
+// FIXME: Don't let counters mark themselves as needing pref width recalcs during layout
+// so we don't need this hack.
+static inline void updateCounterIfNeeded(RenderText* o)
+{
+    if (!o->preferredLogicalWidthsDirty() || !o->isCounter())
+        return;
+    toRenderCounter(o)->updateCounter();
+}
+
 static inline void dirtyLineBoxesForRenderer(RenderObject* o, bool fullLayout)
 {
     if (o->isText()) {
         RenderText* renderText = toRenderText(o);
-        renderText->updateTextIfNeeded(); // FIXME: Counters depend on this hack. No clue why. Should be investigated and removed.
+        updateCounterIfNeeded(renderText);
         renderText->dirtyLineBoxes(fullLayout);
     } else
         toRenderInline(o)->dirtyLineBoxes(fullLayout);
@@ -1616,10 +1626,12 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
                         lineBox->setContainingRegion(regionAtBlockOffset(lineBox->lineTopWithLeading()));
                 }
             }
+        }
 
-            for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-                setStaticPositions(this, lineBreaker.positionedObjects()[i]);
+        for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
+            setStaticPositions(this, lineBreaker.positionedObjects()[i]);
 
+        if (!layoutState.lineInfo().isEmpty()) {
             layoutState.lineInfo().setFirstLine(false);
             newLine(lineBreaker.clear());
         }
@@ -1912,7 +1924,7 @@ void RenderBlock::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWithRe
         RenderBox* floatingBox = *it;
         floatingBox->layoutIfNeeded();
         LayoutSize newSize(floatingBox->width() + floatingBox->marginWidth(), floatingBox->height() + floatingBox->marginHeight());
-        ASSERT(floatIndex < floats.size());
+        ASSERT_WITH_SECURITY_IMPLICATION(floatIndex < floats.size());
         if (floats[floatIndex].object != floatingBox) {
             encounteredNewFloat = true;
             return;
@@ -2279,8 +2291,8 @@ void RenderBlock::LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolve
             }
         } else if (object->isFloating()) {
             // The top margin edge of a self-collapsing block that clears a float intrudes up into it by the height of the margin,
-            // so in order to place this child float at the top content edge of the self-collapsing block add the margin back in before placement.
-            LayoutUnit marginOffset = (m_block->isSelfCollapsingBlock() && m_block->style()->clear() && m_block->getClearDelta(m_block, LayoutUnit())) ? m_block->collapsedMarginBeforeForChild(m_block) : LayoutUnit();
+            // so in order to place this first child float at the top content edge of the self-collapsing block add the margin back in before placement.
+            LayoutUnit marginOffset = (!object->previousSibling() && m_block->isSelfCollapsingBlock() && m_block->style()->clear() && m_block->getClearDelta(m_block, LayoutUnit())) ? m_block->collapsedMarginBeforeForChild(m_block) : LayoutUnit();
             LayoutUnit oldLogicalHeight = m_block->logicalHeight();
             m_block->setLogicalHeight(oldLogicalHeight + marginOffset);
             m_block->positionNewFloatOnLine(m_block->insertFloatingObject(toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
@@ -2780,7 +2792,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             }
 
             if (renderTextInfo.m_text != t) {
-                t->updateTextIfNeeded();
+                updateCounterIfNeeded(t);
                 renderTextInfo.m_text = t;
                 renderTextInfo.m_font = &f;
                 renderTextInfo.m_layout = f.createLayout(t, width.currentWidth(), collapseWhiteSpace);

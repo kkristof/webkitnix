@@ -48,8 +48,9 @@ namespace WebCore {
 using namespace HTMLNames;
 
 AccessibilityTable::AccessibilityTable(RenderObject* renderer)
-    : AccessibilityRenderObject(renderer),
-    m_headerContainer(0)
+    : AccessibilityRenderObject(renderer)
+    , m_headerContainer(0)
+    , m_isAccessibilityTable(true)
 {
 }
 
@@ -60,11 +61,7 @@ AccessibilityTable::~AccessibilityTable()
 void AccessibilityTable::init()
 {
     AccessibilityRenderObject::init();
-#if ACCESSIBILITY_TABLES
     m_isAccessibilityTable = isTableExposableThroughAccessibility();
-#else
-    m_isAccessibilityTable = false;
-#endif
 }
 
 PassRefPtr<AccessibilityTable> AccessibilityTable::create(RenderObject* renderer)
@@ -592,7 +589,7 @@ AccessibilityRole AccessibilityTable::roleValue() const
     return TableRole;
 }
     
-bool AccessibilityTable::accessibilityIsIgnored() const
+bool AccessibilityTable::computeAccessibilityIsIgnored() const
 {
     AccessibilityObjectInclusion decision = accessibilityIsIgnoredBase();
     if (decision == IncludeObject)
@@ -601,7 +598,7 @@ bool AccessibilityTable::accessibilityIsIgnored() const
         return true;
     
     if (!isAccessibilityTable())
-        return AccessibilityRenderObject::accessibilityIsIgnored();
+        return AccessibilityRenderObject::computeAccessibilityIsIgnored();
         
     return false;
 }

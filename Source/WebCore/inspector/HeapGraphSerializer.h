@@ -43,21 +43,24 @@
 
 namespace WebCore {
 
-class HeapGraphEdge;
-class HeapGraphNode;
-class InspectorObject;
-
 class HeapGraphSerializer {
     WTF_MAKE_NONCOPYABLE(HeapGraphSerializer);
 public:
-    explicit HeapGraphSerializer(InspectorFrontend::Memory*);
+
+    class Client {
+    public:
+        virtual ~Client() { }
+        virtual void addNativeSnapshotChunk(PassRefPtr<TypeBuilder::Memory::HeapSnapshotChunk>) = 0;
+    };
+
+    explicit HeapGraphSerializer(Client*);
     ~HeapGraphSerializer();
     void reportNode(const WTF::MemoryObjectInfo&);
     void reportEdge(const void*, const char*, WTF::MemberType);
     void reportLeaf(const WTF::MemoryObjectInfo&, const char*);
     void reportBaseAddress(const void*, const void*);
 
-    void finish();
+    PassRefPtr<InspectorObject> finish();
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -69,11 +72,12 @@ private:
 
     int addString(const String&);
     void addRootNode();
+    int registerTypeString(const String&);
 
     void reportEdgeImpl(const int toNodeId, const char* name, int memberType);
     int reportNodeImpl(const WTF::MemoryObjectInfo&, int edgesCount);
 
-    InspectorFrontend::Memory* m_frontend;
+    Client* m_client;
 
     typedef HashMap<String, int> StringMap;
     StringMap m_stringToIndex;
@@ -97,9 +101,13 @@ private:
     Address2NodeId m_address2NodeIdMap;
 
     Vector<const void*> m_roots;
+    RefPtr<InspectorObject> m_typeStrings;
 
     size_t m_edgeTypes[WTF::LastMemberTypeEntry];
     int m_unknownClassNameId;
+    int m_leafCount;
+
+    static const int s_firstNodeId = 1;
 };
 
 } // namespace WebCore

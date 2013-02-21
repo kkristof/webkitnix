@@ -32,8 +32,6 @@
 #include "WebViewHost.h"
 
 #include "DRTDevToolsAgent.h"
-#include "MockWebSpeechInputController.h"
-#include "MockWebSpeechRecognizer.h"
 #include "Task.h"
 #include "TestNavigationController.h"
 #include "TestShell.h"
@@ -42,11 +40,9 @@
 #include "WebContextMenuData.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
-#include "WebDeviceOrientationClientMock.h"
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrame.h"
-#include "WebGeolocationClientMock.h"
 #include "WebHistoryItem.h"
 #include "WebKit.h"
 #include "WebNode.h"
@@ -58,10 +54,8 @@
 #include "WebScreenInfo.h"
 #include "WebSerializedScriptValue.h"
 #include "WebStorageNamespace.h"
-#include "WebUserMediaClientMock.h"
 #include "WebView.h"
 #include "WebWindowFeatures.h"
-#include "skia/ext/platform_canvas.h"
 #include "webkit/support/test_media_stream_client.h"
 #include "webkit/support/webkit_support.h"
 #include <cctype>
@@ -236,7 +230,6 @@ bool WebViewHost::runModalPromptDialog(WebFrame* frame, const WebString& message
 
 void WebViewHost::showContextMenu(WebFrame*, const WebContextMenuData& contextMenuData)
 {
-    m_lastContextMenuData = adoptPtr(new WebContextMenuData(contextMenuData));
 }
 
 void WebViewHost::didUpdateLayout()
@@ -271,69 +264,6 @@ int WebViewHost::historyForwardListCount()
     int currentIndex =navigationController()->lastCommittedEntryIndex();
     return navigationController()->entryCount() - currentIndex - 1;
 }
-
-#if ENABLE(NOTIFICATIONS)
-WebNotificationPresenter* WebViewHost::notificationPresenter()
-{
-    return m_shell->notificationPresenter();
-}
-#endif
-
-WebKit::WebGeolocationClient* WebViewHost::geolocationClient()
-{
-    return geolocationClientMock();
-}
-
-WebKit::WebGeolocationClientMock* WebViewHost::geolocationClientMock()
-{
-    if (!m_geolocationClientMock)
-        m_geolocationClientMock = adoptPtr(WebGeolocationClientMock::create());
-    return m_geolocationClientMock.get();
-}
-
-#if ENABLE(INPUT_SPEECH)
-WebSpeechInputController* WebViewHost::speechInputController(WebKit::WebSpeechInputListener* listener)
-{
-    if (!m_speechInputControllerMock)
-        m_speechInputControllerMock = MockWebSpeechInputController::create(listener);
-    return m_speechInputControllerMock.get();
-}
-#endif
-
-#if ENABLE(SCRIPTED_SPEECH)
-WebSpeechRecognizer* WebViewHost::speechRecognizer()
-{
-    if (!m_mockSpeechRecognizer)
-        m_mockSpeechRecognizer = MockWebSpeechRecognizer::create();
-    return m_mockSpeechRecognizer.get();
-}
-#endif
-
-WebDeviceOrientationClientMock* WebViewHost::deviceOrientationClientMock()
-{
-    if (!m_deviceOrientationClientMock.get())
-        m_deviceOrientationClientMock = adoptPtr(WebDeviceOrientationClientMock::create());
-    return m_deviceOrientationClientMock.get();
-}
-
-WebDeviceOrientationClient* WebViewHost::deviceOrientationClient()
-{
-    return deviceOrientationClientMock();
-}
-
-#if ENABLE(MEDIA_STREAM)
-WebUserMediaClient* WebViewHost::userMediaClient()
-{
-    return userMediaClientMock();
-}
-
-WebUserMediaClientMock* WebViewHost::userMediaClientMock()
-{
-    if (!m_userMediaClientMock.get())
-        m_userMediaClientMock = WebUserMediaClientMock::create();
-    return m_userMediaClientMock.get();
-}
-#endif
 
 // WebWidgetClient -----------------------------------------------------------
 
@@ -387,63 +317,6 @@ WebScreenInfo WebViewHost::screenInfo()
     return info;
 }
 
-#if ENABLE(POINTER_LOCK)
-bool WebViewHost::requestPointerLock()
-{
-    switch (m_pointerLockPlannedResult) {
-    case PointerLockWillSucceed:
-        postDelayedTask(new HostMethodTask(this, &WebViewHost::didAcquirePointerLock), 0);
-        return true;
-    case PointerLockWillRespondAsync:
-        ASSERT(!m_pointerLocked);
-        return true;
-    case PointerLockWillFailSync:
-        ASSERT(!m_pointerLocked);
-        return false;
-    default:
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-}
-
-void WebViewHost::requestPointerUnlock()
-{
-    postDelayedTask(new HostMethodTask(this, &WebViewHost::didLosePointerLock), 0);
-}
-
-bool WebViewHost::isPointerLocked()
-{
-    return m_pointerLocked;
-}
-
-void WebViewHost::didAcquirePointerLock()
-{
-    m_pointerLocked = true;
-    webWidget()->didAcquirePointerLock();
-
-    // Reset planned result to default.
-    m_pointerLockPlannedResult = PointerLockWillSucceed;
-}
-
-void WebViewHost::didNotAcquirePointerLock()
-{
-    ASSERT(!m_pointerLocked);
-    m_pointerLocked = false;
-    webWidget()->didNotAcquirePointerLock();
-
-    // Reset planned result to default.
-    m_pointerLockPlannedResult = PointerLockWillSucceed;
-}
-
-void WebViewHost::didLosePointerLock()
-{
-    bool wasLocked = m_pointerLocked;
-    m_pointerLocked = false;
-    if (wasLocked)
-        webWidget()->didLosePointerLock();
-}
-#endif
-
 void WebViewHost::show(WebNavigationPolicy)
 {
     m_hasWindow = true;
@@ -485,7 +358,6 @@ void WebViewHost::setWindowRect(const WebRect& rect)
         m_windowRect.height = 1 + border2;
     int width = m_windowRect.width - border2;
     int height = m_windowRect.height - border2;
-    discardBackingStore();
     webWidget()->resize(WebSize(width, height));
 }
 
@@ -638,16 +510,6 @@ bool WebViewHost::willCheckAndDispatchMessageEvent(WebFrame* sourceFrame, WebFra
 
 // WebTestDelegate ------------------------------------------------------------
 
-WebContextMenuData* WebViewHost::lastContextMenuData() const
-{
-    return m_lastContextMenuData.get();
-}
-
-void WebViewHost::clearContextMenuData()
-{
-    m_lastContextMenuData.clear();
-}
-
 void WebViewHost::setEditCommand(const string& name, const string& value)
 {
     m_editCommandName = name;
@@ -715,26 +577,9 @@ void WebViewHost::applyPreferences()
     m_shell->applyPreferences();
 }
 
-#if ENABLE(WEB_INTENTS)
-void WebViewHost::setCurrentWebIntentRequest(const WebIntentRequest& request)
-{
-    m_currentRequest = request;
-}
-
-WebIntentRequest* WebViewHost::currentWebIntentRequest()
-{
-    return &m_currentRequest;
-}
-#endif
-
 std::string WebViewHost::makeURLErrorDescription(const WebKit::WebURLError& error)
 {
     return webkit_support::MakeURLErrorDescription(error);
-}
-
-std::string WebViewHost::normalizeLayoutTestURL(const std::string& url)
-{
-    return m_shell->normalizeLayoutTestURL(url);
 }
 
 void WebViewHost::showDevTools()
@@ -765,7 +610,6 @@ void WebViewHost::setDatabaseQuota(int quota)
 void WebViewHost::setDeviceScaleFactor(float deviceScaleFactor)
 {
     webView()->setDeviceScaleFactor(deviceScaleFactor);
-    discardBackingStore();
 }
 
 void WebViewHost::setFocus(bool focused)
@@ -816,98 +660,6 @@ void WebViewHost::setLocale(const std::string& locale)
     setlocale(LC_ALL, locale.c_str());
 }
 
-void WebViewHost::setDeviceOrientation(WebKit::WebDeviceOrientation& orientation)
-{
-    deviceOrientationClientMock()->setOrientation(orientation);
-}
-
-int WebViewHost::numberOfPendingGeolocationPermissionRequests()
-{
-    Vector<WebViewHost*> windowList = m_shell->windowList();
-    int numberOfRequests = 0;
-    for (size_t i = 0; i < windowList.size(); i++)
-        numberOfRequests += windowList[i]->geolocationClientMock()->numberOfPendingPermissionRequests();
-    return numberOfRequests;
-}
-
-void WebViewHost::setGeolocationPermission(bool allowed)
-{
-    Vector<WebViewHost*> windowList = m_shell->windowList();
-    for (size_t i = 0; i < windowList.size(); i++)
-        windowList[i]->geolocationClientMock()->setPermission(allowed);
-}
-
-void WebViewHost::setMockGeolocationPosition(double latitude, double longitude, double accuracy)
-{
-    Vector<WebViewHost*> windowList = m_shell->windowList();
-    for (size_t i = 0; i < windowList.size(); i++)
-        windowList[i]->geolocationClientMock()->setPosition(latitude, longitude, accuracy);
-}
-
-void WebViewHost::setMockGeolocationPositionUnavailableError(const std::string& message)
-{
-    Vector<WebViewHost*> windowList = m_shell->windowList();
-    // FIXME: Benjamin
-    for (size_t i = 0; i < windowList.size(); i++)
-        windowList[i]->geolocationClientMock()->setPositionUnavailableError(WebString::fromUTF8(message));
-}
-
-#if ENABLE(NOTIFICATIONS)
-void WebViewHost::grantWebNotificationPermission(const std::string& origin)
-{
-    m_shell->notificationPresenter()->grantPermission(WebString::fromUTF8(origin));
-}
-
-bool WebViewHost::simulateLegacyWebNotificationClick(const std::string& notificationIdentifier)
-{
-    return m_shell->notificationPresenter()->simulateClick(WebString::fromUTF8(notificationIdentifier));
-}
-#endif
-
-#if ENABLE(INPUT_SPEECH)
-void WebViewHost::addMockSpeechInputResult(const std::string& result, double confidence, const std::string& language)
-{
-    m_speechInputControllerMock->addMockRecognitionResult(WebString::fromUTF8(result), confidence, WebString::fromUTF8(language));
-}
-
-void WebViewHost::setMockSpeechInputDumpRect(bool dumpRect)
-{
-    m_speechInputControllerMock->setDumpRect(dumpRect);
-}
-#endif
-
-#if ENABLE(SCRIPTED_SPEECH)
-void WebViewHost::addMockSpeechRecognitionResult(const std::string& transcript, double confidence)
-{
-    m_mockSpeechRecognizer->addMockResult(WebString::fromUTF8(transcript), confidence);
-}
-
-void WebViewHost::setMockSpeechRecognitionError(const std::string& error, const std::string& message)
-{
-    m_mockSpeechRecognizer->setError(WebString::fromUTF8(error), WebString::fromUTF8(message));
-}
-
-bool WebViewHost::wasMockSpeechRecognitionAborted()
-{
-    return m_mockSpeechRecognizer->wasAborted();
-}
-#endif
-
-void WebViewHost::display()
-{
-    const WebKit::WebSize& size = webView()->size();
-    WebRect rect(0, 0, size.width, size.height);
-    proxy()->setPaintRect(rect);
-    paintInvalidatedRegion();
-    displayRepaintMask();
-}
-
-void WebViewHost::displayInvalidatedRegion()
-{
-    paintInvalidatedRegion();
-    displayRepaintMask();
-}
-
 void WebViewHost::testFinished()
 {
     m_shell->testFinished(this);
@@ -938,11 +690,6 @@ int WebViewHost::navigationEntryCount()
     return m_shell->navigationEntryCount();
 }
 
-int WebViewHost::windowCount()
-{
-    return m_shell->windowCount();
-}
-
 void WebViewHost::goToOffset(int offset)
 {
     m_shell->goToOffset(offset);
@@ -964,6 +711,11 @@ void WebViewHost::loadURLForFrame(const WebURL& url, const string& frameName)
 bool WebViewHost::allowExternalPages()
 {
     return m_shell->allowExternalPages();
+}
+
+void WebViewHost::captureHistoryForWindow(size_t windowIndex, WebVector<WebHistoryItem>* history, size_t* currentEntryIndex)
+{
+    m_shell->captureHistoryForWindow(windowIndex, history, currentEntryIndex);
 }
 
 // Public functions -----------------------------------------------------------
@@ -1046,26 +798,12 @@ void WebViewHost::reset()
     m_lastPageIdUpdated = -1;
     m_hasWindow = false;
     m_inModalLoop = false;
-    m_isPainting = false;
-    m_canvas.clear();
-#if ENABLE(POINTER_LOCK)
-    m_pointerLocked = false;
-    m_pointerLockPlannedResult = PointerLockWillSucceed;
-#endif
 
     m_navigationController = adoptPtr(new TestNavigationController(this));
 
     m_pendingExtraData.clear();
     m_editCommandName.clear();
     m_editCommandValue.clear();
-
-    if (m_geolocationClientMock.get())
-        m_geolocationClientMock->resetMock();
-
-#if ENABLE(INPUT_SPEECH)
-    if (m_speechInputControllerMock.get())
-        m_speechInputControllerMock->clearResults();
-#endif
 
     m_currentCursor = WebCursorInfo();
     m_windowRect = WebRect();
@@ -1075,7 +813,6 @@ void WebViewHost::reset()
 
     if (m_webWidget) {
         webView()->mainFrame()->setName(WebString());
-        webView()->settings()->setMinimumTimerInterval(webkit_support::GetForegroundTabTimerInterval());
     }
 }
 
@@ -1242,118 +979,3 @@ webkit_support::TestMediaStreamClient* WebViewHost::testMediaStreamClient()
     return m_testMediaStreamClient.get();
 }
 #endif
-
-// Painting functions ---------------------------------------------------------
-
-void WebViewHost::paintRect(const WebRect& rect)
-{
-    ASSERT(!m_isPainting);
-    ASSERT(canvas());
-    m_isPainting = true;
-    float deviceScaleFactor = webView()->deviceScaleFactor();
-    int scaledX = static_cast<int>(static_cast<float>(rect.x) * deviceScaleFactor);
-    int scaledY = static_cast<int>(static_cast<float>(rect.y) * deviceScaleFactor);
-    int scaledWidth = static_cast<int>(ceil(static_cast<float>(rect.width) * deviceScaleFactor));
-    int scaledHeight = static_cast<int>(ceil(static_cast<float>(rect.height) * deviceScaleFactor));
-    WebRect deviceRect(scaledX, scaledY, scaledWidth, scaledHeight);
-    webWidget()->paint(canvas(), deviceRect);
-    m_isPainting = false;
-}
-
-void WebViewHost::paintInvalidatedRegion()
-{
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-    webWidget()->animate(0.0);
-#endif
-    webWidget()->layout();
-    WebSize widgetSize = webWidget()->size();
-    WebRect clientRect(0, 0, widgetSize.width, widgetSize.height);
-
-    // Paint the canvas if necessary. Allow painting to generate extra rects
-    // for the first two calls. This is necessary because some WebCore rendering
-    // objects update their layout only when painted.
-    // Store the total area painted in total_paint. Then tell the gdk window
-    // to update that area after we're done painting it.
-    for (int i = 0; i < 3; ++i) {
-        // rect = intersect(proxy()->paintRect() , clientRect)
-        WebRect damageRect = proxy()->paintRect();
-        int left = max(damageRect.x, clientRect.x);
-        int top = max(damageRect.y, clientRect.y);
-        int right = min(damageRect.x + damageRect.width, clientRect.x + clientRect.width);
-        int bottom = min(damageRect.y + damageRect.height, clientRect.y + clientRect.height);
-        WebRect rect;
-        if (left < right && top < bottom)
-            rect = WebRect(left, top, right - left, bottom - top);
-
-        proxy()->setPaintRect(WebRect());
-        if (rect.isEmpty())
-            continue;
-        paintRect(rect);
-    }
-    ASSERT(proxy()->paintRect().isEmpty());
-}
-
-void WebViewHost::paintPagesWithBoundaries()
-{
-    ASSERT(!m_isPainting);
-    ASSERT(canvas());
-    m_isPainting = true;
-
-    WebSize pageSizeInPixels = webWidget()->size();
-    WebFrame* webFrame = webView()->mainFrame();
-
-    int pageCount = webFrame->printBegin(pageSizeInPixels);
-    int totalHeight = pageCount * (pageSizeInPixels.height + 1) - 1;
-
-    SkCanvas* testCanvas = skia::TryCreateBitmapCanvas(pageSizeInPixels.width, totalHeight, true);
-    if (testCanvas) {
-        discardBackingStore();
-        m_canvas = adoptPtr(testCanvas);
-    } else {
-        webFrame->printEnd();
-        return;
-    }
-
-    webFrame->printPagesWithBoundaries(canvas(), pageSizeInPixels);
-    webFrame->printEnd();
-
-    m_isPainting = false;
-}
-
-SkCanvas* WebViewHost::canvas()
-{
-    if (m_canvas)
-        return m_canvas.get();
-    WebSize widgetSize = webWidget()->size();
-    float deviceScaleFactor = webView()->deviceScaleFactor();
-    int scaledWidth = static_cast<int>(ceil(static_cast<float>(widgetSize.width) * deviceScaleFactor));
-    int scaledHeight = static_cast<int>(ceil(static_cast<float>(widgetSize.height) * deviceScaleFactor));
-    resetScrollRect();
-    m_canvas = adoptPtr(skia::CreateBitmapCanvas(scaledWidth, scaledHeight, true));
-    return m_canvas.get();
-}
-
-void WebViewHost::resetScrollRect()
-{
-}
-
-void WebViewHost::discardBackingStore()
-{
-    m_canvas.clear();
-}
-
-// Paints the entire canvas a semi-transparent black (grayish). This is used
-// by the layout tests in fast/repaint. The alpha value matches upstream.
-void WebViewHost::displayRepaintMask()
-{
-    canvas()->drawARGB(167, 0, 0, 0);
-}
-
-// Simulate a print by going into print mode and then exit straight away.
-void WebViewHost::printPage(WebKit::WebFrame* frame)
-{
-    WebSize pageSizeInPixels = webWidget()->size();
-    WebPrintParams printParams(pageSizeInPixels);
-    frame->printBegin(printParams);
-    frame->printEnd();
-}

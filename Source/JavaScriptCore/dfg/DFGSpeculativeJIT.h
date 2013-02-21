@@ -54,7 +54,6 @@ class SpeculateCellOperand;
 class SpeculateBooleanOperand;
 
 enum GeneratedOperandType { GeneratedOperandTypeUnknown, GeneratedOperandInteger, GeneratedOperandDouble, GeneratedOperandJSValue};
-enum SpeculationDirection { ForwardSpeculation, BackwardSpeculation };
 
 // === SpeculativeJIT ===
 //
@@ -123,7 +122,6 @@ public:
     }
     
     GPRReg fillInteger(Node*, DataFormat& returnFormat);
-    FPRReg fillDouble(Node*);
 #if USE(JSVALUE64)
     GPRReg fillJSValue(Node*);
 #elif USE(JSVALUE32_64)
@@ -525,16 +523,12 @@ public:
         }
     }
     
-    bool isStrictInt32(Node*);
+    bool isKnownInteger(Node* node) { return !(m_state.forNode(node).m_type & ~SpecInt32); }
+    bool isKnownCell(Node* node) { return !(m_state.forNode(node).m_type & ~SpecCell); }
     
-    bool isKnownInteger(Node*);
-    bool isKnownNumeric(Node*);
-    bool isKnownCell(Node*);
-    
-    bool isKnownNotInteger(Node*);
-    bool isKnownNotNumber(Node*);
-
-    bool isKnownNotCell(Node*);
+    bool isKnownNotInteger(Node* node) { return !(m_state.forNode(node).m_type & SpecInt32); }
+    bool isKnownNotNumber(Node* node) { return !(m_state.forNode(node).m_type & SpecNumber); }
+    bool isKnownNotCell(Node* node) { return !(m_state.forNode(node).m_type & SpecCell); }
     
     // Checks/accessors for constant values.
     bool isConstant(Node* node) { return m_jit.graph().isConstant(node); }
@@ -568,16 +562,6 @@ public:
     Identifier* identifier(unsigned index)
     {
         return &m_jit.codeBlock()->identifier(index);
-    }
-
-    ResolveOperations* resolveOperations(unsigned index)
-    {
-        return m_jit.codeBlock()->resolveOperations(index);
-    }
-
-    PutToBaseOperation* putToBaseOperation(unsigned index)
-    {
-        return m_jit.codeBlock()->putToBaseOperation(index);
     }
 
     // Spill all VirtualRegisters back to the JSStack.
@@ -704,8 +688,6 @@ public:
         return lastNode->op() == Branch && lastNode->child1() == m_currentNode ? block->size() - 1 : UINT_MAX;
     }
     
-    void nonSpeculativeValueToNumber(Node*);
-    void nonSpeculativeValueToInt32(Node*);
     void nonSpeculativeUInt32ToNumber(Node*);
 
 #if USE(JSVALUE64)
@@ -1259,7 +1241,7 @@ public:
 
 // EncodedJSValue in JSVALUE32_64 is a 64-bit integer. When being compiled in ARM EABI, it must be aligned even-numbered register (r0, r2 or [sp]).
 // To avoid assemblies from using wrong registers, let's occupy r1 or r3 with a dummy argument when necessary.
-#if COMPILER_SUPPORTS(EABI) && CPU(ARM)
+#if (COMPILER_SUPPORTS(EABI) && CPU(ARM)) || CPU(MIPS)
 #define EABI_32BIT_DUMMY_ARG      TrustedImm32(0),
 #else
 #define EABI_32BIT_DUMMY_ARG
@@ -1709,7 +1691,7 @@ public:
     }
 #endif
     
-#if !defined(NDEBUG) && !CPU(ARM)
+#if !defined(NDEBUG) && !CPU(ARM) && !CPU(MIPS)
     void prepareForExternalCall()
     {
         // We're about to call out to a "native" helper function. The helper
@@ -2041,9 +2023,9 @@ public:
     void compileObjectEquality(Node*);
     void compileObjectToObjectOrOtherEquality(Edge leftChild, Edge rightChild);
     void compileValueAdd(Node*);
-    void compileNonStringCellOrOtherLogicalNot(Edge value, bool needSpeculationCheck);
+    void compileObjectOrOtherLogicalNot(Edge value, bool needSpeculationCheck);
     void compileLogicalNot(Node*);
-    void emitNonStringCellOrOtherBranch(Edge value, BlockIndex taken, BlockIndex notTaken, bool needSpeculationCheck);
+    void emitObjectOrOtherBranch(Edge value, BlockIndex taken, BlockIndex notTaken, bool needSpeculationCheck);
     void emitBranch(Node*);
     
     void compileIntegerCompare(Node*, MacroAssembler::RelationalCondition);
@@ -2312,7 +2294,7 @@ public:
 
 // === Operand types ===
 //
-// IntegerOperand, DoubleOperand and JSValueOperand.
+// IntegerOperand and JSValueOperand.
 //
 // These classes are used to lock the operands to a node into machine
 // registers. These classes implement of pattern of locking a value
@@ -2372,56 +2354,6 @@ private:
     Node* m_node;
     GPRReg m_gprOrInvalid;
     DataFormat m_format;
-};
-
-class DoubleOperand {
-public:
-    explicit DoubleOperand(SpeculativeJIT* jit, Edge use)
-        : m_jit(jit)
-        , m_node(use.node())
-        , m_fprOrInvalid(InvalidFPRReg)
-    {
-        ASSERT(m_jit);
-        
-        // This is counter-intuitive but correct. DoubleOperand is intended to
-        // be used only when you're a node that is happy to accept an untyped
-        // value, but will special-case for doubles (using DoubleOperand) if the
-        // value happened to already be represented as a double. The implication
-        // is that you will not try to force the value to become a double if it
-        // is not one already.
-        ASSERT(use.useKind() != DoubleUse);
-        
-        if (jit->isFilledDouble(m_node))
-            fpr();
-    }
-
-    ~DoubleOperand()
-    {
-        ASSERT(m_fprOrInvalid != InvalidFPRReg);
-        m_jit->unlock(m_fprOrInvalid);
-    }
-
-    Node* node() const
-    {
-        return m_node;
-    }
-
-    FPRReg fpr()
-    {
-        if (m_fprOrInvalid == InvalidFPRReg)
-            m_fprOrInvalid = m_jit->fillDouble(node());
-        return m_fprOrInvalid;
-    }
-    
-    void use()
-    {
-        m_jit->use(m_node);
-    }
-
-private:
-    SpeculativeJIT* m_jit;
-    Node* m_node;
-    FPRReg m_fprOrInvalid;
 };
 
 class JSValueOperand {
@@ -2629,8 +2561,6 @@ private:
 class FPRTemporary {
 public:
     FPRTemporary(SpeculativeJIT*);
-    FPRTemporary(SpeculativeJIT*, DoubleOperand&);
-    FPRTemporary(SpeculativeJIT*, DoubleOperand&, DoubleOperand&);
     FPRTemporary(SpeculativeJIT*, SpeculateDoubleOperand&);
     FPRTemporary(SpeculativeJIT*, SpeculateDoubleOperand&, SpeculateDoubleOperand&);
 #if USE(JSVALUE32_64)

@@ -242,6 +242,7 @@ set(WebKit2_SOURCES
     UIProcess/GeolocationPermissionRequestProxy.cpp
 
     UIProcess/ResponsivenessTimer.cpp
+    UIProcess/StatisticsRequest.cpp
     UIProcess/VisitedLinkProvider.cpp
     UIProcess/WebApplicationCacheManagerProxy.cpp
     UIProcess/WebBackForwardList.cpp
@@ -553,6 +554,7 @@ set(WebKit2_MESSAGES_IN_FILES
     WebProcess/Notifications/WebNotificationManager.messages.in
 
     WebProcess/Plugins/PluginProcessConnection.messages.in
+    WebProcess/Plugins/PluginProcessConnectionManager.messages.in
     WebProcess/Plugins/PluginProxy.messages.in
 
     WebProcess/ResourceCache/WebResourceCacheManager.messages.in

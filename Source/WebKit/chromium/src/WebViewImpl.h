@@ -328,7 +328,6 @@ public:
     virtual void didCommitAndDrawFrame();
     virtual void didCompleteSwapBuffers();
     virtual void scheduleComposite();
-    virtual void createFontAtlas(SkBitmap&, WebRect[128], int&);
 
     // WebViewImpl
 
@@ -403,7 +402,7 @@ public:
     void mouseDoubleClick(const WebMouseEvent&);
 
     bool detectContentOnTouch(const WebPoint&);
-    void startPageScaleAnimation(const WebCore::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
+    bool startPageScaleAnimation(const WebCore::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
 
     void numberOfWheelEventHandlersChanged(unsigned);
     void hasTouchEventHandlers(bool);
@@ -577,13 +576,17 @@ public:
 
 #if ENABLE(GESTURE_EVENTS)
     void computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZoomType, float& scale, WebPoint& scroll, bool& isAnchor);
-    WebCore::Node* bestTouchLinkNode(const WebGestureEvent& touchEvent);
-    void enableTouchHighlight(const WebGestureEvent& touchEvent);
+    WebCore::Node* bestTapNode(const WebCore::PlatformGestureEvent& tapEvent);
+    void enableTapHighlight(const WebCore::PlatformGestureEvent& tapEvent);
     void computeScaleAndScrollForFocusedNode(WebCore::Node* focusedNode, float& scale, WebCore::IntPoint& scroll, bool& needAnimation);
 #endif
     void animateZoomAroundPoint(const WebCore::IntPoint&, AutoZoomType);
 
-    void shouldUseAnimateDoubleTapTimeZeroForTesting(bool);
+    void enableFakeDoubleTapAnimationForTesting(bool);
+    bool fakeDoubleTapAnimationPendingForTesting() const { return m_doubleTapZoomPending; }
+    WebCore::IntPoint fakeDoubleTapTargetPositionForTesting() const { return m_fakeDoubleTapTargetPosition; }
+    float fakeDoubleTapPageScaleFactorForTesting() const { return m_fakeDoubleTapPageScaleFactor; }
+    bool fakeDoubleTapUseAnchorForTesting() const { return m_fakeDoubleTapUseAnchor; }
 
     void enterFullScreenForElement(WebCore::Element*);
     void exitFullScreenForElement(WebCore::Element*);
@@ -763,11 +766,16 @@ private:
     float m_savedPageScaleFactor; // 0 means that no page scale factor is saved.
     WebCore::IntSize m_savedScrollOffset;
 
-    // Whether the current scale was achieved by zooming in with double tap.
-    bool m_doubleTapZoomInEffect;
+    // The scale moved to by the latest double tap zoom, if any.
+    float m_doubleTapZoomPageScaleFactor;
+    // Have we sent a double-tap zoom and not yet heard back the scale?
+    bool m_doubleTapZoomPending;
 
     // Used for testing purposes.
-    bool m_shouldUseDoubleTapTimeZero;
+    bool m_enableFakeDoubleTapAnimationForTesting;
+    WebCore::IntPoint m_fakeDoubleTapTargetPosition;
+    float m_fakeDoubleTapPageScaleFactor;
+    bool m_fakeDoubleTapUseAnchor;
 
     bool m_contextMenuAllowed;
 

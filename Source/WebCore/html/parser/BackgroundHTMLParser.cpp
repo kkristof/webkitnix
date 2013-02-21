@@ -53,34 +53,79 @@ static void checkThatTokensAreSafeToSendToAnotherThread(const CompactHTMLTokenSt
         ASSERT(tokens->at(i).isSafeToSendToAnotherThread());
 }
 
+static void checkThatPreloadsAreSafeToSendToAnotherThread(const PreloadRequestStream& preloads)
+{
+    for (size_t i = 0; i < preloads.size(); ++i)
+        ASSERT(preloads[i]->isSafeToSendToAnotherThread());
+}
+
 #endif
 
-// FIXME: Tune this constant based on a benchmark. The current value was choosen arbitrarily.
+static inline bool tokenExitsForeignContent(const CompactHTMLToken& token)
+{
+    // FIXME: This is copied from HTMLTreeBuilder::processTokenInForeignContent and changed to use threadSafeMatch.
+    const String& tagName = token.data();
+    return threadSafeMatch(tagName, bTag)
+        || threadSafeMatch(tagName, bigTag)
+        || threadSafeMatch(tagName, blockquoteTag)
+        || threadSafeMatch(tagName, bodyTag)
+        || threadSafeMatch(tagName, brTag)
+        || threadSafeMatch(tagName, centerTag)
+        || threadSafeMatch(tagName, codeTag)
+        || threadSafeMatch(tagName, ddTag)
+        || threadSafeMatch(tagName, divTag)
+        || threadSafeMatch(tagName, dlTag)
+        || threadSafeMatch(tagName, dtTag)
+        || threadSafeMatch(tagName, emTag)
+        || threadSafeMatch(tagName, embedTag)
+        || threadSafeMatch(tagName, h1Tag)
+        || threadSafeMatch(tagName, h2Tag)
+        || threadSafeMatch(tagName, h3Tag)
+        || threadSafeMatch(tagName, h4Tag)
+        || threadSafeMatch(tagName, h5Tag)
+        || threadSafeMatch(tagName, h6Tag)
+        || threadSafeMatch(tagName, headTag)
+        || threadSafeMatch(tagName, hrTag)
+        || threadSafeMatch(tagName, iTag)
+        || threadSafeMatch(tagName, imgTag)
+        || threadSafeMatch(tagName, liTag)
+        || threadSafeMatch(tagName, listingTag)
+        || threadSafeMatch(tagName, menuTag)
+        || threadSafeMatch(tagName, metaTag)
+        || threadSafeMatch(tagName, nobrTag)
+        || threadSafeMatch(tagName, olTag)
+        || threadSafeMatch(tagName, pTag)
+        || threadSafeMatch(tagName, preTag)
+        || threadSafeMatch(tagName, rubyTag)
+        || threadSafeMatch(tagName, sTag)
+        || threadSafeMatch(tagName, smallTag)
+        || threadSafeMatch(tagName, spanTag)
+        || threadSafeMatch(tagName, strongTag)
+        || threadSafeMatch(tagName, strikeTag)
+        || threadSafeMatch(tagName, subTag)
+        || threadSafeMatch(tagName, supTag)
+        || threadSafeMatch(tagName, tableTag)
+        || threadSafeMatch(tagName, ttTag)
+        || threadSafeMatch(tagName, uTag)
+        || threadSafeMatch(tagName, ulTag)
+        || threadSafeMatch(tagName, varTag)
+        || (threadSafeMatch(tagName, fontTag) && (token.getAttributeItem(colorAttr) || token.getAttributeItem(faceAttr) || token.getAttributeItem(sizeAttr)));
+}
+
+// FIXME: Tune this constant based on a benchmark. The current value was chosen arbitrarily.
 static const size_t pendingTokenLimit = 4000;
 
-ParserMap& parserMap()
-{
-    // This initialization assumes that this will be initialize on the main thread before
-    // any parser thread is started.
-    static ParserMap* sParserMap = new ParserMap;
-    return *sParserMap;
-}
-
-ParserMap::BackgroundParserMap& ParserMap::backgroundParsers()
-{
-    ASSERT(HTMLParserThread::shared()->threadId() == currentThread());
-    return m_backgroundParsers;
-}
-
-BackgroundHTMLParser::BackgroundHTMLParser(const HTMLParserOptions& options, const WeakPtr<HTMLDocumentParser>& parser, PassOwnPtr<XSSAuditor> xssAuditor)
-    : m_inForeignContent(false)
+BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser> > reference, PassOwnPtr<Configuration> config)
+    : m_weakFactory(reference, this)
     , m_token(adoptPtr(new HTMLToken))
-    , m_tokenizer(HTMLTokenizer::create(options))
-    , m_options(options)
-    , m_parser(parser)
+    , m_tokenizer(HTMLTokenizer::create(config->options))
+    , m_options(config->options)
+    , m_parser(config->parser)
     , m_pendingTokens(adoptPtr(new CompactHTMLTokenStream))
-    , m_xssAuditor(xssAuditor)
+    , m_xssAuditor(config->xssAuditor.release())
+    , m_preloadScanner(config->preloadScanner.release())
 {
+    m_namespaceStack.append(HTML);
 }
 
 void BackgroundHTMLParser::append(const String& input)
@@ -89,12 +134,13 @@ void BackgroundHTMLParser::append(const String& input)
     pumpTokenizer();
 }
 
-void BackgroundHTMLParser::resumeFrom(const WeakPtr<HTMLDocumentParser>& parser, PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer, HTMLInputCheckpoint checkpoint)
+void BackgroundHTMLParser::resumeFrom(PassOwnPtr<Checkpoint> checkpoint)
 {
-    m_parser = parser;
-    m_token = token;
-    m_tokenizer = tokenizer;
-    m_input.rewindTo(checkpoint);
+    m_parser = checkpoint->parser;
+    m_token = checkpoint->token.release();
+    m_tokenizer = checkpoint->tokenizer.release();
+    m_input.rewindTo(checkpoint->inputCheckpoint, checkpoint->unparsedInput);
+    m_preloadScanner.clear(); // FIXME: We should rewind the preload scanner rather than clearing it.
     pumpTokenizer();
 }
 
@@ -104,51 +150,73 @@ void BackgroundHTMLParser::finish()
     pumpTokenizer();
 }
 
+void BackgroundHTMLParser::stop()
+{
+    delete this;
+}
+
+void BackgroundHTMLParser::forcePlaintextForTextDocument()
+{
+    // This is only used by the TextDocumentParser (a subclass of HTMLDocumentParser)
+    // to force us into the PLAINTEXT state w/o using a <plaintext> tag.
+    // The TextDocumentParser uses a <pre> tag for historical/compatibility reasons.
+    m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
+}
+
 void BackgroundHTMLParser::markEndOfFile()
 {
-    // FIXME: This should use InputStreamPreprocessor::endOfFileMarker
-    // once InputStreamPreprocessor is split off into its own header.
-    const LChar endOfFileMarker = 0;
-
     ASSERT(!m_input.current().isClosed());
-    m_input.append(String(&endOfFileMarker, 1));
+    m_input.append(String(&kEndOfFileMarker, 1));
     m_input.close();
 }
 
 bool BackgroundHTMLParser::simulateTreeBuilder(const CompactHTMLToken& token)
 {
-    if (token.type() == HTMLTokenTypes::StartTag) {
+    if (token.type() == HTMLToken::StartTag) {
         const String& tagName = token.data();
-        if (threadSafeMatch(tagName, SVGNames::svgTag)
-            || threadSafeMatch(tagName, MathMLNames::mathTag))
-            m_inForeignContent = true;
-
-        // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
-        if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag))
-            m_tokenizer->setState(HTMLTokenizerState::RCDATAState);
-        else if (threadSafeMatch(tagName, plaintextTag))
-            m_tokenizer->setState(HTMLTokenizerState::PLAINTEXTState);
-        else if (threadSafeMatch(tagName, scriptTag))
-            m_tokenizer->setState(HTMLTokenizerState::ScriptDataState);
-        else if (threadSafeMatch(tagName, styleTag)
-            || threadSafeMatch(tagName, iframeTag)
-            || threadSafeMatch(tagName, xmpTag)
-            || (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled)
-            || threadSafeMatch(tagName, noframesTag)
-            || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
-            m_tokenizer->setState(HTMLTokenizerState::RAWTEXTState);
+        if (threadSafeMatch(tagName, SVGNames::svgTag))
+            m_namespaceStack.append(SVG);
+        if (threadSafeMatch(tagName, MathMLNames::mathTag))
+            m_namespaceStack.append(MathML);
+        if (inForeignContent() && tokenExitsForeignContent(token))
+            m_namespaceStack.removeLast();
+        // FIXME: Support tags that exit MathML.
+        if (m_namespaceStack.last() == SVG && equalIgnoringCase(tagName, SVGNames::foreignObjectTag.localName()))
+            m_namespaceStack.append(HTML);
+        if (!inForeignContent()) {
+            // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
+            if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag))
+                m_tokenizer->setState(HTMLTokenizer::RCDATAState);
+            else if (threadSafeMatch(tagName, plaintextTag))
+                m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
+            else if (threadSafeMatch(tagName, scriptTag))
+                m_tokenizer->setState(HTMLTokenizer::ScriptDataState);
+            else if (threadSafeMatch(tagName, styleTag)
+                || threadSafeMatch(tagName, iframeTag)
+                || threadSafeMatch(tagName, xmpTag)
+                || (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled)
+                || threadSafeMatch(tagName, noframesTag)
+                || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
+                m_tokenizer->setState(HTMLTokenizer::RAWTEXTState);
+        }
     }
 
-    if (token.type() == HTMLTokenTypes::EndTag) {
+    if (token.type() == HTMLToken::EndTag) {
         const String& tagName = token.data();
-        if (threadSafeMatch(tagName, SVGNames::svgTag) || threadSafeMatch(tagName, MathMLNames::mathTag))
-            m_inForeignContent = false;
-        if (threadSafeMatch(tagName, scriptTag))
+        // FIXME: Support tags that exit MathML.
+        if ((m_namespaceStack.last() == SVG && threadSafeMatch(tagName, SVGNames::svgTag))
+            || (m_namespaceStack.last() == MathML && threadSafeMatch(tagName, MathMLNames::mathTag))
+            || (m_namespaceStack.contains(SVG) && m_namespaceStack.last() == HTML && equalIgnoringCase(tagName, SVGNames::foreignObjectTag.localName())))
+            m_namespaceStack.removeLast();
+        if (threadSafeMatch(tagName, scriptTag)) {
+            if (!inForeignContent())
+                m_tokenizer->setState(HTMLTokenizer::DataState);
             return false;
+        }
     }
 
     // FIXME: Need to set setForceNullCharacterReplacement based on m_inForeignContent as well.
-    m_tokenizer->setShouldAllowCDATA(m_inForeignContent);
+    m_tokenizer->setShouldAllowCDATA(inForeignContent());
     return true;
 }
 
@@ -163,8 +231,13 @@ void BackgroundHTMLParser::pumpTokenizer()
         {
             OwnPtr<XSSInfo> xssInfo = m_xssAuditor->filterToken(FilterTokenRequest(*m_token, m_sourceTracker, m_tokenizer->shouldAllowCDATA()));
             CompactHTMLToken token(m_token.get(), TextPosition(m_input.current().currentLine(), m_input.current().currentColumn()));
+
             if (xssInfo)
                 token.setXSSInfo(xssInfo.release());
+
+            if (m_preloadScanner)
+                m_preloadScanner->scan(token, m_pendingPreloads);
+
             m_pendingTokens->append(token);
         }
 
@@ -184,44 +257,16 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 
 #ifndef NDEBUG
     checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens.get());
+    checkThatPreloadsAreSafeToSendToAnotherThread(m_pendingPreloads);
 #endif
 
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
     chunk->tokens = m_pendingTokens.release();
+    chunk->preloads.swap(m_pendingPreloads);
     chunk->checkpoint = m_input.createCheckpoint();
     callOnMainThread(bind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, m_parser, chunk.release()));
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);
-}
-
-void BackgroundHTMLParser::createPartial(ParserIdentifier identifier, const HTMLParserOptions& options, const WeakPtr<HTMLDocumentParser>& parser, PassOwnPtr<XSSAuditor> xssAuditor)
-{
-    ASSERT(!parserMap().backgroundParsers().get(identifier));
-    parserMap().backgroundParsers().set(identifier, BackgroundHTMLParser::create(options, parser, xssAuditor));
-}
-
-void BackgroundHTMLParser::stopPartial(ParserIdentifier identifier)
-{
-    parserMap().backgroundParsers().remove(identifier);
-}
-
-void BackgroundHTMLParser::appendPartial(ParserIdentifier identifier, const String& input)
-{
-    ASSERT(!input.impl() || input.impl()->hasOneRef() || input.isEmpty());
-    if (BackgroundHTMLParser* parser = parserMap().backgroundParsers().get(identifier))
-        parser->append(input);
-}
-
-void BackgroundHTMLParser::resumeFromPartial(ParserIdentifier identifier, const WeakPtr<HTMLDocumentParser>& parser, PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer, HTMLInputCheckpoint checkpoint)
-{
-    if (BackgroundHTMLParser* backgroundParser = parserMap().backgroundParsers().get(identifier))
-        backgroundParser->resumeFrom(parser, token, tokenizer, checkpoint);
-}
-
-void BackgroundHTMLParser::finishPartial(ParserIdentifier identifier)
-{
-    if (BackgroundHTMLParser* parser = parserMap().backgroundParsers().get(identifier))
-        parser->finish();
 }
 
 }

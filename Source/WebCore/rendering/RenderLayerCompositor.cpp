@@ -302,6 +302,20 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
         m_compositingLayersNeedRebuild = needRebuild;
 }
 
+void RenderLayerCompositor::customPositionForVisibleRectComputation(const GraphicsLayer* graphicsLayer, FloatPoint& position) const
+{
+    if (graphicsLayer != m_scrollLayer.get())
+        return;
+
+    FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
+    if (!frameView)
+        return;
+
+    FloatPoint scrollPosition = -position;
+    scrollPosition = frameView->constrainScrollPositionForOverhang(roundedIntPoint(scrollPosition));
+    position = -scrollPosition;
+}
+
 void RenderLayerCompositor::scheduleLayerFlush()
 {
     if (Page* page = this->page())
@@ -1179,7 +1193,7 @@ void RenderLayerCompositor::frameViewDidChangeSize()
 {
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->unscaledVisibleContentSize(false /* exclude scrollbars */));
+        m_clipLayer->setSize(frameView->unscaledVisibleContentSize());
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
@@ -1502,27 +1516,26 @@ TiledBacking* RenderLayerCompositor::pageTiledBacking() const
     return renderViewBacking ? renderViewBacking->tiledBacking() : 0;
 }
 
-void RenderLayerCompositor::didMoveOnscreen()
+void RenderLayerCompositor::setIsInWindow(bool isInWindow)
 {
     if (TiledBacking* tiledBacking = pageTiledBacking())
-        tiledBacking->setIsInWindow(true);
+        tiledBacking->setIsInWindow(isInWindow);
 
-    if (!inCompositingMode() || m_rootLayerAttachment != RootLayerUnattached)
+    if (!inCompositingMode())
         return;
 
-    RootLayerAttachment attachment = shouldPropagateCompositingToEnclosingFrame() ? RootLayerAttachedViaEnclosingFrame : RootLayerAttachedViaChromeClient;
-    attachRootLayer(attachment);
-}
+    if (isInWindow) {
+        if (m_rootLayerAttachment != RootLayerUnattached)
+            return;
 
-void RenderLayerCompositor::willMoveOffscreen()
-{
-    if (TiledBacking* tiledBacking = pageTiledBacking())
-        tiledBacking->setIsInWindow(false);
+        RootLayerAttachment attachment = shouldPropagateCompositingToEnclosingFrame() ? RootLayerAttachedViaEnclosingFrame : RootLayerAttachedViaChromeClient;
+        attachRootLayer(attachment);
+    } else {
+        if (m_rootLayerAttachment == RootLayerUnattached)
+            return;
 
-    if (!inCompositingMode() || m_rootLayerAttachment == RootLayerUnattached)
-        return;
-
-    detachRootLayer();
+        detachRootLayer();
+    }
 }
 
 void RenderLayerCompositor::clearBackingForLayerIncludingDescendants(RenderLayer* layer)
@@ -1553,7 +1566,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
     }
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
-        m_clipLayer->setSize(frameView->unscaledVisibleContentSize(false /* exclude scrollbars */));
+        m_clipLayer->setSize(frameView->unscaledVisibleContentSize());
     }
 
 #if ENABLE(RUBBER_BANDING)

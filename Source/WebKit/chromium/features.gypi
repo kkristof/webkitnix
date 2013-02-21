@@ -75,7 +75,6 @@
       'ENABLE_IFRAME_SEAMLESS=1',
       'ENABLE_INDEXED_DATABASE=1',
       'ENABLE_INPUT_TYPE_DATE=1',
-      'ENABLE_INPUT_TYPE_DATETIME=1',
       'ENABLE_INPUT_TYPE_DATETIMELOCAL=1',
       'ENABLE_INPUT_TYPE_MONTH=1',
       'ENABLE_INPUT_TYPE_TIME=1',
@@ -115,6 +114,7 @@
       'ENABLE_SPEECH_SYNTHESIS=0',
       'ENABLE_SQL_DATABASE=1',
       'ENABLE_STYLE_SCOPED=1',
+      'ENABLE_SUBPIXEL_LAYOUT=1',
       'ENABLE_SVG=<(enable_svg)',
       'ENABLE_SVG_FONTS=<(enable_svg)',
       'ENABLE_TEMPLATE_ELEMENT=1',
@@ -134,7 +134,6 @@
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WEB_TIMING=1',
       'ENABLE_WORKERS=1',
-      'ENABLE_XHR_RESPONSE_BLOB=1',
       'ENABLE_XHR_TIMEOUT=0',
       'ENABLE_XSLT=1',
       'WTF_USE_LEVELDB=1',
@@ -227,16 +226,6 @@
       ['OS=="win" or OS=="android" or use_x11==1', {
         'feature_defines': [
           'ENABLE_OPENTYPE_VERTICAL=1',
-        ],
-      }],
-      ['enable_web_intents==1', {
-        'feature_defines': [
-          'ENABLE_WEB_INTENTS=1',
-        ],
-      }],
-      ['enable_web_intents_tag==1', {
-        'feature_defines': [
-          'ENABLE_WEB_INTENTS_TAG=1',
         ],
       }],
       ['OS=="mac"', {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -147,16 +147,31 @@ const char* DatabaseBackendAsync::DatabaseCloseTask::debugTaskName() const
 // *** DatabaseTransactionTask ***
 // Starts a transaction that will report its results via a callback.
 
-DatabaseBackendAsync::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtr<SQLTransaction> transaction)
+DatabaseBackendAsync::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtr<SQLTransactionBackend> transaction)
     : DatabaseTask(Database::from(transaction->database()), 0)
     , m_transaction(transaction)
+    , m_didPerformTask(false)
 {
+}
+
+DatabaseBackendAsync::DatabaseTransactionTask::~DatabaseTransactionTask()
+{
+    // If the task is being destructed without the transaction ever being run,
+    // then we must either have an error or an interruption. Give the
+    // transaction a chance to clean up since it may not have been able to
+    // run to its clean up state.
+
+    // Transaction phase 2 cleanup. See comment on "What happens if a
+    // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
+
+    if (!m_didPerformTask)
+        m_transaction->notifyDatabaseThreadIsShuttingDown();
 }
 
 void DatabaseBackendAsync::DatabaseTransactionTask::doPerformTask()
 {
-    if (m_transaction->performNextStep())
-        Database::from(m_transaction->database())->inProgressTransactionCompleted();
+    m_transaction->performNextStep();
+    m_didPerformTask = true;
 }
 
 #if !LOG_DISABLED

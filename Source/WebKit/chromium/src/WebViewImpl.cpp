@@ -41,7 +41,6 @@
 #include "Color.h"
 #include "ColorSpace.h"
 #include "CompositionUnderlineVectorBuilder.h"
-#include "CompositorHUDFontAtlas.h"
 #include "ContextFeaturesClientImpl.h"
 #include "ContextMenu.h"
 #include "ContextMenuController.h"
@@ -400,8 +399,11 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_ignoreViewportTagMaximumScale(false)
     , m_pageScaleFactorIsSet(false)
     , m_savedPageScaleFactor(0)
-    , m_doubleTapZoomInEffect(false)
-    , m_shouldUseDoubleTapTimeZero(false)
+    , m_doubleTapZoomPageScaleFactor(0)
+    , m_doubleTapZoomPending(false)
+    , m_enableFakeDoubleTapAnimationForTesting(false)
+    , m_fakeDoubleTapPageScaleFactor(0)
+    , m_fakeDoubleTapUseAnchor(false)
     , m_contextMenuAllowed(false)
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
@@ -467,7 +469,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.backForwardClient = BackForwardListChromium::create(this);
-    // FIXME: Set pageClients.validationMessageClient when Chromium-side implementation is done.
+    if (WebRuntimeFeatures::isNativeValidationMessageEnabled())
+        pageClients.validationMessageClient = m_validationMessage.get();
 
     m_page = adoptPtr(new Page(pageClients));
 #if ENABLE(MEDIA_STREAM)
@@ -568,7 +571,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     if (event.button == WebMouseEvent::ButtonLeft) {
         IntPoint point(event.x, event.y);
         point = m_page->mainFrame()->view()->windowToContents(point);
-        HitTestResult result(m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point, false));
+        HitTestResult result(m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point));
         Node* hitNode = result.innerNonSharedNode();
 
         // Take capture on a mouse down on a plugin so we can send it mouse events.
@@ -675,7 +678,7 @@ void WebViewImpl::scrollBy(const WebPoint& delta)
     } else {
         WebGestureEvent syntheticGestureEvent;
 
-        syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdateWithoutPropagation;
         syntheticGestureEvent.data.scrollUpdate.deltaX = delta.x;
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.y;
         syntheticGestureEvent.x = m_positionOnFlingStart.x;
@@ -696,6 +699,42 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     bool eventSwallowed = false;
     bool eventCancelled = false; // for disambiguation
 
+    // Special handling for slow-path fling gestures, which have no PlatformGestureEvent equivalent.
+    switch (event.type) {
+    case WebInputEvent::GestureFlingStart: {
+        if (mainFrameImpl()->frame()->eventHandler()->isScrollbarHandlingGestures()) {
+            m_client->didHandleGestureEvent(event, eventCancelled);
+            return eventSwallowed;
+        }
+        m_client->cancelScheduledContentIntents();
+        m_positionOnFlingStart = WebPoint(event.x / pageScaleFactor(), event.y / pageScaleFactor());
+        m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
+        m_flingModifier = event.modifiers;
+        m_flingSourceDevice = event.sourceDevice;
+        OwnPtr<WebGestureCurve> flingCurve = adoptPtr(Platform::current()->createFlingAnimationCurve(event.sourceDevice, WebFloatPoint(event.data.flingStart.velocityX, event.data.flingStart.velocityY), WebSize()));
+        m_gestureAnimation = WebActiveGestureAnimation::createAtAnimationStart(flingCurve.release(), this);
+        scheduleAnimation();
+        eventSwallowed = true;
+
+        m_client->didHandleGestureEvent(event, eventCancelled);
+        return eventSwallowed;
+    }
+    case WebInputEvent::GestureFlingCancel:
+        if (m_gestureAnimation) {
+            m_gestureAnimation.clear();
+            if (m_layerTreeView)
+                m_layerTreeView->didStopFlinging();
+            eventSwallowed = true;
+        }
+
+        m_client->didHandleGestureEvent(event, eventCancelled);
+        return eventSwallowed;
+    default:
+        break;
+    }
+
+    PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
+
     // Handle link highlighting outside the main switch to avoid getting lost in the
     // complicated set of cases handled below.
     switch (event.type) {
@@ -703,7 +742,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Queue a highlight animation, then hand off to regular handler.
 #if OS(LINUX)
         if (settingsImpl()->gestureTapHighlightEnabled())
-            enableTouchHighlight(event);
+            enableTapHighlight(platformEvent);
 #endif
         break;
     case WebInputEvent::GestureTapCancel:
@@ -717,31 +756,9 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     }
 
     switch (event.type) {
-    case WebInputEvent::GestureFlingStart: {
-        if (mainFrameImpl()->frame()->eventHandler()->isScrollbarHandlingGestures())
-            break;
-        m_client->cancelScheduledContentIntents();
-        m_positionOnFlingStart = WebPoint(event.x, event.y);
-        m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
-        m_flingModifier = event.modifiers;
-        m_flingSourceDevice = event.sourceDevice;
-        OwnPtr<WebGestureCurve> flingCurve = adoptPtr(Platform::current()->createFlingAnimationCurve(event.sourceDevice, WebFloatPoint(event.data.flingStart.velocityX, event.data.flingStart.velocityY), WebSize()));
-        m_gestureAnimation = WebActiveGestureAnimation::createAtAnimationStart(flingCurve.release(), this);
-        scheduleAnimation();
-        eventSwallowed = true;
-        break;
-    }
-    case WebInputEvent::GestureFlingCancel:
-        if (m_gestureAnimation) {
-            m_gestureAnimation.clear();
-            if (m_layerTreeView)
-                m_layerTreeView->didStopFlinging();
-            eventSwallowed = true;
-        }
-        break;
     case WebInputEvent::GestureTap: {
         m_client->cancelScheduledContentIntents();
-        if (detectContentOnTouch(WebPoint(event.x, event.y))) {
+        if (detectContentOnTouch(platformEvent.position())) {
             eventSwallowed = true;
             break;
         }
@@ -754,19 +771,25 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // Don't trigger a disambiguation popup on sites designed for mobile devices.
         // Instead, assume that the page has been designed with big enough buttons and links.
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds()) {
-            IntRect boundingBox(event.x - event.data.tap.width / 2, event.y - event.data.tap.height / 2, event.data.tap.width, event.data.tap.height);
+            // FIXME: didTapMultipleTargets should just take a rect instead of
+            // an event.
+            WebGestureEvent scaledEvent = event;
+            scaledEvent.x = event.x / pageScaleFactor();
+            scaledEvent.y = event.y / pageScaleFactor();
+            scaledEvent.data.tap.width = event.data.tap.width / pageScaleFactor();
+            scaledEvent.data.tap.height = event.data.tap.height / pageScaleFactor();
+            IntRect boundingBox(scaledEvent.x - scaledEvent.data.tap.width / 2, scaledEvent.y - scaledEvent.data.tap.height / 2, scaledEvent.data.tap.width, scaledEvent.data.tap.height);
             Vector<IntRect> goodTargets;
             findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets);
             // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
             // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
-            if (goodTargets.size() >= 2 && m_client && m_client->didTapMultipleTargets(event, goodTargets)) {
+            if (goodTargets.size() >= 2 && m_client && m_client->didTapMultipleTargets(scaledEvent, goodTargets)) {
                 eventSwallowed = true;
                 eventCancelled = true;
                 break;
             }
         }
 
-        PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
 
         if (m_selectPopup && m_selectPopup == selectPopup) {
@@ -788,7 +811,6 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         m_client->cancelScheduledContentIntents();
         m_page->contextMenuController()->clearContextMenu();
         m_contextMenuAllowed = true;
-        PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
         m_contextMenuAllowed = false;
 
@@ -796,14 +818,13 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     }
     case WebInputEvent::GestureTapDown: {
         m_client->cancelScheduledContentIntents();
-        PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
         break;
     }
     case WebInputEvent::GestureDoubleTap:
         if (m_webSettings->doubleTapToZoomEnabled() && m_minimumPageScaleFactor != m_maximumPageScaleFactor) {
             m_client->cancelScheduledContentIntents();
-            animateZoomAroundPoint(WebPoint(event.x, event.y), DoubleTap);
+            animateZoomAroundPoint(platformEvent.position(), DoubleTap);
             eventSwallowed = true;
             break;
         }
@@ -816,7 +837,6 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate: {
-        PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), event);
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
         break;
     }
@@ -839,19 +859,34 @@ void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingPar
     scheduleAnimation();
 }
 
-void WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds)
+bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds)
 {
     WebPoint clampedPoint = targetPosition;
-    if (!useAnchor)
+    if (!useAnchor) {
         clampedPoint = clampOffsetAtScale(targetPosition, newScale);
-    if ((!durationInSeconds && !useAnchor) || m_shouldUseDoubleTapTimeZero) {
-        setPageScaleFactor(newScale, clampedPoint);
-        return;
+        if (!durationInSeconds) {
+            setPageScaleFactor(newScale, clampedPoint);
+            return false;
+        }
     }
-    if (!m_layerTreeView)
-        return;
+    if (useAnchor && newScale == pageScaleFactor())
+        return false;
 
-    m_layerTreeView->startPageScaleAnimation(targetPosition, useAnchor, newScale, durationInSeconds);
+    if (m_enableFakeDoubleTapAnimationForTesting) {
+        m_fakeDoubleTapTargetPosition = targetPosition;
+        m_fakeDoubleTapUseAnchor = useAnchor;
+        m_fakeDoubleTapPageScaleFactor = newScale;
+    } else {
+        if (!m_layerTreeView)
+            return false;
+        m_layerTreeView->startPageScaleAnimation(targetPosition, useAnchor, newScale, durationInSeconds);
+    }
+    return true;
+}
+
+void WebViewImpl::enableFakeDoubleTapAnimationForTesting(bool enable)
+{
+    m_enableFakeDoubleTapAnimationForTesting = enable;
 }
 #endif
 
@@ -1083,9 +1118,9 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, AutoZoomType zoomTy
 
     // Use the rect-based hit test to find the node.
     IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
-    HitTestResult result = mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(point,
-            false, zoomType == FindInPage, DontHitTestScrollbars, HitTestRequest::Active | HitTestRequest::ReadOnly,
-            IntSize(rect.width, rect.height));
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active
+            | ((zoomType == FindInPage) ? HitTestRequest::IgnoreClipping : 0);
+    HitTestResult result = mainFrameImpl()->frame()->eventHandler()->hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
 
     Node* node = result.innerNonSharedNode();
     if (!node)
@@ -1134,11 +1169,6 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source, int target
     ASSERT(scrollOffset.width() + newX + newWidth <= maxSize.width);
 
     return WebRect(newX, source.y, newWidth, source.height);
-}
-
-void WebViewImpl::shouldUseAnimateDoubleTapTimeZeroForTesting(bool setToZero)
-{
-    m_shouldUseDoubleTapTimeZero = setToZero;
 }
 
 void WebViewImpl::computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZoomType zoomType, float& scale, WebPoint& scroll, bool& isAnchor)
@@ -1198,17 +1228,15 @@ void WebViewImpl::computeScaleAndScrollForHitRect(const WebRect& hitRect, AutoZo
         scaleUnchanged = fabs(pageScaleFactor() - scale) < minScaleDifference;
     }
 
-    if (zoomType == DoubleTap && (rect.isEmpty() || scaleUnchanged || m_doubleTapZoomInEffect)) {
+    bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
+        && m_doubleTapZoomPageScaleFactor != m_minimumPageScaleFactor)
+        || m_doubleTapZoomPending;
+    if (zoomType == DoubleTap && (rect.isEmpty() || scaleUnchanged || stillAtPreviousDoubleTapScale)) {
         // Zoom out to minimum scale.
         scale = m_minimumPageScaleFactor;
         scroll = WebPoint(hitRect.x, hitRect.y);
         isAnchor = true;
-        m_doubleTapZoomInEffect = false;
     } else {
-        if (zoomType == DoubleTap && scale != m_minimumPageScaleFactor)
-            m_doubleTapZoomInEffect = true;
-        else
-            m_doubleTapZoomInEffect = false;
         // FIXME: If this is being called for auto zoom during find in page,
         // then if the user manually zooms in it'd be nice to preserve the
         // relative increase in zoom they caused (if they zoom out then it's ok
@@ -1263,43 +1291,40 @@ static bool invokesHandCursor(Node* node, bool shiftKey, Frame* frame)
         || (cursor == CURSOR_AUTO && frame->eventHandler()->useHandCursor(node, node->isLink(), shiftKey));
 }
 
-Node* WebViewImpl::bestTouchLinkNode(const WebGestureEvent& touchEvent)
+Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
 {
     if (!m_page || !m_page->mainFrame())
         return 0;
 
     Node* bestTouchNode = 0;
 
-    IntSize touchEventSearchRegionSize(touchEvent.data.tapDown.width / 2, touchEvent.data.tapDown.height / 2);
-    IntPoint touchEventLocation(touchEvent.x, touchEvent.y);
+    IntPoint touchEventLocation(tapEvent.position());
 #if ENABLE(TOUCH_ADJUSTMENT)
-    m_page->mainFrame()->eventHandler()->adjustGesturePosition(PlatformGestureEventBuilder(mainFrameImpl()->frameView(), touchEvent), touchEventLocation);
+    m_page->mainFrame()->eventHandler()->adjustGesturePosition(tapEvent, touchEventLocation);
 #endif
 
     IntPoint hitTestPoint = m_page->mainFrame()->view()->windowToContents(touchEventLocation);
-    HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(
-        hitTestPoint, false, false, DontHitTestScrollbars, HitTestRequest::TouchEvent);
+    HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent);
     bestTouchNode = result.targetNode();
 
     // Make sure our highlight candidate uses a hand cursor as a heuristic to
     // choose appropriate targets.
-    bool shiftKey = touchEvent.modifiers & WebGestureEvent::ShiftKey;
-    while (bestTouchNode && !invokesHandCursor(bestTouchNode, shiftKey, m_page->mainFrame()))
+    while (bestTouchNode && !invokesHandCursor(bestTouchNode, false, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
     // We should pick the largest enclosing node with hand cursor set.
-    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), shiftKey, m_page->mainFrame()))
+    while (bestTouchNode && bestTouchNode->parentNode() && invokesHandCursor(bestTouchNode->parentNode(), false, m_page->mainFrame()))
         bestTouchNode = bestTouchNode->parentNode();
 
     return bestTouchNode;
 }
 
-void WebViewImpl::enableTouchHighlight(const WebGestureEvent& touchEvent)
+void WebViewImpl::enableTapHighlight(const PlatformGestureEvent& tapEvent)
 {
     // Always clear any existing highlight when this is invoked, even if we don't get a new target to highlight.
     m_linkHighlight.clear();
 
-    Node* touchNode = bestTouchLinkNode(touchEvent);
+    Node* touchNode = bestTapNode(tapEvent);
 
     if (!touchNode || !touchNode->renderer() || !touchNode->renderer()->enclosingLayer())
         return;
@@ -1329,8 +1354,13 @@ void WebViewImpl::animateZoomAroundPoint(const IntPoint& point, AutoZoomType zoo
     computeScaleAndScrollForHitRect(WebRect(webPoint.x, webPoint.y, 0, 0), zoomType, scale, scroll, isAnchor);
 
     bool isDoubleTap = (zoomType == DoubleTap);
-    double durationInSeconds = (isDoubleTap && !m_shouldUseDoubleTapTimeZero) ? doubleTapZoomAnimationDurationInSeconds : 0;
-    startPageScaleAnimation(scroll, isAnchor, scale, durationInSeconds);
+    double durationInSeconds = isDoubleTap ? doubleTapZoomAnimationDurationInSeconds : 0;
+    bool isAnimating = startPageScaleAnimation(scroll, isAnchor, scale, durationInSeconds);
+
+    if (isDoubleTap && isAnimating) {
+        m_doubleTapZoomPageScaleFactor = scale;
+        m_doubleTapZoomPending = true;
+    }
 #endif
 }
 
@@ -1353,6 +1383,7 @@ void WebViewImpl::hasTouchEventHandlers(bool hasTouchHandlers)
 
 bool WebViewImpl::hasTouchEventHandlersAt(const WebPoint& point)
 {
+    // FIXME: Implement this. Note that the point must be divided by pageScaleFactor.
     return true;
 }
 
@@ -1775,12 +1806,14 @@ void WebViewImpl::didExitFullScreen()
 
 void WebViewImpl::instrumentBeginFrame()
 {
-    InspectorInstrumentation::didBeginFrame(m_page.get());
+    if (m_devToolsAgent)
+        m_devToolsAgent->didBeginFrame();
 }
 
 void WebViewImpl::instrumentCancelFrame()
 {
-    InspectorInstrumentation::didCancelFrame(m_page.get());
+    if (m_devToolsAgent)
+        m_devToolsAgent->didCancelFrame();
 }
 
 #if ENABLE(BATTERY_STATUS)
@@ -1814,7 +1847,8 @@ void WebViewImpl::willBeginFrame()
 
 void WebViewImpl::didBeginFrame()
 {
-    InspectorInstrumentation::didComposite(m_page.get());
+    if (m_devToolsAgent)
+        m_devToolsAgent->didComposite();
 
     if (m_continuousPaintingEnabled)
         ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, m_pageOverlays.get());
@@ -2082,26 +2116,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         return true;
     }
 
-    const WebInputEvent* inputEventTransformed = &inputEvent;
-    if (m_page->settings()->applyPageScaleFactorInCompositor()) {
-        WebMouseEvent mouseEvent;
-        WebGestureEvent gestureEvent;
-        if (WebInputEvent::isMouseEventType(inputEvent.type)) {
-            mouseEvent = *static_cast<const WebMouseEvent*>(&inputEvent);
-            mouseEvent.x = mouseEvent.x / pageScaleFactor();
-            mouseEvent.y = mouseEvent.y / pageScaleFactor();
-            inputEventTransformed = static_cast<const WebInputEvent*>(&mouseEvent);
-        } else if (WebInputEvent::isGestureEventType(inputEvent.type)) {
-            gestureEvent = *static_cast<const WebGestureEvent*>(&inputEvent);
-            gestureEvent.x = gestureEvent.x / pageScaleFactor();
-            gestureEvent.y = gestureEvent.y / pageScaleFactor();
-            gestureEvent.data.tap.width /= pageScaleFactor();
-            gestureEvent.data.tap.height /= pageScaleFactor();
-            inputEventTransformed = static_cast<const WebInputEvent*>(&gestureEvent);
-        }
-    }
-
-    return PageWidgetDelegate::handleInputEvent(m_page.get(), *this, *inputEventTransformed);
+    return PageWidgetDelegate::handleInputEvent(m_page.get(), *this, inputEvent);
 }
 
 void WebViewImpl::mouseCaptureLost()
@@ -2153,8 +2168,15 @@ void WebViewImpl::setFocus(bool enable)
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
             Editor* editor = focusedFrame->editor();
-            if (editor && editor->hasComposition())
+            if (editor && editor->hasComposition()) {
+                if (m_autofillClient)
+                    m_autofillClient->setIgnoreTextChanges(true);
+
                 editor->confirmComposition();
+
+                if (m_autofillClient)
+                    m_autofillClient->setIgnoreTextChanges(false);
+            }
             m_imeAcceptEvents = false;
         }
     }
@@ -3761,10 +3783,8 @@ void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPa
     m_newNavigationLoader = 0;
 #endif
     m_observedNewNavigation = false;
-    if (*isNewNavigation && !isNavigationWithinPage) {
+    if (*isNewNavigation && !isNavigationWithinPage)
         m_pageScaleFactorIsSet = false;
-        m_doubleTapZoomInEffect = false;
-    }
 
     // Make sure link highlight from previous page is cleared.
     m_linkHighlight.clear();
@@ -3947,7 +3967,7 @@ Node* WebViewImpl::focusedWebCoreNode()
 HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
 {
     IntPoint docPoint(m_page->mainFrame()->view()->windowToContents(pos));
-    return m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(docPoint, false);
+    return m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(docPoint);
 }
 
 void WebViewImpl::setTabsToLinks(bool enable)
@@ -4211,13 +4231,14 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
         }
 
         setPageScaleFactor(pageScaleFactor() * pageScaleDelta, scrollPoint);
-        m_doubleTapZoomInEffect = false;
+        m_doubleTapZoomPending = false;
     }
 }
 
 void WebViewImpl::willCommit()
 {
-    InspectorInstrumentation::willComposite(m_page.get());
+    if (m_devToolsAgent)
+        m_devToolsAgent->willComposite();
 }
 
 void WebViewImpl::didCommit()
@@ -4267,12 +4288,6 @@ void WebViewImpl::scheduleComposite()
 
     ASSERT(!Platform::current()->compositorSupport()->isThreadingEnabled());
     m_client->scheduleComposite();
-}
-
-void WebViewImpl::createFontAtlas(SkBitmap& bitmap, WebRect asciiToRectTable[128], int& fontHeight)
-{
-    TRACE_EVENT0("webkit", "WebViewImpl::loadFontAtlas");
-    bitmap = WebCore::CompositorHUDFontAtlas::generateFontAtlas(asciiToRectTable, fontHeight);
 }
 
 void WebViewImpl::updateLayerTreeViewport()

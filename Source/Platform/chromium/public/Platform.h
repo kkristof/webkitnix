@@ -67,13 +67,14 @@ class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebSocketStreamHandle;
 class WebStorageNamespace;
+class WebUnitTestSupport;
 class WebThemeEngine;
 class WebThread;
 class WebURL;
 class WebURLLoader;
 class WebWorkerRunLoop;
-struct WebLocalizedString;
 struct WebFloatPoint;
+struct WebLocalizedString;
 struct WebSize;
 
 class Platform {
@@ -116,10 +117,11 @@ public:
 
     // Creates a device for audio I/O.
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
-    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
+    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*, const WebString& deviceId) { return 0; }
 
-    // FIXME: remove deprecated API once chromium switches over to new method.
+    // FIXME: remove deprecated APIs once chromium switches over to new method.
     virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
+    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
 
 
     // Blob ----------------------------------------------------------------
@@ -358,6 +360,13 @@ public:
 
     // Callable from a background WebKit thread.
     virtual void callOnMainThread(void (*func)(void*), void* context) { }
+
+
+    // Testing -------------------------------------------------------------
+
+#define HAVE_WEBUNITTESTSUPPORT 1
+    // Get a pointer to testing support interfaces. Will not be available in production builds.
+    virtual WebUnitTestSupport* unitTestSupport() { return 0; }
 
 
     // Tracing -------------------------------------------------------------

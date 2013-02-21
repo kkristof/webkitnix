@@ -68,7 +68,6 @@
 #include "Settings.h"
 #include "TextIterator.h"
 #include "WebKitAccessibleWrapperAtk.h"
-#include "WorkerThread.h"
 #include "webkitglobalsprivate.h"
 #include "webkitwebframe.h"
 #include "webkitwebframeprivate.h"
@@ -238,24 +237,6 @@ guint DumpRenderTreeSupportGtk::getPendingUnloadEventCount(WebKitWebFrame* frame
     g_return_val_if_fail(WEBKIT_IS_WEB_FRAME(frame), 0);
 
     return core(frame)->document()->domWindow()->pendingUnloadEventListeners();
-}
-
-bool DumpRenderTreeSupportGtk::pauseAnimation(WebKitWebFrame* frame, const char* name, double time, const char* element)
-{
-    ASSERT(core(frame));
-    Element* coreElement = core(frame)->document()->getElementById(AtomicString(element));
-    if (!coreElement || !coreElement->renderer())
-        return false;
-    return core(frame)->animation()->pauseAnimationAtTime(coreElement->renderer(), AtomicString(name), time);
-}
-
-bool DumpRenderTreeSupportGtk::pauseTransition(WebKitWebFrame* frame, const char* name, double time, const char* element)
-{
-    ASSERT(core(frame));
-    Element* coreElement = core(frame)->document()->getElementById(AtomicString(element));
-    if (!coreElement || !coreElement->renderer())
-        return false;
-    return core(frame)->animation()->pauseTransitionAtTime(coreElement->renderer(), AtomicString(name), time);
 }
 
 CString DumpRenderTreeSupportGtk::markerTextForListItem(WebKitWebFrame* frame, JSContextRef context, JSValueRef nodeObject)
@@ -550,28 +531,9 @@ void DumpRenderTreeSupportGtk::clearOpener(WebKitWebFrame* frame)
         coreFrame->loader()->setOpener(0);
 }
 
-unsigned int DumpRenderTreeSupportGtk::workerThreadCount()
-{
-#if ENABLE(WORKERS)
-    return WebCore::WorkerThread::workerThreadCount();
-#else
-    return 0;
-#endif
-}
-
 bool DumpRenderTreeSupportGtk::findString(WebKitWebView* webView, const gchar* targetString, WebKitFindOptions findOptions)
 {
     return core(webView)->findString(String::fromUTF8(targetString), findOptions);
-}
-
-double DumpRenderTreeSupportGtk::defaultMinimumTimerInterval()
-{
-    return Settings::defaultMinDOMTimerInterval();
-}
-
-void DumpRenderTreeSupportGtk::setMinimumTimerInterval(WebKitWebView* webView, double interval)
-{
-    core(webView)->settings()->setMinDOMTimerInterval(interval);
 }
 
 CString DumpRenderTreeSupportGtk::accessibilityHelpText(AtkObject* axObject)

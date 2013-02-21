@@ -595,4 +595,7 @@ String validationMessageBadInputForNumberText()
     return validationMessageTypeMismatchText();
 }
 
+String snapshottedPlugInLabelTitle() { return String(); }
+String snapshottedPlugInLabelSubtitle() { return String(); }
+
 }

@@ -29,9 +29,8 @@ find_package(LibSoup 2.39.4.1 REQUIRED)
 
 set(WTF_USE_SOUP 1)
 
-add_definitions(-DENABLE_GLIB_SUPPORT=1)
+add_definitions(-DWTF_USE_GLIB=1)
 add_definitions(-DWTF_USE_SOUP=1)
-add_definitions(-DWTF_USE_PTHREADS=1)
 add_definitions(-DWTF_USE_ICU_UNICODE=1)
 add_definitions(-DWTF_USE_CAIRO=1)
 
@@ -138,7 +137,7 @@ if ((${EINA_VERSION} STRLESS 1.7) OR (${EVAS_VERSION} STRLESS 1.7) OR (${ECORE_V
 endif ()
 
 find_package(Freetype 2.4.2 REQUIRED)
-find_package(HarfBuzz 0.9.2 REQUIRED)
+find_package(HarfBuzz)
 add_definitions(-DWTF_USE_FREETYPE=1)
 add_definitions(-DWTF_USE_HARFBUZZ=1)
 

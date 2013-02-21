@@ -180,15 +180,6 @@ private:
             break;
         }
             
-        case ValueToInt32: {
-            if (node->child1()->shouldSpeculateNumber()
-                && node->mustGenerate()) {
-                node->clearFlags(NodeMustGenerate);
-                m_graph.deref(node);
-            }
-            break;
-        }
-            
         case BitAnd:
         case BitOr:
         case BitXor:
@@ -232,16 +223,39 @@ private:
             Node* logicalNot = node->child1().node();
             if (logicalNot->op() == LogicalNot
                 && logicalNot->adjustedRefCount() == 1) {
-                Edge newChildEdge = logicalNot->child1();
-                if (newChildEdge->hasBooleanResult()) {
-                    m_graph.ref(newChildEdge);
-                    m_graph.deref(logicalNot);
-                    node->children.setChild1(newChildEdge);
-                    
-                    BlockIndex toBeTaken = node->notTakenBlockIndex();
-                    BlockIndex toBeNotTaken = node->takenBlockIndex();
-                    node->setTakenBlockIndex(toBeTaken);
-                    node->setNotTakenBlockIndex(toBeNotTaken);
+                
+                // Make sure that OSR exit can't observe the LogicalNot. If it can,
+                // then we must compute it and cannot peephole around it.
+                bool found = false;
+                bool ok = true;
+                for (unsigned i = m_indexInBlock; i--;) {
+                    Node* candidate = m_block->at(i);
+                    if (!candidate->shouldGenerate())
+                        continue;
+                    if (candidate == logicalNot) {
+                        found = true;
+                        break;
+                    }
+                    if (candidate->canExit()) {
+                        ok = false;
+                        found = true;
+                        break;
+                    }
+                }
+                ASSERT_UNUSED(found, found);
+                
+                if (ok) {
+                    Edge newChildEdge = logicalNot->child1();
+                    if (newChildEdge->hasBooleanResult()) {
+                        m_graph.ref(newChildEdge);
+                        m_graph.deref(logicalNot);
+                        node->children.setChild1(newChildEdge);
+                        
+                        BlockIndex toBeTaken = node->notTakenBlockIndex();
+                        BlockIndex toBeNotTaken = node->takenBlockIndex();
+                        node->setTakenBlockIndex(toBeTaken);
+                        node->setNotTakenBlockIndex(toBeNotTaken);
+                    }
                 }
             }
             break;
@@ -252,7 +266,7 @@ private:
                 break;
             if (!node->variableAccessData()->shouldUseDoubleFormat())
                 break;
-            fixDoubleEdge(0);
+            fixDoubleEdge(0, ForwardSpeculation);
             break;
         }
             
@@ -508,7 +522,7 @@ private:
         edge = newEdge;
     }
     
-    void fixDoubleEdge(unsigned childIndex)
+    void fixDoubleEdge(unsigned childIndex, SpeculationDirection direction = BackwardSpeculation)
     {
         Node* source = m_currentNode;
         Edge& edge = m_graph.child(source, childIndex);
@@ -518,13 +532,14 @@ private:
             return;
         }
         
-        injectInt32ToDoubleNode(childIndex);
+        injectInt32ToDoubleNode(childIndex, direction);
     }
 
-    void injectInt32ToDoubleNode(unsigned childIndex)
+    void injectInt32ToDoubleNode(unsigned childIndex, SpeculationDirection direction = BackwardSpeculation)
     {
         Node* result = m_insertionSet.insertNode(
-            m_indexInBlock, DontRefChildren, RefNode, SpecDouble, Int32ToDouble,
+            m_indexInBlock, DontRefChildren, RefNode, SpecDouble,
+            direction == BackwardSpeculation ? Int32ToDouble : ForwardInt32ToDouble,
             m_currentNode->codeOrigin, m_graph.child(m_currentNode, childIndex).node());
         
 #if DFG_ENABLE(DEBUG_PROPAGATION_VERBOSE)

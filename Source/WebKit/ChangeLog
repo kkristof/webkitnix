@@ -1,3 +1,126 @@
+2013-02-19  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, include exports for VS2010 as well.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+
+2013-02-18  Brent Fulgham  <bfulgham@webkit.org>
+
+        [Windows] Unreviewed VS2010 build correction.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in: Sync
+        export definition with VS2005 version.
+
+2013-02-15  Rik Cabanier  <cabanier@adobe.com>
+
+        Add platform support for -webkit-background-blend-mode to CG context
+        https://bugs.webkit.org/show_bug.cgi?id=108549
+
+        Reviewed by Dean Jackson.
+
+        Fixed build issue.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+
+2013-02-14  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Touch-ups to the VS2010 WebKit solution.
+        Remove un-needed include directories and force includes. 
+        Update exports file.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+        * WebKit.vcxproj/common.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeLauncherCommon.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffLauncherCommon.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePlugin.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePlugin.vcxproj.filters:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPI.vcxproj:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPI.vcxproj.filters:
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherCommon.props:
+        * win/record-memory/record-memoryCommon.props:
+        * WebCore.vcxproj/WebCore.vcxproj:
+        * WebCore.vcxproj/WebCore.vcxproj.filters:
+        * JavaScriptCore.vcxproj/JavaScriptCoreCommon.props:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+        * JavaScriptCore.vcxproj/jsc/jscCommon.props:
+        * JavaScriptCore.vcxproj/testRegExp/testRegExp.vcxproj:
+        * JavaScriptCore.vcxproj/testapi/testapi.vcxproj:
+        * WTF.vcxproj/WTFCommon.props:
+
+2013-02-14  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, set svn:eol-style native for .sln, .vcproj, and .vsprops files.
+        https://bugs.webkit.org/show_bug.cgi?id=96934
+
+        * WebKit.vcxproj/WebKit.sln: Modified property svn:eol-style.
+
+2013-02-14  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, set svn:eol-style CRLF for .sln files.
+
+        * WebKit.vcxproj/WebKit.sln: Modified property svn:eol-style.
+
+2013-02-14  Roger Fong  <roger_fong@apple.com>
+
+        Add TestWebKitAPI, gtest-md and record-memory projects to VS2010 WebKit solution.
+        https://bugs.webkit.org/show_bug.cgi?id=107034.
+
+        Reviewed by Brent Fulgham.
+
+        * WebKit.vcxproj/WebKit.sln:
+
+2013-02-12  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Build fix for VS2010 WebKit solution.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+
+2013-02-11  Adenilson Cavalcanti  <cavalcantii@gmail.com>
+
+        Build fix: r142549 broke EFL build
+        https://bugs.webkit.org/show_bug.cgi?id=109527
+
+        Reviewed by Kentaro Hara.
+
+        Build fix.
+
+        * CMakeLists.txt:
+
+2013-02-11  Brent Fulgham  <bfulgham@webkit.org>
+
+        Rename Visual Studio solution folders to avoid conflicts with project names
+        https://bugs.webkit.org/show_bug.cgi?id=109484
+
+        Reviewed by Tim Horton.
+
+        * WebKit.vcxproj/WebKit.sln: Rename several solution folders (e.g.,
+        WTF, WebCore, WebKit, JavaScriptCore) so that they do not conflict
+        with projects using the same name.
+
+2013-02-08  Benjamin Poulain  <bpoulain@apple.com>
+
+        Move workerThreadCount from TestRunner to WebCore Internals
+        https://bugs.webkit.org/show_bug.cgi?id=109239
+
+        Reviewed by Darin Adler.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2013-02-07  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Corrections the exports definition file.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+
+2013-02-07  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. More VS2010 WebKit solution touchups.
+        Make WebKitExports.def.in be treated as a custom build file so that changes to it cause the exports to be rebuilt.
+
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExportGenerator.vcxproj:
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExportGenerator.vcxproj.filters:
+        * WebKit.vcxproj/WebKitExportGenerator/WebKitExports.def.in:
+
 2013-02-06  Roger Fong  <roger_fong@apple.com>
 
         Unreviewed. Touchups to VS2010 WebKit solution.

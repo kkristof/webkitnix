@@ -42,7 +42,6 @@
 #include <JavaScriptCore/JSContextRef.h>
 #include <JavaScriptCore/JSLock.h>
 #include <JavaScriptCore/JSValueRef.h>
-#include <WebCore/AnimationController.h>
 #include <WebCore/ArchiveResource.h>
 #include <WebCore/CSSComputedStyleDeclaration.h>
 #include <WebCore/Chrome.h>
@@ -417,44 +416,6 @@ PassRefPtr<ImmutableArray> WebFrame::childFrames()
     return ImmutableArray::adopt(vector);
 }
 
-bool WebFrame::pauseAnimationOnElementWithId(const AtomicString& animationName, const String& elementID, double time)
-{
-    if (!m_coreFrame)
-        return false;
-
-    AnimationController* controller = m_coreFrame->animation();
-    if (!controller)
-        return false;
-
-    if (!m_coreFrame->document())
-        return false;
-
-    Node* coreNode = m_coreFrame->document()->getElementById(elementID);
-    if (!coreNode || !coreNode->renderer())
-        return false;
-
-    return controller->pauseAnimationAtTime(coreNode->renderer(), animationName, time);
-}
-
-bool WebFrame::pauseTransitionOnElementWithId(const String& propertyName, const String& elementID, double time)
-{
-    if (!m_coreFrame)
-        return false;
-
-    AnimationController* controller = m_coreFrame->animation();
-    if (!controller)
-        return false;
-
-    if (!m_coreFrame->document())
-        return false;
-
-    Node* coreNode = m_coreFrame->document()->getElementById(elementID);
-    if (!coreNode || !coreNode->renderer())
-        return false;
-
-    return controller->pauseTransitionAtTime(coreNode->renderer(), propertyName, time);
-}
-
 String WebFrame::layerTreeAsText() const
 {
     if (!m_coreFrame)
@@ -521,7 +482,7 @@ IntRect WebFrame::visibleContentBounds() const
     if (!view)
         return IntRect();
     
-    IntRect contentRect = view->visibleContentRect(true);
+    IntRect contentRect = view->visibleContentRect(ScrollableArea::IncludeScrollbars);
     return IntRect(0, 0, contentRect.width(), contentRect.height());
 }
 
@@ -534,7 +495,7 @@ IntRect WebFrame::visibleContentBoundsExcludingScrollbars() const
     if (!view)
         return IntRect();
     
-    IntRect contentRect = view->visibleContentRect(false);
+    IntRect contentRect = view->visibleContentRect();
     return IntRect(0, 0, contentRect.width(), contentRect.height());
 }
 
@@ -579,7 +540,7 @@ PassRefPtr<InjectedBundleHitTestResult> WebFrame::hitTest(const IntPoint point) 
     if (!m_coreFrame)
         return 0;
 
-    return InjectedBundleHitTestResult::create(m_coreFrame->eventHandler()->hitTestResultAtPoint(point, false, true));
+    return InjectedBundleHitTestResult::create(m_coreFrame->eventHandler()->hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping));
 }
 
 bool WebFrame::getDocumentBackgroundColor(double* red, double* green, double* blue, double* alpha)

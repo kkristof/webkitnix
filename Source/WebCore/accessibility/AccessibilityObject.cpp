@@ -74,7 +74,7 @@ AccessibilityObject::AccessibilityObject()
     : m_id(0)
     , m_haveChildren(false)
     , m_role(UnknownRole)
-    , m_cachedIsIgnoredValue(DefaultBehavior)
+    , m_lastKnownIsIgnoredValue(DefaultBehavior)
 #if PLATFORM(GTK) || (PLATFORM(EFL) && HAVE(ACCESSIBILITY))
     , m_wrapper(0)
 #elif PLATFORM(CHROMIUM)
@@ -90,6 +90,10 @@ AccessibilityObject::~AccessibilityObject()
 
 void AccessibilityObject::detach()
 {
+    // Clear any children and call detachFromParent on them so that
+    // no children are left with dangling pointers to their parent.
+    clearChildren();
+
 #if HAVE(ACCESSIBILITY) && PLATFORM(CHROMIUM)
     m_detached = true;
 #elif HAVE(ACCESSIBILITY)
@@ -1782,25 +1786,25 @@ void AccessibilityObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
     }
 }
 
-bool AccessibilityObject::cachedIsIgnoredValue()
+bool AccessibilityObject::lastKnownIsIgnoredValue()
 {
-    if (m_cachedIsIgnoredValue == DefaultBehavior)
-        m_cachedIsIgnoredValue = accessibilityIsIgnored() ? IgnoreObject : IncludeObject;
+    if (m_lastKnownIsIgnoredValue == DefaultBehavior)
+        m_lastKnownIsIgnoredValue = accessibilityIsIgnored() ? IgnoreObject : IncludeObject;
 
-    return m_cachedIsIgnoredValue == IgnoreObject;
+    return m_lastKnownIsIgnoredValue == IgnoreObject;
 }
 
-void AccessibilityObject::setCachedIsIgnoredValue(bool isIgnored)
+void AccessibilityObject::setLastKnownIsIgnoredValue(bool isIgnored)
 {
-    m_cachedIsIgnoredValue = isIgnored ? IgnoreObject : IncludeObject;
+    m_lastKnownIsIgnoredValue = isIgnored ? IgnoreObject : IncludeObject;
 }
 
 void AccessibilityObject::notifyIfIgnoredValueChanged()
 {
     bool isIgnored = accessibilityIsIgnored();
-    if (cachedIsIgnoredValue() != isIgnored) {
+    if (lastKnownIsIgnoredValue() != isIgnored) {
         axObjectCache()->childrenChanged(parentObject());
-        setCachedIsIgnoredValue(isIgnored);
+        setLastKnownIsIgnoredValue(isIgnored);
     }
 }
 
@@ -1841,6 +1845,29 @@ bool AccessibilityObject::isButton() const
     AccessibilityRole role = roleValue();
 
     return role == ButtonRole || role == PopUpButtonRole || role == ToggleButtonRole;
+}
+
+bool AccessibilityObject::accessibilityIsIgnored() const
+{
+    AXComputedObjectAttributeCache* attributeCache = axObjectCache()->computedObjectAttributeCache();
+    if (attributeCache) {
+        AccessibilityObjectInclusion ignored = attributeCache->getIgnored(axObjectID());
+        switch (ignored) {
+        case IgnoreObject:
+            return true;
+        case IncludeObject:
+            return false;
+        case DefaultBehavior:
+            break;
+        }
+    }
+
+    bool result = computeAccessibilityIsIgnored();
+
+    if (attributeCache)
+        attributeCache->setIgnored(axObjectID(), result ? IgnoreObject : IncludeObject);
+
+    return result;
 }
 
 } // namespace WebCore

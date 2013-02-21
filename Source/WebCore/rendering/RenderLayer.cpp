@@ -1185,13 +1185,13 @@ bool RenderLayer::updateLayerPosition()
     }
     
     bool positionOrOffsetChanged = false;
-    if (renderer()->isInFlowPositioned()) {
-        LayoutSize newOffset = toRenderBoxModelObject(renderer())->offsetForInFlowPosition();
-        positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
-        m_offsetForInFlowPosition = newOffset;
-        localPoint.move(m_offsetForInFlowPosition);
+    if (renderer()->hasPaintOffset()) {
+        LayoutSize newOffset = toRenderBoxModelObject(renderer())->paintOffset();
+        positionOrOffsetChanged = newOffset != m_paintOffset;
+        m_paintOffset = newOffset;
+        localPoint.move(m_paintOffset);
     } else {
-        m_offsetForInFlowPosition = LayoutSize();
+        m_paintOffset = LayoutSize();
     }
 
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the renderers.
@@ -1367,28 +1367,13 @@ RenderLayer* RenderLayer::enclosingFilterRepaintLayer() const
     return 0;
 }
 
-static inline void expandRectForFilterOutsets(LayoutRect& rect, const RenderLayerModelObject* renderer)
-{
-    ASSERT(renderer);
-    if (!renderer->style()->hasFilterOutsets())
-        return;
-
-    int topOutset;
-    int rightOutset;
-    int bottomOutset;
-    int leftOutset;
-    renderer->style()->getFilterOutsets(topOutset, rightOutset, bottomOutset, leftOutset);
-    rect.move(-leftOutset, -topOutset);
-    rect.expand(leftOutset + rightOutset, topOutset + bottomOutset);
-}
-
 void RenderLayer::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect, bool immediate)
 {
     if (rect.isEmpty())
         return;
     
     LayoutRect rectForRepaint = rect;
-    expandRectForFilterOutsets(rectForRepaint, renderer());
+    renderer()->style()->filterOutsets().expandRect(rectForRepaint);
 
     RenderLayerFilterInfo* filterInfo = this->filterInfo();
     ASSERT(filterInfo);
@@ -1557,7 +1542,7 @@ static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLaye
         LayoutRect clipRect = layer->boundingBox(layer);
         expandClipRectForDescendantsAndReflection(clipRect, layer, layer, paintBehavior);
 #if ENABLE(CSS_FILTERS)
-        expandRectForFilterOutsets(clipRect, layer->renderer());
+        layer->renderer()->style()->filterOutsets().expandRect(clipRect);
 #endif
         return transform.mapRect(clipRect);
     }
@@ -1565,7 +1550,7 @@ static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLaye
     LayoutRect clipRect = layer->boundingBox(rootLayer);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, paintBehavior);
 #if ENABLE(CSS_FILTERS)
-    expandRectForFilterOutsets(clipRect, layer->renderer());
+    layer->renderer()->style()->filterOutsets().expandRect(clipRect);
 #endif
     return clipRect;
 }
@@ -2026,7 +2011,8 @@ bool RenderLayer::scrollBy(const IntSize& delta, ScrollOffsetClamping clamp, Scr
         // have an overflow clip. Which means that it is a document node that can be scrolled.
         FrameView* view = renderer()->view()->frameView();
         IntPoint scrollPositionBefore = view->scrollPosition();
-        view->scrollBy(delta);
+        if (view->isScrollable())
+            view->scrollBy(delta);
         IntPoint scrollPositionAfter = view->scrollPosition();
         return scrollPositionBefore != scrollPositionAfter;
 
@@ -2459,14 +2445,14 @@ IntPoint RenderLayer::minimumScrollPosition() const
 IntPoint RenderLayer::maximumScrollPosition() const
 {
     // FIXME: m_scrollSize may not be up-to-date if m_scrollDimensionsDirty is true.
-    return scrollOrigin() + roundedIntSize(m_scrollSize) - visibleContentRect(true).size();
+    return scrollOrigin() + roundedIntSize(m_scrollSize) - visibleContentRect(IncludeScrollbars).size();
 }
 
-IntRect RenderLayer::visibleContentRect(bool includeScrollbars) const
+IntRect RenderLayer::visibleContentRect(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
     int verticalScrollbarWidth = 0;
     int horizontalScrollbarHeight = 0;
-    if (includeScrollbars) {
+    if (scrollbarInclusion == IncludeScrollbars) {
         verticalScrollbarWidth = (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar()) ? verticalScrollbar()->width() : 0;
         horizontalScrollbarHeight = (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar()) ? horizontalScrollbar()->height() : 0;
     }
@@ -3599,7 +3585,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool shouldPaintOutline = isSelfPaintingLayer && !isPaintingOverlayScrollbars;
     bool shouldPaintContent = m_hasVisibleContent && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    bool useClipRect = true;
     GraphicsContext* transparencyLayerContext = context;
     
     if (localPaintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isRoot())
@@ -3699,7 +3684,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 // If the filter needs the full source image, we need to avoid using the clip rectangles.
                 // Otherwise, if for example this layer has overflow:hidden, a drop shadow will not compute correctly.
                 // Note that we will still apply the clipping on the final rendering of the filter.
-                useClipRect = !filterRenderer()->hasFilterThatMovesPixels();
+                localPaintingInfo.clipToDirtyRect = !filterRenderer()->hasFilterThatMovesPixels();
             }
         }
     }
@@ -3746,7 +3731,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             if (haveTransparency)
                 beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, localPaintingInfo.paintBehavior);
         
-            if (useClipRect) {
+            if (localPaintingInfo.clipToDirtyRect) {
                 // Paint our background first, before painting any child layers.
                 // Establish the clip used to paint our background.
                 clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, damageRect, DoNotIncludeSelfForBorderRadius); // Background painting will handle clipping to self.
@@ -3756,10 +3741,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             PaintInfo paintInfo(context, pixelSnappedIntRect(damageRect.rect()), PaintPhaseBlockBackground, paintBehavior, paintingRootForRenderer, localPaintingInfo.region);
             renderer()->paint(paintInfo, paintOffset);
 
-            if (useClipRect) {
-                // Restore the clip.
+            if (localPaintingInfo.clipToDirtyRect)
                 restoreClip(context, localPaintingInfo.paintDirtyRect, damageRect);
-            }
         }
 
         // Now walk the sorted list of children with negative z-indices.
@@ -3773,7 +3756,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             if (haveTransparency)
                 beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, localPaintingInfo.paintBehavior);
 
-            if (useClipRect) {
+            if (localPaintingInfo.clipToDirtyRect) {
                 // Set up the clip used when painting our children.
                 clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, clipRectToApply);
             }
@@ -3792,10 +3775,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                 renderer()->paint(paintInfo, paintOffset);
             }
 
-            if (useClipRect) {
-                // Now restore our clip.
+            if (localPaintingInfo.clipToDirtyRect)
                 restoreClip(context, localPaintingInfo.paintDirtyRect, clipRectToApply);
-            }
         }
 
         if (shouldPaintOutline && !outlineRect.isEmpty()) {
@@ -3832,17 +3813,15 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     ASSERT(transparencyLayerContext == context);
 
     if ((localPaintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && renderer()->hasMask() && !selectionOnly) {
-        if (useClipRect)
+        if (localPaintingInfo.clipToDirtyRect)
             clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, damageRect, DoNotIncludeSelfForBorderRadius); // Mask painting will handle clipping to self.
         
         // Paint the mask.
         PaintInfo paintInfo(context, pixelSnappedIntRect(damageRect.rect()), PaintPhaseMask, PaintBehaviorNormal, paintingRootForRenderer, localPaintingInfo.region);
         renderer()->paint(paintInfo, paintOffset);
         
-        if (useClipRect) {
-            // Restore the clip.
+        if (localPaintingInfo.clipToDirtyRect)
             restoreClip(context, localPaintingInfo.paintDirtyRect, damageRect);
-        }
     }
 
     // End our transparency layer
@@ -4598,7 +4577,7 @@ void RenderLayer::calculateClipRects(const ClipRectsContext& clipRectsContext, C
         clipRects.setPosClipRect(clipRects.fixedClipRect());
         clipRects.setOverflowClipRect(clipRects.fixedClipRect());
         clipRects.setFixed(true);
-    } else if (renderer()->style()->hasInFlowPosition())
+    } else if (renderer()->style()->hasPaintOffset())
         clipRects.setPosClipRect(clipRects.overflowClipRect());
     else if (renderer()->style()->position() == AbsolutePosition)
         clipRects.setOverflowClipRect(clipRects.posClipRect());
@@ -5011,7 +4990,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     // filtered areas with the outsets if we know that the filter is going to render in hardware.
     // https://bugs.webkit.org/show_bug.cgi?id=81239
     if (flags & IncludeLayerFilterOutsets)
-        expandRectForFilterOutsets(unionBounds, renderer);
+        renderer->style()->filterOutsets().expandRect(unionBounds);
 #endif
 
     if ((flags & IncludeSelfTransform) && paintsWithTransform(PaintBehaviorNormal)) {

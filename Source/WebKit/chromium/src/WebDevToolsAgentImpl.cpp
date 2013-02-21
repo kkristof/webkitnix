@@ -426,6 +426,30 @@ void WebDevToolsAgentImpl::didNavigate()
     ClientMessageLoopAdapter::didNavigate();
 }
 
+void WebDevToolsAgentImpl::didBeginFrame()
+{
+    if (InspectorController* ic = inspectorController())
+        ic->didBeginFrame();
+}
+
+void WebDevToolsAgentImpl::didCancelFrame()
+{
+    if (InspectorController* ic = inspectorController())
+        ic->didCancelFrame();
+}
+
+void WebDevToolsAgentImpl::willComposite()
+{
+    if (InspectorController* ic = inspectorController())
+        ic->willComposite();
+}
+
+void WebDevToolsAgentImpl::didComposite()
+{
+    if (InspectorController* ic = inspectorController())
+        ic->didComposite();
+}
+
 void WebDevToolsAgentImpl::didCreateScriptContext(WebFrameImpl* webframe, int worldId)
 {
     // Skip non main world contexts.
@@ -778,7 +802,7 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
         || commandName == InspectorBackendDispatcher::commandNames[InspectorBackendDispatcher::kProfiler_startCmd]
         || commandName == InspectorBackendDispatcher::commandNames[InspectorBackendDispatcher::kProfiler_stopCmd]
         || commandName == InspectorBackendDispatcher::commandNames[InspectorBackendDispatcher::kProfiler_getCPUProfileCmd]
-        || commandName == InspectorBackendDispatcher::commandNames[InspectorBackendDispatcher::kProfiler_getHeapSnapshotCmd];
+        || commandName == InspectorBackendDispatcher::commandNames[InspectorBackendDispatcher::kHeapProfiler_getHeapSnapshotCmd];
 }
 
 void WebDevToolsAgent::processPendingMessages()

@@ -121,8 +121,8 @@ EXPORTS
 #if ENABLE(INSPECTOR)
         ?consoleMessageArgumentCounts@InspectorConsoleAgent@WebCore@@QAE?AV?$Vector@I$0A@@WTF@@XZ
         ?counterValue@InspectorCounters@WebCore@@SAHW4CounterType@12@@Z
-        ?didBeginFrameImpl@InspectorInstrumentation@WebCore@@CAXPAVInstrumentingAgents@2@@Z
-        ?didCancelFrameImpl@InspectorInstrumentation@WebCore@@CAXPAVInstrumentingAgents@2@@Z
+        ?didBeginFrame@InspectorController@WebCore@@QAEXXZ
+        ?didCancelFrame@InspectorController@WebCore@@QAEXXZ
 #endif
         ?counterValueForElement@WebCore@@YA?AVString@WTF@@PAVElement@1@@Z
         ?createThread@WTF@@YAIP6APAXPAX@Z0PBD@Z
@@ -184,10 +184,6 @@ EXPORTS
         ?equal@WTF@@YA_NPBVStringImpl@1@0@Z
         ?equalIgnoringCase@WTF@@YA_NPAVStringImpl@1@PBE@Z
         ?externalRepresentation@WebCore@@YA?AVString@WTF@@PAVElement@1@I@Z
-        ?ensureSelectFeatureSet@ContentDistributor@WebCore@@QAEABVSelectRuleFeatureSet@2@PAVElementShadow@2@@Z
-        ?hasShadowElement@ScopeContentDistribution@WebCore@@SA_NPBVShadowRoot@2@@Z
-        ?hasContentElement@ScopeContentDistribution@WebCore@@SA_NPBVShadowRoot@2@@Z
-        ?countElementShadow@ScopeContentDistribution@WebCore@@SAIPBVShadowRoot@2@@Z
         ?find@StringImpl@WTF@@QAEIPAV12@I@Z
         ?find@StringImpl@WTF@@QAEIPAV12@@Z
         ?absoluteCaretBounds@FrameSelection@WebCore@@QAE?AVIntRect@2@XZ
@@ -203,6 +199,7 @@ EXPORTS
         ?getHighlight@InspectorController@WebCore@@QBEXPAUHighlight@2@@Z
         ?instrumentingAgentsForPage@InspectorInstrumentation@WebCore@@CAPAVInstrumentingAgents@2@PAVPage@2@@Z
         ?s_frontendCounter@InspectorInstrumentation@WebCore@@0HA
+        ?isUnderTest@InspectorFrontendClientLocal@WebCore@@UAE_NXZ
         ??0InspectorFrontendClientLocal@WebCore@@QAE@PAVInspectorController@1@PAVPage@1@V?$PassOwnPtr@VSettings@InspectorFrontendClientLocal@WebCore@@@WTF@@@Z
         ??1InspectorFrontendClientLocal@WebCore@@UAE@XZ
         ?changeAttachedWindowHeight@InspectorFrontendClientLocal@WebCore@@UAEXI@Z
@@ -229,7 +226,6 @@ EXPORTS
         ?lastChangeWasUserEdit@HTMLTextFormControlElement@WebCore@@QBE_NXZ
         ?mainThreadScrollingReasonsAsText@Page@WebCore@@QAE?AVString@WTF@@XZ
         ?markersFor@DocumentMarkerController@WebCore@@QAE?AV?$Vector@PAVDocumentMarker@WebCore@@$0A@@WTF@@PAVNode@2@VMarkerTypes@DocumentMarker@2@@Z
-        ?memoryCache@WebCore@@YAPAVMemoryCache@1@XZ
         ?nextSibling@ComposedShadowTreeWalker@WebCore@@QAEXXZ
         ?firstChild@ComposedShadowTreeWalker@WebCore@@QAEXXZ
         ?lastChild@ComposedShadowTreeWalker@WebCore@@QAEXXZ
@@ -242,6 +238,7 @@ EXPORTS
         ?number@String@WTF@@SA?AV12@NIW4TrailingZerosTruncatingPolicy@2@@Z
         ?overrideUserPreferredLanguages@WebCore@@YAXABV?$Vector@VString@WTF@@$0A@@WTF@@@Z
         ?numberOfScopedHTMLStyleChildren@Node@WebCore@@QBEIXZ
+        ?completeURL@Document@WebCore@@QBE?AVKURL@2@ABVString@WTF@@@Z
         ?page@Document@WebCore@@QBEPAVPage@2@XZ
         ?pageNumberForElement@PrintContext@WebCore@@SAHPAVElement@2@ABVFloatSize@2@@Z
         ?paintControlTints@FrameView@WebCore@@AAEXXZ
@@ -249,7 +246,6 @@ EXPORTS
         ?rangeFromLocationAndLength@TextIterator@WebCore@@SA?AV?$PassRefPtr@VRange@WebCore@@@WTF@@PAVContainerNode@2@HH_N@Z
         ?remove@String@WTF@@QAEXIH@Z
         ?removedLastRef@Node@WebCore@@AAEXXZ
-        ?resourceForURL@MemoryCache@WebCore@@QAEPAVCachedResource@2@ABVKURL@2@@Z
         ?reverseFind@StringImpl@WTF@@QAEI_WI@Z
         ?saveDocumentAndScrollState@HistoryController@WebCore@@QAEXXZ
         ?scriptExecutionContext@JSDOMGlobalObject@WebCore@@QBEPAVScriptExecutionContext@2@XZ
@@ -310,7 +306,7 @@ EXPORTS
         ??1ContextDestructionObserver@WebCore@@MAE@XZ
         ?contextDestroyed@ContextDestructionObserver@WebCore@@UAEXXZ
         ??0ContextDestructionObserver@WebCore@@QAE@PAVScriptExecutionContext@1@@Z
-        ?nodesFromRect@Document@WebCore@@QBE?AV?$PassRefPtr@VNodeList@WebCore@@@WTF@@HHIIII_N0@Z
+        ?nodesFromRect@Document@WebCore@@QBE?AV?$PassRefPtr@VNodeList@WebCore@@@WTF@@HHIIIII@Z
         ?selectionStartHasMarkerFor@Editor@WebCore@@QBE_NW4MarkerType@DocumentMarker@2@HH@Z
 #if ENABLE(FULLSCREEN_API)
         ?webkitWillEnterFullScreenForElement@Document@WebCore@@QAEXPAVElement@2@@Z
@@ -369,7 +365,7 @@ EXPORTS
 #endif
         ?getHBITMAP@BitmapImage@WebCore@@UAE_NPAUHBITMAP__@@@Z
         ?getHBITMAPOfSize@BitmapImage@WebCore@@UAE_NPAUHBITMAP__@@PAUtagSIZE@@@Z
-        ?drawPattern@Image@WebCore@@UAEXPAVGraphicsContext@2@ABVFloatRect@2@ABVAffineTransform@2@ABVFloatPoint@2@W4ColorSpace@2@W4CompositeOperator@2@1@Z
+        ?drawPattern@Image@WebCore@@UAEXPAVGraphicsContext@2@ABVFloatRect@2@ABVAffineTransform@2@ABVFloatPoint@2@W4ColorSpace@2@W4CompositeOperator@2@1W4BlendMode@2@@Z
         ?reportMemoryUsage@BitmapImage@WebCore@@UBEXPAVMemoryObjectInfo@WTF@@@Z
         ?drawFrameMatchingSourceSize@BitmapImage@WebCore@@MAEXPAVGraphicsContext@2@ABVFloatRect@2@ABVIntSize@2@W4ColorSpace@2@W4CompositeOperator@2@@Z
         ?draw@Image@WebCore@@MAEXPAVGraphicsContext@2@ABVFloatRect@2@1W4ColorSpace@2@W4CompositeOperator@2@W4BlendMode@2@W4RespectImageOrientationEnum@2@@Z
@@ -390,5 +386,19 @@ EXPORTS
         ?pseudoElement@Element@WebCore@@QBEPAVPseudoElement@2@W4PseudoId@2@@Z
         ?pauseTransitionAtTime@AnimationController@WebCore@@QAE_NPAVRenderObject@2@ABVString@WTF@@N@Z
         ?addFromLiteralData@AtomicString@WTF@@CA?AV?$PassRefPtr@VStringImpl@WTF@@@2@PBDI@Z
+        ?ensureSelectFeatureSet@ContentDistributor@WebCore@@QAEABVSelectRuleFeatureSet@2@PAVElementShadow@2@@Z
+        ?hasShadowElement@ScopeContentDistribution@WebCore@@SA_NPBVShadowRoot@2@@Z
+        ?hasContentElement@ScopeContentDistribution@WebCore@@SA_NPBVShadowRoot@2@@Z
+        ?countElementShadow@ScopeContentDistribution@WebCore@@SAIPBVShadowRoot@2@@Z
+        ?memoryCache@WebCore@@YAPAVMemoryCache@1@XZ
+        ?resourceForURL@MemoryCache@WebCore@@QAEPAVCachedResource@2@ABVKURL@2@@Z
         ?nonFastScrollableRects@Page@WebCore@@QAE?AV?$PassRefPtr@VClientRectList@WebCore@@@WTF@@PBVFrame@2@@Z
         ?numberOfActiveAnimations@AnimationController@WebCore@@QBEIPAVDocument@2@@Z
+        ?minDOMTimerInterval@Settings@WebCore@@QAENXZ
+        ?setMinDOMTimerInterval@Settings@WebCore@@QAEXN@Z
+        ?setApplicationChromeMode@Settings@WebCore@@QAEX_N@Z
+        ?setDOMPasteAllowed@Settings@WebCore@@QAEX_N@Z
+
+#if ENABLE(WORKERS)
+        ?workerThreadCount@WorkerThread@WebCore@@SAIXZ
+#endif

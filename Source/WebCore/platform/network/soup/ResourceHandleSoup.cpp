@@ -231,7 +231,6 @@ static bool createSoupRequestAndMessageForHandle(ResourceHandle*, const Resource
 static void cleanupSoupRequestOperation(ResourceHandle*, bool isDestroying = false);
 static void sendRequestCallback(GObject*, GAsyncResult*, gpointer);
 static void readCallback(GObject*, GAsyncResult*, gpointer);
-static void closeCallback(GObject*, GAsyncResult*, gpointer);
 static gboolean requestTimeoutCallback(void*);
 #if ENABLE(WEB_TIMING)
 static int  milisecondsSinceRequest(double requestTime);
@@ -454,63 +453,53 @@ static void doRedirect(ResourceHandle* handle)
         return;
     }
 
-    ResourceRequest request = handle->firstRequest();
+    ResourceRequest newRequest = handle->firstRequest();
     SoupMessage* message = d->m_soupMessage.get();
     const char* location = soup_message_headers_get_one(message->response_headers, "Location");
     KURL newURL = KURL(soupURIToKURL(soup_message_get_uri(message)), location);
-    bool crossOrigin = !protocolHostAndPortAreEqual(request.url(), newURL);
-    request.setURL(newURL);
+    bool crossOrigin = !protocolHostAndPortAreEqual(handle->firstRequest().url(), newURL);
+    newRequest.setURL(newURL);
 
-    if (shouldRedirectAsGET(message, newURL, crossOrigin)) {
-        request.setHTTPMethod("GET");
-        request.setHTTPBody(0);
-        request.clearHTTPContentType();
+    if (newRequest.httpMethod() != "GET") {
+        // Change newRequest method to GET if change was made during a previous redirection
+        // or if current redirection says so
+        if (message->method == SOUP_METHOD_GET || shouldRedirectAsGET(message, newURL, crossOrigin)) {
+            newRequest.setHTTPMethod("GET");
+            newRequest.setHTTPBody(0);
+            newRequest.clearHTTPContentType();
+        }
     }
 
     // Should not set Referer after a redirect from a secure resource to non-secure one.
-    if (!newURL.protocolIs("https") && protocolIs(request.httpReferrer(), "https") && handle->context()->shouldClearReferrerOnHTTPSToHTTPRedirect())
-        request.clearHTTPReferrer();
+    if (!newURL.protocolIs("https") && protocolIs(newRequest.httpReferrer(), "https") && handle->context()->shouldClearReferrerOnHTTPSToHTTPRedirect())
+        newRequest.clearHTTPReferrer();
 
     d->m_user = newURL.user();
     d->m_pass = newURL.pass();
-    request.removeCredentials();
+    newRequest.removeCredentials();
 
     if (crossOrigin) {
         // If the network layer carries over authentication headers from the original request
         // in a cross-origin redirect, we want to clear those headers here. 
-        request.clearHTTPAuthorization();
+        newRequest.clearHTTPAuthorization();
 
         // TODO: We are losing any username and password specified in the redirect URL, as this is the 
         // same behavior as the CFNet port. We should investigate if this is really what we want.
     } else
-        applyAuthenticationToRequest(handle, request, true);
+        applyAuthenticationToRequest(handle, newRequest, true);
 
     cleanupSoupRequestOperation(handle);
-    if (!createSoupRequestAndMessageForHandle(handle, request, true)) {
+    if (!createSoupRequestAndMessageForHandle(handle, newRequest, true)) {
         d->client()->cannotShowURL(handle);
         return;
     }
 
     // If we sent credentials with this request's URL, we don't want the response to carry them to
     // the WebKit layer. They were only placed in the URL for the benefit of libsoup.
-    request.removeCredentials();
+    newRequest.removeCredentials();
 
-    d->client()->willSendRequest(handle, request, d->m_response);
+    d->client()->willSendRequest(handle, newRequest, d->m_response);
     handle->sendPendingRequest();
-}
-
-static void redirectCloseCallback(GObject*, GAsyncResult* result, gpointer data)
-{
-    RefPtr<ResourceHandle> handle = static_cast<ResourceHandle*>(data);
-
-    if (handle->cancelledOrClientless()) {
-        cleanupSoupRequestOperation(handle.get());
-        return;
-    }
-
-    ResourceHandleInternal* d = handle->getInternal();
-    g_input_stream_close_finish(d->m_inputStream.get(), result, 0);
-    doRedirect(handle.get());
 }
 
 static void redirectSkipCallback(GObject*, GAsyncResult* asyncResult, gpointer data)
@@ -538,7 +527,8 @@ static void redirectSkipCallback(GObject*, GAsyncResult* asyncResult, gpointer d
         return;
     }
 
-    g_input_stream_close_async(d->m_inputStream.get(), G_PRIORITY_DEFAULT, 0, redirectCloseCallback, handle.get());
+    g_input_stream_close(d->m_inputStream.get(), 0, 0);
+    doRedirect(handle.get());
 }
 
 static void wroteBodyDataCallback(SoupMessage*, SoupBuffer* buffer, gpointer data)
@@ -1305,19 +1295,6 @@ void ResourceHandle::loadResourceSynchronously(NetworkingContext* context, const
     syncLoader.run();
 }
 
-static void closeCallback(GObject*, GAsyncResult* res, gpointer data)
-{
-    RefPtr<ResourceHandle> handle = static_cast<ResourceHandle*>(data);
-    ResourceHandleInternal* d = handle->getInternal();
-
-    g_input_stream_close_finish(d->m_inputStream.get(), res, 0);
-
-    if (handle->client() && loadingSynchronousRequest)
-        handle->client()->didFinishLoading(handle.get(), 0);
-
-    cleanupSoupRequestOperation(handle.get());
-}
-
 static void readCallback(GObject*, GAsyncResult* asyncResult, gpointer data)
 {
     RefPtr<ResourceHandle> handle = static_cast<ResourceHandle*>(data);
@@ -1351,16 +1328,10 @@ static void readCallback(GObject*, GAsyncResult* asyncResult, gpointer data)
             return;
         }
 
-        // We inform WebCore of load completion now instead of waiting for the input
-        // stream to close because the input stream is closed asynchronously. If this
-        // is a synchronous request, we wait until the closeCallback, because we don't
-        // want to halt the internal main loop before the input stream closes.
-        if (handle->client() && !loadingSynchronousRequest) {
-            handle->client()->didFinishLoading(handle.get(), 0);
-            handle->setClient(0); // Unset the client so that we do not try to access th
-                                  // client in the closeCallback.
-        }
-        g_input_stream_close_async(d->m_inputStream.get(), G_PRIORITY_DEFAULT, 0, closeCallback, handle.get());
+        g_input_stream_close(d->m_inputStream.get(), 0, 0);
+
+        handle->client()->didFinishLoading(handle.get(), 0);
+        cleanupSoupRequestOperation(handle.get());
         return;
     }
 

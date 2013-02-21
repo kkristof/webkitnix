@@ -40,7 +40,7 @@ public:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() { return 0; }
     void invalidateStyleAttribute();
 
-    const StylePropertySet* inlineStyle() const { return attributeData() ? attributeData()->m_inlineStyle.get() : 0; }
+    const StylePropertySet* inlineStyle() const { return elementData() ? elementData()->m_inlineStyle.get() : 0; }
     StylePropertySet* ensureMutableInlineStyle();
     
     // Unlike StylePropertySet setters, these implement invalidation.
@@ -49,6 +49,8 @@ public:
     bool setInlineStyleProperty(CSSPropertyID, const String& value, bool important = false);
     bool removeInlineStyleProperty(CSSPropertyID);
     void removeAllInlineStyleProperties();
+
+    void synchronizeStyleAttributeInternal() const;
     
     virtual CSSStyleDeclaration* style() OVERRIDE;
 
@@ -75,7 +77,6 @@ protected:
 private:
     void styleAttributeChanged(const AtomicString& newStyleString);
 
-    virtual void updateStyleAttribute() const;
     void inlineStyleChanged();
     PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
     void setInlineStyleFromString(const AtomicString&);
@@ -86,17 +87,17 @@ private:
 
 inline void StyledElement::invalidateStyleAttribute()
 {
-    ASSERT(attributeData());
-    attributeData()->m_styleAttributeIsDirty = true;
+    ASSERT(elementData());
+    elementData()->m_styleAttributeIsDirty = true;
 }
 
 inline const StylePropertySet* StyledElement::presentationAttributeStyle()
 {
-    if (!attributeData())
+    if (!elementData())
         return 0;
-    if (attributeData()->m_presentationAttributeStyleIsDirty)
+    if (elementData()->m_presentationAttributeStyleIsDirty)
         rebuildPresentationAttributeStyle();
-    return attributeData()->presentationAttributeStyle();
+    return elementData()->presentationAttributeStyle();
 }
 
 } //namespace

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2010, 2011, 2012 Research In Motion Limited. All rights reserved.
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013 Research In Motion Limited. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -422,7 +422,7 @@ WebPagePrivate::WebPagePrivate(WebPage* webPage, WebPageClient* client, const In
     , m_suspendRootLayerCommit(false)
 #endif
     , m_pendingOrientation(-1)
-    , m_fullscreenVideoNode(0)
+    , m_fullscreenNode(0)
     , m_hasInRegionScrollableAreas(false)
     , m_updateDelegatedOverlaysDispatched(false)
     , m_enableQnxJavaScriptObject(false)
@@ -2416,6 +2416,9 @@ void WebPagePrivate::updateCursor()
         m_lastMouseEvent.altKey() ? 0 : KEYMOD_ALT;
 
     BlackBerry::Platform::MouseEvent event(buttonMask, buttonMask, mapToTransformed(m_lastMouseEvent.position()), mapToTransformed(m_lastMouseEvent.globalPosition()), 0, modifiers,  0);
+
+    // We have added document viewport position and document content position as members of the mouse event, when we create the event, we should initial them as well.
+    event.populateDocumentPosition(m_lastMouseEvent.position(), mapFromTransformedViewportToTransformedContents(m_lastMouseEvent.position()));
     m_webPage->mouseEvent(event);
 }
 
@@ -2503,7 +2506,7 @@ void WebPagePrivate::clearDocumentData(const Document* documentGoingAway)
     if (nodeUnderFatFinger && nodeUnderFatFinger->document() == documentGoingAway)
         m_touchEventHandler->resetLastFatFingersResult();
 
-    // NOTE: m_fullscreenVideoNode, m_fullScreenPluginView and m_pluginViews
+    // NOTE: m_fullscreenNode, m_fullScreenPluginView and m_pluginViews
     // are cleared in other methods already.
 }
 
@@ -2592,7 +2595,7 @@ IntRect WebPagePrivate::getRecursiveVisibleWindowRect(ScrollView* view, bool noC
         return IntRect(IntPoint::zero(), view->contentsSize());
     }
 
-    IntRect visibleWindowRect(view->contentsToWindow(view->visibleContentRect(false)));
+    IntRect visibleWindowRect(view->contentsToWindow(view->visibleContentRect()));
     if (view->parent() && !(noClipOfMainFrame && view->parent() == m_mainFrame->view())) {
         // Intersect with parent visible rect.
         visibleWindowRect.intersect(getRecursiveVisibleWindowRect(view->parent(), noClipOfMainFrame));
@@ -2628,6 +2631,21 @@ void WebPage::assignFocus(Platform::FocusDirection direction)
     if (d->m_page->defersLoading())
        return;
     d->assignFocus(direction);
+}
+
+void WebPage::focusNextField()
+{
+    d->m_inputHandler->focusNextField();
+}
+
+void WebPage::focusPreviousField()
+{
+    d->m_inputHandler->focusPreviousField();
+}
+
+void WebPage::submitForm()
+{
+    d->m_inputHandler->submitForm();
 }
 
 Platform::IntRect WebPagePrivate::focusNodeRect()
@@ -2683,7 +2701,7 @@ PassRefPtr<Node> WebPagePrivate::contextNode(TargetDetectionStrategy strategy)
     else
         contentPos = mapFromViewportToContents(m_lastMouseEvent.position());
 
-    HitTestResult result = eventHandler->hitTestResultAtPoint(contentPos, false /*allowShadowContent*/);
+    HitTestResult result = eventHandler->hitTestResultAtPoint(contentPos);
     return result.innerNode();
 }
 
@@ -2754,7 +2772,7 @@ Node* WebPagePrivate::nodeForZoomUnderPoint(const IntPoint& documentPoint)
     if (!m_mainFrame)
         return 0;
 
-    HitTestResult result = m_mainFrame->eventHandler()->hitTestResultAtPoint(documentPoint, false);
+    HitTestResult result = m_mainFrame->eventHandler()->hitTestResultAtPoint(documentPoint);
 
     Node* node = result.innerNonSharedNode();
 
@@ -3549,10 +3567,7 @@ void WebPagePrivate::resumeBackingStore()
 {
     ASSERT(m_webPage->isVisible());
 
-    bool directRendering = m_backingStore->d->shouldDirectRenderingToWindow();
-    if (!m_backingStore->d->isActive()
-        || shouldResetTilesWhenShown()
-        || directRendering) {
+    if (!m_backingStore->d->isActive() || shouldResetTilesWhenShown()) {
         BackingStorePrivate::setCurrentBackingStoreOwner(m_webPage);
 
         // If we're OpenGL compositing, switching to accel comp drawing of the root layer
@@ -3630,10 +3645,6 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
         setShouldResetTilesWhenShown(true);
 
     bool hasPendingOrientation = m_pendingOrientation != -1;
-
-    // The window buffers might have been recreated, cleared, moved, etc., so:
-    m_backingStore->d->windowFrontBufferState()->clearBlittedRegion();
-    m_backingStore->d->windowBackBufferState()->clearBlittedRegion();
 
     IntSize viewportSizeBefore = actualVisibleSize();
     FloatPoint centerOfVisibleContentsRect = this->centerOfVisibleContentsRect();
@@ -3788,20 +3799,10 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
     // Try and zoom here with clamping on.
     // FIXME: Determine why the above comment says "clamping on", yet we
     //   don't set enforceScaleClamping to true.
-    // FIXME: Determine why ensureContentVisible() is only called for !success
-    //   in the direct-rendering case, but in all cases otherwise. Chances are
-    //   one of these is incorrect and we can unify two branches into one.
-    if (m_backingStore->d->shouldDirectRenderingToWindow()) {
-        bool success = zoomAboutPoint(scale, anchor, false /* enforceScaleClamping */, true /* forceRendering */);
-        if (!success && ensureFocusElementVisible)
-            ensureContentVisible(!newVisibleRectContainsOldVisibleRect);
-
-    } else if (zoomAboutPoint(scale, anchor, false /*enforceScaleClamping*/, true /*forceRendering*/)) {
+    if (zoomAboutPoint(scale, anchor, false /*enforceScaleClamping*/, true /*forceRendering*/)) {
         if (ensureFocusElementVisible)
             ensureContentVisible(!newVisibleRectContainsOldVisibleRect);
-
     } else {
-
         // Suspend all updates to the backingstore.
         m_backingStore->d->suspendBackingStoreUpdates();
 
@@ -3838,7 +3839,7 @@ void WebPagePrivate::setViewportSize(const IntSize& transformedActualVisibleSize
 #if ENABLE(FULLSCREEN_API) && ENABLE(VIDEO)
     // When leaving fullscreen mode, restore the scale and scroll position if needed.
     // We also need to make sure the scale and scroll position won't cause over scale or over scroll.
-    if (m_scaleBeforeFullScreen > 0 && !m_fullscreenVideoNode) {
+    if (m_scaleBeforeFullScreen > 0 && !m_fullscreenNode) {
         // Restore the scale when leaving fullscreen. We can't use TransformationMatrix::scale(double) here,
         // as it will multiply the scale rather than set the scale.
         // FIXME: We can refactor this into setCurrentScale(double) if it is useful in the future.
@@ -4008,7 +4009,7 @@ bool WebPagePrivate::handleMouseEvent(PlatformMouseEvent& mouseEvent)
     }
 
     if (!node) {
-        HitTestResult result = eventHandler->hitTestResultAtPoint(mapFromViewportToContents(mouseEvent.position()), false /*allowShadowContent*/);
+        HitTestResult result = eventHandler->hitTestResultAtPoint(mapFromViewportToContents(mouseEvent.position()));
         node = result.innerNode();
     }
 
@@ -4333,7 +4334,8 @@ bool WebPage::keyEvent(const Platform::KeyboardEvent& keyboardEvent)
 
     bool handled = d->m_inputHandler->handleKeyboardInput(keyboardEvent);
 
-    if (!handled && keyboardEvent.type() == Platform::KeyboardEvent::KeyDown && !d->m_inputHandler->isInputMode()) {
+    // This is hotkey handling and perhaps doesn't belong here.
+    if (!handled && keyboardEvent.type() == Platform::KeyboardEvent::KeyDown && !d->m_inputHandler->isInputMode() && !keyboardEvent.modifiers()) {
         IntPoint previousPos = d->scrollPosition();
         handleScrolling(keyboardEvent.character(), d);
         handled = previousPos != d->scrollPosition();
@@ -4984,7 +4986,7 @@ WebDOMDocument WebPage::document() const
 
 WebDOMNode WebPage::nodeAtDocumentPoint(const Platform::IntPoint& documentPoint)
 {
-    HitTestResult result = d->m_mainFrame->eventHandler()->hitTestResultAtPoint(WebCore::IntPoint(documentPoint), false);
+    HitTestResult result = d->m_mainFrame->eventHandler()->hitTestResultAtPoint(WebCore::IntPoint(documentPoint));
     Node* node = result.innerNonSharedNode();
     return WebDOMNode(node);
 }
@@ -5157,15 +5159,15 @@ void WebPage::notifyFullScreenVideoExited(bool done)
 {
     UNUSED_PARAM(done);
 #if ENABLE(VIDEO)
-    if (d->m_webSettings->fullScreenVideoCapable()) {
-        if (HTMLMediaElement* mediaElement = static_cast<HTMLMediaElement*>(d->m_fullscreenVideoNode.get()))
-            mediaElement->exitFullscreen();
-    } else {
+    Element* element = toElement(d->m_fullscreenNode.get());
+    if (!element)
+        return;
+    if (d->m_webSettings->fullScreenVideoCapable() && element->hasTagName(HTMLNames::videoTag))
+        static_cast<HTMLMediaElement*>(element)->exitFullscreen();
 #if ENABLE(FULLSCREEN_API)
-        if (Element* element = static_cast<Element*>(d->m_fullscreenVideoNode.get()))
-            element->document()->webkitCancelFullScreen();
+    else
+        element->document()->webkitCancelFullScreen();
 #endif
-    }
 #endif
 }
 
@@ -5589,24 +5591,15 @@ void WebPagePrivate::rootLayerCommitTimerFired(Timer<WebPagePrivate>*)
     // backing store, doing a one shot drawing synchronization with the
     // backing store is never necessary, because the backing store draws
     // nothing.
-    if (!compositorDrawsRootLayer()) {
-        // If we are doing direct rendering and have a single rendering target,
-        // committing is equivalent to a one shot drawing synchronization.
-        // We need to re-render the web page, re-render the layers, and
-        // then blit them on top of the re-rendered web page.
-        if (m_backingStore->d->isOpenGLCompositing() && m_backingStore->d->shouldDirectRenderingToWindow())
-            setNeedsOneShotDrawingSynchronization();
-
-        if (needsOneShotDrawingSynchronization()) {
+    if (!compositorDrawsRootLayer() && needsOneShotDrawingSynchronization()) {
 #if DEBUG_AC_COMMIT
-            Platform::logAlways(Platform::LogLevelCritical,
-                "%s: OneShotDrawingSynchronization code path!",
-                WTF_PRETTY_FUNCTION);
+        Platform::logAlways(Platform::LogLevelCritical,
+            "%s: OneShotDrawingSynchronization code path!",
+            WTF_PRETTY_FUNCTION);
 #endif
-            const IntRect windowRect = IntRect(IntPoint::zero(), viewportSize());
-            m_backingStore->d->repaint(windowRect, true /*contentChanged*/, true /*immediate*/);
-            return;
-        }
+        const IntRect windowRect = IntRect(IntPoint::zero(), viewportSize());
+        m_backingStore->d->repaint(windowRect, true /*contentChanged*/, true /*immediate*/);
+        return;
     }
 
     commitRootLayerIfNeeded();
@@ -5781,7 +5774,7 @@ void WebPagePrivate::enterFullscreenForNode(Node* node)
         return;
 
     mmrPlayer->setFullscreenWebPageClient(m_client);
-    m_fullscreenVideoNode = node;
+    m_fullscreenNode = node;
     m_client->fullscreenStart(contextName, window, mmrPlayer->getWindowScreenRect());
 #endif
 }
@@ -5789,9 +5782,9 @@ void WebPagePrivate::enterFullscreenForNode(Node* node)
 void WebPagePrivate::exitFullscreenForNode(Node* node)
 {
 #if ENABLE(VIDEO)
-    if (m_fullscreenVideoNode.get()) {
+    if (m_fullscreenNode.get()) {
         m_client->fullscreenStop();
-        m_fullscreenVideoNode = 0;
+        m_fullscreenNode = 0;
     }
 
     if (!node || !node->hasTagName(HTMLNames::videoTag))
@@ -5811,23 +5804,12 @@ void WebPagePrivate::exitFullscreenForNode(Node* node)
 }
 
 #if ENABLE(FULLSCREEN_API)
-// TODO: We should remove this helper class when we decide to support all elements.
-static bool containsVideoTags(Element* element)
-{
-    for (Node* node = element->firstChild(); node; node = NodeTraversal::next(node, element)) {
-        if (node->hasTagName(HTMLNames::videoTag))
-            return true;
-    }
-    return false;
-}
-
 void WebPagePrivate::enterFullScreenForElement(Element* element)
 {
 #if ENABLE(VIDEO)
-    // TODO: We should not check video tag when we decide to support all elements.
-    if (!element || (!element->hasTagName(HTMLNames::videoTag) && !containsVideoTags(element)))
+    if (!element)
         return;
-    if (m_webSettings->fullScreenVideoCapable()) {
+    if (m_webSettings->fullScreenVideoCapable() && element->hasTagName(HTMLNames::videoTag)) {
         // The Browser chrome has its own fullscreen video widget it wants to
         // use, and this is a video element. The only reason that
         // webkitWillEnterFullScreenForElement() and
@@ -5859,7 +5841,7 @@ void WebPagePrivate::enterFullScreenForElement(Element* element)
         // Javascript call is often made on a div element.
         // This is where we would hide the browser's chrome if we wanted to.
         client()->fullscreenStart();
-        m_fullscreenVideoNode = element;
+        m_fullscreenNode = element;
     }
 #endif
 }
@@ -5867,17 +5849,16 @@ void WebPagePrivate::enterFullScreenForElement(Element* element)
 void WebPagePrivate::exitFullScreenForElement(Element* element)
 {
 #if ENABLE(VIDEO)
-    // TODO: We should not check video tag when we decide to support all elements.
-    if (!element || (!element->hasTagName(HTMLNames::videoTag) && !containsVideoTags(element)))
+    if (!element)
         return;
-    if (m_webSettings->fullScreenVideoCapable()) {
+    if (m_webSettings->fullScreenVideoCapable() && element->hasTagName(HTMLNames::videoTag)) {
         // The Browser chrome has its own fullscreen video widget.
         exitFullscreenForNode(element);
     } else {
         // This is where we would restore the browser's chrome
         // if hidden above.
         client()->fullscreenStop();
-        m_fullscreenVideoNode = 0;
+        m_fullscreenNode = 0;
     }
 #endif
 }
@@ -5887,14 +5868,14 @@ void WebPagePrivate::adjustFullScreenElementDimensionsIfNeeded()
 {
     // If we are in fullscreen video mode, and we change the FrameView::viewportRect,
     // we need to adjust the media container to the new size.
-    if (!m_fullscreenVideoNode || !m_fullscreenVideoNode->renderer()
-        || !m_fullscreenVideoNode->document() || !m_fullscreenVideoNode->document()->fullScreenRenderer())
+    if (!m_fullscreenNode || !m_fullscreenNode->renderer()
+        || !m_fullscreenNode->document() || !m_fullscreenNode->document()->fullScreenRenderer())
         return;
 
-    ASSERT(m_fullscreenVideoNode->isElementNode());
-    ASSERT(static_cast<Element*>(m_fullscreenVideoNode.get())->isMediaElement());
+    ASSERT(m_fullscreenNode->isElementNode());
+    ASSERT(static_cast<Element*>(m_fullscreenNode.get())->isMediaElement());
 
-    Document* document = m_fullscreenVideoNode->document();
+    Document* document = m_fullscreenNode->document();
     RenderStyle* fullScreenStyle = document->fullScreenRenderer()->style();
     ASSERT(fullScreenStyle);
 
@@ -6045,14 +6026,6 @@ void WebPage::setJavaScriptCanAccessClipboard(bool enabled)
 }
 
 #if USE(ACCELERATED_COMPOSITING)
-void WebPagePrivate::blitVisibleContents()
-{
-    if (m_backingStore->d->shouldDirectRenderingToWindow())
-        return;
-
-    m_backingStore->d->blitVisibleContents();
-}
-
 void WebPagePrivate::scheduleCompositingRun()
 {
     if (WebPageCompositorClient* compositorClient = compositor()->client()) {
@@ -6061,9 +6034,8 @@ void WebPagePrivate::scheduleCompositingRun()
         return;
     }
 
-    blitVisibleContents();
+    m_backingStore->d->blitVisibleContents();
 }
-
 #endif
 
 void WebPage::setWebGLEnabled(bool enabled)
@@ -6272,7 +6244,7 @@ const HitTestResult& WebPagePrivate::hitTestResult(const IntPoint& contentPos)
 {
     if (m_cachedHitTestContentPos != contentPos) {
         m_cachedHitTestContentPos = contentPos;
-        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, true /*allowShadowContent*/);
+        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowShadowContent);
     }
 
     return m_cachedHitTestResult;

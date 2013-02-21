@@ -425,7 +425,7 @@ public:
     void updateBlendMode();
 #endif
 
-    const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
+    const LayoutSize& paintOffset() const { return m_paintOffset; }
 
     void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
     void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
@@ -867,6 +867,7 @@ private:
             , region(inRegion)
             , overlapTestRequests(inOverlapTestRequests)
             , paintBehavior(inPaintBehavior)
+            , clipToDirtyRect(true)
         { }
         RenderLayer* rootLayer;
         RenderObject* paintingRoot; // only paint descendants of this object
@@ -875,6 +876,7 @@ private:
         RenderRegion* region; // May be null.
         OverlapTestRequestMap* overlapTestRequests; // May be null.
         PaintBehavior paintBehavior;
+        bool clipToDirtyRect;
     };
         
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
@@ -932,7 +934,7 @@ private:
     virtual IntPoint scrollPosition() const;
     virtual IntPoint minimumScrollPosition() const;
     virtual IntPoint maximumScrollPosition() const;
-    virtual IntRect visibleContentRect(bool includeScrollbars) const;
+    virtual IntRect visibleContentRect(VisibleContentRectIncludesScrollbars) const;
     virtual int visibleHeight() const;
     virtual int visibleWidth() const;
     virtual IntSize contentsSize() const;
@@ -1124,8 +1126,8 @@ protected:
     LayoutRect m_repaintRect; // Cached repaint rects. Used by layout.
     LayoutRect m_outlineBox;
 
-    // Our current relative position offset.
-    LayoutSize m_offsetForInFlowPosition;
+    // Paint time offset only, it is used for properly paint relative / sticky positioned elements and exclusion boxes on floats.
+    LayoutSize m_paintOffset;
 
     // Our (x,y) coordinates are in our parent layer's coordinate space.
     LayoutPoint m_topLeft;

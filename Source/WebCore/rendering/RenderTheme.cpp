@@ -341,8 +341,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintMediaRewindButton(o, paintInfo, r);
     case MediaReturnToRealtimeButtonPart:
         return paintMediaReturnToRealtimeButton(o, paintInfo, r);
-    case MediaToggleClosedCaptionsButtonPart:
-        return paintMediaToggleClosedCaptionsButton(o, paintInfo, r);
     case MediaSliderPart:
         return paintMediaSliderTrack(o, paintInfo, r);
     case MediaSliderThumbPart:
@@ -493,7 +491,7 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
 
 String RenderTheme::formatMediaControlsTime(float time) const
 {
-    if (!isfinite(time))
+    if (!std::isfinite(time))
         time = 0;
     int seconds = (int)fabsf(time);
     int hours = seconds / (60 * 60);
@@ -856,7 +854,7 @@ bool RenderTheme::isDefault(const RenderObject* o) const
         return false;
 
     Settings* settings = o->document()->settings();
-    if (!settings || !settings->inApplicationChromeMode())
+    if (!settings || !settings->applicationChromeMode())
         return false;
     
     return o->style()->appearance() == DefaultButtonPart;

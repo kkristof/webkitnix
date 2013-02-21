@@ -19,9 +19,8 @@
 */
 
 #include "config.h"
-#include "V8TestSerializedScriptValueInterface.h"
-
 #if ENABLE(Condition1) || ENABLE(Condition2)
+#include "V8TestSerializedScriptValueInterface.h"
 
 #include "BindingState.h"
 #include "ContextFeatures.h"
@@ -231,7 +230,7 @@ v8::Handle<v8::Value> V8TestSerializedScriptValueInterface::constructorCallback(
         return args.Holder();
     if (args.Length() < 2)
         return throwNotEnoughArgumentsError(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, hello, MAYBE_MISSING_PARAMETER(args, 0, DefaultIsUndefined));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, hello, args[0]);
     MessagePortArray messagePortArrayTransferList;
     ArrayBufferArray arrayBufferArrayTransferList;
     if (args.Length() > 2) {
@@ -246,7 +245,7 @@ v8::Handle<v8::Value> V8TestSerializedScriptValueInterface::constructorCallback(
     RefPtr<TestSerializedScriptValueInterface> impl = TestSerializedScriptValueInterface::create(hello, data, messagePortArrayTransferList);
     v8::Handle<v8::Object> wrapper = args.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper(impl.release(), &info, wrapper, args.GetIsolate());
+    V8DOMWrapper::associateObjectWithWrapper(impl.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     return wrapper;
 }
 
@@ -279,7 +278,7 @@ v8::Persistent<v8::FunctionTemplate> V8TestSerializedScriptValueInterface::GetRa
         return result->value;
 
     v8::HandleScope handleScope;
-    v8::Persistent<v8::FunctionTemplate> templ = createRawTemplate();
+    v8::Persistent<v8::FunctionTemplate> templ = createRawTemplate(isolate);
     data->rawTemplateMap().add(&info, templ);
     return templ;
 }
@@ -318,9 +317,7 @@ v8::Handle<v8::Object> V8TestSerializedScriptValueInterface::createWrapper(PassR
         return wrapper;
 
     installPerContextProperties(wrapper, impl.get(), isolate);
-    v8::Persistent<v8::Object> wrapperHandle = V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate);
-    if (!hasDependentLifetime)
-        wrapperHandle.MarkIndependent();
+    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, hasDependentLifetime ? WrapperConfiguration::Dependent : WrapperConfiguration::Independent);
     return wrapper;
 }
 void V8TestSerializedScriptValueInterface::derefObject(void* object)

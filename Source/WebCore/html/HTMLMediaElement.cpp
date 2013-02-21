@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #if ENABLE(VIDEO)
 #include "HTMLMediaElement.h"
 
@@ -45,6 +44,7 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
+#include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
@@ -123,6 +123,11 @@
 
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStreamRegistry.h"
+#endif
+
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+#include "MediaKeyNeededEvent.h"
+#include "MediaKeys.h"
 #endif
 
 using namespace std;
@@ -284,6 +289,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 #if ENABLE(VIDEO_TRACK)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
+    , m_processingPreferenceChange(false)
     , m_lastTextTrackUpdateTime(-1)
     , m_textTracks(0)
     , m_ignoreTrackDisplayUpdate(0)
@@ -307,14 +313,14 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     m_mediaSourceURL.setPath(createCanonicalUUIDString());
 #endif
 
-    setHasCustomCallbacks();
+    setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, document);
 
 #if ENABLE(VIDEO_TRACK)
     if (document->page()) {
-        PageGroup& group = document->page()->group();
-        if (group.userHasCaptionPreferences())
-            m_disableCaptions = !group.userPrefersCaptions();
+        CaptionUserPreferences* captionPreferences = document->page()->group().captionPreferences();
+        if (captionPreferences->userHasCaptionPreferences())
+            m_disableCaptions = !captionPreferences->userPrefersCaptions();
     }
 #endif
 }
@@ -341,6 +347,10 @@ HTMLMediaElement::~HTMLMediaElement()
 
 #if ENABLE(MEDIA_SOURCE)
     setSourceState(MediaSource::closedKeyword());
+#endif
+
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+    setMediaKeys(0);
 #endif
 
     removeElementFromDocumentMap(this, document());
@@ -586,7 +596,7 @@ void HTMLMediaElement::attach()
 
 #if ENABLE(VIDEO_TRACK)
     if (document()->page())
-        document()->page()->group().registerForCaptionPreferencesChangedCallbacks(this);
+        document()->page()->group().captionPreferences()->registerForPreferencesChangedCallbacks(this);
 #endif
 }
 
@@ -594,7 +604,7 @@ void HTMLMediaElement::detach()
 {
 #if ENABLE(VIDEO_TRACK)
     if (document()->page())
-        document()->page()->group().unregisterForCaptionPreferencesChangedCallbacks(this);
+        document()->page()->group().captionPreferences()->unregisterForPreferencesChangedCallbacks(this);
 #endif
     HTMLElement::detach();
 }
@@ -1966,6 +1976,40 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, const String& keySyste
 }
 #endif
 
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array* initData)
+{
+    if (!hasEventListeners("webkitneedkey")) {
+        m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
+        scheduleEvent(eventNames().errorEvent);
+        return false;
+    }
+
+    MediaKeyNeededEventInit initializer;
+    initializer.initData = initData;
+    initializer.bubbles = false;
+    initializer.cancelable = false;
+
+    RefPtr<Event> event = MediaKeyNeededEvent::create(eventNames().webkitneedkeyEvent, initializer);
+    event->setTarget(this);
+    m_asyncEventQueue->enqueueEvent(event.release());
+
+    return true;
+}
+
+void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
+{
+    if (m_mediaKeys == mediaKeys)
+        return;
+
+    if (m_mediaKeys)
+        m_mediaKeys->setMediaElement(0);
+    m_mediaKeys = mediaKeys;
+    if (m_mediaKeys)
+        m_mediaKeys->setMediaElement(this);
+}
+#endif
+
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 {
     ASSERT(m_player);
@@ -1993,17 +2037,14 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
 void HTMLMediaElement::rewind(float timeDelta)
 {
     LOG(Media, "HTMLMediaElement::rewind(%f)", timeDelta);
-
-    ExceptionCode e;
-    setCurrentTime(max(currentTime() - timeDelta, minTimeSeekable()), e);
+    setCurrentTime(max(currentTime() - timeDelta, minTimeSeekable()), IGNORE_EXCEPTION);
 }
 
 void HTMLMediaElement::returnToRealtime()
 {
     LOG(Media, "HTMLMediaElement::returnToRealtime");
-    ExceptionCode e;
-    setCurrentTime(maxTimeSeekable(), e);
-}  
+    setCurrentTime(maxTimeSeekable(), IGNORE_EXCEPTION);
+}
 
 void HTMLMediaElement::addPlayedRange(float start, float end)
 {
@@ -2407,10 +2448,8 @@ void HTMLMediaElement::playInternal()
     if (!m_player || m_networkState == NETWORK_EMPTY)
         scheduleLoad(MediaResource);
 
-    if (endedPlayback()) {
-        ExceptionCode unused;
-        seek(0, unused);
-    }
+    if (endedPlayback())
+        seek(0, IGNORE_EXCEPTION);
 
     if (m_mediaController)
         m_mediaController->bringElementUpToSpeed(this);
@@ -2476,6 +2515,14 @@ void HTMLMediaElement::setSourceState(const String& state)
 #if ENABLE(ENCRYPTED_MEDIA)
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
 {
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+    static bool firstTime = true;
+    if (firstTime && context() && context()->scriptExecutionContext()) {
+        context()->scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated.  Use 'MediaKeys.createSession()' instead.");
+        firstTime = false;
+    }
+#endif
+
     if (keySystem.isEmpty()) {
         ec = SYNTAX_ERR;
         return;
@@ -2504,6 +2551,14 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode& ec)
 {
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+    static bool firstTime = true;
+    if (firstTime && context() && context()->scriptExecutionContext()) {
+        context()->scriptExecutionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "'HTMLMediaElement.webkitAddKey()' is deprecated.  Use 'MediaKeySession.update()' instead.");
+        firstTime = false;
+    }
+#endif
+
     if (keySystem.isEmpty()) {
         ec = SYNTAX_ERR;
         return;
@@ -2747,15 +2802,14 @@ float HTMLMediaElement::percentLoaded() const
         return 0;
     float duration = m_player->duration();
 
-    if (!duration || isinf(duration))
+    if (!duration || std::isinf(duration))
         return 0;
 
     float buffered = 0;
     RefPtr<TimeRanges> timeRanges = m_player->buffered();
     for (unsigned i = 0; i < timeRanges->length(); ++i) {
-        ExceptionCode ignoredException;
-        float start = timeRanges->start(i, ignoredException);
-        float end = timeRanges->end(i, ignoredException);
+        float start = timeRanges->start(i, IGNORE_EXCEPTION);
+        float end = timeRanges->end(i, IGNORE_EXCEPTION);
         buffered += end - start;
     }
     return buffered / duration;
@@ -2958,8 +3012,8 @@ bool HTMLMediaElement::userPrefersCaptions() const
     if (!page)
         return false;
 
-    PageGroup& group = page->group();
-    return group.userHasCaptionPreferences() && group.userPrefersCaptions();
+    CaptionUserPreferences* captionPreferences = page->group().captionPreferences();
+    return captionPreferences->userHasCaptionPreferences() && captionPreferences->userPrefersCaptions();
 }
 
 bool HTMLMediaElement::userIsInterestedInThisTrackKind(String kind) const
@@ -2980,28 +3034,35 @@ bool HTMLMediaElement::userIsInterestedInThisTrackKind(String kind) const
     return false;
 }
 
-void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group) const
+void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 {
     ASSERT(group.tracks.size());
 
     String bestMatchingLanguage;
-    if (group.hasSrcLang) {
-        Vector<String> languages;
-        languages.reserveInitialCapacity(group.tracks.size());
+    if (group.hasSrcLang && document()->page()) {
+        Vector<String> trackLanguages;
+        trackLanguages.reserveInitialCapacity(group.tracks.size());
         for (size_t i = 0; i < group.tracks.size(); ++i) {
             String srcLanguage = group.tracks[i]->language();
             if (srcLanguage.length())
-                languages.append(srcLanguage);
+                trackLanguages.append(srcLanguage);
         }
-        bestMatchingLanguage = preferredLanguageFromList(languages);
+        bestMatchingLanguage = preferredLanguageFromList(trackLanguages, document()->page()->group().captionPreferences()->preferredLanguages());
     }
 
     // First, find the track in the group that should be enabled (if any).
+    Vector<RefPtr<TextTrack> > currentlyEnabledTracks;
     RefPtr<TextTrack> trackToEnable;
     RefPtr<TextTrack> defaultTrack;
     RefPtr<TextTrack> fallbackTrack;
-    for (size_t i = 0; !trackToEnable && i < group.tracks.size(); ++i) {
+    for (size_t i = 0; i < group.tracks.size(); ++i) {
         RefPtr<TextTrack> textTrack = group.tracks[i];
+
+        if (m_processingPreferenceChange && textTrack->mode() == TextTrack::showingKeyword())
+            currentlyEnabledTracks.append(textTrack);
+
+        if (trackToEnable)
+            continue;
 
         if (userIsInterestedInThisTrackKind(textTrack->kind())) {
             // * If the text track kind is { [subtitles or captions] [descriptions] } and the user has indicated an interest in having a
@@ -3041,6 +3102,15 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group) const
     if (!trackToEnable && fallbackTrack)
         trackToEnable = fallbackTrack;
 
+    if (currentlyEnabledTracks.size()) {
+        m_processingPreferenceChange = false;
+        for (size_t i = 0; i < currentlyEnabledTracks.size(); ++i) {
+            RefPtr<TextTrack> textTrack = currentlyEnabledTracks[i];
+            if (textTrack != trackToEnable)
+                textTrack->setMode(TextTrack::disabledKeyword());
+        }
+    }
+
     if (trackToEnable)
         trackToEnable->setMode(TextTrack::showingKeyword());
 }
@@ -3051,10 +3121,17 @@ void HTMLMediaElement::toggleTrackAtIndex(int index, bool exclusive)
     if (!trackList || !trackList->length())
         return;
 
+    CaptionUserPreferences* captionPreferences = document()->page() ? document()->page()->group().captionPreferences() : 0;
+    if (captionPreferences)
+        captionPreferences->setUserPrefersCaptions(index != textTracksOffIndex());
+
     for (int i = 0, length = trackList->length(); i < length; ++i) {
         TextTrack* track = trackList->item(i);
-        if (i == index)
+        if (i == index) {
             track->setMode(TextTrack::showingKeyword());
+            if (captionPreferences && track->language().length())
+                captionPreferences->setPreferredLanguage(track->language());
+        }
         else if (exclusive || index == HTMLMediaElement::textTracksOffIndex())
             track->setMode(TextTrack::disabledKeyword());
     }
@@ -3356,13 +3433,12 @@ void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
     
     // When the current playback position reaches the end of the media resource when the direction of
     // playback is forwards, then the user agent must follow these steps:
-    if (!isnan(dur) && dur && now >= dur && m_playbackRate > 0) {
+    if (!std::isnan(dur) && dur && now >= dur && m_playbackRate > 0) {
         // If the media element has a loop attribute specified and does not have a current media controller,
         if (loop() && !m_mediaController) {
-            ExceptionCode ignoredException;
             m_sentEndEvent = false;
             //  then seek to the earliest possible position of the media resource and abort these steps.
-            seek(startTime(), ignoredException);
+            seek(startTime(), IGNORE_EXCEPTION);
         } else {
             // If the media element does not have a current media controller, and the media element
             // has still ended playback, and the direction of playback is still forwards, and paused
@@ -3426,9 +3502,8 @@ void HTMLMediaElement::mediaPlayerDurationChanged(MediaPlayer* player)
 
     float now = currentTime();
     float dur = duration();
-    ExceptionCode ignoredException;
     if (now > dur)
-        seek(dur, ignoredException);
+        seek(dur, IGNORE_EXCEPTION);
 
     endProcessingMediaPlayerCallback();
 }
@@ -3614,7 +3689,7 @@ bool HTMLMediaElement::couldPlayIfEnoughData() const
 bool HTMLMediaElement::endedPlayback() const
 {
     float dur = duration();
-    if (!m_player || isnan(dur))
+    if (!m_player || std::isnan(dur))
         return false;
 
     // 4.8.10.8 Playing the media resource
@@ -4374,28 +4449,26 @@ void HTMLMediaElement::captionPreferencesChanged()
     if (!isVideo())
         return;
 
+    m_processingPreferenceChange = true;
+    setClosedCaptionsVisible(userPrefersCaptions());
+
     if (hasMediaControls())
         mediaControls()->textTrackPreferencesChanged();
-    
-    markCaptionAndSubtitleTracksAsUnconfigured();
 }
 
 void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
 {
-    // Mark all track elements as not "configured" so that configureTextTracks()
+    if (!m_textTracks)
+        return;
+
+    // Mark all tracks as not "configured" so that configureTextTracks()
     // will reconsider which tracks to display in light of new user preferences
     // (e.g. default tracks should not be displayed if the user has turned off
     // captions and non-default tracks should be displayed based on language
     // preferences if the user has turned captions on).
-    for (RefPtr<Node> node = firstChild(); node; node = node->nextSibling()) {
-        if (!node->hasTagName(trackTag))
-            continue;
+    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
         
-        HTMLTrackElement* trackElement = static_cast<HTMLTrackElement*>(node.get());
-        RefPtr<TextTrack> textTrack = trackElement->track();
-        if (!textTrack)
-            continue;
-        
+        RefPtr<TextTrack> textTrack = m_textTracks->item(i);
         String kind = textTrack->kind();
 
         if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
@@ -4612,9 +4685,8 @@ void HTMLMediaElement::prepareMediaFragmentURI()
 void HTMLMediaElement::applyMediaFragmentURI()
 {
     if (m_fragmentStartTime != MediaPlayer::invalidTime()) {
-        ExceptionCode ignoredException;
         m_sentEndEvent = false;
-        seek(m_fragmentStartTime, ignoredException);
+        seek(m_fragmentStartTime, IGNORE_EXCEPTION);
     }
 }
 

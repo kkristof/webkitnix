@@ -49,12 +49,12 @@ const ExclusionShape* ExclusionShapeInfo<RenderType, shapeGetter>::computedShape
 
     ASSERT(shape);
 
-    m_shape = ExclusionShape::createExclusionShape(shape, m_logicalWidth, m_logicalHeight, m_renderer->style()->writingMode());
+    m_shape = ExclusionShape::createExclusionShape(shape, m_shapeLogicalWidth, m_shapeLogicalHeight, m_renderer->style()->writingMode());
     ASSERT(m_shape);
     return m_shape.get();
 }
 
-template class ExclusionShapeInfo<RenderBlock, &RenderStyle::shapeInside>;
+template class ExclusionShapeInfo<RenderBlock, &RenderStyle::resolvedShapeInside>;
 template class ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside>;
 }
 #endif

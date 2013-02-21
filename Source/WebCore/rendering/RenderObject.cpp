@@ -1298,6 +1298,10 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     // repainting to do individual region repaints.
     if (inRenderFlowThread()) {
         RenderFlowThread* parentRenderFlowThread = enclosingRenderFlowThread();
+        // The ancestor document will do the reparenting when the repaint propagates further up.
+        // We're just a seamless child document, and we don't need to do the hacking.
+        if (parentRenderFlowThread && parentRenderFlowThread->document() != document())
+            return repaintContainer;
         // If we have already found a repaint container then we will repaint into that container only if it is part of the same
         // flow thread. Otherwise we will need to catch the repaint call and send it to the flow thread.
         if (!(repaintContainer && repaintContainer->inRenderFlowThread() && repaintContainer->enclosingRenderFlowThread() == parentRenderFlowThread))
@@ -2391,11 +2395,6 @@ void RenderObject::willBeDestroyed()
     if (AXObjectCache::accessibilityEnabled())
         document()->axObjectCache()->remove(this);
 
-    // Continuation and first-letter can generate several renderers associated with a single node.
-    // We only want to clear the node's renderer if we are the associated renderer.
-    if (node() && node()->renderer() == this)
-        node()->setRenderer(0);
-
 #ifndef NDEBUG
     if (!documentBeingDestroyed() && view() && view()->hasRenderNamedFlowThreads()) {
         // After remove, the object and the associated information should not be in any flow thread.
@@ -2527,18 +2526,6 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
 
         if (destroyRootParent->firstChild() != this || destroyRootParent->lastChild() != this)
             break;
-    }
-
-    // We repaint, so that the area exposed when this object disappears gets repainted properly.
-    // FIXME: A RenderObject with RenderLayer should probably repaint through it as getting the
-    // repaint rects is O(1) through a RenderLayer (assuming it's up-to-date).
-    if (destroyRoot->everHadLayout()) {
-        if (destroyRoot->isBody())
-            destroyRoot->view()->repaint();
-        else {
-            destroyRoot->repaint();
-            destroyRoot->repaintOverhangingFloats(true);
-        }
     }
 
     destroyRoot->destroy();

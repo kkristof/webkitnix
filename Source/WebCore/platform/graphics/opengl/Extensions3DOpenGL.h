@@ -59,6 +59,10 @@ protected:
 
     virtual bool supportsExtension(const WTF::String&);
     virtual String getExtensions();
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+private:
+    bool isVertexArrayObjectSupported();
+#endif
 };
 
 } // namespace WebCore

@@ -139,6 +139,7 @@ list(APPEND WebCore_SOURCES
     platform/text/TextEncodingDetectorICU.cpp
     platform/text/TextBreakIteratorICU.cpp
     platform/text/TextCodecICU.cpp
+    platform/text/LocaleNone.cpp
 
     platform/chromium/support/WebAudioBus.cpp
     platform/chromium/support/WebData.cpp
@@ -178,7 +179,7 @@ else ()
     )
     list(APPEND WebCore_SOURCES
         platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
-        platform/graphics/surfaces/glx/X11WindowResources.cpp
+        platform/graphics/surfaces/glx/X11Helper.cpp
         platform/graphics/surfaces/glx/GLXContext.cpp
         platform/graphics/surfaces/glx/GLXSurface.cpp
     )

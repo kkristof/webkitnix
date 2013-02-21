@@ -39,7 +39,7 @@ v8::Handle<v8::Value> V8DataView::constructorCallbackCustom(const v8::Arguments&
         // 'new DataView()' and the call used to construct the cached DataView object.
         RefPtr<DataView> dataView = DataView::create(0);
         v8::Handle<v8::Object> wrapper = args.Holder();
-        V8DOMWrapper::associateObjectWithWrapper(dataView.release(), &info, wrapper, args.GetIsolate());
+        V8DOMWrapper::associateObjectWithWrapper(dataView.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
         return wrapper;
     }
     if (args[0]->IsNull() || !V8ArrayBuffer::HasInstance(args[0], args.GetIsolate()))
@@ -54,7 +54,7 @@ v8::Handle<v8::Object> wrap(DataView* impl, v8::Handle<v8::Object> creationConte
     return V8DataView::createWrapper(impl, creationContext, isolate);
 }
 
-v8::Handle<v8::Value> V8DataView::getInt8Callback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8DataView::getInt8CallbackCustom(const v8::Arguments& args)
 {
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
@@ -68,7 +68,7 @@ v8::Handle<v8::Value> V8DataView::getInt8Callback(const v8::Arguments& args)
     return v8Integer(result, args.GetIsolate());
 }
 
-v8::Handle<v8::Value> V8DataView::getUint8Callback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8DataView::getUint8CallbackCustom(const v8::Arguments& args)
 {
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
@@ -82,7 +82,7 @@ v8::Handle<v8::Value> V8DataView::getUint8Callback(const v8::Arguments& args)
     return v8Integer(result, args.GetIsolate());
 }
 
-v8::Handle<v8::Value> V8DataView::setInt8Callback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8DataView::setInt8CallbackCustom(const v8::Arguments& args)
 {
     if (args.Length() < 2)
         return throwNotEnoughArgumentsError(args.GetIsolate());
@@ -97,7 +97,7 @@ v8::Handle<v8::Value> V8DataView::setInt8Callback(const v8::Arguments& args)
     return v8Undefined();
 }
 
-v8::Handle<v8::Value> V8DataView::setUint8Callback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8DataView::setUint8CallbackCustom(const v8::Arguments& args)
 {
     if (args.Length() < 2)
         return throwNotEnoughArgumentsError(args.GetIsolate());

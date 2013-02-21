@@ -103,6 +103,7 @@ public:
 #endif
 
     WKRetainPtr<WKImageRef> windowSnapshotImage();
+    WKDictionaryRef options() const { return m_options.get(); }
 
 #if PLATFORM(NIX)
     void scheduleDisplayUpdate();
@@ -113,6 +114,7 @@ private:
     PlatformWKView m_view;
     PlatformWindow m_window;
     bool m_windowIsKey;
+    WKRetainPtr<WKDictionaryRef> m_options;
 #if PLATFORM(EFL) || PLATFORM(QT)
     bool m_usingFixedLayout;
 #endif

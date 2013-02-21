@@ -1313,6 +1313,16 @@ void WebPage::setSuppressScrollbarAnimations(bool suppressAnimations)
     m_page->setShouldSuppressScrollbarAnimations(suppressAnimations);
 }
 
+void WebPage::setRubberBandsAtBottom(bool rubberBandsAtBottom)
+{
+    m_page->setRubberBandsAtBottom(rubberBandsAtBottom);
+}
+
+void WebPage::setRubberBandsAtTop(bool rubberBandsAtTop)
+{
+    m_page->setRubberBandsAtTop(rubberBandsAtTop);
+}
+
 void WebPage::setPaginationMode(uint32_t mode)
 {
     Pagination pagination = m_page->pagination();
@@ -1510,7 +1520,7 @@ static bool isContextClick(const PlatformMouseEvent& event)
 static bool handleContextMenuEvent(const PlatformMouseEvent& platformMouseEvent, WebPage* page)
 {
     IntPoint point = page->corePage()->mainFrame()->view()->windowToContents(platformMouseEvent.position());
-    HitTestResult result = page->corePage()->mainFrame()->eventHandler()->hitTestResultAtPoint(point, false);
+    HitTestResult result = page->corePage()->mainFrame()->eventHandler()->hitTestResultAtPoint(point);
 
     Frame* frame = page->corePage()->mainFrame();
     if (result.innerNonSharedNode())
@@ -1764,7 +1774,7 @@ void WebPage::highlightPotentialActivation(const IntPoint& point, const IntSize&
             return;
 
 #else
-        HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), /*allowShadowContent*/ false, /*ignoreClipping*/ true);
+        HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
         adjustedNode = result.innerNode();
 #endif
         // Find the node to highlight. This is not the same as the node responding the tap gesture, because many
@@ -1973,7 +1983,7 @@ void WebPage::setIsInWindow(bool isInWindow)
         m_page->setCanStartMedia(false);
         m_page->willMoveOffscreen();
     } else {
-        // Defer the call to Page::setCanStartMedia() since it ends up sending a syncrhonous messages to the UI process
+        // Defer the call to Page::setCanStartMedia() since it ends up sending a synchronous message to the UI process
         // in order to get plug-in connections, and the UI process will be waiting for the Web process to update the backing
         // store after moving the view into a window, until it times out and paints white. See <rdar://problem/9242771>.
         if (m_mayStartMediaWhenInWindow)
@@ -1981,6 +1991,8 @@ void WebPage::setIsInWindow(bool isInWindow)
 
         m_page->didMoveOnscreen();
     }
+
+    m_page->setIsInWindow(isInWindow);
 }
 
 void WebPage::didReceivePolicyDecision(uint64_t frameID, uint64_t listenerID, uint32_t policyAction, uint64_t downloadID)
@@ -3016,10 +3028,11 @@ void WebPage::findZoomableAreaForPoint(const WebCore::IntPoint& point, const Web
     Node* node = 0;
     IntRect zoomableArea;
     bool foundAreaForTouchPoint = m_mainFrame->coreFrame()->eventHandler()->bestZoomableAreaForTouchPoint(point, IntSize(area.width() / 2, area.height() / 2), zoomableArea, node);
-    ASSERT(node);
 
     if (!foundAreaForTouchPoint)
         return;
+
+    ASSERT(node);
 
     if (node->document() && node->document()->view())
         zoomableArea = node->document()->view()->contentsToWindow(zoomableArea);
@@ -3032,7 +3045,7 @@ void WebPage::findZoomableAreaForPoint(const WebCore::IntPoint& point, const Web
 {
     UNUSED_PARAM(area);
     Frame* mainframe = m_mainFrame->coreFrame();
-    HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), /*allowShadowContent*/ false, /*ignoreClipping*/ true);
+    HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
 
     Node* node = result.innerNode();
 
@@ -3481,6 +3494,12 @@ bool WebPage::canHandleRequest(const WebCore::ResourceRequest& request)
 {
     if (SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(request.url().protocol()))
         return true;
+
+#if ENABLE(BLOB)
+    if (request.url().protocolIs("blob"))
+        return true;
+#endif
+
     return platformCanHandleRequest(request);
 }
 

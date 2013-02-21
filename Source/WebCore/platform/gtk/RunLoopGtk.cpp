@@ -32,12 +32,14 @@
 #endif
 #include <glib.h>
 
+#include <wtf/MainThread.h>
+
 namespace WebCore {
 
 RunLoop::RunLoop()
 {
     // g_main_context_default() doesn't add an extra reference.
-    m_runLoopContext = g_main_context_default();
+    m_runLoopContext = isMainThread() ? g_main_context_default() : adoptGRef(g_main_context_new());
     ASSERT(m_runLoopContext);
     GRefPtr<GMainLoop> innermostLoop = adoptGRef(g_main_loop_new(m_runLoopContext.get(), FALSE));
     ASSERT(innermostLoop);
@@ -55,7 +57,7 @@ RunLoop::~RunLoop()
 
 void RunLoop::run()
 {
-    RunLoop* mainRunLoop = RunLoop::main();
+    RunLoop* mainRunLoop = RunLoop::current();
     GMainLoop* innermostLoop = mainRunLoop->innermostLoop();
     if (!g_main_loop_is_running(innermostLoop)) {
         g_main_loop_run(innermostLoop);

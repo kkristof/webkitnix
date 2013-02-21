@@ -28,9 +28,11 @@
 
 #include "BackgroundHTMLInputStream.h"
 #include "CachedResourceClient.h"
+#include "CompactHTMLToken.h"
 #include "FragmentScriptingPermission.h"
 #include "HTMLInputStream.h"
 #include "HTMLParserOptions.h"
+#include "HTMLPreloadScanner.h"
 #include "HTMLScriptRunnerHost.h"
 #include "HTMLSourceTracker.h"
 #include "HTMLToken.h"
@@ -46,6 +48,7 @@
 
 namespace WebCore {
 
+class BackgroundHTMLParser;
 class CompactHTMLToken;
 class Document;
 class DocumentFragment;
@@ -54,7 +57,7 @@ class HTMLParserScheduler;
 class HTMLTokenizer;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
-class HTMLPreloadScanner;
+class HTMLResourcePreloader;
 class ScriptController;
 class ScriptSourceCode;
 
@@ -85,6 +88,7 @@ public:
 #if ENABLE(THREADED_HTML_PARSER)
     struct ParsedChunk {
         OwnPtr<CompactHTMLTokenStream> tokens;
+        PreloadRequestStream preloads;
         HTMLInputCheckpoint checkpoint;
     };
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
@@ -99,6 +103,8 @@ protected:
     HTMLDocumentParser(DocumentFragment*, Element* contextElement, FragmentScriptingPermission);
 
     HTMLTreeBuilder* treeBuilder() const { return m_treeBuilder.get(); }
+
+    void forcePlaintextForTextDocument();
 
 private:
     static PassRefPtr<HTMLDocumentParser> create(DocumentFragment* fragment, Element* contextElement, FragmentScriptingPermission permission)
@@ -129,9 +135,12 @@ private:
 #if ENABLE(THREADED_HTML_PARSER)
     void startBackgroundParser();
     void stopBackgroundParser();
+    void checkForSpeculationFailure();
     void didFailSpeculation(PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
     void processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
 #endif
+
+    Document* contextForParsingSession();
 
     enum SynchronousMode {
         AllowYield,
@@ -181,7 +190,9 @@ private:
     OwnPtr<ParsedChunk> m_currentChunk;
     Deque<OwnPtr<ParsedChunk> > m_speculations;
     WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
+    WeakPtr<BackgroundHTMLParser> m_backgroundParser;
 #endif
+    OwnPtr<HTMLResourcePreloader> m_preloader;
 
     bool m_endWasDelayed;
     bool m_haveBackgroundParser;

@@ -5,7 +5,6 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/Modules/gamepad"
     "${WEBCORE_DIR}/Modules/geolocation"
     "${WEBCORE_DIR}/Modules/indexeddb"
-    "${WEBCORE_DIR}/Modules/intents"
     "${WEBCORE_DIR}/Modules/mediasource"
     "${WEBCORE_DIR}/Modules/mediastream"
     "${WEBCORE_DIR}/Modules/navigatorcontentutils"
@@ -117,7 +116,6 @@ set(WebCore_IDL_INCLUDES
     Modules/gamepad
     Modules/geolocation
     Modules/indexeddb
-    Modules/intents
     Modules/mediastream
     Modules/networkinfo
     Modules/notifications
@@ -202,12 +200,6 @@ set(WebCore_IDL_FILES
     Modules/indexeddb/IDBTransaction.idl
     Modules/indexeddb/IDBVersionChangeEvent.idl
     Modules/indexeddb/WorkerContextIndexedDatabase.idl
-
-    Modules/intents/DeliveredIntent.idl
-    Modules/intents/DOMWindowIntents.idl
-    Modules/intents/Intent.idl
-    Modules/intents/IntentResultCallback.idl
-    Modules/intents/NavigatorIntents.idl
 
     Modules/mediasource/MediaSource.idl
     Modules/mediasource/SourceBuffer.idl
@@ -326,6 +318,7 @@ set(WebCore_IDL_FILES
     css/CSSSupportsRule.idl
     css/CSSValue.idl
     css/CSSValueList.idl
+    css/DOMWindowCSS.idl
     css/MediaList.idl
     css/MediaQueryList.idl
     css/RGBColor.idl
@@ -458,7 +451,6 @@ set(WebCore_IDL_FILES
     html/HTMLHtmlElement.idl
     html/HTMLIFrameElement.idl
     html/HTMLImageElement.idl
-    html/HTMLIntentElement.idl
     html/HTMLInputElement.idl
     html/HTMLKeygenElement.idl
     html/HTMLLabelElement.idl
@@ -849,12 +841,6 @@ set(WebCore_SOURCES
     Modules/indexeddb/PageGroupIndexedDatabase.cpp
     Modules/indexeddb/WorkerContextIndexedDatabase.cpp
 
-    Modules/intents/DOMWindowIntents.cpp
-    Modules/intents/DeliveredIntent.cpp
-    Modules/intents/Intent.cpp
-    Modules/intents/IntentRequest.cpp
-    Modules/intents/NavigatorIntents.cpp
-
     Modules/mediasource/MediaSource.cpp
     Modules/mediasource/SourceBuffer.cpp
     Modules/mediasource/SourceBufferList.cpp
@@ -953,8 +939,8 @@ set(WebCore_SOURCES
     Modules/webdatabase/DOMWindowWebDatabase.cpp
     Modules/webdatabase/Database.cpp
     Modules/webdatabase/DatabaseAuthorizer.cpp
-    Modules/webdatabase/DatabaseBackend.cpp
     Modules/webdatabase/DatabaseBackendAsync.cpp
+    Modules/webdatabase/DatabaseBackendBase.cpp
     Modules/webdatabase/DatabaseBackendContext.cpp
     Modules/webdatabase/DatabaseBackendSync.cpp
     Modules/webdatabase/DatabaseBase.cpp
@@ -971,10 +957,14 @@ set(WebCore_SOURCES
     Modules/webdatabase/SQLResultSet.cpp
     Modules/webdatabase/SQLResultSetRowList.cpp
     Modules/webdatabase/SQLStatement.cpp
+    Modules/webdatabase/SQLStatementBackend.cpp
     Modules/webdatabase/SQLStatementSync.cpp
     Modules/webdatabase/SQLTransaction.cpp
+    Modules/webdatabase/SQLTransactionBackend.cpp
+    Modules/webdatabase/SQLTransactionBackendSync.cpp
     Modules/webdatabase/SQLTransactionClient.cpp
     Modules/webdatabase/SQLTransactionCoordinator.cpp
+    Modules/webdatabase/SQLTransactionStateMachine.cpp
     Modules/webdatabase/SQLTransactionSync.cpp
 
     Modules/websockets/ThreadableWebSocketChannel.cpp
@@ -1076,6 +1066,8 @@ set(WebCore_SOURCES
     css/CSSValue.cpp
     css/CSSValueList.cpp
     css/CSSValuePool.cpp
+    css/DOMWindowCSS.cpp
+    css/DocumentRuleSets.cpp
     css/FontFeatureValue.cpp
     css/FontValue.cpp
     css/InspectorCSSOMWrappers.cpp
@@ -1125,7 +1117,6 @@ set(WebCore_SOURCES
     css/WebKitCSSViewportRule.cpp
 
     dom/ActiveDOMObject.cpp
-    dom/AncestorChainWalker.cpp
     dom/Attr.cpp
     dom/BeforeTextInsertedEvent.cpp
     dom/BeforeUnloadEvent.cpp
@@ -1173,7 +1164,6 @@ set(WebCore_SOURCES
     dom/DocumentStyleSheetCollection.cpp
     dom/DocumentType.cpp
     dom/Element.cpp
-    dom/ElementAttributeData.cpp
     dom/ElementRareData.cpp
     dom/ElementShadow.cpp
     dom/EntityReference.cpp
@@ -1185,6 +1175,8 @@ set(WebCore_SOURCES
     dom/EventException.cpp
     dom/EventListenerMap.cpp
     dom/EventNames.cpp
+    dom/EventPathWalker.cpp
+    dom/EventRetargeter.cpp
     dom/EventTarget.cpp
     dom/ExceptionBase.cpp
     dom/ExceptionCodePlaceholder.cpp
@@ -1418,7 +1410,6 @@ set(WebCore_SOURCES
     html/HTMLIFrameElement.cpp
     html/HTMLImageElement.cpp
     html/HTMLImageLoader.cpp
-    html/HTMLIntentElement.cpp
     html/HTMLInputElement.cpp
     html/HTMLKeygenElement.cpp
     html/HTMLLIElement.cpp
@@ -1561,6 +1552,7 @@ set(WebCore_SOURCES
     html/parser/HTMLFormattingElementList.cpp
     html/parser/HTMLMetaCharsetParser.cpp
     html/parser/HTMLPreloadScanner.cpp
+    html/parser/HTMLResourcePreloader.cpp
     html/parser/HTMLScriptRunner.cpp
     html/parser/HTMLSourceTracker.cpp
     html/parser/HTMLTokenizer.cpp
@@ -1638,6 +1630,7 @@ set(WebCore_SOURCES
     inspector/InspectorFileSystemAgent.cpp
     inspector/InspectorFrontendClientLocal.cpp
     inspector/InspectorFrontendHost.cpp
+    inspector/InspectorHeapProfilerAgent.cpp
     inspector/InspectorHistory.cpp
     inspector/InspectorIndexedDBAgent.cpp
     inspector/InspectorInputAgent.cpp
@@ -1757,6 +1750,7 @@ set(WebCore_SOURCES
 
     page/AutoscrollController.cpp
     page/BarInfo.cpp
+    page/CaptionUserPreferences.cpp
     page/Chrome.cpp
     page/Console.cpp
     page/ContentSecurityPolicy.cpp
@@ -2013,8 +2007,12 @@ set(WebCore_SOURCES
     platform/graphics/texmap/coordinated/UpdateAtlas.cpp
     platform/graphics/texmap/TextureMapper.cpp
     platform/graphics/texmap/TextureMapperBackingStore.cpp
+    platform/graphics/texmap/TextureMapperFPSCounter.cpp
     platform/graphics/texmap/TextureMapperImageBuffer.cpp
     platform/graphics/texmap/TextureMapperLayer.cpp
+    platform/graphics/texmap/TextureMapperSurfaceBackingStore.cpp
+    platform/graphics/texmap/TextureMapperTile.cpp
+    platform/graphics/texmap/TextureMapperTiledBackingStore.cpp
 
     platform/graphics/transforms/AffineTransform.cpp
     platform/graphics/transforms/Matrix3DTransformOperation.cpp
@@ -2092,7 +2090,6 @@ set(WebCore_SOURCES
     platform/text/DateTimeFormat.cpp
     platform/text/Hyphenation.cpp
     platform/text/LineEnding.cpp
-    platform/text/LocaleNone.cpp
     platform/text/LocaleToScriptMappingDefault.cpp
     platform/text/PlatformLocale.cpp
     platform/text/QuotedPrintable.cpp
@@ -2502,6 +2499,7 @@ set(WebCore_SOURCES
 
     svg/graphics/SVGImage.cpp
     svg/graphics/SVGImageCache.cpp
+    svg/graphics/SVGImageForContainer.cpp
 
     svg/graphics/filters/SVGFEImage.cpp
     svg/graphics/filters/SVGFilter.cpp
@@ -2836,6 +2834,7 @@ endif ()
 
 set(WebCoreTestSupport_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/testing"
+    "${WEBCORE_DIR}/platform/mock"
 )
 
 set(WebCoreTestSupport_IDL_INCLUDES
@@ -2852,6 +2851,7 @@ set(WebCoreTestSupport_IDL_FILES
 set(WebCoreTestSupport_SOURCES
     testing/Internals.cpp
     testing/InternalSettings.cpp
+    platform/mock/PlatformSpeechSynthesizerMock.cpp
 )
 
 # Modules that the bindings generator scripts may use

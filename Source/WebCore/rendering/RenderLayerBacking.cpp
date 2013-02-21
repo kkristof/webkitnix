@@ -405,8 +405,11 @@ void RenderLayerBacking::updateCompositedBounds()
         RenderView* view = m_owningLayer->renderer()->view();
         RenderLayer* rootLayer = view->layer();
 
-        // Start by clipping to the document's bounds.
-        LayoutRect clippingBounds = view->unscaledDocumentRect();
+        LayoutRect clippingBounds;
+        if (renderer()->style()->position() == FixedPosition && renderer()->container() == view)
+            clippingBounds = view->frameView()->viewportConstrainedVisibleContentRect();
+        else
+            clippingBounds = view->unscaledDocumentRect();
 
         if (m_owningLayer != rootLayer)
             clippingBounds.intersect(m_owningLayer->backgroundClipRect(RenderLayer::ClipRectsContext(rootLayer, 0, AbsoluteClipRects)).rect()); // FIXME: Incorrect for CSS regions.
@@ -1400,7 +1403,10 @@ bool RenderLayerBacking::isSimpleContainerCompositingLayer() const
     
     if (paintsBoxDecorations() || paintsChildren())
         return false;
-    
+
+    if (renderObject->isRenderRegion())
+        return false;
+
     if (renderObject->node() && renderObject->node()->isDocumentNode()) {
         // Look to see if the root object has a non-simple background
         RenderObject* rootObject = renderObject->document()->documentElement() ? renderObject->document()->documentElement()->renderer() : 0;
@@ -1431,6 +1437,13 @@ bool RenderLayerBacking::isSimpleContainerCompositingLayer() const
 
 static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
 {
+    // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
+    parent->updateLayerListsIfNeeded();
+
+#if !ASSERT_DISABLED
+    LayerListMutationDetector mutationChecker(parent);
+#endif
+
     if (Vector<RenderLayer*>* normalFlowList = parent->normalFlowList()) {
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
@@ -1473,13 +1486,6 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
 // Conservative test for having no rendered children.
 bool RenderLayerBacking::hasVisibleNonCompositingDescendantLayers() const
 {
-    // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
-    m_owningLayer->updateLayerListsIfNeeded();
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(m_owningLayer);
-#endif
-
     return hasVisibleNonCompositingDescendant(m_owningLayer);
 }
 

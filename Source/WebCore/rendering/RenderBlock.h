@@ -455,12 +455,27 @@ protected:
     void setMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg);
     void setMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg);
 
+    void setMustDiscardMarginBefore(bool = true);
+    void setMustDiscardMarginAfter(bool = true);
+
+    bool mustDiscardMarginBefore() const;
+    bool mustDiscardMarginAfter() const;
+
+    bool mustDiscardMarginBeforeForChild(const RenderBox*) const;
+    bool mustDiscardMarginAfterForChild(const RenderBox*) const;
+
+    bool mustSeparateMarginBeforeForChild(const RenderBox*) const;
+    bool mustSeparateMarginAfterForChild(const RenderBox*) const;
+
     void initMaxMarginValues()
     {
         if (m_rareData) {
             m_rareData->m_margins = MarginValues(RenderBlockRareData::positiveMarginBeforeDefault(this) , RenderBlockRareData::negativeMarginBeforeDefault(this),
                                                  RenderBlockRareData::positiveMarginAfterDefault(this), RenderBlockRareData::negativeMarginAfterDefault(this));
             m_rareData->m_paginationStrut = 0;
+
+            m_rareData->m_discardMarginBefore = false;
+            m_rareData->m_discardMarginAfter = false;
         }
     }
 
@@ -689,14 +704,7 @@ private:
 #endif
     };
 
-    // When a float has shape outside, it needs to be handled differently at
-    // paint time and at layout time, since the coordinates of the shape
-    // (affecting layout) and the coordinates of the float itself (affecting
-    // where the content of the float is) can be in different places. This enum
-    // is used to change behavior based on that state.
-    enum FloatRenderingState { FloatLayout, FloatPaint };
-
-    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&, FloatRenderingState = FloatLayout) const;
+    LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
 
     LayoutUnit logicalTopForFloat(const FloatingObject* child) const { return isHorizontalWritingMode() ? child->y() : child->x(); }
     LayoutUnit logicalBottomForFloat(const FloatingObject* child) const { return isHorizontalWritingMode() ? child->maxY() : child->maxX(); }
@@ -738,13 +746,12 @@ private:
             child->setHeight(logicalWidth);
     }
 
-    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child, FloatRenderingState renderingState = FloatLayout) const
+    LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
 #if ENABLE(CSS_EXCLUSIONS)
         ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
-        if (renderingState == FloatPaint && shapeOutside)
-            return child->x() - (isHorizontalWritingMode() ? shapeOutside->shapeLogicalLeft() : shapeOutside->shapeLogicalTop());
-        // FIXME: Bug 106928 This needs to properly handle the margin for floats with shape-outside for non-paint time.
+        if (shapeOutside)
+            return child->x();
 #endif
 
         if (isHorizontalWritingMode())
@@ -753,13 +760,12 @@ private:
             return child->x() + marginBeforeForChild(child->renderer());
     }
         
-    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child, FloatRenderingState renderingState = FloatLayout) const
+    LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
 #if ENABLE(CSS_EXCLUSIONS)
         ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
-        if (renderingState == FloatPaint && shapeOutside)
-            return child->y() - (isHorizontalWritingMode() ? shapeOutside->shapeLogicalTop() : shapeOutside->shapeLogicalLeft());
-        // FIXME: Bug 106928 This needs to properly handle the margin for floats with shape-outside.
+        if (shapeOutside)
+            return child->y();
 #endif
 
         if (isHorizontalWritingMode())
@@ -958,6 +964,8 @@ private:
         bool m_marginAfterQuirk : 1;
         bool m_determinedMarginBeforeQuirk : 1;
 
+        bool m_discardMargin : 1;
+
         // These flags track the previous maximal positive and negative margins.
         LayoutUnit m_positiveMargin;
         LayoutUnit m_negativeMargin;
@@ -975,42 +983,43 @@ private:
         void setMarginBeforeQuirk(bool b) { m_marginBeforeQuirk = b; }
         void setMarginAfterQuirk(bool b) { m_marginAfterQuirk = b; }
         void setDeterminedMarginBeforeQuirk(bool b) { m_determinedMarginBeforeQuirk = b; }
-        void setPositiveMargin(LayoutUnit p) { m_positiveMargin = p; }
-        void setNegativeMargin(LayoutUnit n) { m_negativeMargin = n; }
+        void setPositiveMargin(LayoutUnit p) { ASSERT(!m_discardMargin); m_positiveMargin = p; }
+        void setNegativeMargin(LayoutUnit n) { ASSERT(!m_discardMargin); m_negativeMargin = n; }
         void setPositiveMarginIfLarger(LayoutUnit p)
         {
+            ASSERT(!m_discardMargin);
             if (p > m_positiveMargin)
                 m_positiveMargin = p;
         }
         void setNegativeMarginIfLarger(LayoutUnit n)
         {
+            ASSERT(!m_discardMargin);
             if (n > m_negativeMargin)
                 m_negativeMargin = n;
         }
 
-        void setMargin(LayoutUnit p, LayoutUnit n) { m_positiveMargin = p; m_negativeMargin = n; }
+        void setMargin(LayoutUnit p, LayoutUnit n) { ASSERT(!m_discardMargin); m_positiveMargin = p; m_negativeMargin = n; }
+        void setCanCollapseMarginAfterWithChildren(bool collapse) { m_canCollapseMarginAfterWithChildren = collapse; }
+        void setDiscardMargin(bool value) { m_discardMargin = value; }
 
         bool atBeforeSideOfBlock() const { return m_atBeforeSideOfBlock; }
         bool canCollapseWithMarginBefore() const { return m_atBeforeSideOfBlock && m_canCollapseMarginBeforeWithChildren; }
         bool canCollapseWithMarginAfter() const { return m_atAfterSideOfBlock && m_canCollapseMarginAfterWithChildren; }
         bool canCollapseMarginBeforeWithChildren() const { return m_canCollapseMarginBeforeWithChildren; }
         bool canCollapseMarginAfterWithChildren() const { return m_canCollapseMarginAfterWithChildren; }
-        void setCanCollapseMarginAfterWithChildren(bool collapse) { m_canCollapseMarginAfterWithChildren = collapse; }
         bool quirkContainer() const { return m_quirkContainer; }
         bool determinedMarginBeforeQuirk() const { return m_determinedMarginBeforeQuirk; }
         bool marginBeforeQuirk() const { return m_marginBeforeQuirk; }
         bool marginAfterQuirk() const { return m_marginAfterQuirk; }
         LayoutUnit positiveMargin() const { return m_positiveMargin; }
         LayoutUnit negativeMargin() const { return m_negativeMargin; }
+        bool discardMargin() const { return m_discardMargin; }
         LayoutUnit margin() const { return m_positiveMargin - m_negativeMargin; }
     };
 
     void layoutBlockChild(RenderBox* child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom, LayoutUnit& maxFloatLogicalBottom);
     void adjustPositionedBlock(RenderBox* child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
-    bool handleSpecialChild(RenderBox* child, const MarginInfo&);
-    bool handleFloatingChild(RenderBox* child, const MarginInfo&);
-    bool handlePositionedChild(RenderBox* child, const MarginInfo&);
 
     RenderBoxModelObject* createReplacementRunIn(RenderBoxModelObject* runIn);
     void moveRunInUnderSiblingBlockIfNeeded(RenderObject* runIn);
@@ -1019,7 +1028,7 @@ private:
     LayoutUnit collapseMargins(RenderBox* child, MarginInfo&);
     LayoutUnit clearFloatsIfNeeded(RenderBox* child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos);
     LayoutUnit estimateLogicalTopPosition(RenderBox* child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);
-    void marginBeforeEstimateForChild(RenderBox* child, LayoutUnit& positiveMarginBefore, LayoutUnit& negativeMarginBefore) const;
+    void marginBeforeEstimateForChild(RenderBox*, LayoutUnit&, LayoutUnit&, bool&) const;
     void determineLogicalLeftPositionForChild(RenderBox* child);
     void handleAfterSideOfBlock(LayoutUnit top, LayoutUnit bottom, MarginInfo&);
     void setCollapsedBottomMargin(const MarginInfo&);
@@ -1126,17 +1135,13 @@ protected:
         LayoutUnit* m_heightRemaining;
     };
 
-    class FloatingObjects {
-    public:
-        FloatingObjects(const RenderBlock* renderer, bool horizontalWritingMode)
-            : m_placedFloatsTree(UninitializedTree)
-            , m_leftObjectsCount(0)
-            , m_rightObjectsCount(0)
-            , m_horizontalWritingMode(horizontalWritingMode)
-            , m_renderer(renderer)
-        {
-        }
+    void createFloatingObjects();
 
+public:
+
+    class FloatingObjects {
+        WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;
+    public:
         void clear();
         void add(FloatingObject*);
         void remove(FloatingObject*);
@@ -1153,6 +1158,7 @@ protected:
             return m_placedFloatsTree; 
         }
     private:
+        FloatingObjects(const RenderBlock*, bool horizontalWritingMode);
         void computePlacedFloatsTree();
         inline void computePlacedFloatsTreeIfNeeded()
         {
@@ -1169,7 +1175,12 @@ protected:
         unsigned m_rightObjectsCount;
         bool m_horizontalWritingMode;
         const RenderBlock* m_renderer;
+
+        friend void RenderBlock::createFloatingObjects();
     };
+
+protected:
+
     OwnPtr<FloatingObjects> m_floatingObjects;
 
     // Allocated only when some of these fields have non-default values
@@ -1181,8 +1192,10 @@ protected:
             , m_paginationStrut(0)
             , m_pageLogicalOffset(0)
             , m_lineGridBox(0)
-            , m_shouldBreakAtLineToAvoidWidow(false)
             , m_lineBreakToAvoidWidow(0)
+            , m_shouldBreakAtLineToAvoidWidow(false)
+            , m_discardMarginBefore(false)
+            , m_discardMarginAfter(false)
         { 
         }
 
@@ -1190,7 +1203,6 @@ protected:
         { 
             return std::max<LayoutUnit>(block->marginBefore(), 0);
         }
-        
         static LayoutUnit negativeMarginBeforeDefault(const RenderBlock* block)
         { 
             return std::max<LayoutUnit>(-block->marginBefore(), 0);
@@ -1210,8 +1222,10 @@ protected:
         
         RootInlineBox* m_lineGridBox;
 
-        bool m_shouldBreakAtLineToAvoidWidow;
         RootInlineBox* m_lineBreakToAvoidWidow;
+        bool m_shouldBreakAtLineToAvoidWidow : 1;
+        bool m_discardMarginBefore : 1;
+        bool m_discardMarginAfter : 1;
      };
 
     OwnPtr<RenderBlockRareData> m_rareData;

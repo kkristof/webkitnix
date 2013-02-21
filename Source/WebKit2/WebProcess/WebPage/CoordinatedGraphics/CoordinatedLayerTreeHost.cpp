@@ -86,7 +86,6 @@ CoordinatedLayerTreeHost::CoordinatedLayerTreeHost(WebPage* webPage)
     , m_isFlushingLayerChanges(false)
     , m_waitingForUIProcess(true)
     , m_isSuspended(false)
-    , m_shouldSendScrollPositionUpdate(true)
     , m_shouldSyncFrame(false)
     , m_didInitializeRootCompositingLayer(false)
     , m_layerFlushTimer(this, &CoordinatedLayerTreeHost::layerFlushTimerFired)
@@ -188,7 +187,7 @@ void CoordinatedLayerTreeHost::setNonCompositedContentsNeedDisplay(const WebCore
     scheduleLayerFlush();
 }
 
-void CoordinatedLayerTreeHost::scrollNonCompositedContents(const WebCore::IntRect& scrollRect, const WebCore::IntSize& /* scrollOffset */)
+void CoordinatedLayerTreeHost::scrollNonCompositedContents(const WebCore::IntRect& scrollRect)
 {
     setNonCompositedContentsNeedDisplay(scrollRect);
 }
@@ -293,7 +292,7 @@ bool CoordinatedLayerTreeHost::flushPendingLayerChanges()
 
         IntSize contentsSize = roundedIntSize(m_nonCompositedContentLayer->size());
         IntRect coveredRect = toCoordinatedGraphicsLayer(m_nonCompositedContentLayer.get())->coverRect();
-        m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::DidRenderFrame(contentsSize, coveredRect));
+        m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::DidRenderFrame(m_visibleContentsRect.location(), contentsSize, coveredRect));
         m_waitingForUIProcess = true;
         m_shouldSyncFrame = false;
     } else
@@ -353,11 +352,6 @@ void CoordinatedLayerTreeHost::initializeRootCompositingLayerIfNeeded()
 
 void CoordinatedLayerTreeHost::syncLayerState(CoordinatedLayerID id, const CoordinatedLayerInfo& info)
 {
-    if (m_shouldSendScrollPositionUpdate) {
-        m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::DidChangeScrollPosition(m_visibleContentsRect.location()));
-        m_shouldSendScrollPositionUpdate = false;
-    }
-
     m_shouldSyncFrame = true;
     m_webPage->send(Messages::CoordinatedLayerTreeHostProxy::SetCompositingLayerState(id, info));
 }
@@ -745,9 +739,6 @@ void CoordinatedLayerTreeHost::setVisibleContentsRect(const FloatRect& rect, con
         // the same while panning. This can have nasty effects on layout.
         m_webPage->setFixedVisibleContentRect(roundedIntRect(rect));
     }
-
-    if (contentsRectDidChange)
-        m_shouldSendScrollPositionUpdate = true;
 }
 
 void CoordinatedLayerTreeHost::deviceOrPageScaleFactorChanged()

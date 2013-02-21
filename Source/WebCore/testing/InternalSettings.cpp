@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -87,6 +88,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
+    , m_minimumTimerInterval(settings->minDOMTimerInterval())
 #if ENABLE(VIDEO_TRACK)
     , m_shouldDisplaySubtitles(settings->shouldDisplaySubtitles())
     , m_shouldDisplayCaptions(settings->shouldDisplayCaptions())
@@ -121,6 +123,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
+    settings->setMinDOMTimerInterval(m_minimumTimerInterval);
 #if ENABLE(VIDEO_TRACK)
     settings->setShouldDisplaySubtitles(m_shouldDisplaySubtitles);
     settings->setShouldDisplayCaptions(m_shouldDisplayCaptions);
@@ -192,10 +195,22 @@ void InternalSettings::setMockScrollbarsEnabled(bool enabled, ExceptionCode& ec)
     settings()->setMockScrollbarsEnabled(enabled);
 }
 
+static bool urlIsWhitelistedForSetShadowDOMEnabled(const String& url)
+{
+    // This check is just for preventing fuzzers from crashing because of unintended API calls.
+    // You can list your test if needed.
+    return notFound != url.find("fast/dom/shadow/content-shadow-unknown.html")
+        || notFound != url.find("fast/dom/shadow/insertion-points-with-shadow-disabled.html");
+}
+
 void InternalSettings::setShadowDOMEnabled(bool enabled, ExceptionCode& ec)
 {
+    if (!urlIsWhitelistedForSetShadowDOMEnabled(page()->mainFrame()->document()->url().string())) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
 #if ENABLE(SHADOW_DOM)
-    UNUSED_PARAM(ec);
     RuntimeEnabledFeatures::setShadowDOMEnabled(enabled);
 #else
     // Even SHADOW_DOM is off, InternalSettings allows setShadowDOMEnabled(false) to
@@ -464,6 +479,12 @@ void InternalSettings::setImagesEnabled(bool enabled, ExceptionCode& ec)
 {
     InternalSettingsGuardForSettings();
     settings()->setImagesEnabled(enabled);
+}
+
+void InternalSettings::setMinimumTimerInterval(double intervalInSeconds, ExceptionCode& ec)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setMinDOMTimerInterval(intervalInSeconds);
 }
 
 }

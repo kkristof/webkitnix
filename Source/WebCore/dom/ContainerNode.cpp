@@ -26,7 +26,9 @@
 #include "AXObjectCache.h"
 #include "ChildListMutationScope.h"
 #include "ContainerNodeAlgorithms.h"
+#if ENABLE(DELETION_UI)
 #include "DeleteButtonController.h"
+#endif
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "FloatRect.h"
@@ -105,15 +107,23 @@ void ContainerNode::takeAllChildrenFrom(ContainerNode* oldParent)
 {
     NodeVector children;
     getChildNodes(oldParent, children);
+
+    if (oldParent->document()->hasMutationObserversOfType(MutationObserver::ChildList)) {
+        ChildListMutationScope mutation(oldParent);
+        for (unsigned i = 0; i < children.size(); ++i)
+            mutation.willRemoveChild(children[i].get());
+    }
+
+    // FIXME: We need to do notifyMutationObserversNodeWillDetach() for each child,
+    // probably inside removeDetachedChildrenInContainer.
+
     oldParent->removeDetachedChildren();
 
     for (unsigned i = 0; i < children.size(); ++i) {
-        ExceptionCode ec = 0;
         if (children[i]->attached())
             children[i]->detach();
         // FIXME: We need a no mutation event version of adoptNode.
-        RefPtr<Node> child = document()->adoptNode(children[i].release(), ec);
-        ASSERT(!ec);
+        RefPtr<Node> child = document()->adoptNode(children[i].release(), ASSERT_NO_EXCEPTION);
         parserAppendChild(child.get());
         // FIXME: Together with adoptNode above, the tree scope might get updated recursively twice
         // (if the document changed or oldParent was in a shadow tree, AND *this is in a shadow tree).
@@ -342,6 +352,8 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node* nextChil
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();
 
+    ChildListMutationScope(this).childAdded(newChild.get());
+
     childrenChanged(true, newChild->previousSibling(), nextChild, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 }
@@ -565,6 +577,9 @@ void ContainerNode::parserRemoveChild(Node* oldChild)
 
     oldChild->updateAncestorConnectedSubframeCountForRemoval();
 
+    ChildListMutationScope(this).willRemoveChild(oldChild);
+    oldChild->notifyMutationObserversNodeWillDetach();
+
     removeBetween(prev, next, oldChild);
 
     childrenChanged(true, prev, next, -1);
@@ -716,6 +731,8 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
 
     newChild->updateAncestorConnectedSubframeCountForInsertion();
 
+    ChildListMutationScope(this).childAdded(newChild.get());
+
     childrenChanged(true, last, 0, 1);
     ChildNodeInsertionNotifier(this).notify(newChild.get());
 }
@@ -810,9 +827,9 @@ void ContainerNode::attach()
 
 void ContainerNode::detach()
 {
-    Node::detach();
     detachChildren();
     clearChildNeedsStyleRecalc();
+    Node::detach();
 }
 
 void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int childCountDelta)
@@ -825,14 +842,17 @@ void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int chil
 
 void ContainerNode::cloneChildNodes(ContainerNode *clone)
 {
+#if ENABLE(DELETION_UI)
     HTMLElement* deleteButtonContainerElement = 0;
     if (Frame* frame = document()->frame())
         deleteButtonContainerElement = frame->editor()->deleteButtonController()->containerElement();
-
+#endif
     ExceptionCode ec = 0;
     for (Node* n = firstChild(); n && !ec; n = n->nextSibling()) {
+#if ENABLE(DELETION_UI)
         if (n == deleteButtonContainerElement)
             continue;
+#endif
         clone->appendChild(n->cloneNode(true), ec);
     }
 }
@@ -1057,8 +1077,14 @@ void ContainerNode::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
     Node::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_firstChild, "firstChild");
-    info.addMember(m_lastChild, "lastChild");
+    info.ignoreMember(m_firstChild);
+    info.ignoreMember(m_lastChild);
+
+    // Report child nodes as direct members to make them look like a tree in the snapshot.
+    NodeVector children;
+    getChildNodes(const_cast<ContainerNode*>(this), children);
+    for (size_t i = 0; i < children.size(); ++i)
+        info.addMember(children[i], "child");
 }
 
 static void dispatchChildInsertionEvents(Node* child)

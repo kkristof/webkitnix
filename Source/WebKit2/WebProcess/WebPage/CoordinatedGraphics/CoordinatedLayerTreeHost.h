@@ -66,7 +66,7 @@ public:
     virtual void invalidate();
 
     virtual void setNonCompositedContentsNeedDisplay(const WebCore::IntRect&);
-    virtual void scrollNonCompositedContents(const WebCore::IntRect& scrollRect, const WebCore::IntSize& scrollOffset);
+    virtual void scrollNonCompositedContents(const WebCore::IntRect& scrollRect);
     virtual void forceRepaint();
     virtual bool forceRepaintAsync(uint64_t callbackID);
     virtual void sizeDidChange(const WebCore::IntSize& newSize);
@@ -201,7 +201,6 @@ private:
     bool m_waitingForUIProcess;
     bool m_isSuspended;
     WebCore::FloatRect m_visibleContentsRect;
-    bool m_shouldSendScrollPositionUpdate;
 
     LayerTreeContext m_layerTreeContext;
     bool m_shouldSyncFrame;

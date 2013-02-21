@@ -28,13 +28,19 @@
 
 #if ENABLE(SQL_DATABASE)
 
-#include "DatabaseBackend.h"
+#include "DatabaseBackendBase.h"
+#include <wtf/Deque.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
+class ChangeVersionData;
 class Database;
 class DatabaseServer;
+class SQLTransaction;
+class SQLTransactionBackend;
+class SQLTransactionClient;
+class SQLTransactionCoordinator;
 
 // FIXME: This implementation of DatabaseBackendAsync is only a place holder
 // for the split out of the Database backend to be done later. This
@@ -42,18 +48,34 @@ class DatabaseServer;
 // DatabaseBackendAsync to do so before the proper backend split is
 // available. This should be replaced with the actual implementation later.
 
-class DatabaseBackendAsync : public DatabaseBackend {
+class DatabaseBackendAsync : public DatabaseBackendBase {
 public:
     DatabaseBackendAsync(PassRefPtr<DatabaseBackendContext>, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
 
     virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
-    virtual bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
+    void close();
+
+    PassRefPtr<SQLTransactionBackend> runTransaction(PassRefPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
+    void scheduleTransactionStep(SQLTransactionBackend*);
+    void inProgressTransactionCompleted();
+
+    SQLTransactionClient* transactionClient() const;
+    SQLTransactionCoordinator* transactionCoordinator() const;
 
 private:
     class DatabaseOpenTask;
     class DatabaseCloseTask;
     class DatabaseTransactionTask;
     class DatabaseTableNamesTask;
+
+    virtual bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
+
+    void scheduleTransaction();
+
+    Deque<RefPtr<SQLTransactionBackend> > m_transactionQueue;
+    Mutex m_transactionInProgressMutex;
+    bool m_transactionInProgress;
+    bool m_isTransactionQueueEnabled;
 
     friend class Database;
 };

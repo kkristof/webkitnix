@@ -28,6 +28,7 @@
 
 #include "CompositorFakeWebGraphicsContext3D.h"
 #include "FrameTestHelpers.h"
+#include "GraphicsLayerChromium.h"
 #include "RenderLayerBacking.h"
 #include "RenderLayerCompositor.h"
 #include "RenderView.h"
@@ -39,11 +40,10 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include <gtest/gtest.h>
+#include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebLayer.h>
-#include <webkit/support/webkit_support.h>
-
-#include "GraphicsLayerChromium.h"
+#include <public/WebUnitTestSupport.h>
 
 using namespace WebCore;
 using namespace WebKit;
@@ -59,8 +59,9 @@ public:
 
     virtual void initializeLayerTreeView(WebLayerTreeViewClient* client, const WebLayer& rootLayer, const WebLayerTreeView::Settings& settings)
     {
-        m_layerTreeView = adoptPtr(Platform::current()->compositorSupport()->createLayerTreeView(client, rootLayer, settings));
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
         ASSERT(m_layerTreeView);
+        m_layerTreeView->setRootLayer(rootLayer);
     }
 
     virtual WebLayerTreeView* layerTreeView()
@@ -97,7 +98,7 @@ public:
 
     virtual ~ScrollingCoordinatorChromiumTest()
     {
-        webkit_support::UnregisterAllMockedURLs();
+        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
         m_webViewImpl->close();
 
         Platform::current()->compositorSupport()->shutdown();
@@ -106,7 +107,7 @@ public:
     void navigateTo(const std::string& url)
     {
         FrameTestHelpers::loadFrame(m_webViewImpl->mainFrame(), url);
-        webkit_support::ServeAsynchronousMockedRequests();
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)

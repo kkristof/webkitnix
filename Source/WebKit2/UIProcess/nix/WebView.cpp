@@ -276,7 +276,6 @@ void WebView::commitViewportChanges()
         return;
     if (m_webPageProxy->useFixedLayout()) {
         m_webPageProxy->setViewportSize(m_size);
-        drawingArea->coordinatedLayerTreeHostProxy()->setContentsSize(m_contentsSize);
     } else {
         drawingArea->setSize(m_size, IntSize());
     }

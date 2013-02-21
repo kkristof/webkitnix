@@ -26,7 +26,7 @@
 #ifndef CaptionUserPreferencesMac_h
 #define CaptionUserPreferencesMac_h
 
-#if ENABLE(VIDEO_TRACK)
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(IOS)
 
 #include "CSSPropertyNames.h"
 #include "CaptionUserPreferences.h"
@@ -41,18 +41,18 @@ public:
     virtual ~CaptionUserPreferencesMac();
 
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
+    virtual bool userHasCaptionPreferences() const OVERRIDE;
     virtual bool userPrefersCaptions() const OVERRIDE;
     virtual void setUserPrefersCaptions(bool) OVERRIDE;
-    virtual bool userHasCaptionPreferences() const OVERRIDE { return true; }
     virtual float captionFontSizeScale(bool&) const OVERRIDE;
     virtual String captionsStyleSheetOverride() const OVERRIDE;
-    virtual void registerForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener*) OVERRIDE;
-    virtual void unregisterForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener*) OVERRIDE;
 
-    virtual void setPreferredLanguage(String) const OVERRIDE;
+    virtual void registerForPreferencesChangedCallbacks(CaptionPreferencesChangedListener*) OVERRIDE;
+
+    virtual void setPreferredLanguage(String) OVERRIDE;
     virtual Vector<String> preferredLanguages() const OVERRIDE;
 
-    void captionPreferencesChanged();
+    virtual void captionPreferencesChanged() OVERRIDE;
 #endif
 
     virtual String displayNameForTrack(TextTrack*) const OVERRIDE;
@@ -74,7 +74,6 @@ private:
 
     void updateCaptionStyleSheetOveride();
 
-    HashSet<CaptionPreferencesChangedListener*> m_captionPreferenceChangeListeners;
     bool m_listeningForPreferenceChanges;
 #endif
 };

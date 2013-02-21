@@ -54,6 +54,13 @@ typedef Ecore_Evas* PlatformWindow;
 typedef struct OpaqueNIXView* NIXView;
 typedef NIXView PlatformWKView;
 typedef int PlatformWindow;
+#elif PLATFORM(QT)
+QT_BEGIN_NAMESPACE
+class QQuickView;
+QT_END_NAMESPACE
+class QQuickWebView;
+typedef QQuickWebView* PlatformWKView;
+typedef QQuickView* PlatformWindow;
 #endif
 
 namespace TestWebKitAPI {

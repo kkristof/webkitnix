@@ -52,9 +52,34 @@ void WKViewInitialize(WKViewRef viewRef)
     toImpl(viewRef)->initialize();
 }
 
+void WKViewSetViewClient(WKViewRef viewRef, const WKViewClient* client)
+{
+    toImpl(viewRef)->initializeClient(client);
+}
+
 WKPageRef WKViewGetPage(WKViewRef viewRef)
 {
     return toImpl(viewRef)->pageRef();
+}
+
+void WKViewSetDrawsBackground(WKViewRef viewRef, bool flag)
+{
+    toImpl(viewRef)->setDrawsBackground(flag);
+}
+
+bool WKViewGetDrawsBackground(WKViewRef viewRef)
+{
+    return toImpl(viewRef)->drawsBackground();
+}
+
+void WKViewSetDrawsTransparentBackground(WKViewRef viewRef, bool flag)
+{
+    toImpl(viewRef)->setDrawsTransparentBackground(flag);
+}
+
+bool WKViewGetDrawsTransparentBackground(WKViewRef viewRef)
+{
+    return toImpl(viewRef)->drawsTransparentBackground();
 }
 
 void WKViewSetThemePath(WKViewRef viewRef, WKStringRef theme)
@@ -70,6 +95,25 @@ void WKViewSuspendActiveDOMObjectsAndAnimations(WKViewRef viewRef)
 void WKViewResumeActiveDOMObjectsAndAnimations(WKViewRef viewRef)
 {
     toImpl(viewRef)->resumeActiveDOMObjectsAndAnimations();
+}
+
+void WKViewSetShowsAsSource(WKViewRef viewRef, bool flag)
+{
+    toImpl(viewRef)->setShowsAsSource(flag);
+}
+
+bool WKViewGetShowsAsSource(WKViewRef viewRef)
+{
+    return toImpl(viewRef)->showsAsSource();
+}
+
+void WKViewExitFullScreen(WKViewRef viewRef)
+{
+#if ENABLE(FULLSCREEN_API)
+    toImpl(viewRef)->exitFullScreen();
+#else
+    UNUSED_PARAM(viewRef);
+#endif
 }
 
 Evas_Object* WKViewGetEvasObject(WKViewRef viewRef)

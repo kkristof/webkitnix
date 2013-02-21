@@ -232,9 +232,6 @@ WebInspector.NativeSnapshotNode.prototype = {
     __proto__: WebInspector.DataGridNode.prototype
 }
 
-
-
-
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
@@ -269,62 +266,18 @@ WebInspector.NativeSnapshotProfileType.prototype = {
         /**
          * @param {?string} error
          * @param {?MemoryAgent.MemoryBlock} memoryBlock
+         * @param {Object=} graphMetaInformation
          */
-        function didReceiveMemorySnapshot(error, memoryBlock)
+        function didReceiveMemorySnapshot(error, memoryBlock, graphMetaInformation)
         {
+            var metaInformation = /** @type{HeapSnapshotMetainfo} */(graphMetaInformation);
             this.isTemporary = false;
             this.sidebarElement.subtitle = Number.bytesToString(/** @type{number} */(memoryBlock.size));
 
-            var meta = {
-              "node_fields": [
-                "type",
-                "name",
-                "id",
-                "self_size",
-                "edge_count"
-              ],
-              "node_types": [
-                [
-                  "hidden",
-                  "array",
-                  "string",
-                  "object",
-                  "code",
-                  "closure",
-                  "regexp",
-                  "number",
-                  "native",
-                  "synthetic"
-                ],
-                "string",
-                "number",
-                "number",
-                "number",
-              ],
-              "edge_fields": [
-                "type",
-                "name_or_index",
-                "to_node"
-              ],
-              "edge_types": [
-                [
-                  "context",
-                  "element",
-                  "property",
-                  "internal",
-                  "hidden",
-                  "shortcut",
-                  "weak"
-                ],
-                "string_or_number",
-                "node"
-              ]
-            };
-
-            var edgeFieldCount = meta.edge_fields.length;
-            var nodeFieldCount = meta.node_fields.length;
-            var nodeIdFieldOffset = meta.node_fields.indexOf("id");
-            var toNodeIdFieldOffset = meta.edge_fields.indexOf("to_node");
+            var edgeFieldCount = metaInformation.edge_fields.length;
+            var nodeFieldCount = metaInformation.node_fields.length;
+            var nodeIdFieldOffset = metaInformation.node_fields.indexOf("id");
+            var toNodeIdFieldOffset = metaInformation.edge_fields.indexOf("to_node");
 
             var baseToRealNodeIdMap = {};
             for (var i = 0; i < this._baseToRealNodeId.length; i += 2)
@@ -344,7 +297,7 @@ WebInspector.NativeSnapshotProfileType.prototype = {
 
             var heapSnapshot = {
                 "snapshot": {
-                    "meta": meta,
+                    "meta": metaInformation,
                     node_count: this._nodes.length / nodeFieldCount,
                     edge_count: this._edges.length / edgeFieldCount,
                     root_index: this._nodes.length - nodeFieldCount
@@ -498,7 +451,6 @@ WebInspector.NativeMemoryProfileType.prototype = {
         /**
          * @param {?string} error
          * @param {?MemoryAgent.MemoryBlock} memoryBlock
-         * @param {?Object=} graph
          */
         function didReceiveMemorySnapshot(error, memoryBlock)
         {
@@ -676,7 +628,6 @@ WebInspector.NativeMemoryBarChart.prototype = {
         /**
          * @param {?string} error
          * @param {?MemoryAgent.MemoryBlock} memoryBlock
-         * @param {?Object=} graph
          */
         function didReceiveMemorySnapshot(error, memoryBlock)
         {

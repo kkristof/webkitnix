@@ -64,7 +64,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8Document::evaluateCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8Document::evaluateCallbackCustom(const v8::Arguments& args)
 {
     RefPtr<Document> document = V8Document::toNative(args.Holder());
     ExceptionCode ec = 0;
@@ -101,7 +101,7 @@ v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationConte
     v8::Handle<v8::Object> wrapper = V8Document::createWrapper(impl, creationContext, isolate);
     if (wrapper.IsEmpty())
         return wrapper;
-    if (!worldForEnteredContextIfIsolated()) {
+    if (!worldForEnteredContext()) {
         if (Frame* frame = impl->frame())
             frame->script()->windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
     }
@@ -109,7 +109,7 @@ v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationConte
 }
 
 #if ENABLE(TOUCH_EVENTS)
-v8::Handle<v8::Value> V8Document::createTouchListCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> V8Document::createTouchListCallbackCustom(const v8::Arguments& args)
 {
     RefPtr<TouchList> touchList = TouchList::create();
 

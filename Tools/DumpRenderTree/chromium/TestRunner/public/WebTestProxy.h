@@ -42,44 +42,59 @@
 #include "WebKit/chromium/public/WebSecurityOrigin.h"
 #include "WebKit/chromium/public/WebTextAffinity.h"
 #include "WebKit/chromium/public/WebTextDirection.h"
+#include "WebTestCommon.h"
 #include <map>
+#include <memory>
 #include <string>
 
 namespace WebKit {
 class WebAccessibilityObject;
 class WebCachedURLRequest;
 class WebDataSource;
+class WebDeviceOrientationClient;
+class WebDeviceOrientationClientMock;
 class WebDragData;
 class WebFrame;
+class WebGeolocationClient;
+class WebGeolocationClientMock;
 class WebImage;
-class WebIntentRequest;
-class WebIntentServiceInfo;
 class WebNode;
+class WebNotificationPresenter;
 class WebPlugin;
 class WebRange;
 class WebSerializedScriptValue;
+class WebSpeechInputController;
+class WebSpeechInputListener;
+class WebSpeechRecognizer;
 class WebSpellCheckClient;
 class WebString;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
+class WebUserMediaClient;
 class WebView;
 struct WebConsoleMessage;
+struct WebContextMenuData;
 struct WebPluginParams;
 struct WebPoint;
 struct WebSize;
 struct WebWindowFeatures;
 }
 
+class SkCanvas;
+
 namespace WebTestRunner {
 
+class MockWebSpeechInputController;
+class MockWebSpeechRecognizer;
 class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
 class WebTestRunner;
+class WebUserMediaClientMock;
 
-class WebTestProxyBase {
+class WEBTESTRUNNER_EXPORT WebTestProxyBase {
 public:
     void setInterfaces(WebTestInterfaces*);
     void setDelegate(WebTestDelegate*);
@@ -88,10 +103,21 @@ public:
 
     WebKit::WebSpellCheckClient *spellCheckClient() const;
 
-    void setPaintRect(const WebKit::WebRect&);
-    WebKit::WebRect paintRect() const;
+    std::string captureTree(bool debugRenderTree);
+    SkCanvas* capturePixels();
 
     void setLogConsoleOutput(bool enabled);
+
+#if WEBTESTRUNNER_IMPLEMENTATION
+    void display();
+    void displayInvalidatedRegion();
+    void discardBackingStore();
+
+    WebKit::WebDeviceOrientationClientMock* deviceOrientationClientMock();
+    WebKit::WebGeolocationClientMock* geolocationClientMock();
+    MockWebSpeechInputController* speechInputControllerMock();
+    MockWebSpeechRecognizer* speechRecognizerMock();
+#endif
 
 protected:
     WebTestProxyBase();
@@ -117,14 +143,23 @@ protected:
     void didChangeSelection(bool isEmptySelection);
     void didChangeContents();
     void didEndEditing();
-    void registerIntentService(WebKit::WebFrame*, const WebKit::WebIntentServiceInfo&);
-    void dispatchIntent(WebKit::WebFrame* source, const WebKit::WebIntentRequest&);
     bool createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest&, const WebKit::WebWindowFeatures&, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy);
     WebKit::WebPlugin* createPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&);
     void setStatusText(const WebKit::WebString&);
     void didStopLoading();
     bool isSmartInsertDeleteEnabled();
     bool isSelectTrailingWhitespaceEnabled();
+    void showContextMenu(WebKit::WebFrame*, const WebKit::WebContextMenuData&);
+    WebKit::WebUserMediaClient* userMediaClient();
+    void printPage(WebKit::WebFrame*);
+    WebKit::WebNotificationPresenter* notificationPresenter();
+    WebKit::WebGeolocationClient* geolocationClient();
+    WebKit::WebSpeechInputController* speechInputController(WebKit::WebSpeechInputListener*);
+    WebKit::WebSpeechRecognizer* speechRecognizer();
+    WebKit::WebDeviceOrientationClient* deviceOrientationClient();
+    bool requestPointerLock();
+    void requestPointerUnlock();
+    bool isPointerLocked();
 
     void willPerformClientRedirect(WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fire_time);
     void didCancelClientRedirect(WebKit::WebFrame*);
@@ -161,16 +196,34 @@ protected:
 
 private:
     void locationChangeDone(WebKit::WebFrame*);
+    void paintRect(const WebKit::WebRect&);
+    void paintInvalidatedRegion();
+    void paintPagesWithBoundaries();
+    SkCanvas* canvas();
+    void displayRepaintMask();
 
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
 
-    SpellCheckClient* m_spellcheck;
+    std::auto_ptr<SpellCheckClient> m_spellcheck;
+    std::auto_ptr<WebUserMediaClientMock> m_userMediaClient;
 
+    // Painting.
+    std::auto_ptr<SkCanvas> m_canvas;
     WebKit::WebRect m_paintRect;
+    bool m_isPainting;
     std::map<unsigned, std::string> m_resourceIdentifierMap;
 
     bool m_logConsoleOutput;
+
+    std::auto_ptr<WebKit::WebGeolocationClientMock> m_geolocationClient;
+    std::auto_ptr<WebKit::WebDeviceOrientationClientMock> m_deviceOrientationClient;
+    std::auto_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
+    std::auto_ptr<MockWebSpeechInputController> m_speechInputController;
+
+private:
+    WebTestProxyBase(WebTestProxyBase&);
+    WebTestProxyBase& operator=(const WebTestProxyBase&);
 };
 
 // Use this template to inject methods into your WebViewClient/WebFrameClient
@@ -286,16 +339,6 @@ public:
         WebTestProxyBase::didEndEditing();
         Base::didEndEditing();
     }
-    virtual void registerIntentService(WebKit::WebFrame* frame, const WebKit::WebIntentServiceInfo& service)
-    {
-        WebTestProxyBase::registerIntentService(frame, service);
-        Base::registerIntentService(frame, service);
-    }
-    virtual void dispatchIntent(WebKit::WebFrame* source, const WebKit::WebIntentRequest& request)
-    {
-        WebTestProxyBase::dispatchIntent(source, request);
-        Base::dispatchIntent(source, request);
-    }
     virtual WebKit::WebView* createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest& request, const WebKit::WebWindowFeatures& features, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy policy)
     {
         if (!WebTestProxyBase::createView(creator, request, features, frameName, policy))
@@ -326,6 +369,51 @@ public:
     virtual bool isSelectTrailingWhitespaceEnabled()
     {
         return WebTestProxyBase::isSelectTrailingWhitespaceEnabled();
+    }
+    virtual void showContextMenu(WebKit::WebFrame* frame, const WebKit::WebContextMenuData& contextMenuData)
+    {
+        WebTestProxyBase::showContextMenu(frame, contextMenuData);
+        Base::showContextMenu(frame, contextMenuData);
+    }
+    virtual WebKit::WebUserMediaClient* userMediaClient()
+    {
+        return WebTestProxyBase::userMediaClient();
+    }
+    virtual void printPage(WebKit::WebFrame* frame)
+    {
+        WebTestProxyBase::printPage(frame);
+    }
+    virtual WebKit::WebNotificationPresenter* notificationPresenter()
+    {
+        return WebTestProxyBase::notificationPresenter();
+    }
+    virtual WebKit::WebGeolocationClient* geolocationClient()
+    {
+        return WebTestProxyBase::geolocationClient();
+    }
+    virtual WebKit::WebSpeechInputController* speechInputController(WebKit::WebSpeechInputListener* listener)
+    {
+        return WebTestProxyBase::speechInputController(listener);
+    }
+    virtual WebKit::WebSpeechRecognizer* speechRecognizer()
+    {
+        return WebTestProxyBase::speechRecognizer();
+    }
+    virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient()
+    {
+        return WebTestProxyBase::deviceOrientationClient();
+    }
+    virtual bool requestPointerLock()
+    {
+        return WebTestProxyBase::requestPointerLock();
+    }
+    virtual void requestPointerUnlock()
+    {
+        WebTestProxyBase::requestPointerUnlock();
+    }
+    virtual bool isPointerLocked()
+    {
+        return WebTestProxyBase::isPointerLocked();
     }
 
     // WebFrameClient implementation.

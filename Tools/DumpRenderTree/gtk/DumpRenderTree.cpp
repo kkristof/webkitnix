@@ -173,6 +173,7 @@ static void initializeGtkFontSettings(const char* testURL)
                  "gtk-xft-antialias", 1,
                  "gtk-xft-hinting", 0,
                  "gtk-font-name", "Liberation Sans 12",
+                 "gtk-icon-theme-name", "gnome",
                  NULL);
     gdk_screen_set_resolution(gdk_screen_get_default(), 96.0);
 
@@ -445,7 +446,6 @@ static void resetDefaultsToConsistentValues()
                  "html5-local-storage-database-path", localStoragePath.get(),
                  "enable-xss-auditor", FALSE,
                  "enable-spatial-navigation", FALSE,
-                 "enable-frame-flattening", FALSE,
                  "javascript-can-access-clipboard", TRUE,
                  "javascript-can-open-windows-automatically", TRUE,
                  "enable-offline-web-application-cache", TRUE,
@@ -482,7 +482,6 @@ static void resetDefaultsToConsistentValues()
     g_object_set(G_OBJECT(inspector), "javascript-profiling-enabled", FALSE, NULL);
 
     webkit_web_view_set_zoom_level(webView, 1.0);
-    DumpRenderTreeSupportGtk::setMinimumTimerInterval(webView, DumpRenderTreeSupportGtk::defaultMinimumTimerInterval());
 
     DumpRenderTreeSupportGtk::resetOriginAccessWhiteLists();
 

@@ -79,11 +79,11 @@ void FullscreenVideoControllerGStreamer::enterFullscreen()
     if (!m_gstreamerGWorld->enterFullscreen())
         return;
 
+    initializeWindow();
+
     GstElement* pipeline = m_gstreamerGWorld->pipeline();
     m_playerVolumeSignalHandler = g_signal_connect(pipeline, "notify::volume", G_CALLBACK(playerVolumeChangedCallback), this);
     m_playerMuteSignalHandler = g_signal_connect(pipeline, "notify::mute", G_CALLBACK(playerMuteChangedCallback), this);
-
-    initializeWindow();
 }
 
 void FullscreenVideoControllerGStreamer::exitFullscreen()
@@ -136,7 +136,7 @@ void FullscreenVideoControllerGStreamer::setVolume(float volume)
 
 String FullscreenVideoControllerGStreamer::timeToString(float time)
 {
-    if (!isfinite(time))
+    if (!std::isfinite(time))
         time = 0;
     int seconds = fabsf(time);
     int hours = seconds / (60 * 60);

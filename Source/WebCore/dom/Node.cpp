@@ -59,6 +59,7 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
+#include "ExceptionCodePlaceholder.h"
 #include "FocusEvent.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -204,11 +205,11 @@ void Node::dumpStatistics()
                 if (!result.isNewEntry)
                     result.iterator->value++;
 
-                if (ElementAttributeData* attributeData = element->attributeData()) {
-                    attributes += attributeData->length();
+                if (ElementData* elementData = element->elementData()) {
+                    attributes += elementData->length();
                     ++elementsWithAttributeStorage;
-                    for (unsigned i = 0; i < attributeData->length(); ++i) {
-                        Attribute* attr = attributeData->attributeItem(i);
+                    for (unsigned i = 0; i < elementData->length(); ++i) {
+                        Attribute* attr = elementData->attributeItem(i);
                         if (attr->attr())
                             ++attributesWithAttr;
                     }
@@ -295,7 +296,7 @@ void Node::dumpStatistics()
     printf("Attributes:\n");
     printf("  Number of Attributes (non-Node and Node): %zu [%zu]\n", attributes, sizeof(Attribute));
     printf("  Number of Attributes with an Attr: %zu\n", attributesWithAttr);
-    printf("  Number of Elements with attribute storage: %zu [%zu]\n", elementsWithAttributeStorage, sizeof(ElementAttributeData));
+    printf("  Number of Elements with attribute storage: %zu [%zu]\n", elementsWithAttributeStorage, sizeof(ElementData));
     printf("  Number of Elements with RareData: %zu\n", elementsWithRareData);
     printf("  Number of Elements with NamedNodeMap: %zu [%zu]\n", elementsWithNamedNodeMap, sizeof(NamedNodeMap));
 #endif
@@ -609,8 +610,7 @@ void Node::normalize()
         if (!text->length()) {
             // Care must be taken to get the next node before removing the current node.
             node = NodeTraversal::nextPostOrder(node.get());
-            ExceptionCode ec;
-            text->remove(ec);
+            text->remove(IGNORE_EXCEPTION);
             continue;
         }
 
@@ -622,17 +622,15 @@ void Node::normalize()
 
             // Remove empty text nodes.
             if (!nextText->length()) {
-                ExceptionCode ec;
-                nextText->remove(ec);
+                nextText->remove(IGNORE_EXCEPTION);
                 continue;
             }
 
             // Both non-empty text nodes. Merge them.
             unsigned offset = text->length();
-            ExceptionCode ec;
-            text->appendData(nextText->data(), ec);
+            text->appendData(nextText->data(), IGNORE_EXCEPTION);
             document()->textNodesMerged(nextText.get(), offset);
-            nextText->remove(ec);
+            nextText->remove(IGNORE_EXCEPTION);
         }
 
         node = NodeTraversal::nextPostOrder(node.get());
@@ -1108,23 +1106,9 @@ void Node::detach()
     detachingNode = this;
 #endif
 
-    if (renderer()) {
+    if (renderer())
         renderer()->destroyAndCleanupAnonymousWrappers();
-#ifndef NDEBUG
-        for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
-            RenderObject* renderer = node->renderer();
-            // RenderFlowThread and the top layer remove elements from the regular tree
-            // hierarchy. They will be cleaned up when we call detach on them.
-#if ENABLE(DIALOG_ELEMENT)
-            ASSERT(!renderer || renderer->inRenderFlowThread() || (renderer->enclosingLayer()->isInTopLayerSubtree()));
-#else
-            ASSERT(!renderer || renderer->inRenderFlowThread());
-#endif
-        }
-#endif
-    }
-
-    ASSERT(!renderer());
+    setRenderer(0);
 
     Document* doc = document();
     if (isUserActionElement()) {
@@ -1769,7 +1753,7 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
     if (attr1 && attr2 && start1 == start2 && start1) {
         // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
         Element* owner1 = attr1->ownerElement();
-        owner1->updatedAttributeData(); // Force update invalid attributes.
+        owner1->synchronizeAllAttributes();
         unsigned length = owner1->attributeCount();
         for (unsigned i = 0; i < length; ++i) {
             // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an 
@@ -1801,10 +1785,17 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
         chain1.append(current);
     for (current = start2; current; current = current->parentNode())
         chain2.append(current);
-   
-    // Walk the two chains backwards and look for the first difference.
+
     unsigned index1 = chain1.size();
     unsigned index2 = chain2.size();
+
+    // If the two elements don't have a common root, they're not in the same tree.
+    if (chain1[index1 - 1] != chain2[index2 - 1]) {
+        unsigned short direction = (start1 > start2) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
+        return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
+    }
+
+    // Walk the two chains backwards and look for the first difference.
     for (unsigned i = min(index1, index2); i; --i) {
         Node* child1 = chain1[--index1];
         Node* child2 = chain2[--index2];
@@ -2357,14 +2348,14 @@ void Node::dispatchFocusInEvent(const AtomicString& eventType, PassRefPtr<Node> 
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusinEvent || eventType == eventNames().DOMFocusInEvent);
-    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, 0), oldFocusedNode));
+    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, oldFocusedNode)));
 }
 
 void Node::dispatchFocusOutEvent(const AtomicString& eventType, PassRefPtr<Node> newFocusedNode)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(eventType == eventNames().focusoutEvent || eventType == eventNames().DOMFocusOutEvent);
-    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, 0), newFocusedNode));
+    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document()->defaultView(), 0, newFocusedNode)));
 }
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)
@@ -2422,8 +2413,9 @@ void Node::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection)
 {
     if (document()->page())
         document()->page()->chrome()->client()->elementDidFocus(this);
-    
-    EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(oldFocusedNode));
+
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().focusEvent, false, false, document()->defaultView(), 0, oldFocusedNode);
+    EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
 }
 
 void Node::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
@@ -2431,7 +2423,8 @@ void Node::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
     if (document()->page())
         document()->page()->chrome()->client()->elementDidBlur(this);
 
-    EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(newFocusedNode));
+    RefPtr<FocusEvent> event = FocusEvent::create(eventNames().blurEvent, false, false, document()->defaultView(), 0, newFocusedNode);
+    EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
 }
 
 void Node::dispatchChangeEvent()
@@ -2591,8 +2584,8 @@ void Node::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
     info.addMember(m_parentOrShadowHostNode, "parentOrShadowHostNode");
     info.addMember(m_treeScope, "treeScope");
-    info.addMember(m_next, "next");
-    info.addMember(m_previous, "previous");
+    info.ignoreMember(m_next);
+    info.ignoreMember(m_previous);
     info.addMember(this->renderer(), "renderer");
     if (hasRareData()) {
         if (isElementNode())
@@ -2605,8 +2598,7 @@ void Node::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 void Node::textRects(Vector<IntRect>& rects) const
 {
     RefPtr<Range> range = Range::create(document());
-    WebCore::ExceptionCode ec = 0;
-    range->selectNodeContents(const_cast<Node*>(this), ec);
+    range->selectNodeContents(const_cast<Node*>(this), IGNORE_EXCEPTION);
     range->textRects(rects);
 }
 

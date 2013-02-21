@@ -30,16 +30,14 @@ SOURCES += \
     Modules/geolocation/Geolocation.cpp \
     Modules/geolocation/GeolocationController.cpp \
     Modules/geolocation/NavigatorGeolocation.cpp \
-    \
     Modules/webdatabase/DOMWindowWebDatabase.cpp \
     Modules/webdatabase/Database.cpp \
     Modules/webdatabase/DatabaseAuthorizer.cpp \
-    Modules/webdatabase/DatabaseBackend.cpp \
+    Modules/webdatabase/DatabaseBackendBase.cpp \
     Modules/webdatabase/DatabaseContext.cpp \
     Modules/webdatabase/DatabaseServer.cpp \
     Modules/webdatabase/DatabaseSync.cpp \
     Modules/webdatabase/WorkerContextWebDatabase.cpp \
-    \
     accessibility/AccessibilityImageMapLink.cpp \
     accessibility/AccessibilityMediaControls.cpp \
     accessibility/AccessibilityMenuList.cpp \
@@ -307,6 +305,8 @@ SOURCES += \
     css/CSSValue.cpp \
     css/CSSValueList.cpp \
     css/CSSValuePool.cpp \
+    css/DOMWindowCSS.cpp \
+    css/DocumentRuleSets.cpp \
     css/FontFeatureValue.cpp \
     css/FontValue.cpp \
     css/InspectorCSSOMWrappers.cpp \
@@ -352,7 +352,6 @@ SOURCES += \
     css/WebKitCSSTransformValue.cpp \
     css/WebKitCSSViewportRule.cpp \
     dom/ActiveDOMObject.cpp \
-    dom/AncestorChainWalker.cpp \
     dom/Attr.cpp \
     dom/BeforeTextInsertedEvent.cpp \
     dom/BeforeUnloadEvent.cpp \
@@ -399,7 +398,6 @@ SOURCES += \
     dom/DOMStringMap.cpp \
     dom/DatasetDOMStringMap.cpp \
     dom/Element.cpp \
-    dom/ElementAttributeData.cpp \
     dom/ElementRareData.cpp \
     dom/ElementShadow.cpp \
     dom/EntityReference.cpp \
@@ -411,6 +409,8 @@ SOURCES += \
     dom/EventException.cpp \
     dom/EventListenerMap.cpp \
     dom/EventNames.cpp \
+    dom/EventPathWalker.cpp \
+    dom/EventRetargeter.cpp \
     dom/EventTarget.cpp \
     dom/ExceptionBase.cpp \
     dom/ExceptionCodePlaceholder.cpp \
@@ -742,6 +742,7 @@ SOURCES += \
     html/parser/HTMLParserScheduler.cpp \
     html/parser/HTMLParserThread.cpp \
     html/parser/HTMLPreloadScanner.cpp \
+    html/parser/HTMLResourcePreloader.cpp \
     html/parser/HTMLScriptRunner.cpp \
     html/parser/HTMLSourceTracker.cpp \
     html/parser/HTMLTokenizer.cpp \
@@ -800,6 +801,7 @@ SOURCES += \
     inspector/InspectorDOMStorageResource.cpp \
     inspector/InspectorFrontendClientLocal.cpp \
     inspector/InspectorFrontendHost.cpp \
+    inspector/InspectorHeapProfilerAgent.cpp \
     inspector/InspectorHistory.cpp \
     inspector/InspectorInputAgent.cpp \
     inspector/InspectorInstrumentation.cpp \
@@ -906,6 +908,7 @@ SOURCES += \
     page/animation/KeyframeAnimation.cpp \
     page/AutoscrollController.cpp \
     page/BarInfo.cpp \
+    page/CaptionUserPreferences.cpp \
     page/Chrome.cpp \
     page/Console.cpp \
     page/ContentSecurityPolicy.cpp \
@@ -1078,6 +1081,7 @@ SOURCES += \
     platform/mock/DeviceMotionClientMock.cpp \
     platform/mock/DeviceOrientationClientMock.cpp \
     platform/mock/GeolocationClientMock.cpp \
+    platform/mock/PlatformSpeechSynthesizerMock.cpp \
     platform/mock/ScrollbarThemeMock.cpp \
     platform/network/AuthenticationChallengeBase.cpp \
     platform/network/BlobData.cpp \
@@ -1453,12 +1457,15 @@ HEADERS += \
     Modules/proximity/DeviceProximityEvent.h \
     \
     Modules/webdatabase/AbstractDatabaseServer.h \
+    Modules/webdatabase/AbstractSQLStatement.h \
+    Modules/webdatabase/AbstractSQLStatementBackend.h \
+    Modules/webdatabase/ChangeVersionData.h \
     Modules/webdatabase/ChangeVersionWrapper.h \
     Modules/webdatabase/DOMWindowWebDatabase.h \
     Modules/webdatabase/DatabaseAuthorizer.h \
     Modules/webdatabase/Database.h \
-    Modules/webdatabase/DatabaseBackend.h \
     Modules/webdatabase/DatabaseBackendAsync.h \
+    Modules/webdatabase/DatabaseBackendBase.h \
     Modules/webdatabase/DatabaseBackendContext.h \
     Modules/webdatabase/DatabaseBackendSync.h \
     Modules/webdatabase/DatabaseBase.h \
@@ -1477,10 +1484,15 @@ HEADERS += \
     Modules/webdatabase/SQLResultSet.h \
     Modules/webdatabase/SQLResultSetRowList.h \
     Modules/webdatabase/SQLStatement.h \
+    Modules/webdatabase/SQLStatementBackend.h \
     Modules/webdatabase/SQLStatementSync.h \
     Modules/webdatabase/SQLTransaction.h \
+    Modules/webdatabase/SQLTransactionBackend.h \
+    Modules/webdatabase/SQLTransactionBackendSync.h \
     Modules/webdatabase/SQLTransactionClient.h \
     Modules/webdatabase/SQLTransactionCoordinator.h \
+    Modules/webdatabase/SQLTransactionState.h \
+    Modules/webdatabase/SQLTransactionStateMachine.h \
     Modules/webdatabase/SQLTransactionSync.h \
     Modules/webdatabase/SQLTransactionSyncCallback.h \
     Modules/webdatabase/WorkerContextWebDatabase.h \
@@ -1536,6 +1548,7 @@ HEADERS += \
     css/CSSValueList.h \
     css/CSSValuePool.h \
     css/CSSVariableValue.h \
+    css/DOMWindowCSS.h \
     css/FontFeatureValue.h \
     css/FontValue.h \
     css/LengthFunctions.h \
@@ -1576,7 +1589,6 @@ HEADERS += \
     css/WebKitCSSTransformValue.h \
     css/WebKitCSSViewportRule.h \
     dom/ActiveDOMObject.h \
-    dom/AncestorChainWalker.h \
     dom/Attr.h \
     dom/Attribute.h \
     dom/BeforeTextInsertedEvent.h \
@@ -1621,13 +1633,13 @@ HEADERS += \
     dom/DatasetDOMStringMap.h \
     dom/Element.h \
     dom/ElementShadow.h \
-    dom/ElementAttributeData.h \
     dom/Entity.h \
     dom/EntityReference.h \
     dom/Event.h \
     dom/EventDispatchMediator.h \
     dom/EventListenerMap.h \
     dom/EventNames.h \
+    dom/EventPathWalker.h \
     dom/EventQueue.h \
     dom/EventSender.h \
     dom/EventTarget.h \
@@ -1914,6 +1926,7 @@ HEADERS += \
     html/TimeRanges.h \
     html/TypeAhead.h \
     html/ValidityState.h \
+    html/parser/AtomicHTMLToken.h \
     html/parser/CSSPreloadScanner.h \
     html/parser/CompactHTMLToken.h \
     html/parser/HTMLConstructionSite.h \
@@ -1925,13 +1938,14 @@ HEADERS += \
     html/parser/HTMLFormattingElementList.h \
     html/parser/HTMLParserScheduler.h \
     html/parser/HTMLPreloadScanner.h \
+    html/parser/HTMLResourcePreloader.h \
     html/parser/HTMLScriptRunner.h \
     html/parser/HTMLScriptRunnerHost.h \
     html/parser/HTMLToken.h \
-    html/parser/HTMLTokenTypes.h \
     html/parser/HTMLTokenizer.h \
     html/parser/HTMLTreeBuilder.h \
     html/parser/HTMLViewSourceParser.h \
+    html/parser/InputStreamPreprocessor.h \
     html/parser/XSSAuditor.h \
     html/parser/XSSAuditorDelegate.h \
     html/shadow/ContentDistributor.h \
@@ -1990,6 +2004,7 @@ HEADERS += \
     inspector/InspectorFrontendClient.h \
     inspector/InspectorFrontendClientLocal.h \
     inspector/InspectorFrontendHost.h \
+    inspector/InspectorHeapProfilerAgent.h \
     inspector/InspectorHistory.h \
     inspector/InspectorInstrumentation.h \
     inspector/InspectorLayerTreeAgent.h \
@@ -2085,6 +2100,7 @@ HEADERS += \
     page/AdjustViewSizeOrNot.h \
     page/AutoscrollController.h \
     page/BarInfo.h \
+    page/CaptionUserPreferences.h \
     page/Chrome.h \
     page/Console.h \
     page/ConsoleTypes.h \
@@ -2162,6 +2178,7 @@ HEADERS += \
     platform/mock/DeviceMotionClientMock.h \
     platform/mock/DeviceOrientationClientMock.h \
     platform/mock/GeolocationClientMock.cpp \
+    platform/mock/PlatformSpeechSynthesizerMock.h \
     platform/mock/ScrollbarThemeMock.h \
     platform/graphics/BitmapImage.h \
     platform/graphics/Color.h \
@@ -2242,6 +2259,7 @@ HEADERS += \
     platform/graphics/IntPoint.h \
     platform/graphics/IntPointHash.h \
     platform/graphics/IntRect.h \
+    platform/graphics/IntRectExtent.h \
     platform/graphics/Latin1TextIterator.h \
     platform/graphics/MediaPlayer.h \
     platform/graphics/NativeImagePtr.h \
@@ -2265,9 +2283,13 @@ HEADERS += \
     platform/graphics/texmap/GraphicsLayerTextureMapper.h \
     platform/graphics/texmap/TextureMapper.h \
     platform/graphics/texmap/TextureMapperBackingStore.h \
+    platform/graphics/texmap/TextureMapperFPSCounter.h \
     platform/graphics/texmap/TextureMapperImageBuffer.h \
     platform/graphics/texmap/TextureMapperLayer.h \
     platform/graphics/texmap/TextureMapperPlatformLayer.h \
+    platform/graphics/texmap/TextureMapperSurfaceBackingStore.h \
+    platform/graphics/texmap/TextureMapperTile.h \
+    platform/graphics/texmap/TextureMapperTiledBackingStore.h \
     platform/graphics/Tile.h \
     platform/graphics/TiledBackingStore.h \
     platform/graphics/TiledBackingStoreClient.h \
@@ -2643,6 +2665,7 @@ HEADERS += \
     svg/graphics/filters/SVGFilter.h \
     svg/graphics/SVGImage.h \
     svg/graphics/SVGImageCache.h \
+    svg/graphics/SVGImageForContainer.h \
     svg/properties/SVGAttributeToPropertyMap.h \
     svg/properties/SVGAnimatedEnumerationPropertyTearOff.h \
     svg/properties/SVGAnimatedListPropertyTearOff.h \
@@ -2842,8 +2865,6 @@ HEADERS += \
     workers/WorkerScriptLoader.h \
     workers/WorkerThread.h \
     xml/parser/CharacterReferenceParserInlines.h \
-    xml/parser/MarkupTokenBase.h \
-    xml/parser/MarkupTokenizerBase.h \
     xml/parser/MarkupTokenizerInlines.h \
     xml/parser/XMLDocumentParser.h \
     xml/DOMParser.h \
@@ -2900,8 +2921,12 @@ SOURCES += \
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp \
     platform/graphics/texmap/TextureMapper.cpp \
     platform/graphics/texmap/TextureMapperBackingStore.cpp \
+    platform/graphics/texmap/TextureMapperFPSCounter.cpp \
     platform/graphics/texmap/TextureMapperImageBuffer.cpp \
     platform/graphics/texmap/TextureMapperLayer.cpp \
+    platform/graphics/texmap/TextureMapperSurfaceBackingStore.cpp \
+    platform/graphics/texmap/TextureMapperTile.cpp \
+    platform/graphics/texmap/TextureMapperTiledBackingStore.cpp \
     platform/network/DNSResolveQueue.cpp \
     platform/network/MIMESniffing.cpp \
     platform/network/qt/CookieJarQt.cpp \
@@ -3052,10 +3077,14 @@ enable?(SQL_DATABASE) {
         Modules/webdatabase/SQLResultSet.cpp \
         Modules/webdatabase/SQLResultSetRowList.cpp \
         Modules/webdatabase/SQLStatement.cpp \
+        Modules/webdatabase/SQLStatementBackend.cpp \
         Modules/webdatabase/SQLStatementSync.cpp \
         Modules/webdatabase/SQLTransaction.cpp \
+        Modules/webdatabase/SQLTransactionBackend.cpp \
+        Modules/webdatabase/SQLTransactionBackendSync.cpp \
         Modules/webdatabase/SQLTransactionClient.cpp \
         Modules/webdatabase/SQLTransactionCoordinator.cpp \
+        Modules/webdatabase/SQLTransactionStateMachine.cpp \
         Modules/webdatabase/SQLTransactionSync.cpp \
 
     SOURCES += \
@@ -3760,6 +3789,7 @@ enable?(SVG) {
         svg/graphics/filters/SVGFilterBuilder.cpp \
         svg/graphics/SVGImage.cpp \
         svg/graphics/SVGImageCache.cpp \
+        svg/graphics/SVGImageForContainer.cpp \
         svg/properties/SVGAttributeToPropertyMap.cpp \
         svg/properties/SVGPathSegListPropertyTearOff.cpp \
         svg/SVGDocumentExtensions.cpp \
@@ -4207,6 +4237,7 @@ contains(DEFINES, ENABLE_OPENCL=1) {
     SOURCES += \
         platform/graphics/gpu/opencl/FilterContextOpenCL.cpp \
         platform/graphics/gpu/opencl/OpenCLFEColorMatrix.cpp \
+        platform/graphics/gpu/opencl/OpenCLFEFlood.cpp \
         platform/graphics/gpu/opencl/OpenCLFESourceAlpha.cpp \
         platform/graphics/gpu/opencl/OpenCLFESourceGraphic.cpp \
         platform/graphics/gpu/opencl/OpenCLFETurbulence.cpp
@@ -4221,7 +4252,12 @@ use?(GRAPHICS_SURFACE) {
         SOURCES += platform/graphics/surfaces/win/GraphicsSurfaceWin.cpp
     }
     have?(XCOMPOSITE) {
-        SOURCES += platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
+        HEADERS += \
+            platform/graphics/surfaces/glx/X11Helper.h \
+            platform/graphics/surfaces/glx/GLXConfigSelector.h
+        SOURCES += \
+            platform/graphics/surfaces/glx/X11Helper.cpp \
+            platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
     }
 }
 

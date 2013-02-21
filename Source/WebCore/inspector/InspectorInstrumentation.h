@@ -35,6 +35,7 @@
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "Element.h"
+#include "EventContext.h"
 #include "Frame.h"
 #include "HitTestResult.h"
 #include "Page.h"
@@ -143,7 +144,7 @@ public:
     static void didCallFunction(const InspectorInstrumentationCookie&);
     static InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext*, XMLHttpRequest*);
     static void didDispatchXHRReadyStateChangeEvent(const InspectorInstrumentationCookie&);
-    static InspectorInstrumentationCookie willDispatchEvent(Document*, const Event& event, DOMWindow* window, Node* node, const Vector<EventContext>& ancestors);
+    static InspectorInstrumentationCookie willDispatchEvent(Document*, const Event&, DOMWindow*, Node*, const EventPath&);
     static void didDispatchEvent(const InspectorInstrumentationCookie&);
     static InspectorInstrumentationCookie willHandleEvent(ScriptExecutionContext*, Event*);
     static void didHandleEvent(const InspectorInstrumentationCookie&);
@@ -151,11 +152,10 @@ public:
     static void didDispatchEventOnWindow(const InspectorInstrumentationCookie&);
     static InspectorInstrumentationCookie willEvaluateScript(Frame*, const String& url, int lineNumber);
     static void didEvaluateScript(const InspectorInstrumentationCookie&);
+    static void scriptsEnabled(Page*, bool isEnabled);
     static void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
     static InspectorInstrumentationCookie willFireTimer(ScriptExecutionContext*, int timerId);
     static void didFireTimer(const InspectorInstrumentationCookie&);
-    static void didBeginFrame(Page*);
-    static void didCancelFrame(Page*);
     static void didInvalidateLayout(Frame*);
     static InspectorInstrumentationCookie willLayout(Frame*);
     static void didLayout(const InspectorInstrumentationCookie&, RenderObject*);
@@ -347,7 +347,7 @@ private:
     static void didCallFunctionImpl(const InspectorInstrumentationCookie&);
     static InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEventImpl(InstrumentingAgents*, XMLHttpRequest*, ScriptExecutionContext*);
     static void didDispatchXHRReadyStateChangeEventImpl(const InspectorInstrumentationCookie&);
-    static InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents*, const Event&, DOMWindow*, Node*, const Vector<EventContext>& ancestors, Document*);
+    static InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents*, const Event&, DOMWindow*, Node*, const EventPath&, Document*);
     static InspectorInstrumentationCookie willHandleEventImpl(InstrumentingAgents*, Event*);
     static void didHandleEventImpl(const InspectorInstrumentationCookie&);
     static void didDispatchEventImpl(const InspectorInstrumentationCookie&);
@@ -355,11 +355,10 @@ private:
     static void didDispatchEventOnWindowImpl(const InspectorInstrumentationCookie&);
     static InspectorInstrumentationCookie willEvaluateScriptImpl(InstrumentingAgents*, const String& url, int lineNumber, Frame*);
     static void didEvaluateScriptImpl(const InspectorInstrumentationCookie&);
+    static void scriptsEnabledImpl(InstrumentingAgents*, bool isEnabled);
     static void didCreateIsolatedContextImpl(InstrumentingAgents*, Frame*, ScriptState*, SecurityOrigin*);
     static InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents*, int timerId, ScriptExecutionContext*);
     static void didFireTimerImpl(const InspectorInstrumentationCookie&);
-    static void didBeginFrameImpl(InstrumentingAgents*);
-    static void didCancelFrameImpl(InstrumentingAgents*);
     static void didInvalidateLayoutImpl(InstrumentingAgents*, Frame*);
     static InspectorInstrumentationCookie willLayoutImpl(InstrumentingAgents*, Frame*);
     static void didLayoutImpl(const InspectorInstrumentationCookie&, RenderObject*);
@@ -370,8 +369,6 @@ private:
     static void didScrollLayerImpl(InstrumentingAgents*);
     static InspectorInstrumentationCookie willPaintImpl(InstrumentingAgents*, Frame*);
     static void didPaintImpl(const InspectorInstrumentationCookie&, GraphicsContext*, const LayoutRect&);
-    static void willCompositeImpl(InstrumentingAgents*);
-    static void didCompositeImpl(InstrumentingAgents*);
     static InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents*, Frame*);
     static void didRecalculateStyleImpl(const InspectorInstrumentationCookie&);
     static void didScheduleStyleRecalculationImpl(InstrumentingAgents*, Document*);
@@ -864,18 +861,18 @@ inline void InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(const 
 #endif
 }
 
-inline InspectorInstrumentationCookie InspectorInstrumentation::willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const Vector<EventContext>& ancestors)
+inline InspectorInstrumentationCookie InspectorInstrumentation::willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath)
 {
 #if ENABLE(INSPECTOR)
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willDispatchEventImpl(instrumentingAgents, event, window, node, ancestors, document);
+        return willDispatchEventImpl(instrumentingAgents, event, window, node, eventPath, document);
 #else
     UNUSED_PARAM(document);
     UNUSED_PARAM(event);
     UNUSED_PARAM(window);
     UNUSED_PARAM(node);
-    UNUSED_PARAM(ancestors);
+    UNUSED_PARAM(eventPath);
 #endif
     return InspectorInstrumentationCookie();
 }
@@ -965,6 +962,18 @@ inline void InspectorInstrumentation::didEvaluateScript(const InspectorInstrumen
 #endif
 }
 
+inline void InspectorInstrumentation::scriptsEnabled(Page* page, bool isEnabled)
+{
+#if ENABLE(INSPECTOR)
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        return scriptsEnabledImpl(instrumentingAgents, isEnabled);
+#else
+    UNUSED_PARAM(page);
+    UNUSED_PARAM(isEnabled);
+#endif
+}
+
 inline void InspectorInstrumentation::didCreateIsolatedContext(Frame* frame, ScriptState* scriptState, SecurityOrigin* origin)
 {
 #if ENABLE(INSPECTOR)
@@ -999,28 +1008,6 @@ inline void InspectorInstrumentation::didFireTimer(const InspectorInstrumentatio
         didFireTimerImpl(cookie);
 #else
     UNUSED_PARAM(cookie);
-#endif
-}
-
-inline void InspectorInstrumentation::didBeginFrame(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        didBeginFrameImpl(instrumentingAgents);
-#else
-    UNUSED_PARAM(page);
-#endif
-}
-
-inline void InspectorInstrumentation::didCancelFrame(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        didCancelFrameImpl(instrumentingAgents);
-#else
-    UNUSED_PARAM(page);
 #endif
 }
 
@@ -1138,28 +1125,6 @@ inline void InspectorInstrumentation::didScrollLayer(Frame* frame)
         didScrollLayerImpl(instrumentingAgents);
 #else
     UNUSED_PARAM(frame);
-#endif
-}
-
-inline void InspectorInstrumentation::willComposite(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        willCompositeImpl(instrumentingAgents);
-#else
-    UNUSED_PARAM(page);
-#endif
-}
-
-inline void InspectorInstrumentation::didComposite(Page* page)
-{
-#if ENABLE(INSPECTOR)
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        didCompositeImpl(instrumentingAgents);
-#else
-    UNUSED_PARAM(page);
 #endif
 }
 
@@ -1689,6 +1654,8 @@ inline void InspectorInstrumentation::frameStartedLoading(Frame* frame)
 #if ENABLE(INSPECTOR)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         frameStartedLoadingImpl(instrumentingAgents, frame);
+#else
+    UNUSED_PARAM(frame);
 #endif
 }
 
@@ -1697,6 +1664,8 @@ inline void InspectorInstrumentation::frameStoppedLoading(Frame* frame)
 #if ENABLE(INSPECTOR)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         frameStoppedLoadingImpl(instrumentingAgents, frame);
+#else
+    UNUSED_PARAM(frame);
 #endif
 }
 
@@ -1705,6 +1674,9 @@ inline void InspectorInstrumentation::frameScheduledNavigation(Frame* frame, dou
 #if ENABLE(INSPECTOR)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         frameScheduledNavigationImpl(instrumentingAgents, frame, delay);
+#else
+    UNUSED_PARAM(frame);
+    UNUSED_PARAM(delay);
 #endif
 }
 
@@ -1713,6 +1685,8 @@ inline void InspectorInstrumentation::frameClearedScheduledNavigation(Frame* fra
 #if ENABLE(INSPECTOR)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         frameClearedScheduledNavigationImpl(instrumentingAgents, frame);
+#else
+    UNUSED_PARAM(frame);
 #endif
 }
 

@@ -36,22 +36,26 @@
 #include "GamepadController.h"
 #include "TestRunner.h"
 #include "TextInputController.h"
+#include "WebCache.h"
 #include <public/WebString.h>
+#include <public/WebURL.h>
+#include <string>
 
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebView;
+using namespace WebKit;
+using namespace std;
 
 namespace WebTestRunner {
 
 TestInterfaces::TestInterfaces()
-    : m_webView(0)
+    : m_accessibilityController(new AccessibilityController())
+    , m_eventSender(new EventSender())
+    , m_gamepadController(new GamepadController())
+    , m_textInputController(new TextInputController())
+    , m_testRunner(new TestRunner(this))
+    , m_webView(0)
+    , m_delegate(0)
 {
-    m_accessibilityController = adoptPtr(new AccessibilityController());
-    m_eventSender = adoptPtr(new EventSender());
-    m_gamepadController = adoptPtr(new GamepadController());
-    m_textInputController = adoptPtr(new TextInputController());
-    m_testRunner = adoptPtr(new TestRunner());
+    resetAll();
 }
 
 TestInterfaces::~TestInterfaces()
@@ -60,7 +64,7 @@ TestInterfaces::~TestInterfaces()
     m_eventSender->setWebView(0);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->setWebView(0);
-    m_testRunner->setWebView(0);
+    m_testRunner->setWebView(0, 0);
 
     m_accessibilityController->setDelegate(0);
     m_eventSender->setDelegate(0);
@@ -69,14 +73,15 @@ TestInterfaces::~TestInterfaces()
     m_testRunner->setDelegate(0);
 }
 
-void TestInterfaces::setWebView(WebView* webView)
+void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 {
     m_webView = webView;
+    m_proxy = proxy;
     m_accessibilityController->setWebView(webView);
     m_eventSender->setWebView(webView);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->setWebView(webView);
-    m_testRunner->setWebView(webView);
+    m_testRunner->setWebView(webView, proxy);
 }
 
 void TestInterfaces::setDelegate(WebTestDelegate* delegate)
@@ -86,6 +91,7 @@ void TestInterfaces::setDelegate(WebTestDelegate* delegate)
     m_gamepadController->setDelegate(delegate);
     // m_textInputController doesn't depend on WebTestDelegate.
     m_testRunner->setDelegate(delegate);
+    m_delegate = delegate;
 }
 
 void TestInterfaces::bindTo(WebFrame* frame)
@@ -105,11 +111,41 @@ void TestInterfaces::resetAll()
     m_gamepadController->reset();
     // m_textInputController doesn't have any state to reset.
     m_testRunner->reset();
+    WebCache::clear();
 }
 
 void TestInterfaces::setTestIsRunning(bool running)
 {
     m_testRunner->setTestIsRunning(running);
+}
+
+void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generatePixels)
+{
+    string spec = GURL(testURL).spec();
+    m_testRunner->setShouldGeneratePixelResults(generatePixels);
+    if (spec.find("loading/") != string::npos)
+        m_testRunner->setShouldDumpFrameLoadCallbacks(true);
+    if (spec.find("/dumpAsText/") != string::npos) {
+        m_testRunner->setShouldDumpAsText(true);
+        m_testRunner->setShouldGeneratePixelResults(false);
+    }
+    if (spec.find("/inspector/") != string::npos)
+        m_testRunner->showDevTools();
+}
+
+void TestInterfaces::windowOpened(WebTestProxyBase* proxy)
+{
+    m_windowList.push_back(proxy);
+}
+
+void TestInterfaces::windowClosed(WebTestProxyBase* proxy)
+{
+    vector<WebTestProxyBase*>::iterator pos = find(m_windowList.begin(), m_windowList.end(), proxy);
+    if (pos == m_windowList.end()) {
+        WEBKIT_ASSERT_NOT_REACHED();
+        return;
+    }
+    m_windowList.erase(pos);
 }
 
 AccessibilityController* TestInterfaces::accessibilityController()
@@ -130,6 +166,21 @@ TestRunner* TestInterfaces::testRunner()
 WebView* TestInterfaces::webView()
 {
     return m_webView;
+}
+
+WebTestDelegate* TestInterfaces::delegate()
+{
+    return m_delegate;
+}
+
+WebTestProxyBase* TestInterfaces::proxy()
+{
+    return m_proxy;
+}
+
+const vector<WebTestProxyBase*>& TestInterfaces::windowList()
+{
+    return m_windowList;
 }
 
 }

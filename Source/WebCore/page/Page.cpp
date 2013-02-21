@@ -36,6 +36,7 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
+#include "ExceptionCodePlaceholder.h"
 #include "FileSystem.h"
 #include "FocusController.h"
 #include "Frame.h"
@@ -591,8 +592,7 @@ void Page::findStringMatchingRanges(const String& target, FindOptions options, i
         indexForSelection = NoMatchBeforeUserSelection;
         RefPtr<Range> selectedRange = frameWithSelection->selection()->selection().firstRange();
         for (size_t i = 0; i < matchRanges->size(); ++i) {
-            ExceptionCode ec;
-            if (selectedRange->compareBoundaryPoints(Range::START_TO_END, matchRanges->at(i).get(), ec) < 0) {
+            if (selectedRange->compareBoundaryPoints(Range::START_TO_END, matchRanges->at(i).get(), IGNORE_EXCEPTION) < 0) {
                 indexForSelection = i;
                 break;
             }
@@ -815,6 +815,34 @@ void Page::setShouldSuppressScrollbarAnimations(bool suppressAnimations)
     m_suppressScrollbarAnimations = suppressAnimations;
 }
 
+bool Page::rubberBandsAtBottom()
+{
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        return scrollingCoordinator->rubberBandsAtBottom();
+
+    return false;
+}
+
+void Page::setRubberBandsAtBottom(bool rubberBandsAtBottom)
+{
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        scrollingCoordinator->setRubberBandsAtBottom(rubberBandsAtBottom);
+}
+
+bool Page::rubberBandsAtTop()
+{
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        return scrollingCoordinator->rubberBandsAtTop();
+
+    return false;
+}
+
+void Page::setRubberBandsAtTop(bool rubberBandsAtTop)
+{
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        scrollingCoordinator->setRubberBandsAtTop(rubberBandsAtTop);
+}
+
 void Page::setPagination(const Pagination& pagination)
 {
     if (m_pagination == pagination)
@@ -861,6 +889,19 @@ void Page::willMoveOffscreen()
     }
     
     suspendScriptedAnimations();
+}
+
+void Page::setIsInWindow(bool isInWindow)
+{
+    if (m_isInWindow == isInWindow)
+        return;
+
+    m_isInWindow = isInWindow;
+
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+        if (FrameView* frameView = frame->view())
+            frameView->setIsInWindow(isInWindow);
+    }
 }
 
 void Page::windowScreenDidChange(PlatformDisplayID displayID)

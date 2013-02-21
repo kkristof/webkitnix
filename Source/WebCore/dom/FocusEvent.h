@@ -31,6 +31,14 @@
 
 namespace WebCore {
 
+class Node;
+
+struct FocusEventInit : public UIEventInit {
+    FocusEventInit();
+
+    RefPtr<EventTarget> relatedTarget;
+};
+
 class FocusEvent : public UIEvent {
 public:
     static PassRefPtr<FocusEvent> create()
@@ -43,6 +51,11 @@ public:
         return adoptRef(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
     }
 
+    static PassRefPtr<FocusEvent> create(const AtomicString& type, const FocusEventInit& initializer)
+    {
+        return adoptRef(new FocusEvent(type, initializer));
+    }
+
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
 
@@ -52,6 +65,7 @@ public:
 private:
     FocusEvent();
     FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int, PassRefPtr<EventTarget>);
+    FocusEvent(const AtomicString& type, const FocusEventInit&);
 
     RefPtr<EventTarget> m_relatedTarget;
 };
@@ -61,6 +75,42 @@ inline FocusEvent* toFocusEvent(Event* event)
     ASSERT(event && event->isFocusEvent());
     return static_cast<FocusEvent*>(event);
 }
+
+class FocusEventDispatchMediator : public EventDispatchMediator {
+public:
+    static PassRefPtr<FocusEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+private:
+    explicit FocusEventDispatchMediator(PassRefPtr<FocusEvent>);
+    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
+};
+
+class BlurEventDispatchMediator : public EventDispatchMediator {
+public:
+    static PassRefPtr<BlurEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+private:
+    explicit BlurEventDispatchMediator(PassRefPtr<FocusEvent>);
+    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
+};
+
+class FocusInEventDispatchMediator : public EventDispatchMediator {
+public:
+    static PassRefPtr<FocusInEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+private:
+    explicit FocusInEventDispatchMediator(PassRefPtr<FocusEvent>);
+    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
+};
+
+class FocusOutEventDispatchMediator : public EventDispatchMediator {
+public:
+    static PassRefPtr<FocusOutEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+private:
+    explicit FocusOutEventDispatchMediator(PassRefPtr<FocusEvent>);
+    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
+};
 
 } // namespace WebCore
 

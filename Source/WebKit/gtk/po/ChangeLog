@@ -1,3 +1,21 @@
+2013-02-19  Mișu Moldovan  <dumol@gnome.org>
+
+        Romanian translation for WebKitGtk+ HEAD
+        https://bugs.webkit.org/show_bug.cgi?id=110009
+
+        Reviewed by Gustavo Noronha.
+
+        * ro.po: Added.
+
+2013-02-08  Alexandre Franke  <alexandre.franke@gmail.com>
+
+        Updated French translation
+        https://bugs.webkit.org/show_bug.cgi?id=106229
+
+        Rubber-stamped by Gustavo Noronha.
+
+        * fr.po: updated.
+
 2013-02-01  Philippe Normand  <pnormand@igalia.com>
 
         Unreviewed, GTK build fix after r141566.

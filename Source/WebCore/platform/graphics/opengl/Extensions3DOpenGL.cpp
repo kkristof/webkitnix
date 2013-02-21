@@ -64,22 +64,27 @@ void Extensions3DOpenGL::renderbufferStorageMultisample(unsigned long target, un
 Platform3DObject Extensions3DOpenGL::createVertexArrayOES()
 {
     m_context->makeContextCurrent();
-#if !PLATFORM(GTK) && !PLATFORM(QT) && !PLATFORM(EFL) && !PLATFORM(NIX) && defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
     GLuint array = 0;
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+    if (isVertexArrayObjectSupported())
+        glGenVertexArrays(1, &array);
+#elif defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
     glGenVertexArraysAPPLE(1, &array);
-    return array;
-#else
-    return 0;
 #endif
+    return array;
 }
 
 void Extensions3DOpenGL::deleteVertexArrayOES(Platform3DObject array)
 {
     if (!array)
         return;
-    
+
     m_context->makeContextCurrent();
-#if !PLATFORM(GTK) && !PLATFORM(QT) && !PLATFORM(EFL) && !PLATFORM(NIX) && defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
+
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+    if (isVertexArrayObjectSupported())
+        glDeleteVertexArrays(1, &array);
+#elif defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
     glDeleteVertexArraysAPPLE(1, &array);
 #endif
 }
@@ -88,19 +93,24 @@ GC3Dboolean Extensions3DOpenGL::isVertexArrayOES(Platform3DObject array)
 {
     if (!array)
         return GL_FALSE;
-    
+
     m_context->makeContextCurrent();
-#if !PLATFORM(GTK) && !PLATFORM(QT) && !PLATFORM(EFL) && !PLATFORM(NIX) && defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+    if (isVertexArrayObjectSupported())
+        return glIsVertexArray(array);
+#elif defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
     return glIsVertexArrayAPPLE(array);
-#else
-    return GL_FALSE;
 #endif
+    return GL_FALSE;
 }
 
 void Extensions3DOpenGL::bindVertexArrayOES(Platform3DObject array)
 {
     m_context->makeContextCurrent();
-#if !PLATFORM(GTK) && !PLATFORM(QT) && !PLATFORM(EFL) && !PLATFORM(NIX) && defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+    if (isVertexArrayObjectSupported())
+        glBindVertexArray(array);
+#elif defined(GL_APPLE_vertex_array_object) && GL_APPLE_vertex_array_object
     glBindVertexArrayAPPLE(array);
 #else
     UNUSED_PARAM(array);
@@ -150,8 +160,13 @@ bool Extensions3DOpenGL::supportsExtension(const String& name)
         return m_availableExtensions.contains("GL_ARB_texture_float");
 
     // GL_OES_vertex_array_object
-    if (name == "GL_OES_vertex_array_object")
+    if (name == "GL_OES_vertex_array_object") {
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+        return m_availableExtensions.contains("GL_ARB_vertex_array_object");
+#else
         return m_availableExtensions.contains("GL_APPLE_vertex_array_object");
+#endif
+    }
 
     // Desktop GL always supports the standard derivative functions
     if (name == "GL_OES_standard_derivatives")
@@ -171,6 +186,14 @@ String Extensions3DOpenGL::getExtensions()
 {
     return String(reinterpret_cast<const char*>(::glGetString(GL_EXTENSIONS)));
 }
+
+#if (PLATFORM(GTK) || PLATFORM(QT) || PLATFORM(EFL) || PLATFORM(NIX))
+bool Extensions3DOpenGL::isVertexArrayObjectSupported()
+{
+    static const bool supportsVertexArrayObject = supports("GL_OES_vertex_array_object");
+    return supportsVertexArrayObject;
+}
+#endif
 
 } // namespace WebCore
 

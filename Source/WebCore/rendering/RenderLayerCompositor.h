@@ -171,8 +171,7 @@ public:
     void updateRootLayerAttachment();
     void updateRootLayerPosition();
     
-    void didMoveOnscreen();
-    void willMoveOffscreen();
+    void setIsInWindow(bool);
 
     void clearBackingForAllLayers();
     
@@ -249,6 +248,7 @@ private:
     
     // GraphicsLayerUpdaterClient implementation
     virtual void flushLayers(GraphicsLayerUpdater*) OVERRIDE;
+    virtual void customPositionForVisibleRectComputation(const GraphicsLayer*, FloatPoint&) const OVERRIDE;
     
     // Whether the given RL needs a compositing layer.
     bool needsToBeComposited(const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason* = 0) const;

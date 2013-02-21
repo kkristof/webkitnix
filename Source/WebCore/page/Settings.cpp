@@ -37,10 +37,12 @@
 #include "FrameView.h"
 #include "HTMLMediaElement.h"
 #include "HistoryItem.h"
+#include "InspectorInstrumentation.h"
 #include "Page.h"
 #include "PageCache.h"
 #include "ResourceHandle.h"
 #include "StorageMap.h"
+#include "TextAutosizer.h"
 #include <limits>
 
 using namespace std;
@@ -164,16 +166,13 @@ Settings::Settings(Page* page)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
     , m_areImagesEnabled(true)
-    , m_isMediaEnabled(true)
     , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
     , m_textAreasAreResizable(false)
     , m_needsAdobeFrameReloadingQuirk(false)
-    , m_isDOMPasteAllowed(false)
     , m_usesPageCache(false)
     , m_authorAndUserStylesEnabled(true)
     , m_fontRenderingMode(0)
-    , m_inApplicationChromeMode(false)
     , m_isCSSCustomFilterEnabled(false)
 #if ENABLE(CSS_STICKY_POSITION)
     , m_cssStickyPositionEnabled(true)
@@ -363,6 +362,11 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
 void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
 {
     m_textAutosizingFontScaleFactor = fontScaleFactor;
+
+    // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext())
+        frame->document()->textAutosizer()->recalculateMultipliers();
+
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -415,6 +419,7 @@ void Settings::imageLoadingSettingsTimerFired(Timer<Settings>*)
 void Settings::setScriptEnabled(bool isScriptEnabled)
 {
     m_isScriptEnabled = isScriptEnabled;
+    InspectorInstrumentation::scriptsEnabled(m_page, m_isScriptEnabled);
 }
 
 void Settings::setJavaEnabled(bool isJavaEnabled)
@@ -433,11 +438,6 @@ void Settings::setImagesEnabled(bool areImagesEnabled)
 
     // See comment in setLoadsImagesAutomatically.
     m_setImageLoadingSettingsTimer.startOneShot(0);
-}
-
-void Settings::setMediaEnabled(bool isMediaEnabled)
-{
-    m_isMediaEnabled = isMediaEnabled;
 }
 
 void Settings::setPluginsEnabled(bool arePluginsEnabled)
@@ -478,11 +478,6 @@ void Settings::setTextAreasAreResizable(bool textAreasAreResizable)
 void Settings::setNeedsAdobeFrameReloadingQuirk(bool shouldNotReloadIFramesForUnchangedSRC)
 {
     m_needsAdobeFrameReloadingQuirk = shouldNotReloadIFramesForUnchangedSRC;
-}
-
-void Settings::setDOMPasteAllowed(bool DOMPasteAllowed)
-{
-    m_isDOMPasteAllowed = DOMPasteAllowed;
 }
 
 void Settings::setDefaultMinDOMTimerInterval(double interval)
@@ -560,11 +555,6 @@ void Settings::setFontRenderingMode(FontRenderingMode mode)
 FontRenderingMode Settings::fontRenderingMode() const
 {
     return static_cast<FontRenderingMode>(m_fontRenderingMode);
-}
-
-void Settings::setApplicationChromeMode(bool mode)
-{
-    m_inApplicationChromeMode = mode;
 }
 
 #if USE(SAFARI_THEME)

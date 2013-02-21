@@ -76,6 +76,10 @@ public:
     virtual String scrollingStateTreeAsText() const OVERRIDE;
 
     virtual bool isRubberBandInProgress() const OVERRIDE;
+    virtual bool rubberBandsAtBottom() const OVERRIDE;
+    virtual void setRubberBandsAtBottom(bool) OVERRIDE;
+    virtual bool rubberBandsAtTop() const OVERRIDE;
+    virtual void setRubberBandsAtTop(bool) OVERRIDE;
 
 private:
     // Return whether this scrolling coordinator can keep fixed position layers fixed to their
@@ -96,7 +100,6 @@ private:
     virtual bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const { return false; }
 
     void ensureRootStateNodeForFrameView(FrameView*);
-    ScrollingStateNode* stateNodeForID(ScrollingNodeID);
 
     struct ScrollParameters {
         ScrollElasticity horizontalScrollElasticity;
@@ -129,13 +132,9 @@ private:
     void scrollingStateTreeCommitterTimerFired(Timer<ScrollingCoordinatorMac>*);
     void commitTreeState();
 
-    void removeNode(ScrollingStateNode*);
-
     OwnPtr<ScrollingStateTree> m_scrollingStateTree;
     RefPtr<ScrollingTree> m_scrollingTree;
     Timer<ScrollingCoordinatorMac> m_scrollingStateTreeCommitterTimer;
-
-    HashMap<ScrollingNodeID, ScrollingStateNode*> m_stateNodeMap;
 };
 
 } // namespace WebCore

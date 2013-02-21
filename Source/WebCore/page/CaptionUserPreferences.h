@@ -50,33 +50,43 @@ public:
     static PassOwnPtr<CaptionUserPreferences> create(PageGroup* group) { return adoptPtr(new CaptionUserPreferences(group)); }
     virtual ~CaptionUserPreferences() { }
 
-    virtual bool userPrefersCaptions() const { return false; }
-    virtual void setUserPrefersCaptions(bool) { }
-    virtual bool userHasCaptionPreferences() const { return false; }
+    virtual bool userHasCaptionPreferences() const { return m_testingMode && m_havePreferences; }
+    virtual bool userPrefersCaptions() const { return m_testingMode ? m_userPrefersCaptions : false; }
+    virtual void setUserPrefersCaptions(bool preference);
     virtual float captionFontSizeScale(bool& important) const { important = false; return 0.05f; }
     virtual String captionsStyleSheetOverride() const { return emptyString(); }
-    virtual void registerForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener*) { }
-    virtual void unregisterForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener*) { }
 
-    virtual void setPreferredLanguage(String) const { }
-    virtual Vector<String> preferredLanguages() const { return platformUserPreferredLanguages(); }
+    virtual void registerForPreferencesChangedCallbacks(CaptionPreferencesChangedListener*);
+    virtual void unregisterForPreferencesChangedCallbacks(CaptionPreferencesChangedListener*);
+    virtual void captionPreferencesChanged();
+    bool havePreferenceChangeListeners() const { return !m_captionPreferenceChangeListeners.isEmpty(); }
 
-    virtual String displayNameForTrack(TextTrack* track) const
-    {
-        if (track->label().isEmpty() && track->language().isEmpty())
-            return textTrackNoLabelText();
-        if (!track->label().isEmpty())
-            return track->label();
-        return track->language();
-    }
+    virtual void setPreferredLanguage(String);
+    virtual Vector<String> preferredLanguages() const;
+
+    virtual String displayNameForTrack(TextTrack*) const;
+
+    virtual bool testingMode() const { return m_testingMode; }
+    virtual void setTestingMode(bool override) { m_testingMode = override; }
 
     PageGroup* pageGroup() { return m_pageGroup; }
 
 protected:
-    CaptionUserPreferences(PageGroup* group) : m_pageGroup(group) { }
+    CaptionUserPreferences(PageGroup* group)
+        : m_pageGroup(group)
+        , m_testingMode(false)
+        , m_havePreferences(false)
+        , m_userPrefersCaptions(false)
+    {
+    }
 
 private:
+    HashSet<CaptionPreferencesChangedListener*> m_captionPreferenceChangeListeners;
     PageGroup* m_pageGroup;
+    String m_userPreferredLanguage;
+    bool m_testingMode;
+    bool m_havePreferences;
+    bool m_userPrefersCaptions;
 };
     
 }

@@ -20,14 +20,28 @@ function foo()
 
     InspectorTest.addResult(textEditor.text());
 
+    function dumpTextEditorWithSelection()
+    {
+        InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+    }
+
+    function homeButton(shift)
+    {
+        var key = WebInspector.isMac() ? "leftArrow" : "home";
+        var modifiers = WebInspector.isMac() ? ["metaKey"] : [];
+        if (shift)
+            modifiers.push("shiftKey");
+        eventSender.keyDown(key, modifiers);
+    }
+
     InspectorTest.runTestSuite([
         function testFirstNonBlankCharacter(next)
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
             next();
         },
 
@@ -35,23 +49,23 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
             next();
         },
 
-        function testHomeButtonTriggering(next)
+        function testHomeButtonToggling(next)
         {
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
             next();
         },
 
@@ -59,11 +73,11 @@ function foo()
         {
             var selection = WebInspector.TextRange.createFromLocation(0, 2);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", []);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
+            homeButton(false);
+            dumpTextEditorWithSelection();
             next();
         },
 
@@ -71,13 +85,13 @@ function foo()
         {
             var selection = new WebInspector.TextRange(0, 0, 2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
             next();
         },
 
@@ -85,13 +99,13 @@ function foo()
         {
             var selection = new WebInspector.TextRange(3, 1, 2, 8);
             textEditor.setSelection(selection);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
-            eventSender.keyDown("home", ["shiftKey"]);
-            InspectorTest.addResult(textEditor.selection());
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
+            homeButton(true);
+            dumpTextEditorWithSelection();
             next();
         }
     ]);

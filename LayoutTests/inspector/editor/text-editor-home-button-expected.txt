@@ -6,33 +6,90 @@ function foo()
 }
 
 Running: testFirstNonBlankCharacter
-{"startLine":2,"startColumn":8,"endLine":2,"endColumn":8}
-{"startLine":2,"startColumn":4,"endLine":2,"endColumn":4}
+function foo()
+{
+    retu|rn 42;
+}
+function foo()
+{
+    |return 42;
+}
 
 Running: testFirstNonBlankCharacterFromWhitespace
-{"startLine":2,"startColumn":2,"endLine":2,"endColumn":2}
-{"startLine":2,"startColumn":4,"endLine":2,"endColumn":4}
+function foo()
+{
+  |  return 42;
+}
+function foo()
+{
+    |return 42;
+}
 
-Running: testHomeButtonTriggering
-{"startLine":2,"startColumn":2,"endLine":2,"endColumn":2}
-{"startLine":2,"startColumn":4,"endLine":2,"endColumn":4}
-{"startLine":2,"startColumn":0,"endLine":2,"endColumn":0}
-{"startLine":2,"startColumn":4,"endLine":2,"endColumn":4}
+Running: testHomeButtonToggling
+function foo()
+{
+  |  return 42;
+}
+function foo()
+{
+    |return 42;
+}
+function foo()
+{
+|    return 42;
+}
+function foo()
+{
+    |return 42;
+}
 
 Running: testHomeButtonDoesNotChangeCursor
-{"startLine":0,"startColumn":2,"endLine":0,"endColumn":2}
-{"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
-{"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
+fu|nction foo()
+{
+    return 42;
+}
+|function foo()
+{
+    return 42;
+}
+|function foo()
+{
+    return 42;
+}
 
 Running: testHomeButtonWithShift
-{"startLine":0,"startColumn":0,"endLine":2,"endColumn":8}
-{"startLine":0,"startColumn":0,"endLine":2,"endColumn":4}
-{"startLine":0,"startColumn":0,"endLine":2,"endColumn":0}
-{"startLine":0,"startColumn":0,"endLine":2,"endColumn":4}
+>function foo()
+{
+    retu<rn 42;
+}
+>function foo()
+{
+    <return 42;
+}
+>function foo()
+{
+<    return 42;
+}
+>function foo()
+{
+    <return 42;
+}
 
 Running: testHomeButtonWithShiftInversed
-{"startLine":3,"startColumn":1,"endLine":2,"endColumn":8}
-{"startLine":3,"startColumn":1,"endLine":2,"endColumn":4}
-{"startLine":3,"startColumn":1,"endLine":2,"endColumn":0}
-{"startLine":3,"startColumn":1,"endLine":2,"endColumn":4}
+function foo()
+{
+    retu>rn 42;
+}<
+function foo()
+{
+    >return 42;
+}<
+function foo()
+{
+>    return 42;
+}<
+function foo()
+{
+    >return 42;
+}<
 

@@ -31,6 +31,8 @@
 #include "config.h"
 #include "WebTestInterfaces.h"
 
+#include "MockWebMediaStreamCenter.h"
+#include "MockWebRTCPeerConnectionHandler.h"
 #include "TestInterfaces.h"
 #include "TestRunner.h"
 
@@ -39,18 +41,17 @@ using namespace WebKit;
 namespace WebTestRunner {
 
 WebTestInterfaces::WebTestInterfaces()
+    : m_interfaces(new TestInterfaces())
 {
-    m_interfaces = new TestInterfaces;
 }
 
 WebTestInterfaces::~WebTestInterfaces()
 {
-    delete m_interfaces;
 }
 
-void WebTestInterfaces::setWebView(WebView* webView)
+void WebTestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 {
-    m_interfaces->setWebView(webView);
+    m_interfaces->setWebView(webView, proxy);
 }
 
 void WebTestInterfaces::setDelegate(WebTestDelegate* delegate)
@@ -73,9 +74,9 @@ void WebTestInterfaces::setTestIsRunning(bool running)
     m_interfaces->setTestIsRunning(running);
 }
 
-WebView* WebTestInterfaces::webView() const
+void WebTestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generatePixels)
 {
-    return m_interfaces->webView();
+    m_interfaces->configureForTestWithURL(testURL, generatePixels);
 }
 
 WebTestRunner* WebTestInterfaces::testRunner()
@@ -85,7 +86,19 @@ WebTestRunner* WebTestInterfaces::testRunner()
 
 TestInterfaces* WebTestInterfaces::testInterfaces()
 {
-    return m_interfaces;
+    return m_interfaces.get();
 }
+
+#if ENABLE_WEBRTC
+WebMediaStreamCenter* WebTestInterfaces::createMediaStreamCenter(WebMediaStreamCenterClient* client)
+{
+    return new MockWebMediaStreamCenter(client);
+}
+
+WebRTCPeerConnectionHandler* WebTestInterfaces::createWebRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient* client)
+{
+    return new MockWebRTCPeerConnectionHandler(client, m_interfaces.get());
+}
+#endif // ENABLE_WEBRTC
 
 }

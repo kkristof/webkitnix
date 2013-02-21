@@ -64,9 +64,6 @@ class ViewportConstraints;
 class ScrollingTree;
 #endif
 
-IntSize scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition,
-    const IntPoint& scrollOrigin, float frameScaleFactor, bool fixedElementsLayoutRelativeToFrame);
-
 enum SetOrSyncScrollingLayerPosition {
     SetScrollingLayerPosition,
     SyncScrollingLayerPosition
@@ -127,6 +124,10 @@ public:
     virtual void syncChildPositions(const LayoutRect&) { }
     virtual String scrollingStateTreeAsText() const;
     virtual bool isRubberBandInProgress() const { return false; }
+    virtual bool rubberBandsAtBottom() const { return false; }
+    virtual void setRubberBandsAtBottom(bool) { }
+    virtual bool rubberBandsAtTop() const { return false; }
+    virtual void setRubberBandsAtTop(bool) { }
 
     // Generated a unique id for scroll layers.
     ScrollingNodeID uniqueScrollLayerID();

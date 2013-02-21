@@ -1,3 +1,189 @@
+2013-02-15  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Spread the gyp build files throughout the tree
+        https://bugs.webkit.org/show_bug.cgi?id=109960
+
+        Reviewed by Dirk Pranke.
+
+        * gyp/Configuration.gypi.in: Remove the 'Source', since now it cannot be shared.
+        * gyp/run-gyp: Update the path to the JavaScriptCore gypfile.
+
+2013-02-15  Martin Robinson  <mrobinson@igalia.com>
+
+        Unreviewed, rolling out parts of r142731.
+        http://trac.webkit.org/changeset/142731
+        https://bugs.webkit.org/show_bug.cgi?id=109672
+
+        This patch broke the GTK+ gyp build. Roll out the changes there,
+        since they were actually unnecessary.
+
+        * gyp/Configuration.gypi.in:
+        * gyp/Dependencies.gyp:
+        * gyp/JavaScriptCore.gyp:
+        * gyp/WTF.gyp:
+
+2013-02-13  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] window.open passes height and width parameters even if not defined in a page
+        https://bugs.webkit.org/show_bug.cgi?id=107705
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Do not resize window when default size is requested.
+
+        * WebCoreSupport/ChromeClientGtk.cpp:
+        (WebKit::ChromeClient::setWindowRect):
+
+2013-02-13  Andrew Wilson  <atwilson@chromium.org>
+
+        Unreviewed Chromium gyp-file cleanup after glib backend removal.
+        https://bugs.webkit.org/show_bug.cgi?id=109672
+
+        Removed references to GLib unicode backend:
+
+        * gyp/Configuration.gypi.in:
+        * gyp/Dependencies.gyp:
+        * gyp/JavaScriptCore.gyp:
+        * gyp/WTF.gyp:
+
+2013-02-12  Martin Robinson  <mrobinson@igalia.com>
+
+        2013-02-10  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Connect the gyp build to autoconf
+        https://bugs.webkit.org/show_bug.cgi?id=109360
+
+        Reviewed by Dirk Pranke.
+
+        Move Configuration.gypi to Configuration.gypi.in and allow autoconf to
+        fill in variables during a configuration phase. Also add some scripts
+        to support connecting autoconf up to the gyp build. This allows us
+        to have a very autotools-esque experience.
+
+        * gyp/Configuration.gypi: Removed.
+        * gyp/Configuration.gypi.in: Added. Fleshed out Configuration.gypi to include
+        dependency CFLAGS and LIBS directly from configure. Due to the way we are
+        generating the gyp build now, we also need to include an absolute path to
+        the build directory. Fixing bugs in gyp should allow us to avoid this in the
+        future.
+        * gyp/Dependencies.gyp: Added this file which holds external dependency targets.
+        We could consider auto-generating this at some point.
+        * gyp/JavaScriptCore.gyp: Remove references to the old Configuration.gypi.
+        It's now included via the command-line -I flag. Update to support the new
+        s/default/global/g terminology for variables.
+        * gyp/WTF.gyp: Remove the dependency targets as this is now handled entirely
+        by autoconf.
+        * gyp/autogen.sh: Added. Set up the build directory and kick off autoconf.
+        * gyp/configure.ac: Added. An autoconf build that re-uses much of our
+        existing autoconf setup.
+        * gyp/run-gyp: Added. Script for invoking gyp for out-of-tree builds.
+
+2013-02-12  Huang Dongsung  <luxtella@company100.net>
+
+        [TexMap] Apply frames-per-second debug counter to WK1.
+        https://bugs.webkit.org/show_bug.cgi?id=109540
+
+        Reviewed by Noam Rosenthal.
+
+        Make AcceleratedCompositingContext use TextureMapperFPSCounter.
+
+        * WebCoreSupport/AcceleratedCompositingContext.h:
+        * WebCoreSupport/AcceleratedCompositingContextGL.cpp:
+        (WebKit::AcceleratedCompositingContext::compositeLayersToContext):
+
+2013-02-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Disable delete button controller on non-Mac ports and delete EditorClient::shouldShowDeleteInterface
+        https://bugs.webkit.org/show_bug.cgi?id=109534
+
+        Reviewed by Anders Carlsson.
+
+        * WebCoreSupport/EditorClientGtk.cpp:
+        (WebKit):
+        * WebCoreSupport/EditorClientGtk.h:
+        (EditorClient):
+        * webkit/webkitwebview.cpp:
+        (webkit_web_view_class_init):
+
+2013-02-11  Benjamin Poulain  <benjamin@webkit.org>
+
+        Kill TestRunner::setMinimumTimerInterval; implement the feature with InternalSettings
+        https://bugs.webkit.org/show_bug.cgi?id=109349
+
+        Reviewed by Sam Weinig.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        * WebCoreSupport/DumpRenderTreeSupportGtk.h:
+        (DumpRenderTreeSupportGtk):
+
+2013-02-10  Jae Hyun Park  <jae.park08@gmail.com>
+
+        Rename ENABLE(GLIB_SUPPORT) to USE(GLIB)
+        https://bugs.webkit.org/show_bug.cgi?id=104266
+
+        Reviewed by Philippe Normand.
+
+        Using USE(GLIB) instead of ENABLE(GLIB_SUPPORT) is more consistent with
+        the existing macro naming conventions.
+
+        From Platform.h
+        USE() - use a particular third-party library or optional OS service
+        ENABLE() - turn on a specific feature of WebKit
+
+        * gyp/Configuration.gypi:
+
+2013-02-08  Benjamin Poulain  <bpoulain@apple.com>
+
+        Move workerThreadCount from TestRunner to WebCore Internals
+        https://bugs.webkit.org/show_bug.cgi?id=109239
+
+        Reviewed by Darin Adler.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        * WebCoreSupport/DumpRenderTreeSupportGtk.h:
+        (DumpRenderTreeSupportGtk):
+
+2013-02-08  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Add an experimental gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=109003
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Add an experimental gyp build for WebKitGTK+. Currently only libjavascriptcoregtk,
+        jsc, and minidom build (and only on platforms for that support bash). To use the
+        build simply run:
+
+        $ gyp --generator-output=build --depth=. Source/WebKit/gtk/gyp/JavaScriptCore.gyp
+
+        Then enter the build directory and run make.
+
+        * gyp/Configuration.gypi: Added.
+        * gyp/JavaScriptCore.gyp: Added.
+        * gyp/WTF.gyp: Added.
+        * gyp/generate-derived-sources.sh: Added.
+
+2013-02-07  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Cleanup command-line defines
+        https://bugs.webkit.org/show_bug.cgi?id=109213
+
+        Reviewed by Xan Lopez.
+
+        * GNUmakefile.am: Remove references to flags that are now provided
+        by autotoolsconfig.h
+
+2013-02-07  Benjamin Poulain  <bpoulain@apple.com>
+
+        Move pauseAnimation/pauseTransition from TestRunner to Internals
+        https://bugs.webkit.org/show_bug.cgi?id=109107
+
+        Reviewed by Anders Carlsson.
+
+        * WebCoreSupport/DumpRenderTreeSupportGtk.cpp:
+        * WebCoreSupport/DumpRenderTreeSupportGtk.h:
+        (DumpRenderTreeSupportGtk):
+
 2013-02-07  ChangSeok Oh  <shivamidow@gmail.com>
 
         [GTK][AC] Implement opacity animation with clutter ac backend

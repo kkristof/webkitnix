@@ -87,6 +87,7 @@
 #include "TreeScope.h"
 #include "TypeConversions.h"
 #include "ViewportArguments.h"
+#include "WorkerThread.h"
 #include <wtf/text/StringBuffer.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
@@ -124,6 +125,22 @@
 #include "GraphicsLayer.h"
 #include "GraphicsLayerChromium.h"
 #include "RenderLayerBacking.h"
+#endif
+
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+#include "CDM.h"
+#include "MockCDM.h"
+#endif
+
+#if ENABLE(VIDEO_TRACK)
+#include "CaptionUserPreferences.h"
+#include "PageGroup.h"
+#endif
+
+#if ENABLE(SPEECH_SYNTHESIS)
+#include "DOMWindowSpeechSynthesis.h"
+#include "PlatformSpeechSynthesizerMock.h"
+#include "SpeechSynthesis.h"
 #endif
 
 namespace WebCore {
@@ -248,11 +265,18 @@ void Internals::resetToConsistentState(Page* page)
     if (page->inspectorController())
         page->inspectorController()->setProfilerEnabled(false);
 #endif
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(WIN)
+    page->group().captionPreferences()->setTestingMode(false);
+#endif
 }
 
 Internals::Internals(Document* document)
     : ContextDestructionObserver(document)
 {
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(WIN)
+    if (document && document->page())
+        document->page()->group().captionPreferences()->setTestingMode(true);
+#endif
 }
 
 Document* Internals::contextDocument() const
@@ -276,6 +300,15 @@ InternalSettings* Internals::settings() const
     if (!page)
         return 0;
     return InternalSettings::from(page);
+}
+
+unsigned Internals::workerThreadCount() const
+{
+#if ENABLE(WORKERS)
+    return WorkerThread::workerThreadCount();
+#else
+    return 0;
+#endif
 }
 
 String Internals::address(Node* node)
@@ -442,6 +475,16 @@ void Internals::resumeAnimations(Document* document, ExceptionCode& ec) const
     controller->resumeAnimations();
 }
 
+bool Internals::pauseAnimationAtTimeOnElement(const String& animationName, double pauseTime, Element* element, ExceptionCode& ec)
+{
+    if (!element || pauseTime < 0) {
+        ec = INVALID_ACCESS_ERR;
+        return false;
+    }
+    AnimationController* controller = frame()->animation();
+    return controller->pauseAnimationAtTime(element->renderer(), AtomicString(animationName), pauseTime);
+}
+
 bool Internals::pauseAnimationAtTimeOnPseudoElement(const String& animationName, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
 {
     if (!element || pauseTime < 0) {
@@ -461,6 +504,16 @@ bool Internals::pauseAnimationAtTimeOnPseudoElement(const String& animationName,
     }
 
     return frame()->animation()->pauseAnimationAtTime(pseudoElement->renderer(), AtomicString(animationName), pauseTime);
+}
+
+bool Internals::pauseTransitionAtTimeOnElement(const String& propertyName, double pauseTime, Element* element, ExceptionCode& ec)
+{
+    if (!element || pauseTime < 0) {
+        ec = INVALID_ACCESS_ERR;
+        return false;
+    }
+    AnimationController* controller = frame()->animation();
+    return controller->pauseTransitionAtTime(element->renderer(), propertyName, pauseTime);
 }
 
 bool Internals::pauseTransitionAtTimeOnPseudoElement(const String& property, double pauseTime, Element* element, const String& pseudoId, ExceptionCode& ec)
@@ -780,6 +833,20 @@ void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& s
         ec = INVALID_ACCESS_ERR;
 }
 
+#if ENABLE(SPEECH_SYNTHESIS)
+void Internals::enableMockSpeechSynthesizer()
+{
+    Document* document = contextDocument();
+    if (!document || !document->domWindow())
+        return;
+    SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(document->domWindow());
+    if (!synthesis)
+        return;
+    
+    synthesis->setPlatformSynthesizer(PlatformSpeechSynthesizerMock::create(synthesis));
+}
+#endif
+    
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
 {
 #if ENABLE(PAGE_POPUP)
@@ -1338,17 +1405,29 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int x, int y, 
         return 0;
     }
 
-    return document->nodesFromRect(x, y, topPadding, rightPadding, bottomPadding, leftPadding, ignoreClipping, allowShadowContent);
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active;
+    if (ignoreClipping)
+        hitType |= HitTestRequest::IgnoreClipping;
+    if (allowShadowContent)
+        hitType |= HitTestRequest::AllowShadowContent;
+
+    return document->nodesFromRect(x, y, topPadding, rightPadding, bottomPadding, leftPadding, hitType);
 }
 
 void Internals::emitInspectorDidBeginFrame()
 {
-    InspectorInstrumentation::didBeginFrame(contextDocument()->frame()->page());
+#if ENABLE(INSPECTOR)
+    InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
+    inspectorController->didBeginFrame();
+#endif
 }
 
 void Internals::emitInspectorDidCancelFrame()
 {
-    InspectorInstrumentation::didCancelFrame(contextDocument()->frame()->page());
+#if ENABLE(INSPECTOR)
+    InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
+    inspectorController->didCancelFrame();
+#endif
 }
 
 void Internals::setBatteryStatus(Document* document, const String& eventType, bool charging, double chargingTime, double dischargingTime, double level, ExceptionCode& ec)
@@ -1911,5 +1990,12 @@ void Internals::setUsesOverlayScrollbars(bool enabled)
 {
     WebCore::Settings::setUsesOverlayScrollbars(enabled);
 }
+
+#if ENABLE(ENCRYPTED_MEDIA_V2)
+void Internals::initializeMockCDM()
+{
+    CDM::registerCDMFactory(MockCDM::create, MockCDM::supportsKeySytem);
+}
+#endif
 
 }

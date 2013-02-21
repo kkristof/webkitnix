@@ -666,6 +666,8 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArgumen
         computed.maximumScale = max(computed.maximumScale, m_webView->maxPageScaleFactor);
         computed.userScalable = true;
     }
+    if (arguments.zoom == ViewportArguments::ValueAuto && !m_webView->settingsImpl()->initializeAtMinimumPageScale())
+        computed.initialScale = 1.0f;
     if (!m_webView->settingsImpl()->applyDeviceScaleFactorInCompositor())
         computed.initialScale *= deviceScaleFactor;
 
@@ -797,7 +799,7 @@ void ChromeClientImpl::popupOpened(PopupContainer* popupContainer,
     // to interact via the keyboard with an invisible popup.
     if (popupContainer->popupType() == PopupContainer::Suggestion) {
         FrameView* view = m_webView->page()->mainFrame()->view();
-        IntRect visibleRect = view->visibleContentRect(true /* include scrollbars */);
+        IntRect visibleRect = view->visibleContentRect(ScrollableArea::IncludeScrollbars);
         // |bounds| is in screen coordinates, so make sure to convert it to
         // content coordinates prior to comparing to |visibleRect|.
         IntRect screenRect = bounds;
@@ -1095,11 +1097,11 @@ bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType&
 {
     const char* kDialogs[] = {"alert", "confirm", "prompt", "showModalDialog"};
     int dialog = static_cast<int>(dialogType);
-    ASSERT(0 <= dialog && dialog < static_cast<int>(arraysize(kDialogs)));
+    ASSERT_WITH_SECURITY_IMPLICATION(0 <= dialog && dialog < static_cast<int>(arraysize(kDialogs)));
 
     const char* kDismissals[] = {"beforeunload", "pagehide", "unload"};
     int dismissal = static_cast<int>(dismissalType) - 1; // Exclude NoDismissal.
-    ASSERT(0 <= dismissal && dismissal < static_cast<int>(arraysize(kDismissals)));
+    ASSERT_WITH_SECURITY_IMPLICATION(0 <= dismissal && dismissal < static_cast<int>(arraysize(kDismissals)));
 
     WebKit::Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
 

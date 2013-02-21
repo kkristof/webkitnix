@@ -103,7 +103,7 @@ PassRefPtr<BitmapTexture> CoordinatedBackingStore::texture() const
 
 void CoordinatedBackingStore::setSize(const FloatSize& size)
 {
-    m_size = size;
+    m_pendingSize = size;
 }
 
 void CoordinatedBackingStore::paintTilesToTextureMapper(Vector<TextureMapperTile*>& tiles, TextureMapper* textureMapper, const TransformationMatrix& transform, float opacity, BitmapTexture* mask, const FloatRect& rect)
@@ -169,11 +169,16 @@ void CoordinatedBackingStore::drawRepaintCounter(TextureMapper* textureMapper, i
     TransformationMatrix adjustedTransform = transform * adjustedTransformForRect(targetRect);
     CoordinatedBackingStoreTileMap::iterator end = m_tiles.end();
     for (CoordinatedBackingStoreTileMap::iterator it = m_tiles.begin(); it != end; ++it)
-        textureMapper->drawRepaintCounter(repaintCount, borderColor, it->value.rect().location(), adjustedTransform);
+        textureMapper->drawNumber(repaintCount, borderColor, it->value.rect().location(), adjustedTransform);
 }
 
 void CoordinatedBackingStore::commitTileOperations(TextureMapper* textureMapper)
 {
+    if (!m_pendingSize.isZero()) {
+        m_size = m_pendingSize;
+        m_pendingSize = FloatSize();
+    }
+
     HashSet<uint32_t>::iterator tilesToRemoveEnd = m_tilesToRemove.end();
     for (HashSet<uint32_t>::iterator it = m_tilesToRemove.begin(); it != tilesToRemoveEnd; ++it)
         m_tiles.remove(*it);

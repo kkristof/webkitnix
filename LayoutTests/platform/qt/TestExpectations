@@ -115,6 +115,7 @@ fast/events/constructors/mouse-event-constructor.html
 fast/events/constructors/composition-event-constructor.html
 fast/events/constructors/wheel-event-constructor.html
 fast/events/constructors/keyboard-event-constructor.html
+fast/events/constructors/focus-event-constructor.html
 
 # ENABLE(INDEXED_DATABASE) is disabled.
 storage/indexeddb
@@ -398,9 +399,6 @@ http/tests/multipart
 fast/hidpi
 svg/as-image/image-respects-deviceScaleFactor.html
 
-# Web Intents is not yet enabled.
-webintents/
-
 # Pointer Lock is not implemented.
 pointer-lock/
 http/tests/pointer-lock/
@@ -480,6 +478,9 @@ webkit.org/b/61138 http/tests/w3c/webperf/submission/Intel/resource-timing
 
 # Missing eventSender.scheduleAsynchronousKeyDown() implementation
 fast/dom/MutationObserver/inline-event-listener.html
+
+# X-Content-Type-Options (ENABLE_NOSNIFF) is not enabled.
+http/tests/security/contentTypeOptions
 
 # =========================================================================== #
 #       Drag and Drop Support in DRT.                                         #
@@ -635,12 +636,6 @@ http/tests/history/back-with-fragment-change.php
 # https://bugs.webkit.org/show_bug.cgi?id=62741
 http/tests/appcache/video.html
 
-# [Qt] New tests introduced in r84742 fail
-# https://bugs.webkit.org/show_bug.cgi?id=59334
-http/tests/misc/will-send-request-returns-null-on-redirect.html
-http/tests/security/XFrameOptions/x-frame-options-deny.html
-http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html
-
 # https://bugs.webkit.org/show_bug.cgi?id=56691
 http/tests/inspector/network/network-size-chunked.html
 http/tests/inspector/network/network-size-sync.html
@@ -665,6 +660,9 @@ http/tests/misc/redirect-to-external-url.html
 # [Qt] http/tests/cookies/js-get-and-set-http-only-cookie.html failing since introduction in r119947
 # https://bugs.webkit.org/show_bug.cgi?id=87208
 http/tests/cookies/js-get-and-set-http-only-cookie.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=109799
+webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Skip ]
 
 # =========================================================================== #
 #       Failing xmlhttprequest tests                                          #
@@ -1200,6 +1198,10 @@ css3/filters/custom/filter-repaint-custom-rotated.html
 css3/filters/custom/filter-repaint-custom.html
 css3/filters/custom-with-at-rule-syntax/parsing-custom-function-invalid.html
 css3/filters/custom-with-at-rule-syntax/parsing-custom-function-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-at-rule-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-at-rule-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-src-property-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-src-property-valid.html
 
 # The following tests need further investigation:
 # https://bugs.webkit.org/show_bug.cgi?id=101531
@@ -1346,11 +1348,14 @@ svg/animations/animate-elem-08-t-drt.html
 
 # [Qt] Diverging test results on 32/64 bit architectures
 # https://bugs.webkit.org/show_bug.cgi?id=82601
+compositing/transitions/transform-on-large-layer.html
 fast/repaint/moving-shadow-on-container.html
 fast/repaint/moving-shadow-on-path.html
 ietestcenter/css3/valuesandunits/units-010.htm
 inspector/audits/audits-panel-functional.html
+http/tests/inspector/console-cross-origin-iframe-logging.html
 http/tests/inspector-enabled/console-clear-arguments-on-frame-navigation.html
+http/tests/inspector-enabled/console-clear-arguments-on-frame-remove.html
 svg/W3C-SVG-1.1/paths-data-03-f.svg
 svg/css/stars-with-shadow.html
 svg/custom/use-on-symbol-inside-pattern.svg
@@ -1368,6 +1373,12 @@ fast/regions/autoheight-singleregion-breakbeforealways-minheight.html
 # [Qt] svg/css/text-gradient-shadow.svg fails
 # https://bugs.webkit.org/show_bug.cgi?id=92734
 svg/css/text-gradient-shadow.svg
+
+# These tests need to be rebaselined after https://bugs.webkit.org/show_bug.cgi?id=99984
+webkit.org/b/99984 svg/as-image/image-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/99984 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
+webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-svgdom-preserveAspectRatio-prop.html [ ImageOnlyFailure Pass ]
 
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=105437
 webkit.org/b/105437 svg/W3C-SVG-1.1-SE/filters-image-03-f.svg [ ImageOnlyFailure Pass ]
@@ -1411,6 +1422,8 @@ webkit.org/b/105437 svg/filters/feImage-target-style-change.svg [ ImageOnlyFailu
 
 webkit.org/b/106957 svg/dom/SVGViewSpec-invalid-ref-crash.html [ Failure ]
 
+# New test, needs platform results
+webkit.org/b/106221 svg/filters/filter-hidden-content.svg [ Failure Pass ]
 
 # ============================================================================= #
 # Failing CSS Tests
@@ -1668,6 +1681,7 @@ fast/block/positioning/absolute-in-inline-ltr.html
 fast/block/positioning/absolute-in-inline-rtl-2.html
 fast/block/positioning/absolute-in-inline-rtl-3.html
 fast/block/positioning/absolute-in-inline-rtl.html
+fast/borders/border-image-02.html
 fast/borders/border-image-omit-right-slice.html
 fast/borders/borderRadiusAllStylesAllCorners.html
 fast/borders/borderRadiusDashed01.html
@@ -1722,7 +1736,6 @@ fast/text/international/bidi-LDB-2-CSS.html
 fast/text/international/bidi-control-chars-treated-as-ZWS.html
 fast/text/international/bidi-european-terminators.html
 fast/text/international/bidi-explicit-embedding.html
-fast/text/international/bidi-ignored-for-first-child-inline.html
 fast/text/international/bidi-innertext.html
 fast/text/international/bidi-linebreak-001.html
 fast/text/international/bidi-linebreak-002.html
@@ -1884,6 +1897,16 @@ fast/spatial-navigation/snav-media-elements.html
 fast/layers/no-clipping-overflow-hidden-added-after-transform.html
 fast/layers/no-clipping-overflow-hidden-added-after-transition.html
 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html
+
+# [Qt] New fast/forms/number/number-l10n-input.html test fails after r142122.
+webkit.org/b/109224 fast/forms/number/number-l10n-input.html [ Skip ]
+
+# [Qt] New fast/flexbox/line-clamp-link-after-ellipsis.html layout test is failing since r142335.
+webkit.org/b/109353 fast/flexbox/line-clamp-link-after-ellipsis.html [ Skip ]
+
+webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ Skip ]
+
+webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Skip ]
 
 # ============================================================================= #
 # failing security tests
@@ -2094,6 +2117,11 @@ http/tests/loading/preload-slow-loading.php
 http/tests/security/contentSecurityPolicy/media-src-allowed.html
 http/tests/security/contentSecurityPolicy/media-src-blocked.html
 
+# [Qt] Migrate to Ubuntu 12.04.
+compositing/visibility/visibility-simple-webgl-layer.html
+css2.1/t0805-c5519-brdr-r-01-e.html
+css2.1/t0905-c5525-fltblck-00-d-ag.html
+
 # [Qt]fast/events/remove-target-in-mouseup* tests fail
 # https://bugs.webkit.org/show_bug.cgi?id=60833
 fast/events/remove-target-in-mouseup-deep.html
@@ -2242,6 +2270,8 @@ svg/transforms/transformed-text-fill-gradient.html
 fast/regions/floats-basic-in-variable-width-regions.html
 fast/regions/region-style-rule-position.html
 fast/forms/select/intrinsic-min-width-applies-with-fixed-width.html
+webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ ImageOnlyFailure ]
+webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse.html [ ImageOnlyFailure ]
 
 # Failing fast/css/sticky/ tests with minor pixel differences
 # https://bugs.webkit.org/show_bug.cgi?id=92080
@@ -2392,7 +2422,6 @@ Bug(_qt_slow) [ Debug ] editing/selection/dump-as-markup.html [ Pass Slow ]
 Bug(_qt_slow) [ Debug ] fast/js/array-sort-modifying-tostring.html [ Pass Timeout ]
 Bug(_qt_slow) [ Debug ] fast/overflow/lots-of-sibling-inline-boxes.html [ Pass Slow ]
 Bug(_qt_slow) [ Debug ] fast/js/dfg-inline-function-dot-caller.html [ Pass Slow ]
-Bug(_qt_slow) [ Debug ] fast/js/dfg-poison-fuzz.html [ Pass Slow ]
 
 webkit.org/b/62662 [ Debug ] inspector/cookie-parser.html [ Crash Pass ]
 
@@ -2447,8 +2476,6 @@ webkit.org/b/108429 svg/custom/text-ctm.svg [ Pass Failure ]
 # Disable webaudio codec tests, including proprietary codecs.
 webkit.org/b/88794 webaudio/codec-tests
 
-webkit.org/b/90007 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
-
 # Skip tests in fast/text/shaping
 webkit.org/b/90951 fast/text/shaping
 
@@ -2471,6 +2498,7 @@ webkit.org/b/23166 ietestcenter/css3/bordersbackgrounds/border-radius-clip-002.h
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
 webkit.org/b/104822 css3/supports-cssom.html
+webkit.org/b/100324 css3/supports-dom-api.html
 
 # CSS Device Adaptation is not enabled.
 webkit.org/b/95969 css3/device-adapt [ Skip ]
@@ -2494,6 +2522,7 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-stack-trace.html
+webkit.org/b/73936 inspector/profiler/canvas2d/canvas-replay-log-grid.html
 
 # [Qt] Unidentified pixel failures
 webkit.org/b/99306 animations/additive-transform-animations.html [ ImageOnlyFailure ]
@@ -2523,16 +2552,11 @@ webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while
 webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Skip ]
 webkit.org/b/101670 media/video-controls-captions-trackmenu-sorted.html [ Skip ]
 webkit.org/b/101670 media/video-controls-captions-trackmenu-localized.html [ Skip ]
+webkit.org/b/101670 media/video-controls-captions-trackmenu-hide-on-click.html [ Skip ]
+webkit.org/b/101670 media/track/track-user-preferences.html [ Skip ]
 
 # New, but failing test
 webkit.org/b/101035 fast/images/exif-orientation-image-document.html
-
-# These tests need to be rebaselined after https://bugs.webkit.org/show_bug.cgi?id=65643
-webkit.org/b/101397 svg/repaint/repaint-webkit-svg-shadow.svg
-webkit.org/b/101397 svg/css/composite-shadow-text.svg
-webkit.org/b/101397 svg/custom/simple-text-double-shadow.svg
-webkit.org/b/101397 svg/css/clippath-with-shadow.svg
-webkit.org/b/101397 svg/css/arrow-with-shadow.svg
 
 # Fails after test refactoring, maybe rebaseline needed
 webkit.org/b/98523 fast/images/repaint-subrect-grid.html
@@ -2559,6 +2583,7 @@ webkit.org/b/108257 compositing/overflow/automatically-opt-into-composited-scrol
 # No support for exposing in-band text tracks
 webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-cues-added-once.html [ Skip ]
+webkit.org/b/103769 media/track/track-in-band-style.html [ Skip ]
 
 webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
 
@@ -2602,10 +2627,7 @@ webkit.org/b/39725 fast/events/drag-and-drop-autoscroll.html [ Skip ]
 inspector/editor/text-editor-formatter.html
 inspector/editor/text-editor-word-jumps.html
 inspector/editor/text-editor-home-button.html
-
-# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=14664
-webkit.org/b/107476 fast/block/float/024.html [ Failure ]
-webkit.org/b/107476 fast/block/margin-collapse/empty-clear-blocks.html [ Failure ]
+inspector/editor/text-editor-smart-braces.html
 
 # [Qt] REGRESSION(r141634) test failing
 webkit.org/b/108813 compositing/visibility/visibility-image-layers-dynamic.html [ Skip ]
@@ -2617,3 +2639,18 @@ webkit.org/b/108676 svg/custom/svg-fonts-in-text-controls.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/floating-to-non-floating.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/static-positioned-to-absolute-positioned.html [ Skip ]
+
+# Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109775
+webkit.org/b/109775 media/audio-controls-rendering.html [ Failure ]
+webkit.org/b/109775 media/controls-after-reload.html [ Failure ]
+webkit.org/b/109775 media/controls-strict.html [ Failure ]
+webkit.org/b/109775 media/controls-styling-strict.html [ Failure ]
+webkit.org/b/109775 media/controls-without-preload.html [ Failure ]
+webkit.org/b/109775 media/video-controls-rendering.html [ Failure ]
+webkit.org/b/109775 media/video-display-toggle.html [ Failure ]
+webkit.org/b/109775 media/video-playing-and-pause.html [ Failure ]
+
+webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
+
+# New test introduced in r143073 that never passed on Qt and EFL.
+webkit.org/b/110054 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]

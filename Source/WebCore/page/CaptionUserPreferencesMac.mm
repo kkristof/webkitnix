@@ -25,7 +25,7 @@
 
 #import "config.h"
 
-#if ENABLE(VIDEO_TRACK)
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(IOS)
 
 #import "CaptionUserPreferencesMac.h"
 
@@ -36,15 +36,17 @@
 #import "KURL.h"
 #import "Language.h"
 #import "LocalizedStrings.h"
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-#import "MediaAccessibility/MediaAccessibility.h"
-#endif
+#import "Logging.h"
 #import "PageGroup.h"
 #import "SoftLinking.h"
 #import "TextTrackCue.h"
 #import "UserStyleSheetTypes.h"
 #import <wtf/RetainPtr.h>
 #import <wtf/text/StringBuilder.h>
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
+#import "MediaAccessibility/MediaAccessibility.h"
+#endif
 
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
 
@@ -100,34 +102,54 @@ CaptionUserPreferencesMac::~CaptionUserPreferencesMac()
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
 bool CaptionUserPreferencesMac::userPrefersCaptions() const
 {
+    if (testingMode() || !MediaAccessibilityLibrary())
+        return CaptionUserPreferences::userPrefersCaptions();
+
     return MACaptionAppearanceGetShowCaptions(kMACaptionAppearanceDomainUser);
 }
 
 void CaptionUserPreferencesMac::setUserPrefersCaptions(bool preference)
 {
+    if (testingMode() || !MediaAccessibilityLibrary()) {
+        CaptionUserPreferences::setUserPrefersCaptions(preference);
+        return;
+    }
+
     MACaptionAppearanceSetShowCaptions(kMACaptionAppearanceDomainUser, preference);
 }
 
-void CaptionUserPreferencesMac::registerForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener* listener)
+bool CaptionUserPreferencesMac::userHasCaptionPreferences() const
 {
-    ASSERT(!m_captionPreferenceChangeListeners.contains(listener));
+    if (testingMode() || !MediaAccessibilityLibrary())
+        return CaptionUserPreferences::userHasCaptionPreferences();
+
+    return true;
+}
+
+void CaptionUserPreferencesMac::registerForPreferencesChangedCallbacks(CaptionPreferencesChangedListener* listener)
+{
+    CaptionUserPreferences::registerForPreferencesChangedCallbacks(listener);
+
+    if (!MediaAccessibilityLibrary())
+        return;
 
     if (!kMAXCaptionAppearanceSettingsChangedNotification)
         return;
-    
+
     if (!m_listeningForPreferenceChanges) {
         m_listeningForPreferenceChanges = true;
-        CFNotificationCenterAddObserver (CFNotificationCenterGetLocalCenter(), this, userCaptionPreferencesChangedNotificationCallback, kMAXCaptionAppearanceSettingsChangedNotification, NULL, CFNotificationSuspensionBehaviorCoalesce);
-        updateCaptionStyleSheetOveride();
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this, userCaptionPreferencesChangedNotificationCallback, kMAXCaptionAppearanceSettingsChangedNotification, NULL, CFNotificationSuspensionBehaviorCoalesce);
     }
     
-    m_captionPreferenceChangeListeners.add(listener);
+    updateCaptionStyleSheetOveride();
 }
 
-void CaptionUserPreferencesMac::unregisterForCaptionPreferencesChangedCallbacks(CaptionPreferencesChangedListener* listener)
+void CaptionUserPreferencesMac::captionPreferencesChanged()
 {
-    if (kMAXCaptionAppearanceSettingsChangedNotification)
-        m_captionPreferenceChangeListeners.remove(listener);
+    if (havePreferenceChangeListeners())
+        updateCaptionStyleSheetOveride();
+
+    CaptionUserPreferences::captionPreferencesChanged();
 }
 
 String CaptionUserPreferencesMac::captionsWindowCSS() const
@@ -139,8 +161,11 @@ String CaptionUserPreferencesMac::captionsWindowCSS() const
     if (!windowColor.isValid())
         windowColor = Color::transparent;
 
+    bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
     CGFloat opacity = MACaptionAppearanceGetWindowOpacity(kMACaptionAppearanceDomainUser, &behavior);
-    String windowStyle = colorPropertyCSS(CSSPropertyBackgroundColor, Color(windowColor.red(), windowColor.green(), windowColor.blue(), static_cast<int>(opacity * 255)), behavior == kMACaptionAppearanceBehaviorUseValue);
+    if (!important)
+        important = behavior == kMACaptionAppearanceBehaviorUseValue;
+    String windowStyle = colorPropertyCSS(CSSPropertyBackgroundColor, Color(windowColor.red(), windowColor.green(), windowColor.blue(), static_cast<int>(opacity * 255)), important);
 
     if (!opacity)
         return windowStyle;
@@ -148,10 +173,7 @@ String CaptionUserPreferencesMac::captionsWindowCSS() const
     StringBuilder builder;
     builder.append(windowStyle);
     builder.append(getPropertyNameString(CSSPropertyPadding));
-    builder.append(": .2em");
-    if (behavior == kMACaptionAppearanceBehaviorUseValue)
-        builder.append(" !important");
-    builder.append(';');
+    builder.append(": .4em !important;");
     
     return builder.toString();
 }
@@ -169,8 +191,11 @@ String CaptionUserPreferencesMac::captionsBackgroundCSS() const
     if (!backgroundColor.isValid())
         backgroundColor = defaultBackgroundColor;
 
+    bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
     CGFloat opacity = MACaptionAppearanceGetBackgroundOpacity(kMACaptionAppearanceDomainUser, 0);
-    String backgroundStyle = colorPropertyCSS(CSSPropertyBackgroundColor, Color(backgroundColor.red(), backgroundColor.green(), backgroundColor.blue(), static_cast<int>(opacity * 255)), behavior == kMACaptionAppearanceBehaviorUseValue);
+    if (!important)
+        important = behavior == kMACaptionAppearanceBehaviorUseValue;
+    String backgroundStyle = colorPropertyCSS(CSSPropertyBackgroundColor, Color(backgroundColor.red(), backgroundColor.green(), backgroundColor.blue(), static_cast<int>(opacity * 255)), important);
 
     if (!opacity)
         return backgroundStyle;
@@ -195,8 +220,10 @@ Color CaptionUserPreferencesMac::captionsTextColor(bool& important) const
         // This default value must be the same as the one specified in mediaControls.css for -webkit-media-text-track-container.
         textColor = Color::white;
     
-    CGFloat opacity = MACaptionAppearanceGetForegroundOpacity(kMACaptionAppearanceDomainUser, &behavior);
     important = behavior == kMACaptionAppearanceBehaviorUseValue;
+    CGFloat opacity = MACaptionAppearanceGetForegroundOpacity(kMACaptionAppearanceDomainUser, &behavior);
+    if (!important)
+        important = behavior == kMACaptionAppearanceBehaviorUseValue;
     return Color(textColor.red(), textColor.green(), textColor.blue(), static_cast<int>(opacity * 255));
 }
     
@@ -333,6 +360,9 @@ String CaptionUserPreferencesMac::captionsDefaultFontCSS() const
 
 String CaptionUserPreferencesMac::captionsStyleSheetOverride() const
 {
+    if (testingMode() || !MediaAccessibilityLibrary())
+        return CaptionUserPreferences::captionsStyleSheetOverride();
+
     StringBuilder captionsOverrideStyleSheet;
 
     String background = captionsBackgroundCSS();
@@ -368,11 +398,16 @@ String CaptionUserPreferencesMac::captionsStyleSheetOverride() const
         captionsOverrideStyleSheet.append('}');
     }
 
+    LOG(Media, "CaptionUserPreferencesMac::captionsStyleSheetOverrideSetting sytle to:\n%s", captionsOverrideStyleSheet.toString().utf8().data());
+
     return captionsOverrideStyleSheet.toString();
 }
 
 float CaptionUserPreferencesMac::captionFontSizeScale(bool& important) const
 {
+    if (testingMode() || !MediaAccessibilityLibrary())
+        return CaptionUserPreferences::captionFontSizeScale(important);
+
     MACaptionAppearanceBehavior behavior;
     CGFloat characterScale = CaptionUserPreferences::captionFontSizeScale(important);
     CGFloat scaleAdjustment = MACaptionAppearanceGetRelativeCharacterSize(kMACaptionAppearanceDomainUser, &behavior);
@@ -386,17 +421,6 @@ float CaptionUserPreferencesMac::captionFontSizeScale(bool& important) const
 #else
     return scaleAdjustment * characterScale;
 #endif
-}
-
-void CaptionUserPreferencesMac::captionPreferencesChanged()
-{
-    if (m_captionPreferenceChangeListeners.isEmpty())
-        return;
-
-    updateCaptionStyleSheetOveride();
-
-    for (HashSet<CaptionPreferencesChangedListener*>::iterator i = m_captionPreferenceChangeListeners.begin(); i != m_captionPreferenceChangeListeners.end(); ++i)
-        (*i)->captionPreferencesChanged();
 }
 
 void CaptionUserPreferencesMac::updateCaptionStyleSheetOveride()
@@ -414,26 +438,46 @@ void CaptionUserPreferencesMac::updateCaptionStyleSheetOveride()
              Vector<String>(), InjectInAllFrames, UserStyleAuthorLevel, InjectInExistingDocuments);
 }
 
-void CaptionUserPreferencesMac::setPreferredLanguage(String language) const
+void CaptionUserPreferencesMac::setPreferredLanguage(String language)
 {
+    if (testingMode() || !MediaAccessibilityLibrary()) {
+        CaptionUserPreferences::setPreferredLanguage(language);
+        return;
+    }
+
     MACaptionAppearanceAddSelectedLanguage(kMACaptionAppearanceDomainUser, language.createCFString().get());
 }
 
 Vector<String> CaptionUserPreferencesMac::preferredLanguages() const
 {
-    Vector<String> override = userPreferredLanguagesOverride();
-    if (!override.isEmpty())
-        return override;
+    if (testingMode() || !MediaAccessibilityLibrary())
+        return CaptionUserPreferences::preferredLanguages();
 
+    Vector<String> platformLanguages = platformUserPreferredLanguages();
+    Vector<String> override = userPreferredLanguagesOverride();
+    if (!override.isEmpty()) {
+        if (platformLanguages.size() != override.size())
+            return override;
+        for (size_t i = 0; i < override.size(); i++) {
+            if (override[i] != platformLanguages[i])
+                return override;
+        }
+    }
+
+    CFIndex languageCount = 0;
     RetainPtr<CFArrayRef> languages(AdoptCF, MACaptionAppearanceCopySelectedLanguages(kMACaptionAppearanceDomainUser));
-    CFIndex languageCount = CFArrayGetCount(languages.get());
+    if (languages)
+        languageCount = CFArrayGetCount(languages.get());
 
     if (!languageCount)
         return CaptionUserPreferences::preferredLanguages();
 
-    Vector<String> userPreferredLanguages(languageCount);
+    Vector<String> userPreferredLanguages;
+    userPreferredLanguages.reserveCapacity(languageCount + platformLanguages.size());
     for (CFIndex i = 0; i < languageCount; i++)
         userPreferredLanguages.append(static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages.get(), i)));
+
+    userPreferredLanguages.append(platformLanguages);
 
     return userPreferredLanguages;
 }
@@ -473,4 +517,4 @@ String CaptionUserPreferencesMac::displayNameForTrack(TextTrack* track) const
 
 }
 
-#endif // ENABLE(VIDEO_TRACK)
+#endif // ENABLE(VIDEO_TRACK) && !PLATFORM(IOS)
