@@ -274,11 +274,8 @@ void WebView::commitViewportChanges()
 
     if (!drawingArea)
         return;
-    if (m_webPageProxy->useFixedLayout()) {
-        m_webPageProxy->setViewportSize(m_size);
-    } else {
-        drawingArea->setSize(m_size, IntSize());
-    }
+
+    drawingArea->setSize(m_size, IntSize());
     drawingArea->setVisibleContentsRect(visibleRect(), FloatPoint());
 }
 
