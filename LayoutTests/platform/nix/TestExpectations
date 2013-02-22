@@ -18,16 +18,9 @@
 ################################################################################
 
 fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
-fast/dom/remove-body-during-body-replacement.html [ Skip ]
-fast/hidpi/image-set-simple.html [ Skip ]
 fast/js/sparse-array.html [ Pass Crash ]
-fast/workers/shared-worker-context-gc.html [ Skip ]
-fast/workers/worker-exception-during-navigation.html [ Skip ]
-fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.htm [ Skip ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
-storage/indexeddb/cursor-continue.html [ Skip ]
-storage/indexeddb/keypath-edges.html [ Skip ]
 
 # sometimes crash
 fast/replaced/object-with-embed-url-param.html [ Pass Crash ]
@@ -87,6 +80,209 @@ canvas/philip/tests/2d.text.draw.space.collapse.space.html [ Skip ]
 canvas/philip/tests/2d.text.draw.space.collapse.start.html [ Skip ]
 canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
+
+css1/box_properties/acid_test.html
+
+#failing css tests that need further investigation
+css1/units/rounding.html
+
+#failing css2.1 tests that need further investigation
+css2.1/20110323/inline-table-002a.htm
+css2.1/20110323/inline-table-003.htm
+
+#faling css2.1 tests
+css2.1/20110323/c541-word-sp-000.htm
+css2.1/20110323/vertical-align-boxes-001.htm
+css2.1/t09-c5526c-display-00-e.html
+css2.1/20110323/block-replaced-width-001.htm
+css2.1/t040302-c61-ex-len-00-b-a.html
+css2.1/t040302-c61-rel-len-00-b-ag.html
+css2.1/t1507-c526-font-sz-02-b-a.html
+css2.1/t1601-c547-indent-00-b-a.html
+css2.1/t1602-c43-center-00-d-ag.html
+css2.1/t1604-c542-letter-sp-00-b-a.html
+
+# failing css3 tests that need further investigation
+css3/compositing/blend-mode-property-parsing.html
+css3/compositing/blend-mode-property.html
+css3/compositing/should-have-compositing-layer.html
+css3/device-adapt/opera/cascading-001.xhtml
+css3/device-adapt/opera/cascading-002.xhtml
+css3/device-adapt/opera/cascading-003.xhtml
+css3/device-adapt/opera/cascading-004.xhtml
+css3/device-adapt/opera/constrain-001.xhtml
+css3/device-adapt/opera/constrain-004.xhtml
+css3/device-adapt/opera/constrain-005.xhtml
+css3/device-adapt/opera/constrain-006.xhtml
+css3/device-adapt/opera/constrain-007.xhtml
+css3/device-adapt/opera/constrain-008.xhtml
+css3/device-adapt/opera/constrain-009.xhtml
+css3/device-adapt/opera/constrain-010.xhtml
+css3/device-adapt/opera/constrain-011.xhtml
+css3/device-adapt/opera/constrain-013.xhtml
+css3/device-adapt/opera/constrain-014.xhtml
+css3/device-adapt/opera/constrain-015.xhtml
+css3/device-adapt/opera/constrain-016.xhtml
+css3/device-adapt/opera/constrain-017.xhtml
+css3/device-adapt/opera/constrain-018.xhtml
+css3/device-adapt/opera/constrain-019.xhtml
+css3/device-adapt/opera/constrain-020.xhtml
+css3/device-adapt/opera/constrain-021.xhtml
+css3/device-adapt/opera/constrain-022.xhtml
+css3/device-adapt/opera/constrain-023.xhtml
+css3/device-adapt/opera/constrain-024.xhtml
+css3/device-adapt/opera/cssom-001.xhtml
+css3/device-adapt/opera/orientation-001.xhtml
+css3/device-adapt/opera/syntax-001.xhtml
+css3/device-adapt/opera/syntax-002.xhtml
+css3/device-adapt/opera/syntax-003.xhtml
+css3/device-adapt/viewport-at-rule-parsing.html
+css3/device-adapt/viewport-properties-validation.html
+css3/device-adapt/viewport-width-check-window-innerwidth-correct.html
+css3/device-adapt/viewport-width-not-affecting-next-page.html
+css3/filters/custom-with-at-rule-syntax/parsing-custom-function-valid.html
+css3/filters/custom/custom-filter-animation.html
+css3/filters/custom/custom-filter-array-blending.html
+css3/filters/custom/custom-filter-mix-bindings.html
+css3/filters/custom/custom-filter-parsing-at-rule-valid.html
+css3/filters/custom/custom-filter-property-computed-style.html
+css3/filters/custom/custom-filter-property-parsing.html
+css3/filters/custom/custom-filter-transforms-animation.html
+css3/filters/custom/missing-custom-filter-shader.html
+css3/filters/filter-animation-from-none-hw.html
+css3/filters/filter-animation-from-none-multi-hw.html
+css3/filters/filter-animation-from-none-multi.html
+css3/filters/filter-animation-from-none.html
+css3/filters/filter-animation-hw.html
+css3/filters/filter-animation-multi-hw.html
+css3/filters/filter-animation-multi.html
+css3/filters/filter-animation.html
+css3/filters/filter-property-computed-style.html
+css3/filters/filter-property-parsing.html
+css3/filters/filter-property.html
+css3/filters/should-not-have-compositing-layer.html
+css3/flexbox/flex-rounding.html
+css3/selectors3/html/css3-modsel-d1.html
+css3/selectors3/html/css3-modsel-d1b.html
+css3/selectors3/html/css3-modsel-d2.html
+css3/selectors3/html/css3-modsel-d4.html
+css3/selectors3/xhtml/css3-modsel-15c.xml
+css3/selectors3/xhtml/css3-modsel-d1.xml
+css3/selectors3/xhtml/css3-modsel-d1b.xml
+css3/selectors3/xhtml/css3-modsel-d2.xml
+css3/selectors3/xhtml/css3-modsel-d3.xml
+css3/selectors3/xhtml/css3-modsel-d4.xml
+css3/selectors3/xml/css3-modsel-15c.xml
+css3/selectors3/xml/css3-modsel-d1.xml
+css3/selectors3/xml/css3-modsel-d1b.xml
+css3/selectors3/xml/css3-modsel-d2.xml
+css3/selectors3/xml/css3-modsel-d3.xml
+css3/selectors3/xml/css3-modsel-d4.xml
+css3/zoom-coords.xhtml
+
+css3/filters/add-filter-rendering.html
+css3/filters/composited-reflected.html
+css3/filters/crash-filter-change.html
+css3/filters/css-opacity-with-drop-shadow.html
+css3/filters/custom/composited/custom-filter-blend-modes.html
+css3/filters/custom/custom-filter-a-tex-coord-optional.html
+css3/filters/custom/custom-filter-array-uniform-indirect-index.html
+css3/filters/custom/custom-filter-array.html
+css3/filters/custom/custom-filter-blend-modes.html
+css3/filters/custom/custom-filter-change-blend-mode.html
+css3/filters/custom/custom-filter-clamp-css-color-matrix-negative.html
+css3/filters/custom/custom-filter-clamp-css-color-matrix.html
+css3/filters/custom/custom-filter-color-matrix.html
+css3/filters/custom/custom-filter-composite-fractional-source-alpha.html
+css3/filters/custom/custom-filter-composite-operators.html
+css3/filters/custom/custom-filter-composite-source-atop.html
+css3/filters/custom/custom-filter-css-keyword-as-parameter-name.html
+css3/filters/custom/custom-filter-detached-mesh-with-mesh-box-type.html
+css3/filters/custom/custom-filter-mesh-column-row-order.html
+css3/filters/custom/custom-filter-shader-cache.html
+css3/filters/custom/custom-filter-u-mesh-box.html
+css3/filters/custom/custom-filter-u-mesh-size.html
+css3/filters/custom/custom-filter-u-texture-size.html
+css3/filters/custom/custom-filter-u-tile-size.html
+css3/filters/custom/effect-color-check.html
+css3/filters/custom/effect-custom-combined-missing.html
+css3/filters/custom/effect-custom-parameters.html
+css3/filters/custom/effect-custom-transform-parameters.html
+css3/filters/custom/effect-custom.html
+css3/filters/custom/filter-fallback-to-software.html
+css3/filters/custom/filter-repaint-custom-clipped.html
+css3/filters/custom/filter-repaint-custom-rotated.html
+css3/filters/custom/filter-repaint-custom.html
+css3/filters/effect-blur-hw.html
+css3/filters/effect-blur.html
+css3/filters/effect-brightness-hw.html
+css3/filters/effect-brightness.html
+css3/filters/effect-combined-hw.html
+css3/filters/effect-combined.html
+css3/filters/effect-contrast-hw.html
+css3/filters/effect-contrast.html
+css3/filters/effect-drop-shadow-hw.html
+css3/filters/effect-drop-shadow.html
+css3/filters/effect-grayscale-hw.html
+css3/filters/effect-grayscale.html
+css3/filters/effect-hue-rotate-hw.html
+css3/filters/effect-hue-rotate.html
+css3/filters/effect-invert-hw.html
+css3/filters/effect-invert.html
+css3/filters/effect-opacity-hw.html
+css3/filters/effect-opacity.html
+css3/filters/effect-saturate-hw.html
+css3/filters/effect-saturate.html
+css3/filters/effect-sepia-hw.html
+css3/filters/effect-sepia.html
+css3/filters/filter-change-repaint-composited.html
+css3/filters/filter-change-repaint.html
+css3/filters/filter-repaint-blur.html
+css3/filters/filter-repaint-child-layers.html
+css3/filters/filter-repaint-composited-fallback-crash.html
+css3/filters/filter-repaint-composited-fallback.html
+css3/filters/filter-repaint-sepia.html
+css3/filters/filter-repaint-shadow-clipped.html
+css3/filters/filter-repaint-shadow-rotated.html
+css3/filters/filter-repaint-shadow.html
+css3/filters/filter-repaint.html
+css3/filters/filter-with-transform.html
+css3/filters/filtered-compositing-descendant.html
+css3/filters/filtered-inline.html
+css3/filters/nested-filter.html
+css3/filters/nested-filters.html
+css3/filters/regions-expanding.html
+css3/filters/simple-filter-rendering.html
+css3/selectors3/html/css3-modsel-17.html
+css3/selectors3/html/css3-modsel-61.html
+css3/selectors3/xhtml/css3-modsel-17.xml
+css3/selectors3/xhtml/css3-modsel-61.xml
+css3/selectors3/xml/css3-modsel-17.xml
+css3/selectors3/xml/css3-modsel-61.xml
+css3/selectors3/html/css3-modsel-161.html
+css3/selectors3/xhtml/css3-modsel-161.xml
+css3/selectors3/xml/css3-modsel-161.xml
+css3/unicode-bidi-isolate-aharon-failing.html
+css3/filters/blur-filter-page-scroll.html
+css3/filters/effect-brightness-clamping-hw.html
+css3/filters/effect-brightness-clamping.html
+css3/filters/effect-reference-external.html
+css3/filters/effect-reference-ordering-hw.html
+css3/filters/effect-reference-ordering.html
+css3/filters/effect-reference.html
+css3/images/cross-fade-background-size.html
+css3/filters/effect-reference-hw.html
+css3/filters/blur-filter-page-scroll-self.html
+css3/flexbox/repaint-column-reverse.html
+css3/flexbox/repaint-during-resize-no-flex.html
+css3/flexbox/repaint-rtl-column.html
+css3/filters/multiple-filters-invalidation.html
+css3/filters/composited-during-animation.html
+css3/filters/composited-during-transition-layertree.html
+css3/images/cross-fade-invalidation.html
+css3/masking/clip-path-reference-userSpaceOnUse.html
+css3/masking/clip-path-reference.html
+css3/filters/blur-filter-page-scroll-parents.html
 
 editing/deleting/delete-3775172-fix.html [ Skip ]
 editing/deleting/delete-3928305-fix.html [ Skip ]
@@ -471,8 +667,6 @@ fast/css/image-orientation/image-orientation.html
 #fast/css-generated-content/pseudo-transition.html
 #fast/css-generated-content/quotes-lang.html
 #fast/css-generated-content/nested-tables-with-before-after-content-crash.html
-
-fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ Skip ]
 
 fast/dynamic/012.html [ Skip ]
 fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
@@ -1248,7 +1442,6 @@ fast/media/mq-resolution.html [ Skip ]
 fast/media/mq-simple-query-05.html [ Skip ]
 fast/media/w3c/test_media_queries.html [ Skip ]
 # flakey tests
-fast/media/media-descriptor-syntax-01.html [ Skip ]
 fast/media/mq-invalid-media-feature-04.html [ Skip ]
 fast/media/mq-relative-constraints-04.html [ Skip ]
 
@@ -1262,16 +1455,6 @@ fast/multicol/vertical-lr/column-break-with-balancing.html [ Skip ]
 fast/multicol/vertical-rl/column-break-with-balancing.html [ Skip ]
 fast/multicol/vertical-lr/rules-with-border-before.html [ Skip ]
 fast/multicol/vertical-rl/rules-with-border-before.html [ Skip ]
-# flakey tests
-fast/multicol/vertical-lr/border-padding-pagination.html [ Skip ]
-fast/multicol/vertical-lr/column-count-with-rules.html [ Skip ]
-fast/multicol/vertical-lr/column-rules.html [ Skip ]
-fast/multicol/vertical-lr/float-avoidance.html [ Skip ]
-fast/multicol/vertical-lr/float-multicol.html [ Skip ]
-fast/multicol/vertical-lr/float-paginate-complex.html [ Skip ]
-fast/multicol/vertical-lr/float-paginate.html [ Skip ]
-fast/multicol/vertical-lr/nested-columns.html [ Skip ]
-fast/multicol/vertical-lr/unsplittable-inline-block.html [ Skip ]
 
 fast/overflow/clip-rects-fixed-ancestor.html [ Skip ]
 fast/overflow/scrollbar-restored-and-then-locked.html [ Skip ]
@@ -1340,7 +1523,6 @@ fast/repaint/float-move-during-layout.html [ Skip ]
 fast/repaint/float-new-in-block.html [ Skip ]
 fast/repaint/gradients-em-stops-repaint.html [ Skip ]
 fast/repaint/inline-block-resize.html [ Skip ]
-fast/repaint/inline-horizontal-bt-overflow.html [ Skip ]
 fast/repaint/inline-overflow.html [ Skip ]
 fast/repaint/inline-relative-positioned.html [ Skip ]
 fast/repaint/inline-vertical-lr-overflow.html [ Skip ]
@@ -1376,7 +1558,6 @@ fast/repaint/static-to-positioned.html [ Skip ]
 fast/repaint/table-cell-collapsed-border.html [ Skip ]
 fast/repaint/table-cell-move.html [ Skip ]
 fast/repaint/table-col-background.html [ Skip ]
-fast/repaint/table-collapsed-border.html [ Skip ]
 fast/repaint/table-extra-bottom-grow.html [ Skip ]
 fast/repaint/table-row.html [ Skip ]
 fast/repaint/table-section-repaint.html [ Skip ]
@@ -1754,11 +1935,11 @@ storage/storageinfo-missing-arguments.html [ Skip ]
 storage/storageinfo-query-usage.html [ Skip ]
 storage/storageinfo-request-quota.html [ Skip ]
 storage/domstorage/storage-close-database-on-idle.html [ Skip ]
+storage/indexeddb/cursor-advance.html [ Skip ]
 storage/indexeddb/cursor-continue-dir.html [ Skip ]
 storage/indexeddb/cursor-continue-validity.html [ Skip ]
 storage/indexeddb/database-quota.html [ Skip ]
 storage/indexeddb/dont-commit-on-blocked.html [ Skip ]
-storage/indexeddb/keypath-edges.html [ Skip ]
 storage/indexeddb/objectstore-basics-workers.html [ Skip ]
 storage/indexeddb/open-during-transaction.html [ Skip ]
 storage/indexeddb/pending-activity-workers.html [ Skip ]
@@ -1766,109 +1947,6 @@ storage/indexeddb/pending-version-change-on-exit.html [ Skip ]
 storage/indexeddb/pending-version-change-stuck.html [ Skip ]
 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Skip ]
 storage/indexeddb/transaction-complete-workers.html [ Skip ]
-# flakey tests
-storage/indexeddb/cursor-advance.html [ Skip ]
-storage/indexeddb/index-basics.html [ Skip ]
-
-svg/path-arc-invalid.html [ Skip ]
-
-svg/animations/additive-type-by-animation.html [ Skip ]
-svg/animations/animate-css-xml-attributeType.html [ Skip ]
-svg/animations/animate-setcurrenttime.html [ Skip ]
-svg/animations/dynamic-modify-transform-without-baseval.html [ Skip ]
-svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ Skip ]
-svg/animations/non-additive-type-by-animation.html [ Skip ]
-svg/animations/smil-element-not-removed-crash.html [ Skip ]
-svg/animations/svg-animation-order.html [ Skip ]
-svg/animations/svgboolean-animation-1.html [ Skip ]
-svg/animations/svgenum-animation-11.html [ Skip ]
-svg/animations/svgenum-animation-13.html [ Skip ]
-svg/animations/svgenum-animation-2.html [ Skip ]
-svg/animations/svgenum-animation-4.html [ Skip ]
-svg/animations/svgenum-animation-5.html [ Skip ]
-svg/animations/svgenum-animation-6.html [ Skip ]
-svg/animations/svgenum-animation-7.html [ Skip ]
-svg/animations/svgenum-animation-8.html [ Skip ]
-svg/animations/svginteger-animation-1.html [ Skip ]
-svg/animations/svginteger-animation-2.html [ Skip ]
-svg/animations/svglength-animation-retarget-crash.html [ Skip ]
-svg/animations/svgnumberoptionalnumber-animation-1.html [ Skip ]
-svg/animations/svgnumberoptionalnumber-animation-2.html [ Skip ]
-svg/animations/svgnumberoptionalnumber-animation-3.html [ Skip ]
-svg/animations/svgnumberoptionalnumber-animation-4.html [ Skip ]
-svg/animations/target-condition-crash.html [ Skip ]
-svg/animations/updated-attributes.html [ Skip ]
-
-svg/as-background-image/svg-as-background-6.html [ Skip ]
-# flakey test
-svg/as-background-image/svg-background-partial-redraw.html [ Skip ]
-
-svg/as-border-image/svg-as-border-image.html [ Skip ]
-
-svg/as-image/image-respects-pageScaleFactor-change.html [ Skip ]
-svg/as-image/svg-as-image-with-relative-size.html [ Skip ]
-svg/as-image/svg-intrinsic-size-rectangular.html [ Skip ]
-svg/as-image/svg-intrinsic-size.html [ Skip ]
-svg/as-image/svg-object-intrinsic-size.html [ Skip ]
-# flakey test
-svg/as-image/image-respects-pageScaleFactor.html [ Skip ]
-
-svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Skip ]
-svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Skip ]
-svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Skip ]
-svg/as-object/svg-embedded-in-html-in-iframe.html [ Skip ]
-# flakey test
-svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Skip ]
-svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Skip ]
-
-svg/batik/filters/feTile.svg [ Skip ]
-svg/batik/filters/filterRegions.svg [ Skip ]
-svg/batik/text/smallFonts.svg [ Skip ]
-svg/batik/text/textEffect.svg [ Skip ]
-svg/batik/text/textEffect3.svg [ Skip ]
-svg/batik/text/textFeatures.svg [ Skip ]
-svg/batik/text/textProperties.svg [ Skip ]
-
-svg/carto.net/tabgroup.svg [ Skip ]
-# needs more investigation
-svg/carto.net/window.svg [ Skip ]
-
-svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Skip ]
-svg/foreignObject/background-render-phase.html [ Skip ]
-svg/foreignObject/clip.html [ Skip ]
-svg/foreignObject/filter.html [ Skip ]
-svg/foreignObject/fO-fixed-position-crash.html [ Skip ]
-svg/foreignObject/mask.html [ Skip ]
-svg/foreignObject/multiple-foreign-objects.html [ Skip ]
-svg/foreignObject/repaint-rect-coordinates.html [ Skip ]
-
-svg/hittest/svg-shapes-non-scale-stroke.html [ Skip ]
-svg/hittest/svg-use-element-from-point.html [ Skip ]
-
-svg/in-html/circle.html [ Skip ]
-svg/in-html/script-external.html [ Skip ]
-svg/in-html/script.html [ Skip ]
-svg/in-html/svg-assert-failure-percentage.html [ Skip ]
-
-# need more investigation
-svg/overflow/overflow-on-outermost-svg-element-in-xhtml-auto.xhtml [ Skip ]
-svg/overflow/overflow-on-outermost-svg-element-in-xhtml-hidden.xhtml [ Skip ]
-svg/overflow/overflow-on-outermost-svg-element-in-xhtml-scroll.xhtml [ Skip ]
-svg/overflow/overflow-on-outermost-svg-element-in-xhtml-visible.xhtml [ Skip ]
-
-svg/repaint/filter-child-repaint.svg [ Skip ]
-svg/repaint/filter-repaint.svg [ Skip ]
-svg/repaint/inner-svg-change-viewBox.svg [ Skip ]
-svg/repaint/svgsvgelement-repaint-children.html [ Skip ]
-# flakey tests
-svg/repaint/container-repaint.svg [ Skip ]
-svg/repaint/image-href-change.svg [ Skip ]
-svg/repaint/inner-svg-change-viewBox-contract.svg [ Skip ]
-svg/repaint/image-with-clip-path.svg [ Skip ]
-svg/repaint/mask-clip-target-transform.svg [ Skip ]
-svg/repaint/repaint-webkit-svg-shadow.svg [ Skip ]
-# needs more investigation
-svg/repaint/inner-svg-change-viewPort-relative.svg [ Skip ]
 
 # Many tests needing new rebaselines
 # the generic results are using a viewport of 800 pixels
@@ -2387,9 +2465,6 @@ webaudio/up-mixing-mono-51.html [ Skip ]
 webaudio/up-mixing-mono-stereo.html [ Skip ]
 webaudio/up-mixing-stereo-51.html [ Skip ]
 
-css1 [ Skip ]
-css2.1 [ Skip ]
-css3 [ Skip ]
 dom/xhtml/level3 [ Skip ]
 fast/css-generated-content [ Skip ]
 
@@ -2532,23 +2607,7 @@ scrollbars/scrollbar-orientation.html [ Skip ]
 scrollbars/scrollbars-on-positioned-content.html [ Skip ]
 security/block-test-no-port.html [ Skip ]
 security/block-test.html [ Skip ]
-svg/clip-path [ Skip ]
-svg/custom [ Skip ]
-svg/css [ Skip ]
-svg/dom [ Skip ]
-svg/dynamic-updates [ Skip ]
-svg/filters [ Skip ]
-svg/hixie [ Skip ]
-svg/stroke [ Skip ]
-svg/text [ Skip ]
-svg/transforms [ Skip ]
-svg/W3C-I18N [ Skip ]
-svg/W3C-SVG-1.1 [ Skip ]
-svg/W3C-SVG-1.1-SE [ Skip ]
-svg/W3C-SVG-1.2-Tiny [ Skip ]
-svg/webarchive [ Skip ]
-svg/wicd [ Skip ]
-svg/zoom [ Skip ]
+svg [ Skip ]
 transforms/2d/compound-transforms-vs-containers.html [ Skip ]
 transforms/2d/hindi-rotated.html [ Skip ]
 transforms/2d/transform-fixed-container.html [ Skip ]
