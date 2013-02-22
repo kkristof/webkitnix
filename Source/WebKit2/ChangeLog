@@ -1,3 +1,444 @@
+2013-02-22  Balazs Kelemen  <kbalazs@webkit.org>
+
+        Yet another unreviewed buildfix after r143714.
+
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::paintToCairoSurface):
+
+2013-02-22  Balazs Kelemen  <kbalazs@webkit.org>
+
+        Unreviewed preventive buildfix after my last commit.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        * UIProcess/efl/WebView.cpp:
+
+2013-02-22  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [CoordGfx] Minor cleanup in CoordinatedGraphicsScene::paintToGraphicsContext
+        https://bugs.webkit.org/show_bug.cgi?id=109824
+
+        Reviewed by Andreas Kling.
+
+        Avoid ugly ifdefs by using PlatformGraphicsContext.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::displayTimerFired):
+
+2013-02-22  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Remove declaration of non-existent functions from EwkView
+        https://bugs.webkit.org/show_bug.cgi?id=110572
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Removed declarations of non-existent EwkView::paintToCurrentGLContext() and
+        EwkView::paintToCairoSurface(cairo_surface_t*) that were accidentally
+        left at r143699.
+
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView):
+
+2013-02-22  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Clean up PageViewportControllerClientEfl class
+        https://bugs.webkit.org/show_bug.cgi?id=110438
+
+        Reviewed by Andreas Kling.
+
+        Cleaned up PageViewportControllerClientEfl class from unused methods
+        and class members, eliminated access to WK2 internals from this class.
+
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::didChangeContentsSize):
+        * UIProcess/efl/PageViewportControllerClientEfl.h:
+        (WebKit::PageViewportControllerClientEfl::~PageViewportControllerClientEfl):
+        (PageViewportControllerClientEfl):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::WebView):
+        (WebKit::WebView::updateViewportSize):
+
+2013-02-22  Michał Pakuła vel Rutka  <m.pakula@samsung.com>
+
+        [WK2][EFL][GTK][Qt] Add context menu item tags for C API
+        https://bugs.webkit.org/show_bug.cgi?id=109815
+
+        Reviewed by Anders Carlsson.
+
+        This patch adds context menu item tags used by EFL, GTK and Qt ports, defined in
+        WebCore to WK2 C API.
+
+        * Shared/API/c/WKContextMenuItemTypes.h:
+        * Shared/API/c/WKSharedAPICast.h:
+        (WebKit::toAPI):
+        (WebKit::toImpl):
+
+2013-02-22  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Move AC code from EwkView to WebView
+        https://bugs.webkit.org/show_bug.cgi?id=110216
+
+        Reviewed by Anders Carlsson.
+
+        Accelerated compositing code is moved from EwkView to WebView.
+        Added new WKView API to be used from EwkView instead of direct accessing
+        to coordinated graphics scene.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewSetUserViewportTranslation):
+        (WKViewUserViewportToContents):
+        (WKViewPaintToCurrentGLContext):
+        (WKViewPaintToCairoSurface):
+        * UIProcess/API/C/efl/WKView.h:
+
+            Added WKView API functions.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::EwkView):
+        (EwkView::displayTimerFired):
+        (EwkView::feedTouchEvent):
+        (EwkView::createGLSurface):
+        (EwkView::handleEvasObjectCalculate):
+        (EwkView::handleEwkViewMouseWheel):
+        (EwkView::handleEwkViewMouseDown):
+        (EwkView::handleEwkViewMouseUp):
+        (EwkView::handleEwkViewMouseMove):
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView):
+
+            Using new WKView API.
+
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::initialize):
+        (WebKit):
+        (WebKit::WebView::paintToCurrentGLContext):
+        (WebKit::WebView::paintToCairoSurface):
+        (WebKit::WebView::userViewportToContents):
+        (WebKit::WebView::transformFromScene):
+        (WebKit::WebView::transformToScene):
+        (WebKit::WebView::coordinatedGraphicsScene):
+        (WebKit::WebView::enterAcceleratedCompositingMode):
+        (WebKit::WebView::exitAcceleratedCompositingMode):
+        * UIProcess/efl/WebView.h:
+        (WebCore):
+        (WebKit::WebView::setUserViewportTranslation):
+        (WebView):
+
+            Added WebView methods to support new WKView API.
+
+2013-02-21  Dima Gorbik  <dgorbik@apple.com>
+
+        QuickTime plugin doesn't load when accelerated compositing is disabled
+        https://bugs.webkit.org/show_bug.cgi?id=110534
+
+        Reviewed by Anders Carlsson.
+
+        We shouldn't disable accelerated compositing for plugins, because
+        plugins such as QuickTime rely on this and will try to set other drawing
+        models that we don't support.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::isAcceleratedCompositingEnabled):
+
+2013-02-21  Dean Jackson  <dino@apple.com>
+
+        Plug-in snapshotting code always accepts first snapshot
+        https://bugs.webkit.org/show_bug.cgi?id=110495
+
+        Reviewed by Tim Horton.
+
+        When we detect a plugin that can be snapshotted we start capturing
+        images until we find one that we believe isn't blank, or we timeout.
+        I introduced a regression recently where we swap renderers as
+        soon as the snapshot arrives, whether or not is is blank.
+
+        The fix was to have the embedder (currently only WK2) be the one
+        who tells the HTMLPlugInElement to start displaying snapshots.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::pluginSnapshotTimerFired): When we find a
+        snapshot that we like, tell the HTMLPlugInElement to move to
+        the snapshot view.
+
+2013-02-21  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        Unreviewed. Fix make distcheck.
+
+        * GNUmakefile.am: Add -DBUILDING_WEBKIT flags to introspection
+        scanner.
+        * GNUmakefile.list.am: Add missing header to compilation and
+        remove one that no longer exists.
+
+2013-02-21  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Move PageViewportController and PageViewportControllerClientEfl out from WebView
+        https://bugs.webkit.org/show_bug.cgi?id=110345
+
+        Reviewed by Andreas Kling.
+
+        WebView does not need to know about both PageViewportController and 
+        PageViewportControllerClientEfl. Considering the fact that PageViewportController
+        will stop being WK2 internal and will be based on WK2 C API, it 
+        should be owned by EwkView rather than WebView.
+
+        This patch is also a preparation for WKViewClient API extension to cover all
+        the places where PageViewportController and PageViewportControllerClientEfl
+        are accessed directly from WebView at the moment.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::EwkView):
+        * UIProcess/API/efl/EwkView.h:
+        (WebKit):
+        (EwkView::pageViewportControllerClient):
+        (EwkView::pageViewportController):
+        (EwkView):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::didCommitLoad):
+        (WebKit::WebView::updateViewportSize):
+        (WebKit::WebView::didChangeContentsSize):
+        (WebKit::WebView::didChangeViewportProperties):
+        (WebKit::WebView::pageDidRequestScroll):
+        (WebKit::WebView::didRenderFrame):
+        (WebKit::WebView::pageTransitionViewportReady):
+        * UIProcess/efl/WebView.h:
+        (WebView):
+
+2013-02-20  Tim Horton  <timothy_horton@apple.com>
+
+        Provide WKView SPI to defer telling the WebPageProxy and WebProcess about changes in the hosting window
+        https://bugs.webkit.org/show_bug.cgi?id=110415
+        <rdar://problem/13095405>
+
+        Reviewed by Simon Fraser.
+
+        * UIProcess/API/mac/WKView.mm: Add _viewInWindowChangesDeferredCount and _viewInWindowChangeWasDeferred to WKViewData.
+        (-[WKView viewDidMoveToWindow]): If we're deferring window changes, don't include the ViewIsInWindow flag
+        when sending viewStateDidChange. Instead, save the fact that we want to do that later aside.
+        (-[WKView beginDeferringViewInWindowChanges]):
+        (-[WKView endDeferringViewInWindowChanges]): Straightforward begin/end pair. When we exit the last pair and
+        have a pending window change, let the WebPageProxy know. WebPageProxy will do the check to ensure that
+        the in-window state has actually changed.
+        (-[WKView isDeferringViewInWindowChanges]):
+        * UIProcess/API/mac/WKViewPrivate.h: 
+
+2013-02-20  Kiran Muppala  <cmuppala@apple.com>
+
+        Disable window occlusion notifications for App Store on Mac.
+        https://bugs.webkit.org/show_bug.cgi?id=110417
+
+        Reviewed by Simon Fraser.
+
+        Temporary fix to workaround issues with window occlusion notifications
+        in App Store.
+
+        * UIProcess/API/mac/WKView.mm:
+        (+[WKView _registerWindowOcclusionNotificationHandlers]): Return early
+        if the main bundle identifier matches that of App Store.
+
+2013-02-20  Mark Rowe  <mrowe@apple.com>
+
+        <https://webkit.org/b/110410> Specify the plug-in process / service entitlements via the Xcode configuration.
+
+        This is the modern mechanism for applying entitlements to production builds,
+        and it simplifies the maintenance of entitlements going forward. It also allows
+        us to fix the new XPC PluginServices to have the same entitlements as PluginProcess.
+
+        Reviewed by Alexey Proskuryakov.
+
+        * Configurations/Base.xcconfig: Ad-hoc sign all WebKit2 components.
+        * Configurations/PluginProcess.xcconfig: Specify the entitlements to use.
+        * Configurations/PluginService.32.xcconfig: Ditto.
+        * Configurations/PluginService.64.xcconfig: Ditto.
+        * Configurations/PluginService.Development.xcconfig: Ditto.
+        * Configurations/PluginService.entitlements: Renamed from Source/WebKit2/PluginProcess/mac/PluginProcess.entitlements.
+        Move the entitlements in to the Configurations directory to make them easier to find.
+        * PluginProcess/mac/add-entitlements.sh: Removed. In my testing the dependency issue mentioned
+        in the script is not an issue with current versions of Xcode. If we see it again we can come
+        up with a workaround that doesn't involve performing the signing via a script phase.
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-02-20  Mark Rowe  <mrowe@apple.com>
+
+        <https://webkit.org/b/110409> Remove duplication between 32- and 64-bit PluginService plists.
+
+        Reviewed by Dan Bernstein.
+
+        The only difference between the plists was the CFBundleIdentifier. Since the values are the
+        same as the product name, we can just use the value of the PRODUCT_NAME configuration setting.
+
+        * Configurations/PluginService.32.xcconfig:
+        * Configurations/PluginService.64.xcconfig:
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.32-64.Info.plist: Renamed from Source/WebKit2/PluginProcess/EntryPoint/mac/XPCService/PluginService.32/Info.plist.
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.64/Info.plist: Removed.
+
+2013-02-20  Simon Fraser  <simon.fraser@apple.com>
+
+        Zoomed, slow-scrolling pages keep recreating tiles when scrolled
+        https://bugs.webkit.org/show_bug.cgi?id=110379
+
+        Reviewed by Tim Horton.
+
+        Make the visible rect and exposed rects passed through
+        the drawing area to the tile cache FloatRects instead of IntRects.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView setFrameSize:]):
+        (-[WKView _updateWindowAndViewFrames]):
+        (-[WKView enableFrameSizeUpdates]):
+        (-[WKView setMinimumWidthForAutoLayout:]):
+        * UIProcess/WebPageProxy.h:
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::WebPageProxy::viewExposedRectChanged):
+        * WebProcess/WebPage/DrawingArea.h:
+        (WebKit::DrawingArea::setExposedRect):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::viewExposedRectChanged):
+        * WebProcess/WebPage/WebPage.h:
+        * WebProcess/WebPage/WebPage.messages.in:
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::setExposedRect):
+
+2013-02-20  Dirk Schulze  <krit@webkit.org>
+
+        Enable CANVAS_PATH flag
+        https://bugs.webkit.org/show_bug.cgi?id=108508
+
+        Reviewed by Simon Fraser.
+
+        Enable CANVAS_PATH flag on trunk.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-02-20  Laszlo Gombos  <l.gombos@samsung.com>
+
+        Remove unnecessary includes for Platform.h from headers
+        https://bugs.webkit.org/show_bug.cgi?id=110300
+
+        Reviewed by Alexey Proskuryakov.
+
+        wtf/Platform.h only need to be included in a few places directly    
+        as it is included in config.h. Remove the unnecessay duplicate as    
+        it can be confusing.
+
+        * Shared/PrintInfo.h:
+
+2013-02-20  Huang Dongsung  <luxtella@company100.net>
+
+        [WK2] Remove m_viewportSize in WebPage.
+        https://bugs.webkit.org/show_bug.cgi?id=110311
+
+        Reviewed by Anders Carlsson.
+
+        EFL and Qt use m_viewSize as a contents size while Apple use it as a viewport
+        size, so EFL and Qt introduced m_viewportSize to make WebPage know a viewport
+        size.
+
+        EFL and Qt use m_viewSize as a contents size because the size of non compositing
+        layer is contents size, and EFL and Qt mark whole non compositing layer as dirty
+        using m_viewSize. Bug 110299 (http://webkit.org/b/110299) changes that it is not
+        necessary to know m_viewSize when marking whole non compositing layer as dirty.
+        So we can make EFL and Qt use m_viewSize as a viewport size also.
+
+        This patch removes m_viewportSize and related methods to increase readability.
+
+        * UIProcess/API/qt/raw/qrawwebview.cpp:
+        (QRawWebView::setSize):
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::didChangeViewportSize):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::pageRect):
+        (WebKit::WebChromeClient::contentsSizeChanged):
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::updateBackingStoreState):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setSize):
+        (WebKit::WebPage::sendViewportAttributesChanged):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPage.messages.in:
+
+2013-02-20  Huang Dongsung  <luxtella@company100.net>
+
+        [WK2] add setNeedsDisplay in DrawingArea to mark whole layer as dirty.
+        https://bugs.webkit.org/show_bug.cgi?id=110299
+
+        Reviewed by Anders Carlsson.
+
+        Currently, we call setNeedsDisplay with the size of WebPage to mark whole
+        backing store as dirty. However, the size of non compositing layer can be
+        inconsistent with the size of WebPage. For example, in Coordinated Graphics, the
+        size of non compositing layer is contents size.
+
+        So, WebPage should not assume the size of non compositing layer, and should just
+        call setNeedsDisplay when marking whole layer as dirty.
+
+        In addition, this patch renames from setNeedsDisplay() with a rect argument to
+        setNeedsDisplayInRect(), which matches to the terms of GraphicsLayer.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::invalidateContentsAndRootView):
+        (WebKit::WebChromeClient::invalidateContentsForSlowScroll):
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::restoreViewState):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::setNonCompositedContentsNeedDisplay):
+        (WebKit):
+        (WebKit::CoordinatedLayerTreeHost::setNonCompositedContentsNeedDisplayInRect):
+        (WebKit::CoordinatedLayerTreeHost::scrollNonCompositedContents):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        (CoordinatedLayerTreeHost):
+        * WebProcess/WebPage/DrawingArea.h:
+        (DrawingArea):
+        * WebProcess/WebPage/DrawingAreaImpl.cpp:
+        (WebKit::DrawingAreaImpl::setNeedsDisplay):
+        (WebKit):
+        (WebKit::DrawingAreaImpl::setNeedsDisplayInRect):
+        (WebKit::DrawingAreaImpl::scroll):
+        (WebKit::DrawingAreaImpl::forceRepaint):
+        (WebKit::DrawingAreaImpl::didUninstallPageOverlay):
+        (WebKit::DrawingAreaImpl::setPageOverlayNeedsDisplay):
+        (WebKit::DrawingAreaImpl::resumePainting):
+        * WebProcess/WebPage/DrawingAreaImpl.h:
+        (DrawingAreaImpl):
+        * WebProcess/WebPage/LayerTreeHost.h:
+        (LayerTreeHost):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setSize):
+        (WebKit::WebPage::setDrawsBackground):
+        (WebKit::WebPage::setDrawsTransparentBackground):
+        (WebKit::WebPage::resumeActiveDOMObjectsAndAnimations):
+        * WebProcess/WebPage/gtk/LayerTreeHostGtk.cpp:
+        (WebKit::LayerTreeHostGtk::setNonCompositedContentsNeedDisplay):
+        (WebKit):
+        (WebKit::LayerTreeHostGtk::setNonCompositedContentsNeedDisplayInRect):
+        (WebKit::LayerTreeHostGtk::scrollNonCompositedContents):
+        * WebProcess/WebPage/gtk/LayerTreeHostGtk.h:
+        (LayerTreeHostGtk):
+        * WebProcess/WebPage/mac/LayerTreeHostMac.h:
+        (LayerTreeHostMac):
+        * WebProcess/WebPage/mac/LayerTreeHostMac.mm:
+        (WebKit::LayerTreeHostMac::setNonCompositedContentsNeedDisplay):
+        (WebKit):
+        (WebKit::LayerTreeHostMac::setNonCompositedContentsNeedDisplayInRect):
+        (WebKit::LayerTreeHostMac::scrollNonCompositedContents):
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.h:
+        (RemoteLayerTreeDrawingArea):
+        * WebProcess/WebPage/mac/RemoteLayerTreeDrawingArea.mm:
+        (WebKit::RemoteLayerTreeDrawingArea::setNeedsDisplay):
+        (WebKit):
+        (WebKit::RemoteLayerTreeDrawingArea::setNeedsDisplayInRect):
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::setNeedsDisplay):
+        (WebKit):
+        (WebKit::TiledCoreAnimationDrawingArea::setNeedsDisplayInRect):
+
 2013-02-20  Christophe Dumez  <ch.dumez@sisa.samsung.com>
 
         [EFL][WK2] Port EwkPopupMenuItem to the C API

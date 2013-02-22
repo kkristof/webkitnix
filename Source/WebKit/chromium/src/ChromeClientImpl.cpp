@@ -189,19 +189,17 @@ void ChromeClientImpl::setWindowRect(const FloatRect& r)
 
 FloatRect ChromeClientImpl::windowRect()
 {
-    if (m_webView->client()) {
-        // On Chrome for Android, rootWindowRect is in physical screen pixels
-        // instead of density independent (UI) pixels, and must be scaled down.
-        FloatRect rect = FloatRect(m_webView->client()->rootWindowRect());
-        if (!m_webView->page()->settings()->applyDeviceScaleFactorInCompositor())
-            rect.scale(1 / m_webView->client()->screenInfo().deviceScaleFactor);
-        return rect;
+    WebRect rect;
+    if (m_webView->client())
+        rect = m_webView->client()->rootWindowRect();
+    else {
+        // These numbers will be fairly wrong. The window's x/y coordinates will
+        // be the top left corner of the screen and the size will be the content
+        // size instead of the window size.
+        rect.width = m_webView->size().width;
+        rect.height = m_webView->size().height;
     }
-
-    // These numbers will be fairly wrong. The window's x/y coordinates will
-    // be the top left corner of the screen and the size will be the content
-    // size instead of the window size.
-    return FloatRect(0, 0, m_webView->size().width, m_webView->size().height);
+    return FloatRect(rect);
 }
 
 FloatRect ChromeClientImpl::pageRect()
@@ -641,7 +639,7 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
 {
 #if ENABLE(VIEWPORT)
-    if (!m_webView->isFixedLayoutModeEnabled() || !m_webView->client() || !m_webView->page())
+    if (!m_webView->settings()->viewportEnabled() || !m_webView->isFixedLayoutModeEnabled() || !m_webView->client() || !m_webView->page())
         return;
 
     IntSize viewportSize = m_webView->dipSize();
@@ -651,15 +649,7 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArgumen
     if (!viewportSize.width() || !viewportSize.height())
         return;
 
-    ViewportAttributes computed;
-    if (m_webView->settings()->viewportEnabled()) {
-        computed = arguments.resolve(viewportSize, viewportSize, m_webView->page()->settings()->layoutFallbackWidth());
-    } else {
-        // If viewport tag is disabled but fixed layout is still enabled, (for
-        // example, on Android WebView with UseWideViewport false), compute
-        // based on the default viewport arguments.
-        computed = ViewportArguments().resolve(viewportSize, viewportSize, viewportSize.width());
-    }
+    ViewportAttributes computed = arguments.resolve(viewportSize, viewportSize, m_webView->page()->settings()->layoutFallbackWidth());
     restrictScaleFactorToInitialScaleIfNotUserScalable(computed);
 
     if (m_webView->ignoreViewportTagMaximumScale()) {
@@ -684,10 +674,12 @@ void ChromeClientImpl::print(Frame* frame)
         m_webView->client()->printPage(WebFrameImpl::fromFrame(frame));
 }
 
+#if ENABLE(SQL_DATABASE)
 void ChromeClientImpl::exceededDatabaseQuota(Frame* frame, const String& databaseName, DatabaseDetails)
 {
     // Chromium users cannot currently change the default quota
 }
+#endif
 
 void ChromeClientImpl::reachedMaxAppCacheSize(int64_t spaceNeeded)
 {

@@ -60,7 +60,7 @@ WebInspector.displayNameForURL = function(url)
 
     var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
     if (uiSourceCode)
-        return uiSourceCode.parsedURL.displayName;
+        return uiSourceCode.displayName();
 
     if (!WebInspector.inspectedPageURL)
         return url.trimURL("");
@@ -123,16 +123,6 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
     return container;
 }
 
-WebInspector._linkifierPlugins = [];
-
-/**
- * @param {function(string):string} plugin
- */
-WebInspector.registerLinkifierPlugin = function(plugin)
-{
-    WebInspector._linkifierPlugins.push(plugin);
-}
-
 /**
  * @param {string} string
  * @return {DocumentFragment}
@@ -147,9 +137,6 @@ WebInspector.linkifyStringAsFragment = function(string)
      */
     function linkifier(title, url, lineNumber)
     {
-        for (var i = 0; i < WebInspector._linkifierPlugins.length; ++i)
-            title = WebInspector._linkifierPlugins[i](title);
-
         var isExternal = !WebInspector.resourceForURL(url);
         var urlNode = WebInspector.linkifyURLAsNode(url, title, undefined, isExternal);
         if (typeof(lineNumber) !== "undefined") {

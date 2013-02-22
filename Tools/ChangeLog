@@ -1,3 +1,273 @@
+2013-02-21  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL][DRT] Do not dump empty frames.
+        https://bugs.webkit.org/show_bug.cgi?id=110474
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Follow the original Mac implementation more closely by skipping
+        empty frames (frames which have no document). We are not really
+        interested in showing anything about them.
+
+        * DumpRenderTree/efl/DumpRenderTree.cpp:
+        (dumpFramesAsText):
+
+2013-02-21  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] support the lucid version of freetype on precise in DRT
+        https://bugs.webkit.org/show_bug.cgi?id=107338
+
+        Reviewed by Tony Chang.
+
+        Modify the DRT build so that we can optionally link against
+        a fixed version of Freetype2. This allows us to share pixel test
+        results across multiple versions of Ubuntu without having to
+        worry about differences in font rendering.
+
+        At the moment this feature is off by default. Eventually it will
+        be on by default on linux.
+
+        Note that this only affects DRT; the regular Chromium binary
+        (and, for now, content_shell) will still use the system version
+        of Freetype.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+
+2013-02-21  Rouslan Solomakhin  <rouslan@chromium.org>
+
+        [Chromium] Remove the word "cheher" from the list of misspelled words
+        https://bugs.webkit.org/show_bug.cgi?id=110447
+
+        Reviewed by Tony Chang.
+
+        Other platforms do not mark "cheher" as a misspelled word in layout tests.
+        This change is to bring Chromium platform in line with the rest of the
+        platforms.
+
+        * DumpRenderTree/chromium/TestRunner/src/MockSpellCheck.cpp:
+        (WebTestRunner::MockSpellCheck::hasInCache): Changed "cheher" to "wellcome".
+        (WebTestRunner::MockSpellCheck::fillSuggestionList): Removed "cheher" misspelling and "checker" suggestion.
+        (WebTestRunner::MockSpellCheck::initializeIfNeeded): Removed "cheher" misspelling.
+
+2013-02-21  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] document WebTestDelegate and WebTestRunner interfaces
+        https://bugs.webkit.org/show_bug.cgi?id=110472
+
+        Reviewed by Adam Barth.
+
+        Also remove the default implementation of the remaining WebTestDelegate
+        methods now that all embedders provide this interface.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestDelegate):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner):
+
+2013-02-19  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: Need a way to use the Objective-C JavaScript API with WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=106059
+
+        Reviewed by Geoffrey Garen.
+
+        Added new tests for the WebKit API portion of the JSC Objective-C API.
+
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/mac/JSContextBackForwardCache1.html: Added.
+        * TestWebKitAPI/Tests/mac/JSContextBackForwardCache2.html: Added.
+        * TestWebKitAPI/Tests/mac/WebViewDidCreateJavaScriptContext.mm: Added.
+        (-[MyConsole log:]):
+        (-[MyConsole printHelloWorld]):
+        (-[MyConsole add:to:]):
+        (-[DidCreateJavaScriptContextFrameLoadDelegate webView:didFinishLoadForFrame:]):
+        (-[DidCreateJavaScriptContextFrameLoadDelegate webView:didCreateJavaScriptContext:forFrame:]):
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST):
+
+2013-02-21  Stephen Chenney  <schenney@chromium.org>
+
+        Unreviewed, add myself as a reviewer
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-21  Jer Noble  <jer.noble@apple.com>
+
+        Unreviewed; add myself to the Media watchlist and update my committers.py setting to Reviewer.
+
+        * Scripts/webkitpy/common/config/committers.py:
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-02-21  Martin Robinson  <mrobinson@igalia.com>
+
+        gtk/DumpRenderTree.cpp is missing <locale.h> include
+        https://bugs.webkit.org/show_bug.cgi?id=109386
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp: Fix the WebKitGTK+ Mac build
+        by include locale.h when we use setlocale.
+
+2013-02-21  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Move feature overriding to the configure phase
+        https://bugs.webkit.org/show_bug.cgi?id=110293
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * Scripts/webkitdirs.pm:
+        (runAutogenForAutotoolsProjectIfNecessary): Rename the feature file to
+        WebKitFeatureOverrides.txt to better match the other filenames used in
+        the new feature processing.
+        * gtk/generate-feature-defines-files: Added. A script which takes as an argument
+        the default features, overrides them with the contents of WebKitFeatureOverrrides.txt
+        and writes WebKitFeatures.txt and WebKitFeatures.h.
+        * gtk/override-feature-defines: Removed.
+
+2013-02-21  Oswald Buddenhagen  <oswald.buddenhagen@digia.com>
+
+        [Qt] Remove obsolete DEPENDPATH assignment
+
+        Reviewed by Simon Hausmann
+
+        qmake now adds CONFIG+=depend_includepath by default, making manual
+        DEPENDPATH setup unnecessary.
+
+        * qmake/mkspecs/features/default_post.prf:
+
+2013-02-20  Vivek Galatage  <vivekg@webkit.org>
+
+        Unreviewed. Changing primary email id.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-14  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Request WebLayerTreeView for DumpRenderTree via explicit testing path
+        https://bugs.webkit.org/show_bug.cgi?id=109634
+
+        Reviewed by Adrienne Walker.
+
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::createOutputSurface):
+        (WebViewHost::initializeLayerTreeView):
+
+2013-02-20  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Re-enable 3D CSS transforms when using build-webkit
+        https://bugs.webkit.org/show_bug.cgi?id=110402
+
+        Reviewed by Xan Lopez.
+
+        * Scripts/webkitperl/FeatureList.pm: Enable 3D rendering by default
+        when building WebKitGTK+.
+
+2013-02-20  Roger Fong  <roger_fong@apple.com>
+
+        Get VS2010 Solution B&I ready.
+        <rdar://problem/1322988>
+
+        Rubberstamped by Timothy Horton.        
+        
+        Add Production configurations.
+        
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTree.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeLauncher.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeLauncherProduction.props: Added.
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeLauncherRelease.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeProduction.props: Added.
+        * DumpRenderTree/DumpRenderTree.vcxproj/DumpRenderTree/DumpRenderTreeRelease.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiff.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffLauncher.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffLauncherProduction.props: Added.
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffLauncherRelease.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffProduction.props: Added.
+        * DumpRenderTree/DumpRenderTree.vcxproj/ImageDiff/ImageDiffRelease.props:
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePlugin.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePluginProduction.props: Added.
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePluginRelease.props:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPI.vcxproj:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPIProduction.props: Added.
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPIRelease.props:
+        * WinLauncher/WinLauncher.vcxproj/WinLauncher.vcxproj:
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherLib.vcxproj:
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherLibProduction.props: Added.
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherLibRelease.props:
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherProduction.props: Added.
+        * WinLauncher/WinLauncher.vcxproj/WinLauncherRelease.props:
+        * win/record-memory/record-memory.vcxproj:
+        * win/record-memory/record-memoryProduction.props: Added.
+        * win/record-memory/record-memoryRelease.props:
+
+2013-02-20  Dirk Schulze  <krit@webkit.org>
+
+        Enable CANVAS_PATH flag
+        https://bugs.webkit.org/show_bug.cgi?id=108508
+
+        Reviewed by Simon Fraser.
+
+        Enable CANVAS_PATH flag on trunk.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-02-20  Tony Chang  <tony@chromium.org>
+
+        Parse author names with commas in ChangeLogs
+        https://bugs.webkit.org/show_bug.cgi?id=110356
+
+        Reviewed by Dirk Pranke.
+
+        Paweł's name has a comma in it, which was confusing the ChangeLog parser.
+
+        * Scripts/webkitpy/common/checkout/changelog.py:
+        (ChangeLogEntry): Move name splitting regexp into a constant.
+        (ChangeLogEntry._parse_reviewer_text): Use _split_reviewer_names.
+        (ChangeLogEntry._split_reviewer_names): Rename to be more specific.
+        (ChangeLogEntry._split_author_names_with_emails): Rename to be more specific and require emails.
+        (ChangeLogEntry._parse_author_text): Use _split_author_names_with_emails.
+        * Scripts/webkitpy/common/checkout/changelog_unittest.py:
+        (test_parse_authors): Test case with Paweł's name.
+
+2013-02-15  Dirk Schulze  <krit@webkit.org>
+
+        [Chromium] Add runtime flag for CanvasPath
+        https://bugs.webkit.org/show_bug.cgi?id=109997
+
+        Reviewed by Adam Barth.
+
+        Added runtime flag for Canvas Path. Enabled it by default for TestShell. Otherwise
+        the constructor for Path on DOMWindow would never be activatable, since the script
+        is running after creating the DOMWindow object.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+
+2013-02-20  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] use a WebTestProxyBase pointer to identify the window we need the history for
+        https://bugs.webkit.org/show_bug.cgi?id=110346
+
+        Reviewed by Adam Barth.
+
+        Using an index is very brittle, as the TestRunner API does not define
+        any ordering of windows.
+
+        Also, make TestRunner::shouldDumpBackForwardList() so content shell can
+        trigger the capturing in the browser process before generating the
+        text dump.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestRunner):
+        (WebTestRunner::WebTestDelegate::captureHistoryForWindow):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h:
+        (WebTestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::captureTree):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::captureHistoryForWindow):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
 2013-02-19  Rouslan Solomakhin  <rouslan@chromium.org>
 
         [Chromium] Serve spellcheck suggestions for editing/spelling/spelling-changed-text.html from cache

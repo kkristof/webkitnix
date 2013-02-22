@@ -1,3 +1,274 @@
+2013-02-22  Mikhail Naganov  <mnaganov@chromium.org>
+
+        [Chromium] Add support for emulating legacy Android WebView 'setInitialScale' method
+        https://bugs.webkit.org/show_bug.cgi?id=109946
+
+        Adding a WebView method for permanently setting initial page scale.
+        This override has higher priority than any calculated page scale
+        and viewport meta tag value.
+
+        Also, this patch eliminates a dubious "fixed layout enabled, viewport disabled" mode
+        previously used by Android WebView.
+
+        Reviewed by Adam Barth.
+
+        * public/WebView.h:
+        (WebView):
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::dispatchViewportPropertiesDidChange):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::setInitialPageScaleOverride):
+        (WebKit):
+        (WebKit::WebViewImpl::computePageScaleFactorLimits):
+        * src/WebViewImpl.h:
+        * tests/WebFrameTest.cpp:
+
+2013-02-22  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] WebKit::initialize should take a Platform* now that WebKitPlatformSupport is empty
+        https://bugs.webkit.org/show_bug.cgi?id=110605
+
+        Reviewed by Adam Barth.
+
+        Part of a larger refactoring series; see tracking bug 82948.
+
+        * public/WebKit.h:
+        (WebKit):
+        * src/WebKit.cpp:
+        (WebKit::initialize):
+        (WebKit::initializeWithoutV8):
+        (WebKit::webKitPlatformSupport):
+
+2013-02-22  Andrey Kosyakov  <caseq@chromium.org>
+
+        Web Inspector: [Chromium] add a browser test for frames on timeline
+        https://bugs.webkit.org/show_bug.cgi?id=110592
+
+        - factor out timeline recording logic from testPageOverlayUpdate for reuse;
+        - record timeline while running a simple DOM-based animation;
+        - assure we have frames and Style Recalc/Layout/Paint events in between.
+
+        Reviewed by Yury Semikhatsky.
+
+        * src/js/Tests.js:
+        (.TestSuite.prototype.assertHasKey):
+        (.TestSuite.prototype.testTimelineFrames.step1):
+        (.TestSuite.prototype.testTimelineFrames.onTimelineRecorded):
+        (.TestSuite.prototype.testTimelineFrames):
+        (.TestSuite.prototype.testPageOverlayUpdate.step4):
+        (.TestSuite.prototype.testPageOverlayUpdate.onTimelineRecorded):
+        (.TestSuite.prototype.recordTimeline.addRecord):
+        (.TestSuite.prototype.recordTimeline.innerAddRecord):
+        (.TestSuite.prototype.recordTimeline.done):
+        (.TestSuite.prototype.recordTimeline):
+        (.TestSuite.prototype.stopTimeline):
+
+2013-02-21  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Implement SharedBuffer version of put() / onSuccess()
+        https://bugs.webkit.org/show_bug.cgi?id=110398
+
+        Reviewed by Tony Chang.
+
+        Proxy new SharedBuffer calls to WebIDBCallbacks through
+        to the new SharedBuffer-based IDBCallbacks.
+
+        * public/WebIDBCursor.h:
+        * src/IDBCallbacksProxy.cpp:
+        (WebKit::IDBCallbacksProxy::onSuccess):
+        (WebKit::IDBCallbacksProxy::onSuccessWithPrefetch):
+        * src/IDBCallbacksProxy.h:
+        (IDBCallbacksProxy):
+        * src/WebIDBCallbacksImpl.cpp:
+        (WebKit::WebIDBCallbacksImpl::onSuccess):
+        * src/WebIDBCallbacksImpl.h:
+        (WebIDBCallbacksImpl):
+        * tests/IDBAbortOnCorruptTest.cpp:
+        (WebCore::MockIDBCallbacks::onSuccess):
+        (WebCore::MockIDBCallbacks::onSuccessWithPrefetch):
+        * tests/IDBDatabaseBackendTest.cpp:
+        * tests/IDBRequestTest.cpp:
+        (WebKit::TEST_F):
+
+2013-02-21  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        Allow to retrieve the request data from abstract TextCheckingRequest to be accessible for WK2
+        https://bugs.webkit.org/show_bug.cgi?id=110208
+
+        Reviewed by Hajime Morrita.
+
+        * src/EditorClientImpl.cpp:
+        (WebKit::EditorClientImpl::requestCheckingOfString):
+        Extract the request data as it is the member of 'TextCheckingRequest'.
+
+2013-02-21  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove chromium/public/platform directory
+        https://bugs.webkit.org/show_bug.cgi?id=110471
+
+        Reviewed by Adam Barth.
+
+        Part of a larger refactoring series; see tracking bug 82948.
+        
+        * WebKit.gyp:
+        * public/platform: Removed.
+        * public/platform/WebKitPlatformSupport.h: Removed.
+        * public/platform/android: Removed.
+        * public/platform/default: Removed.
+        * public/platform/linux: Removed.
+        * public/platform/mac: Removed.
+        * public/platform/win: Removed.
+        * src/WebKit.cpp:
+
+2013-02-21  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] support the lucid version of freetype on precise in DRT
+        https://bugs.webkit.org/show_bug.cgi?id=107338
+
+        Reviewed by Tony Chang.
+
+        Add in a linux-only dependency on Freetype2 so that we can
+        match the version shipped in Ubuntu Lucid.
+
+        * DEPS:
+
+2013-02-21  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r183905.  Requested by
+        "Mark Pilgrim" <pilgrim@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-02-21  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Remove copying WebIDBDatabase::put() stub
+        https://bugs.webkit.org/show_bug.cgi?id=109967
+
+        Reviewed by Darin Fisher.
+
+        Now that the chromium call to this method has
+        been removed, we can remove the stub.
+
+        * public/WebIDBDatabase.h:
+
+2013-02-21  Dirk Pranke  <dpranke@chromium.org>
+
+        Unreviewed, roll chromium deps 183552 -> 183788
+
+        * DEPS:
+
+2013-02-21  John Mellor  <johnme@chromium.org>
+
+        [chromium] Simplify computation of screenRect/windowRect.
+        https://bugs.webkit.org/show_bug.cgi?id=110456
+
+        Reviewed by Adam Barth.
+
+        This patch removes applyDeviceScaleFactorInCompositor checks
+        added by http://trac.webkit.org/changeset/139356 because
+        Chrome for Android now sizes its screen and window in DIP
+        units (like other platforms), so they are no longer necessary.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::windowRect):
+
+2013-02-21  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Web Inspector: Get rid of parsedURL in uiSourceCode, use name and path for displayName instead.
+        https://bugs.webkit.org/show_bug.cgi?id=110335
+
+        Reviewed by Alexander Pavlov.
+
+        * src/js/Tests.js:
+        (.TestSuite.prototype._scriptsAreParsed):
+
+2013-02-21  Ken Kania  <kkania@chromium.org>
+
+        Web Inspector: Add command for selecting files for file input element
+        https://bugs.webkit.org/show_bug.cgi?id=109308
+
+        Reviewed by Pavel Feldman.
+
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::canSetFileInputFiles):
+        (WebKit):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+
+2013-02-20  Paweł Hajdan, Jr.  <phajdan.jr@chromium.org>
+
+        Add gyp option to switch ENABLE(SQL_DATABASE)
+        https://bugs.webkit.org/show_bug.cgi?id=109303
+        http://code.google.com/p/chromium/issues/detail?id=22208
+
+        Reviewed by Tony Chang.
+
+        This will be useful to implement build with system sqlite.
+
+        * features.gypi:
+        * src/ChromeClientImpl.cpp:
+        (WebKit):
+        * src/ChromeClientImpl.h:
+        (ChromeClientImpl):
+
+2013-02-20  Dirk Schulze  <krit@webkit.org>
+
+        Enable CANVAS_PATH flag
+        https://bugs.webkit.org/show_bug.cgi?id=108508
+
+        Reviewed by Simon Fraser.
+
+        Enable CANVAS_PATH flag on trunk.
+
+        * features.gypi:
+
+2013-02-15  Dirk Schulze  <krit@webkit.org>
+
+        [Chromium] Add runtime flag for CanvasPath
+        https://bugs.webkit.org/show_bug.cgi?id=109997
+
+        Reviewed by Adam Barth.
+
+        Add runtime flag for Chromium.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableCanvasPath):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isCanvasPathEnabled):
+
+2013-02-20  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Move WebKitPlatformSupport declaration to Platform.h
+        https://bugs.webkit.org/show_bug.cgi?id=110262
+
+        Reviewed by Adam Barth.
+
+        In preparation for removing WebKitPlatformSupport.h entirely (once
+        downstream references to that file have been updated). Part of a
+        larger refactoring series; see tracking bug 82948.
+
+        * public/platform/WebKitPlatformSupport.h:
+
+2013-02-20  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove idbFactory from WebKitPlatformSupport
+        https://bugs.webkit.org/show_bug.cgi?id=106457
+
+        Reviewed by Adam Barth.
+
+        Now that https://codereview.chromium.org/12230054 has landed, the
+        idbFactory method is no longer needed. (Embedders must now call
+        the new setIDBFactory method upon initialization.) Part of a
+        larger refactoring series; see tracking bug 82948.
+
+        * public/platform/WebKitPlatformSupport.h:
+        (WebKit):
+        * src/IDBFactoryBackendProxy.cpp:
+        (WebKit::IDBFactoryBackendProxy::IDBFactoryBackendProxy):
+
 2013-02-20  Mark Lam  <mark.lam@apple.com>
 
         Rename DatabaseBackend to DatabaseBackendBase.

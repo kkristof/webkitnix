@@ -832,6 +832,9 @@ editing/spelling/spelling-with-punctuation-selection.html
 editing/spelling/spelling-with-underscore-selection.html
 editing/spelling/spelling-with-whitespace-selection.html
 
+# REGRESSION(r143470): editing/spelling/spelling-changed-text.html fails on Qt, GTK, EFL
+webkit.org/b/110447 editing/spelling/spelling-changed-text.html [ Skip ]
+
 # =========================================================================== #
 #       Failing plugins tests.                                                #
 # =========================================================================== #
@@ -1681,7 +1684,6 @@ fast/block/positioning/absolute-in-inline-ltr.html
 fast/block/positioning/absolute-in-inline-rtl-2.html
 fast/block/positioning/absolute-in-inline-rtl-3.html
 fast/block/positioning/absolute-in-inline-rtl.html
-fast/borders/border-image-02.html
 fast/borders/border-image-omit-right-slice.html
 fast/borders/borderRadiusAllStylesAllCorners.html
 fast/borders/borderRadiusDashed01.html
@@ -2257,6 +2259,7 @@ fast/css/empty-cell-baseline.html
 fast/forms/datalist/input-appearance-range-with-datalist-rtl.html
 fast/forms/datalist/update-range-with-datalist.html
 fast/multicol/cell-shrinkback.html
+fast/multicol/newmulticol/column-rules-fixed-height.html
 fast/multicol/overflow-into-columngap.html
 fast/overflow/line-clamp-and-columns.html
 fast/table/td-width-fifty-percent-regression.html
@@ -2629,6 +2632,11 @@ inspector/editor/text-editor-word-jumps.html
 inspector/editor/text-editor-home-button.html
 inspector/editor/text-editor-smart-braces.html
 
+# [Qt] REGRESSION(143400): It made all inspector tests crash on Qt 64 bit release.
+webkit.org/b/110440 http/tests/inspector-enabled
+webkit.org/b/110440 http/tests/inspector
+webkit.org/b/110440 inspector
+
 # [Qt] REGRESSION(r141634) test failing
 webkit.org/b/108813 compositing/visibility/visibility-image-layers-dynamic.html [ Skip ]
 
@@ -2639,6 +2647,11 @@ webkit.org/b/108676 svg/custom/svg-fonts-in-text-controls.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/floating-to-non-floating.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/static-positioned-to-absolute-positioned.html [ Skip ]
+
+# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=70634
+webkit.org/b/109507 compositing/contents-opaque/contents-opaque-background-color.html [ Failure ]
+webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-opacity.html [ Failure ]
+webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-transform.html [ Failure ]
 
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109775
 webkit.org/b/109775 media/audio-controls-rendering.html [ Failure ]
@@ -2654,3 +2667,17 @@ webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
 
 # New test introduced in r143073 that never passed on Qt and EFL.
 webkit.org/b/110054 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
+
+# [Qt] newly added svg/as-background-image/svg-transformed-background.html fails
+webkit.org/b/110442 svg/as-background-image/svg-transformed-background.html [ Skip ]
+
+# Need rebaseline for https://bugs.webkit.org/show_bug.cgi?id=109994
+webkit.org/b/109994 css2.1/20110323/replaced-elements-001.htm [ Failure ]
+webkit.org/b/109994 fast/forms/button-generated-content.html [ Failure ]
+webkit.org/b/109994 fast/forms/select-baseline.html [ Failure ]
+webkit.org/b/109994 svg/custom/foreign-object-skew.svg [ Failure ]
+webkit.org/b/109994 tables/mozilla/bugs/bug92647-2.html [ Failure ]
+
+# [Qt] REGRESSION(r143654): some fast/js test crashes on 32 bit build
+webkit.org/b/110590 fast/js/regress/HashMap-string-put-get-iterate.html [ Skip ]
+webkit.org/b/110590 fast/js/dfg-value-to-int32-with-side-effect.html [ Skip ]

@@ -308,6 +308,9 @@ void HTMLDocumentParser::checkForSpeculationFailure()
 
 void HTMLDocumentParser::didFailSpeculation(PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer)
 {
+    if (!m_currentChunk)
+        return;
+
     m_weakFactory.revokeAll();
     m_speculations.clear();
 
@@ -315,9 +318,11 @@ void HTMLDocumentParser::didFailSpeculation(PassOwnPtr<HTMLToken> token, PassOwn
     checkpoint->parser = m_weakFactory.createWeakPtr();
     checkpoint->token = token;
     checkpoint->tokenizer = tokenizer;
-    checkpoint->inputCheckpoint = m_currentChunk->checkpoint;
+    checkpoint->inputCheckpoint = m_currentChunk->inputCheckpoint;
+    checkpoint->preloadScannerCheckpoint = m_currentChunk->preloadScannerCheckpoint;
     checkpoint->unparsedInput = m_input.current().toString().isolatedCopy();
     m_input.current().clear();
+    m_currentChunk.clear();
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
     HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, checkpoint.release()));
@@ -696,8 +701,8 @@ void HTMLDocumentParser::finish()
         return;
     }
 
-    if (shouldUseThreading() && !wasCreatedByScript()) {
-        ASSERT(!m_tokenizer && !m_token);
+    if (!m_tokenizer) {
+        ASSERT(!m_token);
         // We're finishing before receiving any data. Rather than booting up
         // the background parser just to spin it down, we finish parsing
         // synchronously.

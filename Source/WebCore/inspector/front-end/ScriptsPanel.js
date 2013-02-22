@@ -150,6 +150,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._installDebuggerSidebarController();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
+    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
 
     this._sourceFramesByUISourceCode = new Map();
@@ -186,6 +187,15 @@ WebInspector.ScriptsPanel.prototype = {
     get statusBarItems()
     {
         return [this.enableToggleButton.element, this._pauseOnExceptionButton.element, this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
+    },
+
+    /**
+     * @return {?Element}
+     */
+    statusBarText: function()
+    {
+        var sourceFrame = this.visibleView;
+        return sourceFrame ? sourceFrame.statusBarText() : null;
     },
 
     defaultFocusedElement: function()
@@ -1150,23 +1160,24 @@ WebInspector.ScriptsPanel.prototype = {
     _dockSideChanged: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
-        this._setVerticalSplit(dockSide !== WebInspector.DockController.State.DockedToRight);
+        var vertically = dockSide === WebInspector.DockController.State.DockedToRight && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        this._splitVertically(vertically);
     },
 
     /**
-     * @param {boolean} vertical
+     * @param {boolean} vertically
      */
-    _setVerticalSplit: function(vertical)
+    _splitVertically: function(vertically)
     {
-        if (this.sidebarPaneView && vertical === this.splitView.isVertical())
+        if (this.sidebarPaneView && vertically === !this.splitView.isVertical())
             return;
 
         if (this.sidebarPaneView)
             this.sidebarPaneView.detach();
 
-        this.splitView.setVertical(vertical);
+        this.splitView.setVertical(!vertically);
 
-        if (vertical) {
+        if (!vertically) {
             this.sidebarPaneView = new WebInspector.SidebarPaneStack();
             for (var pane in this.sidebarPanes)
                 this.sidebarPaneView.addPane(this.sidebarPanes[pane]);

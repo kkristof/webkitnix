@@ -597,14 +597,14 @@ void InputHandler::requestCheckingOfString(PassRefPtr<WebCore::TextCheckingReque
 {
     m_request = textCheckingRequest;
 
-    InputLog(Platform::LogLevelInfo, "InputHandler::requestCheckingOfString '%s'", m_request->text().latin1().data());
+    InputLog(Platform::LogLevelInfo, "InputHandler::requestCheckingOfString '%s'", m_request->data().text().latin1().data());
 
     if (!m_request) {
         SpellingLog(Platform::LogLevelWarn, "InputHandler::requestCheckingOfString did not receive a valid request.");
         return;
     }
 
-    unsigned requestLength = m_request->text().length();
+    unsigned requestLength = m_request->data().text().length();
 
     // Check if the field should be spellchecked.
     if (!isActiveTextEdit() || !shouldSpellCheckElement(m_currentFocusElement.get()) || requestLength < 2) {
@@ -639,7 +639,7 @@ void InputHandler::requestCheckingOfString(PassRefPtr<WebCore::TextCheckingReque
     }
 
     int paragraphLength = 0;
-    if (!convertStringToWchar(m_request->text(), checkingString, requestLength + 1, &paragraphLength)) {
+    if (!convertStringToWchar(m_request->data().text(), checkingString, requestLength + 1, &paragraphLength)) {
         Platform::logAlways(Platform::LogLevelCritical, "InputHandler::requestCheckingOfString Failed to convert String to wchar type.");
         free(checkingString);
         m_request->didCancel();
@@ -798,7 +798,7 @@ void InputHandler::requestSpellingCheckingOptions(imf_sp_text_t& spellCheckingOp
     if (!shouldMoveDialog && spellCheckingOptionRequest.startTextPosition == spellCheckingOptionRequest.endTextPosition)
         return;
 
-    if (screenOffset.isEmpty()) {
+    if (screenOffset.width() == -1 && screenOffset.height() == -1) {
         screenOffset.setWidth(m_screenOffset.width());
         screenOffset.setHeight(m_screenOffset.height());
     } else {

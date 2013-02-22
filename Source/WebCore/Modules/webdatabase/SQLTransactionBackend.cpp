@@ -34,7 +34,7 @@
 #include "AbstractSQLTransaction.h"
 #include "Database.h" // FIXME: Should only be used in the frontend.
 #include "DatabaseAuthorizer.h"
-#include "DatabaseBackendAsync.h"
+#include "DatabaseBackend.h"
 #include "DatabaseBackendContext.h"
 #include "DatabaseThread.h"
 #include "ExceptionCode.h"
@@ -233,9 +233,9 @@
 // ==============================================================================
 // The RefPtr chain goes something like this:
 //
-//     At birth (in DatabaseBackendAsync::runTransaction()):
+//     At birth (in DatabaseBackend::runTransaction()):
 //     ====================================================
-//     DatabaseBackendAsync               // Deque<RefPtr<SQLTransactionBackend> > m_transactionQueue points to ...
+//     DatabaseBackend                    // Deque<RefPtr<SQLTransactionBackend> > m_transactionQueue points to ...
 //     --> SQLTransactionBackend          // RefPtr<SQLTransaction> m_frontend points to ...
 //         --> SQLTransaction             // RefPtr<SQLTransactionBackend> m_backend points to ...
 //             --> SQLTransactionBackend  // which is a circular reference.
@@ -248,7 +248,7 @@
 //     or if the database was interrupted. See comments on "What happens if a transaction
 //     is interrupted?" below for details.
 //
-//     After scheduling the transaction with the DatabaseThread (DatabaseBackendAsync::scheduleTransaction()):
+//     After scheduling the transaction with the DatabaseThread (DatabaseBackend::scheduleTransaction()):
 //     ======================================================================================================
 //     DatabaseThread                         // MessageQueue<DatabaseTask> m_queue points to ...
 //     --> DatabaseTransactionTask            // RefPtr<SQLTransactionBackend> m_transaction points to ...
@@ -302,9 +302,9 @@
 //     Phase 1. After Birth, before scheduling
 //
 //     - To clean up, DatabaseThread::databaseThread() will call
-//       DatabaseBackendAsync::close() during its shutdown.
-//     - DatabaseBackendAsync::close() will iterate
-//       DatabaseBackendAsync::m_transactionQueue and call
+//       DatabaseBackend::close() during its shutdown.
+//     - DatabaseBackend::close() will iterate
+//       DatabaseBackend::m_transactionQueue and call
 //       notifyDatabaseThreadIsShuttingDown() on each transaction there.
 //        
 //     Phase 2. After scheduling, before state AcquireLock
@@ -348,13 +348,13 @@ static const int DefaultQuotaSizeIncrease = 1048576;
 
 namespace WebCore {
 
-PassRefPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackendAsync* db,
+PassRefPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
     PassRefPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
 {
     return adoptRef(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
 }
 
-SQLTransactionBackend::SQLTransactionBackend(DatabaseBackendAsync* db,
+SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
     PassRefPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
     : m_frontend(frontend)
     , m_database(db)
@@ -465,10 +465,26 @@ void SQLTransactionBackend::enqueueStatementBackend(PassRefPtr<SQLStatementBacke
     m_statementQueue.append(statementBackend);
 }
 
-void SQLTransactionBackend::checkAndHandleClosedOrInterruptedDatabase()
+void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
 {
-    if (m_database->opened() && !m_database->isInterrupted())
+    // Only honor the requested state transition if we're not supposed to be
+    // cleaning up and shutting down:
+    if (m_database->opened() && !m_database->isInterrupted()) {
+        setStateToRequestedState();
+        ASSERT(m_nextState == SQLTransactionState::AcquireLock
+            || m_nextState == SQLTransactionState::OpenTransactionAndPreflight
+            || m_nextState == SQLTransactionState::RunStatements
+            || m_nextState == SQLTransactionState::PostflightAndCommit
+            || m_nextState == SQLTransactionState::CleanupAndTerminate
+            || m_nextState == SQLTransactionState::CleanupAfterTransactionErrorCallback);
+
+        LOG(StorageAPI, "State %s\n", nameForSQLTransactionState(m_nextState));
         return;
+    }
+
+    if (m_nextState == SQLTransactionState::End)
+        return;
+    m_nextState = SQLTransactionState::End;
 
     // If the database was stopped, don't do anything and cancel queued work
     LOG(StorageAPI, "Database was stopped or interrupted - cancelling work for this transaction");
@@ -480,28 +496,17 @@ void SQLTransactionBackend::checkAndHandleClosedOrInterruptedDatabase()
     }
 
     // Terminate the frontend state machine. This also gets the frontend to
-    // call checkAndHandleClosedOrInterruptedDatabase() and clear its wrappers
+    // call computeNextStateAndCleanupIfNeeded() and clear its wrappers
     // if needed.
     m_frontend->requestTransitToState(SQLTransactionState::End);
 
     // Redirect to the end state to abort, clean up, and end the transaction.
     doCleanup();
-    m_nextState = SQLTransactionState::End;
 }
 
 void SQLTransactionBackend::performNextStep()
 {
-    LOG(StorageAPI, "State %s\n", nameForSQLTransactionState(m_nextState));
-
-    setStateToRequestedState();
-    ASSERT(m_nextState == SQLTransactionState::AcquireLock
-        || m_nextState == SQLTransactionState::OpenTransactionAndPreflight
-        || m_nextState == SQLTransactionState::RunStatements
-        || m_nextState == SQLTransactionState::PostflightAndCommit
-        || m_nextState == SQLTransactionState::CleanupAndTerminate
-        || m_nextState == SQLTransactionState::CleanupAfterTransactionErrorCallback);
-
-    checkAndHandleClosedOrInterruptedDatabase();
+    computeNextStateAndCleanupIfNeeded();
     runStateMachine();
 }
 

@@ -31,8 +31,7 @@
 #include "RenderMultiColumnBlock.h"
 #include "RenderMultiColumnFlowThread.h"
 
-using std::min;
-using std::max;
+using namespace std;
 
 namespace WebCore {
 
@@ -98,9 +97,12 @@ void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit, LogicalE
 
 LayoutUnit RenderMultiColumnSet::columnGap() const
 {
-    if (style()->hasNormalColumnGap())
-        return style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
-    return static_cast<int>(style()->columnGap());
+    // FIXME: Eventually we will cache the column gap when the widths of columns start varying, but for now we just
+    // go to the parent block to get the gap.
+    RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
+    if (parentBlock->style()->hasNormalColumnGap())
+        return parentBlock->style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
+    return parentBlock->style()->columnGap();
 }
 
 unsigned RenderMultiColumnSet::columnCount() const
@@ -108,7 +110,7 @@ unsigned RenderMultiColumnSet::columnCount() const
     if (!computedColumnHeight())
         return 0;
     
-    // Our region rect determines our column count. We have as many columns as needed to fit all the content.
+    // Our portion rect determines our column count. We have as many columns as needed to fit all the content.
     LayoutUnit logicalHeightInColumns = flowThread()->isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width();
     return ceil(static_cast<float>(logicalHeightInColumns) / computedColumnHeight());
 }
@@ -156,7 +158,7 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionRectAt(unsigned index) const
     return portionRect;
 }
 
-LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect& portionRect, unsigned index, unsigned colCount, int colGap) const
+LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect& portionRect, unsigned index, unsigned colCount, LayoutUnit colGap) const
 {
     // This function determines the portion of the flow thread that paints for the column. Along the inline axis, columns are
     // unclipped at outside edges (i.e., the first and last column in the set), and they clip to half the column
@@ -205,6 +207,31 @@ LayoutRect RenderMultiColumnSet::flowThreadPortionOverflowRect(const LayoutRect&
         }
     }
     return overflowRectForFlowThreadPortion(overflowRect, isFirstRegion() && isFirstColumn, isLastRegion() && isLastColumn);
+}
+
+void RenderMultiColumnSet::setFlowThreadPortionRect(const LayoutRect& rect)
+{
+    RenderRegion::setFlowThreadPortionRect(rect);
+    
+    // Mutate the dimensions of the column set once our flow portion is set if the flow portion has more columns
+    // than can fit inside our current dimensions.
+    unsigned colCount = columnCount();
+    if (!colCount)
+        return;
+    
+    LayoutUnit colGap = columnGap();
+    LayoutUnit minimumContentLogicalWidth = colCount * computedColumnWidth() + (colCount - 1) * colGap;
+    LayoutUnit currentContentLogicalWidth = contentLogicalWidth();
+    LayoutUnit delta = max(LayoutUnit(), minimumContentLogicalWidth - currentContentLogicalWidth);
+    if (!delta)
+        return;
+
+    // Increase our logical width by the delta.
+    setLogicalWidth(logicalWidth() + delta);
+    
+    // Shift our position left by the delta if we are RTL.
+    if (!style()->isLeftToRightDirection())
+        setLogicalLeft(logicalLeft() - delta);
 }
 
 void RenderMultiColumnSet::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

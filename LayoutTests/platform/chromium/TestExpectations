@@ -586,6 +586,8 @@ http/tests/security/storage-blocking-loosened-shared-worker.html [ WontFix ]
 http/tests/security/storage-blocking-strengthened-shared-worker.html [ WontFix ]
 storage/indexeddb/basics-shared-workers.html [ WontFix ]
 
+webkit.org/b/110401 http/tests/security/feed-urls-from-remote.html [ Timeout ]
+
 # test_shell does not support message ports
 webkit.org/b/74459 fast/workers/termination-with-port-messages.html
 webkit.org/b/74459 fast/workers/worker-cloneport.html
@@ -1351,7 +1353,8 @@ webkit.org/b/83303 [ Win ] svg/custom/mouse-move-on-svg-container.xhtml [ ImageO
 webkit.org/b/83303 [ Win ] svg/custom/mouse-move-on-svg-root-standalone.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Win ] svg/custom/mouse-move-on-svg-root.xhtml [ ImageOnlyFailure Pass ]
 
-webkit.org/b/109413 [ Linux Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
+# Need to rebaseline text failure for https://bugs.webkit.org/show_bug.cgi?id=109994
+webkit.org/b/109413 svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass Failure ]
 
 # This fails image 5-10% of the time. Probably a race condition on timers.
 webkit.org/b/83471 svg/as-image/animated-svg-as-image-same-image.html [ ImageOnlyFailure Pass ]
@@ -1385,12 +1388,6 @@ webkit.org/b/101396 svg/custom/simple-text-double-shadow.svg
 webkit.org/b/101396 svg/css/clippath-with-shadow.svg
 webkit.org/b/101396 svg/css/arrow-with-shadow.svg
 
-# These tests need to be rebaselined after https://bugs.webkit.org/show_bug.cgi?id=99984
-webkit.org/b/99984 svg/as-image/image-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-svgdom-preserveAspectRatio-prop.html [ ImageOnlyFailure Pass ]
-
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109775
 webkit.org/b/109775 [ Win Mac ] media/audio-controls-rendering.html [ Failure ]
 webkit.org/b/109775 [ Lion MountainLion Win7 ] media/controls-after-reload.html [ Failure ]
@@ -1400,6 +1397,12 @@ webkit.org/b/109775 [ Win Mac ] media/controls-without-preload.html [ Failure ]
 webkit.org/b/109775 [ MountainLion Win ] media/video-controls-rendering.html [ Failure ]
 webkit.org/b/109775 [ MountainLion XP ] media/video-display-toggle.html [ Failure ]
 webkit.org/b/109775 [ Lion MountainLion Win7 ] media/video-playing-and-pause.html [ Failure ]
+
+# Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=110294
+webkit.org/b/110294 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+webkit.org/b/110294 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
+webkit.org/b/110294 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+webkit.org/b/110294 compositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
 
 # -----------------------------------------------------------------
 # End SVG TESTS
@@ -1586,10 +1589,14 @@ webkit.org/b/110138 platform/chromium/virtual/softwarecompositing/geometry/limit
 webkit.org/b/110079 [ Win Debug ] storage/websql/sql-data-types.html [ Crash ]
 
 # Newly introduced Reftest fails on Chrome/Mac
-webkit.org/b/110203 [ Mac ] fast/multicol/seamless-flowed-through-columns.html [ Failure ]
+webkit.org/b/110203 [ Mac ] fast/multicol/seamless-flowed-through-columns.html [ ImageOnlyFailure ]
 
 # Test fails for some reason.
 webkit.org/b/110296 fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
+webkit.org/b/110377 [ Mac ] fast/multicol/newmulticol/layers-in-multicol.html [ ImageOnlyFailure ]
+webkit.org/b/110377 [ Mac ] fast/multicol/newmulticol/float-paginate-complex.html [ ImageOnlyFailure ]
+webkit.org/b/110377 [ Mac ] fast/multicol/newmulticol/float-paginate.html [ ImageOnlyFailure ]
+webkit.org/b/110377 [ Mac ] fast/multicol/newmulticol/positioned-with-constrained-height.html [ ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
 # MAC PORT TESTS
@@ -2022,9 +2029,6 @@ crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-t
 # to go back. in test_shell history.back() does not go back,
 # so the test timeouts.
 crbug.com/11001 http/tests/history/back-to-post.php [ Timeout ]
-
-# Needs baseline after 14185
-webkit.org/b/14185 [ Android Win Mac ] fast/borders/border-image-02.html [ Missing ]
 
 # WebKit 45086:45111
 crbug.com/15270 fast/js/excessive-comma-usage.html [ Failure ]
@@ -2652,7 +2656,6 @@ webkit.org/b/54051 [ Mac ] platform/chromium/virtual/softwarecompositing/plugins
 webkit.org/b/54051 [ Mac ] plugins/windowless_plugin_paint_test.html [ Timeout ]
 
 # Actual failures
-webkit.org/b/54322 [ SnowLeopard ] fast/images/favicon-as-image.html [ Failure ]
 webkit.org/b/54322 [ SnowLeopard ] fast/text/international/text-combine-image-test.html [ ImageOnlyFailure ]
 
 webkit.org/b/54322 [ SnowLeopard ] fast/loader/loadInProgress.html [ Pass Slow ]
@@ -2670,7 +2673,6 @@ webkit.org/b/55300 [ Mac Android ] fast/images/support-broken-image-delegate.htm
 # introduced by Dave Hyatt in WK r80582
 crbug.com/75561 [ Android ] fast/writing-mode/text-orientation-basic.html [ Failure ]
 
-webkit.org/b/56060 [ Linux ] fast/images/favicon-as-image.html [ Failure ]
 
 # Skip an overly restrictive cross-origin HTTPS test
 crbug.com/69594 http/tests/appcache/different-https-origin-resource-main.html
@@ -2918,9 +2920,6 @@ webkit.org/b/74694 http/tests/cache/history-only-cached-subresource-loads.html [
 webkit.org/b/74694 http/tests/cache/history-only-cached-subresource-loads-max-age-https.html [ Missing Pass ]
 
 webkit.org/b/67915 [ Android ] fast/borders/borderRadiusDashed06.html [ ImageOnlyFailure ]
-
-# Needs rebaseline after bug 14185
-webkit.org/b/14185 fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
 
 webkit.org/b/95365 fast/loader/reload-zero-byte-plugin.html
 
@@ -4042,7 +4041,6 @@ crbug.com/172970 fast/events/touch/emulate-touch-events.html [ Failure Pass ]
 webkit.org/b/94240 platform/chromium/virtual/deferred/fast/images/animated-gif-restored-from-bfcache.html [ Failure ]
 webkit.org/b/94240 [ Linux ] platform/chromium/virtual/deferred/fast/images/color-jpeg-with-color-profile.html [ ImageOnlyFailure ]
 webkit.org/b/94240 [ Android ] platform/chromium/virtual/deferred/fast/images/embed-image.html [ Failure ]
-webkit.org/b/94240 [ Linux SnowLeopard ] platform/chromium/virtual/deferred/fast/images/favicon-as-image.html [ Failure ]
 webkit.org/b/94240 [ Linux Win SnowLeopard ] platform/chromium/virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
 webkit.org/b/94240 platform/chromium/virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 webkit.org/b/94240 [ XP ] platform/chromium/virtual/deferred/fast/images/imagemap-circle-focus-ring.html [ Failure ]
@@ -4318,12 +4316,6 @@ webkit.org/b/109136 platform/chromium/fast/forms/calendar-picker/calendar-picker
 webkit.org/b/109136 platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ ImageOnlyFailure Pass ] 
 webkit.org/b/109158 platform/chromium/fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ ImageOnlyFailure Pass ] 
 
-# Rebaseline after currentPath
-webkit.org/b/108246 fast/canvas/canvas-currentPath.html [ Failure ]
-webkit.org/b/108246 platform/chromium/virtual/gpu/fast/canvas/canvas-currentPath.html [ Failure ]
-webkit.org/b/108246 fast/canvas/canvas-currentPath-crash.html [ Failure ]
-webkit.org/b/108246 platform/chromium/virtual/gpu/fast/canvas/canvas-currentPath-crash.html [ Failure ]
-
 # Broken by Skia flag changes in r139445
 crbug.com/169550 [ Debug ] fast/lists/big-list-marker.html [ Crash ]
 crbug.com/169550 [ Debug ] platform/chromium/virtual/deferred/fast/images/icon-decoding.html [ Crash ]
@@ -4345,13 +4337,6 @@ webkit.org/b/106858 [ Linux Win Debug ] scrollingcoordinator/non-fast-scrollable
 webkit.org/b/106858 [ Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
 webkit.org/b/106858 [ Linux Win Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
-
-# Needs rebaseline after enabling CANVAS_PATH.
-webkit.org/b/108508 fast/canvas/canvas-path-constructors.html [ Failure ]
-webkit.org/b/108508 platform/chromium/virtual/gpu/fast/canvas/canvas-path-constructors.html [ Failure ]
-webkit.org/b/108508 fast/canvas/canvas-path-object.html [ Failure ]
-webkit.org/b/108508 platform/chromium/virtual/gpu/fast/canvas/canvas-path-object.html [ Failure ]
-
 # This is won't fix, as the debug and release versions differ.
 
 webkit.org/b/107204 fast/events/touch/multi-touch-inside-iframes.html [ Pass Failure ]
@@ -4363,6 +4348,12 @@ webkit.org/b/107328 http/tests/cache/cancel-multiple-post-xhrs.html [ Missing ]
 webkit.org/b/107341 [ Debug ] inspector/profiler/memory-instrumentation-cached-images.html [ Failure ]
 
 webkit.org/b/108163 [ Debug ] platform/chromium/virtual/deferred/fast/images/icon-0colors.html [ Crash ]
+
+# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=70634
+webkit.org/b/109507 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+webkit.org/b/109507 compositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
+webkit.org/b/109507 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+webkit.org/b/109507 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
 
 # New clamping logic in the tile shader will causes slight diffs. These images must be rebaselined.
 crbug.com/170722 [ Mac Win Linux ] compositing/color-matching/image-color-matching.html [ ImageOnlyFailure ]
@@ -4416,3 +4407,12 @@ webkit.org/b/109581 [ Win ] inspector/debugger/debugger-script-preprocessor.html
 crbug.com/176843 fast/filesystem/op-restricted-names.html [ Failure ]
 
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Pass Crash Slow ]
+
+# Need rebaseline for https://bugs.webkit.org/show_bug.cgi?id=109994
+webkit.org/b/109994 [ Mac Win ] css2.1/20110323/replaced-elements-001.htm [ Failure ]
+webkit.org/b/109994 [ Mac Win ] fast/forms/button-generated-content.html [ Failure ]
+webkit.org/b/109994 [ Mac Win ] fast/forms/select-baseline.html [ Failure ]
+webkit.org/b/109994 [ Mac Win ] tables/mozilla/bugs/bug92647-2.html [ Failure ]
+
+webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.html [ ImageOnlyFailure ]
+

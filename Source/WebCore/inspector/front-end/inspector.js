@@ -129,7 +129,9 @@ var WebInspector = {
         closeButton.addStyleClass("drawer-header-close-button");
         closeButton.addEventListener("click", this.closeViewInDrawer.bind(this), false);
 
-        document.getElementById("panel-status-bar").firstElementChild.appendChild(drawerStatusBarHeader);
+        var panelStatusBar = document.getElementById("panel-status-bar");
+        var drawerViewAnchor = document.getElementById("drawer-view-anchor");
+        panelStatusBar.insertBefore(drawerStatusBarHeader, drawerViewAnchor);
         this._drawerStatusBarHeader = drawerStatusBarHeader;
         this.drawer.show(view, WebInspector.Drawer.AnimationType.Immediately);
     },
@@ -270,16 +272,6 @@ var WebInspector = {
                 this._nodeSearchButton.toggled = enabled;
         }
         WebInspector.domAgent.setInspectModeEnabled(enabled, callback.bind(this));
-    },
-
-    _profilesLinkifier: function(title)
-    {
-        var profileStringMatches = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(title);
-        if (profileStringMatches) {
-            var profilesPanel = /** @ type {WebInspector.ProfilesPanel} */ WebInspector.panel("profiles");
-            title = WebInspector.ProfilesPanel._instance.displayTitleForProfileLink(profileStringMatches[2], profileStringMatches[1]);
-        }
-        return title;
     },
 
     _debuggerPaused: function()
@@ -468,7 +460,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.endBatchUpdate();
 
     this.addMainEventListeners(document);
-    WebInspector.registerLinkifierPlugin(this._profilesLinkifier.bind(this));
 
     window.addEventListener("resize", this.windowResize.bind(this), true);
 
@@ -583,7 +574,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || (anchor.target === "_blank" && !WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href)))
+    if (!anchor || (anchor.target === "_blank"))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.
@@ -596,7 +587,7 @@ WebInspector.documentClick = function(event)
 
         const profileMatch = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href);
         if (profileMatch) {
-            WebInspector.showProfileForURL(anchor.href);
+            WebInspector.showPanel("profiles").showProfile(profileMatch[1], profileMatch[2]);
             return;
         }
 
@@ -982,11 +973,6 @@ WebInspector._showAnchorLocationInPanel = function(anchor, panel)
     WebInspector.inspectorView.showPanelForAnchorNavigation(panel);
     panel.showAnchorLocation(anchor);
     return true;
-}
-
-WebInspector.showProfileForURL = function(url)
-{
-    WebInspector.showPanel("profiles").showProfileForURL(url);
 }
 
 WebInspector.evaluateInConsole = function(expression, showResultOnly)

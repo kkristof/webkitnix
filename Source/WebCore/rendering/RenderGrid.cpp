@@ -96,6 +96,26 @@ public:
         }
         return 0;
     }
+
+    PassOwnPtr<GridCoordinate> nextEmptyGridArea()
+    {
+        if (m_grid.isEmpty())
+            return nullptr;
+
+        size_t& varyingTrackIndex = (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
+        const size_t endOfVaryingTrackIndex = (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
+        for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
+            const Vector<RenderBox*>& children = m_grid[m_rowIndex][m_columnIndex];
+            if (children.isEmpty()) {
+                PassOwnPtr<GridCoordinate> result =  adoptPtr(new GridCoordinate(m_rowIndex, m_columnIndex));
+                // Advance the iterator to avoid an infinite loop where we would return the same grid area over and over.
+                ++varyingTrackIndex;
+                return result;
+            }
+        }
+        return nullptr;
+    }
+
 private:
     const Vector<Vector<Vector<RenderBox*, 1> > >& m_grid;
     TrackSizingDirection m_direction;
@@ -138,8 +158,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     setLogicalHeight(0);
     updateLogicalWidth();
-
-    m_overflow.clear();
 
     layoutGridItems();
 
@@ -475,6 +493,19 @@ bool RenderGrid::tracksAreWiderThanMinTrackBreadth(TrackSizingDirection directio
 }
 #endif
 
+void RenderGrid::growGrid(TrackSizingDirection direction)
+{
+    if (direction == ForColumns) {
+        const size_t oldColumnSize = m_grid[0].size();
+        for (size_t row = 0; row < m_grid.size(); ++row)
+            m_grid[row].grow(oldColumnSize + 1);
+    } else {
+        const size_t oldRowSize = m_grid.size();
+        m_grid.grow(oldRowSize + 1);
+        m_grid[oldRowSize].grow(m_grid[0].size());
+    }
+}
+
 void RenderGrid::insertItemIntoGrid(RenderBox* child, size_t rowTrack, size_t columnTrack)
 {
     m_grid[rowTrack][columnTrack].append(child);
@@ -491,13 +522,18 @@ void RenderGrid::placeItemsOnGrid()
     for (size_t i = 0; i < m_grid.size(); ++i)
         m_grid[i].grow(maximumColumnIndex);
 
-    Vector<RenderBox*> autoGridItems;
+    Vector<RenderBox*> autoMajorAxisAutoGridItems;
+    Vector<RenderBox*> specifiedMajorAxisAutoGridItems;
     GridAutoFlow autoFlow = style()->gridAutoFlow();
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         const GridPosition& columnPosition = child->style()->gridItemColumn();
         const GridPosition& rowPosition = child->style()->gridItemRow();
         if (autoFlow != AutoFlowNone && (columnPosition.isAuto() || rowPosition.isAuto())) {
-            autoGridItems.append(child);
+            const GridPosition& majorAxisPosition = autoPlacementMajorAxisPositionForChild(child);
+            if (majorAxisPosition.isAuto())
+                autoMajorAxisAutoGridItems.append(child);
+            else
+                specifiedMajorAxisAutoGridItems.append(child);
             continue;
         }
         size_t columnTrack = resolveGridPositionFromStyle(columnPosition);
@@ -510,20 +546,97 @@ void RenderGrid::placeItemsOnGrid()
 
     if (autoFlow == AutoFlowNone) {
         // If we did collect some grid items, they won't be placed thus never laid out.
-        ASSERT(!autoGridItems.size());
+        ASSERT(!autoMajorAxisAutoGridItems.size());
+        ASSERT(!specifiedMajorAxisAutoGridItems.size());
         return;
     }
 
-    // FIXME: This should implement the auto flow algorithm (https://bugs.webkit.org/b/103316).
-    // To keep our tests passing, we just insert them in the grid as if grid-auto-flow was none.
-    for (size_t i = 0; i < autoGridItems.size(); ++i) {
-        const GridPosition& columnPosition = autoGridItems[i]->style()->gridItemColumn();
-        const GridPosition& rowPosition = autoGridItems[i]->style()->gridItemRow();
-        size_t columnTrack = columnPosition.isAuto() ? 0 : resolveGridPositionFromStyle(columnPosition);
-        size_t rowTrack = rowPosition.isAuto() ? 0 : resolveGridPositionFromStyle(rowPosition);
+    placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
+    placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
+}
 
-        insertItemIntoGrid(autoGridItems[i], rowTrack, columnTrack);
+void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)
+{
+    for (size_t i = 0; i < autoGridItems.size(); ++i) {
+        const GridPosition& majorAxisPosition = autoPlacementMajorAxisPositionForChild(autoGridItems[i]);
+        ASSERT(!majorAxisPosition.isAuto());
+        GridIterator iterator(m_grid, autoPlacementMajorAxisDirection(), resolveGridPositionFromStyle(majorAxisPosition));
+        if (OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea()) {
+            insertItemIntoGrid(autoGridItems[i], emptyGridArea->rowIndex, emptyGridArea->columnIndex);
+            continue;
+        }
+
+        growGrid(autoPlacementMinorAxisDirection());
+        OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea();
+        ASSERT(emptyGridArea);
+        insertItemIntoGrid(autoGridItems[i], emptyGridArea->rowIndex, emptyGridArea->columnIndex);
     }
+}
+
+void RenderGrid::placeAutoMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)
+{
+    for (size_t i = 0; i < autoGridItems.size(); ++i) {
+        ASSERT(autoPlacementMajorAxisPositionForChild(autoGridItems[i]).isAuto());
+        placeAutoMajorAxisItemOnGrid(autoGridItems[i]);
+    }
+}
+
+void RenderGrid::placeAutoMajorAxisItemOnGrid(RenderBox* gridItem)
+{
+    ASSERT(autoPlacementMajorAxisPositionForChild(gridItem).isAuto());
+    const GridPosition& minorAxisPosition = autoPlacementMinorAxisPositionForChild(gridItem);
+    size_t minorAxisIndex = 0;
+    if (!minorAxisPosition.isAuto()) {
+        minorAxisIndex = resolveGridPositionFromStyle(minorAxisPosition);
+        GridIterator iterator(m_grid, autoPlacementMinorAxisDirection(), minorAxisIndex);
+        if (OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea()) {
+            insertItemIntoGrid(gridItem, emptyGridArea->rowIndex, emptyGridArea->columnIndex);
+            return;
+        }
+    } else {
+        const size_t endOfMajorAxis = (autoPlacementMajorAxisDirection() == ForColumns) ? gridColumnCount() : gridRowCount();
+        for (size_t majorAxisIndex = 0; majorAxisIndex < endOfMajorAxis; ++majorAxisIndex) {
+            GridIterator iterator(m_grid, autoPlacementMajorAxisDirection(), majorAxisIndex);
+            if (OwnPtr<GridCoordinate> emptyGridArea = iterator.nextEmptyGridArea()) {
+                insertItemIntoGrid(gridItem, emptyGridArea->rowIndex, emptyGridArea->columnIndex);
+                return;
+            }
+        }
+    }
+
+    // We didn't find an empty grid area so we need to create an extra major axis line and insert our gridItem in it.
+    const size_t columnIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? m_grid[0].size() : minorAxisIndex;
+    const size_t rowIndex = (autoPlacementMajorAxisDirection() == ForColumns) ? minorAxisIndex : m_grid.size();
+    growGrid(autoPlacementMajorAxisDirection());
+    insertItemIntoGrid(gridItem, rowIndex, columnIndex);
+}
+
+const GridPosition& RenderGrid::autoPlacementMajorAxisPositionForChild(const RenderBox* gridItem) const
+{
+    GridAutoFlow flow = style()->gridAutoFlow();
+    ASSERT(flow != AutoFlowNone);
+    return (flow == AutoFlowColumn) ? gridItem->style()->gridItemColumn() : gridItem->style()->gridItemRow();
+}
+
+const GridPosition& RenderGrid::autoPlacementMinorAxisPositionForChild(const RenderBox* gridItem) const
+{
+    GridAutoFlow flow = style()->gridAutoFlow();
+    ASSERT(flow != AutoFlowNone);
+    return (flow == AutoFlowColumn) ? gridItem->style()->gridItemRow() : gridItem->style()->gridItemColumn();
+}
+
+RenderGrid::TrackSizingDirection RenderGrid::autoPlacementMajorAxisDirection() const
+{
+    GridAutoFlow flow = style()->gridAutoFlow();
+    ASSERT(flow != AutoFlowNone);
+    return (flow == AutoFlowColumn) ? ForColumns : ForRows;
+}
+
+RenderGrid::TrackSizingDirection RenderGrid::autoPlacementMinorAxisDirection() const
+{
+    GridAutoFlow flow = style()->gridAutoFlow();
+    ASSERT(flow != AutoFlowNone);
+    return (flow == AutoFlowColumn) ? ForRows : ForColumns;
 }
 
 void RenderGrid::clearGrid()

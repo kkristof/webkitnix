@@ -1,3 +1,205 @@
+2013-02-22  Carlos Garcia Campos  <cargarcia@rim.com>
+
+        [BlackBerry] Remove ProtocolHandler methods from ChromeClientBlackBerry
+        https://bugs.webkit.org/show_bug.cgi?id=110567
+
+        Reviewed by Rob Buis.
+
+        They were removed from ChromeClient in r122810 and are now
+        implemented in NavigatorContentUtilsClientBlackBerry since r131056.
+
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        * WebCoreSupport/ChromeClientBlackBerry.h:
+        (ChromeClientBlackBerry):
+
+2013-02-22  Xan Lopez  <xlopez@rim.com>
+
+        [BlackBerry] DomSupport: use NodeTraversal APIs
+        https://bugs.webkit.org/show_bug.cgi?id=110467
+
+        Reviewed by Antonio Gomes.
+
+        * WebKitSupport/DOMSupport.cpp:
+        (BlackBerry::WebKit::DOMSupport::visibleTextQuads):
+
+2013-02-21  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        Allow to retrieve the request data from abstract TextCheckingRequest to be accessible for WK2
+        https://bugs.webkit.org/show_bug.cgi?id=110208
+
+        Reviewed by Hajime Morrita.
+
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::requestCheckingOfString):
+        Extract the request data as it is the member of 'TextCheckingRequest'.
+
+2013-02-21  Andrew Lo  <anlo@rim.com>
+
+        [BlackBerry] WebPagePrivate::load should not check new window policy
+        https://bugs.webkit.org/show_bug.cgi?id=110403
+
+        Reviewed by Rob Buis.
+
+        Based on my understanding of changeset 135952, we should
+        not check the new window policy in WebPagePrivate::load.
+
+        None of the other ports seem to do this, except for plugins.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::load):
+
+2013-02-21  Alberto Garcia  <albgarcia@rim.com>
+
+        [BlackBerry] BackingStore: replace instrument{Begin,Cancel}Frame with did{Begin,Cancel}Frame
+        https://bugs.webkit.org/show_bug.cgi?id=110460
+
+        Reviewed by Rob Buis.
+
+        This was renamed incorrectly in r142879.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::instrumentBeginFrame):
+        (BlackBerry::WebKit::BackingStorePrivate::instrumentCancelFrame):
+
+2013-02-21  Carlos Garcia Campos  <cargarcia@rim.com>
+
+        [BlackBerry] Extra ResourceRequest parameter in FrameLoaderClientBlackBerry::convertMainResourceLoadToDownload
+        https://bugs.webkit.org/show_bug.cgi?id=110451
+
+        Reviewed by Rob Buis.
+
+        Remove the extra ResourceRequest parameter from
+        FrameLoaderClientBlackBerry::convertMainResourceLoadToDownload.
+
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::convertMainResourceLoadToDownload):
+        * WebCoreSupport/FrameLoaderClientBlackBerry.h:
+        (FrameLoaderClientBlackBerry):
+
+2013-02-21  Xan Lopez  <xlopez@rim.com>
+
+        [BlackBerry] Adapt to name changes in WebCore::ViewPortArguments
+        https://bugs.webkit.org/show_bug.cgi?id=110469
+
+        Reviewed by Rob Buis.
+
+        This changed in r134765.
+
+        * Api/WebViewportArguments.cpp:
+        (BlackBerry::WebKit::WebViewportArguments::zoom):
+        (BlackBerry::WebKit::WebViewportArguments::setZoom):
+        (BlackBerry::WebKit::WebViewportArguments::minZoom):
+        (BlackBerry::WebKit::WebViewportArguments::setMinZoom):
+        (BlackBerry::WebKit::WebViewportArguments::maxZoom):
+        (BlackBerry::WebKit::WebViewportArguments::setMaxZoom):
+        (BlackBerry::WebKit::WebViewportArguments::userZoom):
+        (BlackBerry::WebKit::WebViewportArguments::setUserZoom):
+        * Api/WebViewportArguments.h:
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::didSetSVGZoomAndPan):
+
+2013-02-21  Jakob Petsovits  <jpetsovits@rim.com>
+
+        [BlackBerry] Move posting and scrollbar updates to the page client.
+        https://bugs.webkit.org/show_bug.cgi?id=110256
+        Internal PR 297099
+
+        Reviewed by Rob Buis.
+
+        In blitVisibleContents(), we were calling the WebKit thread
+        functions BackingStorePrivate::isScrollingOrZooming() and
+        WebPage::isVisible(). This is not the right spot to do it.
+        Furthermore, we want to move away from direct window access
+        in WebKit and leave that kind of dirtywork to the client.
+
+        This patch removes invalidateWindow() as well as the two
+        virtual scrollbar drawing functions and replaces it with
+        one new virtual, WebPageClient::postToSurface().
+        This clears up threading issues and gets us another step
+        further towards pure WebPageCompositor rendering.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        * Api/BackingStore_p.h:
+        (BackingStorePrivate):
+        * Api/WebPageClient.h:
+
+2013-02-21  Carlos Garcia Campos  <cargarcia@rim.com>
+
+        [BlackBerry] Rename Localizer to Locale
+        https://bugs.webkit.org/show_bug.cgi?id=110449
+
+        Reviewed by Rob Buis.
+
+        * WebCoreSupport/ColorPickerClient.cpp:
+        (WebCore::ColorPickerClient::locale):
+        * WebCoreSupport/ColorPickerClient.h:
+        (ColorPickerClient):
+        * WebCoreSupport/DatePickerClient.cpp:
+        (WebCore::DatePickerClient::locale):
+        * WebCoreSupport/DatePickerClient.h:
+        (DatePickerClient):
+        * WebCoreSupport/SelectPopupClient.cpp:
+        (WebCore::SelectPopupClient::locale):
+        * WebCoreSupport/SelectPopupClient.h:
+        (SelectPopupClient):
+
+2013-02-21  Carlos Garcia Campos  <cargarcia@rim.com>
+
+        [BlackBerry] Invalid use of COMPILE_ASSERT macro in WebKitTextCodec.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=110437
+
+        Reviewed by Yong Li.
+
+        * Api/WebKitTextCodec.cpp:
+        (WebKit): Define COMPILE_ASSERT_MATCHING_ENUM() macro and use it to
+        check enum values match between WebKit and WTF.
+        (BlackBerry::WebKit::base64Decode): Use a static cast directly to
+        convert from WebKit Base64DecodePolicy to WTF.
+        (BlackBerry::WebKit::base64Encode): Use a static cast directly to
+        convert from WebKit Base64EncodePolicy to WTF.
+
+2013-02-21  Alberto Garcia  <albgarcia@rim.com>
+
+        [BlackBerry] Element::getAttributeItem() no longer returns a mutable attribute
+        https://bugs.webkit.org/show_bug.cgi?id=110439
+
+        Reviewed by Antonio Gomes.
+
+        This was changed in r142827.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::webContext):
+
+2013-02-21  Alberto Garcia  <albgarcia@rim.com>
+
+        [BlackBerry] willComposite() and didComposite() are now in InspectorController
+        https://bugs.webkit.org/show_bug.cgi?id=110343
+
+        Reviewed by Carlos Garcia Campos.
+
+        This was changed in r142879.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::willComposite):
+        (BlackBerry::WebKit::WebPagePrivate::didComposite):
+
+2013-02-20  Nima Ghanavatian  <nghanavatian@rim.com>
+
+        [BlackBerry] Check offset for initialized value
+        https://bugs.webkit.org/show_bug.cgi?id=110390
+
+        Reviewed by Rob Buis.
+
+        Instead of checking isEmpty, which checks for either point being <= 0, we want to explicitly check
+        for the initialized value of (-1, -1). This would be set in redrawSpellCheckDialogIfRequired, and
+        triggers the restore from cache in requestSpellingCheckingOptions.
+
+        Internally reviewed by Gen Mak.
+
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::requestSpellingCheckingOptions):
+
 2013-02-20  Jakob Petsovits  <jpetsovits@rim.com>
 
         [BlackBerry] Make sure to always sync before reusing backingstore tiles.
