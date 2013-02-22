@@ -72,6 +72,7 @@ list(APPEND WebKit2_SOURCES
 
     WebProcess/WebCoreSupport/nix/WebErrorsNix.cpp
     WebProcess/WebCoreSupport/nix/WebPopupMenuNix.cpp
+    WebProcess/WebCoreSupport/nix/WebContextMenuClientNix.cpp
 
     WebProcess/WebPage/nix/WebInspectorNix.cpp
     WebProcess/WebPage/nix/WebPageNix.cpp
