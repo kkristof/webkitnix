@@ -180,6 +180,7 @@ css3/selectors3/xml/css3-modsel-d3.xml
 css3/selectors3/xml/css3-modsel-d4.xml
 css3/zoom-coords.xhtml
 
+# failing css3 tests
 css3/filters/add-filter-rendering.html
 css3/filters/composited-reflected.html
 css3/filters/crash-filter-change.html
@@ -283,6 +284,14 @@ css3/images/cross-fade-invalidation.html
 css3/masking/clip-path-reference-userSpaceOnUse.html
 css3/masking/clip-path-reference.html
 css3/filters/blur-filter-page-scroll-parents.html
+
+#flaky css* tests
+css2.1/20110323/replaced-elements-001.htm
+css3/compositing/background-blend-mode-property-parsing.html
+css3/compositing/background-blend-mode-property.html
+css3/filters/custom-with-at-rule-syntax/parsing-at-rule-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-src-property-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-src-property-valid.html
 
 editing/deleting/delete-3775172-fix.html [ Skip ]
 editing/deleting/delete-3928305-fix.html [ Skip ]
@@ -605,6 +614,9 @@ fast/block/line-layout/selection-highlight-overlap.html
 fast/block/float/float-in-float-hit-testing.html
 fast/block/positioning/hittest-on-relative-positioned-children.html
 
+# flaky fast/block tests:
+fast/block/float/float-not-removed-from-pre-block.html
+
 # flakey test
 fast/body-propagation/background-image/006.html [ Skip ]
 
@@ -663,10 +675,9 @@ fast/css/input-search-padding.html
 fast/css/text-input-with-webkit-border-radius.html
 fast/css/image-orientation/image-orientation.html
 
-#failing fast/css* tests that need further investigation
-#fast/css-generated-content/pseudo-transition.html
-#fast/css-generated-content/quotes-lang.html
-#fast/css-generated-content/nested-tables-with-before-after-content-crash.html
+# flaky fast/css tests
+fast/css/transform-inline-style-remove.html
+fast/css/transform-inline-style.html
 
 fast/dynamic/012.html [ Skip ]
 fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
