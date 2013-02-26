@@ -36,11 +36,13 @@
 #include <public/WebData.h>
 #include <public/WebFFTFrame.h>
 #include <public/WebGamepads.h>
+#include <public/WebString.h>
 #else
 #include "WebAudioDevice.h"
 #include "WebData.h"
 #include "WebFFTFrame.h"
 #include "WebGamepads.h"
+#include "WebString.h"
 #endif
 
 
@@ -61,7 +63,7 @@ public:
 
     // Creates a device for audio I/O.
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
-    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
+    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*, const WebString& deviceId) { return 0; }
 
 
     // Gamepad -------------------------------------------------------------

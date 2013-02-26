@@ -12,6 +12,10 @@ SET (Platform_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/chromium/public/WebVector.h"
 )
 
-SET (Platform_SOURCES "nix/public/Platform.cpp")
+SET (Platform_SOURCES
+    chromium/src/WebCString.cpp
+    chromium/src/WebString.cpp
+    nix/public/Platform.cpp
+)
 
 install(FILES ${Platform_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/NixPlatform)
