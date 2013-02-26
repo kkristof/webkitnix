@@ -1,3 +1,62 @@
+2013-02-26  Dmitry Zvorygin  <zvorygin@chromium.org>
+
+        Merged Tip and Debug log levels for web console.
+        https://bugs.webkit.org/show_bug.cgi?id=109919
+
+        Reviewed by Pavel Feldman.
+
+        In every component either TIP or DEBUG level was used for reporting,
+        but not both. This patch is prerequisite for Web Inspector console log filtering.
+
+        * WebCoreSupport/WebChromeClient.mm:
+        (stringForMessageLevel):
+        * WebView/WebUIDelegatePrivate.h:
+
+
+2013-02-21  Jeffrey Pfau  <jpfau@apple.com>
+
+        Optionally partition cache to prevent using cache for tracking
+        https://bugs.webkit.org/show_bug.cgi?id=110269
+
+        Reviewed by Maciej Stachowiak.
+
+        Update WKSI bindings and add feature defines.
+
+        * Configurations/FeatureDefines.xcconfig: Add defines for cache partitioning and public suffix list usage
+        * WebCoreSupport/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface):
+
+2013-02-25  Jer Noble  <jer.noble@apple.com>
+
+        Normalize ENABLE_ENCRYPTED_MEDIA definitions across all FeatureDefines files.
+        https://bugs.webkit.org/show_bug.cgi?id=110806
+
+        Reviewed by Alexey Proskuryakov.
+    
+        Ensure both ENCRYPTED_MEDIA and ENCRYPTED_MEDIA_V2 are enabled on macosx_1090.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-02-25  Andreas Kling  <akling@apple.com>
+
+        Reduce amount of code that includes StylePropertySet.h
+        <http://webkit.org/b/101149>
+
+        Reviewed by Antti Koivisto.
+
+        * WebCoreSupport/WebEditorClient.mm:
+        * WebView/WebFrame.mm:
+        * WebView/WebView.mm:
+
+2013-02-24  Andreas Kling  <akling@apple.com>
+
+        Reduce include graph of JSDOMBinding.h
+        <http://webkit.org/b/110709>
+
+        Reviewed by Antti Koivisto.
+
+        * WebView/WebHTMLView.mm:
+
 2013-02-21  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
 
         Allow to retrieve the request data from abstract TextCheckingRequest to be accessible for WK2

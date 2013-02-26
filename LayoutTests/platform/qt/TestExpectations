@@ -210,7 +210,7 @@ fast/css/cursor-parsing-image-set.html
 
 # ENABLE(TEMPLATE_ELEMENT) is disabled.
 fast/dom/HTMLTemplateElement
-html5lib/run-template.html
+html5lib/generated/run-template.html
 fast/xsl/xslt-xhtml-template.xml
 fast/xpath/xpath-template-element.html
 fast/xsl/xslt-processor-template.html
@@ -420,6 +420,9 @@ fast/dom/HTMLAnchorElement/anchor-nodownload.html
 fast/dom/HTMLAnchorElement/anchor-download.html
 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html
 fast/dom/HTMLAnchorElement/anchor-download-unset.html
+
+# Require ENABLE(CUSTOM_ELEMENTS) support
+webkit.org/b/110735 fast/dom/custom [ Skip ]
 
 # For now, Web Audio API is disabled
 webaudio/
@@ -831,9 +834,7 @@ editing/spelling/spelling-subword-selection.html
 editing/spelling/spelling-with-punctuation-selection.html
 editing/spelling/spelling-with-underscore-selection.html
 editing/spelling/spelling-with-whitespace-selection.html
-
-# REGRESSION(r143470): editing/spelling/spelling-changed-text.html fails on Qt, GTK, EFL
-webkit.org/b/110447 editing/spelling/spelling-changed-text.html [ Skip ]
+webkit.org/b/108370 editing/spelling/spelling-changed-text.html [ Failure ]
 
 # =========================================================================== #
 #       Failing plugins tests.                                                #
@@ -2275,6 +2276,7 @@ fast/regions/region-style-rule-position.html
 fast/forms/select/intrinsic-min-width-applies-with-fixed-width.html
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse.html [ ImageOnlyFailure ]
+webkit.org/b/110447 fast/regions/shape-inside-on-regions.html [ Skip ]
 
 # Failing fast/css/sticky/ tests with minor pixel differences
 # https://bugs.webkit.org/show_bug.cgi?id=92080
@@ -2574,7 +2576,7 @@ webkit.org/b/102675 [ Debug ] fast/block/float/overhanging-tall-block.html
 webkit.org/b/102877 fast/frames/frame-unload-crash2.html
 
 # Fails until we enable the Resource Timing API.
-webkit.org/b/61138 http/tests/w3c/webperf/submission/resource-timing [ Skip ]
+webkit.org/b/61138 http/tests/w3c/webperf/submission/Google/resource-timing [ Skip ]
 
 # [Qt] A new compositing bug uncovered by r135859
 webkit.org/b/103424 fast/backgrounds/background-opaque-images-over-color.html
@@ -2635,6 +2637,7 @@ inspector/editor/text-editor-smart-braces.html
 # [Qt] REGRESSION(143400): It made all inspector tests crash on Qt 64 bit release.
 webkit.org/b/110440 http/tests/inspector-enabled
 webkit.org/b/110440 http/tests/inspector
+webkit.org/b/110440 http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html
 webkit.org/b/110440 inspector
 
 # [Qt] REGRESSION(r141634) test failing
@@ -2670,14 +2673,3 @@ webkit.org/b/110054 compositing/geometry/limit-layer-bounds-fixed.html [ Failure
 
 # [Qt] newly added svg/as-background-image/svg-transformed-background.html fails
 webkit.org/b/110442 svg/as-background-image/svg-transformed-background.html [ Skip ]
-
-# Need rebaseline for https://bugs.webkit.org/show_bug.cgi?id=109994
-webkit.org/b/109994 css2.1/20110323/replaced-elements-001.htm [ Failure ]
-webkit.org/b/109994 fast/forms/button-generated-content.html [ Failure ]
-webkit.org/b/109994 fast/forms/select-baseline.html [ Failure ]
-webkit.org/b/109994 svg/custom/foreign-object-skew.svg [ Failure ]
-webkit.org/b/109994 tables/mozilla/bugs/bug92647-2.html [ Failure ]
-
-# [Qt] REGRESSION(r143654): some fast/js test crashes on 32 bit build
-webkit.org/b/110590 fast/js/regress/HashMap-string-put-get-iterate.html [ Skip ]
-webkit.org/b/110590 fast/js/dfg-value-to-int32-with-side-effect.html [ Skip ]

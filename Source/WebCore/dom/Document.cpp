@@ -46,11 +46,14 @@
 #include "ContentSecurityPolicy.h"
 #include "ContextFeatures.h"
 #include "CookieJar.h"
+#include "CustomElementConstructor.h"
+#include "CustomElementRegistry.h"
 #include "DOMImplementation.h"
 #include "DOMNamedFlowCollection.h"
 #include "DOMSelection.h"
 #include "DOMWindow.h"
 #include "DateComponents.h"
+#include "Dictionary.h"
 #include "DocumentEventQueue.h"
 #include "DocumentFragment.h"
 #include "DocumentLoader.h"
@@ -152,6 +155,7 @@
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "StaticHashSetNodeList.h"
+#include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
@@ -238,6 +242,10 @@
 
 #if ENABLE(CSP_NEXT)
 #include "DOMSecurityPolicy.h"
+#endif
+
+#if PLATFORM(CHROMIUM)
+#include "TraceEvent.h"
 #endif
 
 using namespace std;
@@ -676,6 +684,10 @@ void Document::removedLastRef()
 
         detachParser();
 
+#if ENABLE(CUSTOM_ELEMENTS)
+        m_registry.clear();
+#endif
+
         // removeDetachedChildren() doesn't always unregister IDs,
         // so tear down scope information upfront to avoid having stale references in the map.
         destroyTreeScopeData();
@@ -841,6 +853,25 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionC
 
     return createElement(QualifiedName(nullAtom, name, nullAtom), false);
 }
+
+#if ENABLE(CUSTOM_ELEMENTS)
+PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, ExceptionCode& ec)
+{
+    return registerElement(state, name, Dictionary(), ec);
+}
+
+PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionCode& ec)
+{
+    if (!m_registry)
+        m_registry = adoptRef(new CustomElementRegistry(this));
+    return m_registry->registerElement(state, name, options, ec);
+}
+
+PassRefPtr<CustomElementRegistry> Document::registry() const
+{
+    return m_registry;
+}
+#endif // ENABLE(CUSTOM_ELEMENTS)
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
@@ -1751,6 +1782,10 @@ void Document::recalcStyle(StyleChange change)
     if (m_inStyleRecalc)
         return; // Guard against re-entrancy. -dwh
 
+#if PLATFORM(CHROMIUM)
+    TRACE_EVENT0("webkit", "Document::recalcStyle");
+#endif
+
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
     // before setting the DOMWindow on the Frame, or the SecurityOrigin on the document. The attach, in turn
@@ -2361,9 +2396,6 @@ void Document::implicitClose()
     // We have to clear the parser, in case someone document.write()s from the
     // onLoad event handler, as in Radar 3206524.
     detachParser();
-
-    // Parser should have picked up all preloads by now
-    m_cachedResourceLoader->clearPreloads();
 
     // FIXME: We kick off the icon loader when the Document is done parsing.
     // There are earlier opportunities we could start it:
@@ -4405,6 +4437,9 @@ void Document::finishedParsing()
     // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
     static const int timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds = 10;
     m_sharedObjectPoolClearTimer.startOneShot(timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds);
+
+    // Parser should have picked up all preloads by now
+    m_cachedResourceLoader->clearPreloads();
 }
 
 void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
@@ -5773,7 +5808,12 @@ void Document::decrementActiveParserCount()
     --m_activeParserCount;
     if (!frame())
         return;
+    // FIXME: This should always be enabled, but it seems to cause
+    // http/tests/security/feed-urls-from-remote.html to timeout on Mac WK1
+    // see http://webkit.org/b/110554 and http://webkit.org/b/110401
+#if ENABLE(THREADED_HTML_PARSER)
     loader()->checkLoadComplete();
+#endif
     frame()->loader()->checkLoadComplete();
 }
 
@@ -5804,7 +5844,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request, HitTestResu
         return;
 
     Element* innerElementInDocument = result.innerElement();
-    ASSERT(!innerElementInDocument || innerElementInDocument->document() == this);
+    while (innerElementInDocument && innerElementInDocument->document() != this)
+        innerElementInDocument = innerElementInDocument->document()->ownerElement();
 
     Element* oldActiveElement = activeElement();
     if (oldActiveElement && !request.active()) {

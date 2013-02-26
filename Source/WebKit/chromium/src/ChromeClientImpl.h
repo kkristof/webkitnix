@@ -38,7 +38,6 @@
 #include "SearchPopupMenu.h"
 #include "WebNavigationPolicy.h"
 #include <public/WebColor.h>
-#include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
@@ -252,12 +251,9 @@ private:
 #if ENABLE(PAGE_POPUP)
     WebCore::PagePopupDriver* m_pagePopupDriver;
 #endif
-
-#if USE(ACCELERATED_COMPOSITING)
-    OwnPtr<WebCore::GraphicsLayerFactory> m_graphicsLayerFactory;
-#endif
 };
 
+#if ENABLE(NAVIGATOR_CONTENT_UTILS)
 class NavigatorContentUtilsClientImpl : public WebCore::NavigatorContentUtilsClient {
 public:
     static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
@@ -270,6 +266,7 @@ private:
 
     WebViewImpl* m_webView;
 };
+#endif
 
 } // namespace WebKit
 

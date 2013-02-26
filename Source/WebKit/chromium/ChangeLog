@@ -1,3 +1,501 @@
+2013-02-26  Levi Weintraub  <leviw@chromium.org>
+
+        Add support for 8 bit TextRuns for Chromium/HarfBuzz
+        https://bugs.webkit.org/show_bug.cgi?id=99393
+
+        Reviewed by Eric Seidel.
+
+        Enabling 8 bit text runs for Chromium.
+
+        * features.gypi:
+
+2013-02-26  Dmitry Zvorygin  <zvorygin@chromium.org>
+
+        Merged Tip and Debug log levels for web console.
+        https://bugs.webkit.org/show_bug.cgi?id=109919
+
+        Reviewed by Pavel Feldman.
+
+        In every component either TIP or DEBUG level was used for reporting,
+        but not both. This patch is prerequisite for Web Inspector console log filtering.
+
+        * public/WebConsoleMessage.h:
+        * src/AssertMatchingEnums.cpp:
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::addMessageToConsole):
+
+2013-02-26  Andrey Kosyakov  <caseq@chromium.org>
+
+        Plumbing trace events to Timeline
+
+        Web Inspector: plumb trace events to Timeline agent
+        https://bugs.webkit.org/show_bug.cgi?id=105796
+
+        Reviewed by Pavel Feldman.
+
+        * public/WebDevToolsAgentClient.h:
+        (WebDevToolsAgentClient):
+        (WebKit::WebDevToolsAgentClient::setTraceEventCallback):
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::setTraceEventCallback):
+        (WebKit):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::setTraceEventCallback):
+        (WebKit):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2013-02-01  Andrey Kosyakov  <caseq@chromium.org>
+
+        Web Inspector: plumb trace events to Timeline agent
+        https://bugs.webkit.org/show_bug.cgi?id=105796
+
+        Reviewed by Pavel Feldman.
+
+        Plumb trace events to Inspector.
+
+        * public/WebDevToolsAgentClient.h:
+        (WebDevToolsAgentClient):
+        (WebKit::WebDevToolsAgentClient::setTraceEventCallback):
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::setTraceEventCallback):
+        (WebKit):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::setTraceEventCallback):
+        (WebKit):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2013-02-26  Andrey Kosyakov  <caseq@chromium.org>
+
+        Unreviewed, rolling out r144041, r144044, and r144048.
+        http://trac.webkit.org/changeset/144041
+        http://trac.webkit.org/changeset/144044
+        http://trac.webkit.org/changeset/144048
+        https://bugs.webkit.org/show_bug.cgi?id=105796
+
+        Broke build
+
+        * public/WebDevToolsAgentClient.h:
+        * src/InspectorClientImpl.cpp:
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2013-02-01  Andrey Kosyakov  <caseq@chromium.org>
+
+        Web Inspector: plumb trace events to Timeline agent
+        https://bugs.webkit.org/show_bug.cgi?id=105796
+
+        Reviewed by Pavel Feldman.
+
+        Plumb trace events to Inspector.
+
+        * public/WebDevToolsAgentClient.h:
+        (WebDevToolsAgentClient):
+        (WebKit::WebDevToolsAgentClient::setTraceEventCallback):
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::setTraceEventCallback):
+        (WebKit):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::setTraceEventCallback):
+        (WebKit):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2013-02-26  Tien-Ren Chen  <trchen@chromium.org>
+
+        Implement coordinated scrollbar for subframes and overflow:scroll
+        https://bugs.webkit.org/show_bug.cgi?id=109560
+
+        Reviewed by James Robinson.
+
+        Added ScrollingCoordinatorChromiumTest.iframeScrolling to verify
+        impl-side scrolling and impl-side scrollbars for frames.
+
+        Update ScrollingCoordinatorChromiumTest.overflowScrolling to verify
+        impl-side scrollbars.
+
+        * tests/ScrollingCoordinatorChromiumTest.cpp:
+        (WebKit::ScrollingCoordinatorChromiumTest::ScrollingCoordinatorChromiumTest):
+        (WebKit::TEST_F):
+        (WebKit):
+        * tests/data/iframe-scrolling-inner.html: Added.
+        * tests/data/iframe-scrolling.html: Added.
+
+2013-02-26  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144016.
+        http://trac.webkit.org/changeset/144016
+        https://bugs.webkit.org/show_bug.cgi?id=110856
+
+        Breaks compilation on chromium mac (Requested by vsevik on
+        #webkit).
+
+        * WebKit.gypi:
+        * tests/KeyCodeConversionTest.cpp: Removed.
+
+2013-02-26  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Fix continuous painting mode
+        https://bugs.webkit.org/show_bug.cgi?id=110788
+
+        Reviewed by Adrienne Walker.
+
+        Recent instrumentation shuffling caused WebViewImpl::didBeginFrame to no longer be called, which
+        broke continuous painting.  Since continuous painting mode is meant to simply invalidate layers
+        on each frame, it's a better fit for the animation system. This moves the invalidation calls
+        into WebViewImpl::updateAnimations along with other animation type things.
+
+        Tested manually by enabling continuous painting mode in the inspector. There aren't any automated
+        tests in WebKit for this feature.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setContinuousPaintingEnabled):
+        (WebKit::WebViewImpl::didBeginFrame):
+        (WebKit::WebViewImpl::updateAnimations):
+        * src/painting/ContinuousPainter.cpp:
+        (WebKit::ContinuousPainter::setNeedsDisplayRecursive):
+
+2013-02-26  James Weatherall  <wez@chromium.org>
+
+        keydown and keyup events have zero keycode for some numeric pad keys under Chromium on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=85642
+
+        Add tests to verify that the fixed keys generate the same keyCode values
+        as their equivalents.
+
+        Reviewed by Ojan Vafai.
+
+        * WebKit.gypi:
+        * tests/KeyCodeConversionTest.cpp: Added.
+        (WebCore):
+        (WebCore::TEST):
+
+2013-02-25  Rouslan Solomakhin  <rouslan@chromium.org>
+
+        Add expandedToParagraph() method to WebRange
+        https://bugs.webkit.org/show_bug.cgi?id=110618
+
+        Reviewed by Adam Barth.
+
+        Add a method expandedToParagraph() to WebRange to return a copy of the
+        range expanded to paragraph boundaries. This method is to be used to
+        query the spelling context around the misspelled word under cursor.
+
+        * public/WebRange.h:
+        (WebRange): Added expandedToParagraph() method declaration.
+        * src/WebRange.cpp:
+        (WebKit::WebRange::expandedToParagraph): Added method to copy range, expand the copied range to paragraph boundaries, and return the resulting range.
+        (WebKit): Added expandedToParagraph() method definition.
+
+2013-02-25  James Robinson  <jamesr@chromium.org>
+
+        [chromium] WebViewImpl::m_client can be null in some unit tests, check it before calling
+        https://bugs.webkit.org/show_bug.cgi?id=110834
+
+        Reviewed by Adrienne Walker.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::suppressInvalidations):
+        (WebKit::WebViewImpl::setRootGraphicsLayer):
+
+2013-02-25  Ken Kania  <kkania@chromium.org>
+
+        Remove browser patching mechanism for handling javascript dialogs in chromium port
+        https://bugs.webkit.org/show_bug.cgi?id=110531
+
+        Reviewed by Pavel Feldman.
+
+        * public/WebDevToolsAgent.h:
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::handleJavaScriptDialog):
+        (WebKit::browserHintToString):
+        (WebKit::browserHintFromString):
+        (WebKit::WebDevToolsAgent::patchWithBrowserData):
+
+2013-02-25  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Plumb WebViewImpl's compositor scheduling suppression out to WebWidgetClient
+        https://bugs.webkit.org/show_bug.cgi?id=110640
+
+        Reviewed by Adrienne Walker.
+
+        This plumbs the WebViewImpl::m_suppressInvalidations logic out to the WebWidgetClient so
+        it can be implemented by the embedder. The existing logic is left in place for now,
+        once the embedder side has landed WebViewImpl will be purely a pass-through.
+
+        * public/WebWidgetClient.h:
+        (WebWidgetClient):
+        (WebKit::WebWidgetClient::suppressCompositorScheduling):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::suppressInvalidations):
+        (WebKit::WebViewImpl::setRootGraphicsLayer):
+
+2013-02-25  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r143936.
+        http://trac.webkit.org/changeset/143936
+        https://bugs.webkit.org/show_bug.cgi?id=110789
+
+        Causes webkit_unit_tests failures on android dbg (Requested by
+        vollick on #webkit).
+
+        * WebKit.gyp:
+        * WebKit.gypi:
+        * tests/GIFImageDecoderTest.cpp: Removed.
+        * tests/data/broken.gif: Removed.
+
+2013-02-25  Alpha Lam  <hclam@chromium.org>
+
+        GIFImageReader to read from source data directly
+        https://bugs.webkit.org/show_bug.cgi?id=109662
+
+        Reviewed by Stephen White.
+
+        Added the following unit tests to test new logic in GIFImageDecoder:
+
+        GIFImageDecoderTest.decodeTwoFrames
+        Test that it can decode a multi-frame GIF image correctly.
+
+        GIFImageDecoderTest.parseAndDecode
+        First perform a parse operation and then a decode operation. Expect
+        that parse and decode operates correctly.
+
+        GIFImageDecoderTest.parseByteByByte
+        Test that multi-frame GIF image can be parsed correctly byte by byte.
+
+        GIFImageDecoderTest.parseAndDecodeByteByByte
+        Run a loop to feed decoder byte by byte, perform a parse and then
+        decode operation and make sure frames are decoded correctly.
+
+        GIFImageDecoderTest.brokenSecondFrame
+        Decode a GIF image with second frame broken. Expect that the first
+        frame can be decoded correctly.
+
+        * WebKit.gyp:
+        * WebKit.gypi:
+        * tests/GIFImageDecoderTest.cpp: Added.
+        (WebKit):
+        (WebKit::readFile):
+        (WebKit::TEST):
+        * tests/data/broken.gif: Added.
+
+2013-02-25  Andrey Kosyakov  <caseq@chromium.org>
+
+        Unreviewed follow-up to r143725, reduce chances test flakes on a slow box.
+
+        * src/js/Tests.js:
+        (.TestSuite.prototype.testPageOverlayUpdate.step2):
+
+2013-02-25  Anton Vayvod  <avayvod@chromium.org>
+
+        [Chromium] Disable registerProtocolHandler on Android
+        https://bugs.webkit.org/show_bug.cgi?id=110481
+
+        Reviewed by Julien Chaffraix.
+
+        Chromium for Android has been exposing registerProtocolHandler, but the feature wasn't
+        actually wired up internally. Disable the feature to avoid breaking feature detection until
+        we can implement it properly. Previous attempt is at http://trac.webkit.org/changeset/133465
+        See the discussion of the future implementation at http://crbug.com/156386
+
+        * features.gypi: Disable the flag for Android, enable it only for non-Android platforms.
+
+        * src/ChromeClientImpl.h: Declaration is now guarded by the flag, not to break Android.
+
+2013-02-24  Hajime Morrita  <morrita@google.com>
+
+        [Custom Elements] Implement bare-bone document.register()
+        https://bugs.webkit.org/show_bug.cgi?id=100229
+
+        Reviewed by Adam Barth.
+
+        Added enableCustomDOMElements flag.
+
+        * features.gypi:
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableCustomDOMElements):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isCustomDOMElementsEnabled):
+
+2013-02-23  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] WebKit::initialize should take a Platform* now that WebKitPlatformSupport is empty
+        https://bugs.webkit.org/show_bug.cgi?id=110605
+
+        Reviewed by Adam Barth.
+
+        Part of a larger refactoring series; see tracking bug 82948.
+
+        * public/WebKit.h:
+        (WebKit):
+        * src/WebKit.cpp:
+        (WebKit::initialize):
+        (WebKit::initializeWithoutV8):
+        (WebKit::webKitPlatformSupport):
+
+2013-02-22  David Dorwin  <ddorwin@chromium.org>
+
+        [chromium] Remove call to detach WebHelperPluginImpl's frame since it is never attached
+        https://bugs.webkit.org/show_bug.cgi?id=110668
+
+        Reviewed by Adam Barth.
+
+        This fixes http://crbug.com/172764
+
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::WebHelperPluginImpl::destoryPage):
+
+2013-02-22  Aaron Colwell  <acolwell@chromium.org>
+
+        Factor MediaSource methods out of MediaPlayer & MediaPlayerPrivate and into a new MediaSourcePrivate interface.
+        https://bugs.webkit.org/show_bug.cgi?id=109857
+
+        Reviewed by Adam Barth.
+
+        WebMediaSource and WebMediaSource client were created to replace the MediaSource methods in WebMediaPlayer and
+        WebMediaPlayerClient. This allows the MediaSource implementation to be updated without further polluting the
+        media player interfaces.
+
+        * WebKit.gyp:
+        * public/WebMediaPlayer.h:
+        (WebMediaPlayer):
+        (WebKit::WebMediaPlayer::load):
+        * public/WebMediaPlayerClient.h:
+        (WebKit):
+        * public/WebMediaSource.h: Added.
+        (WebKit):
+        (WebMediaSource):
+        (WebKit::WebMediaSource::~WebMediaSource):
+        * public/WebMediaSourceClient.h: Added.
+        (WebKit):
+        (WebMediaSourceClient):
+        (WebKit::WebMediaSourceClient::~WebMediaSourceClient):
+        * src/AssertMatchingEnums.cpp:
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit):
+        (WebMediaSourceClientImpl): Temporary WebMediaSourceClient implementation to keep things working until Chromium
+                                    changes land.
+        (WebKit::WebMediaSourceClientImpl::WebMediaSourceClientImpl):
+        (WebKit::WebMediaSourceClientImpl::~WebMediaSourceClientImpl):
+        (WebKit::WebMediaSourceClientImpl::addId):
+        (WebKit::WebMediaSourceClientImpl::removeId):
+        (WebKit::WebMediaSourceClientImpl::buffered):
+        (WebKit::WebMediaSourceClientImpl::append):
+        (WebKit::WebMediaSourceClientImpl::abort):
+        (WebKit::WebMediaSourceClientImpl::duration):
+        (WebKit::WebMediaSourceClientImpl::setDuration):
+        (WebKit::WebMediaSourceClientImpl::endOfStream):
+        (WebKit::WebMediaSourceClientImpl::setTimestampOffset):
+        (WebKit::WebMediaPlayerClientImpl::sourceOpened):
+        (WebKit::WebMediaPlayerClientImpl::sourceURL):
+        (WebKit::WebMediaPlayerClientImpl::load):
+        (WebKit::WebMediaPlayerClientImpl::loadRequested):
+        (WebKit::WebMediaPlayerClientImpl::loadInternal):
+        * src/WebMediaPlayerClientImpl.h:
+        (WebMediaPlayerClientImpl):
+        * src/WebMediaSourceImpl.cpp: Added.
+        (WebKit):
+        (MediaSourcePrivateImpl):
+        (WebKit::MediaSourcePrivateImpl::~MediaSourcePrivateImpl):
+        (WebKit::MediaSourcePrivateImpl::MediaSourcePrivateImpl):
+        (WebKit::MediaSourcePrivateImpl::addId):
+        (WebKit::MediaSourcePrivateImpl::removeId):
+        (WebKit::MediaSourcePrivateImpl::buffered):
+        (WebKit::MediaSourcePrivateImpl::append):
+        (WebKit::MediaSourcePrivateImpl::abort):
+        (WebKit::MediaSourcePrivateImpl::duration):
+        (WebKit::MediaSourcePrivateImpl::setDuration):
+        (WebKit::MediaSourcePrivateImpl::endOfStream):
+        (WebKit::MediaSourcePrivateImpl::setTimestampOffset):
+        (WebKit::WebMediaSourceImpl::WebMediaSourceImpl):
+        (WebKit::WebMediaSourceImpl::~WebMediaSourceImpl):
+        (WebKit::WebMediaSourceImpl::open):
+        * src/WebMediaSourceImpl.h: Added.
+        (WebKit):
+        (WebMediaSourceImpl):
+
+2013-02-22  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Remove old SerializedScriptValue-based get() callbacks
+        https://bugs.webkit.org/show_bug.cgi?id=110626
+
+        Reviewed by James Robinson.
+
+        Removal now that refactoring is complete.
+
+        * public/WebIDBCallbacks.h:
+        (WebKit):
+
+2013-02-22  Ali Juma  <ajuma@chromium.org>
+
+        [chromium] Register newly-created layers for animation
+        https://bugs.webkit.org/show_bug.cgi?id=106594
+
+        Reviewed by James Robinson.
+
+        * WebKit.gyp:
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::ChromeClientImpl):
+        (WebKit::ChromeClientImpl::graphicsLayerFactory):
+        * src/ChromeClientImpl.h:
+        (ChromeClientImpl):
+        * src/GraphicsLayerFactoryChromium.cpp: Added.
+        (WebKit):
+        (WebKit::GraphicsLayerFactoryChromium::GraphicsLayerFactoryChromium):
+        (WebKit::GraphicsLayerFactoryChromium::~GraphicsLayerFactoryChromium):
+        (WebKit::GraphicsLayerFactoryChromium::createGraphicsLayer):
+        * src/GraphicsLayerFactoryChromium.h: Added.
+        (WebKit):
+        (GraphicsLayerFactoryChromium):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::WebViewImpl):
+        (WebKit::WebViewImpl::graphicsLayerFactory):
+        (WebKit):
+        (WebKit::WebViewImpl::registerForAnimations):
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2013-02-22  Fady Samuel  <fsamuel@chromium.org>
+
+        [Chromium] Expose shadowRoot to the WebKit API
+        https://bugs.webkit.org/show_bug.cgi?id=110522
+
+        Reviewed by Dimitri Glazkov.
+
+        * public/WebElement.h:
+        (WebElement):
+        * src/WebElement.cpp:
+        (WebKit::WebElement::shadowRoot):
+        (WebKit):
+
+2013-02-22  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r143734.
+        http://trac.webkit.org/changeset/143734
+        https://bugs.webkit.org/show_bug.cgi?id=110615
+
+        Causes linux build failures. (Requested by vollick on
+        #webkit).
+
+        * public/WebKit.h:
+        (WebKit):
+        * src/WebKit.cpp:
+        (WebKit::initialize):
+        (WebKit::initializeWithoutV8):
+        (WebKit::webKitPlatformSupport):
+
 2013-02-22  Mikhail Naganov  <mnaganov@chromium.org>
 
         [Chromium] Add support for emulating legacy Android WebView 'setInitialScale' method

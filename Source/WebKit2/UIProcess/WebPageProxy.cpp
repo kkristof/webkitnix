@@ -1242,7 +1242,7 @@ void WebPageProxy::handleKeyboardEvent(const NativeWebKeyboardEvent& event)
 }
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
-void WebPageProxy::getPluginPath(const String& mimeType, const String& urlString, const String& documentURLString, String& pluginPath, uint32_t& pluginLoadPolicy)
+void WebPageProxy::getPluginPath(const String& mimeType, const String& urlString, const String& frameURLString, const String& pageURLString, String& pluginPath, uint32_t& pluginLoadPolicy)
 {
     MESSAGE_CHECK_URL(urlString);
 
@@ -1257,9 +1257,10 @@ void WebPageProxy::getPluginPath(const String& mimeType, const String& urlString
 
 #if PLATFORM(MAC)
     PluginModuleLoadPolicy currentPluginLoadPolicy = static_cast<PluginModuleLoadPolicy>(pluginLoadPolicy);
-    pluginLoadPolicy = m_uiClient.pluginLoadPolicy(this, plugin.bundleIdentifier, plugin.info.name, documentURLString, currentPluginLoadPolicy);
+    pluginLoadPolicy = m_loaderClient.pluginLoadPolicy(this, plugin.bundleIdentifier, plugin.versionString, plugin.info.name, frameURLString, pageURLString, currentPluginLoadPolicy);
 #else
-    UNUSED_PARAM(documentURLString);
+    UNUSED_PARAM(frameURLString);
+    UNUSED_PARAM(pageURLString);
 #endif
 
     if (pluginLoadPolicy != PluginModuleLoadNormally)
@@ -2582,10 +2583,88 @@ void WebPageProxy::mouseDidMoveOverElement(const WebHitTestResult::Data& hitTest
     m_uiClient.mouseDidMoveOverElement(this, hitTestResultData, modifiers, userData.get());
 }
 
-void WebPageProxy::unavailablePluginButtonClicked(uint32_t opaquePluginUnavailabilityReason, const String& mimeType, const String& url, const String& pluginsPageURL)
+String WebPageProxy::pluginInformationBundleIdentifierKey()
 {
-    MESSAGE_CHECK_URL(url);
-    MESSAGE_CHECK_URL(pluginsPageURL);
+    return ASCIILiteral("PluginInformationBundleIdentifier");
+}
+
+String WebPageProxy::pluginInformationBundleVersionKey()
+{
+    return ASCIILiteral("PluginInformationBundleVersion");
+}
+
+String WebPageProxy::pluginInformationDisplayNameKey()
+{
+    return ASCIILiteral("PluginInformationDisplayName");
+}
+
+String WebPageProxy::pluginInformationFrameURLKey()
+{
+    return ASCIILiteral("PluginInformationFrameURL");
+}
+
+String WebPageProxy::pluginInformationMIMETypeKey()
+{
+    return ASCIILiteral("PluginInformationMIMEType");
+}
+
+String WebPageProxy::pluginInformationPageURLKey()
+{
+    return ASCIILiteral("PluginInformationPageURL");
+}
+
+String WebPageProxy::pluginInformationPluginspageAttributeURLKey()
+{
+    return ASCIILiteral("PluginInformationPluginspageAttributeURL");
+}
+
+String WebPageProxy::pluginInformationPluginURLKey()
+{
+    return ASCIILiteral("PluginInformationPluginURL");
+}
+
+PassRefPtr<ImmutableDictionary> WebPageProxy::pluginInformationDictionary(const String& bundleIdentifier, const String& bundleVersion, const String& displayName, const String& frameURLString, const String& mimeType, const String& pageURLString, const String& pluginspageAttributeURLString, const String& pluginURLString)
+{
+    HashMap<String, RefPtr<APIObject> > pluginInfoMap;
+    if (!bundleIdentifier.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationBundleIdentifierKey(), WebString::create(bundleIdentifier));
+    if (!bundleVersion.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationBundleVersionKey(), WebString::create(bundleVersion));
+    if (!displayName.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationDisplayNameKey(), WebString::create(displayName));
+    if (!frameURLString.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationFrameURLKey(), WebURL::create(frameURLString));
+    if (!mimeType.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationMIMETypeKey(), WebString::create(mimeType));
+    if (!pageURLString.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationPageURLKey(), WebURL::create(pageURLString));
+    if (!pluginspageAttributeURLString.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationPluginspageAttributeURLKey(), WebURL::create(pluginspageAttributeURLString));
+    if (!pluginURLString.isEmpty())
+        pluginInfoMap.set(WebPageProxy::pluginInformationPluginURLKey(), WebURL::create(pluginURLString));
+
+    return ImmutableDictionary::adopt(pluginInfoMap);
+}
+
+void WebPageProxy::unavailablePluginButtonClicked(uint32_t opaquePluginUnavailabilityReason, const String& mimeType, const String& pluginURLString, const String& pluginspageAttributeURLString, const String& frameURLString, const String& pageURLString)
+{
+    MESSAGE_CHECK_URL(pluginURLString);
+    MESSAGE_CHECK_URL(pluginspageAttributeURLString);
+    MESSAGE_CHECK_URL(frameURLString);
+    MESSAGE_CHECK_URL(pageURLString);
+
+    String pluginBundleIdentifier;
+    String pluginBundleVersion;
+    String pluginName;
+    String newMimeType = mimeType;
+#if ENABLE(NETSCAPE_PLUGIN_API)
+    PluginModuleInfo plugin = m_process->context()->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), pluginURLString));
+#if PLATFORM(MAC)
+    pluginBundleIdentifier = plugin.bundleIdentifier;
+    pluginBundleVersion = plugin.versionString;
+#endif
+    pluginName = plugin.info.name;
+#endif
 
     WKPluginUnavailabilityReason pluginUnavailabilityReason = kWKPluginUnavailabilityReasonPluginMissing;
     switch (static_cast<RenderEmbeddedObject::PluginUnavailabilityReason>(opaquePluginUnavailabilityReason)) {
@@ -2601,9 +2680,6 @@ void WebPageProxy::unavailablePluginButtonClicked(uint32_t opaquePluginUnavailab
 
     case RenderEmbeddedObject::PluginInactive: {
 #if ENABLE(NETSCAPE_PLUGIN_API)
-        String newMimeType = mimeType;
-        PluginModuleInfo plugin = m_process->context()->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), url));
-
         if (!plugin.path.isEmpty() && PluginInfoStore::reactivateInactivePlugin(plugin)) {
             // The plug-in has been reactivated now; reload the page so it'll be instantiated.
             reload(false);
@@ -2616,7 +2692,7 @@ void WebPageProxy::unavailablePluginButtonClicked(uint32_t opaquePluginUnavailab
         ASSERT_NOT_REACHED();
     }
 
-    m_uiClient.unavailablePluginButtonClicked(this, pluginUnavailabilityReason, mimeType, url, pluginsPageURL);
+    m_uiClient.unavailablePluginButtonClicked(this, pluginUnavailabilityReason, mimeType, pluginBundleIdentifier, pluginBundleVersion, pluginName, pluginURLString, pluginspageAttributeURLString, frameURLString, pageURLString);
 }
 
 void WebPageProxy::setToolbarsAreVisible(bool toolbarsAreVisible)
@@ -3967,28 +4043,28 @@ void WebPageProxy::didChangePageCount(unsigned pageCount)
     m_pageCount = pageCount;
 }
 
-void WebPageProxy::didFailToInitializePlugin(const String& mimeType)
+void WebPageProxy::didFailToInitializePlugin(const String& mimeType, const String& frameURLString, const String& pageURLString)
 {
-    m_loaderClient.didFailToInitializePlugin(this, mimeType);
+    m_loaderClient.didFailToInitializePlugin(this, mimeType, frameURLString, pageURLString);
 }
 
 // FIXME: ENABLE(NETSCAPE_PLUGIN_API)
-void WebPageProxy::didBlockInsecurePluginVersion(const String& mimeType, const String& urlString)
+void WebPageProxy::didBlockInsecurePluginVersion(const String& mimeType, const String& pluginURLString, const String& frameURLString, const String& pageURLString)
 {
-    String pluginIdentifier;
-    String pluginVersion;
+    String pluginBundleIdentifier;
+    String pluginBundleVersion;
     String newMimeType = mimeType;
 
 #if PLATFORM(MAC) && ENABLE(NETSCAPE_PLUGIN_API)
-    PluginModuleInfo plugin = m_process->context()->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), urlString));
+    PluginModuleInfo plugin = m_process->context()->pluginInfoStore().findPlugin(newMimeType, KURL(KURL(), pluginURLString));
 
-    pluginIdentifier = plugin.bundleIdentifier;
-    pluginVersion = plugin.versionString;
+    pluginBundleIdentifier = plugin.bundleIdentifier;
+    pluginBundleVersion = plugin.versionString;
 #else
-    UNUSED_PARAM(urlString);
+    UNUSED_PARAM(pluginURLString);
 #endif
 
-    m_loaderClient.didBlockInsecurePluginVersion(this, newMimeType, pluginIdentifier, pluginVersion);
+    m_loaderClient.didBlockInsecurePluginVersion(this, newMimeType, pluginBundleIdentifier, pluginBundleVersion, frameURLString, pageURLString);
 }
 
 bool WebPageProxy::willHandleHorizontalScrollEvents() const

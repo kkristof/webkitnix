@@ -1646,7 +1646,7 @@ void SpeculativeJIT::compile(BasicBlock& block)
             valueSource = ValueSource(SourceIsDead);
         else if (node->variableAccessData()->isArgumentsAlias())
             valueSource = ValueSource(ArgumentsSource);
-        else if (node->variableAccessData()->isCaptured())
+        else if (!node->variableAccessData()->shouldUnboxIfPossible())
             valueSource = ValueSource(ValueInJSStack);
         else if (!node->refCount())
             valueSource = ValueSource(SourceIsDead);
@@ -2288,7 +2288,7 @@ void SpeculativeJIT::compileValueToInt32(Node* node)
             return;
         }
         case GeneratedOperandTypeUnknown:
-            RELEASE_ASSERT_NOT_REACHED();
+            RELEASE_ASSERT(!m_compileOkay);
             return;
         }
         RELEASE_ASSERT_NOT_REACHED();
@@ -3936,21 +3936,7 @@ void SpeculativeJIT::speculateNumber(Edge edge)
     if (!needsTypeCheck(edge, SpecNumber))
         return;
     
-    JSValueOperand operand(this, edge, ManualOperandSpeculation);
-#if USE(JSVALUE64)
-    JITCompiler::Jump isInteger = m_jit.branch64(MacroAssembler::AboveOrEqual, operand.gpr(), GPRInfo::tagTypeNumberRegister);
-    typeCheck(
-        JSValueRegs(operand.gpr()), edge, SpecNumber,
-        m_jit.branchTest64(MacroAssembler::Zero, operand.gpr(), GPRInfo::tagTypeNumberRegister));
-    isInteger.link(&m_jit);
-#else
-    JSValueOperand op1(this, edge);
-    JITCompiler::Jump isInteger = m_jit.branch32(MacroAssembler::Equal, operand.tagGPR(), TrustedImm32(JSValue::Int32Tag));
-    typeCheck(
-        JSValueRegs(operand.tagGPR(), op1.payloadGPR()), edge, SpecNumber,
-        m_jit.branch32(MacroAssembler::AboveOrEqual, operand.tagGPR(), TrustedImm32(JSValue::LowestTag)));
-    isInteger.link(&m_jit);
-#endif
+    (SpeculateDoubleOperand(this, edge)).fpr();
 }
 
 void SpeculativeJIT::speculateRealNumber(Edge edge)

@@ -466,11 +466,6 @@ public:
     const AtomicString& pseudo() const;
     void setPseudo(const AtomicString&);
 
-    void updateId(const AtomicString& oldId, const AtomicString& newId);
-    void updateId(TreeScope*, const AtomicString& oldId, const AtomicString& newId);
-    void updateName(const AtomicString& oldName, const AtomicString& newName);
-    void updateLabel(TreeScope*, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
-
     LayoutSize minimumSizeForResizing() const;
     void setMinimumSizeForResizing(const LayoutSize&);
 
@@ -642,9 +637,6 @@ private:
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) { }
     virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }
 
-    // FIXME: Remove the need for Attr to call willModifyAttribute/didModifyAttribute.
-    friend class Attr;
-
     enum SynchronizationOfLazyAttribute { NotInSynchronizationOfLazyAttribute = 0, InSynchronizationOfLazyAttribute };
 
     void didAddAttribute(const QualifiedName&, const AtomicString&);
@@ -654,6 +646,11 @@ private:
 
     void synchronizeAttribute(const QualifiedName&) const;
     void synchronizeAttribute(const AtomicString& localName) const;
+
+    void updateId(const AtomicString& oldId, const AtomicString& newId);
+    void updateId(TreeScope*, const AtomicString& oldId, const AtomicString& newId);
+    void updateName(const AtomicString& oldName, const AtomicString& newName);
+    void updateLabel(TreeScope*, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 
     void scrollByUnits(int units, ScrollGranularity);
 
@@ -772,43 +769,6 @@ inline Element* Element::nextElementSibling() const
     while (n && !n->isElementNode())
         n = n->nextSibling();
     return static_cast<Element*>(n);
-}
-
-inline void Element::updateName(const AtomicString& oldName, const AtomicString& newName)
-{
-    if (!inDocument() || isInShadowTree())
-        return;
-
-    if (oldName == newName)
-        return;
-
-    if (shouldRegisterAsNamedItem())
-        updateNamedItemRegistration(oldName, newName);
-}
-
-inline void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
-{
-    if (!isInTreeScope())
-        return;
-
-    if (oldId == newId)
-        return;
-
-    updateId(treeScope(), oldId, newId);
-}
-
-inline void Element::updateId(TreeScope* scope, const AtomicString& oldId, const AtomicString& newId)
-{
-    ASSERT(isInTreeScope());
-    ASSERT(oldId != newId);
-
-    if (!oldId.isEmpty())
-        scope->removeElementById(oldId, this);
-    if (!newId.isEmpty())
-        scope->addElementById(newId, this);
-
-    if (shouldRegisterAsExtraNamedItem())
-        updateExtraNamedItemRegistration(oldId, newId);
 }
 
 inline bool Element::fastHasAttribute(const QualifiedName& name) const

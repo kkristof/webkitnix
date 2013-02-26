@@ -68,6 +68,7 @@
 #include "GraphicsContext.h"
 #include "GraphicsContext3D.h"
 #include "GraphicsContext3DPrivate.h"
+#include "GraphicsLayerFactoryChromium.h"
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
@@ -424,6 +425,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(0)
     , m_rootLayer(0)
     , m_rootGraphicsLayer(0)
+    , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium(this)))
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewCommitsDeferred(false)
     , m_compositorCreationFailed(false)
@@ -928,6 +930,7 @@ void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
         m_layerTreeView->setContinuousPaintingEnabled(enabled);
     }
     m_continuousPaintingEnabled = enabled;
+    m_client->scheduleAnimation();
 }
 
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
@@ -1850,9 +1853,6 @@ void WebViewImpl::didBeginFrame()
 {
     if (m_devToolsAgent)
         m_devToolsAgent->didComposite();
-
-    if (m_continuousPaintingEnabled)
-        ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, m_pageOverlays.get());
 }
 
 void WebViewImpl::updateAnimations(double monotonicFrameBeginTime)
@@ -1873,6 +1873,11 @@ void WebViewImpl::updateAnimations(double monotonicFrameBeginTime)
 
     if (!m_page)
         return;
+
+    if (m_continuousPaintingEnabled) {
+        ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, m_pageOverlays.get());
+        m_client->scheduleAnimation();
+    }
 
     PageWidgetDelegate::animate(m_page.get(), monotonicFrameBeginTime);
 #endif
@@ -4000,6 +4005,8 @@ bool WebViewImpl::tabsToLinks() const
 void WebViewImpl::suppressInvalidations(bool enable)
 {
     m_suppressInvalidations = enable;
+    if (m_client)
+        m_client->suppressCompositorScheduling(enable);
 }
 
 #if USE(ACCELERATED_COMPOSITING)
@@ -4010,7 +4017,7 @@ bool WebViewImpl::allowsAcceleratedCompositing()
 
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
-    TemporaryChange<bool> change(m_suppressInvalidations, true);
+    suppressInvalidations(true);
 
     m_rootGraphicsLayer = layer;
     m_rootLayer = layer ? layer->platformLayer() : 0;
@@ -4034,9 +4041,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             m_layerTreeView->clearRootLayer();
     }
 
-    IntRect damagedRect(0, 0, m_size.width, m_size.height);
-    if (!m_isAcceleratedCompositingActive && !m_suppressInvalidations)
-        m_client->didInvalidateRect(damagedRect);
+    suppressInvalidations(false);
 }
 
 void WebViewImpl::scheduleCompositingLayerSync()
@@ -4087,7 +4092,13 @@ void WebViewImpl::setBackgroundColor(const WebCore::Color& color)
 
 WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 {
-    return m_chromeClientImpl.graphicsLayerFactory();
+    return m_graphicsLayerFactory.get();
+}
+
+void WebViewImpl::registerForAnimations(WebLayer* layer)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->registerForAnimations(layer);
 }
 
 WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()

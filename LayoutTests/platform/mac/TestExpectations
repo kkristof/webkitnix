@@ -453,7 +453,7 @@ accessibility/corresponding-control-deleted-crash.html
 
 # ENABLE(TEMPLATE_ELEMENT) is disabled.
 fast/dom/HTMLTemplateElement
-html5lib/run-template.html
+html5lib/generated/run-template.html
 fast/xsl/xslt-xhtml-template.xml
 fast/xpath/xpath-template-element.html
 fast/xsl/xslt-processor-template.html
@@ -805,9 +805,6 @@ svg/filters/color-space-conversion.svg
 svg/filters/container-with-filters.svg
 svg/filters/feSpecularLight-premultiplied.svg
 
-# New test, needs platform results
-webkit.org/b/106221 svg/filters/filter-hidden-content.svg [ Failure Pass ]
-
 # https://bugs.webkit.org/show_bug.cgi?id=89680
 fast/canvas/canvas-imageSmoothingEnabled-repaint.html
 
@@ -1115,6 +1112,9 @@ webkit.org/b/76489 compositing/webgl/webgl-reflection.html [ ImageOnlyFailure ]
 webkit.org/b/76439 [ Debug ] fast/dom/shadow/content-element-api.html [ Failure ]
 webkit.org/b/76439 [ Debug ] fast/dom/shadow/content-element-outside-shadow.html [ Failure ]
 
+# ENABLE(CUSTOM_ELEMENTS) is disabled.
+fast/dom/custom
+
 # CSS Variables are not yet enabled.
 webkit.org/b/85580 fast/css/variables
 webkit.org/b/85580 inspector/styles/variables
@@ -1417,6 +1417,7 @@ webkit.org/b/108370 editing/spelling/spelling-subword-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-with-punctuation-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-with-underscore-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-with-whitespace-selection.html [ Skip ]
+webkit.org/b/108370 editing/spelling/spelling-changed-text.html [ Skip ]
 
 webkit.org/b/108257 [ Debug ] compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Crash ]
 webkit.org/b/108257 [ Debug ] compositing/overflow/automatically-opt-into-composited-scrolling.html [ Crash ]
@@ -1431,14 +1432,7 @@ webkit.org/b/110027 compositing/transitions/transform-on-large-layer.html [ Pass
 
 webkit.org/b/110173 media/video-controls-captions-trackmenu.html [ Crash Pass ]
 
-webkit.org/b/110186 inspector/editor/brace-matcher.html [ Pass Failure ]
-
-# Need rebaseline for https://bugs.webkit.org/show_bug.cgi?id=109994
-webkit.org/b/109994 css2.1/20110323/replaced-elements-001.htm [ Failure ]
-webkit.org/b/109994 fast/forms/button-generated-content.html [ Failure ]
-webkit.org/b/109994 fast/forms/select-baseline.html [ Failure ]
-webkit.org/b/109994 svg/custom/foreign-object-skew.svg [ Failure ]
-webkit.org/b/109994 tables/mozilla/bugs/bug92647-2.html [ Failure ]
+webkit.org/b/110186 inspector-protocol/page/javascriptDialogEvents.html [ Skip ]
 
 webkit.org/b/110554 http/tests/security/feed-urls-from-remote.html [ Failure ]
 webkit.org/b/110555 fast/canvas/canvas-currentPath.html [ Failure ]

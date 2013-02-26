@@ -28,17 +28,17 @@
 #ifndef SelectorChecker_h
 #define SelectorChecker_h
 
-#include "Attribute.h"
 #include "CSSSelector.h"
 #include "InspectorInstrumentation.h"
 #include "SpaceSplitString.h"
-#include "StyledElement.h"
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
 class CSSSelector;
+class Element;
+class RenderScrollbar;
 class RenderStyle;
 
 class SelectorChecker {
@@ -57,8 +57,10 @@ public:
             , element(element)
             , scope(0)
             , visitedMatchType(visitedMatchType)
-            , pseudoStyle(NOPSEUDO)
+            , pseudoId(NOPSEUDO)
             , elementStyle(0)
+            , scrollbar(0)
+            , scrollbarPart(NoPart)
             , isSubSelector(false)
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
@@ -69,15 +71,16 @@ public:
         Element* element;
         const ContainerNode* scope;
         VisitedMatchType visitedMatchType;
-        PseudoId pseudoStyle;
+        PseudoId pseudoId;
         RenderStyle* elementStyle;
+        RenderScrollbar* scrollbar;
+        ScrollbarPart scrollbarPart;
         bool isSubSelector;
         bool hasScrollbarPseudo;
         bool hasSelectionPseudo;
         BehaviorAtBoundary behaviorAtBoundary;
     };
 
-    bool matches(const CSSSelector*, Element*, bool isFastCheckableSelector = false) const;
     template<typename SiblingTraversalStrategy>
     Match match(const SelectorCheckingContext&, PseudoId&, const SiblingTraversalStrategy&) const;
     template<typename SiblingTraversalStrategy>
@@ -96,7 +99,7 @@ public:
     static unsigned determineLinkMatchType(const CSSSelector*);
 
 private:
-    bool checkScrollbarPseudoClass(Document*, const CSSSelector*) const;
+    bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector*) const;
 
     static bool isFrameFocused(const Element*);
 

@@ -93,6 +93,10 @@
 #include "TextAutosizer.h"
 #endif
 
+#if PLATFORM(CHROMIUM)
+#include "TraceEvent.h"
+#endif
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -360,6 +364,11 @@ void FrameView::prepareForDetach()
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
     // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.
     removeFromAXObjectCache();
+
+    if (m_frame && m_frame->page()) {
+        if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
+            scrollingCoordinator->willDestroyScrollableArea(this);
+    }
 }
 
 void FrameView::detachCustomScrollbars()
@@ -787,6 +796,14 @@ bool FrameView::usesCompositedScrolling() const
     return false;
 }
 
+GraphicsLayer* FrameView::layerForScrolling() const
+{
+    RenderView* renderView = this->renderView();
+    if (!renderView)
+        return 0;
+    return renderView->compositor()->scrollLayer();
+}
+
 GraphicsLayer* FrameView::layerForHorizontalScrollbar() const
 {
     RenderView* renderView = this->renderView();
@@ -1039,6 +1056,10 @@ void FrameView::layout(bool allowSubtree)
 {
     if (m_inLayout)
         return;
+
+#if PLATFORM(CHROMIUM)
+    TRACE_EVENT0("webkit", "FrameView::layout");
+#endif
 
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtr<FrameView> protector(this);
@@ -3077,7 +3098,7 @@ void FrameView::updateScrollCorner()
         Element* body = doc ? doc->body() : 0;
         if (body && body->renderer()) {
             renderer = body->renderer();
-            cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+            cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
         
         if (!cornerStyle) {
@@ -3085,14 +3106,14 @@ void FrameView::updateScrollCorner()
             Element* docElement = doc ? doc->documentElement() : 0;
             if (docElement && docElement->renderer()) {
                 renderer = docElement->renderer();
-                cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+                cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
             }
         }
         
         if (!cornerStyle) {
             // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
             if (RenderPart* renderer = m_frame->ownerRenderer())
-                cornerStyle = renderer->getUncachedPseudoStyle(SCROLLBAR_CORNER, renderer->style());
+                cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
     }
 

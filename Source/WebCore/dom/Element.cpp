@@ -72,6 +72,7 @@
 #include "SelectorQuery.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
+#include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "Text.h"
 #include "TextIterator.h"
@@ -808,13 +809,10 @@ inline void Element::setAttributeInternal(size_t index, const QualifiedName& nam
         willModifyAttribute(name, attributeItem(index)->value(), newValue);
 
     if (newValue != attributeItem(index)->value()) {
-        // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
-        // will write into the ElementData.
-        // FIXME: Refactor this so it makes some sense.
+        ensureUniqueElementData()->attributeItem(index)->setValue(newValue);
+
         if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? 0 : attrIfExists(name))
-            attrNode->setValue(newValue);
-        else
-            ensureUniqueElementData()->attributeItem(index)->setValue(newValue);
+            attrNode->recreateTextChildAfterAttributeValueChanged();
     }
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1331,7 +1329,7 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
         if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
             newPseudoStyle = renderer()->uncachedFirstLineStyle(newStyle);
         else
-            newPseudoStyle = renderer()->getUncachedPseudoStyle(pseudoId, newStyle, newStyle);
+            newPseudoStyle = renderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
         if (!newPseudoStyle)
             return true;
         if (*newPseudoStyle != *pseudoStyleCache->at(i)) {
@@ -2582,6 +2580,43 @@ bool Element::hasNamedNodeMap() const
     return hasRareData() && elementRareData()->attributeMap();
 }
 #endif
+
+inline void Element::updateName(const AtomicString& oldName, const AtomicString& newName)
+{
+    if (!inDocument() || isInShadowTree())
+        return;
+
+    if (oldName == newName)
+        return;
+
+    if (shouldRegisterAsNamedItem())
+        updateNamedItemRegistration(oldName, newName);
+}
+
+inline void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
+{
+    if (!isInTreeScope())
+        return;
+
+    if (oldId == newId)
+        return;
+
+    updateId(treeScope(), oldId, newId);
+}
+
+inline void Element::updateId(TreeScope* scope, const AtomicString& oldId, const AtomicString& newId)
+{
+    ASSERT(isInTreeScope());
+    ASSERT(oldId != newId);
+
+    if (!oldId.isEmpty())
+        scope->removeElementById(oldId, this);
+    if (!newId.isEmpty())
+        scope->addElementById(newId, this);
+
+    if (shouldRegisterAsExtraNamedItem())
+        updateExtraNamedItemRegistration(oldId, newId);
+}
 
 void Element::updateLabel(TreeScope* scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
 {

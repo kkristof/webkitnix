@@ -1,3 +1,575 @@
+2013-02-26  Andreas Kling  <akling@apple.com>
+
+        Unused Structure property tables waste 14MB on Membuster.
+        <http://webkit.org/b/110854>
+        <rdar://problem/13292104>
+
+        Reviewed by Filip Pizlo.
+
+        Turn PropertyTable into a GC object and have Structure drop unpinned tables when marking.
+        14 MB progression on Membuster3.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.gypi:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+
+            Added PropertyTable.cpp.
+
+        * runtime/PropertyTable.cpp: Added.
+        (JSC::PropertyTable::create):
+        (JSC::PropertyTable::clone):
+        (JSC::PropertyTable::PropertyTable):
+        (JSC::PropertyTable::destroy):
+        (JSC::PropertyTable::~PropertyTable):
+        (JSC::PropertyTable::visitChildren):
+
+            Moved marking of property table values here from Structure::visitChildren().
+
+        * runtime/StructureInlines.h:
+        (JSC::Structure::putWillGrowOutOfLineStorage):
+        (JSC::Structure::checkOffsetConsistency):
+
+            Moved these to StructureInlines.h to break header dependency cycle between Structure/PropertyTable.
+
+        * runtime/Structure.cpp:
+        (JSC::Structure::visitChildren):
+
+            Null out m_propertyTable if the table is unpinned. This'll cause the table to get GC'd.
+
+        (JSC::Structure::materializePropertyMap):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::changePrototypeTransition):
+        (JSC::Structure::despecifyFunctionTransition):
+        (JSC::Structure::attributeChangeTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::preventExtensionsTransition):
+        (JSC::Structure::nonPropertyTransition):
+        (JSC::Structure::copyPropertyTable):
+        (JSC::Structure::copyPropertyTableForPinning):
+        (JSC::Structure::putSpecificValue):
+        (JSC::Structure::createPropertyMap):
+        * runtime/Structure.h:
+        (Structure):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        * runtime/PropertyMapHashTable.h:
+        (PropertyTable):
+        (JSC::PropertyTable::createStructure):
+        (JSC::PropertyTable::copy):
+
+2013-02-26  Andreas Kling  <akling@apple.com>
+
+        Unreviewed, rolling out r144054.
+        http://trac.webkit.org/changeset/144054
+        https://bugs.webkit.org/show_bug.cgi?id=110854
+
+        broke builds
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.gypi:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        * runtime/PropertyMapHashTable.h:
+        (PropertyTable):
+        (JSC::PropertyTable::PropertyTable):
+        (JSC):
+        (JSC::PropertyTable::~PropertyTable):
+        (JSC::PropertyTable::copy):
+        * runtime/PropertyTable.cpp: Removed.
+        * runtime/Structure.cpp:
+        (JSC::Structure::materializePropertyMap):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::changePrototypeTransition):
+        (JSC::Structure::despecifyFunctionTransition):
+        (JSC::Structure::attributeChangeTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::preventExtensionsTransition):
+        (JSC::Structure::nonPropertyTransition):
+        (JSC::Structure::copyPropertyTable):
+        (JSC::Structure::copyPropertyTableForPinning):
+        (JSC::Structure::putSpecificValue):
+        (JSC::Structure::createPropertyMap):
+        (JSC::Structure::visitChildren):
+        * runtime/Structure.h:
+        (JSC):
+        (JSC::Structure::putWillGrowOutOfLineStorage):
+        (JSC::Structure::checkOffsetConsistency):
+        (Structure):
+        * runtime/StructureInlines.h:
+
+2013-02-26  Andreas Kling  <akling@apple.com>
+
+        Unused Structure property tables waste 14MB on Membuster.
+        <http://webkit.org/b/110854>
+        <rdar://problem/13292104>
+
+        Reviewed by Filip Pizlo.
+
+        Turn PropertyTable into a GC object and have Structure drop unpinned tables when marking.
+        14 MB progression on Membuster3.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.gypi:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+
+            Added PropertyTable.cpp.
+
+        * runtime/PropertyTable.cpp: Added.
+        (JSC::PropertyTable::create):
+        (JSC::PropertyTable::clone):
+        (JSC::PropertyTable::PropertyTable):
+        (JSC::PropertyTable::destroy):
+        (JSC::PropertyTable::~PropertyTable):
+        (JSC::PropertyTable::visitChildren):
+
+            Moved marking of property table values here from Structure::visitChildren().
+
+        * runtime/StructureInlines.h:
+        (JSC::Structure::putWillGrowOutOfLineStorage):
+        (JSC::Structure::checkOffsetConsistency):
+
+            Moved these to StructureInlines.h to break header dependency cycle between Structure/PropertyTable.
+
+        * runtime/Structure.cpp:
+        (JSC::Structure::visitChildren):
+
+            Null out m_propertyTable if the table is unpinned. This'll cause the table to get GC'd.
+
+        (JSC::Structure::materializePropertyMap):
+        (JSC::Structure::addPropertyTransition):
+        (JSC::Structure::changePrototypeTransition):
+        (JSC::Structure::despecifyFunctionTransition):
+        (JSC::Structure::attributeChangeTransition):
+        (JSC::Structure::toDictionaryTransition):
+        (JSC::Structure::preventExtensionsTransition):
+        (JSC::Structure::nonPropertyTransition):
+        (JSC::Structure::copyPropertyTable):
+        (JSC::Structure::copyPropertyTableForPinning):
+        (JSC::Structure::putSpecificValue):
+        (JSC::Structure::createPropertyMap):
+        * runtime/Structure.h:
+        (Structure):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        * runtime/PropertyMapHashTable.h:
+        (PropertyTable):
+        (JSC::PropertyTable::createStructure):
+        (JSC::PropertyTable::copy):
+
+2013-02-26  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        Implement JIT on Windows 64 bits
+        https://bugs.webkit.org/show_bug.cgi?id=107965
+
+        Reviewed by Simon Hausmann.
+
+        1. MSVC doesn't support inline assembly for 64 bits, implements the trampoline in a separate ASM file.
+
+        2. Windows 64 bits has a different calling convention than other OSes following the AMD64 ABI.
+        Differences that we have to handle here:
+        - Registers passed parameters are RCX, RDX, R8 and R9 instead of RDI, RSI, RDX, RCX, R8 and R9
+        - RDI and RSI must be preserved by callee
+        - Only return values <= 8 bytes can be returned by register (RDX can't be used to return a second word)
+        - There is no red-zone after RIP on the stack, but instead 4 reserved words before it
+
+        * Target.pri:
+        * jit/JITStubs.cpp:
+        * jit/JITStubs.h:
+        (JSC):
+        (JITStackFrame):
+        (JSC::JITStackFrame::returnAddressSlot):
+        * jit/JITStubsMSVC64.asm: Added.
+        * jit/JSInterfaceJIT.h:
+        (JSInterfaceJIT):
+        * jit/ThunkGenerators.cpp:
+        (JSC::nativeForGenerator):
+        * yarr/YarrJIT.cpp:
+        (YarrGenerator):
+        (JSC::Yarr::YarrGenerator::generateEnter):
+        (JSC::Yarr::YarrGenerator::generateReturn):
+
+2013-02-26  Oliver Hunt  <oliver@apple.com>
+
+        Kill another analyzer warning in javascriptcore
+        https://bugs.webkit.org/show_bug.cgi?id=110802
+
+        Reviewed by Benjamin Poulain.
+
+        Add null checks.
+        
+        * profiler/LegacyProfiler.cpp:
+        (JSC::LegacyProfiler::startProfiling):
+        (JSC::LegacyProfiler::stopProfiling):
+
+2013-02-26  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144004.
+        http://trac.webkit.org/changeset/144004
+        https://bugs.webkit.org/show_bug.cgi?id=110858
+
+        This iOS change is outdated (Requested by notbenjamin on
+        #webkit).
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::BytecodeGenerator):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::emitNode):
+        (JSC::BytecodeGenerator::emitNodeInConditionContext):
+        (BytecodeGenerator):
+        * parser/Parser.cpp:
+        (JSC::::Parser):
+        * parser/Parser.h:
+        (JSC::Parser::canRecurse):
+        (Parser):
+
+2013-02-25  Filip Pizlo  <fpizlo@apple.com>
+
+        REGRESSION(r143654): some jquery test asserts on 32 bit debug build
+        https://bugs.webkit.org/show_bug.cgi?id=110756
+
+        Reviewed by Geoffrey Garen.
+        
+        TypeOf does speculations manually, so it should mark its JSValueOperand as doing ManualOperandSpeculation.
+
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2013-02-25  Benjamin Poulain  <bpoulain@apple.com>
+
+        [JSC] Upstream iOS Stack bound checking
+        https://bugs.webkit.org/show_bug.cgi?id=110813
+
+        Reviewed by Filip Pizlo.
+
+        On iOS, the StackBounds cannot be cached because the stack
+        can be in one of two threads (the web thread or the UI thread).
+
+        We simply always consider the current stack bound when testing
+        stack boundaries.
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::BytecodeGenerator):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::emitNode):
+        (JSC::BytecodeGenerator::emitNodeInConditionContext):
+        (BytecodeGenerator):
+        * parser/Parser.cpp:
+        (JSC::::Parser):
+        * parser/Parser.h:
+        (JSC::Parser::canRecurse):
+        (Parser):
+
+2013-02-25  Michael Saboff  <msaboff@apple.com>
+
+        For JSVALUE32_64, maxOffsetRelativeToPatchedStorage() doesn't compute the maximum negative offset
+        https://bugs.webkit.org/show_bug.cgi?id=110828
+
+        Reviewed by Oliver Hunt.
+
+        * runtime/JSObject.h:
+        (JSC::maxOffsetRelativeToPatchedStorage): Only add the OBJECT_OFFSETOF(tag) for positive offsets.
+        That way this function will return the offset farthest from 0 needed to access either the payload
+        or tag.
+
+2013-02-25  Jeffrey Pfau  <jpfau@apple.com>
+
+        Optionally partition cache to prevent using cache for tracking
+        https://bugs.webkit.org/show_bug.cgi?id=110269
+
+        Reviewed by Maciej Stachowiak.
+
+        * Configurations/FeatureDefines.xcconfig: Add defines for cache partitioning and public suffix list usage
+
+2013-02-25  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. VS2010 solution build fix.
+
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExportGeneratorCommon.props:
+
+2013-02-24  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG::Edge should have more bits for UseKind, and DFG::Allocator should be simpler
+        https://bugs.webkit.org/show_bug.cgi?id=110722
+
+        Reviewed by Oliver Hunt.
+        
+        This rolls out the DFG::Allocator part of http://trac.webkit.org/changeset/143654,
+        and changes Edge to have more room for UseKinds and possibly other things.
+        
+        This is performance-neutral on both 32-bit and 64-bit. It reduces the size of
+        DFG::Node on 64-bit (by virtue of getting rid of the 16-byte alignment of Node)
+        and increases it slightly on 32-bit (by 4 bytes total - 16-byte alignment led to
+        80 bytes, but the base size of Node plus the 12 bytes of new m_encodedWords in
+        Edge gets 84 bytes). But, it will mean that we don't have to increase Node by
+        another 16 bytes if we ever want to add more UseKinds or other things to Edge.
+
+        * dfg/DFGAllocator.h:
+        (DFG):
+        (Allocator):
+        (JSC::DFG::Allocator::Region::headerSize):
+        (JSC::DFG::Allocator::Region::numberOfThingsPerRegion):
+        (JSC::DFG::Allocator::Region::data):
+        (JSC::DFG::Allocator::Region::isInThisRegion):
+        (JSC::DFG::::Allocator):
+        (JSC::DFG::::~Allocator):
+        (JSC::DFG::::allocate):
+        (JSC::DFG::::free):
+        (JSC::DFG::::freeAll):
+        (JSC::DFG::::reset):
+        (JSC::DFG::::indexOf):
+        (JSC::DFG::::allocatorOf):
+        (JSC::DFG::::bumpAllocate):
+        (JSC::DFG::::freeListAllocate):
+        (JSC::DFG::::allocateSlow):
+        (JSC::DFG::::freeRegionsStartingAt):
+        (JSC::DFG::::startBumpingIn):
+        * dfg/DFGEdge.h:
+        (JSC::DFG::Edge::Edge):
+        (Edge):
+        (JSC::DFG::Edge::node):
+        (JSC::DFG::Edge::setNode):
+        (JSC::DFG::Edge::useKindUnchecked):
+        (JSC::DFG::Edge::setUseKind):
+        (JSC::DFG::Edge::operator==):
+        (JSC::DFG::Edge::operator!=):
+        (JSC::DFG::Edge::makeWord):
+        * dfg/DFGNodeAllocator.h:
+        (DFG):
+
+2013-02-22  Filip Pizlo  <fpizlo@apple.com>
+
+        The DFG special case checks for isCreatedThisArgument are fragile
+        https://bugs.webkit.org/show_bug.cgi?id=110535
+
+        Reviewed by Oliver Hunt.
+        
+        There may be many situations in which we want to force a variable to never be
+        unboxed. Capturing is one such case, and the created this argument is another.
+        Previously all code that dealt with this issue had to query both scenarios.
+        
+        Now DFG::VariableAccessData knows these things. You just have to ask
+        VariableAccessData for whether a variable should be unboxed. Anyone wishing to
+        force a variable to never be unboxed just tells VariableAccessData.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::initialize):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        (DFG):
+        * dfg/DFGCFGSimplificationPhase.cpp:
+        (CFGSimplificationPhase):
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        * dfg/DFGGraph.h:
+        (Graph):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::doRoundOfDoubleVoting):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGUnificationPhase.cpp:
+        (JSC::DFG::UnificationPhase::run):
+        * dfg/DFGVariableAccessData.h:
+        (JSC::DFG::VariableAccessData::VariableAccessData):
+        (JSC::DFG::VariableAccessData::mergeIsCaptured):
+        (JSC::DFG::VariableAccessData::mergeShouldNeverUnbox):
+        (VariableAccessData):
+        (JSC::DFG::VariableAccessData::shouldNeverUnbox):
+        (JSC::DFG::VariableAccessData::shouldUnboxIfPossible):
+        (JSC::DFG::VariableAccessData::shouldUseDoubleFormat):
+        (JSC::DFG::VariableAccessData::tallyVotesForShouldUseDoubleFormat):
+
+2013-02-25  Geoffrey Garen  <ggaren@apple.com>
+
+        Do one lookup per code cache insertion instead of two
+        https://bugs.webkit.org/show_bug.cgi?id=110674
+
+        Reviewed by Sam Weinig.
+
+        Deployed the idiomatic "add null value" trick to avoid a second hash
+        lookup when inserting an item.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCacheMap::pruneSlowCase): Factored this into a helper function
+        to improve clarity and get some code off the hot path.
+
+        (JSC::CodeCache::getCodeBlock):
+        (JSC::CodeCache::getFunctionExecutableFromGlobalCode): Use the add() API
+        to avoid two hash lookups. Be sure to remove items if parsing fails,
+        otherwise we'll leave nulls in the table. (I'm guessing that caching parse
+        errors is not a win.)
+
+        * runtime/CodeCache.h:
+        (JSC::SourceCodeValue::SourceCodeValue):
+        (CodeCacheMap):
+        (JSC::CodeCacheMap::add): Combined find() and set() into add().
+
+        (JSC::CodeCacheMap::remove):
+        (JSC::CodeCacheMap::age):
+        (JSC::CodeCacheMap::prune): Refactored to support above changes.
+
+2013-02-25  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry][ARM] Fix cast-align warnings in JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=110738
+
+        Reviewed by Rob Buis.
+
+        Use reinterpret_cast_ptr instead of reinterpret_cast for
+        pointers.
+
+        * dfg/DFGOperations.cpp:
+        * heap/CopiedBlock.h:
+        (JSC::CopiedBlock::zeroFillWilderness):
+        * heap/WeakBlock.h:
+        (JSC::WeakBlock::asWeakImpl):
+        (JSC::WeakBlock::asFreeCell):
+        (JSC::WeakBlock::weakImpls):
+        * heap/WeakImpl.h:
+        (JSC::WeakImpl::asWeakImpl):
+        * interpreter/JSStack.cpp:
+        (JSC::JSStack::disableErrorStackReserve):
+        * interpreter/JSStack.h:
+        (JSC::JSStack::reservationEnd):
+        * runtime/ArrayStorage.h:
+        (JSC::ArrayStorage::from):
+        * runtime/Butterfly.h:
+        (JSC::Butterfly::indexingPayload):
+        * runtime/IndexingHeader.h:
+        (JSC::IndexingHeader::propertyStorage):
+        * runtime/JSActivation.h:
+        (JSC::JSActivation::tearOff):
+        (JSC::JSActivation::isTornOff):
+        (JSC::JSActivation::storage):
+
+2013-02-22  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG::SpeculativeJIT::speculateNumber() should just use SpeculateDoubleOperand instead of doing its own thing
+        https://bugs.webkit.org/show_bug.cgi?id=110659
+
+        Reviewed by Oliver Hunt and Mark Hahnenberg.
+        
+        This simplifies the code, and also has the effect that if speculateNumber() is called
+        prior to someone actually using the number in a double context, then the number will
+        already be up-converted to double and ready to go.
+
+        Previously if this ever came up, the subsequent use would have to again branch to see
+        if the value is tagged as int or tagged as double.
+
+        On the other hand, if you ever did speculateNumber() and then used the value as a
+        JSValue, this will be a slow down now.
+
+        I suspect that the former (speculateNumber() and then use as number) is more likely
+        than the latter (speculateNumber() and then use as JSValue).
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::speculateNumber):
+
+2013-02-22  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG FixupPhase should have one common hook for knowing if a node is ever being speculated a certain way
+        https://bugs.webkit.org/show_bug.cgi?id=110650
+
+        Reviewed by Mark Hahnenberg.
+        
+        Changes almost all calls to edge.setUseKind(kind) to be
+        setUseKindAndUnboxIfProfitable<kind>(edge). This will allow us to use the latter
+        as a hook for deciding which locals to unbox (webkit.org/b/110433).
+
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        (FixupPhase):
+        (JSC::DFG::FixupPhase::setUseKindAndUnboxIfProfitable):
+        (JSC::DFG::FixupPhase::fixIntEdge):
+        (JSC::DFG::FixupPhase::fixDoubleEdge):
+        (JSC::DFG::FixupPhase::attemptToMakeIntegerAdd):
+
+2013-02-22  Filip Pizlo  <fpizlo@apple.com>
+
+        REGRESSION(r143654): some fast/js test crashes on 32 bit build
+        https://bugs.webkit.org/show_bug.cgi?id=110590
+
+        Reviewed by Mark Hahnenberg.
+        
+        In compileValueToInt32, the refactoring in r143654 undid one of the fixes from
+        r143314 due to a merge goof.
+        
+        In speculateNumber, we were simply forgetting to indicate that we need a
+        ManualOperandSpeculation on a JSValueOperand. ManualOperandSpeculation should
+        be passed whenever you will be performing the type checks yourself rather than
+        using the operand class to do it for you.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileValueToInt32):
+        (JSC::DFG::SpeculativeJIT::speculateNumber):
+
+2013-02-22  Geoffrey Garen  <ggaren@apple.com>
+
+        Not reviewed.
+
+        Fix the 32-bit build by using the right data type in more places.
+
+        * runtime/CodeCache.h:
+        (CodeCacheMap):
+
+2013-02-22  Geoffrey Garen  <ggaren@apple.com>
+
+        Not reviewed.
+
+        Fix the 32-bit build by using the right data type.
+
+        * runtime/CodeCache.h:
+        (JSC::CodeCacheMap::find):
+
+2013-02-21  Geoffrey Garen  <ggaren@apple.com>
+
+        Code cache size should adapt to workload
+        https://bugs.webkit.org/show_bug.cgi?id=110560
+
+        Reviewed by Antti Koivisto.
+
+        (*) 5% PLT arithmetic mean speedup
+        (*) 10% PLT geometric mean speedup
+        (*) 3.4X microbenchmark speedup
+        (*) Reduces initial cache capacity by 16X
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCache::CodeCache): Updated for interface change.
+
+        * runtime/CodeCache.h:
+        (JSC::SourceCodeValue::SourceCodeValue):
+        (SourceCodeValue): Turned the cache value into a struct so it can track its age.
+
+        (CodeCacheMap):
+        (JSC::CodeCacheMap::CodeCacheMap):
+        (JSC::CodeCacheMap::find):
+        (JSC::CodeCacheMap::set):
+        (JSC::CodeCacheMap::clear):
+        (JSC::CodeCacheMap::pruneIfNeeded):
+        (CodeCache): Grow and shrink in response to usage.
+
 2013-02-21  Jessie Berlin  <jberlin@apple.com>
 
         Fix a typo that broke the 32 bit build.

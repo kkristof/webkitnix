@@ -31,11 +31,9 @@
 #ifndef WebKit_h
 #define WebKit_h
 
-#include "../../../Platform/chromium/public/WebCommon.h"
+#include "../../../Platform/chromium/public/Platform.h"
 
 namespace WebKit {
-
-class Platform;
 
 // Must be called on the thread that will be the main WebKit thread before
 // using any other WebKit APIs. The provided Platform; must be
