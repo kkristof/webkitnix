@@ -42,7 +42,6 @@
 #include <cstring>
 #include <glib.h>
 #include <string>
-#include <fstream>
 
 #include <wtf/Platform.h>
 #include <wtf/UnusedParam.h>
@@ -55,13 +54,7 @@ extern void glUseProgram(GLuint);
 
 class MiniBrowser : public LinuxWindowClient, public GestureRecognizerClient {
 public:
-
-    enum Mode {
-        MobileMode,
-        DesktopMode
-    };
-
-    MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, int viewportHorizontalDisplacement, int viewportVerticalDisplacement);
+    MiniBrowser(GMainLoop* mainLoop, const Options& options);
     virtual ~MiniBrowser();
 
     WKPageRef pageRef() const { return NIXViewGetPage(m_view); }
@@ -102,7 +95,7 @@ public:
     virtual double scale();
 
     void setTouchEmulationMode(bool enabled);
-    Mode mode() const { return m_mode; }
+    bool isMobileMode() const { return !m_options.desktopModeEnabled; }
 private:
 
     enum ScaleBehavior {
@@ -129,13 +122,13 @@ private:
     NIXView m_view;
     WKRect m_viewRect;
     GMainLoop* m_mainLoop;
+    const Options& m_options;
     double m_lastClickTime;
     int m_lastClickX;
     int m_lastClickY;
     WKEventMouseButton m_lastClickButton;
     unsigned m_clickCount;
     TouchMocker* m_touchMocker;
-    Mode m_mode;
     bool m_displayUpdateScheduled;
     WKSize m_contentsSize;
     GestureRecognizer m_gestureRecognizer;
@@ -158,19 +151,19 @@ private:
     friend gboolean callUpdateDisplay(gpointer);
 };
 
-MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, int viewportHorizontalDisplacement, int viewportVerticalDisplacement)
+MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
     : m_context(AdoptWK, WKContextCreate())
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("MiniBrowser"))))
-    , m_window(new LinuxWindow(this, width, height))
+    , m_window(new LinuxWindow(this, options.width, options.height))
     , m_view(0)
     , m_mainLoop(mainLoop)
+    , m_options(options)
     , m_lastClickTime(0)
     , m_lastClickX(0)
     , m_lastClickY(0)
     , m_lastClickButton(kWKEventMouseButtonNoButton)
     , m_clickCount(0)
     , m_touchMocker(0)
-    , m_mode(mode)
     , m_displayUpdateScheduled(false)
     , m_gestureRecognizer(GestureRecognizer(this))
     , m_postponeTextInputUpdates(true)
@@ -225,21 +218,34 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, Mode mode, int width, int height, 
     loaderClient.didStartProgress = MiniBrowser::didStartProgress;
     WKPageSetPageLoaderClient(pageRef(), &loaderClient);
 
-    if (m_mode == MobileMode)
+    if (isMobileMode())
         WKPageSetUseFixedLayout(pageRef(), true);
 
     WKSize size = m_window->size();
-    m_viewRect = WKRectMake(viewportHorizontalDisplacement, viewportVerticalDisplacement, size.width - viewportHorizontalDisplacement, size.height - viewportVerticalDisplacement);
+    m_viewRect = WKRectMake(options.viewportHorizontalDisplacement, options.viewportVerticalDisplacement, size.width - options.viewportHorizontalDisplacement, size.height - options.viewportVerticalDisplacement);
     NIXViewSetSize(m_view, m_viewRect.size);
 
-    if (viewportHorizontalDisplacement || viewportVerticalDisplacement) {
-        NIXMatrix transform = NIXMatrixMakeTranslation(viewportHorizontalDisplacement, viewportVerticalDisplacement);
+    if (options.viewportHorizontalDisplacement || options.viewportVerticalDisplacement) {
+        NIXMatrix transform = NIXMatrixMakeTranslation(options.viewportHorizontalDisplacement, options.viewportVerticalDisplacement);
         NIXViewSetUserViewportTransformation(m_view, &transform);
     }
+
+    if (options.forceTouchEmulationEnabled || isMobileMode()) {
+        printf("Touch Emulation Mode enabled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
+        setTouchEmulationMode(true);
+    }
+
+    if (!options.userAgent.empty())
+        WKPageSetCustomUserAgent(pageRef(), WKStringCreateWithUTF8CString(options.userAgent.c_str()));
+
+    if (isMobileMode())
+        printf("Use Control + mouse wheel to zoom in and out.\n");
 
     NIXViewSetFocused(m_view, true);
     NIXViewSetVisible(m_view, true);
     NIXViewSetActive(m_view, true);
+
+    WKPageLoadURL(pageRef(), WKURLCreateWithUTF8CString(options.url.c_str()));
 }
 
 MiniBrowser::~MiniBrowser()
@@ -384,7 +390,7 @@ void MiniBrowser::handleWheelEvent(const XButtonPressedEvent& event)
 {
     WKPoint contentsPoint = NIXViewUserViewportToContents(m_view, WKPointMake(event.x, event.y));
 
-    if (m_mode == MobileMode && event.state & ControlMask) {
+    if (isMobileMode() && event.state & ControlMask) {
         double newScale = NIXViewScale(m_view) * (event.button == 4 ? 1.1 : 0.9);
         scaleAtPoint(contentsPoint, newScale);
         return;
@@ -501,7 +507,7 @@ void MiniBrowser::handleSizeChanged(int width, int height)
     m_viewRect.size.height = height - m_viewRect.origin.y;
     NIXViewSetSize(m_view, m_viewRect.size);
 
-    if (m_mode == MobileMode)
+    if (isMobileMode())
         NIXViewSetScale(m_view, scaleToFitContents());
 }
 
@@ -615,7 +621,7 @@ void MiniBrowser::didChangeContentsSize(NIXView, WKSize size, const void* client
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     mb->m_contentsSize = size;
 
-    if (mb->m_mode == MiniBrowser::MobileMode)
+    if (mb->isMobileMode())
         mb->adjustScrollPosition();
 }
 
@@ -886,29 +892,8 @@ int main(int argc, char* argv[])
 
     printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
 
-    std::string url = options.url;
-    if (url.empty())
-        url = "http://www.google.com";
-    else if (url.find("http") != 0 && url.find("file://") != 0) {
-        std::ifstream localFile(url.c_str());
-        url.insert(0, localFile ? "file://" : "http://");
-    }
-
     GMainLoop* mainLoop = g_main_loop_new(0, false);
-    MiniBrowser browser(mainLoop, options.desktopModeEnabled ? MiniBrowser::DesktopMode : MiniBrowser::MobileMode, options.width, options.height, options.viewportHorizontalDisplacement, options.viewportVerticalDisplacement);
-
-    if (options.forceTouchEmulationEnabled || !options.desktopModeEnabled) {
-        printf("Touch Emulation Mode enabled. Hold Control key to build and emit a multi-touch event: each mouse button should be a different touch point. Release Control Key to clear all tracking pressed touches.\n");
-        browser.setTouchEmulationMode(true);
-    }
-
-    if (!options.userAgent.empty())
-        WKPageSetCustomUserAgent(browser.pageRef(), WKStringCreateWithUTF8CString(options.userAgent.c_str()));
-
-    if (!options.desktopModeEnabled)
-        printf("Use Control + mouse wheel to zoom in and out.\n");
-
-    WKPageLoadURL(browser.pageRef(), WKURLCreateWithUTF8CString(url.c_str()));
+    MiniBrowser browser(mainLoop, options);
 
     g_main_loop_run(mainLoop);
     g_main_loop_unref(mainLoop);

@@ -27,6 +27,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 
 Options::Options()
     : width(0)
@@ -106,6 +107,13 @@ bool Options::parse(int argc, char* argv[])
         height = deviceList[device].height;
 
     userAgent = deviceList[device].userAgent;
+
+    if (url.empty())
+        url = "http://www.google.com";
+    else if (url.find("http") != 0 && url.find("file://") != 0) {
+        std::ifstream localFile(url.c_str());
+        url.insert(0, localFile ? "file://" : "http://");
+    }
 
     return true;
 }
