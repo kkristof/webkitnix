@@ -33,13 +33,6 @@
 
 namespace WebCore {
 
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
-void* ContextMenuItem::nativeMenuItem() const
-{
-    notImplemented();
-    return 0;
-}
-#else
 ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu*)
 {
     m_platformDescription.type = type;
@@ -126,6 +119,6 @@ PlatformMenuDescription ContextMenuItem::platformSubMenu() const
 {
     return 0;
 }
-#endif
+
 }
 #endif // ENABLE(CONTEXT_MENUS)

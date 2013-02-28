@@ -34,28 +34,6 @@
 
 namespace WebCore {
 
-#if USE(CROSS_PLATFORM_CONTEXT_MENUS)
-ContextMenu::ContextMenu(void* menu)
-{
-    getContextMenuItems(menu, m_items);
-}
-
-void ContextMenu::getContextMenuItems(void* menu, Vector<ContextMenuItem>& items)
-{
-    notImplemented();
-}
-
-void* ContextMenu::createNativeMenuFromItems(const Vector<ContextMenuItem>& items)
-{
-    notImplemented();
-    return 0;
-}
-
-void* ContextMenu::nativeMenu() const
-{
-    return createNativeMenuFromItems(m_items);
-}
-#else
 ContextMenu::ContextMenu()
 {
     notImplemented();
@@ -105,7 +83,6 @@ Vector<ContextMenuItem> contextMenuItemVector(const Vector<ContextMenuItem>* ite
 {
     return *items;
 }
-#endif
 
 }
 #endif // ENABLE(CONTEXT_MENUS)
