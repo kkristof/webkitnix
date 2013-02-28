@@ -17,10 +17,14 @@
 # CRASHES
 ################################################################################
 
+editing/selection/empty-cell-right-click.html [ Skip ]
 fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
 fast/js/sparse-array.html [ Pass Crash ]
+fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
+webaudio/oscillator-basic.html [ Skip ]
+webaudio/realtimeanalyser-fft-sizing.html [ Skip ]
 
 # sometimes crash
 fast/replaced/object-with-embed-url-param.html [ Pass Crash ]
@@ -144,7 +148,6 @@ css3/filters/custom-with-at-rule-syntax/parsing-custom-function-valid.html
 css3/filters/custom/custom-filter-animation.html
 css3/filters/custom/custom-filter-array-blending.html
 css3/filters/custom/custom-filter-mix-bindings.html
-css3/filters/custom/custom-filter-parsing-at-rule-valid.html
 css3/filters/custom/custom-filter-property-computed-style.html
 css3/filters/custom/custom-filter-property-parsing.html
 css3/filters/custom/custom-filter-transforms-animation.html
@@ -695,6 +698,9 @@ fast/dom/call-a-constructor-as-a-function.html [ Failure ]
 fast/dom/constructed-objects-prototypes.html [ Failure ]
 fast/dom/constructors-cached-navigate.html [ Failure ]
 fast/dom/constructors-cached.html [ Failure ]
+fast/dom/custom/document-register-basic.html [ Skip ]
+fast/dom/custom/document-register-reentrant-null-constructor.html [ Skip ]
+fast/dom/custom/document-register-reentrant-returning-fake.html [ Skip ]
 fast/dom/dom-constructors.html [ Failure ]
 fast/dom/frame-loading-via-document-write.html [ Failure ]
 fast/dom/gc-10.html [ Skip ]
@@ -861,7 +867,6 @@ fast/dom/shadow/shadow-dom-event-dispatching-nested-shadow-roots.html [ Skip ]
 fast/dom/shadow/shadow-dom-event-dispatching-non-distributed-nodes.html [ Skip ]
 fast/dom/shadow/shadow-dom-event-dispatching-svg-in-shadow-subtree.html [ Skip ]
 fast/dom/shadow/shadow-dom-event-dispatching-text-node-in-shadow-root.html [ Skip ]
-fast/dom/shadow/shadow-dom-event-dispatching.html [ Skip ]
 fast/dom/shadow/shadow-dom-mouse-event-adjust-offset.html [ Skip ]
 fast/dom/shadow/shadow-dynamic-style-change-via-mutation-and-selector.html [ Skip ]
 fast/dom/shadow/shadow-element-rendering-multiple.html [ Skip ]
@@ -1685,7 +1690,7 @@ fast/replaced/no-focus-ring-embed.html [ Skip ]
 fast/replaced/no-focus-ring-object.html [ Skip ]
 fast/replaced/outline-replaced-elements.html [ Skip ]
 fast/replaced/table-percent-height.html [ Skip ]
-fast/replaced/width100percent-image.html [Skip]
+fast/replaced/width100percent-image.html [ Skip ]
 # flakey test
 fast/replaced/width100percent-textarea.html [ Skip ]
 
@@ -2130,13 +2135,18 @@ fast/dom/HTMLTemplateElement/inertContents.html [ Failure ]
 fast/dom/HTMLTemplateElement/innerHTML.html [ Failure ]
 fast/dom/HTMLTemplateElement/ownerDocument.html [ Failure ]
 fast/dom/HTMLTemplateElement/ownerDocumentXHTML.xhtml [ Failure ]
-html5lib/run-template.html [ Failure ]
 
 http/tests/xmlhttprequest/access-control-preflight-async-header-denied.html [ Failure Pass ]
 http/tests/xmlhttprequest/cross-site-denied-response.html [ Failure Pass ]
 http/tests/xmlhttprequest/origin-whitelisting-https.html [ Failure Pass ]
 
+html5lib/generated/run-domjs-unsafe-data.html [ Skip ]
+html5lib/generated/run-pending-spec-changes-plain-text-unsafe-data.html [ Skip ]
+html5lib/generated/run-plain-text-unsafe-data.html [ Skip ]
+
 # These tests fail with timeout
+fast/events/wheelevent-in-text-node.html
+html5lib/generated/run-template-data.html
 http/tests/inspector-enabled/console-exception-while-no-inspector.html
 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html
 inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html
