@@ -72,33 +72,31 @@ TEST(WebKitNix, SuspendResumeAPI)
 
     WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleBeforeSuspend, bufferSize);
 
-    // After collecting the first sample we wait 0.1s to collect the next sample.
-    // A repaint is needed to get viewport updated accordingly. This proccess is
-    // repeated for each collected sample.
-    Util::sleep(0.1);
+    // After collecting the first sample a repaint is needed to get viewport updated accordingly.
+    // This proccess is repeated for each collected sample.
     loader.forceRepaint();
     WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), secondSampleBeforeSuspend, bufferSize);
-    // The timmer is ticking - two different samples.
+    // The timer is ticking - two different samples.
     EXPECT_STRNE(firstSampleBeforeSuspend, secondSampleBeforeSuspend);
 
-    Util::sleep(0.1);
+    // Force an update before suspending otherwise we can get same sample value after suspending
+    // and the test becomes flacky.
+    loader.forceRepaint();
     NIXViewSuspendActiveDOMObjectsAndAnimations(view.get());
     loader.forceRepaint();
     WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleAfterSuspend, bufferSize);
-    // The timmer is paused - still two different samples.
+    // The timer is paused - still two different samples.
     EXPECT_STRNE(secondSampleBeforeSuspend, firstSampleAfterSuspend);
 
-    Util::sleep(0.1);
     loader.forceRepaint();
     WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), secondSampleAfterSuspend, bufferSize);
-    // The timmer is paused - two samples collected while paused so they are equal.
+    // The timer is paused - two samples collected while paused so they are equal.
     EXPECT_STREQ(firstSampleAfterSuspend, secondSampleAfterSuspend);
 
     NIXViewResumeActiveDOMObjectsAndAnimations(view.get());
-    Util::sleep(0.1);
     loader.forceRepaint();
     WKStringGetUTF8CString(WKPageCopyTitle(NIXViewGetPage(view.get())), firstSampleAfterResume, bufferSize);
-    // The timmer is ticking again - two different samples.
+    // The timer is ticking again - two different samples.
     EXPECT_STRNE(secondSampleAfterSuspend, firstSampleAfterResume);
 }
 
