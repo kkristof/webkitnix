@@ -30,6 +30,10 @@
 #include <cmath>
 #include <cstdio>
 
+static const int PanDistanceThreshold = 10;
+static const int MaxDoubleTapInterval = 500;
+static const int LongTapInterval = 1000;
+
 static WKPoint computeCenter(WKPoint a, WKPoint b)
 {
     return WKPointMake((a.x + b.x) / 2, (a.y + b.y) / 2);
@@ -54,6 +58,7 @@ GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
     , m_state(&GestureRecognizer::noGesture)
     , m_timestamp(0)
     , m_doubleTapTimerId(0)
+    , m_longTapTimerId(0)
     , m_initialPinchDistance(0)
     , m_initialPinchScale(0)
 {
@@ -61,6 +66,7 @@ GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
 
 void GestureRecognizer::reset()
 {
+    cancelLongTapTimerIfNeeded();
     if (m_doubleTapTimerId) {
         g_source_remove(m_doubleTapTimerId);
         m_doubleTapTimerId = 0;
@@ -72,8 +78,35 @@ void GestureRecognizer::reset()
     m_initialPinchScale = 0;
 }
 
-static const int PanDistanceThreshold = 10;
-static const int MaxDoubleTapInterval = 500;
+void GestureRecognizer::cancelLongTapTimerIfNeeded()
+{
+    if (!m_longTapTimerId)
+        return;
+
+    g_source_remove(m_longTapTimerId);
+    m_longTapTimerId = 0;
+}
+
+static gboolean longTapTimer(gpointer data)
+{
+    reinterpret_cast<GestureRecognizer*>(data)->longTapTimerTriggered();
+    return false;
+}
+
+void GestureRecognizer::startLongTapTimer()
+{
+    cancelLongTapTimerIfNeeded();
+    m_longTapTimerId = g_timeout_add(LongTapInterval, longTapTimer, this);
+}
+
+void GestureRecognizer::longTapTimerTriggered()
+{
+    if (m_state != &GestureRecognizer::singleTapPressed)
+        return;
+
+    m_client->handleLongTap(m_timestamp, m_firstTouchPoint);
+    reset();
+}
 
 static bool exceedsPanThreshold(const NIXTouchPoint& first, const NIXTouchPoint& last)
 {
@@ -86,7 +119,7 @@ void GestureRecognizer::doubleTapTimerTriggered()
 {
     if (m_state == &GestureRecognizer::waitForDoubleTap) {
         m_client->handleSingleTap(m_timestamp, m_firstTouchPoint);
-        m_state = &GestureRecognizer::noGesture;
+        reset();
     }
 }
 
@@ -105,6 +138,7 @@ void GestureRecognizer::noGesture(const NIXTouchEvent& event)
     NIXTouchPoint touch = event.touchPoints[0];
     m_firstTouchPoint = touch;
     m_previousTouchPoint = touch;
+    startLongTapTimer();
 }
 
 void GestureRecognizer::setupPinchData(const NIXTouchEvent& event)
@@ -120,6 +154,7 @@ void GestureRecognizer::setupPinchData(const NIXTouchEvent& event)
 
 void GestureRecognizer::singleTapPressed(const NIXTouchEvent& event)
 {
+    cancelLongTapTimerIfNeeded();
     const NIXTouchPoint& touchPoint = event.touchPoints[0];
     switch (event.type) {
     case kNIXInputEventTypeTouchMove:

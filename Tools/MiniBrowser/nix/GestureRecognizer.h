@@ -32,13 +32,14 @@
 
 extern "C" {
 gboolean doubleTapTimer(gpointer);
+static gboolean longTapTimer(gpointer);
 }
 
 class GestureRecognizerClient {
 public:
     virtual void handleSingleTap(double timestamp, const NIXTouchPoint&) { }
     virtual void handleDoubleTap(double timestamp, const NIXTouchPoint&) { }
-    virtual void handleTapAndHold(double timestamp, const NIXTouchPoint&) { }
+    virtual void handleLongTap(double timestamp, const NIXTouchPoint&) { }
 
     virtual void handlePanning(double timestamp, WKPoint delta) { }
     virtual void handlePanningFinished(double timestamp) { }
@@ -71,12 +72,17 @@ private:
     void setupPinchData(const NIXTouchEvent&);
     void updatePinchData(double, const NIXTouchEvent&);
 
+    void startLongTapTimer();
+    void cancelLongTapTimerIfNeeded();
+    void longTapTimerTriggered();
+
     typedef void (GestureRecognizer::*StateFunction)(const NIXTouchEvent&);
     StateFunction m_state;
 
     double m_timestamp;
     NIXTouchPoint m_firstTouchPoint;
     guint m_doubleTapTimerId;
+    guint m_longTapTimerId;
     NIXTouchPoint m_previousTouchPoint;
     GestureRecognizerClient* m_client;
 
@@ -88,6 +94,7 @@ private:
     void fail(const char*);
     void doubleTapTimerTriggered();
     friend gboolean doubleTapTimer(gpointer);
+    friend gboolean longTapTimer(gpointer);
 };
 
 #endif

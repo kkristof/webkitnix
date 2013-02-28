@@ -86,6 +86,7 @@ public:
     // GestureRecognizerClient.
     virtual void handleSingleTap(double timestamp, const NIXTouchPoint&);
     virtual void handleDoubleTap(double timestamp, const NIXTouchPoint&);
+    virtual void handleLongTap(double timestamp, const NIXTouchPoint&);
     virtual void handlePanning(double timestamp, WKPoint delta);
     virtual void handlePanningFinished(double timestamp);
     virtual void handlePinch(double timestamp, WKPoint delta, double scale, WKPoint contentCenter);
@@ -342,6 +343,21 @@ static NIXMouseEvent convertXButtonEventToNixButtonEvent(NIXView view, const XBu
     nixEvent.clickCount = clickCount;
     nixEvent.modifiers = convertXEventModifiersToNativeModifiers(event.state);
     nixEvent.timestamp = convertXEventTimeToNixTimestamp(event.time);
+    return nixEvent;
+}
+
+static NIXMouseEvent convertToRightButtonClick(double timestamp, const NIXTouchPoint& touch)
+{
+    NIXMouseEvent nixEvent;
+    nixEvent.type = kNIXInputEventTypeMouseDown;
+    nixEvent.button = kWKEventMouseButtonRightButton;
+    nixEvent.x = touch.x;
+    nixEvent.y = touch.y;
+    nixEvent.globalX = touch.globalX;
+    nixEvent.globalY = touch.globalY;
+    nixEvent.clickCount = 1;
+    nixEvent.modifiers = 0;
+    nixEvent.timestamp = timestamp;
     return nixEvent;
 }
 
@@ -731,6 +747,15 @@ void MiniBrowser::handleDoubleTap(double timestamp, const NIXTouchPoint& touchPo
         return;
     WKPoint contentsPoint = WKPointMake(touchPoint.x, touchPoint.y);
     NIXViewFindZoomableAreaForPoint(m_view, contentsPoint, touchPoint.verticalRadius, touchPoint.horizontalRadius);
+}
+
+void MiniBrowser::handleLongTap(double timestamp, const NIXTouchPoint& touch)
+{
+    NIXMouseEvent event = convertToRightButtonClick(timestamp, touch);
+    WKPoint contentsPoint = NIXViewUserViewportToContents(m_view, WKPointMake(event.x, event.y));
+    event.x = contentsPoint.y;
+    event.y = contentsPoint.y;
+    NIXViewSendMouseEvent(m_view, &event);
 }
 
 void MiniBrowser::handlePanning(double timestamp, WKPoint delta)
