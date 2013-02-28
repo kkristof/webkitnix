@@ -40,6 +40,10 @@
 #include <Block.h>
 #endif
 
+#if ENABLE(CONTEXT_MENUS)
+#include "WebContextMenuItem.h"
+#endif
+
 using namespace WebCore;
 using namespace WebKit;
 
@@ -863,3 +867,11 @@ WKStringRef WKPageGetPluginInformationPluginURLKey()
     static WebString* key = WebString::create(WebPageProxy::pluginInformationPluginURLKey()).leakRef();
     return toAPI(key);
 }
+
+void WKPageContextMenuItemSelected(WKPageRef page, WKContextMenuItemRef item)
+{
+#if ENABLE(CONTEXT_MENUS)
+    toImpl(page)->contextMenuItemSelected(*(toImpl(item)->data()));
+#endif
+}
+

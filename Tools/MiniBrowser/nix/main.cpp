@@ -29,6 +29,8 @@
 #include "TouchMocker.h"
 #include "XlibEventUtils.h"
 #include <GL/gl.h>
+#include <WebKit2/WKArray.h>
+#include <WebKit2/WKContextMenuItem.h>
 #include <WebKit2/WKPreferences.h>
 #include <WebKit2/WKPreferencesPrivate.h>
 #include <WebKit2/WKString.h>
@@ -91,6 +93,9 @@ public:
     virtual void handlePanningFinished(double timestamp);
     virtual void handlePinch(double timestamp, WKPoint delta, double scale, WKPoint contentCenter);
     virtual void handlePinchFinished(double timestamp);
+
+    // ContextMenuClient.
+    static void showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayRef menuItems, const void* clientInfo);
 
     virtual double scale();
 
@@ -244,6 +249,13 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
     NIXViewSetFocused(m_view, true);
     NIXViewSetVisible(m_view, true);
     NIXViewSetActive(m_view, true);
+
+    WKPageContextMenuClient contextMenuClient;
+    memset(&contextMenuClient, 0, sizeof(WKPageContextMenuClient));
+    contextMenuClient.version = kWKPageContextMenuClientCurrentVersion;
+    contextMenuClient.clientInfo = this;
+    contextMenuClient.showContextMenu = MiniBrowser::showContextMenu;
+    WKPageSetPageContextMenuClient(pageRef(), &contextMenuClient);
 
     WKPageLoadURL(pageRef(), WKURLCreateWithUTF8CString(options.url.c_str()));
 }
@@ -882,6 +894,28 @@ void MiniBrowser::didStartProgress(WKPageRef, const void* clientInfo)
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     mb->m_pageHandlesTouchEvents = false;
     mb->m_gestureRecognizer.reset();
+}
+
+void MiniBrowser::showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayRef menuItems, const void*)
+{
+    // FIXME: we should have a GUI context menu at some point.
+    printf("\n# CONTEXT MENU #\n");
+    size_t size = WKArrayGetSize(menuItems);
+    for (size_t i = 0; i < size; ++i) {
+        WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
+        const WKStringRef title = WKContextMenuItemCopyTitle(item);
+        const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
+        char* titleBuffer = new char[titleBufferSize];
+        WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
+        printf("%d- %s\n", i+1, titleBuffer);
+        delete[] titleBuffer;
+        WKRelease(title);
+    }
+    int option = 0;
+    printf("Context Menu option (0 for none): ");
+    scanf("%d",&option);
+    if (option > 0)
+        WKPageContextMenuItemSelected(page, static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, option-1)));
 }
 
 int main(int argc, char* argv[])

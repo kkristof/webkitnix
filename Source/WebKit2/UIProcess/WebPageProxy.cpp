@@ -3182,6 +3182,9 @@ void WebPageProxy::internalShowContextMenu(const IntPoint& menuLocation, const W
 
     m_activeContextMenuHitTestResultData = hitTestResultData;
 
+#if PLATFORM(EFL) || PLATFORM(NIX)
+    m_contextMenuClient.hideContextMenu(this);
+#else
     if (m_activeContextMenu) {
         m_activeContextMenu->hideContextMenu();
         m_activeContextMenu = 0;
@@ -3190,17 +3193,24 @@ void WebPageProxy::internalShowContextMenu(const IntPoint& menuLocation, const W
     m_activeContextMenu = m_pageClient->createContextMenuProxy(this);
     if (!m_activeContextMenu)
         return;
+#endif
 
     // Since showContextMenu() can spin a nested run loop we need to turn off the responsiveness timer.
     m_process->responsivenessTimer()->stop();
 
     // Give the PageContextMenuClient one last swipe at changing the menu.
     Vector<WebContextMenuItemData> items;
+#if PLATFORM(EFL) || PLATFORM(NIX)
+    if (!m_contextMenuClient.getContextMenuFromProposedMenu(this, proposedItems, items, hitTestResultData, userData.get()))
+        m_contextMenuClient.showContextMenu(this, menuLocation, proposedItems);
+    else
+        m_contextMenuClient.showContextMenu(this, menuLocation, items);
+#else
     if (!m_contextMenuClient.getContextMenuFromProposedMenu(this, proposedItems, items, hitTestResultData, userData.get()))
         m_activeContextMenu->showContextMenu(menuLocation, proposedItems);
     else
         m_activeContextMenu->showContextMenu(menuLocation, items);
-    
+#endif
     m_contextMenuClient.contextMenuDismissed(this);
 }
 

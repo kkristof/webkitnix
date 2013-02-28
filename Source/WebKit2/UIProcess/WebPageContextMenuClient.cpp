@@ -93,5 +93,29 @@ void WebPageContextMenuClient::contextMenuDismissed(WebPageProxy* page)
     m_client.contextMenuDismissed(toAPI(page), m_client.clientInfo);
 }
 
+void WebPageContextMenuClient::showContextMenu(WebPageProxy* page, const WebCore::IntPoint& menuLocation, const Vector<WebContextMenuItemData>& menuItemsVector)
+{
+    if (!m_client.showContextMenu)
+        return;
+
+    unsigned size = menuItemsVector.size();
+
+    Vector<RefPtr<APIObject> > menuItems;
+    menuItems.reserveCapacity(size);
+
+    for (unsigned i = 0; i < size; ++i)
+        menuItems.append(WebContextMenuItem::create(menuItemsVector[i]).get());
+
+    m_client.showContextMenu(toAPI(page), toAPI(menuLocation), toAPI(ImmutableArray::adopt(menuItems).get()), m_client.clientInfo);
+}
+
+void WebPageContextMenuClient::hideContextMenu(WebPageProxy* page)
+{
+    if (!m_client.hideContextMenu)
+        return;
+
+    m_client.hideContextMenu(toAPI(page), m_client.clientInfo);
+}
+
 } // namespace WebKit
 #endif // ENABLE(CONTEXT_MENUS)

@@ -28,6 +28,7 @@
 
 #include "NIXEvents.h"
 #include <WebKit2/WKContext.h>
+#include <WebKit2/WKContextMenuItem.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
 
