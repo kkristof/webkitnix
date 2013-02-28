@@ -61,7 +61,15 @@ GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
 
 void GestureRecognizer::reset()
 {
+    if (m_doubleTapTimerId) {
+        g_source_remove(m_doubleTapTimerId);
+        m_doubleTapTimerId = 0;
+    }
+
     m_state = &GestureRecognizer::noGesture;
+    m_timestamp = 0;
+    m_initialPinchDistance = 0;
+    m_initialPinchScale = 0;
 }
 
 static const int PanDistanceThreshold = 10;
@@ -90,18 +98,13 @@ void GestureRecognizer::fail(const char* reason)
 
 void GestureRecognizer::noGesture(const NIXTouchEvent& event)
 {
+    if (event.type != kNIXInputEventTypeTouchStart)
+        return;
+
+    m_state = &GestureRecognizer::singleTapPressed;
     NIXTouchPoint touch = event.touchPoints[0];
-    switch (event.type) {
-    case kNIXInputEventTypeTouchStart:
-        m_state = &GestureRecognizer::singleTapPressed;
-        m_firstTouchPoint = touch;
-        m_previousTouchPoint = touch;
-        break;
-    case kNIXInputEventTypeTouchMove:
-    case kNIXInputEventTypeTouchEnd:
-        fail("received TouchMove or TouchEnd when in NoGesture state.");
-        break;
-    }
+    m_firstTouchPoint = touch;
+    m_previousTouchPoint = touch;
 }
 
 void GestureRecognizer::setupPinchData(const NIXTouchEvent& event)
