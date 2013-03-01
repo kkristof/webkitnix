@@ -31,7 +31,7 @@
 #include <glib.h>
 
 extern "C" {
-gboolean doubleTapTimer(gpointer);
+static gboolean doubleTapTimer(gpointer);
 static gboolean longTapTimer(gpointer);
 }
 
@@ -76,6 +76,10 @@ private:
     void cancelLongTapTimerIfNeeded();
     void longTapTimerTriggered();
 
+    void startDoubleTapTimer();
+    void cancelDoubleTapTimerIfNeeded();
+    void doubleTapTimerTriggered();
+
     typedef void (GestureRecognizer::*StateFunction)(const NIXTouchEvent&);
     StateFunction m_state;
 
@@ -92,7 +96,6 @@ private:
     WKPoint m_initialPinchContentCenter;
 
     void fail(const char*);
-    void doubleTapTimerTriggered();
     friend gboolean doubleTapTimer(gpointer);
     friend gboolean longTapTimer(gpointer);
 };

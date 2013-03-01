@@ -67,10 +67,7 @@ GestureRecognizer::GestureRecognizer(GestureRecognizerClient *client)
 void GestureRecognizer::reset()
 {
     cancelLongTapTimerIfNeeded();
-    if (m_doubleTapTimerId) {
-        g_source_remove(m_doubleTapTimerId);
-        m_doubleTapTimerId = 0;
-    }
+    cancelDoubleTapTimerIfNeeded();
 
     m_state = &GestureRecognizer::noGesture;
     m_timestamp = 0;
@@ -106,6 +103,21 @@ void GestureRecognizer::longTapTimerTriggered()
 
     m_client->handleLongTap(m_timestamp, m_firstTouchPoint);
     reset();
+}
+
+void GestureRecognizer::startDoubleTapTimer()
+{
+    cancelDoubleTapTimerIfNeeded();
+    m_doubleTapTimerId = g_timeout_add(MaxDoubleTapInterval, doubleTapTimer, this);
+}
+
+void GestureRecognizer::cancelDoubleTapTimerIfNeeded()
+{
+    if (!m_doubleTapTimerId)
+        return;
+
+    g_source_remove(m_doubleTapTimerId);
+    m_doubleTapTimerId = 0;
 }
 
 static bool exceedsPanThreshold(const NIXTouchPoint& first, const NIXTouchPoint& last)
@@ -165,7 +177,7 @@ void GestureRecognizer::singleTapPressed(const NIXTouchEvent& event)
     case kNIXInputEventTypeTouchEnd:
         m_state = &GestureRecognizer::waitForDoubleTap;
         m_timestamp = event.timestamp;
-        m_doubleTapTimerId = g_timeout_add(MaxDoubleTapInterval, doubleTapTimer, this);
+        startDoubleTapTimer();
         break;
     case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::pinchInProgress;
@@ -176,7 +188,7 @@ void GestureRecognizer::singleTapPressed(const NIXTouchEvent& event)
 }
 void GestureRecognizer::waitForDoubleTap(const NIXTouchEvent& event)
 {
-    g_source_remove(m_doubleTapTimerId);
+    cancelDoubleTapTimerIfNeeded();
     switch (event.type) {
     case kNIXInputEventTypeTouchStart:
         m_state = &GestureRecognizer::doubleTapPressed;
@@ -268,10 +280,10 @@ void GestureRecognizer::handleTouchEvent(const NIXTouchEvent& event)
     m_previousTouchPoint = event.touchPoints[0];
 }
 
-gboolean doubleTapTimer(gpointer data)
+static gboolean doubleTapTimer(gpointer data)
 {
     reinterpret_cast<GestureRecognizer*>(data)->doubleTapTimerTriggered();
-    return FALSE;
+    return false;
 }
 
 void GestureRecognizer::updatePinchData(double timestamp, const NIXTouchEvent& event)
