@@ -453,7 +453,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
     , m_validationMessage(ValidationMessageClientImpl::create(*client))
-    , m_suppressInvalidations(false)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_showDebugBorders(false)
@@ -1808,18 +1807,6 @@ void WebViewImpl::didExitFullScreen()
 #endif
 }
 
-void WebViewImpl::instrumentBeginFrame()
-{
-    if (m_devToolsAgent)
-        m_devToolsAgent->didBeginFrame();
-}
-
-void WebViewImpl::instrumentCancelFrame()
-{
-    if (m_devToolsAgent)
-        m_devToolsAgent->didCancelFrame();
-}
-
 #if ENABLE(BATTERY_STATUS)
 void WebViewImpl::updateBatteryStatus(const WebBatteryStatus& status)
 {
@@ -1827,25 +1814,13 @@ void WebViewImpl::updateBatteryStatus(const WebBatteryStatus& status)
 }
 #endif
 
-void WebViewImpl::animate(double)
+void WebViewImpl::animate(double monotonicFrameBeginTime)
 {
-#if ENABLE(REQUEST_ANIMATION_FRAME)
-    double monotonicFrameBeginTime = monotonicallyIncreasingTime();
-
-#if USE(ACCELERATED_COMPOSITING)
-    // In composited mode, we always go through the compositor so it can apply
-    // appropriate flow-control mechanisms.
-    if (isAcceleratedCompositingActive())
-        m_layerTreeView->updateAnimations(monotonicFrameBeginTime);
-    else
-#endif
-        updateAnimations(monotonicFrameBeginTime);
-#endif
+    updateAnimations(monotonicFrameBeginTime);
 }
 
 void WebViewImpl::willBeginFrame()
 {
-    instrumentBeginFrame();
     m_client->willBeginCompositorFrame();
 }
 
@@ -1857,6 +1832,9 @@ void WebViewImpl::didBeginFrame()
 
 void WebViewImpl::updateAnimations(double monotonicFrameBeginTime)
 {
+    if (!monotonicFrameBeginTime)
+        monotonicFrameBeginTime = monotonicallyIncreasingTime();
+
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     TRACE_EVENT0("webkit", "WebViewImpl::updateAnimations");
 
@@ -2304,10 +2282,6 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (!focused)
         return info;
 
-    Editor* editor = focused->editor();
-    if (!editor || !editor->canEdit())
-        return info;
-
     FrameSelection* selection = focused->selection();
     if (!selection)
         return info;
@@ -2318,6 +2292,10 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
     info.type = textInputType();
     if (info.type == WebTextInputTypeNone)
+        return info;
+
+    Editor* editor = focused->editor();
+    if (!editor || !editor->canEdit())
         return info;
 
     info.value = plainText(rangeOfContents(node).get());
@@ -2388,6 +2366,14 @@ WebTextInputType WebViewImpl::textInputType()
             return WebTextInputTypeNone;
         return WebTextInputTypeTextArea;
     }
+
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+    if (node->isHTMLElement()) {
+        HTMLElement* element = toHTMLElement(node);
+        if (element->isDateTimeFieldElement())
+            return WebTextInputTypeDateTimeField;
+    }
+#endif
 
     if (node->shouldUseInputMethod())
         return WebTextInputTypeContentEditable;
@@ -3693,6 +3679,18 @@ void WebViewImpl::performCustomContextMenuAction(unsigned action)
     m_page->contextMenuController()->clearContextMenu();
 }
 
+void WebViewImpl::showContextMenu()
+{
+    if (!page())
+        return;
+
+    page()->contextMenuController()->clearContextMenu();
+    m_contextMenuAllowed = true;
+    if (Frame* focusedFrame = page()->focusController()->focusedOrMainFrame())
+        focusedFrame->eventHandler()->sendContextMenuEventForKey();
+    m_contextMenuAllowed = false;
+}
+
 // WebView --------------------------------------------------------------------
 
 void WebViewImpl::setIsTransparent(bool isTransparent)
@@ -4004,7 +4002,6 @@ bool WebViewImpl::tabsToLinks() const
 
 void WebViewImpl::suppressInvalidations(bool enable)
 {
-    m_suppressInvalidations = enable;
     if (m_client)
         m_client->suppressCompositorScheduling(enable);
 }
@@ -4263,32 +4260,6 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
     }
 }
 
-void WebViewImpl::willCommit()
-{
-    if (m_devToolsAgent)
-        m_devToolsAgent->willComposite();
-}
-
-void WebViewImpl::didCommit()
-{
-    if (m_client) {
-        m_client->didCommitCompositorFrame();
-        m_client->didBecomeReadyForAdditionalInput();
-    }
-}
-
-void WebViewImpl::didCommitAndDrawFrame()
-{
-    if (m_client)
-        m_client->didCommitAndDrawCompositorFrame();
-}
-
-void WebViewImpl::didCompleteSwapBuffers()
-{
-    if (m_client)
-        m_client->didCompleteSwapBuffers();
-}
-
 void WebViewImpl::didRecreateOutputSurface(bool success)
 {
     // Switch back to software rendering mode, if necessary
@@ -4309,11 +4280,6 @@ void WebViewImpl::didRecreateOutputSurface(bool success)
 
 void WebViewImpl::scheduleComposite()
 {
-    if  (m_suppressInvalidations) {
-        TRACE_EVENT_INSTANT0("webkit", "WebViewImpl invalidations suppressed");
-        return;
-    }
-
     ASSERT(!Platform::current()->compositorSupport()->isThreadingEnabled());
     m_client->scheduleComposite();
 }

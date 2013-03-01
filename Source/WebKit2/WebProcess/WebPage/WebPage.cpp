@@ -103,6 +103,7 @@
 #include <WebCore/HTMLPlugInElement.h>
 #include <WebCore/HistoryItem.h>
 #include <WebCore/KeyboardEvent.h>
+#include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/MouseEvent.h>
 #include <WebCore/Page.h>
 #include <WebCore/PlatformKeyboardEvent.h>
@@ -237,7 +238,6 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 #if PLATFORM(MAC)
     , m_pdfPluginEnabled(false)
     , m_windowIsVisible(false)
-    , m_isSmartInsertDeleteEnabled(parameters.isSmartInsertDeleteEnabled)
     , m_layerHostingMode(parameters.layerHostingMode)
     , m_keyboardEventBeingInterpreted(0)
 #elif PLATFORM(GTK)
@@ -2392,6 +2392,8 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
 
     settings->setLogsPageMessagesToSystemConsoleEnabled(store.getBoolValueForKey(WebPreferencesKey::logsPageMessagesToSystemConsoleEnabledKey()));
 
+    settings->setSmartInsertDeleteEnabled(store.getBoolValueForKey(WebPreferencesKey::smartInsertDeleteEnabledKey()));
+
     platformPreferencesDidChange(store);
 
     if (m_drawingArea)
@@ -3781,6 +3783,29 @@ void WebPage::setMinimumLayoutWidth(double minimumLayoutWidth)
         corePage()->mainFrame()->view()->enableAutoSizeMode(true, IntSize(minimumLayoutWidth, 1), IntSize(maximumSize, maximumSize));
     else
         corePage()->mainFrame()->view()->enableAutoSizeMode(false, IntSize(), IntSize());
+}
+
+bool WebPage::isSmartInsertDeleteEnabled()
+{
+    return m_page->settings()->smartInsertDeleteEnabled();
+}
+
+void WebPage::setSmartInsertDeleteEnabled(bool enabled)
+{
+    m_page->settings()->setSmartInsertDeleteEnabled(enabled);
+}
+
+bool WebPage::canShowMIMEType(const String& MIMEType) const
+{
+    if (MIMETypeRegistry::canShowMIMEType(MIMEType))
+        return true;
+
+    if (PluginData* pluginData = m_page->pluginData()) {
+        if (pluginData->supportsMimeType(MIMEType) && m_page->settings()->arePluginsEnabled())
+            return true;
+    }
+
+    return false;
 }
 
 } // namespace WebKit

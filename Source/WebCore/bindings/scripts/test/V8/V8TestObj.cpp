@@ -1548,6 +1548,11 @@ static void TestObjReplaceableAttrSetter(v8::Local<v8::String> name, v8::Local<v
     info.This()->ForceSet(name, value);
 }
 
+static void TestObjReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    return TestObjV8Internal::TestObjReplaceableAttrSetter(name, value, info);
+}
+
 static v8::Handle<v8::Value> voidMethodMethod(const v8::Arguments& args)
 {
     TestObj* imp = V8TestObj::toNative(args.Holder());
@@ -2137,6 +2142,39 @@ static v8::Handle<v8::Value> methodWithCallbackAndOptionalArgMethod(const v8::Ar
 static v8::Handle<v8::Value> methodWithCallbackAndOptionalArgMethodCallback(const v8::Arguments& args)
 {
     return TestObjV8Internal::methodWithCallbackAndOptionalArgMethod(args);
+}
+
+static v8::Handle<v8::Value> staticMethodWithCallbackAndOptionalArgMethod(const v8::Arguments& args)
+{
+    RefPtr<TestCallback> callback;
+    if (args.Length() > 0 && !args[0]->IsNull() && !args[0]->IsUndefined()) {
+        if (!args[0]->IsFunction())
+            return throwTypeError(0, args.GetIsolate());
+        callback = V8TestCallback::create(args[0], getScriptExecutionContext());
+    }
+    TestObj::staticMethodWithCallbackAndOptionalArg(callback);
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> staticMethodWithCallbackAndOptionalArgMethodCallback(const v8::Arguments& args)
+{
+    return TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethod(args);
+}
+
+static v8::Handle<v8::Value> staticMethodWithCallbackArgMethod(const v8::Arguments& args)
+{
+    if (args.Length() < 1)
+        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() <= 0 || !args[0]->IsFunction())
+        return throwTypeError(0, args.GetIsolate());
+    RefPtr<TestCallback> callback = V8TestCallback::create(args[0], getScriptExecutionContext());
+    TestObj::staticMethodWithCallbackArg(callback);
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> staticMethodWithCallbackArgMethodCallback(const v8::Arguments& args)
+{
+    return TestObjV8Internal::staticMethodWithCallbackArgMethod(args);
 }
 
 #if ENABLE(Condition1)
@@ -2858,15 +2896,15 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 #if ENABLE(Condition1)
     // Attribute 'conditionalAttr4' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetter, &V8TestObjectA::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, &V8TestObjectA::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1)
 #if ENABLE(Condition1) && ENABLE(Condition2)
     // Attribute 'conditionalAttr5' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetter, &V8TestObjectB::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, &V8TestObjectB::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
     // Attribute 'conditionalAttr6' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetter, &V8TestObjectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, &V8TestObjectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
     // Attribute 'cachedAttribute1' (Type: 'readonly attribute' ExtAttr: 'CachedAttribute')
     {"cachedAttribute1", TestObjV8Internal::cachedAttribute1AttrGetterCallback, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -2895,7 +2933,7 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     // Attribute 'hash' (Type: 'readonly attribute' ExtAttr: '')
     {"hash", TestObjV8Internal::hashAttrGetterCallback, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'replaceableAttribute' (Type: 'readonly attribute' ExtAttr: 'Replaceable')
-    {"replaceableAttribute", TestObjV8Internal::replaceableAttributeAttrGetterCallback, TestObjV8Internal::TestObjReplaceableAttrSetter, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"replaceableAttribute", TestObjV8Internal::replaceableAttributeAttrGetterCallback, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
@@ -3051,6 +3089,8 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8TestObj::GetRawTemplate(isolate) };
     v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(desc, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
     proto->Set(v8::String::NewSymbol("methodThatRequiresAllArgsAndThrows"), v8::FunctionTemplate::New(TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature));
+    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackAndOptionalArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
+    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
     desc->Set(v8::String::NewSymbol("classMethod"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
     desc->Set(v8::String::NewSymbol("classMethodWithOptional"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
     desc->Set(v8::String::NewSymbol("classMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>()));

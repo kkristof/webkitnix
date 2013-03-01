@@ -221,6 +221,28 @@ enum OperandSpeculationMode { AutomaticOperandSpeculation, ManualOperandSpeculat
 
 enum SpeculationDirection { ForwardSpeculation, BackwardSpeculation };
 
+enum ProofStatus { NeedsCheck, IsProved };
+
+inline bool isProved(ProofStatus proofStatus)
+{
+    ASSERT(proofStatus == IsProved || proofStatus == NeedsCheck);
+    return proofStatus == IsProved;
+}
+
+inline ProofStatus proofStatusForIsProved(bool isProved)
+{
+    return isProved ? IsProved : NeedsCheck;
+}
+
+template<typename T, typename U>
+bool checkAndSet(T& left, U right)
+{
+    if (left == right)
+        return false;
+    left = right;
+    return true;
+}
+
 } } // namespace JSC::DFG
 
 namespace WTF {
@@ -228,6 +250,7 @@ namespace WTF {
 void printInternal(PrintStream&, JSC::DFG::OptimizationFixpointState);
 void printInternal(PrintStream&, JSC::DFG::GraphForm);
 void printInternal(PrintStream&, JSC::DFG::UnificationState);
+void printInternal(PrintStream&, JSC::DFG::ProofStatus);
 
 } // namespace WTF
 
@@ -237,7 +260,7 @@ namespace JSC { namespace DFG {
 
 // Put things here that must be defined even if ENABLE(DFG_JIT) is false.
 
-enum CapabilityLevel { CannotCompile, ShouldProfile, CanCompile, CapabilityLevelNotSet };
+enum CapabilityLevel { CannotCompile, MayInline, CanCompile, CapabilityLevelNotSet };
 
 // Unconditionally disable DFG disassembly support if the DFG is not compiled in.
 inline bool shouldShowDisassembly()

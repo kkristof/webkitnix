@@ -69,8 +69,6 @@ class PerfTestsRunner(object):
         self._results = {}
         self._timestamp = time.time()
         self._utc_timestamp = datetime.datetime.utcnow()
-        self._needs_http = None
-        self._has_http_lock = False
 
     @staticmethod
     def _parse_args(args=None):
@@ -124,6 +122,9 @@ class PerfTestsRunner(object):
                 help="Output per-test profile information."),
             optparse.make_option("--profiler", action="store",
                 help="Output per-test profile information, using the specified profiler."),
+            optparse.make_option("--additional-drt-flag", action="append",
+                default=[], help="Additional command line flag to pass to DumpRenderTree "
+                     "Specify multiple times to add multiple flags."),
             ]
         return optparse.OptionParser(option_list=(perf_option_list)).parse_args(args)
 
@@ -160,21 +161,18 @@ class PerfTestsRunner(object):
 
         return tests
 
-    def _start_servers(self):
-        if self._needs_http:
-            self._port.acquire_http_lock()
-            self._port.start_http_server(number_of_servers=2)
-            self._has_http_lock = True
+    def _start_http_servers(self):
+        self._port.acquire_http_lock()
+        self._port.start_http_server(number_of_servers=2)
 
-    def _stop_servers(self):
-        if self._has_http_lock:
-            self._port.stop_http_server()
-            self._port.release_http_lock()
+    def _stop_http_servers(self):
+        self._port.stop_http_server()
+        self._port.release_http_lock()
 
     def run(self):
-        self._needs_http = self._port.requires_http_server()
+        needs_http = self._port.requires_http_server()
 
-        if not self._port.check_build(needs_http=self._needs_http):
+        if not self._port.check_build(needs_http=needs_http):
             _log.error("Build not up to date for %s" % self._port._path_to_driver())
             return self.EXIT_CODE_BAD_BUILD
 
@@ -186,11 +184,13 @@ class PerfTestsRunner(object):
                 return self.EXIT_CODE_BAD_PREPARATION
 
         try:
-            self._start_servers()
+            if needs_http:
+                self._start_http_servers()
             unexpected = self._run_tests_set(sorted(list(tests), key=lambda test: test.test_name()), self._port)
 
         finally:
-            self._stop_servers()
+            if needs_http:
+                self._stop_http_servers()
 
         if self._options.generate_results and not self._options.profile:
             exit_code = self._generate_and_show_results()
@@ -208,58 +208,51 @@ class PerfTestsRunner(object):
     def _generate_and_show_results(self):
         options = self._options
         output_json_path = self._output_json_path()
-        output, perf_webkit_output = self._generate_results_dict(self._timestamp, options.description, options.platform, options.builder_name, options.build_number)
+        output = self._generate_results_dict(self._timestamp, options.description, options.platform, options.builder_name, options.build_number)
 
         if options.slave_config_json_path:
-            output, perf_webkit_output = self._merge_slave_config_json(options.slave_config_json_path, output, perf_webkit_output)
+            output = self._merge_slave_config_json(options.slave_config_json_path, output)
             if not output:
                 return self.EXIT_CODE_BAD_SOURCE_JSON
 
         output = self._merge_outputs_if_needed(output_json_path, output)
         if not output:
             return self.EXIT_CODE_BAD_MERGE
-        perf_webkit_output = [perf_webkit_output]
 
         results_page_path = self._host.filesystem.splitext(output_json_path)[0] + '.html'
-        perf_webkit_json_path = self._host.filesystem.splitext(output_json_path)[0] + '-perf-webkit.json' if options.test_results_server else None
-        self._generate_output_files(output_json_path, perf_webkit_json_path, results_page_path, output, perf_webkit_output)
+        self._generate_output_files(output_json_path, results_page_path, output)
 
         if options.test_results_server:
-            if not self._upload_json(options.test_results_server, output_json_path):
-                return self.EXIT_CODE_FAILED_UPLOADING
+            if options.test_results_server == 'webkit-perf.appspot.com':
+                options.test_results_server = 'perf.webkit.org'
 
-            # FIXME: Remove this code once we've made transition to use perf.webkit.org
-            if not self._upload_json('perf.webkit.org', perf_webkit_json_path, "/api/report"):
+            if not self._upload_json(options.test_results_server, output_json_path):
                 return self.EXIT_CODE_FAILED_UPLOADING
 
         if options.show_results:
             self._port.show_results_html_file(results_page_path)
 
     def _generate_results_dict(self, timestamp, description, platform, builder_name, build_number):
-        contents = {'results': self._results}
+        contents = {'tests': {}}
         if description:
             contents['description'] = description
 
-        revisions_for_perf_webkit = {}
+        revisions = {}
         for (name, path) in self._port.repository_paths():
             scm = SCMDetector(self._host.filesystem, self._host.executive).detect_scm_system(path) or self._host.scm()
             revision = scm.svn_revision(path)
-            contents[name.lower() + '-revision'] = revision
-            revisions_for_perf_webkit[name] = {'revision': str(revision), 'timestamp': scm.timestamp_of_latest_commit(path, revision)}
+            revisions[name] = {'revision': str(revision), 'timestamp': scm.timestamp_of_latest_commit(path, revision)}
 
-        # FIXME: Add --branch or auto-detect the branch we're in
-        for key, value in {'timestamp': int(timestamp), 'branch': self._default_branch, 'platform': platform,
-            'builder-name': builder_name, 'build-number': int(build_number) if build_number else None}.items():
-            if value:
-                contents[key] = value
-
-        contents_for_perf_webkit = {
-            'builderName': builder_name,
-            'buildNumber': str(build_number),
+        meta_info = {
             'buildTime': self._datetime_in_ES5_compatible_iso_format(self._utc_timestamp),
             'platform': platform,
-            'revisions': revisions_for_perf_webkit,
-            'tests': {}}
+            'revisions': revisions,
+            'builderName': builder_name,
+            'buildNumber': int(build_number) if build_number else None}
+
+        for key, value in meta_info.items():
+            if value:
+                contents[key] = value
 
         # FIXME: Make this function shorter once we've transitioned to use perf.webkit.org.
         for metric_full_name, result in self._results.iteritems():
@@ -271,7 +264,7 @@ class PerfTestsRunner(object):
             if not metric:
                 metric = {'fps': 'FrameRate', 'runs/s': 'Runs', 'ms': 'Time'}[result['unit']]
 
-            tests = contents_for_perf_webkit['tests']
+            tests = contents['tests']
             path = test_full_name.split('/')
             for i in range(0, len(path)):
                 # FIXME: We shouldn't assume HTML extension.
@@ -290,27 +283,26 @@ class PerfTestsRunner(object):
                     current_test.setdefault('tests', {})
                     tests = current_test['tests']
 
-        return contents, contents_for_perf_webkit
+        return contents
 
     @staticmethod
     def _datetime_in_ES5_compatible_iso_format(datetime):
         return datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')
 
-    def _merge_slave_config_json(self, slave_config_json_path, contents, contents_for_perf_webkit):
+    def _merge_slave_config_json(self, slave_config_json_path, contents):
         if not self._host.filesystem.isfile(slave_config_json_path):
             _log.error("Missing slave configuration JSON file: %s" % slave_config_json_path)
-            return None, None
+            return None
 
         try:
             slave_config_json = self._host.filesystem.open_text_file_for_reading(slave_config_json_path)
             slave_config = json.load(slave_config_json)
-            contents = dict(slave_config.items() + contents.items())
             for key in slave_config:
-                contents_for_perf_webkit['builder' + key.capitalize()] = slave_config[key]
-            return contents, contents_for_perf_webkit
+                contents['builder' + key.capitalize()] = slave_config[key]
+            return contents
         except Exception, error:
             _log.error("Failed to merge slave configuration JSON file %s: %s" % (slave_config_json_path, error))
-        return None, None
+        return None
 
     def _merge_outputs_if_needed(self, output_json_path, output):
         if self._options.reset_results or not self._host.filesystem.isfile(output_json_path):
@@ -322,14 +314,11 @@ class PerfTestsRunner(object):
             _log.error("Failed to merge output JSON file %s: %s" % (output_json_path, error))
         return None
 
-    def _generate_output_files(self, output_json_path, perf_webkit_json_path, results_page_path, output, perf_webkit_output):
+    def _generate_output_files(self, output_json_path, results_page_path, output):
         filesystem = self._host.filesystem
 
         json_output = json.dumps(output)
         filesystem.write_text_file(output_json_path, json_output)
-
-        if perf_webkit_json_path:
-            filesystem.write_text_file(perf_webkit_json_path, json.dumps(perf_webkit_output))
 
         if results_page_path:
             template_path = filesystem.join(self._port.perf_tests_dir(), 'resources/results-template.html')
@@ -341,7 +330,7 @@ class PerfTestsRunner(object):
 
             filesystem.write_text_file(results_page_path, results_page)
 
-    def _upload_json(self, test_results_server, json_path, host_path="/api/test/report", file_uploader=FileUploader):
+    def _upload_json(self, test_results_server, json_path, host_path="/api/report", file_uploader=FileUploader):
         url = "https://%s%s" % (test_results_server, host_path)
         uploader = file_uploader(url, 120)
         try:

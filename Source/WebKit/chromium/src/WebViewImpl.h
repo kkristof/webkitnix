@@ -181,8 +181,6 @@ public:
     virtual void didNotAcquirePointerLock();
     virtual void didLosePointerLock();
     virtual void didChangeWindowResizerRect();
-    virtual void instrumentBeginFrame();
-    virtual void instrumentCancelFrame();
 
     // WebView methods:
     virtual void initializeMainFrame(WebFrameClient*);
@@ -304,6 +302,7 @@ public:
                                     unsigned inactiveBackgroundColor,
                                     unsigned inactiveForegroundColor);
     virtual void performCustomContextMenuAction(unsigned action);
+    virtual void showContextMenu();
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */);
     virtual void removePageOverlay(WebPageOverlay*);
 #if ENABLE(BATTERY_STATUS)
@@ -324,10 +323,6 @@ public:
     virtual WebCompositorOutputSurface* createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE;
     virtual WebInputHandler* createInputHandler() OVERRIDE;
-    virtual void willCommit();
-    virtual void didCommit();
-    virtual void didCommitAndDrawFrame();
-    virtual void didCompleteSwapBuffers();
     virtual void scheduleComposite();
 
     // WebViewImpl
@@ -904,8 +899,6 @@ private:
     OwnPtr<LinkHighlight> m_linkHighlight;
 #endif
     OwnPtr<ValidationMessageClientImpl> m_validationMessage;
-
-    bool m_suppressInvalidations;
 
     bool m_showFPSCounter;
     bool m_showPaintRects;

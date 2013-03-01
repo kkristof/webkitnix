@@ -98,12 +98,18 @@
         }
     }
     
+    NSString *voiceURI = nil;
     if (utteranceVoiceByURI)
-        [m_synthesizer setVoice:utteranceVoiceByURI->voiceURI()];
+        voiceURI = utteranceVoiceByURI->voiceURI();
     else if (utteranceVoiceByLanguage)
-        [m_synthesizer setVoice:utteranceVoiceByLanguage->voiceURI()];
+        voiceURI = utteranceVoiceByLanguage->voiceURI();
     else
-        [m_synthesizer setVoice:[NSSpeechSynthesizer defaultVoice]];
+        voiceURI = [NSSpeechSynthesizer defaultVoice];
+
+    // Don't set the voice unless necessary. There's a bug in NSSpeechSynthesizer such that
+    // setting the voice for the first time will cause the first speechDone callback to report it was unsuccessful.
+    if (![[m_synthesizer voice] isEqualToString:voiceURI])
+        [m_synthesizer setVoice:voiceURI];
     
     [m_synthesizer setRate:[self convertRateToWPM:utterance->rate()]];
     [m_synthesizer setVolume:utterance->volume()];
@@ -113,8 +119,32 @@
     m_synthesizerObject->client()->didStartSpeaking(utterance);
 }
 
+- (void)pause
+{
+    if (!m_utterance)
+        return;
+    
+    [m_synthesizer pauseSpeakingAtBoundary:NSSpeechImmediateBoundary];
+    m_synthesizerObject->client()->didPauseSpeaking(m_utterance);
+}
+
+- (void)resume
+{
+    if (!m_utterance)
+        return;
+    
+    [m_synthesizer continueSpeaking];
+    m_synthesizerObject->client()->didResumeSpeaking(m_utterance);
+}
+
+- (void)cancel
+{
+    [m_synthesizer stopSpeakingAtBoundary:NSSpeechImmediateBoundary];
+}
+
 - (void)speechSynthesizer:(NSSpeechSynthesizer *)sender didFinishSpeaking:(BOOL)finishedSpeaking
 {
+    ASSERT(m_utterance);
     UNUSED_PARAM(sender);
     
     // Clear the m_utterance variable in case finish speaking kicks off a new speaking job immediately.
@@ -125,6 +155,16 @@
         m_synthesizerObject->client()->didFinishSpeaking(utterance);
     else
         m_synthesizerObject->client()->speakingErrorOccurred(utterance);
+}
+
+- (void)speechSynthesizer:(NSSpeechSynthesizer *)sender willSpeakWord:(NSRange)characterRange ofString:(NSString *)string
+{
+    ASSERT(m_utterance);
+    UNUSED_PARAM(sender);
+    UNUSED_PARAM(string);
+
+    // Mac platform only supports word boundaries.
+    m_synthesizerObject->client()->boundaryEventOccurred(m_utterance, WebCore::SpeechWordBoundary, characterRange.location);
 }
 
 @end
@@ -153,6 +193,16 @@ void PlatformSpeechSynthesizer::initializeVoiceList()
     }
 }
     
+void PlatformSpeechSynthesizer::pause()
+{
+    [m_platformSpeechWrapper.get() pause];
+}
+
+void PlatformSpeechSynthesizer::resume()
+{
+    [m_platformSpeechWrapper.get() resume];
+}
+    
 void PlatformSpeechSynthesizer::speak(const PlatformSpeechSynthesisUtterance& utterance)
 {
     if (!m_platformSpeechWrapper)
@@ -161,6 +211,11 @@ void PlatformSpeechSynthesizer::speak(const PlatformSpeechSynthesisUtterance& ut
     [m_platformSpeechWrapper.get() speakUtterance:&utterance];
 }
 
+void PlatformSpeechSynthesizer::cancel()
+{
+    [m_platformSpeechWrapper.get() cancel];
+}
+    
 } // namespace WebCore
 
 #endif // ENABLE(SPEECH_SYNTHESIS)

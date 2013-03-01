@@ -94,8 +94,14 @@ if ($cgi->param('q2')) {
 }
 if ($cgi->param('showAction')) {
     print "<script>\n";
-    print "if (window.testRunner)\n";
     print "    alert('Form action set to ' + document.forms[0].action);\n";
+    print "</script>\n";
+}
+if ($cgi->param('showFormaction')) {
+    print "<script>\n";
+    print "    var e = document.querySelector('[formaction]');\n";
+    print "    if (e)\n";
+    print "        alert('formaction present on ' + e.nodeName + ' with value of ' + e.getAttribute('formaction'));\n";
     print "</script>\n";
 }
 if ($cgi->param('notifyDone')) {

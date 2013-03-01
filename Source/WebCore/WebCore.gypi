@@ -1384,6 +1384,7 @@
             'bindings/v8/custom/V8HTMLSelectElementCustom.h',
             'bindings/v8/custom/V8HistoryCustom.cpp',
             'bindings/v8/custom/V8IDBAnyCustom.cpp',
+            'bindings/v8/custom/V8IDBRequestCustom.cpp',
             'bindings/v8/custom/V8ImageDataCustom.cpp',
             'bindings/v8/custom/V8InjectedScriptHostCustom.cpp',
             'bindings/v8/custom/V8InjectedScriptManager.cpp',
@@ -5455,6 +5456,7 @@
 
         'webinspector_audits_js_files': [
             'inspector/front-end/AuditCategories.js',
+            'inspector/front-end/AuditController.js',
             'inspector/front-end/AuditFormatters.js',
             'inspector/front-end/AuditLauncherView.js',
             'inspector/front-end/AuditResultView.js',

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "StorageManager.h"
 
+#include "StorageAreaProxyMessages.h"
 #include "StorageManagerMessages.h"
 #include "WebProcessProxy.h"
 #include "WorkQueue.h"
@@ -144,6 +145,15 @@ void StorageManager::destroyStorageArea(CoreIPC::Connection*, uint64_t)
 void StorageManager::getValues(CoreIPC::Connection*, uint64_t, HashMap<String, String>&)
 {
     // FIXME: Implement this.
+}
+
+void StorageManager::setItem(CoreIPC::Connection* connection, uint64_t storageAreaID, const String& key, const String& value)
+{
+    // FIXME: Find the right storage area and set the item.
+    // FIXME: Send out storage changed events.
+
+    bool quotaError = false;
+    connection->send(Messages::StorageAreaProxy::DidSetItem(key, quotaError), storageAreaID);
 }
 
 void StorageManager::createSessionStorageNamespaceInternal(uint64_t storageNamespaceID)

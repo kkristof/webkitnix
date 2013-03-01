@@ -387,6 +387,8 @@
                 'src/mac/WebScreenInfoFactory.mm',
                 'src/mac/WebSubstringUtil.mm',
                 'src/LocalFileSystemChromium.cpp',
+                'src/MediaSourcePrivateImpl.cpp',
+                'src/MediaSourcePrivateImpl.h',
                 'src/NotificationPresenterImpl.h',
                 'src/NotificationPresenterImpl.cpp',
                 'src/painting/ContinuousPainter.h',
@@ -403,6 +405,8 @@
                 'src/ScrollbarGroup.cpp',
                 'src/ScrollbarGroup.h',
                 'src/SharedWorkerRepository.cpp',
+                'src/SourceBufferPrivateImpl.cpp',
+                'src/SourceBufferPrivateImpl.h',
                 'src/SpeechInputClientImpl.cpp',
                 'src/SpeechInputClientImpl.h',
                 'src/SpeechRecognitionClientProxy.cpp',
@@ -643,6 +647,7 @@
                                 # We should not include files depending on webkit_support.
                                 # These tests depend on webkit_support and
                                 # functions defined only in !WEBKIT_IMPLEMENTATION.
+                                'tests/IDBCleanupOnIOErrorTest.cpp',
                                 'tests/LevelDBTest.cpp',
                             ],
                             'conditions': [

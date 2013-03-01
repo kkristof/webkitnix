@@ -480,8 +480,10 @@ public:
     void speak(const String&);
     void stopSpeaking();
 
-    bool isSmartInsertDeleteEnabled() const { return m_isSmartInsertDeleteEnabled; }
 #endif
+
+    bool isSmartInsertDeleteEnabled();
+    void setSmartInsertDeleteEnabled(bool);
 
     void replaceSelectionWithText(WebCore::Frame*, const String&);
     void clearSelection();
@@ -604,6 +606,8 @@ public:
 
     void setMinimumLayoutWidth(double);
     double minimumLayoutWidth() const { return m_minimumLayoutWidth; }
+
+    bool canShowMIMEType(const String& MIMEType) const;
 
 private:
     WebPage(uint64_t pageID, const WebPageCreationParameters&);
@@ -768,10 +772,6 @@ private:
     void capitalizeWord();
 #endif
 
-#if PLATFORM(MAC)
-    void setSmartInsertDeleteEnabled(bool isSmartInsertDeleteEnabled) { m_isSmartInsertDeleteEnabled = isSmartInsertDeleteEnabled; }
-#endif
-
 #if ENABLE(CONTEXT_MENUS)
     void didSelectItemFromActiveContextMenu(const WebContextMenuItemData&);
 #endif
@@ -821,9 +821,6 @@ private:
 
     // Whether the containing window is visible or not.
     bool m_windowIsVisible;
-
-    // Whether smart insert/delete is enabled or not.
-    bool m_isSmartInsertDeleteEnabled;
 
     // The frame of the containing window in screen coordinates.
     WebCore::IntRect m_windowFrameInScreenCoordinates;

@@ -75,13 +75,6 @@ http/tests/xmlhttprequest/default-content-type-dashboard.html [ WontFix Failure 
 # ENABLE(DRAGGABLE_REGION) is disabled
 Bug(GTK) fast/css/draggable-region-parser.html [ Failure ]
 
-# ENABLE(TEMPLATE_ELEMENT) is disabled.
-webkit.org/b/103547 fast/dom/HTMLTemplateElement [ Skip ]
-webkit.org/b/103547 html5lib/generated/run-template.html [ Skip ]
-webkit.org/b/103547 fast/xsl/xslt-xhtml-template.xml [ Skip ]
-webkit.org/b/103547 fast/xpath/xpath-template-element.html [ Skip ]
-webkit.org/b/103547 fast/xsl/xslt-processor-template.html [ Skip ]
-
 # X-Content-Type-Options (ENABLE_NOSNIFF) is not enabled.
 webkit.org/b/71851 http/tests/security/contentTypeOptions [ Skip ]
 
@@ -447,8 +440,6 @@ webkit.org/b/86443 [ Debug ] plugins/npruntime/delete-plugin-within-invoke.html 
 
 webkit.org/b/86176 [ Debug ] ietestcenter/css3/valuesandunits/units-000.htm [ Crash ]
 
-webkit.org/b/93247 [ Debug ] fast/lists/list-marker-remove-crash.html [ Crash ]
-
 webkit.org/b/93812 [ Debug ] svg/custom/use-instanceRoot-as-event-target.xhtml [ Crash Pass ]
 
 webkit.org/b/90957 [ Release ] fast/js/random-array-gc-stress.html [ Crash Pass ]
@@ -733,13 +724,6 @@ webkit.org/b/107194 storage/indexeddb/pending-version-change-on-exit.html [ Time
 webkit.org/b/107194 storage/indexeddb/transaction-complete-workers.html [ Timeout ]
 
 webkit.org/b/108925 http/tests/media/video-play-stall.html [ Timeout Failure ]
-webkit.org/b/110689 media/controls-after-reload.html [ Timeout Failure ]
-webkit.org/b/110689 media/controls-strict.html [ Timeout Failure ]
-webkit.org/b/110689 media/controls-styling-strict.html [ Timeout Failure ]
-webkit.org/b/110689 media/controls-without-preload.html [ Timeout Failure ]
-webkit.org/b/110689 media/video-controls-rendering.html [ Timeout Failure ]
-webkit.org/b/110689 media/video-display-toggle.html [ Timeout Failure ]
-webkit.org/b/110689 media/video-playing-and-pause.html [ Timeout Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests timing out
@@ -1395,20 +1379,27 @@ webkit.org/b/109469 fast/css/cursor-parsing-image-set.html [ Failure ]
 webkit.org/b/109469 fast/events/mouse-cursor-image-set.html [ Timeout ]
 
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ ImageOnlyFailure ]
+webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle-padding.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse.html [ ImageOnlyFailure ]
+webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse-padding.html [ ImageOnlyFailure ]
 
 webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
 
 webkit.org/b/106125 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
-
-webkit.org/b/110319 fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
 
 webkit.org/b/110320 fast/dom/shadow/shadow-dom-event-dispatching-distributed-text-node.html [ Failure ]
 webkit.org/b/110320 fast/dom/shadow/shadow-dom-event-dispatching-text-node-in-shadow-root.html [ Failure ]
 
 webkit.org/b/110446 svg/as-background-image/svg-transformed-background.html [ ImageOnlyFailure ]
 
-webkit.org/b/110694 html5lib/runner.html [ Failure ]
+webkit.org/b/110694 html5lib/generated/run-domjs-unsafe-data.html [ Failure ]
+webkit.org/b/110694 html5lib/generated/run-pending-spec-changes-plain-text-unsafe-data.html [ Failure ]
+webkit.org/b/110694 html5lib/generated/run-plain-text-unsafe-data.html [ Failure ]
+
+# Need support for ResourceHandle::didChangePriority and DRT support
+webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
+
+webkit.org/b/111058 plugins/plugin-clip-subframe.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

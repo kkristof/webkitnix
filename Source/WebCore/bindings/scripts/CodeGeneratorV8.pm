@@ -728,10 +728,6 @@ sub GenerateHeaderCustomCall
     if ($interface->extendedAttributes->{"CustomCall"}) {
         push(@headerContent, "    static v8::Handle<v8::Value> callAsFunctionCallback(const v8::Arguments&);\n");
     }
-    if ($interface->name eq "Event") {
-        push(@headerContent, "    static v8::Handle<v8::Value> dataTransferAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
-        push(@headerContent, "    static void valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);\n");
-    }
     if ($interface->name eq "Location") {
         push(@headerContent, "    static v8::Handle<v8::Value> assignAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
         push(@headerContent, "    static v8::Handle<v8::Value> reloadAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);\n");
@@ -1159,6 +1155,18 @@ END
     push(@implContentDecls, "#endif // ${conditionalString}\n\n") if $conditionalString;
 }
 
+sub GenerateReplaceableAttrSetterCallback
+{
+    my $interface = shift;
+    my $interfaceName = $interface->name;
+
+    push(@implContentDecls, "static void ${interfaceName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n");
+    push(@implContentDecls, "{\n");
+    push(@implContentDecls, GenerateFeatureObservation($interface->extendedAttributes->{"V8MeasureAs"}));
+    push(@implContentDecls, "    return ${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetter(name, value, info);\n");
+    push(@implContentDecls, "}\n\n");
+}
+
 sub GenerateReplaceableAttrSetter
 {
     my $interface = shift;
@@ -1168,8 +1176,6 @@ sub GenerateReplaceableAttrSetter
 static void ${interfaceName}ReplaceableAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
 END
-    push(@implContentDecls, GenerateFeatureObservation($interface->extendedAttributes->{"V8MeasureAs"}));
-
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("Frame.h");
         push(@implContentDecls, <<END);
@@ -2344,14 +2350,14 @@ sub GenerateSingleBatchedAttribute
         }
         $data = "&V8${constructorType}::info";
         $getter = "${interfaceName}V8Internal::${interfaceName}ConstructorGetter";
-        $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetter";
+        $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetterCallback";
     } else {
         # Default Getter and Setter
         $getter = "${interfaceName}V8Internal::${attrName}AttrGetterCallback";
         $setter = "${interfaceName}V8Internal::${attrName}AttrSetterCallback";
 
         if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
-            $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetter";
+            $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetterCallback";
         }
     }
 
@@ -2770,6 +2776,7 @@ END
 
     if ($hasConstructors || $hasReplaceable) {
         GenerateReplaceableAttrSetter($interface);
+        GenerateReplaceableAttrSetterCallback($interface);
     }
 
     if (NeedsCustomOpaqueRootForGC($interface)) {

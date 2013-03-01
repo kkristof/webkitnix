@@ -453,6 +453,10 @@ void WebPageProxy::initializeWebPage()
 #elif ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
     m_process->send(Messages::WebPage::SetVisibilityState(m_isVisible ? PageVisibilityStateVisible : PageVisibilityStateHidden, /* isInitialState */ true), m_pageID);
 #endif
+
+#if PLATFORM(MAC)
+    m_process->send(Messages::WebPage::SetSmartInsertDeleteEnabled(m_isSmartInsertDeleteEnabled), m_pageID);
+#endif
 }
 
 void WebPageProxy::close()
@@ -3882,7 +3886,6 @@ WebPageCreationParameters WebPageProxy::creationParameters() const
     parameters.mayStartMediaWhenInWindow = m_mayStartMediaWhenInWindow;
 
 #if PLATFORM(MAC)
-    parameters.isSmartInsertDeleteEnabled = m_isSmartInsertDeleteEnabled;
     parameters.layerHostingMode = m_layerHostingMode;
     parameters.colorSpace = m_pageClient->colorSpace();
 #endif

@@ -392,6 +392,8 @@ namespace JSC {
 #if ENABLE(DFG_JIT)
             // Force profiling to be enabled during stub generation.
             jit.m_canBeOptimized = true;
+            jit.m_canBeOptimizedOrInlined = true;
+            jit.m_shouldEmitProfiling = true;
 #endif // ENABLE(DFG_JIT)
             return jit.privateCompilePatchGetArrayLength(returnAddress);
         }
@@ -895,9 +897,11 @@ namespace JSC {
 
 #if ENABLE(DFG_JIT)
         bool canBeOptimized() { return m_canBeOptimized; }
+        bool canBeOptimizedOrInlined() { return m_canBeOptimizedOrInlined; }
         bool shouldEmitProfiling() { return m_shouldEmitProfiling; }
 #else
         bool canBeOptimized() { return false; }
+        bool canBeOptimizedOrInlined() { return false; }
         // Enables use of value profiler with tiered compilation turned off,
         // in which case all code gets profiled.
         bool shouldEmitProfiling() { return true; }
@@ -947,6 +951,7 @@ namespace JSC {
 
 #if ENABLE(VALUE_PROFILER)
         bool m_canBeOptimized;
+        bool m_canBeOptimizedOrInlined;
         bool m_shouldEmitProfiling;
 #endif
     } JIT_CLASS_ALIGNMENT;

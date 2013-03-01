@@ -1,3 +1,463 @@
+2013-02-28  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt] Enable thin archives before parsing the project files
+
+        Rubber-stamped by Simon Hausmann.
+
+        The targetSubDir() function can be called before default_post.prf has been
+        parsed therefore the gnu_thin_archives option has to be set in default_pre.prf
+        which is parsed before the main project file.
+        This issue was revealed by r144299 and fixes the clean build.
+
+        * qmake/mkspecs/features/default_post.prf:
+        * qmake/mkspecs/features/default_pre.prf:
+
+2013-02-28  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Enable CANVAS_PATH flag
+        https://bugs.webkit.org/show_bug.cgi?id=108508
+
+        Reviewed by Simon Hausmann.
+
+        Also enable CANVAS_PATH flag for Qt.
+
+        * qmake/mkspecs/features/features.pri:
+
+2013-02-28  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][TestWebKitAPI] The activeBuildConfig() function has been replaced with targetSubDir()
+
+        Rubber-stamped by Csaba Osztrogonác.
+
+        Besides suppressing a warning about the non-existing function this
+        fixes the build if there is a subdirectory (eg. debug-and-release).
+
+        * TestWebKitAPI/InjectedBundle.pri:
+        * TestWebKitAPI/TestWebKitAPI.pri:
+
+2013-02-28  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL][WTR] WTR cannot load injected bundle
+        https://bugs.webkit.org/show_bug.cgi?id=111063
+
+        Reviewed by Csaba Osztrogonác.
+
+        WTR was not able to load injected bundle because of undefined 
+        symbols for AccessibilityUIElement::scrollToMakeVisible(). 
+        Adding empty implementation of this function to AccessibilityUIElementAtk.cpp
+        solves the problem.
+
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::AccessibilityUIElement::scrollToMakeVisible):
+
+2013-02-28  Alberto Garcia  <albgarcia@rim.com>
+
+        [BlackBerry] TestRunnerBlackBerry: remove layerTreeAsText, it's gone from upstream
+        https://bugs.webkit.org/show_bug.cgi?id=110464
+
+        Reviewed by Rob Buis.
+
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+
+2013-02-28  Xan Lopez  <xlopez@rim.com>
+
+        [BlackBerry] DumpRenderTreeSupport: update the set position methods
+        https://bugs.webkit.org/show_bug.cgi?id=110578
+
+        Reviewed by Rob Buis.
+
+        TestRunner::setMockGeolocationPosition() changed in r130416:
+        http://trac.webkit.org/changeset/130416/trunk/Tools/DumpRenderTree/TestRunner.h
+
+        DumpRenderTreeSupport::setMockGeolocationError() was renamed to
+        setMockGeolocationPositionUnavailableError() in r129444:
+        http://trac.webkit.org/changeset/129444/trunk/Source/WebKit/blackberry/WebKitSupport/DumpRenderTreeSupport.h
+
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        (TestRunner::setMockGeolocationPosition):
+        (TestRunner::setMockGeolocationPositionUnavailableError):
+
+2013-02-28  Xan Lopez  <xlopez@rim.com>
+
+        [BlackBerry] WorkQueueItemBlackBerry: use the new FrameLoader API
+        https://bugs.webkit.org/show_bug.cgi?id=110465
+
+        Reviewed by Rob Buis.
+
+        * DumpRenderTree/blackberry/WorkQueueItemBlackBerry.cpp:
+        (LoadItem::invoke):
+
+2013-02-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        PerfTestRunner doesn't need _needs_http and _has_http_lock
+        https://bugs.webkit.org/show_bug.cgi?id=111037
+
+        Reviewed by Adam Barth.
+
+        Delete these variables in favor of using a local variable.
+
+        Member variables are like global variables. They introduce implicit dependencies
+        between member functions.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner.__init__):
+        (PerfTestsRunner._start_http_servers):
+        (PerfTestsRunner):
+        (PerfTestsRunner._stop_http_servers):
+        (PerfTestsRunner.run):
+
+2013-02-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144224.
+        http://trac.webkit.org/changeset/144224
+        https://bugs.webkit.org/show_bug.cgi?id=111045
+
+        Caused plugins/pass-different-npp-struct.html to time out
+        (Requested by abarth on #webkit).
+
+        * DumpRenderTree/TestNetscapePlugIn/Tests/PassDifferentNPPStruct.cpp:
+        (PassDifferentNPPStruct::NPP_SetWindow):
+        * DumpRenderTree/TestNetscapePlugIn/main.cpp:
+        (NPP_SetWindow):
+
+2013-02-27  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Enable threaded HTML parser by default in DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=110907
+
+        Reviewed by Eric Seidel.
+
+        This patch changes --enable-threaded-html-parser into
+        --disable-threaded-html-parser and thereby enables the threaded HTML
+        parser by default for the Chromium port.
+
+        * DumpRenderTree/chromium/DumpRenderTree.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/WebPreferences.cpp:
+        (WebTestRunner::WebPreferences::reset):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+
+2013-02-27  Kiran Muppala  <cmuppala@apple.com>
+
+        Initialize page visibility after creating WebKitTestRunner WebView on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=111025
+
+        Reviewed by Simon Fraser.
+
+        Set page visibility to "visible" after creating WebView to override
+        visibility state inferred from window occlusion notifications on Mac.
+
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::createWebViewWithOptions): Add call to
+        setVisibilityState.
+
+2013-02-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Merge PageLoadingPerfTest into ReplayPerfTest
+        https://bugs.webkit.org/show_bug.cgi?id=111027
+
+        Reviewed by Dirk Pranke.
+
+        Merged two classes.
+
+        We should really move ahead with the bug 100991 and get rid of PageLoadingPerfTest
+        part of ReplayPerfTest.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (ReplayPerfTest): Moved _FORCE_GC_FILE here.
+        (ReplayPerfTest.__init__):
+        (ReplayPerfTest._run_with_driver): Moved from PageLoadingPerfTest.
+        (ReplayPerfTest.run_single): Load the GC page as run_single on PageLoadingPerfTest did.
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestReplayPerfTest):
+        (TestReplayPerfTest.test_run_single.run_test):
+        (TestReplayPerfTest.test_run_single): Make sure test_time is passed down properly from output.
+        (TestReplayPerfTest.test_run_with_driver_accumulates_results): Renamed from
+        TestPageLoadingPerfTest.test_run.
+        (TestReplayPerfTest.test_run_with_driver_accumulates_results.mock_run_signle):
+        (TestReplayPerfTest.test_run_with_driver_accumulates_memory_results): Renamed from
+        TestPageLoadingPerfTest.test_run_with_memory_output
+        (TestReplayPerfTest.test_run_with_driver_accumulates_memory_results.mock_run_signle):
+        (TestReplayPerfTest.test_prepare_calls_run_single):
+
+2013-02-27  Eric Seidel  <eric@webkit.org>
+
+        Add --additional-drt-flag option to run-perf-tests to make it easy to test runtime options
+        https://bugs.webkit.org/show_bug.cgi?id=111021
+
+        Reviewed by Dirk Pranke.
+
+        The underlying code (which is shared with run-webkit-tests)
+        already knew how to support this option, it just wasn't exposed
+        via the run-perf-tests front-end.  This patch fixes that.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._parse_args):
+
+2013-02-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Stop uploading results to webkit-perf.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=110954
+
+        Reviewed by Benjamin Poulain.
+
+        Pass in perf.webkit.org instead of webkit-perf.appspot.com as the test results server.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (RunAndUploadPerfTests):
+
+2013-02-27  James Simonsen  <simonjam@chromium.org>
+
+        [chromium] Lower priority of preloaded images
+        https://bugs.webkit.org/show_bug.cgi?id=110527
+
+        Plumb the didChangePriority signal into DRT so it can be tested.
+
+        Reviewed by Nate Chapin.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h:
+        (WebKit):
+        (WebTestRunner::WebTestProxy::didChangeResourcePriority):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        (WebTestRunner::TestRunner::shouldDumpResourcePriorities):
+        (WebTestRunner):
+        (WebTestRunner::TestRunner::dumpResourceRequestPriorities):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::assignIdentifierToRequest):
+        (WebTestRunner::WebTestProxyBase::willSendRequest):
+        (WebTestRunner::WebTestProxyBase::didChangeResourcePriority):
+        (WebTestRunner):
+
+2013-02-27  Chris Fleizach  <cfleizach@apple.com>
+
+        AX: Mac platform should support ability to scroll an element into visible
+        https://bugs.webkit.org/show_bug.cgi?id=109860
+
+        Reviewed by Beth Dakin.
+
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        (scrollToMakeVisibleCallback):
+        (AccessibilityUIElement::getJSClass):
+        * DumpRenderTree/mac/AccessibilityUIElementMac.mm:
+        (AccessibilityUIElement::scrollToMakeVisible):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.cpp:
+        (WTR::AccessibilityUIElement::scrollToMakeVisible):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * WebKitTestRunner/InjectedBundle/Bindings/AccessibilityUIElement.idl:
+        * WebKitTestRunner/InjectedBundle/mac/AccessibilityUIElementMac.mm:
+        (WTR::AccessibilityUIElement::scrollToMakeVisible):
+        (WTR):
+
+2013-02-27  John Bauman  <jbauman@chromium.org>
+
+        Plugin in iframe may not display
+        https://bugs.webkit.org/show_bug.cgi?id=109879
+
+        Reviewed by Simon Fraser.
+
+        LogNPPSetWindow will be used with other ports as well.
+
+        * DumpRenderTree/DumpRenderTree.gypi:
+        * DumpRenderTree/TestNetscapePlugIn/CMakeLists.txt:
+
+2013-02-27  Jochen Eisinger  <jochen@chromium.org>
+
+        plugins/netscape-plugin-setwindow-size*.html and plugins/pass-different-npp-struct.html should be async
+        https://bugs.webkit.org/show_bug.cgi?id=110973
+
+        Reviewed by Adam Barth.
+
+        There is nothing that ensures that the log messages from the plugin
+        come in before the layout test finished loading.
+
+        * DumpRenderTree/TestNetscapePlugIn/Tests/PassDifferentNPPStruct.cpp:
+        (PassDifferentNPPStruct::NPP_SetWindow):
+        * DumpRenderTree/TestNetscapePlugIn/main.cpp:
+        (NPP_SetWindow):
+
+2013-02-27  Glenn Adams  <glenn@skynav.com>
+
+        Add ENABLE_CSS3_TEXT_LINE_BREAK flag.
+        https://bugs.webkit.org/show_bug.cgi?id=110944
+
+        Reviewed by Dean Jackson.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2013-02-27  Yong Li  <yong.li.webkit@outlook.com>
+
+        Unreviewed. Remove myself from watchlist.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-02-27  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        Switch QtWebKit to GStreamer 1.0.
+        https://bugs.webkit.org/show_bug.cgi?id=106669.
+
+        Original patch by Sebastian Dröge.
+        Reviewed by Csaba Osztrogonác.
+
+        Build with GStreamer 1.0 if available, but support GStreamer 0.10 
+        temporarily to make upgrading easy and the patch suitable for Qt5.
+
+        * qmake/mkspecs/features/features.prf:
+
+2013-02-27  Szilard Ledan  <szledan@inf.u-szeged.hu>
+
+        Unreviewed. Added myself to committers.py
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144192.
+        http://trac.webkit.org/changeset/144192
+        https://bugs.webkit.org/show_bug.cgi?id=110984
+
+        Stored svn password on wrong computer (Requested by kkristof
+        on #webkit).
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-27  Szilard Ledan  <szledan@inf.u-szeged.hu>
+
+        Unreviewed. Added myself to committers.py
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix after r144155. The report page is located at /api/report, not /api/test/report.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._upload_json):
+
+2013-02-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Stop uploading results to webkit-perf.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=110954
+
+        Reviewed by Benjamin Poulain.
+
+        When the specified test results server was webkit-perf.appspot.com, replace it by perf.webkit.org.
+        Also, always use the new JSON format. Removed the code to generate the old format.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._generate_and_show_results):
+        (PerfTestsRunner._generate_results_dict):
+        (PerfTestsRunner._merge_slave_config_json):
+        (PerfTestsRunner._generate_output_files):
+
+2013-02-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144136, r144143, and r144147.
+        http://trac.webkit.org/changeset/144136
+        http://trac.webkit.org/changeset/144143
+        http://trac.webkit.org/changeset/144147
+        https://bugs.webkit.org/show_bug.cgi?id=110950
+
+        Caused some timeouts and flaky crashes (Requested by abarth on
+        #webkit).
+
+        * DumpRenderTree/chromium/DumpRenderTree.cpp:
+        (main):
+        * DumpRenderTree/chromium/TestRunner/src/WebPreferences.cpp:
+        (WebTestRunner::WebPreferences::reset):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+
+2013-02-25  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Use perf.webkit.org JSON format in results page
+        https://bugs.webkit.org/show_bug.cgi?id=110842
+
+        Reviewed by Benjamin Poulain.
+
+        Change the default JSON format from that of webkit-perf.appspot.com to that of perf.webkit.org.
+
+        A whole bunch of integration tests have been updated to use the new JSON format.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._generate_and_show_results): Renamed output and output_path to legacy_output
+        and legacy_output_json_path respectively.
+        (PerfTestsRunner._generate_results_dict): Don't assume meta build information is always available.
+        (PerfTestsRunner._generate_output_files): Make json_output, which is used to generate the default
+        JSON file and the results page out of perf_webkit_output instead of legacy_output.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py:
+        (MainTest.test_run_memory_test):
+        (MainTest._test_run_with_json_output.mock_upload_json):
+        (MainTest):
+        (MainTest.test_run_with_json_output):
+        (MainTest.test_run_with_description):
+        (MainTest.test_run_generates_json_by_default):
+        (MainTest.test_run_merges_output_by_default):
+        (MainTest.test_run_respects_reset_results):
+        (MainTest.test_run_generates_and_show_results_page):
+        (MainTest.test_run_with_slave_config_json):
+        (MainTest.test_run_with_multiple_repositories):
+        (MainTest.test_run_with_upload_json):
+        (MainTest.test_run_with_upload_json_should_generate_perf_webkit_json):
+
+2013-02-26  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Enable threaded HTML parser by default in DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=110907
+
+        Reviewed by Eric Seidel.
+
+        This patch changes --enable-threaded-html-parser into
+        --disable-threaded-html-parser and thereby enables the threaded HTML
+        parser by default for the Chromium port.
+
+        * DumpRenderTree/chromium/DumpRenderTree.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/WebPreferences.cpp:
+        (WebTestRunner::WebPreferences::reset):
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::TestShell):
+
+2013-02-26  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] Re-enable the fixed version of freetype on linux
+        https://bugs.webkit.org/show_bug.cgi?id=110542
+
+        Reviewed by Tony Chang.
+
+        Re-land the change in r143794 to switch to building with a fixed
+        version of FreeType for just DumpRenderTree. This allows us to share
+        one version of pixel baselines for both Lucid and Precise, and run the
+        layout tests in a stock Precise install (instead of a Lucid chroot).
+        Going forward, this approach isolates us from os-level changes to the
+        version of FreeType. Note that Chromium itself still uses the system
+        FreeType and is unaffected by this change.
+        
+        This setting can still be turned off (at compile/gyp-time) by
+        manually setting use_custom_freetype=0.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+
+2013-02-26  Nico Weber  <thakis@chromium.org>
+
+        [chromium] content shell drt: Enable WebKit::setLayoutTestMode()
+        https://bugs.webkit.org/show_bug.cgi?id=110890
+
+        Reviewed by Jochen Eisinger.
+
+        Several functions in webkit check that bit to change rendering
+        in layout test mode. For example, platform/graphics/skia/FrontSkia.cpp
+        disables font smoothing in this mode. TestShell and DRT both set
+        this flag, so content shell drt should set it too.
+
+        * DumpRenderTree/chromium/TestRunner/src/TestInterfaces.cpp:
+        (WebTestRunner::TestInterfaces::TestInterfaces):
+
 2013-02-26  Vivek Galatage  <vivek.vg@samsung.com>
 
         new-commit-bot: Fix the unit test newcommitbot-unittest.py due to r144040

@@ -138,6 +138,11 @@ String.prototype.trimURL = function(baseURLDomain)
     return result;
 }
 
+String.prototype.toTitleCase = function()
+{
+    return this.substring(0, 1).toUpperCase() + this.substring(1);
+}
+
 /**
  * @param {string} other
  * @return {number}
@@ -963,6 +968,12 @@ StringPool.prototype = {
 var _importedScripts = {};
 
 /**
+ * This function behavior depends on the "debug_devtools" flag value.
+ * - In debug mode it loads scripts synchronously via xhr request.
+ * - In release mode every occurrence of "importScript" gets replaced with
+ * the script source code on the compilation phase.
+ *
+ * To load scripts lazily in release mode call "loasScript" function.
  * @param {string} scriptName
  */
 function importScript(scriptName)
@@ -976,3 +987,5 @@ function importScript(scriptName)
     var sourceURL = WebInspector.ParsedURL.completeURL(window.location.href, scriptName); 
     window.eval(xhr.responseText + "\n//@ sourceURL=" + sourceURL);
 }
+
+var loadScript = importScript;

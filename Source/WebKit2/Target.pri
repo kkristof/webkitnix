@@ -702,6 +702,8 @@ SOURCES += \
     WebProcess/Plugins/PluginProxy.cpp \
     WebProcess/Plugins/PluginProcessConnection.cpp \
     WebProcess/Plugins/PluginProcessConnectionManager.cpp \
+    WebProcess/Storage/StorageAreaProxy.cpp \
+    WebProcess/Storage/StorageNamespaceProxy.cpp \
     WebProcess/Storage/WebKeyValueStorageManager.cpp \
     WebProcess/WebCoreSupport/WebBatteryClient.cpp \
     WebProcess/WebCoreSupport/WebChromeClient.cpp \

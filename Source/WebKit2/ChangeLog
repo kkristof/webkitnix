@@ -1,3 +1,309 @@
+2013-02-28  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: PDF orientation isn't respected when printing or print-previewing
+        https://bugs.webkit.org/show_bug.cgi?id=110925
+        <rdar://problem/13008621>
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::drawPDFPage): Teach drawPDFPage about PDFPage's rotation property, and use it
+        to swap the PDF's cropbox. Painting now matches PDFViewController's historical behavior.
+
+2013-02-28  Sam Weinig  <sam@webkit.org>
+
+        Don't install unused XPCServices on Lion
+        <rdar://problem/13264712>
+
+        Rubber-stamped by Anders Carlsson
+
+        * Configurations/BaseXPCService.xcconfig:
+
+2013-02-28  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r144221): SetSmartInsertDeleteEnabled should be wrapped in PLATFORM(MAC)
+
+        * WebProcess/WebPage/WebPage.messages.in: Move
+        SetSmartInsertDeleteEnabled from USE(APPKIT) to PLATFORM(MAC).
+
+2013-02-27  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [WK2] One more unreviewed buildfix for EFL, GTK and Qt after r144218.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * Target.pri:
+        * WebProcess/Storage/StorageNamespaceProxy.cpp:
+        (WebKit::StorageNamespaceProxy::copy):
+
+2013-02-27  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed (speculative) build fixes for EFL, GTK and Qt after r144218.
+
+        * CMakeLists.txt:
+        * DerivedSources.pri:
+        * GNUmakefile.list.am:
+        * Target.pri:
+
+2013-02-27  John Bauman  <jbauman@chromium.org>
+
+        Plugin in iframe may not display
+        https://bugs.webkit.org/show_bug.cgi?id=109879
+
+        Reviewed by Simon Fraser.
+
+        Update geometry when cliprect changes.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::clipRectChanged):
+        * WebProcess/Plugins/PluginView.h:
+
+2013-02-27  Jer Noble  <jer.noble@apple.com>
+
+        REGRESSION (48533): Full-frame plugins stopped working (download instead of loading the plugin)
+        https://bugs.webkit.org/show_bug.cgi?id=111003
+
+        Reviewed by Anders Carlsson.
+
+        Also query the Page's pluginData when determining whether a given MIME type can be shown.
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageCanShowMIMEType):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::canShowMIMEType):
+        * WebProcess/WebPage/WebPage.h:
+
+2013-02-27  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        Add smartInsertDeleteEnabled setting to WebCore::Page
+        https://bugs.webkit.org/show_bug.cgi?id=107840
+
+        Reviewed by Ryosuke Niwa.
+
+        * Shared/WebPageCreationParameters.cpp:
+        (WebKit::WebPageCreationParameters::encode):
+        (WebKit::WebPageCreationParameters::decode): Remove code related to
+        isSmartInsertDeleteEnabled.
+        * Shared/WebPageCreationParameters.h:
+        (WebPageCreationParameters): Remove isSmartInsertDeleteEnabled.
+        * Shared/WebPreferencesStore.h:
+        (WebKit): Add macro for smartInsertDeleteEnabled setting.
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetSmartInsertDeleteEnabled):
+        (WKPreferencesGetSmartInsertDeleteEnabled): Implement methods using the
+        new setting.
+        * UIProcess/API/C/WKPreferencesPrivate.h: Add new methods headers.
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::initializeWebPage): Set smartInsertDeleteEnabled
+        setting using m_isSmartInsertDeleteEnabled to keep initial value on Mac.
+        (WebKit::WebPageProxy::creationParameters): Remove usage of
+        parameters.isSmartInsertDeleteEnabled.
+        * WebProcess/WebCoreSupport/WebEditorClient.cpp:
+        (WebKit::WebEditorClient::smartInsertDeleteEnabled): Enable method for
+        all platforms.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage): Remove m_isSmartInsertDeleteEnabled
+        initialization.
+        (WebKit::WebPage::updatePreferences): Set smartInsertDeleteEnabled
+        setting.
+        (WebKit::WebPage::isSmartInsertDeleteEnabled): Implement method using
+        settings.
+        (WebKit):
+        (WebKit::WebPage::setSmartInsertDeleteEnabled): Implement method using
+        settings.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Enable methods dealing with smartInsertDeleteEnabled for all
+        platforms and remove m_isSmartInsertDeleteEnabled as it will be a
+        setting.
+
+
+2013-02-27  Anders Carlsson  <andersca@apple.com>
+
+        More storage scaffolding
+        https://bugs.webkit.org/show_bug.cgi?id=110997
+
+        Reviewed by Andreas Kling.
+
+        * DerivedSources.make:
+        Add StorageAreaProxy.
+        
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::setItem):
+        Send back a DidSetItem message.
+        
+        * WebKit2.xcodeproj/project.pbxproj:
+        Add generated files.
+
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::StorageAreaProxy):
+        Add the message receiver.
+        
+        (WebKit::StorageAreaProxy::~StorageAreaProxy):
+        Remove the message receiver.
+        
+        (WebKit::StorageAreaProxy::didSetItem):
+        add stub.
+
+        * WebProcess/Storage/StorageAreaProxy.h:
+        (StorageAreaProxy):
+        * WebProcess/Storage/StorageAreaProxy.messages.in: Added.
+
+2013-02-27  Sam Weinig  <sam@webkit.org>
+
+        REGRESSION: Loading flash switches to discrete graphics, 100 MB on membuster
+        <rdar://problem/13229828>
+
+        Reviewed by Dan Bernstein.
+
+        Due the change in CFBundleIdentifier, the WebProcess and PluginProcess were
+        unnecessarily muxing (they used to be whitelisted by OpenGL) to the discrete
+        GPU.
+
+        * PluginProcess/EntryPoint/mac/LegacyProcess/Info.plist:
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.32-64.Info.plist:
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.Development/Info.plist:
+        * WebProcess/EntryPoint/mac/LegacyProcess/Info.plist:
+        * WebProcess/EntryPoint/mac/XPCService/WebContentService.Development/Info.plist:
+        * WebProcess/EntryPoint/mac/XPCService/WebContentService/Info.plist:
+        Add NSSupportsAutomaticGraphicsSwitching YES.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        Re-add the PluginService.32-64.Info.plist plist to the project file.
+
+2013-02-26  Alexey Proskuryakov  <ap@apple.com>
+
+        Don't add a body to platform request until necessary
+        https://bugs.webkit.org/show_bug.cgi?id=110900
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::willSendRequest): Restore body after IPC. There
+        is no way for the client to change it.
+
+        * Shared/Downloads/mac/DownloadMac.mm:
+        (WebKit::Download::start):
+        (WebKit::Download::startWithHandle):
+        Pass UpdateHTTPBody when passing a request to NSURLConnection.
+
+        * Shared/mac/WebCoreArgumentCodersMac.mm: (CoreIPC::::encodePlatformData):
+        Never serialize the request body. It's slow, and sometimes impossible, so just
+        keeping things consistent.
+
+        * Shared/mac/WebURLRequestMac.mm: (WebKit::WebURLRequest::platformRequest):
+        Pass DoNotUpdateHTTPBody, as we can't update it outside NetworkProcess.
+
+        * UIProcess/Network/CustomProtocols/mac/CustomProtocolManagerProxyMac.mm:
+        (WebKit::CustomProtocolManagerProxy::startLoading): Ditto.
+
+        * WebProcess/InjectedBundle/InjectedBundlePageResourceLoadClient.cpp:
+        (WebKit::InjectedBundlePageResourceLoadClient::willSendRequestForFrame):
+        Restore existing body after a client call..
+
+        * WebProcess/WebPage/mac/WebPageMac.mm: (WebKit::WebPage::platformCanHandleRequest):
+        Pass DoNotUpdateHTTPBody, as we can't update it outside NetworkProcess.
+
+2013-02-27  Glenn Adams  <glenn@skynav.com>
+
+        Add ENABLE_CSS3_TEXT_LINE_BREAK flag.
+        https://bugs.webkit.org/show_bug.cgi?id=110944
+
+        Reviewed by Dean Jackson.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-02-27  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] Replace use of WebPreferences with use of WKPrefences C API
+        https://bugs.webkit.org/show_bug.cgi?id=108952
+
+        Reviewed by Simon Hausmann.
+
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        This patch moves the view classes and preferences in the Qt API
+        to use the C API for accessing and manipulating preferences as
+        part of the cleanup and move towards using the C API as base for
+        the Qt WebKit2 API.
+
+        Adds the function WebKit::adoptToQString for convenience when
+        dealing with QString and copied String objects.
+
+        Removes the ScrollAnimatorEnabled options from QWebPreferences.
+
+        * UIProcess/API/cpp/qt/WKStringQt.cpp:
+        (WebKit::adoptToQString):
+        * UIProcess/API/cpp/qt/WKStringQt.h:
+        (WebKit):
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+        * UIProcess/API/qt/qwebpreferences.cpp:
+        (QWebPreferencesPrivate::testAttribute):
+        (QWebPreferencesPrivate::setAttribute):
+        (QWebPreferencesPrivate::setFontFamily):
+        (QWebPreferencesPrivate::fontFamily):
+        (QWebPreferencesPrivate::setFontSize):
+        (QWebPreferencesPrivate::fontSize):
+        * UIProcess/API/qt/qwebpreferences_p.h:
+        * UIProcess/API/qt/qwebpreferences_p_p.h:
+
+2013-02-26  Anders Carlsson  <andersca@apple.com>
+
+        Implement StorageAreaProxy::getItem and StorageAreaProxy::setItem
+        https://bugs.webkit.org/show_bug.cgi?id=110927
+
+        Reviewed by Sam Weinig.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::setItem):
+        * UIProcess/Storage/StorageManager.h:
+        Add empty stub.
+        
+        * UIProcess/Storage/StorageManager.messages.in:
+        Add SetItem message.
+
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::getItem):
+        Fill the storage map and get the item from it.
+
+        (WebKit::StorageAreaProxy::setItem):
+        Update the storage map and send a SetItem message to the UI process.
+
+2013-02-26  Anders Carlsson  <andersca@apple.com>
+
+        StorageAreaProxy should hold on to a StorageMap and not a HashMap
+        https://bugs.webkit.org/show_bug.cgi?id=110919
+
+        Reviewed by Jessie Berlin.
+
+        Create a storage map instead of a hash map.
+
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::length):
+        (WebKit::StorageAreaProxy::loadValuesIfNeeded):
+        * WebProcess/Storage/StorageAreaProxy.h:
+        (WebCore):
+        (StorageAreaProxy):
+
+2013-02-26  Anders Carlsson  <andersca@apple.com>
+
+        Fix a copy/paste error in WebLoaderClient::didBlockInsecurePluginVersion
+        https://bugs.webkit.org/show_bug.cgi?id=110914
+        <rdar://problem/13297581>
+
+        Reviewed by Beth Dakin.
+
+        Pass kWKErrorCodeInsecurePlugInVersion to the pluginDidFail callback.
+
+        * UIProcess/WebLoaderClient.cpp:
+        (WebKit::WebLoaderClient::didBlockInsecurePluginVersion):
+
+2013-02-26  Jer Noble  <jer.noble@apple.com>
+
+        Unreviewed build fix; use correct macro for platform name in FeatureDefines.xcconfig.
+
+        * Configurations/FeatureDefines.xcconfig:
+
 2013-02-26  Manuel Rego Casasnovas  <rego@igalia.com>
 
         [WK2][GTK] REGRESSION (r143463): unit test failure in WebKit2APITests/TestContextMenu
