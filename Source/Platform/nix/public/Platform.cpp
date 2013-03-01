@@ -34,8 +34,15 @@
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebKit {
+
+WebString::WebString(const WTF::String& string)
+    : m_data(string.utf8().data())
+{
+}
 
 class EmptyPlatform : public Platform {
 public:

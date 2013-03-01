@@ -66,11 +66,7 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     if (m_callbackBufferSize + renderBufferSize > fifoSize)
         return;
 
-#if PLATFORM(NIX)
-    m_audioDevice = adoptPtr(WebKit::Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this));
-#else
     m_audioDevice = adoptPtr(WebKit::Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId));
-#endif
     ASSERT(m_audioDevice);
 
     // Create a FIFO to handle the possibility of the callback size
