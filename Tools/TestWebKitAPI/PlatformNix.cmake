@@ -157,10 +157,10 @@ set(test_webkitnix_api_BINARIES
     WebViewTranslatedScaled
     WebViewUpdateTextInputState
     WebWorker
+    WebViewWebProcessCrashed
 )
 
 set(test_webkitnix_api_fail_BINARIES
-    WebViewWebProcessCrashed
 )
 
 foreach(testName ${test_webkitnix_api_BINARIES})
