@@ -29,15 +29,17 @@
 
 #include "ContextMenuItem.h"
 
-#include "NotImplemented.h"
+#include "ContextMenu.h"
 
 namespace WebCore {
 
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu*)
+ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu* subMenu)
 {
     m_platformDescription.type = type;
     m_platformDescription.action = action;
     m_platformDescription.title = title;
+    if (subMenu)
+        setSubMenu(subMenu);
 }
 
 ContextMenuItem::ContextMenuItem(ContextMenuAction, const String&, bool enabled, bool checked, Vector<ContextMenuItem>& subMenuItems)
@@ -110,14 +112,19 @@ bool ContextMenuItem::enabled() const
     return m_platformDescription.enabled;
 }
 
-void ContextMenuItem::setSubMenu(ContextMenu*)
+void ContextMenuItem::setSubMenu(ContextMenu* menu)
 {
-    notImplemented();
+    m_platformDescription.subMenuItems = *menu->platformDescription();
 }
 
 PlatformMenuDescription ContextMenuItem::platformSubMenu() const
 {
-    return 0;
+    return &m_platformDescription.subMenuItems;
+}
+
+void ContextMenuItem::setSubMenu(Vector<ContextMenuItem>& items)
+{
+    m_platformDescription.subMenuItems = items;
 }
 
 }

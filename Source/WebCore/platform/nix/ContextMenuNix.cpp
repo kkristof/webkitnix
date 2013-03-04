@@ -81,7 +81,13 @@ PlatformMenuDescription platformMenuDescription(Vector<ContextMenuItem>& menuIte
 
 Vector<ContextMenuItem> contextMenuItemVector(const Vector<ContextMenuItem>* items)
 {
+    ASSERT(items);
     return *items;
+}
+
+ContextMenuItem* ContextMenu::itemAtIndex(unsigned index, const PlatformMenuDescription)
+{
+    return &m_items[index];
 }
 
 }
