@@ -505,21 +505,6 @@ void TestRunner::setJavaScriptCanAccessClipboard(bool flag)
     BlackBerry::WebKit::DumpRenderTree::currentInstance()->page()->setJavaScriptCanAccessClipboard(flag);
 }
 
-JSValueRef TestRunner::computedStyleIncludingVisitedInfo(JSContextRef context, JSValueRef value)
-{
-    return DumpRenderTreeSupport::computedStyleIncludingVisitedInfo(context, value);
-}
-
-JSRetainPtr<JSStringRef> TestRunner::markerTextForListItem(JSContextRef context, JSValueRef nodeObject) const
-{
-    WebCore::Element* element = toElement(toJS(toJS(context), nodeObject));
-    if (!element)
-        return 0;
-
-    JSRetainPtr<JSStringRef> markerText(Adopt, JSStringCreateWithUTF8CString(WebCore::markerTextForListItem(element).utf8().data()));
-    return markerText;
-}
-
 void TestRunner::setPluginsEnabled(bool flag)
 {
     notImplemented();

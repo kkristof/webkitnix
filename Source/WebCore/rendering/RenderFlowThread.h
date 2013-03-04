@@ -40,7 +40,7 @@
 namespace WebCore {
 
 struct LayerFragment;
-typedef Vector<LayerFragment> LayerFragments;
+typedef Vector<LayerFragment, 1> LayerFragments;
 class RenderFlowThread;
 class RenderStyle;
 class RenderRegion;
@@ -234,6 +234,7 @@ public:
     ~CurrentRenderFlowThreadMaintainer();
 private:
     RenderFlowThread* m_renderFlowThread;
+    RenderFlowThread* m_previousRenderFlowThread;
 };
 
 } // namespace WebCore

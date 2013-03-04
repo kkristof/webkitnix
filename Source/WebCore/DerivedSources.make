@@ -390,6 +390,7 @@ BINDING_IDLS = \
     $(WebCore)/html/canvas/CanvasRenderingContext2D.idl \
     $(WebCore)/html/canvas/DataView.idl \
     $(WebCore)/html/canvas/DOMPath.idl \
+    $(WebCore)/html/canvas/EXTDrawBuffers.idl \
     $(WebCore)/html/canvas/EXTTextureFilterAnisotropic.idl \
     $(WebCore)/html/canvas/Float32Array.idl \
     $(WebCore)/html/canvas/Float64Array.idl \
@@ -399,6 +400,7 @@ BINDING_IDLS = \
     $(WebCore)/html/canvas/OESElementIndexUint.idl \
     $(WebCore)/html/canvas/OESStandardDerivatives.idl \
     $(WebCore)/html/canvas/OESTextureFloat.idl \
+    $(WebCore)/html/canvas/OESTextureHalfFloat.idl \
     $(WebCore)/html/canvas/OESVertexArrayObject.idl \
     $(WebCore)/html/canvas/Uint16Array.idl \
     $(WebCore)/html/canvas/Uint32Array.idl \

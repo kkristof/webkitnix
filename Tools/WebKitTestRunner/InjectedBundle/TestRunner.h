@@ -117,11 +117,9 @@ public:
     void setCacheModel(int);
 
     // Special DOM functions.
-    JSValueRef computedStyleIncludingVisitedInfo(JSValueRef element);
     void clearBackForwardList();
     void execCommand(JSStringRef name, JSStringRef argument);
     bool isCommandEnabled(JSStringRef name);
-    JSRetainPtr<JSStringRef> markerTextForListItem(JSValueRef element);
     unsigned windowCount();
 
     // Repaint testing.

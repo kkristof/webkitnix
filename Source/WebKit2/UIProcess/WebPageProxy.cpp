@@ -268,7 +268,7 @@ WebPageProxy::WebPageProxy(PageClient* pageClient, PassRefPtr<WebProcessProxy> p
 #endif
 
     m_process->addMessageReceiver(Messages::WebPageProxy::messageReceiverName(), m_pageID, this);
-    m_process->context()->storageManager().createSessionStorageNamespace(m_pageID);
+    m_process->context()->storageManager().createSessionStorageNamespace(m_pageID, m_process->isValid() ? m_process->connection() : 0);
 }
 
 WebPageProxy::~WebPageProxy()
@@ -857,6 +857,17 @@ void WebPageProxy::setDrawsTransparentBackground(bool drawsTransparentBackground
 
     if (isValid())
         m_process->send(Messages::WebPage::SetDrawsTransparentBackground(drawsTransparentBackground), m_pageID);
+}
+
+void WebPageProxy::setUnderlayColor(const Color& color)
+{
+    if (m_underlayColor == color)
+        return;
+
+    m_underlayColor = color;
+
+    if (isValid())
+        m_process->send(Messages::WebPage::SetUnderlayColor(color), m_pageID);
 }
 
 void WebPageProxy::viewWillStartLiveResize()
@@ -2587,6 +2598,20 @@ void WebPageProxy::mouseDidMoveOverElement(const WebHitTestResult::Data& hitTest
     m_uiClient.mouseDidMoveOverElement(this, hitTestResultData, modifiers, userData.get());
 }
 
+void WebPageProxy::connectionWillOpen(CoreIPC::Connection* connection)
+{
+    ASSERT(connection == m_process->connection());
+
+    m_process->context()->storageManager().setAllowedSessionStorageNamespaceConnection(m_pageID, connection);
+}
+
+void WebPageProxy::connectionWillClose(CoreIPC::Connection* connection)
+{
+    ASSERT(connection == m_process->connection());
+
+    m_process->context()->storageManager().setAllowedSessionStorageNamespaceConnection(m_pageID, 0);
+}
+
 String WebPageProxy::pluginInformationBundleIdentifierKey()
 {
     return ASCIILiteral("PluginInformationBundleIdentifier");
@@ -3424,6 +3449,20 @@ void WebPageProxy::ignoreWord(const String& word)
     TextChecker::ignoreWord(spellDocumentTag(), word);
 }
 
+void WebPageProxy::requestCheckingOfString(uint64_t requestID, const TextCheckingRequestData& request)
+{
+    TextChecker::requestCheckingOfString(TextCheckerCompletion::create(requestID, request, this));
+}
+
+void WebPageProxy::didFinishCheckingText(uint64_t requestID, const Vector<WebCore::TextCheckingResult>& result) const
+{
+    m_process->send(Messages::WebPage::DidFinishCheckingText(requestID, result), m_pageID);
+}
+
+void WebPageProxy::didCancelCheckingText(uint64_t requestID) const
+{
+    m_process->send(Messages::WebPage::DidCancelCheckingText(requestID), m_pageID);
+}
 // Other
 
 void WebPageProxy::setFocus(bool focused)
@@ -3868,6 +3907,7 @@ WebPageCreationParameters WebPageProxy::creationParameters() const
     parameters.pageGroupData = m_pageGroup->data();
     parameters.drawsBackground = m_drawsBackground;
     parameters.drawsTransparentBackground = m_drawsTransparentBackground;
+    parameters.underlayColor = m_underlayColor;
     parameters.areMemoryCacheClientCallsEnabled = m_areMemoryCacheClientCallsEnabled;
     parameters.useFixedLayout = m_useFixedLayout;
     parameters.fixedLayoutSize = m_fixedLayoutSize;

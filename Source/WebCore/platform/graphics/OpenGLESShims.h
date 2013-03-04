@@ -26,7 +26,7 @@
 #ifndef OpenGLESShims_h
 #define OpenGLESShims_h
 
-#if PLATFORM(BLACKBERRY) || PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(NIX)
+#if PLATFORM(BLACKBERRY) || PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
 #define glBindFramebufferEXT glBindFramebuffer
 #define glFramebufferTexture2DEXT glFramebufferTexture2D
 #define glBindRenderbufferEXT glBindRenderbuffer

@@ -52,6 +52,10 @@
 #include "TextResourceDecoder.h"
 #include "XLinkNames.h"
 
+#if ENABLE(SVG)
+#include "SVGNames.h"
+#endif
+
 #include <wtf/Functional.h>
 #include <wtf/MainThread.h>
 #include <wtf/text/CString.h>
@@ -113,17 +117,22 @@ static bool startsMultiLineCommentAt(const String& string, size_t start)
     return (start + 1 < string.length() && string[start] == '/' && string[start+1] == '*');
 }
 
+// If other files need this, we should move this to HTMLParserIdioms.h
+template<size_t inlineCapacity>
+bool threadSafeMatch(const Vector<UChar, inlineCapacity>& vector, const QualifiedName& qname)
+{
+    return equalIgnoringNullity(vector, qname.localName().impl());
+}
+
 static bool hasName(const HTMLToken& token, const QualifiedName& name)
 {
-    return equalIgnoringNullity(token.name(), static_cast<const String&>(name.localName()));
+    return threadSafeMatch(token.name(), name);
 }
 
 static bool findAttributeWithName(const HTMLToken& token, const QualifiedName& name, size_t& indexOfMatchingAttribute)
 {
-    String attrName = name.localName().string();
-
-    if (name.namespaceURI() == XLinkNames::xlinkNamespaceURI)
-        attrName = "xlink:" + attrName;
+    // Notice that we're careful not to ref the StringImpl here because we might be on a background thread.
+    const String& attrName = name.namespaceURI() == XLinkNames::xlinkNamespaceURI ? "xlink:" + name.localName().string() : name.localName().string();
 
     for (size_t i = 0; i < token.attributes().size(); ++i) {
         if (equalIgnoringNullity(token.attributes().at(i).name, attrName)) {
@@ -182,6 +191,25 @@ static ContentSecurityPolicy::ReflectedXSSDisposition combineXSSProtectionHeader
         return ContentSecurityPolicy::FilterReflectedXSS;
 
     return result;
+}
+
+static bool isSemicolonSeparatedAttribute(const HTMLToken::Attribute& attribute)
+{
+#if ENABLE(SVG)
+    return threadSafeMatch(attribute.name, SVGNames::valuesAttr);
+#endif
+    return false;
+}
+
+static bool semicolonSeparatedValueContainsJavaScriptURL(const String& value)
+{
+    Vector<String> valueList;
+    value.split(';', valueList);
+    for (size_t i = 0; i < valueList.size(); ++i) {
+        if (protocolIsJavaScript(valueList[i]))
+            return true;
+    }
+    return false;
 }
 
 XSSAuditor::XSSAuditor()
@@ -505,7 +533,9 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& re
     for (size_t i = 0; i < request.token.attributes().size(); ++i) {
         const HTMLToken::Attribute& attribute = request.token.attributes().at(i);
         bool isInlineEventHandler = isNameOfInlineEventHandler(attribute.name);
-        bool valueContainsJavaScriptURL = !isInlineEventHandler && protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(String(attribute.value)));
+        // FIXME: It would be better if we didn't create a new String for every attribute in the document.
+        String strippedValue = stripLeadingAndTrailingHTMLSpaces(String(attribute.value));
+        bool valueContainsJavaScriptURL = (!isInlineEventHandler && protocolIsJavaScript(strippedValue)) || (isSemicolonSeparatedAttribute(attribute) && semicolonSeparatedValueContainsJavaScriptURL(strippedValue));
         if (!isInlineEventHandler && !valueContainsJavaScriptURL)
             continue;
         if (!isContainedInRequest(decodedSnippetForAttribute(request, attribute, ScriptLikeAttribute)))

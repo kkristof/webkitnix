@@ -1,3 +1,495 @@
+2013-03-04  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] pass all focus handling methods through the WebTestDelegate
+        https://bugs.webkit.org/show_bug.cgi?id=111328
+
+        Reviewed by Nico Weber.
+
+        In content_shell, the focus handling is asynchronous. To allow for
+        switching the focus synchronously between WebViews, we need to intercept
+        didFocus and didBlur and forward it to the WebTestDelegate.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestDelegate):
+        (WebTestRunner::WebTestDelegate::setFocus):
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h:
+        (WebTestRunner::WebTestProxy::didFocus):
+        (WebTestRunner::WebTestProxy::didBlur):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::setWindowIsKey):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        (WebTestRunner::WebTestProxyBase::didFocus):
+        (WebTestRunner):
+        (WebTestRunner::WebTestProxyBase::didBlur):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::didFocus):
+        (WebViewHost::didBlur):
+        (WebViewHost::setFocus):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-03-04  Claudio Saavedra  <csaavedra@igalia.com>
+
+        [GTK] No need to manually add system paths to jhbuildrc
+        https://bugs.webkit.org/show_bug.cgi?id=110850
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gtk/jhbuildrc: Remove calls to addpath() for items that jhbuild
+        already takes care of.
+
+2013-03-04  Kinuko Yasuda  <kinuko@chromium.org>
+
+        [chromium] TestWebKitAPI WTF.StringHasher_addCharacters is broken on Chromium Android
+        https://bugs.webkit.org/show_bug.cgi?id=111284
+
+        Disabling the failing two tests on Android.
+
+        Reviewed by Jochen Eisinger.
+
+        * TestWebKitAPI/Tests/WTF/StringHasher.cpp:
+        (TestWebKitAPI):
+        (TestWebKitAPI::TEST):
+
+2013-03-04  Kunihiko Sakamoto  <ksakamoto@chromium.org>
+
+        Add build flag for FontLoader
+        https://bugs.webkit.org/show_bug.cgi?id=111289
+
+        Reviewed by Benjamin Poulain.
+
+        Add ENABLE_FONT_LOAD_EVENTS build flag (disabled by default).
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2013-03-03  Benjamin Poulain  <benjamin@webkit.org>
+
+        [Mac] Get rid of a useless method from DOMHTMLInputElement
+        https://bugs.webkit.org/show_bug.cgi?id=111279
+
+        Reviewed by Sam Weinig.
+
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        (TestRunner::setValueForUser):
+        The method _setValueForUser: was added for testing. This feature is already
+        exposed by DOMHTMLInputElement as a private API and it is how this code is exercised
+        in real use cases. Get rid of the method created for testing, use the real thing
+        instead.
+
+2013-03-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Some perf. tests have variances that differ greatly between runs
+        https://bugs.webkit.org/show_bug.cgi?id=97510
+
+        Reviewed by Benjamin Poulain.
+
+        Use multiple instances of DumpRenderTree or WebKitTestRunner to amortize the effect of the runtime
+        environment on test results (we run each instance after one another, not in parallel).
+
+        We use 4 instances of the test runner, each executing 5 in-process iterations, for the total of 20
+        iterations as it was done previously in single process. These values are hard-coded in perftest.py
+        and runner.js but they are to be configurable in the future.
+
+        Set of 5 iterations obtained by the same test runner is treated as an "iteration group" and each
+        metric now reports an array of the length 4 with each element containing an array of 5 iteration
+        values obtained by each test runner instance as opposed to a flattened array of 20 iteration values.
+
+        Unfortunately, we can use the same trick on Dromaeo because we're already doing only 5 iterations
+        and repeating the entire Dromaeo 4 times will take too long. We need to disable more Dromaeo tests
+        as needed. To this end, added SingleProcessPerfTest to preserve the old behavior.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTestMetric.append_group): Renamed from append.
+        (PerfTestMetric.grouped_iteration_values): Added.
+        (PerfTestMetric.flattened_iteration_values): Renamed from iteration_values.
+
+        (PerfTest.__init__): Takes the number of processes (drivers) to run tests with.
+        This parameter is only used by SingleProcessPerfTest.
+
+        (PerfTest.run): Repeat tests using different driver processes.
+        (PerfTest._run_with_driver): Returns a boolean instead of a list of measured metrics
+        since metrics are shared between multiple drivers (i.e. multiple calls to _run_with_driver).
+        We instead use _ensure_metrics to obtain the matched metrics and store the data there.
+        (PerfTest._ensure_metrics): Added.
+
+        (SingleProcessPerfTest): Added. Used to run Dromaeo tests where running it on 4 different
+        instances of DumpRenderTree/WebKitTestRunner takes too long.
+        (SingleProcessPerfTest.__init__):
+
+        (ReplayPerfTest._run_with_driver): Updated to use _ensure_metrics.
+
+        (PerfTestFactory): Use SingleProcessPerfTest to run Dromaeo tests.
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py: Updated various tests that expect
+        _run_with_driver to return a list of metrics. Now it returns a boolean indicating whether
+        the test succeeded or not. Obtain the dictionary of metrics via test._metrics instead.
+
+        (TestPerfTestMetric.test_append): Updated per name and added some test cases for
+        grouped_iteration_values.
+
+        (TestPerfTest._assert_results_are_correct):
+
+        (TestSingleProcessPerfTest): Added.
+        (TestSingleProcessPerfTest.test_use_only_one_process):
+        (TestSingleProcessPerfTest.test_use_only_one_process.run_single):
+
+        (TestReplayPerfTest.test_run_with_driver_accumulates_results):
+        (TestReplayPerfTest.test_run_with_driver_accumulates_memory_results):
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py: Updated values of
+        sample standard deviations since we're now running tests 4 times.
+        (MainTest._test_run_with_json_output.mock_upload_json):
+        (MainTest.test_run_with_upload_json_should_generate_perf_webkit_json):
+
+2013-03-03  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Remove WebLayerTreeView::setViewportSize call
+        https://bugs.webkit.org/show_bug.cgi?id=110727
+
+        Reviewed by James Robinson.
+
+        After https://codereview.chromium.org/12328080 lands,
+        setViewportSize is called from the Chromium side. The multiplication
+        by deviceScaleFactor here was prone to off-by-one errors.
+        The layoutSize() function was only used here so delete it as well.
+
+        DumpRenderTree WebViewHost must now call this method as well.
+
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::initializeLayerTreeView):
+        (WebViewHost::setWindowRect):
+        (WebViewHost::setDeviceScaleFactor):
+        (WebViewHost::updateViewportSize):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-02-27  Darin Adler  <darin@apple.com>
+
+        StringHasher functions require alignment that call sites do not all guarantee
+        https://bugs.webkit.org/show_bug.cgi?id=110171
+
+        Reviewed by Benjamin Poulain.
+
+        * TestWebKitAPI/CMakeLists.txt:
+        * TestWebKitAPI/GNUmakefile.am:
+        * TestWebKitAPI/TestWebKitAPI.gypi:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPI.vcxproj:
+        * TestWebKitAPI/TestWebKitAPI.vcxproj/TestWebKitAPI.vcxproj.filters:
+        * TestWebKitAPI/TestWebKitAPI.xcodeproj/project.pbxproj:
+        * TestWebKitAPI/Tests/WTF/WTF.pro:
+        * TestWebKitAPI/win/TestWebKitAPI.vcproj:
+        Added the StringHasher.cpp file.
+
+        * TestWebKitAPI/Tests/WTF/StringHasher.cpp: Added. Contains a bunch of tests
+        for the functions in the StringHasher class.
+
+2013-03-02  Benjamin Poulain  <bpoulain@apple.com>
+
+        Move computedStyleIncludingVisitedInfo from TestRunner to Internals
+        https://bugs.webkit.org/show_bug.cgi?id=109772
+
+        Reviewed by Andreas Kling.
+
+        * DumpRenderTree/TestRunner.cpp:
+        (TestRunner::staticFunctions):
+        * DumpRenderTree/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        * DumpRenderTree/efl/TestRunnerEfl.cpp:
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunner):
+        * DumpRenderTree/win/TestRunnerWin.cpp:
+        * DumpRenderTree/wx/TestRunnerWx.cpp:
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+
+2013-03-01  Ilya Tikhonovsky  <loislo@chromium.org>
+
+        Web Inspector: Native Memory Instrumentation: do not visit raw pointers by default.
+        https://bugs.webkit.org/show_bug.cgi?id=110943
+
+        Reviewed by Yury Semikhatsky.
+
+        Unfortunately in many cases raw pointer may point to an object that has been deleted.
+        There is no working solution to solve this problem in general.
+        It could be solved only on case by case basis.
+
+        * TestWebKitAPI/Tests/WTF/MemoryInstrumentationTest.cpp:
+        * TestWebKitAPI/Tests/WebCore/HeapGraphSerializerTest.cpp:
+        (TestWebKitAPI::TEST):
+
+2013-03-01  Jason Anderssen  <janderssen@gmail.com>
+
+        Move markerTextForListItem from TestRunner to Internals
+        https://bugs.webkit.org/show_bug.cgi?id=110939
+
+        Reviewed by Benjamin Poulain.
+
+        * DumpRenderTree/TestRunner.cpp:
+        (TestRunner::staticFunctions):
+        * DumpRenderTree/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/efl/TestRunnerEfl.cpp:
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+        * DumpRenderTree/win/TestRunnerWin.cpp:
+        * DumpRenderTree/wx/TestRunnerWx.cpp:
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        (TestRunner):
+
+2013-03-01  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Don't use legacy test names when returning results from PerfTest.run
+        https://bugs.webkit.org/show_bug.cgi?id=111148
+
+        Reviewed by Dirk Pranke.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTestMetric.name): Renamed from metric.
+        (PerfTest.test_name_without_file_extension): Extracted from legacy_chromium_bot_compatible_test_name.
+        (PerfTest.run): Use metric name instead of the legacy name to store iteration values.
+        (ChromiumStylePerfTest.parse_and_log_output): Use the metric name to store results as done in PerfTest.run.
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestPerfTestMetric.test_init_set_time_metric):
+        (TestPerfTestMetric.legacy_chromium_bot_compatible_test_name): Removed. The integration tests test this.
+        (TestReplayPerfTest.test_run_with_driver_accumulates_results):
+        (TestReplayPerfTest.test_run_with_driver_accumulates_memory_results):
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner.__init__):
+        (PerfTestsRunner._generate_results_dict): Updated to iterate over (test, metrics) pair. Use view_source_url
+        to obtain the trac URL instead of hard coding it.
+        (PerfTestsRunner._run_tests_set):
+
+2013-03-01  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Add an extra project that assembles all project build logs on Windows into a single file.
+        https://bugs.webkit.org/show_bug.cgi?id=111202
+
+        This is useful for running VCExpress builds from command line because there is
+        no unified solution output, only per project build logs.
+        The project will be run as the last project in the solution.
+
+        * win/AssembleBuildLogs: Added.
+        * win/AssembleBuildLogs/AssembleBuildLogs.vcxproj: Added.
+        * win/AssembleBuildLogs/AssembleBuildLogs.vcxproj.filters: Added.
+        * win/AssembleBuildLogs/AssembleLogs.cmd: Added.
+        * win/AssembleBuildLogs/README: Added.
+
+2013-03-01  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Increase number of patches processed before clean building on WinEWS bots.
+
+        * EWSTools/start-queue-win.sh:
+
+2013-03-01  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Don't return statistics in PerfTest.run
+        https://bugs.webkit.org/show_bug.cgi?id=111145
+
+        Reviewed by Dirk Pranke.
+
+        Simply return a list of values obtained in each iteration from PerfTest.run.
+        Also simplify various methods as needed.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTestMetric.__init__): Moved the code to convert 'Time' metric to 'FrameRate' and 'Runs'
+        as needed from PerfTestsRunner._generate_results_dict.
+
+        (PerfTestMetric.legacy_chromium_bot_compatible_test_name): Always append the metric name now
+        that we don't have to worry about the backward compatibility here.
+
+        (PerfTestMetric.iteration_values): Added.
+        (PerfTestMetric.unit): Added.
+        (PerfTestMetric.metric_to_unit):
+        (PerfTestMetric.time_unit_to_metric): Extracted from PerfTestsRunner._generate_results_dict.
+
+        (PerfTest.run):
+        (PerfTest.log_statistics): Merged compute_statistics and self.output_statistics.
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestPerfTestMetric.test_init_set_missing_unit):
+        (TestPerfTestMetric.test_init_set_time_metric): Added.
+        (TestPerfTestMetric.test_legacy_chromium_bot_compatible_test_name):
+        (TestPerfTestMetric.test_append):
+        (TestPerfTestMetric.test_compute_statistics): Removed. Integration tests check some of these
+        test cases and it's not critical to keep math right as they're not used in output JSON anymore.
+        (TestPerfTest._assert_results_are_correct):
+        (TestReplayPerfTest.test_run_with_driver_accumulates_results):
+        (TestReplayPerfTest.test_run_with_driver_accumulates_memory_results):
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner._generate_results_dict):
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py:
+        (EventTargetWrapperTestData): The metric name shows up at the end of the test name as expected.
+        (SomeParserTestData): Ditto.
+        (MemoryTestData): Ditto.
+
+2013-03-01  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Enable LINK_PREFETCH
+        https://bugs.webkit.org/show_bug.cgi?id=111158
+
+        Reviewed by Simon Hausmann.
+
+        * qmake/mkspecs/features/features.pri:
+
+2013-03-01  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] Update features.pri with new features
+        https://bugs.webkit.org/show_bug.cgi?id=111157
+
+        Reviewed by Jocelyn Turcotte.
+
+        * qmake/mkspecs/features/features.pri:
+
+2013-03-01  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] put WebTestProxy::scheduleComposite back in place
+        https://bugs.webkit.org/show_bug.cgi?id=111146
+
+        Reviewed by Nico Weber.
+
+        The call was removed in http://trac.webkit.org/changeset/144398 because
+        DRT doesn't need it. However, content shell depends on this call.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h:
+        (WebTestRunner::WebTestProxy::scheduleComposite):
+
+2013-02-28  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Merge PerfTestRunner._run_single_test into PerfTestRunner._run_tests_set
+        https://bugs.webkit.org/show_bug.cgi?id=111142
+
+        Reviewed by Adam Barth.
+
+        Merged _run_single_test into _run_tests_set. The code looks much cleaner now.
+
+        Also removed _print_status since it's never used anywhere.
+
+        * Scripts/webkitpy/performance_tests/perftestsrunner.py:
+        (PerfTestsRunner.run):
+        (PerfTestsRunner._run_tests_set):
+        * Scripts/webkitpy/performance_tests/perftestsrunner_integrationtest.py:
+        (MainTest.run_test):
+        (MainTest.test_run_test_set):
+        (MainTest.test_run_test_set_kills_drt_per_run):
+        (MainTest.test_run_test_set_for_parser_tests):
+
+2013-02-28  Kiran Muppala  <cmuppala@apple.com>
+
+        Disable window occlusion detection for WebKitTestRunner Web View on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=111116
+
+        Reviewed by Simon Fraser.
+
+        Window occlusion notifications were causing WebKitTestRunner's Web View
+        to be detected as occluded and causing a few JavaScript timer layout
+        tests to fail.  https://bugs.webkit.org/show_bug.cgi?id=111025, fixed this
+        by initializing the page visibility to "visible" after creating the view.
+        But a better solution is to disable window occlusion detection, so that
+        not only the page but also the view is treated as visible.
+
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::createWebViewWithOptions): Remove call to
+        setVisibilityState, since it is no longer necessary.
+        * WebKitTestRunner/mac/PlatformWebViewMac.mm:
+        (WTR::PlatformWebView::PlatformWebView): Disable window occlusion
+        detection for the created WKView.
+
+2013-02-28  Li Yin  <li.yin@intel.com>
+
+        [chromium] Events can't be triggered on MediaStreamTrack
+        https://bugs.webkit.org/show_bug.cgi?id=110930
+
+        Reviewed by Kentaro Hara.
+
+        Related code was moved to MediaStreamCenterChromium::didStopLocalMediaStream
+
+        * DumpRenderTree/chromium/TestRunner/src/MockWebMediaStreamCenter.cpp:
+        (WebTestRunner::MockWebMediaStreamCenter::didStopLocalMediaStream):
+
+2013-02-27  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Use DumpRenderTree-specific interface for DRT's compositor embedding
+        https://bugs.webkit.org/show_bug.cgi?id=111017
+
+        Reviewed by Adam Barth.
+
+        This decouples DumpRenderTree from WebLayerTreeViewClient.
+
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHostDRTLayerTreeViewClient):
+        (WebViewHostDRTLayerTreeViewClient::WebViewHostDRTLayerTreeViewClient):
+        (WebViewHostDRTLayerTreeViewClient::~WebViewHostDRTLayerTreeViewClient):
+        (WebViewHostDRTLayerTreeViewClient::Layout):
+        (WebViewHostDRTLayerTreeViewClient::ScheduleComposite):
+        (WebViewHost::initializeLayerTreeView):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (webkit_support):
+        (WebViewHost):
+
+2013-02-28  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        Unreviewed, add my secondary email address to the list.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-28  Philip Rogers  <pdr@google.com>
+
+        Add Philip Rogers as a reviewer.
+
+        Unreviewed update of committers.py.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-02-28  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Merge more methods on PerfTest
+        https://bugs.webkit.org/show_bug.cgi?id=111030
+
+        Reviewed by Dirk Pranke.
+
+        Merged parse_output into _run_with_driver as it was the only caller. Also merged _should_ignore_line_in_stderr
+        and _should_ignore_line_in_parser_test_result into _filter_output since it was their only caller.
+
+        This makes the control flow a lot more comprehensible.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest._run_with_driver):
+        (PerfTest._should_ignore_line):
+        (PerfTest._filter_output):
+
+        * Scripts/webkitpy/performance_tests/perftest_unittest.py:
+        (TestPerfTest._assert_results_are_correct):
+        (test_ignored_stderr_lines):
+
+2013-02-28  Robert Hogan  <robert@webkit.org>
+
+        Update my IRC nick
+
+        Unreviewed.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
 2013-02-28  Andras Becsi  <andras.becsi@digia.com>
 
         [Qt] Enable thin archives before parsing the project files

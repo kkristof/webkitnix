@@ -196,7 +196,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("addUserScript", &TestRunner::addUserScript);
     bindMethod("addUserStyleSheet", &TestRunner::addUserStyleSheet);
     bindMethod("startSpeechInput", &TestRunner::startSpeechInput);
-    bindMethod("markerTextForListItem", &TestRunner::markerTextForListItem);
     bindMethod("findString", &TestRunner::findString);
     bindMethod("setValueForUser", &TestRunner::setValueForUser);
     bindMethod("enableFixedLayoutMode", &TestRunner::enableFixedLayoutMode);
@@ -1346,15 +1345,6 @@ void TestRunner::startSpeechInput(const CppArgumentList& arguments, CppVariant* 
     input->startSpeechInput();
 }
 
-void TestRunner::markerTextForListItem(const CppArgumentList& args, CppVariant* result)
-{
-    WebElement element;
-    if (!WebBindings::getElement(args[0].value.objectValue, &element))
-        result->setNull();
-    else
-        result->set(element.document().frame()->markerTextForListItem(element).utf8());
-}
-
 void TestRunner::findString(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() < 1 || !arguments[0].isString())
@@ -1780,7 +1770,7 @@ void TestRunner::setAlwaysAcceptCookies(const CppArgumentList& arguments, CppVar
 void TestRunner::setWindowIsKey(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() > 0 && arguments[0].isBool())
-        m_delegate->setFocus(arguments[0].value.boolValue);
+        m_delegate->setFocus(m_proxy, arguments[0].value.boolValue);
     result->setNull();
 }
 

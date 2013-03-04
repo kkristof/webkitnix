@@ -347,6 +347,8 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     setDrawsBackground(parameters.drawsBackground);
     setDrawsTransparentBackground(parameters.drawsTransparentBackground);
 
+    setUnderlayColor(parameters.underlayColor);
+
     setPaginationMode(parameters.paginationMode);
     setPaginationBehavesLikeColumns(parameters.paginationBehavesLikeColumns);
     setPageLength(parameters.pageLength);
@@ -1235,7 +1237,6 @@ void WebPage::setUseFixedLayout(bool fixed)
 #if USE(COORDINATED_GRAPHICS)
     m_page->settings()->setAcceleratedCompositingForFixedPositionEnabled(fixed);
     m_page->settings()->setFixedPositionCreatesStackingContext(fixed);
-    m_page->settings()->setApplyDeviceScaleFactorInCompositor(fixed);
     m_page->settings()->setApplyPageScaleFactorInCompositor(fixed);
 #endif
 
@@ -2393,6 +2394,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setLogsPageMessagesToSystemConsoleEnabled(store.getBoolValueForKey(WebPreferencesKey::logsPageMessagesToSystemConsoleEnabledKey()));
 
     settings->setSmartInsertDeleteEnabled(store.getBoolValueForKey(WebPreferencesKey::smartInsertDeleteEnabledKey()));
+    settings->setShowsURLsInToolTips(store.getBoolValueForKey(WebPreferencesKey::showsURLsInToolTipsEnabledKey()));
 
     platformPreferencesDidChange(store);
 
@@ -3806,6 +3808,31 @@ bool WebPage::canShowMIMEType(const String& MIMEType) const
     }
 
     return false;
+}
+
+void WebPage::addTextCheckingRequest(uint64_t requestID, PassRefPtr<TextCheckingRequest> request)
+{
+    m_pendingTextCheckingRequestMap.add(requestID, request);
+}
+
+void WebPage::didFinishCheckingText(uint64_t requestID, const Vector<TextCheckingResult>& result)
+{
+    TextCheckingRequest* request = m_pendingTextCheckingRequestMap.get(requestID).get();
+    if (!request)
+        return;
+
+    request->didSucceed(result);
+    m_pendingTextCheckingRequestMap.remove(requestID);
+}
+
+void WebPage::didCancelCheckingText(uint64_t requestID)
+{
+    TextCheckingRequest* request = m_pendingTextCheckingRequestMap.get(requestID).get();
+    if (!request)
+        return;
+
+    request->didCancel();
+    m_pendingTextCheckingRequestMap.remove(requestID);
 }
 
 } // namespace WebKit

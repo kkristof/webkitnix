@@ -124,4 +124,9 @@ void TextChecker::ignoreWord(int64_t, const String&)
     notImplemented();
 }
 
+void TextChecker::requestCheckingOfString(PassRefPtr<TextCheckerCompletion>)
+{
+    notImplemented();
+}
+
 }

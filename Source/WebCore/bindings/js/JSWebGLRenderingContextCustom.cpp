@@ -29,10 +29,12 @@
 
 #include "JSWebGLRenderingContext.h"
 
+#include "EXTDrawBuffers.h"
 #include "EXTTextureFilterAnisotropic.h"
 #include "ExceptionCode.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
+#include "JSEXTDrawBuffers.h"
 #include "JSEXTTextureFilterAnisotropic.h"
 #include "JSFloat32Array.h"
 #include "JSHTMLCanvasElement.h"
@@ -42,6 +44,7 @@
 #include "JSOESElementIndexUint.h"
 #include "JSOESStandardDerivatives.h"
 #include "JSOESTextureFloat.h"
+#include "JSOESTextureHalfFloat.h"
 #include "JSOESVertexArrayObject.h"
 #include "JSUint32Array.h"
 #include "JSUint8Array.h"
@@ -61,6 +64,7 @@
 #include "OESElementIndexUint.h"
 #include "OESStandardDerivatives.h"
 #include "OESTextureFloat.h"
+#include "OESTextureHalfFloat.h"
 #include "OESVertexArrayObject.h"
 #include "WebGLBuffer.h"
 #include "WebGLCompressedTextureS3TC.h"
@@ -194,12 +198,16 @@ static JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, WebGLExten
     switch (extension->getName()) {
     case WebGLExtension::WebGLLoseContextName:
         return toJS(exec, globalObject, static_cast<WebGLLoseContext*>(extension));
+    case WebGLExtension::EXTDrawBuffersName:
+        return toJS(exec, globalObject, static_cast<EXTDrawBuffers*>(extension));
     case WebGLExtension::EXTTextureFilterAnisotropicName:
         return toJS(exec, globalObject, static_cast<EXTTextureFilterAnisotropic*>(extension));
     case WebGLExtension::OESStandardDerivativesName:
         return toJS(exec, globalObject, static_cast<OESStandardDerivatives*>(extension));
     case WebGLExtension::OESTextureFloatName:
         return toJS(exec, globalObject, static_cast<OESTextureFloat*>(extension));
+    case WebGLExtension::OESTextureHalfFloatName:
+        return toJS(exec, globalObject, static_cast<OESTextureHalfFloat*>(extension));
     case WebGLExtension::OESVertexArrayObjectName:
         return toJS(exec, globalObject, static_cast<OESVertexArrayObject*>(extension));
     case WebGLExtension::OESElementIndexUintName:

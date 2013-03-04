@@ -36,6 +36,7 @@
 #include "ConsoleTypes.h"
 #include "Element.h"
 #include "EventContext.h"
+#include "FormData.h"
 #include "Frame.h"
 #include "HitTestResult.h"
 #include "Page.h"
@@ -51,6 +52,7 @@
 namespace WebCore {
 
 class CSSRule;
+class CachedResource;
 class CharacterData;
 class DOMWindow;
 class DOMWrapperWorld;

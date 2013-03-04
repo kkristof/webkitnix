@@ -1358,7 +1358,12 @@ KURL Document::baseURI() const
 void Document::setContent(const String& content)
 {
     open();
-    m_parser->append(content);
+    // FIXME: This should probably use insert(), but that's (intentionally)
+    // not implemented for the XML parser as it's normally synonymous with
+    // document.write(). append() will end up yielding, but close() will
+    // pump the tokenizer syncrhonously and finish the parse.
+    m_parser->pinToMainThread();
+    m_parser->append(content.impl());
     close();
 }
 
@@ -2888,20 +2893,20 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
             if (frameLoader->activeDocumentLoader() && frameLoader->activeDocumentLoader()->mainResourceLoader())
                 requestIdentifier = frameLoader->activeDocumentLoader()->mainResourceLoader()->identifier();
             if (frameLoader->shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
-                String message = "Refused to display '" + url().string() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+                String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
                 frameLoader->stopAllLoaders();
                 frame->navigationScheduler()->scheduleLocationChange(securityOrigin(), blankURL(), String());
                 addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, requestIdentifier);
             }
         }
     } else if (equalIgnoringCase(equiv, "content-security-policy"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::EnforceStableDirectives);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::ReportStableDirectives);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report);
     else if (equalIgnoringCase(equiv, "x-webkit-csp"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::EnforceAllDirectives);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedEnforce);
     else if (equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::ReportAllDirectives);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedReport);
 }
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't.

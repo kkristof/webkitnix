@@ -513,6 +513,7 @@ set(WebCore_IDL_FILES
     html/canvas/CanvasRenderingContext.idl
     html/canvas/DataView.idl
     html/canvas/DOMPath.idl
+    html/canvas/EXTDrawBuffers.idl
     html/canvas/EXTTextureFilterAnisotropic.idl
     html/canvas/Float32Array.idl
     html/canvas/Float64Array.idl
@@ -521,6 +522,7 @@ set(WebCore_IDL_FILES
     html/canvas/Int8Array.idl
     html/canvas/OESStandardDerivatives.idl
     html/canvas/OESTextureFloat.idl
+    html/canvas/OESTextureHalfFloat.idl
     html/canvas/OESVertexArrayObject.idl
     html/canvas/OESElementIndexUint.idl
     html/canvas/Uint16Array.idl
@@ -1506,9 +1508,11 @@ set(WebCore_SOURCES
     html/canvas/CanvasRenderingContext2D.cpp
     html/canvas/CanvasStyle.cpp
     html/canvas/DataView.cpp
+    html/canvas/EXTDrawBuffers.cpp
     html/canvas/EXTTextureFilterAnisotropic.cpp
     html/canvas/OESStandardDerivatives.cpp
     html/canvas/OESTextureFloat.cpp
+    html/canvas/OESTextureHalfFloat.cpp
     html/canvas/OESVertexArrayObject.cpp
     html/canvas/OESElementIndexUint.cpp
     html/canvas/WebGLBuffer.cpp
@@ -2054,6 +2058,7 @@ set(WebCore_SOURCES
 
     platform/network/AuthenticationChallengeBase.cpp
     platform/network/BlobData.cpp
+    platform/network/BlobRegistry.cpp
     platform/network/BlobRegistryImpl.cpp
     platform/network/BlobResourceHandle.cpp
     platform/network/Credential.cpp
@@ -2623,6 +2628,7 @@ if (ENABLE_WEBGL)
     list(APPEND WebCore_SOURCES
         html/canvas/OESStandardDerivatives.cpp
         html/canvas/OESTextureFloat.cpp
+        html/canvas/OESTextureHalfFloat.cpp
         html/canvas/OESVertexArrayObject.cpp
         html/canvas/OESElementIndexUint.cpp
         html/canvas/WebGLBuffer.cpp
@@ -2648,16 +2654,20 @@ if (ENABLE_WEBGL)
         html/canvas/WebGLUniformLocation.cpp
         html/canvas/WebGLVertexArrayObjectOES.cpp
         html/canvas/WebGLExtension.cpp
+        html/canvas/EXTDrawBuffers.cpp
         html/canvas/EXTTextureFilterAnisotropic.cpp
         html/canvas/OESStandardDerivatives.cpp
         html/canvas/OESTextureFloat.cpp
+        html/canvas/OESTextureHalfFloat.cpp
         html/canvas/OESVertexArrayObject.cpp
         html/canvas/OESElementIndexUint.cpp
     )
     list(APPEND WebCore_IDL_FILES
+        html/canvas/EXTDrawBuffers.idl
         html/canvas/EXTTextureFilterAnisotropic.idl
         html/canvas/OESStandardDerivatives.idl
         html/canvas/OESTextureFloat.idl
+        html/canvas/OESTextureHalfFloat.idl
         html/canvas/OESVertexArrayObject.idl
         html/canvas/OESElementIndexUint.idl
         html/canvas/WebGLActiveInfo.idl

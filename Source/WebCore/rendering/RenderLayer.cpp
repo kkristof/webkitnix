@@ -55,11 +55,13 @@
 #include "FEMerge.h"
 #include "FilterEffectRenderer.h"
 #endif
+#include "FeatureObserver.h"
 #include "FloatConversion.h"
 #include "FloatPoint3D.h"
 #include "FloatRect.h"
 #include "FocusController.h"
 #include "Frame.h"
+#include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "FrameSelection.h"
 #include "FrameTree.h"
@@ -1559,9 +1561,20 @@ RenderLayer* RenderLayer::transparentPaintingAncestor()
     return 0;
 }
 
-static LayoutRect transparencyClipBox(const RenderLayer*, const RenderLayer* rootLayer, PaintBehavior);
+enum TransparencyClipBoxBehavior {
+    PaintingTransparencyClipBox,
+    HitTestingTransparencyClipBox
+};
 
-static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const RenderLayer* layer, const RenderLayer* rootLayer, PaintBehavior paintBehavior)
+enum TransparencyClipBoxMode {
+    DescendantsOfTransparencyClipBox,
+    RootOfTransparencyClipBox
+};
+
+static LayoutRect transparencyClipBox(const RenderLayer*, const RenderLayer* rootLayer, TransparencyClipBoxBehavior, TransparencyClipBoxMode, PaintBehavior = 0);
+
+static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const RenderLayer* layer, const RenderLayer* rootLayer,
+    TransparencyClipBoxBehavior transparencyBehavior, PaintBehavior paintBehavior)
 {
     // If we have a mask, then the clip is limited to the border box area (and there is
     // no need to examine child layers).
@@ -1570,7 +1583,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
         // a stacking container. This means we can just walk the layer tree directly.
         for (RenderLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
             if (!layer->reflection() || layer->reflectionLayer() != curr)
-                clipRect.unite(transparencyClipBox(curr, rootLayer, paintBehavior));
+                clipRect.unite(transparencyClipBox(curr, rootLayer, transparencyBehavior, DescendantsOfTransparencyClipBox, paintBehavior));
         }
     }
 
@@ -1587,32 +1600,51 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
     }
 }
 
-static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLayer* rootLayer, PaintBehavior paintBehavior)
+static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
+    TransparencyClipBoxMode transparencyMode, PaintBehavior paintBehavior)
 {
     // FIXME: Although this function completely ignores CSS-imposed clipping, we did already intersect with the
     // paintDirtyRect, and that should cut down on the amount we have to paint.  Still it
     // would be better to respect clips.
     
-    if (rootLayer != layer && layer->paintsWithTransform(paintBehavior)) {
+    if (rootLayer != layer && ((transparencyBehavior == PaintingTransparencyClipBox && layer->paintsWithTransform(paintBehavior))
+        || (transparencyBehavior == HitTestingTransparencyClipBox && layer->hasTransform()))) {
         // The best we can do here is to use enclosed bounding boxes to establish a "fuzzy" enough clip to encompass
         // the transformed layer and all of its children.
+        const RenderLayer* paginationLayer = transparencyMode == DescendantsOfTransparencyClipBox ? layer->enclosingPaginationLayer() : 0;
+        const RenderLayer* rootLayerForTransform = paginationLayer ? paginationLayer : rootLayer;
         LayoutPoint delta;
-        layer->convertToLayerCoords(rootLayer, delta);
+        layer->convertToLayerCoords(rootLayerForTransform, delta);
 
         TransformationMatrix transform;
         transform.translate(delta.x(), delta.y());
         transform = transform * *layer->transform();
 
-        LayoutRect clipRect = layer->boundingBox(layer, RenderLayer::UseFragmentBoxes);
-        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, paintBehavior);
+        // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
+        // paints unfragmented.
+        LayoutRect clipRect = layer->boundingBox(layer);
+        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, paintBehavior);
 #if ENABLE(CSS_FILTERS)
         layer->renderer()->style()->filterOutsets().expandRect(clipRect);
 #endif
-        return transform.mapRect(clipRect);
+        LayoutRect result = transform.mapRect(clipRect);
+        if (!paginationLayer)
+            return result;
+        
+        // We have to break up the transformed extent across our columns.
+        // Split our box up into the actual fragment boxes that render in the columns/pages and unite those together to
+        // get our true bounding box.
+        RenderFlowThread* enclosingFlowThread = toRenderFlowThread(paginationLayer->renderer());
+        result = enclosingFlowThread->fragmentsBoundingBox(result);
+        
+        LayoutPoint rootLayerDelta;
+        paginationLayer->convertToLayerCoords(rootLayer, rootLayerDelta);
+        result.moveBy(rootLayerDelta);
+        return result;
     }
     
     LayoutRect clipRect = layer->boundingBox(rootLayer, RenderLayer::UseFragmentBoxes);
-    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, paintBehavior);
+    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, paintBehavior);
 #if ENABLE(CSS_FILTERS)
     layer->renderer()->style()->filterOutsets().expandRect(clipRect);
 #endif
@@ -1621,7 +1653,7 @@ static LayoutRect transparencyClipBox(const RenderLayer* layer, const RenderLaye
 
 LayoutRect RenderLayer::paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior paintBehavior)
 {
-    return intersection(transparencyClipBox(this, rootLayer, paintBehavior), paintDirtyRect);
+    return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, paintBehavior), paintDirtyRect);
 }
 
 void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior paintBehavior)
@@ -1836,12 +1868,9 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
     EPosition position = renderer->style()->position();
 
     // FIXME: Special casing RenderFlowThread so much for fixed positioning here is not great.
-    RenderFlowThread* fixedFlowThreadContainer = 0;
-    if (position == FixedPosition && renderer->inRenderFlowThread()) {
-        fixedFlowThreadContainer = renderer->enclosingRenderFlowThread();
-        if (!fixedFlowThreadContainer->isOutOfFlowPositioned())
-            fixedFlowThreadContainer = 0;
-    }
+    RenderFlowThread* fixedFlowThreadContainer = position == FixedPosition ? renderer->flowThreadContainingBlock() : 0;
+    if (fixedFlowThreadContainer && !fixedFlowThreadContainer->isOutOfFlowPositioned())
+        fixedFlowThreadContainer = 0;
 
     // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a RenderFlowThread
     // may need to be revisited in a future patch.
@@ -1912,7 +1941,7 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
 
         // We should not reach RenderView layer past the RenderFlowThread layer for any
         // children of the RenderFlowThread.
-        if (renderer->inRenderFlowThread() && !layer->isOutOfFlowRenderFlowThread())
+        if (renderer->flowThreadContainingBlock() && !layer->isOutOfFlowRenderFlowThread())
             ASSERT(parentLayer != renderer->view()->layer());
 
         if (foundAncestorFirst) {
@@ -3890,7 +3919,8 @@ void RenderLayer::paintList(Vector<RenderLayer*>* list, GraphicsContext* context
 }
 
 void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer* rootLayer, RenderRegion* region, const LayoutRect& dirtyRect,
-    ClipRectsType clipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot)
+    ClipRectsType clipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot,
+    const LayoutRect* layerBoundingBox)
 {
     if (!enclosingPaginationLayer() || hasTransform()) {
         // For unpaginated layers, there is only one fragment.
@@ -3916,7 +3946,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
         outlineRectInFlowThread, &offsetWithinPaginatedLayer);
     
     // Take our bounding box within the flow thread and clip it.
-    LayoutRect layerBoundingBoxInFlowThread = boundingBox(enclosingPaginationLayer(), 0, &offsetWithinPaginatedLayer);
+    LayoutRect layerBoundingBoxInFlowThread = layerBoundingBox ? *layerBoundingBox : boundingBox(enclosingPaginationLayer(), 0, &offsetWithinPaginatedLayer);
     layerBoundingBoxInFlowThread.intersect(backgroundRectInFlowThread.rect());
 
     // Shift the dirty rect into flow thread coordinates.
@@ -3978,9 +4008,10 @@ void RenderLayer::paintTransformedLayerIntoFragments(GraphicsContext* context, c
 {
     LayerFragments enclosingPaginationFragments;
     LayoutPoint offsetOfPaginationLayerFromRoot;
+    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), PaintingTransparencyClipBox, RootOfTransparencyClipBox, paintingInfo.paintBehavior);
     enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, paintingInfo.rootLayer, paintingInfo.region, paintingInfo.paintDirtyRect,
         (paintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize,
-        (paintFlags & PaintLayerPaintingOverflowContents) ? IgnoreOverflowClip : RespectOverflowClip, &offsetOfPaginationLayerFromRoot);
+        (paintFlags & PaintLayerPaintingOverflowContents) ? IgnoreOverflowClip : RespectOverflowClip, &offsetOfPaginationLayerFromRoot, &transformedExtent);
     
     for (size_t i = 0; i < enclosingPaginationFragments.size(); ++i) {
         const LayerFragment& fragment = enclosingPaginationFragments.at(i);
@@ -4027,7 +4058,7 @@ void RenderLayer::paintBackgroundForFragments(const LayerFragments& layerFragmen
         
         // Paint the background.
         // FIXME: Eventually we will collect the region from the fragment itself instead of just from the paint info.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseBlockBackground, paintBehavior, paintingRootForRenderer, localPaintingInfo.region);
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseBlockBackground, paintBehavior, paintingRootForRenderer, localPaintingInfo.region, 0, 0, localPaintingInfo.rootLayer->renderer());
         renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation));
 
         if (localPaintingInfo.clipToDirtyRect)
@@ -4085,7 +4116,7 @@ void RenderLayer::paintForegroundForFragmentsWithPhase(PaintPhase phase, const L
         if (shouldClip)
             clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, fragment.foregroundRect);
     
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.foregroundRect.rect()), phase, paintBehavior, paintingRootForRenderer, localPaintingInfo.region);
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.foregroundRect.rect()), phase, paintBehavior, paintingRootForRenderer, localPaintingInfo.region, 0, 0, localPaintingInfo.rootLayer->renderer());
         if (phase == PaintPhaseForeground)
             paintInfo.overlapTestRequests = localPaintingInfo.overlapTestRequests;
         renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation));
@@ -4104,7 +4135,7 @@ void RenderLayer::paintOutlineForFragments(const LayerFragments& layerFragments,
             continue;
     
         // Paint our own outline
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.outlineRect.rect()), PaintPhaseSelfOutline, paintBehavior, paintingRootForRenderer, localPaintingInfo.region);
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.outlineRect.rect()), PaintPhaseSelfOutline, paintBehavior, paintingRootForRenderer, localPaintingInfo.region, 0, 0, localPaintingInfo.rootLayer->renderer());
         clipToRect(localPaintingInfo.rootLayer, context, localPaintingInfo.paintDirtyRect, fragment.outlineRect, DoNotIncludeSelfForBorderRadius);
         renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation));
         restoreClip(context, localPaintingInfo.paintDirtyRect, fragment.outlineRect);
@@ -4124,7 +4155,7 @@ void RenderLayer::paintMaskForFragments(const LayerFragments& layerFragments, Gr
         
         // Paint the mask.
         // FIXME: Eventually we will collect the region from the fragment itself instead of just from the paint info.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseMask, PaintBehaviorNormal, paintingRootForRenderer, localPaintingInfo.region);
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseMask, PaintBehaviorNormal, paintingRootForRenderer, localPaintingInfo.region, 0, 0, localPaintingInfo.rootLayer->renderer());
         renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subPixelAccumulation));
         
         if (localPaintingInfo.clipToDirtyRect)
@@ -4366,8 +4397,6 @@ PassRefPtr<HitTestingTransformState> RenderLayer::createLocalTransformState(Rend
         transformState = HitTestingTransformState::create(hitTestLocation.transformedPoint(), hitTestLocation.transformedRect(), FloatQuad(hitTestRect));
         convertToLayerCoords(rootLayer, offset);
     }
-    offset.moveBy(translationOffset);
-
     offset.moveBy(translationOffset);
 
     RenderObject* containerRenderer = containerLayer ? containerLayer->renderer() : 0;
@@ -4613,8 +4642,9 @@ RenderLayer* RenderLayer::hitTestTransformedLayerInFragments(RenderLayer* rootLa
 {
     LayerFragments enclosingPaginationFragments;
     LayoutPoint offsetOfPaginationLayerFromRoot;
+    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, RootOfTransparencyClipBox);
     enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, rootLayer, hitTestLocation.region(), hitTestRect,
-        RootRelativeClipRects, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot);
+        RootRelativeClipRects, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot, &transformedExtent);
 
     for (int i = enclosingPaginationFragments.size() - 1; i >= 0; --i) {
         const LayerFragment& fragment = enclosingPaginationFragments.at(i);
@@ -4866,9 +4896,8 @@ void RenderLayer::updateClipRects(const ClipRectsContext& clipRectsContext)
 {
     ClipRectsType clipRectsType = clipRectsContext.clipRectsType;
     ASSERT(clipRectsType < NumCachedClipRectsTypes);
-    if (m_clipRectsCache && m_clipRectsCache->m_clipRects[clipRectsType]) {
+    if (m_clipRectsCache && m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip)) {
         ASSERT(clipRectsContext.rootLayer == m_clipRectsCache->m_clipRectsRoot[clipRectsType]);
-        ASSERT(m_clipRectsCache->m_respectingOverflowClip[clipRectsType] == (clipRectsContext.respectOverflowClip == RespectOverflowClip));
         ASSERT(m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] == clipRectsContext.overlayScrollbarSizeRelevancy);
         
 #ifdef CHECK_CACHED_CLIP_RECTS
@@ -4877,7 +4906,7 @@ void RenderLayer::updateClipRects(const ClipRectsContext& clipRectsContext)
         tempContext.clipRectsType = TemporaryClipRects;
         ClipRects clipRects;
         calculateClipRects(tempContext, clipRects);
-        ASSERT(clipRects == *m_clipRectsCache->m_clipRects[clipRectsType].get());
+        ASSERT(clipRects == *m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip).get());
 #endif
         return; // We have the correct cached value.
     }
@@ -4894,14 +4923,13 @@ void RenderLayer::updateClipRects(const ClipRectsContext& clipRectsContext)
     if (!m_clipRectsCache)
         m_clipRectsCache = adoptPtr(new ClipRectsCache);
 
-    if (parentLayer && parentLayer->clipRects(clipRectsType) && clipRects == *parentLayer->clipRects(clipRectsType))
-        m_clipRectsCache->m_clipRects[clipRectsType] = parentLayer->clipRects(clipRectsType);
+    if (parentLayer && parentLayer->clipRects(clipRectsContext) && clipRects == *parentLayer->clipRects(clipRectsContext))
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, parentLayer->clipRects(clipRectsContext));
     else
-        m_clipRectsCache->m_clipRects[clipRectsType] = ClipRects::create(clipRects);
+        m_clipRectsCache->setClipRects(clipRectsType, clipRectsContext.respectOverflowClip, ClipRects::create(clipRects));
 
 #ifndef NDEBUG
     m_clipRectsCache->m_clipRectsRoot[clipRectsType] = clipRectsContext.rootLayer;
-    m_clipRectsCache->m_respectingOverflowClip[clipRectsType] = clipRectsContext.respectOverflowClip == RespectOverflowClip;
     m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] = clipRectsContext.overlayScrollbarSizeRelevancy;
 #endif
 }
@@ -4923,8 +4951,8 @@ void RenderLayer::calculateClipRects(const ClipRectsContext& clipRectsContext, C
     
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
-        if (useCached && parentLayer->clipRects(clipRectsType))
-            clipRects = *parentLayer->clipRects(clipRectsType);
+        if (useCached && parentLayer->clipRects(clipRectsContext))
+            clipRects = *parentLayer->clipRects(clipRectsContext);
         else {
             ClipRectsContext parentContext(clipRectsContext);
             parentContext.overlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize; // FIXME: why?
@@ -4985,7 +5013,7 @@ void RenderLayer::parentClipRects(const ClipRectsContext& clipRectsContext, Clip
     }
 
     parent()->updateClipRects(clipRectsContext);
-    clipRects = *parent()->clipRects(clipRectsContext.clipRectsType);
+    clipRects = *parent()->clipRects(clipRectsContext);
 }
 
 static inline ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPosition position)
@@ -5418,7 +5446,9 @@ void RenderLayer::clearClipRects(ClipRectsType typeToClear)
         m_clipRectsCache = nullptr;
     else {
         ASSERT(typeToClear < NumCachedClipRectsTypes);
-        m_clipRectsCache->m_clipRects[typeToClear] = nullptr;
+        RefPtr<ClipRects> dummy;
+        m_clipRectsCache->setClipRects(typeToClear, RespectOverflowClip, dummy);
+        m_clipRectsCache->setClipRects(typeToClear, IgnoreOverflowClip, dummy);
     }
 }
 
@@ -6015,6 +6045,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     if (renderer()->style()->overflowX() == OMARQUEE && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
         if (!m_marquee)
             m_marquee = adoptPtr(new RenderMarquee(this));
+        FeatureObserver::observe(renderer()->document(), renderer()->isHTMLMarquee() ? FeatureObserver::HTMLMarqueeElement : FeatureObserver::CSSOverflowMarquee);
         m_marquee->updateMarqueeStyle();
     }
     else if (m_marquee) {
@@ -6033,6 +6064,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     else if (hasReflection()) {
         if (!m_reflection)
             createReflection();
+        FeatureObserver::observe(renderer()->document(), FeatureObserver::Reflection);
         updateReflectionStyle();
     }
     

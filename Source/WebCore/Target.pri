@@ -116,7 +116,6 @@ SOURCES += \
      bindings/js/JSDOMWindowWebSocketCustom.cpp \
      bindings/js/JSDOMWrapper.cpp \
      bindings/js/JSDataViewCustom.cpp \
-     bindings/js/JSDesktopNotificationsCustom.cpp \
      bindings/js/JSDeviceMotionEventCustom.cpp \
      bindings/js/JSDeviceOrientationEventCustom.cpp \
      bindings/js/JSDocumentCustom.cpp \
@@ -171,7 +170,6 @@ SOURCES += \
      bindings/js/JSNodeFilterCustom.cpp \
      bindings/js/JSNodeIteratorCustom.cpp \
      bindings/js/JSNodeListCustom.cpp \
-     bindings/js/JSNotificationCustom.cpp \
      bindings/js/JSPluginElementFunctions.cpp \
      bindings/js/JSPopStateEventCustom.cpp \
      bindings/js/JSProcessingInstructionCustom.cpp \
@@ -1086,6 +1084,7 @@ SOURCES += \
     platform/mock/ScrollbarThemeMock.cpp \
     platform/network/AuthenticationChallengeBase.cpp \
     platform/network/BlobData.cpp \
+    platform/network/BlobRegistry.cpp \
     platform/network/BlobRegistryImpl.cpp \
     platform/network/BlobResourceHandle.cpp \
     platform/network/Credential.cpp \
@@ -3373,8 +3372,6 @@ enable?(VIDEO) {
             DEFINES+=NS_BUILD_32_LIKE_64
         }
 
-        QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
-
     } else: use?(GSTREAMER) {
         HEADERS += \
             platform/graphics/gstreamer/GStreamerGWorld.h \
@@ -4038,9 +4035,11 @@ enable?(WEBGL) {
         html/canvas/WebGLShader.h \
         html/canvas/WebGLShaderPrecisionFormat.h \
         html/canvas/WebGLSharedObject.h \
+        html/canvas/EXTDrawBuffers.h \
         html/canvas/EXTTextureFilterAnisotropic.h \
         html/canvas/OESStandardDerivatives.h \
         html/canvas/OESTextureFloat.h \
+        html/canvas/OESTextureHalfFloat.h \
         html/canvas/OESVertexArrayObject.h \
         html/canvas/OESElementIndexUint.h \
         html/canvas/WebGLTexture.h \
@@ -4072,9 +4071,11 @@ enable?(WEBGL) {
         html/canvas/WebGLShader.cpp \
         html/canvas/WebGLShaderPrecisionFormat.cpp \
         html/canvas/WebGLSharedObject.cpp \
+        html/canvas/EXTDrawBuffers.cpp \
         html/canvas/EXTTextureFilterAnisotropic.cpp \
         html/canvas/OESStandardDerivatives.cpp \
         html/canvas/OESTextureFloat.cpp \
+        html/canvas/OESTextureHalfFloat.cpp \
         html/canvas/OESVertexArrayObject.cpp \
         html/canvas/OESElementIndexUint.cpp \
         html/canvas/WebGLTexture.cpp \

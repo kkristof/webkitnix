@@ -38,6 +38,7 @@
 #include "NotImplemented.h"
 #include "V8ArrayBufferView.h"
 #include "V8Binding.h"
+#include "V8EXTDrawBuffers.h"
 #include "V8EXTTextureFilterAnisotropic.h"
 #include "V8Float32Array.h"
 #include "V8HTMLCanvasElement.h"
@@ -50,6 +51,7 @@
 #include "V8OESElementIndexUint.h"
 #include "V8OESStandardDerivatives.h"
 #include "V8OESTextureFloat.h"
+#include "V8OESTextureHalfFloat.h"
 #include "V8OESVertexArrayObject.h"
 #include "V8Uint16Array.h"
 #include "V8Uint32Array.h"
@@ -176,6 +178,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
         extensionObject = toV8(static_cast<WebGLLoseContext*>(extension), contextObject, isolate);
         referenceName = "webGLLoseContextName";
         break;
+    case WebGLExtension::EXTDrawBuffersName:
+        extensionObject = toV8(static_cast<EXTDrawBuffers*>(extension), contextObject, isolate);
+        referenceName = "extDrawBuffersName";
+        break;
     case WebGLExtension::EXTTextureFilterAnisotropicName:
         extensionObject = toV8(static_cast<EXTTextureFilterAnisotropic*>(extension), contextObject, isolate);
         referenceName = "extTextureFilterAnisotropicName";
@@ -187,6 +193,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLExtension::OESTextureFloatName:
         extensionObject = toV8(static_cast<OESTextureFloat*>(extension), contextObject, isolate);
         referenceName = "oesTextureFloatName";
+        break;
+    case WebGLExtension::OESTextureHalfFloatName:
+        extensionObject = toV8(static_cast<OESTextureHalfFloat*>(extension), contextObject, isolate);
+        referenceName = "oesTextureHalfFloatName";
         break;
     case WebGLExtension::OESVertexArrayObjectName:
         extensionObject = toV8(static_cast<OESVertexArrayObject*>(extension), contextObject, isolate);

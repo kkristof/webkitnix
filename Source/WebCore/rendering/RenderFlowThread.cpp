@@ -59,7 +59,7 @@ RenderFlowThread::RenderFlowThread(Document* document)
     , m_pageLogicalSizeChanged(false)
 {
     ASSERT(document->cssRegionsEnabled());
-    setInRenderFlowThread();
+    setFlowThreadState(InsideOutOfFlowThread);
 }
 
 PassRefPtr<RenderStyle> RenderFlowThread::createFlowThreadStyle(RenderStyle* parentStyle)
@@ -727,9 +727,8 @@ bool RenderFlowThread::objectInFlowRegion(const RenderObject* object, const Rend
     ASSERT(object);
     ASSERT(region);
 
-    if (!object->inRenderFlowThread())
-        return false;
-    if (object->enclosingRenderFlowThread() != this)
+    RenderFlowThread* flowThread = object->flowThreadContainingBlock();
+    if (flowThread != this)
         return false;
     if (!m_regionList.contains(const_cast<RenderRegion*>(region)))
         return false;
@@ -992,11 +991,13 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
 
 CurrentRenderFlowThreadMaintainer::CurrentRenderFlowThreadMaintainer(RenderFlowThread* renderFlowThread)
     : m_renderFlowThread(renderFlowThread)
+    , m_previousRenderFlowThread(0)
 {
     if (!m_renderFlowThread)
         return;
     RenderView* view = m_renderFlowThread->view();
-    ASSERT(!view->flowThreadController()->currentRenderFlowThread());
+    m_previousRenderFlowThread = view->flowThreadController()->currentRenderFlowThread();
+    ASSERT(!m_previousRenderFlowThread || !renderFlowThread->isRenderNamedFlowThread());
     view->flowThreadController()->setCurrentRenderFlowThread(m_renderFlowThread);
 }
 
@@ -1006,7 +1007,7 @@ CurrentRenderFlowThreadMaintainer::~CurrentRenderFlowThreadMaintainer()
         return;
     RenderView* view = m_renderFlowThread->view();
     ASSERT(view->flowThreadController()->currentRenderFlowThread() == m_renderFlowThread);
-    view->flowThreadController()->setCurrentRenderFlowThread(0);
+    view->flowThreadController()->setCurrentRenderFlowThread(m_previousRenderFlowThread);
 }
 
 

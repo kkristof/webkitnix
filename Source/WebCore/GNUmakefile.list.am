@@ -248,6 +248,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSErrorCallback.h \
 	DerivedSources/WebCore/JSErrorEvent.cpp \
 	DerivedSources/WebCore/JSErrorEvent.h \
+	DerivedSources/WebCore/JSEXTDrawBuffers.cpp \
+	DerivedSources/WebCore/JSEXTDrawBuffers.h \
 	DerivedSources/WebCore/JSEXTTextureFilterAnisotropic.cpp \
 	DerivedSources/WebCore/JSEXTTextureFilterAnisotropic.h \
 	DerivedSources/WebCore/JSEvent.cpp \
@@ -577,6 +579,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSOESStandardDerivatives.h \
 	DerivedSources/WebCore/JSOESTextureFloat.cpp \
 	DerivedSources/WebCore/JSOESTextureFloat.h \
+	DerivedSources/WebCore/JSOESTextureHalfFloat.cpp \
+	DerivedSources/WebCore/JSOESTextureHalfFloat.h \
 	DerivedSources/WebCore/JSOESVertexArrayObject.cpp \
 	DerivedSources/WebCore/JSOESVertexArrayObject.h \
 	DerivedSources/WebCore/JSOESElementIndexUint.cpp \
@@ -1533,6 +1537,7 @@ dom_binding_idls += \
 	$(WebCore)/html/canvas/CanvasRenderingContext2D.idl \
 	$(WebCore)/html/canvas/DataView.idl \
 	$(WebCore)/html/canvas/DOMPath.idl \
+	$(WebCore)/html/canvas/EXTDrawBuffers.idl \
 	$(WebCore)/html/canvas/EXTTextureFilterAnisotropic.idl \
 	$(WebCore)/html/canvas/Float32Array.idl \
 	$(WebCore)/html/canvas/Float64Array.idl \
@@ -1541,6 +1546,7 @@ dom_binding_idls += \
 	$(WebCore)/html/canvas/Int8Array.idl \
 	$(WebCore)/html/canvas/OESStandardDerivatives.idl \
 	$(WebCore)/html/canvas/OESTextureFloat.idl \
+	$(WebCore)/html/canvas/OESTextureHalfFloat.idl \
 	$(WebCore)/html/canvas/OESVertexArrayObject.idl \
 	$(WebCore)/html/canvas/OESElementIndexUint.idl \
 	$(WebCore)/html/canvas/Uint16Array.idl \
@@ -2418,7 +2424,6 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSNodeFilterCustom.cpp \
 	Source/WebCore/bindings/js/JSNodeIteratorCustom.cpp \
 	Source/WebCore/bindings/js/JSNodeListCustom.cpp \
-	Source/WebCore/bindings/js/JSNotificationCustom.cpp \
 	Source/WebCore/bindings/js/JSOscillatorNodeCustom.cpp \
 	Source/WebCore/bindings/js/JSPannerNodeCustom.cpp \
 	Source/WebCore/bindings/js/JSPerformanceEntryCustom.cpp \
@@ -3274,12 +3279,16 @@ webcore_sources += \
 	Source/WebCore/html/canvas/DataView.cpp \
 	Source/WebCore/html/canvas/DataView.h \
 	Source/WebCore/html/canvas/DOMPath.h \
+	Source/WebCore/html/canvas/EXTDrawBuffers.cpp \
+	Source/WebCore/html/canvas/EXTDrawBuffers.h \
 	Source/WebCore/html/canvas/EXTTextureFilterAnisotropic.cpp \
 	Source/WebCore/html/canvas/EXTTextureFilterAnisotropic.h \
 	Source/WebCore/html/canvas/OESStandardDerivatives.cpp \
 	Source/WebCore/html/canvas/OESStandardDerivatives.h \
 	Source/WebCore/html/canvas/OESTextureFloat.cpp \
 	Source/WebCore/html/canvas/OESTextureFloat.h \
+	Source/WebCore/html/canvas/OESTextureHalfFloat.cpp \
+	Source/WebCore/html/canvas/OESTextureHalfFloat.h \
 	Source/WebCore/html/canvas/OESVertexArrayObject.cpp \
 	Source/WebCore/html/canvas/OESVertexArrayObject.h \
 	Source/WebCore/html/canvas/OESElementIndexUint.cpp \
@@ -5836,6 +5845,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/network/BlobData.cpp \
 	Source/WebCore/platform/network/BlobData.h \
 	Source/WebCore/platform/network/BlobRegistry.h \
+	Source/WebCore/platform/network/BlobRegistry.cpp \
 	Source/WebCore/platform/network/BlobRegistryImpl.cpp \
 	Source/WebCore/platform/network/BlobRegistryImpl.h \
 	Source/WebCore/platform/network/BlobResourceHandle.cpp \

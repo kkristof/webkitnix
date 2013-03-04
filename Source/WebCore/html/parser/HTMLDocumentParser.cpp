@@ -332,16 +332,24 @@ void HTMLDocumentParser::checkForSpeculationFailure()
 {
     if (!m_tokenizer)
         return;
-    // FIXME: If the tokenizer is in the same state as when we started this function,
-    // then we haven't necessarily failed our speculation.
+    if (!m_currentChunk)
+        return;
+    // Currently we're only smart enough to reuse the speculation buffer if the tokenizer
+    // both starts and ends in the DataState. That state is simplest because the HTMLToken
+    // is always in the Uninitialized state. We should consider whether we can reuse the
+    // speculation buffer in other states, but we'd likely need to do something more
+    // sophisticated with the HTMLToken.
+    if (m_currentChunk->tokenizerState == HTMLTokenizer::DataState && m_tokenizer->state() == HTMLTokenizer::DataState && m_input.current().isEmpty()) {
+        ASSERT(m_token->isUninitialized());
+        m_tokenizer.clear();
+        m_token.clear();
+        return;
+    }
     didFailSpeculation(m_token.release(), m_tokenizer.release());
 }
 
 void HTMLDocumentParser::didFailSpeculation(PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer)
 {
-    if (!m_currentChunk)
-        return;
-
     m_weakFactory.revokeAll();
     m_speculations.clear();
 
@@ -562,6 +570,7 @@ void HTMLDocumentParser::constructTreeFromCompactHTMLToken(const CompactHTMLToke
 {
     RefPtr<AtomicHTMLToken> token = AtomicHTMLToken::create(compactToken);
     m_treeBuilder->constructTree(token.get());
+    token->clearExternalCharacters(); // The compact token could be destroyed any time after this method returns.
 }
 
 #endif
@@ -646,7 +655,7 @@ void HTMLDocumentParser::stopBackgroundParser()
 
 #endif
 
-void HTMLDocumentParser::append(const SegmentedString& source)
+void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
 {
     if (isStopped())
         return;
@@ -656,8 +665,12 @@ void HTMLDocumentParser::append(const SegmentedString& source)
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        HTMLParserThread::shared()->postTask(bind(
-            &BackgroundHTMLParser::append, m_backgroundParser, source.toString().isolatedCopy()));
+        ASSERT(inputSource->hasOneRef());
+        Closure closure = bind(&BackgroundHTMLParser::append, m_backgroundParser, String(inputSource));
+        // NOTE: Important that the String temporary is destroyed before we post the task
+        // otherwise the String could call deref() on a StringImpl now owned by the background parser.
+        // We would like to ASSERT(closure.arg3()->hasOneRef()) but sadly the args are private.
+        HTMLParserThread::shared()->postTask(closure);
         return;
     }
 #endif
@@ -665,6 +678,7 @@ void HTMLDocumentParser::append(const SegmentedString& source)
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
+    String source(inputSource);
 
     if (m_preloadScanner) {
         if (m_input.current().isEmpty() && !isWaitingForScripts()) {

@@ -142,7 +142,7 @@ public:
     WebCore::IntPoint calculateReflowedScrollPosition(const WebCore::FloatPoint& anchorOffset, double inverseScale);
     void setTextReflowAnchorPoint(const Platform::IntPoint& focalPoint);
 
-    void restoreHistoryViewState(Platform::IntSize contentsSize, Platform::IntPoint scrollPosition, double scale, bool shouldReflowBlock);
+    void restoreHistoryViewState(const WebCore::IntPoint& scrollPosition, double scale, bool shouldReflowBlock);
 
     // Perform actual zoom for block zoom.
     void zoomBlock();
@@ -321,6 +321,7 @@ public:
 #endif
 
     void selectionChanged(WebCore::Frame*);
+    void setOverlayExpansionPixelHeight(int);
 
     void updateDelegatedOverlays(bool dispatched = false);
 
@@ -482,6 +483,7 @@ public:
     WebSettings* m_webSettings;
     WebCookieJar* m_cookieJar;
     OwnPtr<WebTapHighlight> m_tapHighlight;
+    OwnPtr<WebTapHighlight> m_selectionHighlight;
     OwnPtr<SelectionOverlay> m_selectionOverlay;
 
     bool m_visible;

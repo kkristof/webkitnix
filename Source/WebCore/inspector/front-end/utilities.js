@@ -980,8 +980,10 @@ function importScript(scriptName)
 {
     if (_importedScripts[scriptName])
         return;
-    _importedScripts[scriptName] = true;
     var xhr = new XMLHttpRequest();
+    _importedScripts[scriptName] = true;
+    if (window.flattenImports)
+        scriptName = scriptName.split("/").reverse()[0];
     xhr.open("GET", scriptName, false);
     xhr.send(null);
     var sourceURL = WebInspector.ParsedURL.completeURL(window.location.href, scriptName); 

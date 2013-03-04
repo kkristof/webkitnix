@@ -1846,6 +1846,8 @@ void WebViewImpl::updateAnimations(double monotonicFrameBeginTime)
             m_gestureAnimation.clear();
             if (m_layerTreeView)
                 m_layerTreeView->didStopFlinging();
+
+            mainFrameImpl()->frame()->eventHandler()->clearGestureScrollNodes();
         }
     }
 
@@ -3146,20 +3148,6 @@ IntSize WebViewImpl::contentsSize() const
     return root->documentRect().size();
 }
 
-IntSize WebViewImpl::layoutSize() const
-{
-    if (!isFixedLayoutModeEnabled())
-        return m_size;
-
-    IntSize contentSize = contentsSize();
-
-    if (fixedLayoutSize().width >= contentSize.width())
-        return fixedLayoutSize();
-
-    float aspectRatio = static_cast<float>(m_size.height) / m_size.width;
-    return IntSize(contentSize.width(), contentSize.width() * aspectRatio);
-}
-
 void WebViewImpl::computePageScaleFactorLimits()
 {
     if (!mainFrame() || !page() || !page()->mainFrame() || !page()->mainFrame()->view())
@@ -4290,15 +4278,7 @@ void WebViewImpl::updateLayerTreeViewport()
         return;
 
     FrameView* view = page()->mainFrame()->view();
-
-    IntSize layoutViewportSize = layoutSize();
-    IntSize deviceViewportSize = m_size;
-    if (m_webSettings->applyDeviceScaleFactorInCompositor())
-        deviceViewportSize.scale(deviceScaleFactor());
-
-    m_nonCompositedContentHost->setViewport(deviceViewportSize, view->contentsSize(), view->scrollPosition(), view->scrollOrigin());
-
-    m_layerTreeView->setViewportSize(layoutViewportSize, deviceViewportSize);
+    m_nonCompositedContentHost->setViewport(m_size, view->contentsSize(), view->scrollPosition(), view->scrollOrigin());
     m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), m_minimumPageScaleFactor, m_maximumPageScaleFactor);
 }
 

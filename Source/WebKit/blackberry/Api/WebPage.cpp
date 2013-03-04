@@ -584,6 +584,7 @@ void WebPagePrivate::init(const BlackBerry::Platform::String& pageGroupName)
 
 #if USE(ACCELERATED_COMPOSITING)
     m_tapHighlight = DefaultTapHighlight::create(this);
+    m_selectionHighlight = DefaultTapHighlight::create(this);
     m_selectionOverlay = SelectionOverlay::create(this);
     m_page->settings()->setAcceleratedCompositingForFixedPositionEnabled(true);
 #endif
@@ -4522,12 +4523,36 @@ void WebPage::setDocumentCaretPosition(const Platform::IntPoint& documentCaretPo
     d->m_selectionHandler->setCaretPosition(documentCaretPosition);
 }
 
-void WebPage::selectAtDocumentPoint(const Platform::IntPoint& documentPoint)
+void WebPage::selectAtDocumentPoint(const Platform::IntPoint& documentPoint, SelectionExpansionType selectionExpansionType)
 {
     if (d->m_page->defersLoading())
         return;
+    d->m_selectionHandler->selectAtPoint(documentPoint, selectionExpansionType);
+}
 
-    d->m_selectionHandler->selectAtPoint(documentPoint);
+void WebPage::expandSelection(bool isScrollStarted)
+{
+    if (d->m_page->defersLoading())
+        return;
+    d->m_selectionHandler->expandSelection(isScrollStarted);
+}
+
+void WebPage::setOverlayExpansionPixelHeight(int dy)
+{
+    d->setOverlayExpansionPixelHeight(dy);
+}
+
+void WebPagePrivate::setOverlayExpansionPixelHeight(int dy)
+{
+    // Transform from pixel to document coordinates.
+    m_selectionHandler->setOverlayExpansionHeight(m_webkitThreadViewportAccessor->roundToDocumentFromPixelContents(Platform::IntPoint(0, dy)).y());
+}
+
+void WebPage::setParagraphExpansionPixelScrollMargin(const Platform::IntSize& scrollMargin)
+{
+    // Transform from pixel to document coordinates.
+    Platform::IntSize documentScrollMargin = d->m_webkitThreadViewportAccessor->roundToDocumentFromPixelContents(Platform::IntRect(Platform::IntPoint(), scrollMargin)).size();
+    d->m_selectionHandler->setParagraphExpansionScrollMargin(documentScrollMargin);
 }
 
 BackingStore* WebPage::backingStore() const
@@ -6078,6 +6103,11 @@ WebTapHighlight* WebPage::tapHighlight() const
     return d->m_tapHighlight.get();
 }
 
+WebTapHighlight* WebPage::selectionHighlight() const
+{
+    return d->m_selectionHighlight.get();
+}
+
 void WebPage::addOverlay(WebOverlay* overlay)
 {
 #if USE(ACCELERATED_COMPOSITING)
@@ -6176,7 +6206,7 @@ void WebPagePrivate::setTextZoomFactor(float textZoomFactor)
     m_mainFrame->setTextZoomFactor(textZoomFactor);
 }
 
-void WebPagePrivate::restoreHistoryViewState(Platform::IntSize contentsSize, Platform::IntPoint scrollPosition, double scale, bool shouldReflowBlock)
+void WebPagePrivate::restoreHistoryViewState(const WebCore::IntPoint& scrollPosition, double scale, bool shouldReflowBlock)
 {
     if (!m_mainFrame) {
         // FIXME: Do we really need to suspend/resume both backingstore and screen here?
@@ -6185,13 +6215,20 @@ void WebPagePrivate::restoreHistoryViewState(Platform::IntSize contentsSize, Pla
         return;
     }
 
-    m_mainFrame->view()->setContentsSizeFromHistory(contentsSize);
+    // If we are about to overscroll, scroll back to the valid contents area.
+    WebCore::IntPoint adjustedScrollPosition = scrollPosition;
+    WebCore::IntSize validContentsSize = contentsSize();
+    WebCore::IntSize viewportSize = actualVisibleSize();
+    if (adjustedScrollPosition.x() + viewportSize.width() > validContentsSize.width())
+        adjustedScrollPosition.setX(validContentsSize.width() - viewportSize.width());
+    if (adjustedScrollPosition.y() + viewportSize.height() > validContentsSize.height())
+        adjustedScrollPosition.setY(validContentsSize.height() - viewportSize.height());
 
     // Here we need to set scroll position what we asked for.
     // So we use ScrollView::constrainsScrollingToContentEdge(false).
     bool oldConstrainsScrollingToContentEdge = m_mainFrame->view()->constrainsScrollingToContentEdge();
     m_mainFrame->view()->setConstrainsScrollingToContentEdge(false);
-    setScrollPosition(scrollPosition);
+    setScrollPosition(adjustedScrollPosition);
     m_mainFrame->view()->setConstrainsScrollingToContentEdge(oldConstrainsScrollingToContentEdge);
 
     m_shouldReflowBlock = shouldReflowBlock;

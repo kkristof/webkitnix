@@ -108,6 +108,9 @@ public:
 
     void setLogConsoleOutput(bool enabled);
 
+    // FIXME: Make this private again.
+    void scheduleComposite();
+
 #if WEBTESTRUNNER_IMPLEMENTATION
     void display();
     void displayInvalidatedRegion();
@@ -125,7 +128,6 @@ protected:
 
     void didInvalidateRect(const WebKit::WebRect&);
     void didScrollRect(int, int, const WebKit::WebRect&);
-    void scheduleComposite();
     void scheduleAnimation();
     void setWindowRect(const WebKit::WebRect&);
     void show(WebKit::WebNavigationPolicy);
@@ -160,6 +162,8 @@ protected:
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
+    void didFocus();
+    void didBlur();
 
     void willPerformClientRedirect(WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fire_time);
     void didCancelClientRedirect(WebKit::WebFrame*);
@@ -416,6 +420,16 @@ public:
     virtual bool isPointerLocked()
     {
         return WebTestProxyBase::isPointerLocked();
+    }
+    virtual void didFocus()
+    {
+        WebTestProxyBase::didFocus();
+        Base::didFocus();
+    }
+    virtual void didBlur()
+    {
+        WebTestProxyBase::didBlur();
+        Base::didBlur();
     }
 
     // WebFrameClient implementation.

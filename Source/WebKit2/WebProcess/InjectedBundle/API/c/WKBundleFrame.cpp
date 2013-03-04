@@ -34,6 +34,7 @@
 #include "WebFrame.h"
 #include "WebSecurityOrigin.h"
 #include <WebCore/Frame.h>
+#include <WebCore/FrameLoader.h>
 #include <WebCore/FrameView.h>
 
 #include "JavaScriptCore/APICast.h"
@@ -162,19 +163,9 @@ WKStringRef WKBundleFrameCopyName(WKBundleFrameRef frameRef)
     return toCopiedAPI(toImpl(frameRef)->name());
 }
 
-JSValueRef WKBundleFrameGetComputedStyleIncludingVisitedInfo(WKBundleFrameRef frameRef, JSObjectRef element)
-{
-    return toImpl(frameRef)->computedStyleIncludingVisitedInfo(element);
-}
-
 WKStringRef WKBundleFrameCopyCounterValue(WKBundleFrameRef frameRef, JSObjectRef element)
 {
     return toCopiedAPI(toImpl(frameRef)->counterValue(element));
-}
-
-WKStringRef WKBundleFrameCopyMarkerText(WKBundleFrameRef frameRef, JSObjectRef element)
-{
-    return toCopiedAPI(toImpl(frameRef)->markerText(element));
 }
 
 WKStringRef WKBundleFrameCopyInnerText(WKBundleFrameRef frameRef)

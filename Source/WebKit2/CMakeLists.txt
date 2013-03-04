@@ -243,6 +243,7 @@ set(WebKit2_SOURCES
 
     UIProcess/ResponsivenessTimer.cpp
     UIProcess/StatisticsRequest.cpp
+    UIProcess/TextCheckerCompletion.cpp
     UIProcess/VisitedLinkProvider.cpp
     UIProcess/WebApplicationCacheManagerProxy.cpp
     UIProcess/WebBackForwardList.cpp

@@ -32,6 +32,7 @@
 
 #include "ApplicationCacheHost.h"
 #include "BackForwardController.h"
+#include "CachedRawResource.h"
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
 #include "Console.h"
@@ -245,7 +246,7 @@ void MainResourceLoader::willSendRequest(ResourceRequest& newRequest, const Reso
         // then block the redirect.
         RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
         if (!redirectingOrigin->canDisplay(newRequest.url())) {
-            FrameLoader::reportLocalLoadFailed(m_documentLoader->frame(), newRequest.url().string());
+            FrameLoader::reportLocalLoadFailed(m_documentLoader->frame(), newRequest.url().elidedString());
             cancel();
             return;
         }
@@ -409,7 +410,7 @@ void MainResourceLoader::responseReceived(CachedResource* resource, const Resour
         String content = it->value;
         if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, r.url(), identifier())) {
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_documentLoader->frame(), documentLoader(), identifier(), r);
-            String message = "Refused to display '" + r.url().string() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+            String message = "Refused to display '" + r.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
             m_documentLoader->frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, identifier());
 
             cancel();

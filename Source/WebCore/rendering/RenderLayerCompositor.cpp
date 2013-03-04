@@ -1670,7 +1670,7 @@ bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
 {
     // FIXME: We disable accelerated compositing for elements in a RenderFlowThread as it doesn't work properly.
     // See http://webkit.org/b/84900 to re-enable it.
-    return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->renderer()->inRenderFlowThread();
+    return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && layer->renderer()->flowThreadState() == RenderObject::NotInsideFlowThread;
 }
 
 bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, const RenderLayer* compositingAncestorLayer) const
@@ -2452,7 +2452,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
             m_layerForOverhangAreas->setDrawsContent(false);
             m_layerForOverhangAreas->setSize(m_renderView->frameView()->frameRect().size());
 
-            ScrollbarTheme::theme()->setUpOverhangAreasLayerContents(m_layerForOverhangAreas.get());
+            ScrollbarTheme::theme()->setUpOverhangAreasLayerContents(m_layerForOverhangAreas.get(), this->page()->chrome()->client()->underlayColor());
 
             // We want the overhang areas layer to be positioned below the frame contents,
             // so insert it below the clip layer.

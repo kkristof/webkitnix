@@ -120,6 +120,7 @@
                 'public/WebContextMenuData.h',
                 'public/WebCrossOriginPreflightResultCache.h',
                 'public/WebCursorInfo.h',
+                'public/WebDOMActivityLogger.h',
                 'public/WebDOMCustomEvent.h',
                 'public/WebDOMEvent.h',
                 'public/WebDOMEventListener.h',
@@ -439,6 +440,7 @@
                 'src/WebCompositorInputHandlerImpl.h',
                 'src/WebCrossOriginPreflightResultCache.cpp',
                 'src/WebCursorInfo.cpp',
+                'src/WebDOMActivityLogger.cpp',
                 'src/WebDOMCustomEvent.cpp',
                 'src/WebDOMEvent.cpp',
                 'src/WebDOMEventListener.cpp',
@@ -845,6 +847,7 @@
                                      'concatenated_devtools_profiles_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
+                                     'concatenated_devtools_ace_editor_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
                                      'concatenated_devtools_css'],
@@ -933,6 +936,7 @@
                                      'concatenated_devtools_profiles_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
+                                     'concatenated_devtools_ace_editor_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
                                      'concatenated_devtools_css'],
@@ -950,11 +954,12 @@
                             '<(PRODUCT_DIR)/resources/inspector/ProfilesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/AuditsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js',
+                            '<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js',
                             '<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/devTools.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
-                            '<@(webinspector_standalone_css_files)',
+                            '<@(webinspector_standalone_files)',
                         ],
                         'images': [
                             '<@(webinspector_image_files)',
@@ -1186,6 +1191,22 @@
                     }],
                 },
                 {
+                    'target_name': 'concatenated_devtools_ace_editor_js',
+                    'type': 'none',
+                    'actions': [{
+                        'action_name': 'concatenate_devtools_ace_editor_js',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': '../../WebCore/inspector/front-end/AceTextEditor.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(webinspector_ace_editor_js_files)',
+                        ],
+                        'search_path': '../../WebCore/inspector/front-end',
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)', 'true'],
+                    }],
+                },
+                {
                     'target_name': 'concatenated_heap_snapshot_worker_js',
                     'type': 'none',
                     'actions': [{
@@ -1249,7 +1270,7 @@
                     'copies': [{
                         'destination': '<(PRODUCT_DIR)/resources/inspector',
                         'files': [
-                            '<@(webinspector_standalone_css_files)',
+                            '<@(webinspector_standalone_files)',
                         ],
                     }],
                 },
