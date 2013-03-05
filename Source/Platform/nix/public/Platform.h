@@ -70,6 +70,7 @@ public:
     // Audio --------------------------------------------------------------
     virtual double audioHardwareSampleRate() { return 0; }
     virtual size_t audioHardwareBufferSize() { return 0; }
+    virtual unsigned audioHardwareOutputChannels() { return 0; }
 
     // Creates a device for audio I/O.
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
