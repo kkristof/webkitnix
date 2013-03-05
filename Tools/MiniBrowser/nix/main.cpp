@@ -505,6 +505,8 @@ void MiniBrowser::handlePointerMoveEvent(const XPointerMovedEvent& event)
         scheduleUpdateDisplay();
         return;
     }
+    if (isMobileMode())
+        return;
 
     // The mouse move event was allowed to be sent to the TouchMocker because it
     // may be tracking a button press that happened in a valid position.
