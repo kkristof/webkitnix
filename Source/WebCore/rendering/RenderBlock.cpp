@@ -35,6 +35,7 @@
 #include "GraphicsContext.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
+#include "HitTestLocation.h"
 #include "HitTestResult.h"
 #include "InlineIterator.h"
 #include "InlineTextBox.h"
@@ -1797,7 +1798,7 @@ void RenderBlock::addVisualOverflowFromTheme()
 
 bool RenderBlock::expandsToEncloseOverhangingFloats() const
 {
-    return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || (parent() && parent()->isDeprecatedFlexibleBox())
+    return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || (parent() && parent()->isFlexibleBoxIncludingDeprecated())
            || hasColumns() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isRoot();
 }
 
@@ -2325,7 +2326,7 @@ LayoutUnit RenderBlock::computeStartPositionDeltaForChildAvoidingFloats(const Re
     return newPosition - oldPosition;
 }
 
-void RenderBlock::determineLogicalLeftPositionForChild(RenderBox* child)
+void RenderBlock::determineLogicalLeftPositionForChild(RenderBox* child, ApplyLayoutDeltaMode applyDelta)
 {
     LayoutUnit startPosition = borderStart() + paddingStart();
     if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
@@ -2341,7 +2342,7 @@ void RenderBlock::determineLogicalLeftPositionForChild(RenderBox* child)
     if (child->avoidsFloats() && containsFloats() && !flowThreadContainingBlock())
         newPosition += computeStartPositionDeltaForChildAvoidingFloats(child, marginStartForChild(child));
 
-    setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child), ApplyLayoutDelta);
+    setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child), applyDelta);
 }
 
 void RenderBlock::setCollapsedBottomMargin(const MarginInfo& marginInfo)
@@ -2598,7 +2599,7 @@ void RenderBlock::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo, Lay
         marginInfo.setAtBeforeSideOfBlock(false);
 
     // Now place the child in the correct left position
-    determineLogicalLeftPositionForChild(child);
+    determineLogicalLeftPositionForChild(child, ApplyLayoutDelta);
 
     // Update our height now that the child has been placed in the correct position.
     setLogicalHeight(logicalHeight() + logicalHeightForChild(child));
@@ -4278,6 +4279,10 @@ inline void RenderBlock::FloatIntervalSearchAdapter<FloatTypeValue>::collectIfNe
         if (m_heightRemaining)
             *m_heightRemaining = m_renderer->logicalBottomForFloat(r) - m_lowValue;
     }
+
+#if ENABLE(CSS_EXCLUSIONS)
+    m_last = r;
+#endif
 }
 
 LayoutUnit RenderBlock::textIndentOffset() const
@@ -4319,6 +4324,15 @@ LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUn
 
         FloatIntervalSearchAdapter<FloatingObject::FloatLeft> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), left, heightRemaining);
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+#if ENABLE(CSS_EXCLUSIONS)
+        if (const FloatingObject* lastFloat = adapter.lastFloat()) {
+            if (ExclusionShapeOutsideInfo* shapeOutside = lastFloat->renderer()->exclusionShapeOutsideInfo()) {
+                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat), logicalHeight);
+                left += shapeOutside->rightSegmentShapeBoundingBoxDelta();
+            }
+        }
+#endif
     }
 
     if (applyTextIndent && style()->isLeftToRightDirection())
@@ -4367,6 +4381,16 @@ LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutU
         LayoutUnit rightFloatOffset = fixedOffset;
         FloatIntervalSearchAdapter<FloatingObject::FloatRight> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), rightFloatOffset, heightRemaining);
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+#if ENABLE(CSS_EXCLUSIONS)
+        if (const FloatingObject* lastFloat = adapter.lastFloat()) {
+            if (ExclusionShapeOutsideInfo* shapeOutside = lastFloat->renderer()->exclusionShapeOutsideInfo()) {
+                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat), logicalHeight);
+                rightFloatOffset += shapeOutside->leftSegmentShapeBoundingBoxDelta();
+            }
+        }
+#endif
+
         right = min(right, rightFloatOffset);
     }
     

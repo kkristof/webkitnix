@@ -583,6 +583,10 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitGridAutoFlow:
     case CSSPropertyWebkitGridColumns:
     case CSSPropertyWebkitGridRows:
+    case CSSPropertyWebkitGridStart:
+    case CSSPropertyWebkitGridEnd:
+    case CSSPropertyWebkitGridBefore:
+    case CSSPropertyWebkitGridAfter:
     case CSSPropertyWebkitGridColumn:
     case CSSPropertyWebkitGridRow:
     case CSSPropertyWebkitLineClamp:

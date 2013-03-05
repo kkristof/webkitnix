@@ -1173,6 +1173,7 @@ SOURCES += \
     rendering/FixedTableLayout.cpp \
     rendering/FlowThreadController.cpp \
     rendering/HitTestingTransformState.cpp \
+    rendering/HitTestLocation.cpp \
     rendering/HitTestResult.cpp \
     rendering/InlineBox.cpp \
     rendering/InlineFlowBox.cpp \
@@ -1478,6 +1479,7 @@ HEADERS += \
     Modules/webdatabase/DatabaseTask.h \
     Modules/webdatabase/DatabaseThread.h \
     Modules/webdatabase/DatabaseTracker.h \
+    Modules/webdatabase/OriginLock.h \
     Modules/webdatabase/SQLCallbackWrapper.h \
     Modules/webdatabase/SQLResultSet.h \
     Modules/webdatabase/SQLResultSetRowList.h \
@@ -2329,6 +2331,7 @@ HEADERS += \
     platform/Language.h \
     platform/MemoryPressureHandler.h \
     platform/MemoryUsageSupport.h \
+    platform/MainThreadTask.h \
     platform/MIMETypeRegistry.h \
     platform/network/AuthenticationChallengeBase.h \
     platform/network/AuthenticationClient.h \
@@ -2451,6 +2454,7 @@ HEADERS += \
     rendering/FilterEffectRenderer.h \
     rendering/FixedTableLayout.h \
     rendering/HitTestingTransformState.h \
+    rendering/HitTestLocation.h \
     rendering/HitTestResult.h \
     rendering/InlineBox.h \
     rendering/InlineFlowBox.h \
@@ -3068,6 +3072,7 @@ enable?(SQL_DATABASE) {
         Modules/webdatabase/DatabaseTask.cpp \
         Modules/webdatabase/DatabaseThread.cpp \
         Modules/webdatabase/DatabaseTracker.cpp \
+        Modules/webdatabase/OriginLock.cpp \
         Modules/webdatabase/SQLException.cpp \
         Modules/webdatabase/SQLResultSet.cpp \
         Modules/webdatabase/SQLResultSetRowList.cpp \
@@ -3106,8 +3111,8 @@ enable?(INDEXED_DATABASE) {
         Modules/indexeddb/IDBDatabaseException.h \
         Modules/indexeddb/IDBEventDispatcher.h \
         Modules/indexeddb/IDBFactory.h \
-        Modules/indexeddb/IDBFactoryBackendInterface.h \
         Modules/indexeddb/IDBFactoryBackendImpl.h \
+        Modules/indexeddb/IDBFactoryBackendInterface.h \
         Modules/indexeddb/IDBHistograms.h \
         Modules/indexeddb/IDBIndex.h \
         Modules/indexeddb/IDBKey.h \
@@ -3115,7 +3120,8 @@ enable?(INDEXED_DATABASE) {
         Modules/indexeddb/IDBObjectStore.h \
         Modules/indexeddb/IDBObjectStoreBackendImpl.h \
         Modules/indexeddb/IDBRequest.h \
-        Modules/indexeddb/IDBTransaction.h
+        Modules/indexeddb/IDBTransaction.h \
+        Modules/indexeddb/IndexedDB.h
 
     SOURCES += \
         bindings/js/IDBBindingUtilities.cpp \
@@ -4017,6 +4023,7 @@ enable?(WEBGL) {
         html/canvas/WebGLObject.h \
         html/canvas/WebGLActiveInfo.h \
         html/canvas/WebGLBuffer.h \
+        html/canvas/WebGLCompressedTextureATC.h \
         html/canvas/WebGLCompressedTextureS3TC.h \
         html/canvas/WebGLContextAttributes.h \
         html/canvas/WebGLContextEvent.h \
@@ -4053,6 +4060,7 @@ enable?(WEBGL) {
         html/canvas/CanvasContextAttributes.cpp \
         html/canvas/WebGLObject.cpp \
         html/canvas/WebGLBuffer.cpp \
+        html/canvas/WebGLCompressedTextureATC.cpp \
         html/canvas/WebGLCompressedTextureS3TC.cpp \
         html/canvas/WebGLContextAttributes.cpp \
         html/canvas/WebGLContextEvent.cpp \
@@ -4110,8 +4118,8 @@ use?(3D_GRAPHICS) {
         platform/graphics/texmap/coordinated/CoordinatedCustomFilterProgram.h \
         platform/graphics/texmap/coordinated/CoordinatedGraphicsLayer.h \
         platform/graphics/texmap/coordinated/CoordinatedGraphicsScene.h \
+        platform/graphics/texmap/coordinated/CoordinatedGraphicsState.h \
         platform/graphics/texmap/coordinated/CoordinatedImageBacking.h \
-        platform/graphics/texmap/coordinated/CoordinatedLayerInfo.h \
         platform/graphics/texmap/coordinated/CoordinatedSurface.h \
         platform/graphics/texmap/coordinated/CoordinatedTile.h \
         platform/graphics/texmap/coordinated/SurfaceUpdateInfo.h \

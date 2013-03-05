@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugSuffix|Win32">
@@ -2693,7 +2693,9 @@
     <ClCompile Include="..\html\canvas\CanvasPathMethods.cpp" />
     <ClCompile Include="..\html\track\TextTrackCueGeneric.cpp" />
     <ClCompile Include="..\html\track\WebVTTElement.cpp" />
-    <ClCompile Include="..\inspector\TimelineTraceEventProcessor.cpp" />
+    <ClCompile Include="..\inspector\TimelineTraceEventProcessor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\Modules\filesystem\DirectoryEntry.cpp" />
     <ClCompile Include="..\Modules\filesystem\DirectoryEntrySync.cpp" />
     <ClCompile Include="..\Modules\filesystem\DirectoryReader.cpp" />
@@ -2766,6 +2768,7 @@
     <ClCompile Include="..\Modules\webdatabase\DatabaseThread.cpp" />
     <ClCompile Include="..\Modules\webdatabase\DatabaseTracker.cpp" />
     <ClCompile Include="..\Modules\webdatabase\DOMWindowWebDatabase.cpp" />
+    <ClCompile Include="..\Modules\webdatabase\OriginLock.cpp" />
     <ClCompile Include="..\Modules\webdatabase\SQLException.cpp" />
     <ClCompile Include="..\Modules\webdatabase\SQLResultSet.cpp" />
     <ClCompile Include="..\Modules\webdatabase\SQLResultSetRowList.cpp" />
@@ -3221,6 +3224,9 @@
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">ICUVersion.h</ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\platform\win\WebCoreInstanceHandle.cpp" />
+    <ClCompile Include="..\rendering\HitTestLocation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\storage\StorageStrategy.cpp" />
     <ClCompile Include="..\svg\graphics\SVGImageForContainer.cpp" />
     <ClCompile Include="..\WebCorePrefix.cpp">
@@ -8822,6 +8828,7 @@
     <ClInclude Include="..\Modules\webdatabase\DatabaseThread.h" />
     <ClInclude Include="..\Modules\webdatabase\DatabaseTracker.h" />
     <ClInclude Include="..\Modules\webdatabase\DOMWindowWebDatabase.h" />
+    <ClInclude Include="..\Modules\webdatabase\OriginLock.h" />
     <ClInclude Include="..\Modules\webdatabase\SQLCallbackWrapper.h" />
     <ClInclude Include="..\Modules\webdatabase\SQLError.h" />
     <ClInclude Include="..\Modules\webdatabase\SQLException.h" />
@@ -9112,6 +9119,7 @@
     <ClInclude Include="..\platform\Logging.h" />
     <ClInclude Include="..\platform\MemoryPressureHandler.h" />
     <ClInclude Include="..\platform\MemoryUsageSupport.h" />
+    <ClInclude Include="..\platform\MainThreadTask.h" />
     <ClInclude Include="..\platform\MIMETypeRegistry.h" />
     <ClInclude Include="..\platform\NotImplemented.h" />
     <ClInclude Include="..\platform\Pasteboard.h" />
@@ -9186,6 +9194,7 @@
     <ClInclude Include="..\platform\graphics\TextRenderingMode.h" />
     <ClInclude Include="..\platform\win\WCDataObject.h" />
     <ClInclude Include="..\platform\win\WebCoreInstanceHandle.h" />
+    <ClInclude Include="..\rendering\HitTestLocation.h" />
     <ClInclude Include="..\storage\StorageStrategy.h" />
     <ClInclude Include="..\svg\graphics\SVGImageForContainer.h" />
     <ClInclude Include="..\WebCorePrefix.h" />

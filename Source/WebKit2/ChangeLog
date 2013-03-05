@@ -1,3 +1,502 @@
+2013-03-05  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] WebPageProxy::setThemePath() should check that the page is valid
+        https://bugs.webkit.org/show_bug.cgi?id=109917
+
+        Reviewed by Alexey Proskuryakov.
+
+        WebPageProxy::setThemePath() should check that the page is valid before
+        sending IPC message.
+
+        * UIProcess/efl/WebPageProxyEfl.cpp:
+        (WebKit::WebPageProxy::setThemePath):
+
+2013-03-05  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13269245> Crashes creating WebKit processes in WKSandboxExtensionConsume
+        https://bugs.webkit.org/show_bug.cgi?id=111456
+
+        Reviewed by Anders Carlsson.
+
+        It's too late to be draconian about this condition here, crashing doesn't help
+        diagnose what went wrong when creating a sandbox extension.
+
+        Other SandboxExtension functions already have null checks for WKSandboxExtensionRef,
+        and so should consumePermanently().
+
+        * Shared/mac/SandboxExtensionMac.mm:
+        (WebKit::SandboxExtension::createHandle): For now, added logging when extension
+        creation fails. If that proves insufficiently helpful in practice, we can change
+        to a CRASH() later.
+        (WebKit::SandboxExtension::createHandleForTemporaryFile): Ditto.
+        (WebKit::SandboxExtension::consumePermanently): Gracefully fail if there is no extension
+        to consume.
+
+2013-03-05  Gwang Yoon Hwang  <ryumiel@company100.net>
+
+        Coordinated Graphics: CoordinatedGraphicsLayer makes CoordinatedGraphicsScene perform via CoordinatedGraphicsState.
+        https://bugs.webkit.org/show_bug.cgi?id=108294
+
+        Reviewed by Anders Carlsson.
+
+        There are two changes in WK2.
+        1. Change CoordinatedLayerTreeHostProxy to use CoordinatedGraphicsState.
+        2. Add encode/decode of CoordinatedGraphicsState in CoordinatedGraphicsArgumentCoders.
+
+        This patch is based on Dongsung Huang, and Noam's work in
+        https://bugs.webkit.org/show_bug.cgi?id=108294
+
+        No new tests, covered by existing tests.
+
+        * Scripts/webkit2/messages.py:
+        (headers_for_type):
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::::encode):
+            Encoding UpdateImageBacking and CreateUpdateAtlas can fail when
+            encoding WebCoordinatedSurface::Handle fails, but we don't
+            recover in the case.
+        (CoreIPC::::decode):
+        (CoreIPC):
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.h:
+        (WebCore):
+        * UIProcess/CoordinatedGraphics/CoordinatedLayerTreeHostProxy.cpp:
+        (WebKit::CoordinatedLayerTreeHostProxy::commitCoordinatedGraphicsState):
+        (WebKit):
+        * UIProcess/CoordinatedGraphics/CoordinatedLayerTreeHostProxy.h:
+        (WebCore):
+        (CoordinatedLayerTreeHostProxy):
+        (WebKit::CoordinatedLayerTreeHostProxy::coordinatedGraphicsScene):
+        * UIProcess/CoordinatedGraphics/CoordinatedLayerTreeHostProxy.messages.in:
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::flushPendingLayerChanges):
+        (WebKit::CoordinatedLayerTreeHost::initializeRootCompositingLayerIfNeeded):
+        (WebKit::CoordinatedLayerTreeHost::syncLayerState):
+        (WebKit::CoordinatedLayerTreeHost::prepareCustomFilterProxiesIfNeeded):
+        (WebKit):
+        (WebKit::CoordinatedLayerTreeHost::updateImageBacking):
+        (WebKit::CoordinatedLayerTreeHost::setBackgroundColor):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.h:
+        (CoordinatedLayerTreeHost):
+
+2013-03-05  Sam Weinig  <sam@webkit.org>
+
+        Follow up to https://bugs.webkit.org/show_bug.cgi?id=111453, forgot to mark the files as Private.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-03-05  Sam Weinig  <sam@webkit.org>
+
+        Elevate accessors of C-SPI API variants to Objective-C SPI
+        https://bugs.webkit.org/show_bug.cgi?id=111453
+        <rdar://problem/13340357>
+
+        Reviewed by Alexey Proskuryakov.
+
+        * Shared/mac/ObjCObjectGraphCoders.mm:
+        * UIProcess/API/mac/WKBrowsingContextControllerInternal.h:
+        * UIProcess/API/mac/WKBrowsingContextControllerPrivate.h:
+        * UIProcess/API/mac/WKBrowsingContextGroup.mm:
+        * UIProcess/API/mac/WKBrowsingContextGroupPrivate.h: Renamed from Source/WebKit2/UIProcess/API/mac/WKBrowsingContextGroupInternal.h.
+        * UIProcess/API/mac/WKProcessGroup.mm:
+        * UIProcess/API/mac/WKProcessGroupPrivate.h: Copied from Source/WebKit2/UIProcess/API/mac/WKProcessGroupInternal.h.
+        * UIProcess/API/mac/WKView.mm:
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/InjectedBundle/API/mac/WKWebProcessPlugIn.mm:
+        (-[WKWebProcessPlugInController _bundleRef]):
+        * WebProcess/InjectedBundle/API/mac/WKWebProcessPlugInPrivate.h: Renamed from Source/WebKit2/UIProcess/API/mac/WKProcessGroupInternal.h.
+        Add access to C-SPI WebKit types as Objective-C SPI.
+
+2013-03-04  Alexey Proskuryakov  <ap@apple.com>
+
+        Make AsyncFileReader work without ScriptExecutionContext
+        https://bugs.webkit.org/show_bug.cgi?id=111376
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        * NetworkProcess/NetworkResourceLoader.h:
+        Removed a dummy implementation of createAsyncFileStream, which is no longer needed.
+
+2013-03-05  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13345116> REGRESSION: Child processes get access to user cache
+        and temporary directories instead of private ones
+
+        Reviewed by Sam Weinig.
+
+        * Shared/mac/ChildProcessMac.mm: (WebKit::ChildProcess::initializeSandbox):
+        Restore the correct order of calls, so sandbox parameters respect WebKit pseudo
+        containers.
+
+2013-03-05  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r144698): Only enable SPEECH_SYNTHESIS for Mac
+        <http://webkit.org/b/106742>
+
+        Fixes the following build failures:
+
+            Undefined symbols for architecture i386:
+              "__ZTVN7WebCore25PlatformSpeechSynthesizerE", referenced from:
+                  __ZN7WebCore25PlatformSpeechSynthesizerC2EPNS_31PlatformSpeechSynthesizerClientE in PlatformSpeechSynthesizer.o
+              NOTE: a missing vtable usually means the first non-inline virtual member function has no definition.
+              "__ZN7WebCore25PlatformSpeechSynthesizer19initializeVoiceListEv", referenced from:
+                  __ZN7WebCore25PlatformSpeechSynthesizerC2EPNS_31PlatformSpeechSynthesizerClientE in PlatformSpeechSynthesizer.o
+            ld: symbol(s) not found for architecture i386
+
+        * Configurations/FeatureDefines.xcconfig:
+        - Only set ENABLE_SPEECH_SYNTHESIS for the macosx platform.
+
+2013-03-05  Tim Horton  <timothy_horton@apple.com>, Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        [WK2] WTR needs an implementation of setAsynchronousSpellCheckingEnabled
+        https://bugs.webkit.org/show_bug.cgi?id=81042
+
+        Reviewed by Enrica Casucci.
+
+        Expose WK2 setting to enable/disabled asynchronous spell checking.
+        It's used by WebKitTestRunner to reset the setting at the beginning
+        of the test.
+        WebKit2 ports might be interested in this setting if they are going
+        to enable this feature.
+
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetAsynchronousSpellCheckingEnabled):
+        (WKPreferencesGetAsynchronousSpellCheckingEnabled):
+        * UIProcess/API/C/WKPreferences.h:
+        * WebProcess/InjectedBundle/API/c/WKBundle.cpp:
+        (WKBundleSetAsynchronousSpellCheckingEnabled):
+        * WebProcess/InjectedBundle/API/c/WKBundlePrivate.h:
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::setAsynchronousSpellCheckingEnabled):
+        * WebProcess/InjectedBundle/InjectedBundle.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+
+2013-03-03  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        [WK2][EFL] Add requestCheckingOfString implementation.
+        https://bugs.webkit.org/show_bug.cgi?id=108172
+
+        Reviewed by Hajime Morrita.
+
+        Provide implementation of 'requestCheckingOfString' for WK2-EFL.
+        It uses the unified text checker feature.
+
+        * UIProcess/efl/TextCheckerEfl.cpp:
+        (WebKit::TextChecker::requestCheckingOfString):
+
+2013-03-04  Chris Fleizach  <cfleizach@apple.com>
+
+        Support WebSpeech - Speech Synthesis
+        https://bugs.webkit.org/show_bug.cgi?id=106742
+
+        Reviewed by Simon Fraser.
+
+        Enable speech synthesis for the Mac.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-04  Anders Carlsson  <andersca@apple.com>
+
+        UI process storage areas should hold on to storage maps
+        https://bugs.webkit.org/show_bug.cgi?id=111374
+
+        Reviewed by Beth Dakin.
+
+        Pass the session storage quota size through to the storage area constructor and
+        create a StorageMap with the given quota size.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (StorageManager::StorageArea):
+        (WebKit::StorageManager::StorageArea::create):
+        (WebKit::StorageManager::StorageArea::StorageArea):
+        (StorageManager::SessionStorageNamespace):
+        (WebKit::StorageManager::SessionStorageNamespace::create):
+        (WebKit::StorageManager::SessionStorageNamespace::SessionStorageNamespace):
+        (WebKit::StorageManager::SessionStorageNamespace::getOrCreateStorageArea):
+        (WebKit::StorageManager::createSessionStorageNamespace):
+        (WebKit::StorageManager::createSessionStorageNamespaceInternal):
+        * UIProcess/Storage/StorageManager.h:
+        (StorageManager):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::WebPageProxy):
+
+2013-03-04  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        Unreviewed build fix after r144675.
+
+        Work around picky/old C++ compilers by separating the '>>' in
+        nested templates with a space.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (StorageManager::StorageArea):
+
+2013-03-04  Anders Carlsson  <andersca@apple.com>
+
+        More work on UI side storage
+        https://bugs.webkit.org/show_bug.cgi?id=111370
+
+        Reviewed by Andreas Kling.
+
+        Add a DispatchStorageEvent message and begin hooking it up.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (StorageManager::StorageArea):
+        (WebKit::StorageManager::StorageArea::setItem):
+        (WebKit):
+        (WebKit::StorageManager::StorageArea::dispatchEvents):
+        (WebKit::StorageManager::setItem):
+        (WebKit::StorageManager::findStorageArea):
+        * UIProcess/Storage/StorageManager.h:
+        (StorageManager):
+        * UIProcess/Storage/StorageManager.messages.in:
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::setItem):
+        (WebKit::StorageAreaProxy::dispatchStorageEvent):
+        (WebKit):
+        * WebProcess/Storage/StorageAreaProxy.h:
+        (StorageAreaProxy):
+        * WebProcess/Storage/StorageAreaProxy.messages.in:
+
+2013-03-04  Jer Noble  <jer.noble@apple.com>
+
+        Unreviewed build fix: wrap references to PluginInfoStore with 
+        guards for platforms which do not enable NETSCAPE_PLUGIN_AP.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext):
+        (WebKit::WebContext::~WebContext):
+        * UIProcess/WebContext.h:
+
+2013-03-04  Anders Carlsson  <andersca@apple.com>
+
+        Create and destroy storage areas in the UI process
+        https://bugs.webkit.org/show_bug.cgi?id=111361
+
+        Reviewed by Sam Weinig.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (StorageManager::StorageArea):
+        Keep track of listener connection and storage area ID pairs.
+        
+        (WebKit::StorageManager::StorageArea::~StorageArea):
+        Assert that we don't have any listeners left.
+
+        (WebKit::StorageManager::StorageArea::addListener):
+        Add the pair to the set of listeners.
+        
+        (WebKit::StorageManager::StorageArea::removeListener):
+        Remove the pair from the set of listeners.
+        
+        (WebKit::StorageManager::SessionStorageNamespace::getOrCreateStorageArea):
+        Given an origin, look up or create the storage area.
+
+        (WebKit::StorageManager::createStorageArea):
+        Create the storage area if it doesn't already exist.
+
+        (WebKit::StorageManager::destroyStorageArea):
+        Look up the storage area and destroy it.
+
+        * UIProcess/Storage/StorageManager.h:
+        Add a map of open storage areas.
+
+2013-03-04  Jer Noble  <jer.noble@apple.com>
+
+        Add API to allow WK2 clients to query the list of installed plug-ins.
+        https://bugs.webkit.org/show_bug.cgi?id=111245
+
+        Reviewed by Alexey Proskuryakov.
+
+        Add API in WKContext, implemented by WebContext, that allows callers to register a callback 
+        retrieve an array containing installed plugin information. This API is exposed through WebContext 
+        because it owns the PluginInfoStore used to fulfill the request.
+
+        Bump the WKContextClient API by 1:
+        * Shared/APIClientTraits.cpp:
+        * Shared/APIClientTraits.h:
+        * UIProcess/API/C/WKContext.h:
+
+        Add a client protocol to PluginInfoStore to notify the client when plugIn information has been
+        successfully loaded:
+        * UIProcess/Plugins/PluginInfoStore.cpp:
+        (WebKit::PluginInfoStore::PluginInfoStore): Initialize m_client to 0.
+        (WebKit::PluginInfoStore::loadPluginsIfNecessary): If the client is present, notify after loading the plugin store.
+        * UIProcess/Plugins/PluginInfoStore.h:
+        (WebKit::PluginInfoStoreClient::~PluginInfoStoreClient): Default destructor.
+        (WebKit::PluginInfoStoreClient::PluginInfoStoreClient): Default constructor.
+        (WebKit::PluginInfoStore::setClient): Simple setter.
+        (WebKit::PluginInfoStore::client): Simple getter.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::WebContext): Set self as the client of PluginInfoStore.
+        (WebKit::WebContext::~WebContext): Clear the client of PluginInfoStore.
+        (WebKit::WebContext::pluginInfoStoreDidLoadPlugins): Pass the callback to own client.
+        * UIProcess/WebContext.h:
+        * UIProcess/WebContextClient.cpp:
+        (WebKit::WebContextClient::plugInInformationBecameAvailable): Pass the callback to the registered WK callback, if present.
+        * UIProcess/WebContextClient.h:
+
+2013-03-04  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Hook up Services
+        https://bugs.webkit.org/show_bug.cgi?id=111246
+        <rdar://problem/13062672>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Make the Application->Services menu work when the focused selection is a PDFPlugin.
+
+        * Shared/EditorState.cpp:
+        (WebKit::EditorState::encode):
+        (WebKit::EditorState::decode):
+        * Shared/EditorState.h:
+        (WebKit::EditorState::EditorState):
+        (EditorState):
+        Add isInPlugin property to EditorState.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView validRequestorForSendType:returnType:]):
+        If the selection is currently in a Plugin, we only currently have the ability
+        to retrieve the selection as a plain-text string, so restrict sendType to NSStringPboardType.
+
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h:
+        * WebProcess/Plugins/Plugin.h:
+        * WebProcess/Plugins/PluginView.h:
+        * WebProcess/Plugins/PluginProxy.h:
+        * WebProcess/Plugins/Netscape/NetscapePlugin.h:
+        Add getStringSelection.
+
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h:
+        Add pdfLayerController:didChangeSelection: delegate method.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin):
+        Add getStringSelection and notifySelectionChanged.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate pdfLayerController:didChangeSelection:]):
+        Forward selection change notifications to our PDFPlugin.
+
+        (WebKit::PDFPlugin::notifySelectionChanged):
+        Forward selection change notifications to our WebPage.
+
+        (WebKit::PDFPlugin::getStringSelection):
+        Retrieve PDFLayerController's selection as a plain text string.
+        
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::countFindMatches):
+        (WebKit::PluginView::findString):
+        Drive-bys, check for existance and initialization of the plugin before using it.
+
+        (WebKit::PluginView::getStringSelection): Added.
+
+        * WebProcess/WebCoreSupport/WebEditorClient.cpp:
+        (WebKit::WebEditorClient::respondToChangedSelection):
+        Use didChangeSelection instead of sending the EditorStateChanged message directly.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::editorState):
+        If a plugin is focused and has a selection, return a EditorState that reflects that.
+        Since PDFs aren't editable (when editing annotations, the plugin doesn't have focus),
+        I'm not adding support for the editing-related properties when a plugin has focus.
+
+        (WebKit::WebPage::focusedPluginViewForFrame):
+        (WebKit::WebPage::pluginViewForFrame):
+        Make these class methods instead of static functions so we can use them from
+        WebPageMac too, instead of duplicating code there.
+
+        (WebKit::WebPage::didChangeSelection): Added.
+
+        * WebProcess/WebPage/WebPage.h:
+        Add didChangeSelection and [focused]PluginViewForFrame.
+
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::getStringSelectionForPasteboard):
+        Defer to the focused plugin (if it exists) when retrieving the plain-text selection.
+
+2013-03-04  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Add callbacks to the WKViewClient to handle Web Process crash and relaunch
+        https://bugs.webkit.org/show_bug.cgi?id=109828
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Providing WKViewClient with Web Process crash and Web Process relaunch
+        callbacks brings better design as WebView should not be aware of
+        EFL-specific code handling the corresponding events.
+
+        The implementation of the mentioned Web Process callbacks was also added.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewSetThemePath):
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/efl/ViewClientEfl.cpp:
+        (WebKit::ViewClientEfl::webProcessCrashed):
+        (WebKit):
+        (WebKit::ViewClientEfl::webProcessDidRelaunch):
+        (WebKit::ViewClientEfl::ViewClientEfl):
+        * UIProcess/efl/ViewClientEfl.h:
+        (ViewClientEfl):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::setThemePath):
+
+            Accepts WTF::String instead of WKStringRef as it is
+            more appropriate for C++ API implementation class.
+
+        (WebKit::WebView::processDidCrash):
+        (WebKit::WebView::didRelaunchProcess):
+        * UIProcess/efl/WebView.h:
+        (WebView):
+        * UIProcess/efl/WebViewClient.cpp:
+        (WebKit::WebViewClient::webProcessCrashed):
+        (WebKit):
+        (WebKit::WebViewClient::webProcessDidRelaunch):
+        * UIProcess/efl/WebViewClient.h:
+
+2013-03-04  Anders Carlsson  <andersca@apple.com>
+
+        Complete the plug-in URL string before sending it to the UI process
+        https://bugs.webkit.org/show_bug.cgi?id=111355
+        <rdar://problem/13326713>
+
+        Reviewed by Andreas Kling.
+
+        If the URL is not absolute, we won't be able to find it by path extension in the plug-in info store.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::unavailablePluginButtonClicked):
+
+2013-03-04  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Some WebKit2 GTK+ unit tests are failing in 32 bits bot
+        https://bugs.webkit.org/show_bug.cgi?id=111346
+
+        Reviewed by Martin Robinson.
+
+        The problem is the use of a temporary CString object in the macro
+        g_assert_cmpstr. It's a common mistake because we usually forget
+        that g_assert_cmpstr is not a function but a macro, that expands
+        to multiple lines. This patch adds a new macro ASSERT_CMP_CSTRING
+        with the same implementation that g_assert_cmpstr, but using
+        CStrings instead of const char*. It fixes all the cases where a
+        temporary CString was used in g_assert_cmpstr, and uses the new
+        macro also for the cases where we were caching the CString just
+        for g_assert_cmpstr.
+
+        * UIProcess/API/gtk/tests/TestDownloads.cpp:
+        (testDownloadRemoteFile):
+        * UIProcess/API/gtk/tests/TestInspectorServer.cpp:
+        (testInspectorServerPageList):
+        * UIProcess/API/gtk/tests/TestLoaderClient.cpp:
+        * UIProcess/API/gtk/tests/TestMain.h:
+        * UIProcess/API/gtk/tests/TestResources.cpp:
+        * UIProcess/API/gtk/tests/TestWebKitFaviconDatabase.cpp:
+        (testGetFaviconURI):
+        * UIProcess/API/gtk/tests/TestWebKitSettings.cpp:
+        (assertThatUserAgentIsSentInHeaders):
+        (testWebKitSettingsUserAgent):
+
 2013-03-04  Kunihiko Sakamoto  <ksakamoto@chromium.org>
 
         Add build flag for FontLoader

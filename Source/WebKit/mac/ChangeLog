@@ -1,3 +1,88 @@
+2013-03-05  James Robinson  <jamesr@chromium.org>
+
+        ContainerNode::setActive should not sleep for 100ms on platforms that do not implement synchronous repaint(true) semantics
+        https://bugs.webkit.org/show_bug.cgi?id=87054
+
+        Reviewed by Darin Adler.
+
+        The Mac WebKit1 port supports immediate invalidations.
+
+        * WebCoreSupport/WebChromeClient.h:
+        (WebChromeClient):
+        * WebCoreSupport/WebChromeClient.mm:
+        (WebChromeClient::supportsImmediateInvalidation):
+
+2013-03-05  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r144698): Only enable SPEECH_SYNTHESIS for Mac
+        <http://webkit.org/b/106742>
+
+        Fixes the following build failures:
+
+            Undefined symbols for architecture i386:
+              "__ZTVN7WebCore25PlatformSpeechSynthesizerE", referenced from:
+                  __ZN7WebCore25PlatformSpeechSynthesizerC2EPNS_31PlatformSpeechSynthesizerClientE in PlatformSpeechSynthesizer.o
+              NOTE: a missing vtable usually means the first non-inline virtual member function has no definition.
+              "__ZN7WebCore25PlatformSpeechSynthesizer19initializeVoiceListEv", referenced from:
+                  __ZN7WebCore25PlatformSpeechSynthesizerC2EPNS_31PlatformSpeechSynthesizerClientE in PlatformSpeechSynthesizer.o
+            ld: symbol(s) not found for architecture i386
+
+        * Configurations/FeatureDefines.xcconfig:
+        - Only set ENABLE_SPEECH_SYNTHESIS for the macosx platform.
+
+2013-03-04  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r144662): Import JSBase.h in WebFrameLoadDelegate.h
+        <http://webkit.org/b/111269>
+
+        Fixes the following build failure:
+
+            In file included from Source/WebKit/ios/DefaultDelegates/WebDefaultFrameLoadDelegate.m:11:
+            In file included from Source/WebKit/mac/WebView/WebFrameLoadDelegatePrivate.h:29:
+            Source/WebKit/mac/WebView/WebFrameLoadDelegate.h:41:5: error: 'JSC_OBJC_API_ENABLED' is not defined, evaluates to 0 [-Werror,-Wundef]
+            #if JSC_OBJC_API_ENABLED
+                ^
+            Source/WebKit/mac/WebView/WebFrameLoadDelegate.h:207:5: error: 'JSC_OBJC_API_ENABLED' is not defined, evaluates to 0 [-Werror,-Wundef]
+            #if JSC_OBJC_API_ENABLED
+                ^
+            2 errors generated.
+
+        * WebView/WebFrameLoadDelegate.h: Include JSBase.h.
+
+2013-03-04  Chris Fleizach  <cfleizach@apple.com>
+
+        Support WebSpeech - Speech Synthesis
+        https://bugs.webkit.org/show_bug.cgi?id=106742
+
+        Reviewed by Simon Fraser.
+
+        Enable speech synthesis for the Mac.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-04  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Remove contextInternalContext from JSContextInternal.h
+        https://bugs.webkit.org/show_bug.cgi?id=111356
+
+        Reviewed by Geoffrey Garen.
+
+        We don't need it any more since we have globalContextRef in JSContext.
+
+        * WebView/WebScriptWorld.mm:
+        (+[WebScriptWorld scriptWorldForJavaScriptContext:]):
+
+2013-03-04  Laszlo Gombos  <l.gombos@samsung.com>
+
+        JSC_OBJC_API_ENABLED should be removed from FeatureDefines.h
+        https://bugs.webkit.org/show_bug.cgi?id=111269
+
+        Reviewed by Mark Hahnenberg.
+
+        Include JavaScriptCore/JSBase.h for the definition of JSC_OBJC_API_ENABLED.
+
+        * WebView/WebDelegateImplementationCaching.h:
+
 2013-03-04  Kunihiko Sakamoto  <ksakamoto@chromium.org>
 
         Add build flag for FontLoader

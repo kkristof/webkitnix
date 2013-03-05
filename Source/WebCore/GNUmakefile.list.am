@@ -781,6 +781,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSWebGLActiveInfo.h \
 	DerivedSources/WebCore/JSWebGLBuffer.cpp \
 	DerivedSources/WebCore/JSWebGLBuffer.h \
+	DerivedSources/WebCore/JSWebGLCompressedTextureATC.cpp \
+	DerivedSources/WebCore/JSWebGLCompressedTextureATC.h \
 	DerivedSources/WebCore/JSWebGLCompressedTextureS3TC.cpp \
 	DerivedSources/WebCore/JSWebGLCompressedTextureS3TC.h \
 	DerivedSources/WebCore/JSWebGLContextAttributes.cpp \
@@ -1555,6 +1557,7 @@ dom_binding_idls += \
 	$(WebCore)/html/canvas/Uint8ClampedArray.idl \
 	$(WebCore)/html/canvas/WebGLActiveInfo.idl \
 	$(WebCore)/html/canvas/WebGLBuffer.idl \
+	$(WebCore)/html/canvas/WebGLCompressedTextureATC.idl \
 	$(WebCore)/html/canvas/WebGLCompressedTextureS3TC.idl \
 	$(WebCore)/html/canvas/WebGLContextAttributes.idl \
 	$(WebCore)/html/canvas/WebGLContextEvent.idl \
@@ -1923,6 +1926,7 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/indexeddb/IDBTransaction.h \
 	Source/WebCore/Modules/indexeddb/IDBVersionChangeEvent.cpp \
 	Source/WebCore/Modules/indexeddb/IDBVersionChangeEvent.h \
+	Source/WebCore/Modules/indexeddb/IndexedDB.h \
 	Source/WebCore/Modules/indexeddb/PageGroupIndexedDatabase.cpp \
 	Source/WebCore/Modules/indexeddb/PageGroupIndexedDatabase.h \
 	Source/WebCore/Modules/indexeddb/WorkerContextIndexedDatabase.cpp \
@@ -2147,6 +2151,8 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webdatabase/DatabaseThread.h \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.cpp \
 	Source/WebCore/Modules/webdatabase/DatabaseTracker.h \
+	Source/WebCore/Modules/webdatabase/OriginLock.cpp \
+	Source/WebCore/Modules/webdatabase/OriginLock.h \
 	Source/WebCore/Modules/webdatabase/SQLCallbackWrapper.h \
 	Source/WebCore/Modules/webdatabase/SQLError.h \
 	Source/WebCore/Modules/webdatabase/SQLException.cpp \
@@ -3296,6 +3302,8 @@ webcore_sources += \
 	Source/WebCore/html/canvas/WebGLActiveInfo.h \
 	Source/WebCore/html/canvas/WebGLBuffer.cpp \
 	Source/WebCore/html/canvas/WebGLBuffer.h \
+	Source/WebCore/html/canvas/WebGLCompressedTextureATC.cpp \
+	Source/WebCore/html/canvas/WebGLCompressedTextureATC.h \
 	Source/WebCore/html/canvas/WebGLCompressedTextureS3TC.cpp \
 	Source/WebCore/html/canvas/WebGLCompressedTextureS3TC.h \
 	Source/WebCore/html/canvas/WebGLContextAttributes.cpp \
@@ -4368,6 +4376,8 @@ webcore_sources += \
 	Source/WebCore/rendering/HitTestRequest.h \
 	Source/WebCore/rendering/HitTestingTransformState.cpp \
 	Source/WebCore/rendering/HitTestingTransformState.h \
+	Source/WebCore/rendering/HitTestLocation.cpp \
+	Source/WebCore/rendering/HitTestLocation.h \
 	Source/WebCore/rendering/HitTestResult.cpp \
 	Source/WebCore/rendering/HitTestResult.h \
 	Source/WebCore/rendering/InlineBox.cpp \
@@ -5777,6 +5787,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/LocalizedStrings.h \
 	Source/WebCore/platform/Logging.cpp \
 	Source/WebCore/platform/Logging.h \
+	Source/WebCore/platform/MainThreadTask.h \
 	Source/WebCore/platform/MIMETypeRegistry.cpp \
 	Source/WebCore/platform/MIMETypeRegistry.h \
 	Source/WebCore/platform/MemoryPressureHandler.cpp \

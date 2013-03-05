@@ -284,6 +284,10 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitGridAutoFlow,
     CSSPropertyWebkitGridColumns,
     CSSPropertyWebkitGridRows,
+    CSSPropertyWebkitGridStart,
+    CSSPropertyWebkitGridEnd,
+    CSSPropertyWebkitGridBefore,
+    CSSPropertyWebkitGridAfter,
     CSSPropertyWebkitGridColumn,
     CSSPropertyWebkitGridRow,
     CSSPropertyWebkitHighlight,
@@ -1928,10 +1932,16 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitGridRows:
             return valueForGridTrackList(style->gridRows(), style.get(), m_node->document()->renderView());
 
+        case CSSPropertyWebkitGridStart:
         case CSSPropertyWebkitGridColumn:
-            return valueForGridPosition(style->gridItemColumn());
+            return valueForGridPosition(style->gridItemStart());
+        case CSSPropertyWebkitGridEnd:
+            return valueForGridPosition(style->gridItemEnd());
+        case CSSPropertyWebkitGridBefore:
         case CSSPropertyWebkitGridRow:
-            return valueForGridPosition(style->gridItemRow());
+            return valueForGridPosition(style->gridItemBefore());
+        case CSSPropertyWebkitGridAfter:
+            return valueForGridPosition(style->gridItemAfter());
 
         case CSSPropertyHeight:
             if (renderer) {
@@ -2682,6 +2692,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return getCSSPropertyValuesForSidesShorthand(borderWidthShorthand());
         case CSSPropertyWebkitColumnRule:
             return getCSSPropertyValuesForShorthandProperties(webkitColumnRuleShorthand());
+        case CSSPropertyWebkitColumns:
+            return getCSSPropertyValuesForShorthandProperties(webkitColumnsShorthand());
         case CSSPropertyListStyle:
             return getCSSPropertyValuesForShorthandProperties(listStyleShorthand());
         case CSSPropertyMargin:
@@ -2763,7 +2775,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         /* Unimplemented -webkit- properties */
         case CSSPropertyWebkitAnimation:
         case CSSPropertyWebkitBorderRadius:
-        case CSSPropertyWebkitColumns:
         case CSSPropertyWebkitMarginCollapse:
         case CSSPropertyWebkitMarquee:
         case CSSPropertyWebkitMarqueeSpeed:

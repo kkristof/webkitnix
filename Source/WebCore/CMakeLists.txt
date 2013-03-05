@@ -531,6 +531,7 @@ set(WebCore_IDL_FILES
     html/canvas/Uint8ClampedArray.idl
     html/canvas/WebGLActiveInfo.idl
     html/canvas/WebGLBuffer.idl
+    html/canvas/WebGLCompressedTextureATC.idl
     html/canvas/WebGLCompressedTextureS3TC.idl
     html/canvas/WebGLContextAttributes.idl
     html/canvas/WebGLContextEvent.idl
@@ -953,6 +954,7 @@ set(WebCore_SOURCES
     Modules/webdatabase/DatabaseTask.cpp
     Modules/webdatabase/DatabaseThread.cpp
     Modules/webdatabase/DatabaseTracker.cpp
+    Modules/webdatabase/OriginLock.cpp
     Modules/webdatabase/SQLException.cpp
     Modules/webdatabase/SQLResultSet.cpp
     Modules/webdatabase/SQLResultSetRowList.cpp
@@ -1516,6 +1518,7 @@ set(WebCore_SOURCES
     html/canvas/OESVertexArrayObject.cpp
     html/canvas/OESElementIndexUint.cpp
     html/canvas/WebGLBuffer.cpp
+    html/canvas/WebGLCompressedTextureATC.cpp
     html/canvas/WebGLCompressedTextureS3TC.cpp
     html/canvas/WebGLContextAttributes.cpp
     html/canvas/WebGLContextEvent.cpp
@@ -2136,6 +2139,7 @@ set(WebCore_SOURCES
     rendering/FixedTableLayout.cpp
     rendering/FlowThreadController.cpp
     rendering/HitTestingTransformState.cpp
+    rendering/HitTestLocation.cpp
     rendering/HitTestResult.cpp
     rendering/InlineBox.cpp
     rendering/InlineFlowBox.cpp
@@ -2632,6 +2636,7 @@ if (ENABLE_WEBGL)
         html/canvas/OESVertexArrayObject.cpp
         html/canvas/OESElementIndexUint.cpp
         html/canvas/WebGLBuffer.cpp
+        html/canvas/WebGLCompressedTextureATC.cpp
         html/canvas/WebGLCompressedTextureS3TC.cpp
         html/canvas/WebGLContextAttributes.cpp
         html/canvas/WebGLContextEvent.cpp
@@ -2672,6 +2677,7 @@ if (ENABLE_WEBGL)
         html/canvas/OESElementIndexUint.idl
         html/canvas/WebGLActiveInfo.idl
         html/canvas/WebGLBuffer.idl
+        html/canvas/WebGLCompressedTextureATC.idl
         html/canvas/WebGLCompressedTextureS3TC.idl
         html/canvas/WebGLContextAttributes.idl
         html/canvas/WebGLContextEvent.idl

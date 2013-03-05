@@ -89,6 +89,7 @@ public:
     struct ParsedChunk {
         OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
+        XSSInfoStream xssInfos;
         HTMLTokenizer::State tokenizerState;
         HTMLInputCheckpoint inputCheckpoint;
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
@@ -140,7 +141,7 @@ private:
 #if ENABLE(THREADED_HTML_PARSER)
     void startBackgroundParser();
     void stopBackgroundParser();
-    void checkForSpeculationFailure();
+    void validateSpeculations();
     void didFailSpeculation(PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
     void processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void pumpPendingSpeculations();

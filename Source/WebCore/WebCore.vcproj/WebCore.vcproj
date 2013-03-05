@@ -25530,6 +25530,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Modules\webdatabase\OriginLock.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Modules\webdatabase\OriginLock.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Modules\webdatabase\SQLCallbackWrapper.h"
 					>
 				</File>
@@ -28916,6 +28924,10 @@
 			</File>
 			<File
 				RelativePath="..\platform\MemoryUsageSupport.h"
+				>
+			</File>
+			<File
+				RelativePath="..\platform\MainThreadTask.h"
 				>
 			</File>
 			<File
@@ -39360,6 +39372,62 @@
 			</File>
 			<File
 				RelativePath="..\rendering\HitTestingTransformState.h"
+				>
+			</File>
+			<File
+				RelativePath="..\rendering\HitTestLocation.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_All|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Production|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\rendering\HitTestLocation.h"
 				>
 			</File>
 			<File

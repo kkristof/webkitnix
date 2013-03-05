@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="DerivedSources">
@@ -1873,6 +1873,9 @@
       <Filter>Modules\webdatabase</Filter>
     </ClCompile>
     <ClCompile Include="..\Modules\webdatabase\DOMWindowWebDatabase.cpp">
+      <Filter>Modules\webdatabase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Modules\webdatabase\OriginLock.cpp">
       <Filter>Modules\webdatabase</Filter>
     </ClCompile>
     <ClCompile Include="..\Modules\webdatabase\SQLException.cpp">
@@ -6820,6 +6823,9 @@
     <ClCompile Include="..\inspector\TimelineTraceEventProcessor.cpp">
       <Filter>inspector</Filter>
     </ClCompile>
+    <ClCompile Include="..\rendering\HitTestLocation.cpp">
+      <Filter>rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ConfigurationBuildDir)\obj\$(ProjectName)\DerivedSources\CSSGrammar.h">
@@ -8535,6 +8541,9 @@
     <ClInclude Include="..\Modules\webdatabase\DOMWindowWebDatabase.h">
       <Filter>Modules\webdatabase</Filter>
     </ClInclude>
+    <ClInclude Include="..\Modules\webdatabase\OriginLock.h">
+      <Filter>Modules\webdatabase</Filter>
+    </ClInclude>
     <ClInclude Include="..\Modules\webdatabase\SQLCallbackWrapper.h">
       <Filter>Modules\webdatabase</Filter>
     </ClInclude>
@@ -9328,6 +9337,9 @@
       <Filter>platform</Filter>
     </ClInclude>
     <ClInclude Include="..\platform\MemoryUsageSupport.h">
+      <Filter>platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\platform\MainThreadTask.h">
       <Filter>platform</Filter>
     </ClInclude>
     <ClInclude Include="..\platform\MIMETypeRegistry.h">
@@ -14326,6 +14338,9 @@
     </ClInclude>
     <ClInclude Include="..\inspector\TimelineTraceEventProcessor.h">
       <Filter>inspector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rendering\HitTestLocation.h">
+      <Filter>rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

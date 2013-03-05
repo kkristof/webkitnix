@@ -1,3 +1,430 @@
+2013-03-05  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] DRT crashes in an Aura/Win build
+        https://bugs.webkit.org/show_bug.cgi?id=111394
+
+        Reviewed by Tony Chang.
+
+        When building (and running) with use_aura=1, we assume that
+        we're using the default theme engine, but DRT creates the
+        DRTWin theme engine and overwrites the default, leading to crashes
+        in basically every test from the mismatch.
+
+        This fix gets us down to at least "lots of crashes" :).
+
+        * DumpRenderTree/chromium/TestShellWin.cpp:
+        (platformInit):
+
+2013-03-05  Eric Seidel  <eric@webkit.org>
+
+        Add html-parser-threaded perf test now that the threaded parser is enabled by default
+        https://bugs.webkit.org/show_bug.cgi?id=111200
+
+        Reviewed by Ryosuke Niwa.
+
+        Had to teach run-perf-tests to ignore one more warning.
+
+        * Scripts/webkitpy/performance_tests/perftest.py:
+        (PerfTest):
+
+2013-03-05  Jochen Eisinger  <jochen@chromium.org>
+
+        Update list of builders for test results server
+        https://bugs.webkit.org/show_bug.cgi?id=111166
+
+        Reviewed by Ojan Vafai.
+
+        * TestResultServer/static-dashboards/builders.jsonp:
+
+2013-03-05  Martin Robinson  <mrobinson@igalia.com> and Tomas Popela  <tpopela@redhat.com>
+
+        [GTK] Move basic dependency installation to a script
+        https://bugs.webkit.org/show_bug.cgi?id=110692
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gtk/install-dependencies: Added. A Script which installs all dependencies
+        necessary for building for Debian-based distributions and Fedora.
+
+2013-03-05  James Robinson  <jamesr@chromium.org>
+
+        Chromium DumpRenderTree dumps a core every time it's run (Linux/Debug)
+        https://bugs.webkit.org/show_bug.cgi?id=111440
+
+        Reviewed by Adrienne Walker.
+
+        Remove unnecessary WebCompositorSupport::shutdown call
+
+        * DumpRenderTree/chromium/DumpRenderTree.cpp:
+        (main):
+
+2013-03-05  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Unreviewed build fix.
+
+        * GNUmakefile.am: add generate-feature-defines-files scripts to EXTRA_DIST.
+
+2013-03-05  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][MiniBrowser] Improve the update of touch indicators
+        https://bugs.webkit.org/show_bug.cgi?id=111429
+
+        Reviewed by Jocelyn Turcotte.
+
+        MiniBrowserApplication::sendTouchEvent sends an empty list
+        to BrowserWindow::updateVisualMockTouchPoints if the control
+        button is released, in which case the touch indicators should
+        be hidden so that we never end up with a leftover indicator
+        sticking on the screen.
+        This patch also simplifies the lookup of the indicator items by
+        replacing the findChild search in the item tree with a QHash
+        that stores the touch ID's and the pointers to the corresponding
+        indicator items.
+
+        * MiniBrowser/qt/BrowserWindow.cpp:
+        (BrowserWindow::updateVisualMockTouchPoints):
+        * MiniBrowser/qt/BrowserWindow.h:
+        (BrowserWindow):
+
+2013-03-05  Tim Horton  <timothy_horton@apple.com>, Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        [WK2] WTR needs an implementation of setAsynchronousSpellCheckingEnabled
+        https://bugs.webkit.org/show_bug.cgi?id=81042
+
+        Reviewed by Enrica Casucci.
+
+        Add setAsynchronousSpellCheckingEnabled implementation for
+        WebKitTestRunner to have the possibility to test asynchronous
+        spell checking implementation from bug 109577.
+
+        * WebKitTestRunner/InjectedBundle/Bindings/TestRunner.idl:
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::setAsynchronousSpellCheckingEnabled):
+        * WebKitTestRunner/InjectedBundle/TestRunner.h:
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::resetStateToConsistentValues):
+
+2013-03-05  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Add the getStreamById method on RTCPeerConnection
+        https://bugs.webkit.org/show_bug.cgi?id=111311
+
+        Reviewed by Adam Barth.
+
+        Changing mocks to be more realistic.
+
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCPeerConnectionHandler.cpp:
+        (WebTestRunner::MockWebRTCPeerConnectionHandler::addStream):
+        (WebTestRunner::MockWebRTCPeerConnectionHandler::removeStream):
+        * DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.cpp:
+        (WebTestRunner::WebUserMediaClientMock::requestUserMedia):
+
+2013-03-05  Jochen Eisinger  <jochen@chromium.org>
+
+        Add content shell bots to garden-o-matic for general failurse
+        https://bugs.webkit.org/show_bug.cgi?id=111168
+
+        Reviewed by Adam Barth.
+
+        All but the WebKit (Content Shell) Android bot is stable enough. While
+        they're not green yet, there must not be any non-layout test failures on
+        them.
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/config.js:
+        (.):
+
+2013-03-04  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] remove deprecated WebTestRunner::setFocus API
+        https://bugs.webkit.org/show_bug.cgi?id=111354
+
+        Reviewed by James Robinson.
+
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h:
+        (WebTestDelegate):
+
+2013-03-04  Jochen Eisinger  <jochen@chromium.org>
+
+        Run the bindings generation tests on EWS and CQ bots
+        https://bugs.webkit.org/show_bug.cgi?id=111358
+
+        Reviewed by Adam Barth.
+
+        The tests are super fast and not flaky.
+
+        * Scripts/webkitpy/common/config/ports.py:
+        (DeprecatedPort.run_bindings_tests_command):
+        * Scripts/webkitpy/common/config/ports_mock.py:
+        (MockPort.run_webkit_tests_command):
+        (MockPort):
+        (MockPort.run_bindings_tests_command):
+        * Scripts/webkitpy/tool/commands/download_unittest.py:
+        * Scripts/webkitpy/tool/steps/runtests.py:
+        (RunTests.run):
+        * Scripts/webkitpy/tool/steps/runtests_unittest.py:
+        (RunTestsTest.test_webkit_run_unit_tests):
+        * Scripts/webkitpy/tool/steps/steps_unittest.py:
+
+2013-03-04  Eric Seidel  <eric@webkit.org>
+
+        run-webkit-tests should support --profile and --profiler= just like run-perf-tests does
+        https://bugs.webkit.org/show_bug.cgi?id=111384
+
+        Reviewed by Ryosuke Niwa.
+
+        Sometimes I want to know why various LayoutTests are slow
+        without having to convert them into PerformanceTests in order
+        to use our fancy profiling.  The Driver already knows how to
+        do the right thing, we just need to expose the options to the user.
+
+        Handling of these options is already unittested in the perftests_unittest.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests.py:
+        (parse_args):
+
+2013-03-04  Alan Cutter  <alancutter@chromium.org>
+
+        check-webkit-style says "Have to enable auto props in the subversion config file"
+        https://bugs.webkit.org/show_bug.cgi?id=107724
+
+        Reviewed by Tony Chang.
+
+        Added a standard svn config file for WebKit developers to use.
+        Updated the style and commit queue bot build scripts to load this file.
+
+        * EWSTools/GoogleComputeEngine/build-commit-queue.sh:
+        * EWSTools/GoogleComputeEngine/build-feeder-style-sheriffbot.sh:
+        * EWSTools/configure-svn-config.sh: Copied from Tools/EWSTools/GoogleComputeEngine/build-commit-queue.sh.
+        * svn-config: Added.
+
+2013-03-04  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Switch to new webkit_support::CreateLayerTreeView interface
+        https://bugs.webkit.org/show_bug.cgi?id=111285
+
+        Reviewed by Adrienne Walker.
+
+        This removes the need for WebCompositorSupport::initialize and exposes
+        slightly fewer entry points across the repository boundary.
+
+        * DumpRenderTree/chromium/TestShell.cpp:
+        (TestShell::initialize):
+        * DumpRenderTree/chromium/TestShell.h:
+        (TestShell::webCompositorThread):
+        (TestShell):
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::initializeLayerTreeView):
+
+2013-03-04  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Get rid of some AppleWin VS2010 build warnings.
+
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePluginCommon.props:
+
+2013-03-04  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r144657): Fix DumpRenderTree build failure on iOS
+
+            Tools/DumpRenderTree/ios/AccessibilityControllerIOS.mm:95:29: error: class method '+stringWithJSStringRef:' not found (return type defaults to 'id') [-Werror,-Wobjc-method-access]
+                NSString *idAttribute = [NSString stringWithJSStringRef:idAttributeRef];
+                                        ^         ~~~~~~~~~~~~~~~~~~~~~
+            1 error generated.
+
+        * DumpRenderTree/ios/AccessibilityControllerIOS.mm: Import
+        AccessibilityCommonMac.h.
+
+2013-03-04  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Add callbacks to the WKViewClient to handle Web Process crash and relaunch
+        https://bugs.webkit.org/show_bug.cgi?id=109828
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Added API test for newly added Web Process crash and Web Process relaunch WKViewClient
+        callbacks.
+
+        * TestWebKitAPI/CMakeLists.txt:
+
+            Tests located in 'TestWebKitAPI/Tests/WebKit2' subdirectories are also
+            considered.
+
+        * TestWebKitAPI/PlatformEfl.cmake:
+        * TestWebKitAPI/Tests/WebKit2/efl/WKViewClientWebProcessCallbacks.cpp: Added.
+        (TestWebKitAPI):
+        (TestWebKitAPI::didFinishLoadForFrame):
+        (TestWebKitAPI::setPageLoaderClient):
+        (TestWebKitAPI::webProcessCrashed):
+        (TestWebKitAPI::webProcessDidRelaunch):
+        (TestWebKitAPI::setViewClient):
+        (TestWebKitAPI::TEST):
+
+2013-03-04  Chris Fleizach  <cfleizach@apple.com>
+
+        AX: Upstream iOS Accessibility DumpRenderTree changes
+        https://bugs.webkit.org/show_bug.cgi?id=111220
+
+        Reviewed by David Kilzer.
+
+        Upstream the iOS changes for accessibility in DumpRenderTree.
+
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        (headerElementAtIndexCallback):
+        (linkedElementCallback):
+        (elementsForRangeCallback):
+        (increaseTextSelectionCallback):
+        (decreaseTextSelectionCallback):
+        (assistiveTechnologySimulatedFocusCallback):
+        (stringForSelectionCallback):
+        (getIPhoneLabelCallback):
+        (getIPhoneHintCallback):
+        (getIPhoneValueCallback):
+        (getIPhoneIdentifierCallback):
+        (getIPhoneTraitsCallback):
+        (getIPhoneIsElementCallback):
+        (getIPhoneElementTextPositionCallback):
+        (getIPhoneElementTextLengthCallback):
+        (AccessibilityUIElement::getJSClass):
+        * DumpRenderTree/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * DumpRenderTree/DumpRenderTree.xcodeproj/project.pbxproj:
+        * DumpRenderTree/ios: Added.
+        * DumpRenderTree/ios/AccessibilityControllerIOS.mm: Added.
+        (AccessibilityController::AccessibilityController):
+        (AccessibilityController::~AccessibilityController):
+        (AccessibilityController::elementAtPoint):
+        (AccessibilityController::focusedElement):
+        (AccessibilityController::rootElement):
+        (findAccessibleObjectById):
+        (AccessibilityController::accessibleElementById):
+        (AccessibilityController::setLogFocusEvents):
+        (AccessibilityController::setLogScrollingStartEvents):
+        (AccessibilityController::setLogValueChangeEvents):
+        (AccessibilityController::setLogAccessibilityEvents):
+        (AccessibilityController::addNotificationListener):
+        (AccessibilityController::removeNotificationListener):
+        * DumpRenderTree/ios/AccessibilityUIElementIOS.mm: Added.
+        (AccessibilityUIElement::AccessibilityUIElement):
+        (AccessibilityUIElement::~AccessibilityUIElement):
+        (concatenateAttributeAndValue):
+        (AccessibilityUIElement::iphoneLabel):
+        (AccessibilityUIElement::iphoneHint):
+        (AccessibilityUIElement::iphoneValue):
+        (AccessibilityUIElement::iphoneIdentifier):
+        (AccessibilityUIElement::iphoneTraits):
+        (AccessibilityUIElement::iphoneIsElement):
+        (AccessibilityUIElement::iphoneElementTextPosition):
+        (AccessibilityUIElement::iphoneElementTextLength):
+        (AccessibilityUIElement::url):
+        (AccessibilityUIElement::x):
+        (AccessibilityUIElement::y):
+        (AccessibilityUIElement::width):
+        (AccessibilityUIElement::height):
+        (AccessibilityUIElement::clickPointX):
+        (AccessibilityUIElement::clickPointY):
+        (AccessibilityUIElement::getChildren):
+        (AccessibilityUIElement::getChildrenWithRange):
+        (AccessibilityUIElement::childrenCount):
+        (AccessibilityUIElement::elementAtPoint):
+        (AccessibilityUIElement::indexOfChild):
+        (AccessibilityUIElement::getChildAtIndex):
+        (AccessibilityUIElement::headerElementAtIndex):
+        (AccessibilityUIElement::linkedElement):
+        (AccessibilityUIElement::linkedUIElementAtIndex):
+        (AccessibilityUIElement::ariaOwnsElementAtIndex):
+        (AccessibilityUIElement::ariaFlowToElementAtIndex):
+        (AccessibilityUIElement::disclosedRowAtIndex):
+        (AccessibilityUIElement::selectedRowAtIndex):
+        (AccessibilityUIElement::rowAtIndex):
+        (AccessibilityUIElement::titleUIElement):
+        (AccessibilityUIElement::parentElement):
+        (AccessibilityUIElement::disclosedByRow):
+        (AccessibilityUIElement::increaseTextSelection):
+        (AccessibilityUIElement::decreaseTextSelection):
+        (AccessibilityUIElement::stringForSelection):
+        (AccessibilityUIElement::stringForRange):
+        (AccessibilityUIElement::attributedStringForRange):
+        (AccessibilityUIElement::attributedStringRangeIsMisspelled):
+        (AccessibilityUIElement::elementsForRange):
+        (AccessibilityUIElement::getLinkedUIElements):
+        (AccessibilityUIElement::getDocumentLinks):
+        (AccessibilityUIElement::attributesOfLinkedUIElements):
+        (AccessibilityUIElement::attributesOfDocumentLinks):
+        (AccessibilityUIElement::attributesOfChildren):
+        (AccessibilityUIElement::allAttributes):
+        (AccessibilityUIElement::stringAttributeValue):
+        (AccessibilityUIElement::isPressActionSupported):
+        (AccessibilityUIElement::isIncrementActionSupported):
+        (AccessibilityUIElement::isDecrementActionSupported):
+        (AccessibilityUIElement::boolAttributeValue):
+        (AccessibilityUIElement::isAttributeSettable):
+        (AccessibilityUIElement::isAttributeSupported):
+        (AccessibilityUIElement::parameterizedAttributeNames):
+        (AccessibilityUIElement::role):
+        (AccessibilityUIElement::subrole):
+        (AccessibilityUIElement::roleDescription):
+        (AccessibilityUIElement::title):
+        (AccessibilityUIElement::description):
+        (AccessibilityUIElement::orientation):
+        (AccessibilityUIElement::stringValue):
+        (AccessibilityUIElement::language):
+        (AccessibilityUIElement::helpText):
+        (AccessibilityUIElement::intValue):
+        (AccessibilityUIElement::minValue):
+        (AccessibilityUIElement::maxValue):
+        (AccessibilityUIElement::valueDescription):
+        (AccessibilityUIElement::insertionPointLineNumber):
+        (AccessibilityUIElement::isEnabled):
+        (AccessibilityUIElement::isRequired):
+        (AccessibilityUIElement::isFocused):
+        (AccessibilityUIElement::isSelected):
+        (AccessibilityUIElement::isExpanded):
+        (AccessibilityUIElement::isChecked):
+        (AccessibilityUIElement::hierarchicalLevel):
+        (AccessibilityUIElement::ariaIsGrabbed):
+        (AccessibilityUIElement::ariaDropEffects):
+        (AccessibilityUIElement::lineForIndex):
+        (AccessibilityUIElement::boundsForRange):
+        (AccessibilityUIElement::attributesOfColumnHeaders):
+        (AccessibilityUIElement::attributesOfRowHeaders):
+        (AccessibilityUIElement::attributesOfColumns):
+        (AccessibilityUIElement::attributesOfRows):
+        (AccessibilityUIElement::attributesOfVisibleCells):
+        (AccessibilityUIElement::attributesOfHeader):
+        (AccessibilityUIElement::rowCount):
+        (AccessibilityUIElement::columnCount):
+        (AccessibilityUIElement::indexInTable):
+        (AccessibilityUIElement::rowIndexRange):
+        (AccessibilityUIElement::columnIndexRange):
+        (AccessibilityUIElement::cellForColumnAndRow):
+        (AccessibilityUIElement::selectedTextRange):
+        (AccessibilityUIElement::assistiveTechnologySimulatedFocus):
+        (AccessibilityUIElement::setSelectedTextRange):
+        (AccessibilityUIElement::increment):
+        (AccessibilityUIElement::decrement):
+        (AccessibilityUIElement::showMenu):
+        (AccessibilityUIElement::press):
+        (AccessibilityUIElement::accessibilityValue):
+        (AccessibilityUIElement::documentEncoding):
+        (AccessibilityUIElement::documentURI):
+        (_accessibilityNotificationCallback):
+        (AccessibilityUIElement::addNotificationListener):
+        (AccessibilityUIElement::removeNotificationListener):
+        (AccessibilityUIElement::isFocusable):
+        (AccessibilityUIElement::isSelectable):
+        (AccessibilityUIElement::isMultiSelectable):
+        (AccessibilityUIElement::isSelectedOptionActive):
+        (AccessibilityUIElement::isVisible):
+        (AccessibilityUIElement::isOffScreen):
+        (AccessibilityUIElement::isCollapsed):
+        (AccessibilityUIElement::isIgnored):
+        (AccessibilityUIElement::hasPopup):
+        (AccessibilityUIElement::takeFocus):
+        (AccessibilityUIElement::takeSelection):
+        (AccessibilityUIElement::addSelection):
+        (AccessibilityUIElement::removeSelection):
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        (AccessibilityUIElement::numberAttributeValue):
+
 2013-03-04  Jochen Eisinger  <jochen@chromium.org>
 
         [chromium] pass all focus handling methods through the WebTestDelegate

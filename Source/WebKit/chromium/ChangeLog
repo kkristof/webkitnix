@@ -1,3 +1,189 @@
+2013-03-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Properly refactor frontend/backend code by #includes
+        https://bugs.webkit.org/show_bug.cgi?id=110653
+
+        Reviewed by Dimitri Glazkov.
+
+        Clean up the frontend/backend WebIDB* implementations to
+        match the changes to webkit.
+
+2013-03-05  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r186200.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-05  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Clean up WebWidget / WebLayerTreeView interactions
+        https://bugs.webkit.org/show_bug.cgi?id=109125
+
+        Reviewed by Adrienne Walker.
+
+        This removes most of the compositing control flow logic from WebViewImpl since
+        it is now handled in the embedding layer (by the implementation of WebViewClient/WebWidgetClient).
+
+        * public/WebViewClient.h:
+        * public/WebWidget.h:
+        (WebKit):
+        (WebKit::WebWidget::animate):
+        (WebWidget):
+        (WebKit::WebWidget::didExitCompositingMode):
+        (WebKit::WebWidget::createInputHandler):
+        (WebKit::WebWidget::applyScrollAndScale):
+        (WebKit::WebWidget::instrumentBeginFrame):
+        (WebKit::WebWidget::instrumentWillBeginFrame):
+        (WebKit::WebWidget::instrumentDidCancelFrame):
+        (WebKit::WebWidget::instrumentDidBeginFrame):
+        (WebKit::WebWidget::instrumentWillComposite):
+        * src/WebHelperPluginImpl.cpp:
+        * src/WebHelperPluginImpl.h:
+        (WebHelperPluginImpl):
+        * src/WebPagePopupImpl.cpp:
+        * src/WebPagePopupImpl.h:
+        (WebPagePopupImpl):
+        * src/WebPopupMenuImpl.cpp:
+        * src/WebPopupMenuImpl.h:
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::instrumentWillBeginFrame):
+        (WebKit::WebViewImpl::instrumentDidBeginFrame):
+        (WebKit::WebViewImpl::instrumentDidCancelFrame):
+        (WebKit::WebViewImpl::instrumentWillComposite):
+        (WebKit):
+        (WebKit::WebViewImpl::updateBatteryStatus):
+        (WebKit::WebViewImpl::animate):
+        (WebKit::WebViewImpl::didExitCompositingMode):
+        * src/WebViewImpl.h:
+        * tests/WebLayerTreeViewTestCommon.h:
+        (MockWebLayerTreeViewClient):
+
+2013-03-05  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: Add a renderer process memory size test.
+        https://bugs.webkit.org/show_bug.cgi?id=111337
+
+        Reviewed by Yury Semikhatsky.
+
+        The test checks that the renderer process memory size
+        is obtained from the browser and reported to the inspector
+        frontend correctly.
+
+        * src/js/Tests.js:
+        (.TestSuite.prototype.testRendererProcessNativeMemorySize.checkFuzzyValue):
+        (.TestSuite.prototype.testRendererProcessNativeMemorySize.step2):
+
+2013-03-04  Chris Fleizach  <cfleizach@apple.com>
+
+        AX: cellForColumnAndRow fails for tables with hidden table cells
+        https://bugs.webkit.org/show_bug.cgi?id=110050
+
+        Reviewed by Tim Horton.
+
+        * src/WebAccessibilityObject.cpp:
+        (WebKit::WebAccessibilityObject::cellColumnIndex):
+        (WebKit::WebAccessibilityObject::cellColumnSpan):
+        (WebKit::WebAccessibilityObject::cellRowIndex):
+        (WebKit::WebAccessibilityObject::cellRowSpan):
+
+2013-03-04  Kunihiko Sakamoto  <ksakamoto@chromium.org>
+
+        [Chromium] Add runtime flag for font load events
+        https://bugs.webkit.org/show_bug.cgi?id=111296
+
+        Reviewed by Kent Tamura.
+
+        Add a runtime feature flag for FontLoader interface (disabled by default),
+        and enable ENABLE_FONT_LOAD_EVENTS build flag for chromium.
+
+        * features.gypi:
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableFontLoadEvents):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isFontLoadEventsEnabled):
+
+2013-03-04  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r185990.  Requested by
+        jamesr_ via sheriffbot.
+
+        * DEPS:
+
+2013-02-26  Kentaro Hara  <haraken@chromium.org>
+
+        [chromium] Implement TRACE_EVENT macros for sampling profiling
+        https://bugs.webkit.org/show_bug.cgi?id=110932
+
+        Reviewed by Adam Barth.
+
+        We are implementing TRACE_EVENT macros for sampling profiling.
+        It works in the following mechanism:
+
+        - Chromium defines global state variables for sampling profiling.
+        (i.e. g_trace_state0, g_trace_state1, g_trace_state2 in trace_event.h)
+
+        - WebKit gets the addresses of the global state variables at the
+        initialization step. (i.e. EventTracer::initialize())
+
+        - WebKit updates the global states by using TRACE_EVENT_SAMPLING_STATE()
+        macros every time WebKit changes its state. (e.g. DOM attribute
+        getters/setters/methods)
+
+        - A sampling thread running in Chrome reads the global states
+        periodically and visualizes the profiling results into about://tracing.
+
+        This patch implements (1) a WebKit API to get the addresses of
+        the global states and (2) the TRACE_EVENT_SAMPLING_STATE() macro.
+
+        * src/WebKit.cpp:
+        (WebKit::initializeWithoutV8):
+
+2013-03-04  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Roll chromium DEPS 185662 -> 185963
+
+        Roll roll roll the deps
+          Gently from downstream.
+        Merrily merrily merrily merrily
+          Green bots are but a dream.
+
+        * DEPS:
+
+2013-03-04  Tony Chang  <tony@chromium.org>
+
+        Unreviewed, rolling out r144562.
+        http://trac.webkit.org/changeset/144562
+        https://bugs.webkit.org/show_bug.cgi?id=85642
+
+        Caused KeyPadInsert faluires in webkit_unittests
+
+        * WebKit.gypi:
+        * tests/KeyCodeConversionTestGtk.cpp: Removed.
+
+2013-03-04  Levi Weintraub  <leviw@chromium.org>
+
+        Add support for 8 bit TextRuns on Chromium Linux & Mac
+        https://bugs.webkit.org/show_bug.cgi?id=99393
+
+        Reviewed by Eric Seidel.
+
+        Enabling 8 bit text runs for Linux and Mac platforms.
+
+        * features.gypi:
+
+2013-03-04  Peter Beverloo  <peter@chromium.org>
+
+        [Chromium] Add a new dependency on jsr-305 for Android
+        https://bugs.webkit.org/show_bug.cgi?id=111340
+
+        Unreviewed build fix; new Android dependency. This is
+        currently breaking gyp generation on the Android bots.
+
+        * DEPS:
+
 2013-03-04  Aaron Colwell  <acolwell@chromium.org>
 
         Remove unused return value from SourceBufferPrivate::abort() and WebSourceBuffer::abort().
