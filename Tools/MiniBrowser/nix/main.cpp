@@ -903,26 +903,77 @@ void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect c
     }
 }
 
+static void printContextMenuItem(const WKContextMenuItemRef item, const int optionIndex, const int level)
+{
+    const WKStringRef title = WKContextMenuItemCopyTitle(item);
+    if (WKStringIsEmpty(title)) {
+        WKRelease(title);
+        return;
+    }
+
+    const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
+    char* titleBuffer = new char[titleBufferSize];
+    WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
+
+    // No tabs for level 0.
+    for (int i = 0; i < level; ++i)
+        printf("\t");
+
+    printf("%d- %s\n", optionIndex, titleBuffer);
+    delete[] titleBuffer;
+    WKRelease(title);
+}
+
+static int renderContextMenu(const WKArrayRef menuItems, int& optionIndex, const int level = 0)
+{
+    size_t size = WKArrayGetSize(menuItems);
+    for (size_t i = 0; i < size; ++i) {
+        const WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
+        if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSeparator)
+            printf("--------------------\n");
+        else if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSubmenu) {
+            printContextMenuItem(item, optionIndex++, level);
+            const WKArrayRef subMenu = WKContextMenuCopySubmenuItems(item);
+            renderContextMenu(subMenu, optionIndex, level + 1);
+            WKRelease(subMenu);
+        } else
+            printContextMenuItem(item, optionIndex++, level);
+    }
+    return (optionIndex - 1);
+}
+
+static bool selectContextMenuItemAtIndex(const WKPageRef page, const WKArrayRef menuItems, const int index, int counter = 0)
+{
+    size_t size = WKArrayGetSize(menuItems);
+    for (size_t i = 0; i < size; ++i) {
+        const WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
+        if (counter == index) {
+            WKPageContextMenuItemSelected(page, item);
+            return true;
+        }
+        if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSubmenu) {
+            const WKArrayRef subMenu = WKContextMenuCopySubmenuItems(item);
+            return selectContextMenuItemAtIndex(page, subMenu, index, ++counter);
+        }
+        counter++;
+    }
+}
+
 void MiniBrowser::showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayRef menuItems, const void*)
 {
     // FIXME: we should have a GUI context menu at some point.
     printf("\n# CONTEXT MENU #\n");
-    size_t size = WKArrayGetSize(menuItems);
-    for (size_t i = 0; i < size; ++i) {
-        WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
-        const WKStringRef title = WKContextMenuItemCopyTitle(item);
-        const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
-        char* titleBuffer = new char[titleBufferSize];
-        WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
-        printf("%d- %s\n", i+1, titleBuffer);
-        delete[] titleBuffer;
-        WKRelease(title);
-    }
+
+    int optionIndex = 1;
+    printf("--------------------\n");
+    const int itemsCounter = renderContextMenu(menuItems, optionIndex);
+    printf("--------------------\n");
+
     int option = 0;
     printf("Context Menu option (0 for none): ");
     scanf("%d",&option);
-    if (option > 0)
-        WKPageContextMenuItemSelected(page, static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, option-1)));
+    if (option > 0 && option <= itemsCounter)
+        selectContextMenuItemAtIndex(page, menuItems, option - 1);
 }
 
 int main(int argc, char* argv[])
