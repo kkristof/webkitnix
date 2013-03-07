@@ -50,7 +50,7 @@ namespace WebCore {
     typedef GtkMenu* PlatformMenuDescription;
 #elif PLATFORM(WX)
     typedef wxMenu* PlatformMenuDescription;
-#elif PLATFORM(CHROMIUM) || PLATFORM(NIX)
+#elif PLATFORM(CHROMIUM)
     class ContextMenuItem;
     typedef const Vector<ContextMenuItem>* PlatformMenuDescription;
 #else

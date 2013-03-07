@@ -30,64 +30,28 @@
 #include "ContextMenu.h"
 
 #include "NotImplemented.h"
-#include "PlatformMenuDescription.h"
 
 namespace WebCore {
 
-ContextMenu::ContextMenu()
+ContextMenu::ContextMenu(PlatformContextMenu menu)
+{
+    getContextMenuItems(menu, m_items);
+}
+
+void ContextMenu::getContextMenuItems(PlatformContextMenu, Vector<ContextMenuItem>&)
 {
     notImplemented();
 }
 
-ContextMenu::~ContextMenu()
-{
-}
-
-void ContextMenu::appendItem(ContextMenuItem& item)
-{
-    m_items.append(item);
-}
-
-void ContextMenu::insertItem(unsigned position, ContextMenuItem& item)
-{
-    m_items.insert(position, item);
-}
-
-unsigned ContextMenu::itemCount() const
-{
-    return m_items.size();
-}
-
-void ContextMenu::setPlatformDescription(PlatformMenuDescription)
-{
-    notImplemented();
-}
-
-PlatformMenuDescription ContextMenu::platformDescription() const
-{
-    return const_cast<PlatformMenuDescription>(&m_items);
-}
-
-PlatformMenuDescription ContextMenu::releasePlatformDescription()
-{
-    return PlatformMenuDescription();
-}
-
-PlatformMenuDescription platformMenuDescription(Vector<ContextMenuItem>& menuItemVector)
+PlatformContextMenu ContextMenu::createPlatformContextMenuFromItems(const Vector<ContextMenuItem>&)
 {
     notImplemented();
     return 0;
 }
 
-Vector<ContextMenuItem> contextMenuItemVector(const Vector<ContextMenuItem>* items)
+PlatformContextMenu ContextMenu::platformContextMenu() const
 {
-    ASSERT(items);
-    return *items;
-}
-
-ContextMenuItem* ContextMenu::itemAtIndex(unsigned index, const PlatformMenuDescription)
-{
-    return &m_items[index];
+    return createPlatformContextMenuFromItems(m_items);
 }
 
 }
