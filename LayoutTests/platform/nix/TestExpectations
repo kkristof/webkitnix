@@ -3198,24 +3198,12 @@ storage/indexeddb/cursor-delete.html [ Failure Pass ]
 webaudio/waveshaper.html [ Failure Pass ]
 compositing/iframes/resizer.html [ Failure ]
 css3/flexbox/button.html [ Failure ]
-fast/dom/gc-dom-tree-lifetime.html [ Failure ]
 fast/events/touch/gesture/touch-gesture-scroll-div-not-propagated.html [ Failure ]
 fast/events/touch/gesture/touch-gesture-scroll-page-not-propagated.html [ Failure ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-stepup-stepdown-from-renderer.html [ Failure ]
 html5lib/generated/run-template-write.html [ Failure ]
 http/tests/loading/promote-img-preload-priority.html [ Failure ]
 http/tests/misc/will-send-request-returns-null-on-redirect.html [ Failure ]
-http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
-http/tests/security/xss-DENIED-xsl-external-entity.xml [ Failure ]
-compositing/background-color/background-color-alpha.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-change-to-text.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-composite.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-container.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-content-clip.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-padding-clip.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-simple.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-text-change.html [ ImageOnlyFailure ]
-compositing/background-color/background-color-text-clip.html [ ImageOnlyFailure ]
 compositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
@@ -3278,8 +3266,6 @@ compositing/color-matching/pdf-image-match.html [ Missing ]
 
 # Regressions after merge (ed1dcb7 b9b7af1)
 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Crash ]
-storage/indexeddb/cursor-finished.html [ Crash ]
-storage/indexeddb/keypath-basics.html [ Crash ]
 
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
@@ -3332,7 +3318,6 @@ http/tests/xmlhttprequest/cross-origin-no-credential-prompt.html [ Failure ]
 
 # Regressions: Unexpected text-only failures
 fast/workers/worker-close-more.html [ Failure ]
-http/tests/loading/307-after-303-after-post.html [ Failure ]
 
 # need more investigation
 transitions/negative-delay.html [ Failure Pass ]
