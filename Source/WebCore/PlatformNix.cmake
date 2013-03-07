@@ -84,17 +84,11 @@ list(APPEND WebCore_SOURCES
 
     platform/graphics/ImageSource.cpp
     platform/graphics/cairo/DrawingBufferCairo.cpp
-    platform/graphics/efl/GraphicsContext3DEfl.cpp
-    platform/graphics/efl/GraphicsContext3DPrivate.cpp
     platform/graphics/nix/IconNix.cpp
     platform/graphics/nix/ImageNix.cpp
     platform/graphics/OpenGLShims.cpp
     platform/graphics/opengl/Extensions3DOpenGLCommon.cpp
-    platform/graphics/opengl/GLPlatformContext.cpp
-    platform/graphics/opengl/GLPlatformSurface.cpp
     platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp
-    platform/graphics/surfaces/GraphicsSurface.cpp
-    platform/graphics/surfaces/GLTransportSurface.cpp
     platform/graphics/texmap/TextureMapperGL.cpp
     platform/graphics/texmap/TextureMapperShaderProgram.cpp
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
@@ -164,13 +158,15 @@ else ()
 endif ()
 
 if (WTF_USE_EGL)
-    list(APPEND WebCore_INCLUDE_DIRECTORIES
+    list(INSERT WebCore_INCLUDE_DIRECTORIES 0
         platform/graphics/egl
-        platform/graphics/surfaces/egl
         ${EGL_INCLUDE_DIR}
     )
     list(APPEND WebCore_SOURCES
-        platform/graphics/surfaces/egl/EGLContext.cpp
+        platform/graphics/cairo/GLContext.cpp
+        platform/graphics/cairo/GraphicsContext3DCairo.cpp
+        platform/graphics/cairo/GraphicsContext3DPrivate.cpp
+        platform/graphics/egl/GLContextFromCurrentEGL.cpp
     )
     list(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
 else ()
@@ -179,6 +175,13 @@ else ()
         ${X11_X11_INCLUDE_PATH}
     )
     list(APPEND WebCore_SOURCES
+        platform/graphics/efl/GraphicsContext3DEfl.cpp
+        platform/graphics/efl/GraphicsContext3DPrivate.cpp
+        platform/graphics/opengl/GLPlatformContext.cpp
+        platform/graphics/opengl/GLPlatformSurface.cpp
+        platform/graphics/surfaces/GLTransportSurface.cpp
+        platform/graphics/surfaces/GraphicsSurface.cpp
+
         platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
         platform/graphics/surfaces/glx/X11Helper.cpp
         platform/graphics/surfaces/glx/GLXContext.cpp
