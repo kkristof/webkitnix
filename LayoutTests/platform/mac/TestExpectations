@@ -753,6 +753,12 @@ fast/sub-pixel/zoomed-image-tiles.html [ ImageOnlyFailure ]
 # Needs rebaseline
 fast/sub-pixel/inline-block-with-padding.html [ Failure ]
 
+# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=107618
+# https://bugs.webkit.org/show_bug.cgi?id=107952
+compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Missing ]
+compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Missing ]
+compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
+
 # No CORS support for media elements is implemented yet.
 http/tests/security/video-cross-origin-readback.html
 
@@ -950,11 +956,13 @@ fast/canvas/canvas-quadratic-same-endpoint.html
 css3/filters/composited-during-transition-layertree.html
 
 # --- Custom Filters ---
-# The following 3 tests are currently skipped on Mac for slight color differences,
+# The following 5 tests are currently skipped on Mac for slight color differences,
 # please see the relevant bug: http://webkit.org/b/107487
 webkit.org/b/107487 css3/filters/custom/custom-filter-blend-fractional-destination-alpha.html [ Skip ]
 webkit.org/b/107487 css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ Skip ]
 webkit.org/b/107487 css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ Skip ]
+webkit.org/b/107487 css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ Skip ]
+webkit.org/b/107487 css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ Skip ]
 
 # --- Text ---
 fast/forms/text-control-intrinsic-widths.html
@@ -1363,11 +1371,6 @@ webkit.org/b/106151 [ Lion ] http/tests/misc/link-rel-icon-beforeload.html [ Pas
 
 webkit.org/b/106185 fast/frames/flattening/iframe-flattening-fixed-height.html [ Pass Failure ]
 
-webkit.org/b/106412 [ Debug ] editing/style/justify-without-enclosing-block.xhtml [ Crash ]
-webkit.org/b/106412 [ Debug ] editing/execCommand/insert-list-xml.xhtml [ Crash ]
-webkit.org/b/106412 [ Debug ] editing/pasteboard/paste-noscript-xhtml.xhtml [ Crash ]
-webkit.org/b/106412 [ Debug ] editing/pasteboard/paste-xml.xhtml [ Crash ]
-
 webkit.org/b/106957 svg/dom/SVGViewSpec-invalid-ref-crash.html [ Failure ]
 
 # Enable when support drag-and-drop autoscrolling
@@ -1399,13 +1402,6 @@ webkit.org/b/107567 svg/carto.net/combobox.svg [ Failure ]
 webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ] 
 webkit.org/b/106415 fast/workers/worker-document-leak.html [ Pass Failure ] 
 webkit.org/b/106415 fast/workers/worker-lifecycle.html [ Pass Failure ]
-
-# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=70634
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-background-color.html [ Failure ]
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-opacity.html [ Failure ]
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-transform.html [ Failure ]
-webkit.org/b/109507 compositing/rtl/rtl-fixed.html [ Failure ]
-webkit.org/b/109507 compositing/rtl/rtl-fixed-overflow.html [ Failure ]
 
 # Spellchecker behavior tests.
 webkit.org/b/108370 editing/spelling/spelling-double-clicked-word.html [ Skip ]
@@ -1446,3 +1442,21 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
+
+webkit.org/b/111521 editing/selection/selection-invalid-offset.html [ Crash Pass ]
+
+webkit.org/b/111613 platform/mac/fast/speechsynthesis/speech-synthesis-cancel.html [ Crash Pass ]
+
+webkit.org/b/110546 fast/parser/document-write-fighting-eof.html [ Crash ]
+
+webkit.org/b/111647 sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A1.1_T2.html [ Skip ]
+webkit.org/b/111647 sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A2.1_T2.html [ Skip ]
+
+webkit.org/b/111650 http/tests/cookies/third-party-cookie-relaxing.html [ Failure Pass ]
+webkit.org/b/111650 http/tests/cookies/third-party-cookie-accept-policy.html [ Failure Pass ]
+
+webkit.org/b/111754 inspector/debugger/debugger-expand-scope.html [ Crash Pass ]
+
+webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure Pass ]
+webkit.org/b/111606 fast/borders/border-fit.html [ Failure Pass ]
+webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure Pass ]

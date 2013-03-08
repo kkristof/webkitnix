@@ -502,7 +502,6 @@
 #endif
 
 #if PLATFORM(BLACKBERRY)
-#define WTF_USE_MERSENNE_TWISTER_19937 1
 #define WTF_USE_SKIA 1
 #define WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION 1
 #define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_DITHERING 1
@@ -516,10 +515,6 @@
 
 #if PLATFORM(NIX)
 #define ENABLE_GLOBAL_FASTMALLOC_NEW 0
-#endif
-
-#if OS(WINCE)
-#define WTF_USE_MERSENNE_TWISTER_19937 1
 #endif
 
 /* On Windows, use QueryPerformanceCounter by default */
@@ -950,7 +945,7 @@
 #define WTF_PLATFORM_CFNETWORK Error USE_macro_should_be_used_with_CFNETWORK
 
 /* FIXME: Eventually we should enable this for all platforms and get rid of the define. */
-#if PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
+#if PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(WIN) || PLATFORM(QT) || PLATFORM(GTK) || PLATFORM(EFL)
 #define WTF_USE_PLATFORM_STRATEGIES 1
 #endif
 
@@ -990,7 +985,7 @@
 #define WTF_USE_EXPORT_MACROS_FOR_TESTING 1
 #endif
 
-#if (PLATFORM(QT) && !OS(DARWIN) && !OS(WINDOWS)) || PLATFORM(GTK) || PLATFORM(EFL) || PLATFORM(NIX)
+#if (PLATFORM(QT) && !OS(DARWIN) && !OS(WINDOWS)) || PLATFORM(GTK) || PLATFORM(EFL)
 #define WTF_USE_UNIX_DOMAIN_SOCKETS 1
 #endif
 

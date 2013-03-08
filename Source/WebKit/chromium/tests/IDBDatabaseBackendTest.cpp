@@ -28,6 +28,7 @@
 #include "IDBDatabase.h"
 
 #include "IDBBackingStore.h"
+#include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendImpl.h"
 #include "IDBDatabaseCallbacksProxy.h"
 #include "IDBFactoryBackendImpl.h"

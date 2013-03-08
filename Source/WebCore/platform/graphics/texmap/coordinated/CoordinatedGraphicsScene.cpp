@@ -355,15 +355,23 @@ void CoordinatedGraphicsScene::setLayerState(CoordinatedLayerID id, const Coordi
         layer->setMasksToBounds(layerState.isRootLayer ? false : layerState.masksToBounds);
         layer->setPreserves3D(layerState.preserves3D);
 
+        bool fixedToViewportChanged = toGraphicsLayerTextureMapper(layer)->fixedToViewport() != layerState.fixedToViewport;
         toGraphicsLayerTextureMapper(layer)->setFixedToViewport(layerState.fixedToViewport);
+        if (fixedToViewportChanged) {
+            if (layerState.fixedToViewport)
+                m_fixedLayers.add(id, layer);
+            else
+                m_fixedLayers.remove(id);
+        }
+
         layer->setShowDebugBorder(layerState.showDebugBorders);
         layer->setShowRepaintCounter(layerState.showRepaintCounter);
+
+        toGraphicsLayerTextureMapper(layer)->setIsScrollable(layerState.isScrollable);
     }
 
-    if (layerState.fixedToViewport)
-        m_fixedLayers.add(id, layer);
-    else
-        m_fixedLayers.remove(id);
+    if (layerState.committedScrollOffsetChanged)
+        toGraphicsLayerTextureMapper(layer)->didCommitScrollOffset(layerState.committedScrollOffset);
 
     prepareContentBackingStore(layer);
 
@@ -376,7 +384,9 @@ void CoordinatedGraphicsScene::setLayerState(CoordinatedLayerID id, const Coordi
     setLayerFiltersIfNeeded(layer, layerState);
 #endif
     setLayerAnimationsIfNeeded(layer, layerState);
+#if USE(GRAPHICS_SURFACE)
     syncCanvasIfNeeded(layer, layerState);
+#endif
     setLayerRepaintCountIfNeeded(layer, layerState);
 }
 
@@ -395,6 +405,8 @@ void CoordinatedGraphicsScene::createLayer(CoordinatedLayerID id)
 {
     OwnPtr<GraphicsLayer> newLayer = GraphicsLayer::create(0 /* factory */, this);
     toGraphicsLayerTextureMapper(newLayer.get())->setHasOwnBackingStore(false);
+    toGraphicsLayerTextureMapper(newLayer.get())->setID(id);
+    toGraphicsLayerTextureMapper(newLayer.get())->setScrollClient(this);
     m_layers.add(id, newLayer.release());
 }
 
@@ -684,6 +696,16 @@ void CoordinatedGraphicsScene::purgeGLResources()
     dispatchOnMainThread(bind(&CoordinatedGraphicsScene::purgeBackingStores, this));
 }
 
+void CoordinatedGraphicsScene::dispatchCommitScrollOffset(uint32_t layerID, const IntSize& offset)
+{
+    m_client->commitScrollOffset(layerID, offset);
+}
+
+void CoordinatedGraphicsScene::commitScrollOffset(uint32_t layerID, const IntSize& offset)
+{
+    dispatchOnMainThread(bind(&CoordinatedGraphicsScene::dispatchCommitScrollOffset, this, layerID, offset));
+}
+
 void CoordinatedGraphicsScene::purgeBackingStores()
 {
     if (m_client)
@@ -749,6 +771,11 @@ void CoordinatedGraphicsScene::setActive(bool active)
 void CoordinatedGraphicsScene::setBackgroundColor(const Color& color)
 {
     m_backgroundColor = color;
+}
+
+TextureMapperLayer* CoordinatedGraphicsScene::findScrollableContentsLayerAt(const FloatPoint& point)
+{
+    return rootLayer() ? toTextureMapperLayer(rootLayer())->findScrollableContentsLayerAt(point) : 0;
 }
 
 } // namespace WebCore

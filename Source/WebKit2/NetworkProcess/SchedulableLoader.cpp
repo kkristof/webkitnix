@@ -28,6 +28,13 @@
 
 #if ENABLE(NETWORK_PROCESS)
 
+#include "NetworkBlobRegistry.h"
+#include "NetworkConnectionToWebProcess.h"
+#include "NetworkResourceLoadParameters.h"
+#include <WebCore/FormData.h>
+
+using namespace WebCore;
+
 namespace WebKit {
 
 SchedulableLoader::SchedulableLoader(const NetworkResourceLoadParameters& parameters, NetworkConnectionToWebProcess* connection)
@@ -46,7 +53,25 @@ SchedulableLoader::SchedulableLoader(const NetworkResourceLoadParameters& parame
         if (RefPtr<SandboxExtension> extension = SandboxExtension::create(parameters.requestBodySandboxExtensions()[i]))
             m_requestBodySandboxExtensions.append(extension);
     }
-    m_resourceSandboxExtension = SandboxExtension::create(parameters.resourceSandboxExtension());
+
+#if ENABLE(BLOB)
+    if (m_request.httpBody()) {
+        const Vector<FormDataElement>& elements = m_request.httpBody()->elements();
+        for (size_t i = 0, count = elements.size(); i < count; ++i) {
+            if (elements[i].m_type == FormDataElement::encodedBlob) {
+                Vector<RefPtr<SandboxExtension> > blobElementExtensions = NetworkBlobRegistry::shared().sandboxExtensions(elements[i].m_url);
+                m_requestBodySandboxExtensions.append(blobElementExtensions);
+            }
+        }
+    }
+
+    if (m_request.url().protocolIs("blob")) {
+        ASSERT(!SandboxExtension::create(parameters.resourceSandboxExtension()));
+        m_resourceSandboxExtensions = NetworkBlobRegistry::shared().sandboxExtensions(m_request.url());
+    } else
+#endif
+    if (RefPtr<SandboxExtension> resourceSandboxExtension = SandboxExtension::create(parameters.resourceSandboxExtension()))
+        m_resourceSandboxExtensions.append(resourceSandboxExtension);
 }
 
 SchedulableLoader::~SchedulableLoader()
@@ -66,8 +91,8 @@ void SchedulableLoader::consumeSandboxExtensions()
     for (size_t i = 0, count = m_requestBodySandboxExtensions.size(); i < count; ++i)
         m_requestBodySandboxExtensions[i]->consume();
 
-    if (m_resourceSandboxExtension)
-        m_resourceSandboxExtension->consume();
+    for (size_t i = 0, count = m_resourceSandboxExtensions.size(); i < count; ++i)
+        m_resourceSandboxExtensions[i]->consume();
 }
 
 void SchedulableLoader::invalidateSandboxExtensions()
@@ -75,8 +100,8 @@ void SchedulableLoader::invalidateSandboxExtensions()
     for (size_t i = 0, count = m_requestBodySandboxExtensions.size(); i < count; ++i)
         m_requestBodySandboxExtensions[i]->invalidate();
 
-    if (m_resourceSandboxExtension)
-        m_resourceSandboxExtension->invalidate();
+    for (size_t i = 0, count = m_resourceSandboxExtensions.size(); i < count; ++i)
+        m_resourceSandboxExtensions[i]->invalidate();
 }
 
 } // namespace WebKit

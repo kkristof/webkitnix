@@ -33,6 +33,7 @@ INSTALLDEPS += all
 debug_and_release: INCLUDEPATH += $$JAVASCRIPTCORE_GENERATED_SOURCES_DIR/$$targetSubDir()
 
 SOURCES += \
+    API/JSAPIWrapperObject.cpp \
     API/JSBase.cpp \
     API/JSCallbackConstructor.cpp \
     API/JSCallbackFunction.cpp \
@@ -121,6 +122,7 @@ SOURCES += \
     dfg/DFGCPSRethreadingPhase.cpp \
     dfg/DFGConstantFoldingPhase.cpp \
     dfg/DFGCSEPhase.cpp \
+    dfg/DFGDCEPhase.cpp \
     dfg/DFGDisassembler.cpp \
     dfg/DFGDominators.cpp \
     dfg/DFGDriver.cpp \
@@ -298,6 +300,7 @@ SOURCES += \
     runtime/PropertyDescriptor.cpp \
     runtime/PropertyNameArray.cpp \
     runtime/PropertySlot.cpp \
+    runtime/PropertyTable.cpp \
     runtime/PrototypeMap.cpp \
     runtime/RegExpConstructor.cpp \
     runtime/RegExpCachedResult.cpp \

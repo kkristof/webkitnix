@@ -1,3 +1,98 @@
+2013-03-06  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Stop using WebTransformationMatrix on WebLayer
+        https://bugs.webkit.org/show_bug.cgi?id=111635
+
+        Reviewed by Adrienne Walker.
+
+        WebLayer supports setting transforms by using either SkMatrix44 or WebTransformationMatrix,
+        both of which are wrappers around 16 doubles. There's no need to have both.
+
+        * chromium/public/WebLayer.h:
+        (WebKit):
+        (WebLayer):
+
+2013-03-06  Kenneth Russell  <kbr@google.com>
+
+        [Chromium] Fix byte ordering bugs reading back WebGL canvases' content on Android
+        https://bugs.webkit.org/show_bug.cgi?id=111661
+
+        Reviewed by James Robinson.
+
+        * chromium/public/WebGraphicsContext3D.h:
+        (WebGraphicsContext3D):
+            Better documented contract of readBackFrameBuffer.
+
+2013-03-06  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove WebSharedGraphicsContext3D class
+        https://bugs.webkit.org/show_bug.cgi?id=111492
+
+        Reviewed by James Robinson.
+
+        * Platform.gypi:
+        * chromium/public/WebSharedGraphicsContext3D.h: Removed.
+
+2013-03-06  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove the contents of WebVideoFrame class
+        https://bugs.webkit.org/show_bug.cgi?id=106037
+
+        Reviewed by James Robinson.
+
+        This class becomes an empty base class now, used only for the API
+        boundary.
+
+        * chromium/public/WebVideoFrame.h:
+        (WebKit):
+
+2013-03-05  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Scroll deltas should be floats
+        https://bugs.webkit.org/show_bug.cgi?id=111465
+
+        Reviewed by James Robinson.
+
+        This converts the remaining scroll delta fields to floats so that
+        we no longer lose precision due to DIP conversion. The natural
+        type for deltas is WebFloatSize, which was missing, so I also created
+        that type based on the existing WebSize header.
+
+        * Platform.gypi:
+        * chromium/public/WebFloatSize.h: Added.
+        (WebKit):
+        (WebFloatSize):
+        (WebKit::WebFloatSize::isEmpty):
+        (WebKit::WebFloatSize::WebFloatSize):
+        (WebKit::WebFloatSize::operator=):
+        (WebKit::WebFloatSize::operator WebCore::FloatSize):
+        (WebKit::WebFloatSize::operator gfx::SizeF):
+        (WebKit::WebFloatSize::operator gfx::Vector2dF):
+        (WebKit::operator==):
+        (WebKit::operator!=):
+        * chromium/public/WebGestureCurveTarget.h:
+        (WebKit::WebGestureCurveTarget::scrollBy):
+        (WebGestureCurveTarget):
+        * chromium/public/WebInputHandlerClient.h:
+        (WebKit::WebInputHandlerClient::scrollByIfPossible):
+        (WebInputHandlerClient):
+
+2013-03-04  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Move check for threaded compositing from WebCompositorSupport to Platform
+        https://bugs.webkit.org/show_bug.cgi?id=111386
+
+        Reviewed by Adrienne Walker.
+
+        This moves the query for if threaded compositing is enabled from WebCompositorSupport
+        to Platform. This is part of an effort to remove statefulness on WebCompositorSupport
+        and because it's much easier to override Platform functions for different tests.
+
+        * chromium/public/Platform.h:
+        (WebKit::Platform::isThreadedCompositingEnabled):
+        (Platform):
+        * chromium/public/WebCompositorSupport.h:
+
 2013-03-05  James Robinson  <jamesr@chromium.org>
 
         [chromium] Clean up WebWidget / WebLayerTreeView interactions

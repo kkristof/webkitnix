@@ -360,6 +360,9 @@ webkit.org/b/85463 editing/inserting/typing-space-to-trigger-smart-link.html
 # gestureTwoFingerTap not implemented by this platform (introduced in r132406)
 touchadjustment/touch-links-two-finger-tap.html
 
+# CURSOR_VISIBILITY is not enabled in qt
+webkit.org/b/107601 fullscreen/video-cursor-auto-hide.html [ Failure ]
+
 # =========================================================================== #
 #       Feature not yet supported.                                            #
 # =========================================================================== #
@@ -1901,6 +1904,8 @@ webkit.org/b/108508 fast/canvas/canvas-currentPath.html [ Skip ]
 
 webkit.org/b/111290 fast/regions/seamless-iframe-flowed-into-regions.html [ Skip ]
 
+webkit.org/b/111449 [ DEBUG ] fast/parser/document-write-fighting-eof.html [ Skip ]
+
 # ============================================================================= #
 # failing security tests
 # ============================================================================= #
@@ -2070,6 +2075,8 @@ platform/qt/http/tests/cookies/strict-third-party-cookie-blocking.html
 # [Qt] REGRESSION(63862): animations/play-state.html fails intermittently
 # https://bugs.webkit.org/show_bug.cgi?id=42821
 animations/play-state.html
+
+webkit.org/b/111612 animations/animation-delay-changed.html [ Skip ]
 
 # Still working out flakiness issues with the perf tests.
 # https://bugs.webkit.org/show_bug.cgi?id=44199
@@ -2641,11 +2648,6 @@ webkit.org/b/91665 fast/dynamic/absolute-positioned-to-static-positioned.html [ 
 webkit.org/b/91665 fast/dynamic/floating-to-non-floating.html [ Skip ]
 webkit.org/b/91665 fast/dynamic/static-positioned-to-absolute-positioned.html [ Skip ]
 
-# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=70634
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-background-color.html [ Failure ]
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-opacity.html [ Failure ]
-webkit.org/b/109507 compositing/contents-opaque/contents-opaque-layer-transform.html [ Failure ]
-
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109775
 webkit.org/b/109775 media/audio-controls-rendering.html [ Failure ]
 webkit.org/b/109775 media/controls-after-reload.html [ Failure ]
@@ -2673,3 +2675,8 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
+
+# Border-fit should happen at layout time rather than paint time
+webkit.org/b/111606 fast/borders/border-fit-2.html [ Skip ]
+webkit.org/b/111606 fast/borders/border-fit.html [ Skip ]
+webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Skip ]

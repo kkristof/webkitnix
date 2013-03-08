@@ -263,6 +263,9 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitColumnRuleWidth,
     CSSPropertyWebkitColumnSpan,
     CSSPropertyWebkitColumnWidth,
+#if ENABLE(CURSOR_VISIBILITY)
+    CSSPropertyWebkitCursorVisibility,
+#endif
 #if ENABLE(DASHBOARD_SUPPORT)
     CSSPropertyWebkitDashboardRegion,
 #endif
@@ -288,8 +291,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitGridEnd,
     CSSPropertyWebkitGridBefore,
     CSSPropertyWebkitGridAfter,
-    CSSPropertyWebkitGridColumn,
-    CSSPropertyWebkitGridRow,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitHyphenateCharacter,
     CSSPropertyWebkitHyphenateLimitAfter,
@@ -1847,6 +1848,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             return value.release();
         }
+#if ENABLE(CURSOR_VISIBILITY)
+        case CSSPropertyWebkitCursorVisibility:
+            return cssValuePool().createValue(style->cursorVisibility());
+#endif
         case CSSPropertyDirection:
             return cssValuePool().createValue(style->direction());
         case CSSPropertyDisplay:
@@ -1933,15 +1938,17 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForGridTrackList(style->gridRows(), style.get(), m_node->document()->renderView());
 
         case CSSPropertyWebkitGridStart:
-        case CSSPropertyWebkitGridColumn:
             return valueForGridPosition(style->gridItemStart());
         case CSSPropertyWebkitGridEnd:
             return valueForGridPosition(style->gridItemEnd());
         case CSSPropertyWebkitGridBefore:
-        case CSSPropertyWebkitGridRow:
             return valueForGridPosition(style->gridItemBefore());
         case CSSPropertyWebkitGridAfter:
             return valueForGridPosition(style->gridItemAfter());
+        case CSSPropertyWebkitGridColumn:
+            return getCSSPropertyValuesForGridShorthand(webkitGridColumnShorthand());
+        case CSSPropertyWebkitGridRow:
+            return getCSSPropertyValuesForGridShorthand(webkitGridRowShorthand());
 
         case CSSPropertyHeight:
             if (renderer) {
@@ -2189,10 +2196,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createIdentifierValue(CSSValueClip);
         case CSSPropertyWebkitTextSecurity:
             return cssValuePool().createValue(style->textSecurity());
-        case CSSPropertyWebkitTextSizeAdjust:
-            if (style->textSizeAdjust())
-                return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return cssValuePool().createIdentifierValue(CSSValueNone);
         case CSSPropertyWebkitTextStrokeColor:
             return currentColorOrValidColor(style.get(), style->textStrokeColor());
         case CSSPropertyWebkitTextStrokeWidth:
@@ -2941,6 +2944,16 @@ PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForSid
     if (showLeft)
         list->append(leftValue);
 
+    return list.release();
+}
+
+PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForGridShorthand(const StylePropertyShorthand& shorthand) const
+{
+    RefPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
+    for (size_t i = 0; i < shorthand.length(); ++i) {
+        RefPtr<CSSValue> value = getPropertyCSSValue(shorthand.properties()[i], DoNotUpdateLayout);
+        list->append(value);
+    }
     return list.release();
 }
 

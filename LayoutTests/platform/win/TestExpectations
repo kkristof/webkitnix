@@ -2292,7 +2292,12 @@ media/video-set-rate-from-pause.html
 media/video-src-change.html
 media/video-timeupdate-reverse-play.html
 media/W3C/video/src/src_removal_does_not_trigger_loadstart.html
+media/single-valid-source.html
+media/video-source-error-no-candidate.html
 media/video-src-remove.html
+media/video-size-intrinsic-scale.html
+media/video-source-media.html
+media/video-source-load.html
 
 # Interactive form validation not enabled on Windows
 fast/forms/number/number-interactive-validation-required.html
@@ -2647,7 +2652,6 @@ webkit.org/b/109994 tables/mozilla/bugs/bug92647-2.html [ Failure ]
 
 # Need rebaseline
 webkit.org/b/110654 css2.1/20110323/replaced-elements-001.htm [ Failure ]
-webkit.org/b/110654 svg/custom/foreign-object-skew.svg [ Failure ]
 webkit.org/b/110654 tables/mozilla/bugs/bug92647-2.html [ Failure ]
 # New test
 webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
@@ -2667,3 +2671,30 @@ css3/filters/custom-with-at-rule-syntax
 
 # bugs.webkit.org/show_bug.cgi?id=110447
 editing/spelling/spelling-changed-text.html
+
+# Skip a bunch of tests to get EWS bots in a better state.
+accessibility
+fast/events
+fast/text/international
+inspector-protocol
+plugins
+sputnik
+fast/xsl
+http
+fast/js
+fast/events
+fast/parser
+ietestcenter
+jquery
+media/media-fragments
+media/W3C
+
+# Test fails because webkit-image-set is not implemented on Windows
+# The test unfortunately outputs system specific information on assertion failure
+cssom/cssvalue-comparison.html
+
+# CURSOR_VISIBILITY is not enabled on win
+webkit.org/b/107601 fullscreen/video-cursor-auto-hide.html [ Failure ]
+
+# WEBVTT_REGIONS is not enabled on win
+media/track/regions-webvtt

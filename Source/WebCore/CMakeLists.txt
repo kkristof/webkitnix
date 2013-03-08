@@ -1326,10 +1326,10 @@ set(WebCore_SOURCES
     editing/UnlinkCommand.cpp
     editing/VisiblePosition.cpp
     editing/VisibleSelection.cpp
+    editing/VisibleUnits.cpp
     editing/WrapContentsInDummySpanCommand.cpp
     editing/htmlediting.cpp
     editing/markup.cpp
-    editing/visible_units.cpp
 
     fileapi/AsyncFileStream.cpp
     fileapi/Blob.cpp
@@ -1569,6 +1569,7 @@ set(WebCore_SOURCES
     html/parser/XSSAuditor.cpp
     html/parser/XSSAuditorDelegate.cpp
 
+    html/shadow/ClearButtonElement.cpp
     html/shadow/ContentDistributor.cpp
     html/shadow/ContentSelectorQuery.cpp
     html/shadow/DateTimeEditElement.cpp

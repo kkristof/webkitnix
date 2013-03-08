@@ -45,7 +45,7 @@ typedef struct objc_object* PlatformUIElement;
 #include <oleacc.h>
 
 typedef COMPtr<IAccessible> PlatformUIElement;
-#elif PLATFORM(GTK)
+#elif HAVE(ACCESSIBILITY) && (PLATFORM(GTK) || PLATFORM(EFL))
 #include <atk/atk.h>
 typedef AtkObject* PlatformUIElement;
 #else
@@ -255,6 +255,11 @@ public:
     void assistiveTechnologySimulatedFocus();
 #endif // PLATFORM(IOS)
 
+#if PLATFORM(MAC) && !PLATFORM(IOS)
+    // Returns an ordered list of supported actions for an element.
+    JSStringRef supportedActions();
+#endif
+    
 private:
     static JSClassRef getJSClass();
     PlatformUIElement m_element;

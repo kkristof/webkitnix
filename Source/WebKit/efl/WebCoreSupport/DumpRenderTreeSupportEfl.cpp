@@ -125,21 +125,6 @@ String DumpRenderTreeSupportEfl::layerTreeAsText(const Evas_Object* ewkFrame)
     return frame->layerTreeAsText();
 }
 
-bool DumpRenderTreeSupportEfl::elementDoesAutoCompleteForElementWithId(const Evas_Object* ewkFrame, const String& elementId)
-{
-    DRT_SUPPORT_FRAME_GET_OR_RETURN(ewkFrame, frame, false);
-
-    WebCore::Document* document = frame->document();
-    ASSERT(document);
-
-    WebCore::HTMLInputElement* inputElement = static_cast<WebCore::HTMLInputElement*>(document->getElementById(elementId));
-
-    if (!inputElement)
-        return false;
-
-    return inputElement->isTextField() && !inputElement->isPasswordField() && inputElement->shouldAutocomplete();
-}
-
 Eina_List* DumpRenderTreeSupportEfl::frameChildren(const Evas_Object* ewkFrame)
 {
     DRT_SUPPORT_FRAME_GET_OR_RETURN(ewkFrame, frame, 0);
@@ -772,6 +757,18 @@ int DumpRenderTreeSupportEfl::numberOfPendingGeolocationPermissionRequests(const
 }
 
 #if HAVE(ACCESSIBILITY)
+String DumpRenderTreeSupportEfl::accessibilityHelpText(const AtkObject* axObject)
+{
+    if (!axObject || !WEBKIT_IS_ACCESSIBLE(axObject))
+        return String();
+
+    WebCore::AccessibilityObject* coreObject = webkitAccessibleGetAccessibilityObject(WEBKIT_ACCESSIBLE(axObject));
+    if (!coreObject)
+        return String();
+
+    return coreObject->helpText();
+}
+
 AtkObject* DumpRenderTreeSupportEfl::rootAccessibleElement(const Evas_Object* ewkFrame)
 {
     DRT_SUPPORT_FRAME_GET_OR_RETURN(ewkFrame, frame, 0);

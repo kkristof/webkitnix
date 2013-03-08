@@ -109,7 +109,9 @@ td {
 </style>
 <script src="builders.js"></script>
 <script src="loader.js"></script>
+<script src="string.js"></script>
 <script src="dashboard_base.js"></script>
+<script src="ui.js"></script>
 <script src='webtreemap.js'></script>
 
 <div id='header-container'></div>
@@ -229,7 +231,7 @@ var g_webTree;
 
 function generatePage()
 {
-    $('header-container').innerHTML = htmlForTestTypeSwitcher();
+    $('header-container').innerHTML = ui.html.testTypeSwitcher();
 
     g_isGeneratingPage = true;
 

@@ -820,22 +820,6 @@ void RenderBox::applyCachedClipAndScrollOffsetForRepaint(LayoutRect& paintRect) 
     paintRect = intersection(paintRect, clipRect);
 }
 
-LayoutUnit RenderBox::minIntrinsicLogicalWidth() const
-{
-    LayoutUnit minLogicalWidth = 0;
-    LayoutUnit maxLogicalWidth = 0;
-    computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
-    return minLogicalWidth + borderAndPaddingLogicalWidth();
-}
-
-LayoutUnit RenderBox::maxIntrinsicLogicalWidth() const
-{
-    LayoutUnit minLogicalWidth = 0;
-    LayoutUnit maxLogicalWidth = 0;
-    computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
-    return maxLogicalWidth + borderAndPaddingLogicalWidth();
-}
-
 void RenderBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     minLogicalWidth = minPreferredLogicalWidth() - borderAndPaddingLogicalWidth();
@@ -1093,10 +1077,6 @@ void RenderBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& pai
     LayoutRect paintRect = borderBoxRectInRegion(paintInfo.renderRegion);
     paintRect.moveBy(paintOffset);
 
-    // border-fit can adjust where we paint our border and background.  If set, we snugly fit our line box descendants.  (The iChat
-    // balloon layout is an example of this).
-    borderFitAdjust(paintRect);
-
     BackgroundBleedAvoidance bleedAvoidance = determineBackgroundBleedAvoidance(paintInfo.context);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
@@ -1210,11 +1190,6 @@ void RenderBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         return;
 
     LayoutRect paintRect = LayoutRect(paintOffset, size());
-
-    // border-fit can adjust where we paint our border and background.  If set, we snugly fit our line box descendants.  (The iChat
-    // balloon layout is an example of this).
-    borderFitAdjust(paintRect);
-
     paintMaskImages(paintInfo, paintRect);
 }
 
@@ -1999,7 +1974,7 @@ void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& compute
     // width.  Use the width from the style context.
     // FIXME: Account for block-flow in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
-    if (hasOverrideWidth() && parent()->isFlexibleBoxIncludingDeprecated()) {
+    if (hasOverrideWidth() && (style()->borderFit() == BorderFitLines || parent()->isFlexibleBoxIncludingDeprecated())) {
         computedValues.m_extent = overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
         return;
     }
@@ -2064,28 +2039,44 @@ void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& compute
     }
 }
 
+LayoutUnit RenderBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth) const
+{
+    LayoutUnit marginStart = 0;
+    LayoutUnit marginEnd = 0;
+    return fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
+}
+
+LayoutUnit RenderBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const
+{
+    RenderView* renderView = view();
+    marginStart = minimumValueForLength(style()->marginStart(), availableLogicalWidth, renderView);
+    marginEnd = minimumValueForLength(style()->marginEnd(), availableLogicalWidth, renderView);
+    return availableLogicalWidth - marginStart - marginEnd;
+}
+
 LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth) const
 {
-    if (logicalWidthLength.type() == MinContent)
-        return minIntrinsicLogicalWidth();
-    if (logicalWidthLength.type() == MaxContent)
-        return maxIntrinsicLogicalWidth();
-
-    RenderView* renderView = view();
-    LayoutUnit marginStart = minimumValueForLength(style()->marginStart(), availableLogicalWidth, renderView);
-    LayoutUnit marginEnd = minimumValueForLength(style()->marginEnd(), availableLogicalWidth, renderView);
-    LayoutUnit fillAvailableMeasure = availableLogicalWidth - marginStart - marginEnd;
-
     if (logicalWidthLength.type() == FillAvailable)
-        return fillAvailableMeasure;
+        return fillAvailableMeasure(availableLogicalWidth);
+
+    LayoutUnit minLogicalWidth = 0;
+    LayoutUnit maxLogicalWidth = 0;
+    computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
+
+    LayoutUnit borderAndPadding = borderAndPaddingLogicalWidth();
+
+    if (logicalWidthLength.type() == MinContent)
+        return minLogicalWidth + borderAndPadding;
+
+    if (logicalWidthLength.type() == MaxContent)
+        return maxLogicalWidth + borderAndPadding;
+
     if (logicalWidthLength.type() == FitContent) {
-        LayoutUnit minLogicalWidth = 0;
-        LayoutUnit maxLogicalWidth = 0;
-        computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
-        minLogicalWidth += borderAndPaddingLogicalWidth();
-        maxLogicalWidth += borderAndPaddingLogicalWidth();
-        return max(minLogicalWidth, min(maxLogicalWidth, fillAvailableMeasure));
+        minLogicalWidth += borderAndPadding;
+        maxLogicalWidth += borderAndPadding;
+        return max(minLogicalWidth, min(maxLogicalWidth, fillAvailableMeasure(availableLogicalWidth)));
     }
+
     ASSERT_NOT_REACHED();
     return 0;
 }
@@ -2115,13 +2106,12 @@ LayoutUnit RenderBox::computeLogicalWidthInRegionUsing(SizeType widthType, Layou
     if (logicalWidth.isIntrinsic())
         return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth);
 
-    RenderView* renderView = view();
-    LayoutUnit marginStart = minimumValueForLength(styleToUse->marginStart(), availableLogicalWidth, renderView);
-    LayoutUnit marginEnd = minimumValueForLength(styleToUse->marginEnd(), availableLogicalWidth, renderView);
-    LayoutUnit logicalWidthResult = availableLogicalWidth - marginStart - marginEnd;
+    LayoutUnit marginStart = 0;
+    LayoutUnit marginEnd = 0;
+    LayoutUnit logicalWidthResult = fillAvailableMeasure(availableLogicalWidth, marginStart, marginEnd);
 
     if (shrinkToAvoidFloats() && cb->containsFloats())
-        logicalWidthResult = min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, cb, region, offsetFromLogicalTopOfFirstPage));
+        logicalWidthResult = min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, cb, region, offsetFromLogicalTopOfFirstPage));        
 
     if (widthType == MainOrPreferredSize && sizesLogicalWidthToFitContent(widthType))
         return max(minPreferredLogicalWidth(), min(maxPreferredLogicalWidth(), logicalWidthResult));

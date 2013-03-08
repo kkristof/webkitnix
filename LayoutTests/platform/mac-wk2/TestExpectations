@@ -292,6 +292,10 @@ webkit.org/b/105998 [ MountainLion Debug ] fast/css/sticky/sticky-both-sides.htm
 
 webkit.org/b/93552 inspector/device-orientation-success.html [ Failure ]
 
+webkit.org/b/107935 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Missing ]
+webkit.org/b/107935 compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Missing ]
+webkit.org/b/107935 compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Failure ]
+
 webkit.org/b/106405 http/tests/loading/authentication-after-redirect-stores-wrong-credentials/authentication-after-redirect-stores-wrong-credentials.html [ Failure ]
 webkit.org/b/106405 http/tests/loading/basic-auth-resend-wrong-credentials.html [ Failure ]
 webkit.org/b/106405 http/tests/loading/basic-credentials-sent-automatically.html [ Failure ]
@@ -312,6 +316,10 @@ webkit.org/b/108507 printing/standards-percentage-heights.html [ Skip ]
 webkit.org/b/107356 fast/css/sticky/sticky-top-zoomed.html [ ImageOnlyFailure ]
 
 webkit.org/b/109890 [ Debug ] platform/mac-wk2/plugins/destroy-during-async-npp-new.html [ Crash ]
+
+webkit.org/b/111814 platform/mac/accessibility/press-action-is-first.html [ Failure ]
+
+webkit.org/b/111815 http/tests/security/cross-frame-access-put.html [ Failure ]
 
 ### END OF (1) Classified failures with bug reports
 ########################################

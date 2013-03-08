@@ -1174,6 +1174,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\runtime\PropertyTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\runtime\PrototypeMap.cpp"
 				>
 			</File>
@@ -1411,6 +1415,14 @@
 			</File>
 			<File
 				RelativePath="..\..\runtime\JSAPIValueWrapper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\API\JSAPIWrapperObject.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\API\JSAPIWrapperObject.h"
 				>
 			</File>
 			<File

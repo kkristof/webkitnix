@@ -141,6 +141,7 @@ protected:
     WriteBarrier<Structure> m_callbackConstructorStructure;
     WriteBarrier<Structure> m_callbackFunctionStructure;
     WriteBarrier<Structure> m_callbackObjectStructure;
+    WriteBarrier<Structure> m_objcWrapperObjectStructure;
     WriteBarrier<Structure> m_dateStructure;
     WriteBarrier<Structure> m_nullPrototypeObjectStructure;
     WriteBarrier<Structure> m_errorStructure;
@@ -300,6 +301,7 @@ public:
     Structure* callbackConstructorStructure() const { return m_callbackConstructorStructure.get(); }
     Structure* callbackFunctionStructure() const { return m_callbackFunctionStructure.get(); }
     Structure* callbackObjectStructure() const { return m_callbackObjectStructure.get(); }
+    Structure* objcWrapperObjectStructure() const { return m_objcWrapperObjectStructure.get(); }
     Structure* dateStructure() const { return m_dateStructure.get(); }
     Structure* nullPrototypeObjectStructure() const { return m_nullPrototypeObjectStructure.get(); }
     Structure* errorStructure() const { return m_errorStructure.get(); }
@@ -390,7 +392,7 @@ public:
     unsigned weakRandomInteger() { return m_weakRandom.getUint32(); }
 
     UnlinkedProgramCodeBlock* createProgramCodeBlock(CallFrame*, ProgramExecutable*, JSObject** exception);
-    UnlinkedEvalCodeBlock* createEvalCodeBlock(CallFrame*, EvalExecutable*, JSObject** exception);
+    UnlinkedEvalCodeBlock* createEvalCodeBlock(CallFrame*, JSScope*, EvalExecutable*, JSObject** exception);
 
 protected:
 

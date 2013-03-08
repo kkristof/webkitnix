@@ -1,3 +1,116 @@
+2013-03-07  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] RefCounting ParsedCookie to avoid SegFaults
+        https://bugs.webkit.org/show_bug.cgi?id=111761
+
+        Reviewed by Rob Buis.
+
+        Making necessary changes to ref-count the ParsedCookie object.
+
+        * Api/WebCookieJar.cpp:
+        (BlackBerry::WebKit::WebCookieJar::cookies):
+
+2013-03-07  Mike Fenton  <mifenton@rim.com>
+
+        [BlackBerry] Prevent text selection inside Colour and Date/Time input fields
+        https://bugs.webkit.org/show_bug.cgi?id=111733
+
+        Reviewed by Rob Buis.
+
+        PR 305194.
+
+        Prevent selection for popup input fields as they are buttons.
+
+        Informally Reviewed Gen Mak.
+
+        * WebCoreSupport/EditorClientBlackBerry.cpp:
+        (WebCore::EditorClientBlackBerry::shouldChangeSelectedRange):
+
+2013-03-06  Nima Ghanavatian  <nghanavatian@rim.com>
+
+        [BlackBerry] Selection handles don't drag to expand correctly for RTL languages
+        https://bugs.webkit.org/show_bug.cgi?id=111618
+
+        Reviewed by Rob Buis.
+
+        PR 303712
+        If we are using a RTL language, we should ensure that the selection handles are angled the right way.
+        Further, when expanding the selection, the start and end handles should be appropriately set so that
+        expansion in the natural direction is possible.
+
+        Internally reviewed by Mike Fenton.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::SelectionHandler):
+        (BlackBerry::WebKit::SelectionHandler::selectionPositionChanged):
+        * WebKitSupport/SelectionHandler.h:
+        (SelectionHandler):
+
+2013-03-06  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Use the new authenticationChallenge API in WebPage
+        https://bugs.webkit.org/show_bug.cgi?id=111542
+
+        Reviewed by Rob Buis.
+
+        Use the new API that expects requestURL and isProxy parameters.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::authenticationChallenge):
+        * Api/WebPageClient.h:
+
+2013-03-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed some dead code in the page cache
+        https://bugs.webkit.org/show_bug.cgi?id=111525
+
+        Reviewed by Alexey Proskuryakov.
+
+        Page cache autorelease doesn't exist anymore, so there's no need to keep
+        around these olds hacks.
+
+        * Api/BlackBerryGlobal.cpp:
+        (BlackBerry::WebKit::clearMemoryCaches):
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPage::destroy):
+
+2013-03-06  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Use CachedResource::resourceBuffer() instead of CachedResource::data()
+        https://bugs.webkit.org/show_bug.cgi?id=111555
+
+        Reviewed by Rob Buis.
+
+        CachedResource::data() was renamed to
+        CachedResource::resourceBuffer() in r130947.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::webContext):
+
+2013-03-06  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Remove some unneeded header includes
+        https://bugs.webkit.org/show_bug.cgi?id=111545
+
+        Reviewed by Rob Buis.
+
+        * WebCoreSupport/CredentialTransformData.cpp:
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+
+2013-03-06  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Use hasTagName instead of hasLocalName in CredentialTransformData
+        https://bugs.webkit.org/show_bug.cgi?id=111544
+
+        Reviewed by Rob Buis.
+
+        hasLocalName() expects an AtomicString, but we are passing a
+        HTMLName which is a QualifiedName.
+
+        * WebCoreSupport/CredentialTransformData.cpp:
+        (WebCore::CredentialTransformData::findPasswordFormFields): Use
+        hasTagName() instead of hasLocalName().
+
 2013-03-05  Otto Derek Cheung  <otcheung@rim.com>
 
         [BlackBerry] Authentication credentials lost when opening a new tab

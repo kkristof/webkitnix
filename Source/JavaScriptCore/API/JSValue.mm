@@ -892,6 +892,13 @@ static ObjcContainerConvertor::Task objectToValueWithoutCopy(JSContext *context,
             JSObjectRef result = JSObjectMakeDate(contextRef, 1, &argument, 0);
             return (ObjcContainerConvertor::Task){ object, result, ContainerNone };
         }
+
+        if ([object isKindOfClass:[JSManagedValue class]]) {
+            JSValue *value = [static_cast<JSManagedValue *>(object) value];
+            if (!value)
+                return (ObjcContainerConvertor::Task) { object, JSValueMakeUndefined(contextRef), ContainerNone };
+            return (ObjcContainerConvertor::Task){ object, value->m_value, ContainerNone };
+        }
     }
 
     return (ObjcContainerConvertor::Task){ object, valueInternalValue([context wrapperForObjCObject:object]), ContainerNone };
@@ -948,13 +955,20 @@ JSValueRef valueInternalValue(JSValue * value)
     return [context wrapperForJSObject:value];
 }
 
+- (JSValue *)init
+{
+    return nil;
+}
+
 - (JSValue *)initWithValue:(JSValueRef)value inContext:(JSContext *)context
 {
+    if (!value || !context)
+        return nil;
+
     self = [super init];
     if (!self)
         return nil;
 
-    ASSERT(value);
     _context = [context retain];
     m_value = value;
     JSValueProtect([_context globalContextRef], m_value);

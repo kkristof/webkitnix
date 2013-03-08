@@ -237,6 +237,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     , m_mainFrameIsScrollable(true)
 #if PLATFORM(MAC)
     , m_pdfPluginEnabled(false)
+    , m_hasCachedWindowFrame(false)
     , m_windowIsVisible(false)
     , m_layerHostingMode(parameters.layerHostingMode)
     , m_keyboardEventBeingInterpreted(0)
@@ -2325,6 +2326,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setEditableLinkBehavior(static_cast<WebCore::EditableLinkBehavior>(store.getUInt32ValueForKey(WebPreferencesKey::editableLinkBehaviorKey())));
     settings->setShowsToolTipOverTruncatedText(store.getBoolValueForKey(WebPreferencesKey::showsToolTipOverTruncatedTextKey()));
 
+    settings->setAcceleratedCompositingForOverflowScrollEnabled(store.getBoolValueForKey(WebPreferencesKey::acceleratedCompositingForOverflowScrollEnabledKey()));
     settings->setAcceleratedCompositingEnabled(store.getBoolValueForKey(WebPreferencesKey::acceleratedCompositingEnabledKey()) && LayerTreeHost::supportsAcceleratedCompositing());
     settings->setAcceleratedDrawingEnabled(store.getBoolValueForKey(WebPreferencesKey::acceleratedDrawingEnabledKey()) && LayerTreeHost::supportsAcceleratedCompositing());
     settings->setCanvasUsesAcceleratedDrawing(store.getBoolValueForKey(WebPreferencesKey::canvasUsesAcceleratedDrawingKey()) && LayerTreeHost::supportsAcceleratedCompositing());
@@ -2905,6 +2907,14 @@ void WebPage::removePluginView(PluginView* pluginView)
     m_pluginViews.remove(pluginView);
 }
 
+void WebPage::sendSetWindowFrame(const FloatRect& windowFrame)
+{
+#if PLATFORM(MAC)
+    m_hasCachedWindowFrame = false;
+#endif
+    send(Messages::WebPageProxy::SetWindowFrame(windowFrame));
+}
+
 #if PLATFORM(MAC)
 void WebPage::setWindowIsVisible(bool windowIsVisible)
 {
@@ -2917,7 +2927,7 @@ void WebPage::setWindowIsVisible(bool windowIsVisible)
         (*it)->setWindowIsVisible(windowIsVisible);
 }
 
-void WebPage::windowAndViewFramesChanged(const IntRect& windowFrameInScreenCoordinates, const IntRect& viewFrameInWindowCoordinates, const IntPoint& accessibilityViewCoordinates)
+void WebPage::windowAndViewFramesChanged(const FloatRect& windowFrameInScreenCoordinates, const FloatRect& viewFrameInWindowCoordinates, const FloatPoint& accessibilityViewCoordinates)
 {
     m_windowFrameInScreenCoordinates = windowFrameInScreenCoordinates;
     m_viewFrameInWindowCoordinates = viewFrameInWindowCoordinates;
@@ -2925,7 +2935,9 @@ void WebPage::windowAndViewFramesChanged(const IntRect& windowFrameInScreenCoord
     
     // Tell all our plug-in views that the window and view frames have changed.
     for (HashSet<PluginView*>::const_iterator it = m_pluginViews.begin(), end = m_pluginViews.end(); it != end; ++it)
-        (*it)->windowAndViewFramesChanged(windowFrameInScreenCoordinates, viewFrameInWindowCoordinates);
+        (*it)->windowAndViewFramesChanged(enclosingIntRect(windowFrameInScreenCoordinates), enclosingIntRect(viewFrameInWindowCoordinates));
+
+    m_hasCachedWindowFrame = true;
 }
 #endif
 

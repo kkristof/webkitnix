@@ -658,16 +658,16 @@ bool WebViewImpl::handleMouseWheel(Frame& mainFrame, const WebMouseWheelEvent& e
     return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
 }
 
-void WebViewImpl::scrollBy(const WebPoint& delta)
+void WebViewImpl::scrollBy(const WebFloatSize& delta)
 {
     if (m_flingSourceDevice == WebGestureEvent::Touchpad) {
         WebMouseWheelEvent syntheticWheel;
         const float tickDivisor = WebCore::WheelEvent::TickMultiplier;
 
-        syntheticWheel.deltaX = delta.x;
-        syntheticWheel.deltaY = delta.y;
-        syntheticWheel.wheelTicksX = delta.x / tickDivisor;
-        syntheticWheel.wheelTicksY = delta.y / tickDivisor;
+        syntheticWheel.deltaX = delta.width;
+        syntheticWheel.deltaY = delta.height;
+        syntheticWheel.wheelTicksX = delta.width / tickDivisor;
+        syntheticWheel.wheelTicksY = delta.height / tickDivisor;
         syntheticWheel.hasPreciseScrollingDeltas = true;
         syntheticWheel.x = m_positionOnFlingStart.x;
         syntheticWheel.y = m_positionOnFlingStart.y;
@@ -681,8 +681,8 @@ void WebViewImpl::scrollBy(const WebPoint& delta)
         WebGestureEvent syntheticGestureEvent;
 
         syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdateWithoutPropagation;
-        syntheticGestureEvent.data.scrollUpdate.deltaX = delta.x;
-        syntheticGestureEvent.data.scrollUpdate.deltaY = delta.y;
+        syntheticGestureEvent.data.scrollUpdate.deltaX = delta.width;
+        syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
         syntheticGestureEvent.x = m_positionOnFlingStart.x;
         syntheticGestureEvent.y = m_positionOnFlingStart.y;
         syntheticGestureEvent.globalX = m_globalPositionOnFlingStart.x;
@@ -4067,7 +4067,7 @@ WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 void WebViewImpl::scheduleAnimation()
 {
     if (isAcceleratedCompositingActive()) {
-        if (Platform::current()->compositorSupport()->isThreadingEnabled()) {
+        if (Platform::current()->isThreadedCompositingEnabled()) {
             ASSERT(m_layerTreeView);
             m_layerTreeView->setNeedsAnimate();
         } else
@@ -4110,7 +4110,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->finishAllRendering();
         m_client->didDeactivateCompositor();
         if (!m_layerTreeViewCommitsDeferred
-            && WebKit::Platform::current()->compositorSupport()->isThreadingEnabled()) {
+            && WebKit::Platform::current()->isThreadedCompositingEnabled()) {
             ASSERT(m_layerTreeView);
             // In threaded compositing mode, force compositing mode is always on so setIsAcceleratedCompositingActive(false)
             // means that we're transitioning to a new page. Suppress commits until WebKit generates invalidations so
@@ -4243,14 +4243,6 @@ void WebViewImpl::updateLayerTreeViewport()
     FrameView* view = page()->mainFrame()->view();
     m_nonCompositedContentHost->setViewport(m_size, view->contentsSize(), view->scrollPosition(), view->scrollOrigin());
     m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), m_minimumPageScaleFactor, m_maximumPageScaleFactor);
-}
-
-WebGraphicsContext3D* WebViewImpl::sharedGraphicsContext3D()
-{
-    if (!m_page->settings()->acceleratedCompositingEnabled() || !allowsAcceleratedCompositing())
-        return 0;
-
-    return GraphicsContext3DPrivate::extractWebGraphicsContext3D(SharedGraphicsContext3D::get().get());
 }
 
 void WebViewImpl::selectAutofillSuggestionAtIndex(unsigned listIndex)

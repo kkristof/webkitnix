@@ -54,7 +54,7 @@ PassRefPtr<StorageAreaProxy> StorageAreaProxy::create(StorageNamespaceProxy* sto
 }
 
 StorageAreaProxy::StorageAreaProxy(StorageNamespaceProxy* storageNamespaceProxy, PassRefPtr<SecurityOrigin> securityOrigin)
-    : m_storageType(storageNamespaceProxy->storageType())
+    : m_storageNamespaceID(storageNamespaceProxy->storageNamespaceID())
     , m_quotaInBytes(storageNamespaceProxy->quotaInBytes())
     , m_storageAreaID(generateStorageAreaID())
 {
@@ -142,6 +142,8 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
     if (oldValue == value)
         return;
 
+    m_pendingValueChanges.add(key);
+
     WebProcess::shared().connection()->send(Messages::StorageManager::SetItem(m_storageAreaID, key, value, sourceFrame->document()->url()), 0);
 }
 
@@ -201,12 +203,29 @@ void StorageAreaProxy::closeDatabaseIfIdle()
 
 void StorageAreaProxy::didSetItem(const String& key, bool quotaError)
 {
-    // FIXME: Implement this.
+    ASSERT(m_pendingValueChanges.contains(key));
+
+    m_pendingValueChanges.remove(key);
+
+    if (quotaError)
+        resetValues();
 }
 
 void StorageAreaProxy::dispatchStorageEvent(const String& key, const String& oldValue, const String& newValue, const String& urlString)
 {
+    if (!shouldApplyChangesForKey(key))
+        return;
+
     // FIXME: Implement this.
+}
+
+StorageType StorageAreaProxy::storageType() const
+{
+    // A zero storage namespace ID is used for local storage.
+    if (!m_storageNamespaceID)
+        return LocalStorage;
+
+    return SessionStorage;
 }
 
 bool StorageAreaProxy::disabledByPrivateBrowsingInFrame(const Frame* sourceFrame) const
@@ -214,10 +233,25 @@ bool StorageAreaProxy::disabledByPrivateBrowsingInFrame(const Frame* sourceFrame
     if (!sourceFrame->page()->settings()->privateBrowsingEnabled())
         return false;
 
-    if (m_storageType != LocalStorage)
+    if (storageType() != LocalStorage)
         return true;
 
     return !SchemeRegistry::allowsLocalStorageAccessInPrivateBrowsing(sourceFrame->document()->securityOrigin()->protocol());
+}
+
+bool StorageAreaProxy::shouldApplyChangesForKey(const String& key) const
+{
+    // We have not yet loaded anything from this storage map.
+    if (!m_storageMap)
+        return false;
+
+    // Check if this storage area is currently waiting for the storage manager to update the given key.
+    // If that is the case, we don't want to apply any changes made by other storage areas, since
+    // our change was made last.
+    if (m_pendingValueChanges.contains(key))
+        return false;
+
+    return true;
 }
 
 void StorageAreaProxy::loadValuesIfNeeded()
@@ -232,6 +266,12 @@ void StorageAreaProxy::loadValuesIfNeeded()
 
     m_storageMap = StorageMap::create(m_quotaInBytes);
     m_storageMap->importItems(values);
+}
+
+void StorageAreaProxy::resetValues()
+{
+    m_storageMap = nullptr;
+    m_pendingValueChanges.clear();
 }
 
 } // namespace WebKit

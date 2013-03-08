@@ -292,6 +292,7 @@ webkit.org/b/71849 http/tests/security/webgl-remote-read-remote-image-allowed.ht
 webkit.org/b/71849 http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Skip ]
 webkit.org/b/71849 http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Skip ]
 webkit.org/b/71849 inspector/profiler/webgl [ Skip ]
+webkit.org/b/71849 webkit.org/b/111477 inspector-protocol/layers [ Skip ]
 webkit.org/b/71849 transforms/3d [ Skip ]
 webkit.org/b/71849 webgl [ Skip ]
 
@@ -486,6 +487,8 @@ webkit.org/b/110695 http/tests/security/cross-origin-local-storage-allowed.html 
 webkit.org/b/110695 http/tests/security/cross-origin-plugin-allowed.html [ Crash Pass ]
 webkit.org/b/110695 http/tests/security/cross-origin-plugin-private-browsing-toggled-allowed.html [ Crash Pass ]
 
+webkit.org/b/111449 [ Debug ] fast/parser/document-write-fighting-eof.html [ Crash ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Crashing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -520,8 +523,6 @@ webkit.org/b/74493 platform/gtk/accessibility/unknown-roles-not-exposed.html [ F
 webkit.org/b/76385 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Failure Pass ]
 
 webkit.org/b/78344 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
-
-webkit.org/b/80246 fast/css/hover-update.html [ Failure Pass ]
 
 webkit.org/b/86971 svg/custom/non-scaling-stroke-markers.svg [ Failure Pass ]
 
@@ -1347,6 +1348,7 @@ webkit.org/b/105574 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html 
 webkit.org/b/106563 fast/css/image-orientation/image-orientation.html [ Failure ]
 
 webkit.org/b/108169 fast/dom/shadow/touch-event.html [ Failure ]
+webkit.org/b/108169 fast/dom/shadow/touch-event-retargeting.html [ Failure ]
 
 webkit.org/b/108363 fullscreen/full-screen-iframe-legacy.html [ Failure ]
 
@@ -1401,6 +1403,13 @@ webkit.org/b/110694 html5lib/generated/run-plain-text-unsafe-data.html [ Failure
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
 
 webkit.org/b/111058 plugins/plugin-clip-subframe.html [ Failure ]
+
+# CURSOR_VISIBILITY is not enabled in gtk
+webkit.org/b/107601 fullscreen/video-cursor-auto-hide.html [ Failure ]
+
+webkit.org/b/111606 fast/borders/border-fit.html [ Failure ]
+webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure ]
+webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

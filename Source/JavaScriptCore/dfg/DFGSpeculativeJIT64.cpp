@@ -334,15 +334,21 @@ void SpeculativeJIT::nonSpeculativeNonPeepholeCompareNull(Edge operand, bool inv
     
     JITCompiler::Jump notCell;
     
-    if (!isKnownCell(operand.node()))
-        notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
-   
     JITCompiler::Jump notMasqueradesAsUndefined;
     if (m_jit.graph().globalObjectFor(operand->codeOrigin)->masqueradesAsUndefinedWatchpoint()->isStillValid()) {
+        if (!isKnownCell(operand.node()))
+            notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
+
         m_jit.graph().globalObjectFor(operand->codeOrigin)->masqueradesAsUndefinedWatchpoint()->add(speculationWatchpoint());
         m_jit.move(invert ? TrustedImm32(1) : TrustedImm32(0), resultGPR);
         notMasqueradesAsUndefined = m_jit.jump();
     } else {
+        GPRTemporary localGlobalObject(this);
+        GPRTemporary remoteGlobalObject(this);
+
+        if (!isKnownCell(operand.node()))
+            notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
+
         m_jit.loadPtr(JITCompiler::Address(argGPR, JSCell::structureOffset()), resultGPR);
         JITCompiler::Jump isMasqueradesAsUndefined = m_jit.branchTest8(JITCompiler::NonZero, JITCompiler::Address(resultGPR, Structure::typeInfoFlagsOffset()), JITCompiler::TrustedImm32(MasqueradesAsUndefined));
 
@@ -350,8 +356,6 @@ void SpeculativeJIT::nonSpeculativeNonPeepholeCompareNull(Edge operand, bool inv
         notMasqueradesAsUndefined = m_jit.jump();
 
         isMasqueradesAsUndefined.link(&m_jit);
-        GPRTemporary localGlobalObject(this);
-        GPRTemporary remoteGlobalObject(this);
         GPRReg localGlobalObjectGPR = localGlobalObject.gpr();
         GPRReg remoteGlobalObjectGPR = remoteGlobalObject.gpr();
         m_jit.move(JITCompiler::TrustedImmPtr(m_jit.graph().globalObjectFor(operand->codeOrigin)), localGlobalObjectGPR);
@@ -397,18 +401,22 @@ void SpeculativeJIT::nonSpeculativePeepholeBranchNull(Edge operand, Node* branch
     
     JITCompiler::Jump notCell;
     
-    if (!isKnownCell(operand.node()))
-        notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
-    
     if (m_jit.graph().globalObjectFor(operand->codeOrigin)->masqueradesAsUndefinedWatchpoint()->isStillValid()) {
+        if (!isKnownCell(operand.node()))
+            notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
+
         m_jit.graph().globalObjectFor(operand->codeOrigin)->masqueradesAsUndefinedWatchpoint()->add(speculationWatchpoint());
         jump(invert ? taken : notTaken, ForceJump);
     } else {
-        m_jit.loadPtr(JITCompiler::Address(argGPR, JSCell::structureOffset()), resultGPR);
-        branchTest8(JITCompiler::Zero, JITCompiler::Address(resultGPR, Structure::typeInfoFlagsOffset()), JITCompiler::TrustedImm32(MasqueradesAsUndefined), invert ? taken : notTaken);
-   
         GPRTemporary localGlobalObject(this);
         GPRTemporary remoteGlobalObject(this);
+
+        if (!isKnownCell(operand.node()))
+            notCell = m_jit.branchTest64(MacroAssembler::NonZero, argGPR, GPRInfo::tagMaskRegister);
+
+        m_jit.loadPtr(JITCompiler::Address(argGPR, JSCell::structureOffset()), resultGPR);
+        branchTest8(JITCompiler::Zero, JITCompiler::Address(resultGPR, Structure::typeInfoFlagsOffset()), JITCompiler::TrustedImm32(MasqueradesAsUndefined), invert ? taken : notTaken);
+
         GPRReg localGlobalObjectGPR = localGlobalObject.gpr();
         GPRReg remoteGlobalObjectGPR = remoteGlobalObject.gpr();
         m_jit.move(TrustedImmPtr(m_jit.graph().globalObjectFor(operand->codeOrigin)), localGlobalObjectGPR);
@@ -1966,6 +1974,22 @@ void SpeculativeJIT::compile(Node* node)
         m_jit.load64(JITCompiler::addressFor(node->unlinkedLocal()), result.gpr());
         
         jsValueResult(result.gpr(), node);
+        break;
+    }
+        
+    case MovHintAndCheck: {
+        compileMovHintAndCheck(node);
+        break;
+    }
+        
+    case InlineStart: {
+        compileInlineStart(node);
+        break;
+    }
+
+    case MovHint:
+    case ZombieHint: {
+        RELEASE_ASSERT_NOT_REACHED();
         break;
     }
 
@@ -3549,64 +3573,16 @@ void SpeculativeJIT::compile(Node* node)
     }
         
     case ConvertThis: {
-        switch (node->child1().useKind()) {
-        case OtherUse: {
-            JSValueOperand thisValue(this, node->child1(), ManualOperandSpeculation);
-            GPRTemporary scratch(this);
-            GPRReg thisValueGPR = thisValue.gpr();
-            GPRReg scratchGPR = scratch.gpr();
-            
-            if (needsTypeCheck(node->child1(), SpecOther)) {
-                m_jit.move(thisValueGPR, scratchGPR);
-                m_jit.and64(MacroAssembler::TrustedImm32(~TagBitUndefined), scratchGPR);
-                typeCheck(
-                    JSValueRegs(thisValueGPR), node->child1(), SpecOther,
-                    m_jit.branch64(
-                        MacroAssembler::NotEqual, scratchGPR,
-                        MacroAssembler::TrustedImm64(ValueNull)));
-            }
-            
-            m_jit.move(MacroAssembler::TrustedImmPtr(m_jit.globalThisObjectFor(node->codeOrigin)), scratchGPR);
-            cellResult(scratchGPR, node);
-            break;
-        }
+        ASSERT(node->child1().useKind() == UntypedUse);
+        JSValueOperand thisValue(this, node->child1());
+        GPRReg thisValueGPR = thisValue.gpr();
         
-        case ObjectUse: {
-            SpeculateCellOperand thisValue(this, node->child1());
-            GPRTemporary result(this, thisValue);
-            GPRReg thisValueGPR = thisValue.gpr();
-            GPRReg resultGPR = result.gpr();
-            
-            DFG_TYPE_CHECK(
-                JSValueSource::unboxedCell(thisValueGPR), node->child1(), SpecObject,
-                m_jit.branchPtr(
-                    JITCompiler::Equal,
-                    JITCompiler::Address(thisValueGPR, JSCell::structureOffset()),
-                    JITCompiler::TrustedImmPtr(m_jit.globalData()->stringStructure.get())));
-            
-            m_jit.move(thisValueGPR, resultGPR);
-            
-            cellResult(resultGPR, node);
-            break;
-        }
-            
-        case UntypedUse: {
-            JSValueOperand thisValue(this, node->child1());
-            GPRReg thisValueGPR = thisValue.gpr();
-            
-            flushRegisters();
-            
-            GPRResult result(this);
-            callOperation(operationConvertThis, result.gpr(), thisValueGPR);
-            
-            cellResult(result.gpr(), node);
-            break;
-        }
-            
-        default:
-            RELEASE_ASSERT_NOT_REACHED();
-            break;
-        }
+        flushRegisters();
+        
+        GPRResult result(this);
+        callOperation(operationConvertThis, result.gpr(), thisValueGPR);
+        
+        cellResult(result.gpr(), node);
         break;
     }
 
@@ -4176,9 +4152,11 @@ void SpeculativeJIT::compile(Node* node)
     case IsUndefined: {
         JSValueOperand value(this, node->child1());
         GPRTemporary result(this);
-        
+        GPRTemporary localGlobalObject(this);
+        GPRTemporary remoteGlobalObject(this);
+
         JITCompiler::Jump isCell = m_jit.branchTest64(JITCompiler::Zero, value.gpr(), GPRInfo::tagMaskRegister);
-        
+
         m_jit.compare64(JITCompiler::Equal, value.gpr(), TrustedImm32(ValueUndefined), result.gpr());
         JITCompiler::Jump done = m_jit.jump();
         
@@ -4195,8 +4173,6 @@ void SpeculativeJIT::compile(Node* node)
             notMasqueradesAsUndefined = m_jit.jump();
 
             isMasqueradesAsUndefined.link(&m_jit);
-            GPRTemporary localGlobalObject(this);
-            GPRTemporary remoteGlobalObject(this);
             GPRReg localGlobalObjectGPR = localGlobalObject.gpr();
             GPRReg remoteGlobalObjectGPR = remoteGlobalObject.gpr();
             m_jit.move(TrustedImmPtr(m_jit.globalObjectFor(node->codeOrigin)), localGlobalObjectGPR);
@@ -4788,7 +4764,6 @@ void SpeculativeJIT::compile(Node* node)
         noResult(node);
         break;
         
-    case InlineStart:
     case Nop:
         RELEASE_ASSERT_NOT_REACHED();
         break;

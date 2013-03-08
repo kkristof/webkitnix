@@ -1,5 +1,13 @@
+AH_TOP([
+#ifndef __AUTOTOOLSCONFIG_H__
+#define __AUTOTOOLSCONFIG_H__ 1
+])
+
 # This adds the include line to the bottom of the autoconfig header.
-AH_BOTTOM([#include "WebKitFeatures.h"])
+AH_BOTTOM([
+#include "WebKitFeatures.h"
+#endif // __AUTOTOOLSCONFIG_H__
+])
 
 # This list of features represents those selected for release builds.
 # If you are adding a new or unstable feature, you should mark it
@@ -64,6 +72,7 @@ read -d '' DEFAULT_FEATURE_DEFINES <<"EOF"
 	ENABLE_MEDIA_CAPTURE=0
 	ENABLE_MEDIA_SOURCE=0
 	ENABLE_MEDIA_STATISTICS=0
+	ENABLE_MEDIA_STREAM=0
 	ENABLE_METER_ELEMENT=1
 	ENABLE_MHTML=1
 	ENABLE_MICRODATA=0
@@ -117,12 +126,6 @@ if test "$enable_video" = "yes"; then
     DEFAULT_FEATURE_DEFINES="$DEFAULT_FEATURE_DEFINES ENABLE_VIDEO=1"
 else
     DEFAULT_FEATURE_DEFINES="$DEFAULT_FEATURE_DEFINES ENABLE_VIDEO=0"
-fi
-
-if test "$enable_media_stream" = "yes"; then
-    DEFAULT_FEATURE_DEFINES="$DEFAULT_FEATURE_DEFINES ENABLE_MEDIA_STREAM=1"
-else
-    DEFAULT_FEATURE_DEFINES="$DEFAULT_FEATURE_DEFINES ENABLE_MEDIA_STREAM=0"
 fi
 
 if test "$enable_css_shaders" = "yes"; then

@@ -101,6 +101,7 @@
 #include "TemplateContentDocumentFragment.h"
 #include "Text.h"
 #include "TextEvent.h"
+#include "TouchEvent.h"
 #include "TreeScopeAdopter.h"
 #include "UIEvent.h"
 #include "UIEventWithKeyState.h"
@@ -540,22 +541,22 @@ Node* Node::firstDescendant() const
     return n;
 }
 
-bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, bool shouldLazyAttach)
+bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return toContainerNode(this)->insertBefore(newChild, refChild, ec, shouldLazyAttach);
+    return toContainerNode(this)->insertBefore(newChild, refChild, ec, attachBehavior);
 }
 
-bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, bool shouldLazyAttach)
+bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return toContainerNode(this)->replaceChild(newChild, oldChild, ec, shouldLazyAttach);
+    return toContainerNode(this)->replaceChild(newChild, oldChild, ec, attachBehavior);
 }
 
 bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
@@ -567,13 +568,13 @@ bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
     return toContainerNode(this)->removeChild(oldChild, ec);
 }
 
-bool Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, bool shouldLazyAttach)
+bool Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, AttachBehavior attachBehavior)
 {
     if (!isContainerNode()) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return toContainerNode(this)->appendChild(newChild, ec, shouldLazyAttach);
+    return toContainerNode(this)->appendChild(newChild, ec, attachBehavior);
 }
 
 void Node::remove(ExceptionCode& ec)
@@ -2328,6 +2329,10 @@ bool Node::dispatchEvent(PassRefPtr<Event> event)
 {
     if (event->isMouseEvent())
         return EventDispatcher::dispatchEvent(this, MouseEventDispatchMediator::create(adoptRef(toMouseEvent(event.leakRef())), MouseEventDispatchMediator::SyntheticMouseEvent));
+#if ENABLE(TOUCH_EVENTS)
+    if (event->isTouchEvent())
+        return dispatchTouchEvent(adoptRef(toTouchEvent(event.leakRef())));
+#endif
     return EventDispatcher::dispatchEvent(this, EventDispatchMediator::create(event));
 }
 
@@ -2385,6 +2390,13 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
     if (!gestureEvent.get())
         return false;
     return EventDispatcher::dispatchEvent(this, GestureEventDispatchMediator::create(gestureEvent));
+}
+#endif
+
+#if ENABLE(TOUCH_EVENTS)
+bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)
+{
+    return EventDispatcher::dispatchEvent(this, TouchEventDispatchMediator::create(event));
 }
 #endif
 

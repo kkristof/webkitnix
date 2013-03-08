@@ -33,10 +33,10 @@
 
 #include "../../../Platform/chromium/public/WebCanvas.h"
 #include "../../../Platform/chromium/public/WebFileSystem.h"
+#include "../../../Platform/chromium/public/WebMessagePortChannel.h"
 #include "../../../Platform/chromium/public/WebReferrerPolicy.h"
 #include "../../../Platform/chromium/public/WebURL.h"
 #include "WebIconURL.h"
-#include "WebMessagePortChannel.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
 
@@ -402,10 +402,10 @@ public:
     // Returns the number of registered unload listeners.
     virtual unsigned unloadListenerCount() const = 0;
 
-    // Returns true if a user gesture is currently being processed.
+    // Returns true if a user gesture is currently being processed. Deprecated.
     virtual bool isProcessingUserGesture() const = 0;
 
-    // Returns true if a consumable gesture exists and has been successfully consumed.
+    // Returns true if a consumable gesture exists and has been successfully consumed. Deprecated.
     virtual bool consumeUserGesture() const = 0;
 
     // Returns true if this frame is in the process of opening a new frame

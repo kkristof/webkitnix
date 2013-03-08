@@ -62,11 +62,13 @@ public:
 
     void layerTreeDidChange();
     void renderLayerDestroyed(const RenderLayer*);
+    void pseudoElementDestroyed(PseudoElement*);
 
     // Called from the front-end.
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void layersForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
+    virtual void reasonsForCompositingLayer(ErrorString*, const String& layerId, RefPtr<TypeBuilder::LayerTree::CompositingReasons>&);
 
 private:
     InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*);
@@ -82,11 +84,17 @@ private:
     PassRefPtr<TypeBuilder::LayerTree::IntRect> buildObjectForIntRect(const IntRect&);
 
     int idForNode(ErrorString*, Node*);
-        
+
+    String bindPseudoElement(PseudoElement*);
+    void unbindPseudoElement(PseudoElement*);
+
     InspectorFrontend::LayerTree* m_frontend;
 
     HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
     HashMap<String, const RenderLayer*> m_idToLayer;
+
+    HashMap<PseudoElement*, String> m_pseudoElementToIdMap;
+    HashMap<String, PseudoElement*> m_idToPseudoElement;
 };
 
 } // namespace WebCore

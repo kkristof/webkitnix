@@ -554,7 +554,7 @@ SOURCES += \
     editing/UnlinkCommand.cpp \
     editing/VisiblePosition.cpp \
     editing/VisibleSelection.cpp \
-    editing/visible_units.cpp \
+    editing/VisibleUnits.cpp \
     editing/WrapContentsInDummySpanCommand.cpp \
     fileapi/AsyncFileStream.cpp \
     fileapi/AsyncFileStream.cpp \
@@ -751,6 +751,7 @@ SOURCES += \
     html/parser/TextViewSourceParser.cpp \
     html/parser/XSSAuditor.cpp \
     html/parser/XSSAuditorDelegate.cpp \
+    html/shadow/ClearButtonElement.cpp \
     html/shadow/ContentDistributor.cpp \
     html/shadow/ContentSelectorQuery.cpp \
     html/shadow/DateTimeEditElement.cpp \
@@ -1779,7 +1780,7 @@ HEADERS += \
     editing/UnlinkCommand.h \
     editing/VisiblePosition.h \
     editing/VisibleSelection.h \
-    editing/visible_units.h \
+    editing/VisibleUnits.h \
     editing/WrapContentsInDummySpanCommand.h \
     fileapi/Blob.h \
     fileapi/BlobURL.h \

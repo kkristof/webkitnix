@@ -988,10 +988,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueDisc || valueID == CSSValueCircle || valueID == CSSValueSquare || valueID == CSSValueNone)
             return true;
         break;
-    case CSSPropertyWebkitTextSizeAdjust:
-        if (valueID == CSSValueAuto || valueID == CSSValueNone)
-            return true;
-        break;
     case CSSPropertyWebkitTransformStyle:
         if (valueID == CSSValueFlat || valueID == CSSValuePreserve3d)
             return true;
@@ -1143,7 +1139,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyWebkitTextSizeAdjust:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
@@ -2073,6 +2068,13 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     }
 
+#if ENABLE(CURSOR_VISIBILITY)
+    case CSSPropertyWebkitCursorVisibility:
+        if (id == CSSValueAuto || id == CSSValueAutoHide)
+            validPrimitive = true;
+        break;
+#endif
+
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundClip:
     case CSSPropertyWebkitBackgroundClip:
@@ -2603,12 +2605,19 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitGridEnd:
     case CSSPropertyWebkitGridBefore:
     case CSSPropertyWebkitGridAfter:
-    case CSSPropertyWebkitGridColumn:
-    case CSSPropertyWebkitGridRow:
         if (!cssGridLayoutEnabled())
             return false;
+
         validPrimitive = id == CSSValueAuto || validUnit(value, FInteger);
         break;
+
+    case CSSPropertyWebkitGridColumn:
+    case CSSPropertyWebkitGridRow: {
+        if (!cssGridLayoutEnabled())
+            return false;
+
+        return parseGridItemPositionShorthand(propId, important);
+    }
 
     case CSSPropertyWebkitMarginCollapse: {
         if (num == 1) {
@@ -2767,7 +2776,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         if (parseShorthand(propId, borderAbridgedShorthand(), important)) {
             // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
             // though a value of none was specified for the image.
-            addProperty(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
+            addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
             return true;
         }
         return false;
@@ -3018,7 +3027,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyWebkitTextSizeAdjust:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
@@ -4672,6 +4680,30 @@ bool CSSParser::parseAnimationProperty(CSSPropertyID propId, RefPtr<CSSValue>& r
         return true;
     }
     return false;
+}
+
+bool CSSParser::parseGridItemPositionShorthand(CSSPropertyID shorthandId, bool important)
+{
+    ShorthandScope scope(this, shorthandId);
+    const StylePropertyShorthand& shorthand = shorthandForProperty(shorthandId);
+    ASSERT(shorthand.length() == 2);
+    if (!parseValue(shorthand.properties()[0], important))
+        return false;
+
+    if (!m_valueList->current()) {
+        // Only one value was specified, the opposite value should be set to 'auto'.
+        // FIXME: If the first property was <ident>, the opposite value should be the same <ident>.
+        addProperty(shorthand.properties()[1], cssValuePool().createIdentifierValue(CSSValueAuto), important);
+        return true;
+    }
+
+    if (!isForwardSlashOperator(m_valueList->current()))
+        return false;
+
+    if (!m_valueList->next())
+        return false;
+
+    return parseValue(shorthand.properties()[1], important);
 }
 
 bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)

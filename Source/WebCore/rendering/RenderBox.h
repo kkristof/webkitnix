@@ -294,9 +294,6 @@ public:
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
-    LayoutUnit minIntrinsicLogicalWidth() const;
-    LayoutUnit maxIntrinsicLogicalWidth() const;
-
     virtual LayoutUnit minPreferredLogicalWidth() const;
     virtual LayoutUnit maxPreferredLogicalWidth() const;
 
@@ -329,8 +326,6 @@ public:
     LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
     LayoutUnit adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
     LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
-
-    virtual void borderFitAdjust(LayoutRect&) const { } // Shrink the box in which the border paints if border-fit is set.
 
     struct ComputedMarginValues {
         ComputedMarginValues()
@@ -657,6 +652,9 @@ private:
 
     void computePositionedLogicalHeightReplaced(LogicalExtentComputedValues&) const;
     void computePositionedLogicalWidthReplaced(LogicalExtentComputedValues&) const;
+
+    LayoutUnit fillAvailableMeasure(LayoutUnit availableLogicalWidth) const;
+    LayoutUnit fillAvailableMeasure(LayoutUnit availableLogicalWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const;
 
     LayoutUnit computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth) const;
 

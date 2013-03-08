@@ -3202,8 +3202,8 @@ webcore_sources += \
 	Source/WebCore/editing/VisiblePosition.h \
 	Source/WebCore/editing/VisibleSelection.cpp \
 	Source/WebCore/editing/VisibleSelection.h \
-	Source/WebCore/editing/visible_units.cpp \
-	Source/WebCore/editing/visible_units.h \
+	Source/WebCore/editing/VisibleUnits.cpp \
+	Source/WebCore/editing/VisibleUnits.h \
 	Source/WebCore/editing/WrapContentsInDummySpanCommand.cpp \
 	Source/WebCore/editing/WrapContentsInDummySpanCommand.h \
 	Source/WebCore/editing/WritingDirection.h \
@@ -3661,6 +3661,8 @@ webcore_sources += \
 	Source/WebCore/html/parser/XSSAuditorDelegate.h \
 	Source/WebCore/html/shadow/PickerIndicatorElement.cpp \
 	Source/WebCore/html/shadow/PickerIndicatorElement.h \
+	Source/WebCore/html/shadow/ClearButtonElement.cpp \
+	Source/WebCore/html/shadow/ClearButtonElement.h \
 	Source/WebCore/html/shadow/ContentDistributor.cpp \
 	Source/WebCore/html/shadow/ContentDistributor.h \
 	Source/WebCore/html/shadow/ContentSelectorQuery.cpp \

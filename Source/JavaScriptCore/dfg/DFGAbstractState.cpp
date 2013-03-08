@@ -314,6 +314,18 @@ bool AbstractState::executeEffects(unsigned indexInBlock, Node* node)
         m_variables.operand(node->local()) = forNode(node->child1());
         break;
     }
+        
+    case MovHintAndCheck: {
+        // Don't need to do anything. A MovHint is effectively a promise that the SetLocal
+        // was dead.
+        break;
+    }
+        
+    case MovHint:
+    case ZombieHint: {
+        RELEASE_ASSERT_NOT_REACHED();
+        break;
+    }
             
     case SetArgument:
         // Assert that the state of arguments has been set.
@@ -1088,31 +1100,8 @@ bool AbstractState::executeEffects(unsigned indexInBlock, Node* node)
         AbstractValue& source = forNode(node->child1());
         AbstractValue& destination = forNode(node);
             
-        if (isObjectSpeculation(source.m_type)) {
-            // This is the simple case. We already know that the source is an
-            // object, so there's nothing to do. I don't think this case will
-            // be hit, but then again, you never know.
-            destination = source;
-            m_foundConstants = true; // Tell the constant folder to turn this into Identity.
-            break;
-        }
-        
-        node->setCanExit(true);
-        switch (node->child1().useKind()) {
-        case OtherUse:
-            destination.set(SpecObjectOther);
-            break;
-        case ObjectUse:
-            destination = source;
-            break;
-        case UntypedUse:
-            destination = source;
-            destination.merge(SpecObjectOther);
-            break;
-        default:
-            RELEASE_ASSERT_NOT_REACHED();
-            break;
-        }
+        destination = source;
+        destination.merge(SpecObjectOther);
         break;
     }
 
@@ -1628,18 +1617,6 @@ inline bool AbstractState::mergeStateAtTail(AbstractValue& destination, Abstract
             break;
             
         case GetLocal:
-            // If the GetLocal is dead, then we transfer from head to tail.
-            // FIXME: We can get rid of this case after https://bugs.webkit.org/show_bug.cgi?id=109389
-            if (!node->shouldGenerate()) {
-                // The block transfers the value from head to tail.
-                source = inVariable;
-#if DFG_ENABLE(DEBUG_PROPAGATION_VERBOSE)
-                dataLogF("          Transfering ");
-                source.dump(WTF::dataFile());
-                dataLogF(" from head to tail (dead GetLocal case).\n");
-#endif
-                break;
-            }
             // The block refines the value with additional speculations.
             source = forNode(node);
 #if DFG_ENABLE(DEBUG_PROPAGATION_VERBOSE)

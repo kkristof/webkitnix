@@ -546,6 +546,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case SearchFieldCancelButtonPart:
             m_value.ident = CSSValueSearchfieldCancelButton;
             break;
+        case SnapshottedPluginOverlayPart:
+            m_value.ident = CSSValueSnapshottedPluginOverlay;
+            break;
         case TextFieldPart:
             m_value.ident = CSSValueTextfield;
             break;
@@ -1162,6 +1165,34 @@ template<> inline CSSPrimitiveValue::operator ECursor() const
         return CURSOR_NONE;
     return static_cast<ECursor>(m_value.ident - CSSValueAuto);
 }
+
+
+#if ENABLE(CURSOR_VISIBILITY)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(CursorVisibility e)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_IDENT;
+    switch (e) {
+    case CursorVisibilityAuto:
+        m_value.ident = CSSValueAuto;
+        break;
+    case CursorVisibilityAutoHide:
+        m_value.ident = CSSValueAutoHide;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator CursorVisibility() const
+{
+    if (m_value.ident == CSSValueAuto)
+        return CursorVisibilityAuto;
+    if (m_value.ident == CSSValueAutoHide)
+        return CursorVisibilityAutoHide;
+
+    ASSERT_NOT_REACHED();
+    return CursorVisibilityAuto;
+}
+#endif
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EDisplay e)
     : CSSValue(PrimitiveClass)

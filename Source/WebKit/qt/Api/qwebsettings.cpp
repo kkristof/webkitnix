@@ -27,6 +27,7 @@
 #include "DatabaseManager.h"
 #include "FileSystem.h"
 #include "FontCache.h"
+#include "GCController.h"
 #include "IconDatabase.h"
 #include "Image.h"
 #if ENABLE(ICONDATABASE)
@@ -813,7 +814,7 @@ QPixmap QWebSettings::webGraphic(WebGraphic type)
 }
 
 /*!
-    Frees up as much memory as possible by cleaning all memory caches such
+    Frees up as much memory as possible by calling the JavaScript garbage collector and cleaning all memory caches such
     as page, object and font cache.
 
     \since 4.6
@@ -832,7 +833,6 @@ void QWebSettings::clearMemoryCaches()
     int pageCapacity = WebCore::pageCache()->capacity();
     // Setting size to 0, makes all pages be released.
     WebCore::pageCache()->setCapacity(0);
-    WebCore::pageCache()->releaseAutoreleasedPagesNow();
     WebCore::pageCache()->setCapacity(pageCapacity);
 
     // Invalidating the font cache and freeing all inactive font data.
@@ -840,6 +840,11 @@ void QWebSettings::clearMemoryCaches()
 
     // Empty the Cross-Origin Preflight cache
     WebCore::CrossOriginPreflightResultCache::shared().empty();
+
+    // Drop JIT compiled code from ExecutableAllocator.
+    WebCore::gcController().discardAllCompiledCode();
+    // Garbage Collect to release the references of CachedResource from dead objects.
+    WebCore::gcController().garbageCollectNow();
 }
 
 /*!

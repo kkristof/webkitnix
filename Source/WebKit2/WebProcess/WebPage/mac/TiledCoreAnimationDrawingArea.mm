@@ -110,6 +110,8 @@ void TiledCoreAnimationDrawingArea::setNeedsDisplayInRect(const IntRect& rect)
 
 void TiledCoreAnimationDrawingArea::scroll(const IntRect& scrollRect, const IntSize& scrollDelta)
 {
+    if (m_pageOverlayLayer)
+        m_pageOverlayLayer->setNeedsDisplay();
 }
 
 void TiledCoreAnimationDrawingArea::setRootCompositingLayer(GraphicsLayer* graphicsLayer)
@@ -202,19 +204,26 @@ void TiledCoreAnimationDrawingArea::setPageOverlayNeedsDisplay(const IntRect& re
 
 void TiledCoreAnimationDrawingArea::updatePreferences(const WebPreferencesStore&)
 {
+    Settings* settings = m_webPage->corePage()->settings();
     bool scrollingPerformanceLoggingEnabled = m_webPage->scrollingPerformanceLoggingEnabled();
     ScrollingThread::dispatch(bind(&ScrollingTree::setScrollingPerformanceLoggingEnabled, m_webPage->corePage()->scrollingCoordinator()->scrollingTree(), scrollingPerformanceLoggingEnabled));
 
     if (TiledBacking* tiledBacking = mainFrameTiledBacking())
-        tiledBacking->setAggressivelyRetainsTiles(m_webPage->corePage()->settings()->aggressiveTileRetentionEnabled());
+        tiledBacking->setAggressivelyRetainsTiles(settings->aggressiveTileRetentionEnabled());
+    
+    if (m_pageOverlayLayer) {
+        m_pageOverlayLayer->setAcceleratesDrawing(settings->acceleratedDrawingEnabled());
+        m_pageOverlayLayer->setShowDebugBorder(settings->showDebugBorders());
+        m_pageOverlayLayer->setShowRepaintCounter(settings->showRepaintCounter());
+    }
 
     // Soon we want pages with fixed positioned elements to be able to be scrolled by the ScrollingCoordinator.
     // As a part of that work, we have to composite fixed position elements, and we have to allow those
     // elements to create a stacking context.
-    m_webPage->corePage()->settings()->setAcceleratedCompositingForFixedPositionEnabled(true);
-    m_webPage->corePage()->settings()->setFixedPositionCreatesStackingContext(true);
+    settings->setAcceleratedCompositingForFixedPositionEnabled(true);
+    settings->setFixedPositionCreatesStackingContext(true);
 
-    bool showTiledScrollingIndicator = m_webPage->corePage()->settings()->showTiledScrollingIndicator();
+    bool showTiledScrollingIndicator = settings->showTiledScrollingIndicator();
     if (showTiledScrollingIndicator == !!m_debugInfoLayer)
         return;
 
@@ -300,7 +309,6 @@ bool TiledCoreAnimationDrawingArea::flushLayers()
     }
 
     if (m_pageOverlayLayer) {
-        m_pageOverlayLayer->setNeedsDisplay();
         if (TiledBacking* overlayTiledBacking = m_pageOverlayLayer->tiledBacking())
             overlayTiledBacking->setVisibleRect(enclosingIntRect(m_rootLayer.get().frame));
         m_pageOverlayLayer->flushCompositingStateForThisLayerOnly();
@@ -495,9 +503,11 @@ void TiledCoreAnimationDrawingArea::createPageOverlayLayer()
     m_pageOverlayLayer->setName("page overlay content");
 #endif
 
-    m_pageOverlayLayer->setAcceleratesDrawing(true);
+    m_pageOverlayLayer->setAcceleratesDrawing(m_webPage->corePage()->settings()->acceleratedDrawingEnabled());
     m_pageOverlayLayer->setDrawsContent(true);
     m_pageOverlayLayer->setSize(expandedIntSize(FloatSize(m_rootLayer.get().frame.size)));
+    m_pageOverlayLayer->setShowDebugBorder(m_webPage->corePage()->settings()->showDebugBorders());
+    m_pageOverlayLayer->setShowRepaintCounter(m_webPage->corePage()->settings()->showRepaintCounter());
 
     m_pageOverlayPlatformLayer = m_pageOverlayLayer->platformLayer();
 

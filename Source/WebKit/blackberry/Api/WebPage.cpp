@@ -2193,6 +2193,7 @@ void WebPagePrivate::authenticationChallenge(const KURL& url, const ProtectionSp
     AuthenticationChallengeManager* authmgr = AuthenticationChallengeManager::instance();
     BlackBerry::Platform::String username;
     BlackBerry::Platform::String password;
+    BlackBerry::Platform::String requestURL(url.string());
 
 #if !defined(PUBLIC_BUILD) || !PUBLIC_BUILD
     if (m_dumpRenderTree) {
@@ -2210,7 +2211,7 @@ void WebPagePrivate::authenticationChallenge(const KURL& url, const ProtectionSp
         credentialManager().autofillAuthenticationChallenge(protectionSpace, username, password);
 #endif
 
-    bool isConfirmed = m_client->authenticationChallenge(protectionSpace.realm().characters(), protectionSpace.realm().length(), username, password);
+    bool isConfirmed = m_client->authenticationChallenge(protectionSpace.realm().characters(), protectionSpace.realm().length(), username, password, requestURL, protectionSpace.isProxy());
 
 #if ENABLE(BLACKBERRY_CREDENTIAL_PERSIST)
     Credential credential(username, password, CredentialPersistencePermanent);
@@ -2312,7 +2313,7 @@ Platform::WebContext WebPagePrivate::webContext(TargetDetectionStrategy strategy
             context.setFlag(Platform::WebContext::IsImage);
             // FIXME: At the mean time, we only show "Save Image" when the image data is available.
             if (CachedResource* cachedResource = imageElement->cachedImage()) {
-                if (cachedResource->isLoaded() && cachedResource->data()) {
+                if (cachedResource->isLoaded() && cachedResource->resourceBuffer()) {
                     String url = stripLeadingAndTrailingHTMLSpaces(imageElement->getAttribute(HTMLNames::srcAttr).string());
                     context.setSrc(node->document()->completeURL(url).string());
                 }
@@ -3107,7 +3108,6 @@ void WebPage::destroy()
 
     // Close the backforward list and release the cached pages.
     d->m_page->backForward()->close();
-    pageCache()->releaseAutoreleasedPagesNow();
 
     FrameLoader* loader = d->m_mainFrame->loader();
 

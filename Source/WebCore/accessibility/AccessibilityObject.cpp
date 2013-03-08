@@ -57,8 +57,8 @@
 #include "TextCheckingHelper.h"
 #include "TextIterator.h"
 #include "UserGestureIndicator.h"
+#include "VisibleUnits.h"
 #include "htmlediting.h"
-#include "visible_units.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
@@ -1584,6 +1584,26 @@ bool AccessibilityObject::supportsRangeValue() const
         || isSlider()
         || isScrollbar()
         || isSpinButton();
+}
+    
+bool AccessibilityObject::supportsARIASetSize() const
+{
+    return hasAttribute(aria_setsizeAttr);
+}
+
+bool AccessibilityObject::supportsARIAPosInSet() const
+{
+    return hasAttribute(aria_posinsetAttr);
+}
+    
+int AccessibilityObject::ariaSetSize() const
+{
+    return getAttribute(aria_setsizeAttr).toInt();
+}
+
+int AccessibilityObject::ariaPosInSet() const
+{
+    return getAttribute(aria_posinsetAttr).toInt();
 }
     
 bool AccessibilityObject::supportsARIAExpanded() const

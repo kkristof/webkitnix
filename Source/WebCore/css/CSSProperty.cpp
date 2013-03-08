@@ -302,6 +302,9 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyWebkitBoxDirection:
     case CSSPropertyWebkitColorCorrection:
+#if ENABLE(CURSOR_VISIBILITY)
+    case CSSPropertyWebkitCursorVisibility:
+#endif
     case CSSPropertyWebkitFontFeatureSettings:
     case CSSPropertyWebkitFontKerning:
     case CSSPropertyWebkitFontSmoothing:
@@ -338,7 +341,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextOrientation:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyWebkitTextSizeAdjust:
     case CSSPropertyWebkitTextStroke:
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTextStrokeWidth:

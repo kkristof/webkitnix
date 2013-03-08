@@ -349,12 +349,18 @@ EventHandler::EventHandler(Frame* frame)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
     , m_didLongPressInvokeContextMenu(false)
+#if ENABLE(CURSOR_VISIBILITY)
+    , m_autoHideCursorTimer(this, &EventHandler::autoHideCursorTimerFired)
+#endif
 {
 }
 
 EventHandler::~EventHandler()
 {
     ASSERT(!m_fakeMouseMoveEventTimer.isActive());
+#if ENABLE(CURSOR_VISIBILITY)
+    ASSERT(!m_autoHideCursorTimer.isActive());
+#endif
 }
     
 #if ENABLE(DRAG_SUPPORT)
@@ -369,6 +375,9 @@ void EventHandler::clear()
 {
     m_hoverTimer.stop();
     m_fakeMouseMoveEventTimer.stop();
+#if ENABLE(CURSOR_VISIBILITY)
+    cancelAutoHideCursorTimer();
+#endif
     m_resizeLayer = 0;
     m_nodeUnderMouse = 0;
     m_lastNodeUnderMouse = 0;
@@ -1032,6 +1041,8 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     // hitTestResultAtPoint is specifically used to hitTest into all frames, thus it always allows child frame content.
     HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
     m_frame->contentRenderer()->hitTest(request, result);
+    if (!request.readOnly())
+        m_frame->document()->updateHoverActiveState(request, result.innerElement());
 
     if (!request.allowsShadowContent())
         result.setToNonShadowAncestor();
@@ -1235,6 +1246,14 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     bool horizontalText = !style || style->isHorizontalWritingMode();
     const Cursor& iBeam = horizontalText ? iBeamCursor() : verticalTextCursor();
 
+#if ENABLE(CURSOR_VISIBILITY)
+    if (style && style->cursorVisibility() == CursorVisibilityAutoHide) {
+        FeatureObserver::observe(m_frame->document(), FeatureObserver::CursorVisibility);
+        startAutoHideCursorTimer();
+    } else
+        cancelAutoHideCursorTimer();
+#endif
+
     // During selection, use an I-beam no matter what we're over.
     // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
     if (m_mousePressed && m_mouseDownMayStartSelect
@@ -1382,6 +1401,37 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     }
     return pointerCursor();
 }
+
+#if ENABLE(CURSOR_VISIBILITY)
+void EventHandler::startAutoHideCursorTimer()
+{
+    Page* page = m_frame->page();
+    if (!page)
+        return;
+
+    m_autoHideCursorTimer.startOneShot(page->settings()->timeWithoutMouseMovementBeforeHidingControls());
+
+    // The fake mouse move event screws up the auto-hide feature (by resetting the auto-hide timer)
+    // so cancel any pending fake mouse moves.
+    if (m_fakeMouseMoveEventTimer.isActive())
+        m_fakeMouseMoveEventTimer.stop();
+}
+
+void EventHandler::cancelAutoHideCursorTimer()
+{
+    if (m_autoHideCursorTimer.isActive())
+        m_autoHideCursorTimer.stop();
+}
+
+void EventHandler::autoHideCursorTimerFired(Timer<EventHandler>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_autoHideCursorTimer);
+    m_currentMouseCursor = noneCursor();
+    FrameView* view = m_frame->view();
+    if (view && view->isActive())
+        view->setCursor(m_currentMouseCursor);
+}
+#endif
 
 static LayoutPoint documentPointForWindowPoint(Frame* frame, const IntPoint& windowPoint)
 {
@@ -1870,6 +1920,8 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
         return false;
 #endif
 
+    if (!m_frame->page())
+        return false;
     Frame* focusFrame = m_frame->page()->focusController()->focusedOrMainFrame();
     // Do not paste here if the focus was moved somewhere else.
     if (m_frame == focusFrame && m_frame->editor()->client()->supportsGlobalSelection())
@@ -2887,10 +2939,8 @@ bool EventHandler::sendContextMenuEventForKey()
     // Use the focused node as the target for hover and active.
     HitTestResult result(position);
     result.setInnerNode(targetNode);
-    HitTestRequest request(HitTestRequest::Active);
-    doc->updateHoverActiveState(request, result);
-    doc->updateStyleIfNeeded();
-   
+    doc->updateHoverActiveState(HitTestRequest::Active, result.innerElement());
+
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
 
@@ -3026,7 +3076,7 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
             HitTestRequest request(HitTestRequest::Move);
             HitTestResult result(view->windowToContents(m_lastKnownMousePosition));
             renderer->hitTest(request, result);
-            m_frame->document()->updateStyleIfNeeded();
+            m_frame->document()->updateHoverActiveState(request, result.innerElement());
         }
     }
 }
@@ -3777,7 +3827,6 @@ HitTestResult EventHandler::hitTestResultInFrame(Frame* frame, const LayoutPoint
             return result;
     }
     frame->contentRenderer()->hitTest(HitTestRequest(hitType), result);
-    result.setToNonShadowAncestor();
     return result;
 }
 
@@ -3928,10 +3977,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
         int adjustedPageX = lroundf(pagePoint.x() / scaleFactor);
         int adjustedPageY = lroundf(pagePoint.y() / scaleFactor);
 
-        // FIXME: Instead of taking shadow ancestor, event retargetting algorithm should run.
-        // https://bugs.webkit.org/show_bug.cgi?id=107800
-        EventTarget* adjustedTouchTarget = doc->ancestorInThisScope(touchTarget.get()->toNode());
-        RefPtr<Touch> touch = Touch::create(targetFrame, adjustedTouchTarget, point.id(),
+        RefPtr<Touch> touch = Touch::create(targetFrame, touchTarget.get(), point.id(),
                                             point.screenPos().x(), point.screenPos().y(),
                                             adjustedPageX, adjustedPageY,
                                             point.radiusX(), point.radiusY(), point.rotationAngle(), point.force());
@@ -3988,7 +4034,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
                 TouchEvent::create(effectiveTouches.get(), targetTouches.get(), changedTouches[state].m_touches.get(),
                                    stateName, touchEventTarget->toNode()->document()->defaultView(),
                                    0, 0, 0, 0, event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey());
-            touchEventTarget->dispatchEvent(touchEvent.get(), IGNORE_EXCEPTION);
+            touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
             swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
         }
     }

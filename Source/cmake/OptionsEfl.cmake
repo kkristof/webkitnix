@@ -25,7 +25,7 @@ find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
 find_package(GLIB 2.33.2 REQUIRED COMPONENTS gio gobject gthread)
-find_package(LibSoup 2.39.4.1 REQUIRED)
+find_package(LibSoup 2.40.3 REQUIRED)
 
 set(WTF_USE_SOUP 1)
 
@@ -117,7 +117,7 @@ endif ()
 # Allow building the EFL port using EFL version 1.6+ to build on Tizen trunk
 find_package(Eina 1.6 REQUIRED)
 find_package(Evas 1.6 REQUIRED)
-find_package(Ecore 1.6 COMPONENTS Evas File Input ${ECORE_ADDITIONAL_COMPONENTS})
+find_package(Ecore 1.6 COMPONENTS Evas File Input Imf Imf_Evas ${ECORE_ADDITIONAL_COMPONENTS})
 find_package(Edje 1.6 REQUIRED)
 find_package(Eet 1.6 REQUIRED)
 find_package(Eeze 1.6 REQUIRED)

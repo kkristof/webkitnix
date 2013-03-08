@@ -233,6 +233,10 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_shouldCallCheckCompleted(false)
     , m_shouldCallCheckLoadComplete(false)
     , m_opener(0)
+#if PLATFORM(CHROMIUM)
+    , m_didAccessInitialDocument(false)
+    , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
+#endif
     , m_didPerformFirstNavigation(false)
     , m_loadingFromCachedPage(false)
     , m_suppressOpenerInNewFrame(false)
@@ -336,7 +340,7 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
 
     if (isDocumentSandboxed(m_frame, SandboxForms)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        m_frame->document()->addConsoleMessage(HTMLMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
+        m_frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked form submission to '" + submission->action().elidedString() + "' because the form's frame is sandboxed and the 'allow-forms' permission is not set.");
         return;
     }
 
@@ -1410,7 +1414,7 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     if (!frame)
         return;
 
-    frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
+    frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
 const ResourceRequest& FrameLoader::initialRequest() const
@@ -1585,6 +1589,23 @@ DocumentLoader* FrameLoader::activeDocumentLoader() const
         return m_provisionalDocumentLoader.get();
     return m_documentLoader.get();
 }
+
+#if PLATFORM(CHROMIUM)
+void FrameLoader::didAccessInitialDocument()
+{
+    // We only need to notify the client once, and only for the main frame.
+    if (isLoadingMainFrame() && !m_didAccessInitialDocument) {
+        m_didAccessInitialDocument = true;
+        // Notify asynchronously, since this is called within a JavaScript security check.
+        m_didAccessInitialDocumentTimer.startOneShot(0);
+    }
+}
+
+void FrameLoader::didAccessInitialDocumentTimerFired(Timer<FrameLoader>*)
+{
+    m_client->didAccessInitialDocument();
+}
+#endif
 
 bool FrameLoader::isLoading() const
 {
@@ -3346,7 +3367,7 @@ Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadReque
     // Sandboxed frames cannot open new auxiliary browsing contexts.
     if (isDocumentSandboxed(openerFrame, SandboxPopups)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-        openerFrame->document()->addConsoleMessage(HTMLMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set.");
+        openerFrame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set.");
         return 0;
     }
 

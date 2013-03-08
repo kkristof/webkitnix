@@ -24,6 +24,7 @@ set(JavaScriptCore_INCLUDE_DIRECTORIES
 )
 
 set(JavaScriptCore_SOURCES
+    API/JSAPIWrapperObject.cpp
     API/JSBase.cpp
     API/JSCallbackConstructor.cpp
     API/JSCallbackFunction.cpp
@@ -85,6 +86,7 @@ set(JavaScriptCore_SOURCES
     dfg/DFGCPSRethreadingPhase.cpp
     dfg/DFGConstantFoldingPhase.cpp
     dfg/DFGCSEPhase.cpp
+    dfg/DFGDCEPhase.cpp
     dfg/DFGDisassembler.cpp
     dfg/DFGDominators.cpp
     dfg/DFGDriver.cpp
@@ -280,6 +282,7 @@ set(JavaScriptCore_SOURCES
     runtime/PropertyDescriptor.cpp
     runtime/PropertyNameArray.cpp
     runtime/PropertySlot.cpp
+    runtime/PropertyTable.cpp
     runtime/PrototypeMap.cpp
     runtime/RegExp.cpp
     runtime/RegExpCache.cpp

@@ -5136,13 +5136,13 @@
     <ClCompile Include="..\editing\UnlinkCommand.cpp">
       <Filter>editing</Filter>
     </ClCompile>
-    <ClCompile Include="..\editing\visible_units.cpp">
-      <Filter>editing</Filter>
-    </ClCompile>
     <ClCompile Include="..\editing\VisiblePosition.cpp">
       <Filter>editing</Filter>
     </ClCompile>
     <ClCompile Include="..\editing\VisibleSelection.cpp">
+      <Filter>editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\editing\VisibleUnits.cpp">
       <Filter>editing</Filter>
     </ClCompile>
     <ClCompile Include="..\editing\WrapContentsInDummySpanCommand.cpp">
@@ -5699,6 +5699,9 @@
     </ClCompile>
     <ClCompile Include="..\html\parser\XSSAuditorDelegate.cpp">
       <Filter>html\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\html\shadow\ClearButtonElement.cpp">
+      <Filter>html\shadow</Filter>
     </ClCompile>
     <ClCompile Include="..\html\shadow\ContentDistributor.cpp">
       <Filter>html\shadow</Filter>
@@ -12051,13 +12054,13 @@
     <ClInclude Include="..\editing\UnlinkCommand.h">
       <Filter>editing</Filter>
     </ClInclude>
-    <ClInclude Include="..\editing\visible_units.h">
-      <Filter>editing</Filter>
-    </ClInclude>
     <ClInclude Include="..\editing\VisiblePosition.h">
       <Filter>editing</Filter>
     </ClInclude>
     <ClInclude Include="..\editing\VisibleSelection.h">
+      <Filter>editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editing\VisibleUnits.h">
       <Filter>editing</Filter>
     </ClInclude>
     <ClInclude Include="..\editing\WrapContentsInDummySpanCommand.h">
@@ -12644,6 +12647,9 @@
     </ClInclude>
     <ClInclude Include="..\html\parser\XSSAuditorDelegate.h">
       <Filter>html\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\html\shadow\ClearButtonElement.h">
+      <Filter>html\shadow</Filter>
     </ClInclude>
     <ClInclude Include="..\html\shadow\ContentDistributor.h">
       <Filter>html\shadow</Filter>

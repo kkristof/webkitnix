@@ -56,15 +56,16 @@
 #include "MarkupAccumulator.h"
 #include "NodeTraversal.h"
 #include "Range.h"
+#include "RenderBlock.h"
 #include "RenderObject.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "TextIterator.h"
 #include "VisibleSelection.h"
+#include "VisibleUnits.h"
 #include "XMLNSNames.h"
 #include "htmlediting.h"
-#include "visible_units.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>
@@ -515,6 +516,14 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
         // the structure and appearance of the copied markup.
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
 
+        if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isListItem)) {
+            if (WebCore::areRangesEqual(VisibleSelection::selectionFromContentsOfNode(parentListNode).toNormalizedRange().get(), range)) {
+                specialCommonAncestor = parentListNode->parentNode();
+                while (specialCommonAncestor && !isListElement(specialCommonAncestor))
+                    specialCommonAncestor = specialCommonAncestor->parentNode();
+            }
+        }
+
         // Retain the Mail quote level by including all ancestor mail block quotes.
         if (Node* highestMailBlockquote = highestEnclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isMailBlockquote, CanCrossEditingBoundary))
             specialCommonAncestor = highestMailBlockquote;
@@ -522,7 +531,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
 
     Node* checkAncestor = specialCommonAncestor ? specialCommonAncestor : commonAncestor;
     if (checkAncestor->renderer()) {
-        Node* newSpecialCommonAncestor = highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isElementPresentational);
+        Node* newSpecialCommonAncestor = highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isElementPresentational, CanCrossEditingBoundary, checkAncestor->renderer()->containingBlock()->node());
         if (newSpecialCommonAncestor)
             specialCommonAncestor = newSpecialCommonAncestor;
     }

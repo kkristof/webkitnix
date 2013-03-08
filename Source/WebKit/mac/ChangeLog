@@ -1,3 +1,66 @@
+2013-03-07  Anders Carlsson  <andersca@apple.com>
+
+        Add didFocusTextField:inFrame to WebFormDelegate
+        https://bugs.webkit.org/show_bug.cgi?id=111804
+
+        Reviewed by Dan Bernstein.
+
+        * WebCoreSupport/WebChromeClient.mm:
+        (WebChromeClient::focusedNodeChanged):
+        * WebView/WebFormDelegate.h:
+        * WebView/WebFormDelegate.m:
+        (-[WebFormDelegate didFocusTextField:inFrame:]):
+
+2013-03-04  Jer Noble  <jer.noble@apple.com>
+
+        Default mouse cursor behavior should be auto-hide for full screen video with custom controls
+        https://bugs.webkit.org/show_bug.cgi?id=107601
+
+        Reviewed by Beth Dakin.
+
+        Enable the CURSOR_VISIBILITY feature.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed some dead code in the page cache
+        https://bugs.webkit.org/show_bug.cgi?id=111525
+
+        Reviewed by Alexey Proskuryakov.
+
+        Page cache autorelease doesn't exist anymore, so there's no need to keep
+        around these olds hacks.
+
+        This fixes <rdar://problem/4886761> Fix bizarre WebWindowWatcher policy in WebHistoryItem.
+
+        * History/WebHistoryItem.mm:
+        (+[WebHistoryItem _releaseAllPendingPageCaches]):
+        * History/WebHistoryItemInternal.h:
+        * Misc/WebCoreStatistics.mm:
+        (+[WebCoreStatistics autoreleasedPageCount]):
+        * WebView/WebView.mm:
+        (-[WebView _commonInitializationWithFrameName:groupName:]):
+
+2013-03-06  Dmitry Zvorygin  <zvorygin@chromium.org>
+
+        Introduce new message sources for logging.
+        https://bugs.webkit.org/show_bug.cgi?id=110968
+
+        Reviewed by Pavel Feldman.
+
+        * WebCoreSupport/WebChromeClient.mm:
+        * WebView/WebUIDelegatePrivate.h:
+
+2013-03-05  Kent Tamura  <tkent@chromium.org>
+
+        Rename WebCore/editing/visible_units.* to VisibleUnits.*
+        https://bugs.webkit.org/show_bug.cgi?id=111426
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebView/WebFrame.mm:
+
 2013-03-05  James Robinson  <jamesr@chromium.org>
 
         ContainerNode::setActive should not sleep for 100ms on platforms that do not implement synchronous repaint(true) semantics

@@ -1,3 +1,455 @@
+2013-03-07  Keishi Hattori  <keishi@webkit.org>
+
+        Update calendar picker UI
+        https://bugs.webkit.org/show_bug.cgi?id=109439
+
+        Reviewed by Kent Tamura.
+
+        * src/DateTimeChooserImpl.cpp:
+        (WebKit::DateTimeChooserImpl::writeDocument): Adding shortMonthLabels property.
+
+2013-03-07  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145166.
+        http://trac.webkit.org/changeset/145166
+        https://bugs.webkit.org/show_bug.cgi?id=111819
+
+        build break - no symbol
+        webkit_support::CreateScopedTempDirectory() (Requested by
+        hayato on #webkit).
+
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp):
+        (IDBBackingStoreTest):
+        * tests/IDBCleanupOnIOErrorTest.cpp:
+        (WebCore::TEST):
+
+2013-03-07  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Use WeakPtr for Factory-to-BackingStore reference
+        https://bugs.webkit.org/show_bug.cgi?id=111459
+
+        Reviewed by Adam Barth.
+
+        Added tests to verify refcounts on backing stores, update method signatures.
+
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp): No dummy factory needed.
+        (MockIDBFactoryBackend): Expose protected method to tests.
+        (WebCore::TEST): Added BackingStoreLifetime test.
+        * tests/IDBCleanupOnIOErrorTest.cpp: No dummy factory needed.
+
+2013-03-06  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Stop using WebTransformationMatrix on WebLayer
+        https://bugs.webkit.org/show_bug.cgi?id=111635
+
+        Reviewed by Adrienne Walker.
+
+        * src/LinkHighlight.cpp:
+        (WebKit::LinkHighlight::computeEnclosingCompositingLayer):
+        * tests/GraphicsLayerChromiumTest.cpp:
+        (GraphicsLayerChromiumTest):
+
+2013-03-07  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Update some #includes for WebMessagePortChannel.h
+        https://bugs.webkit.org/show_bug.cgi?id=111752
+
+        Reviewed by James Robinson.
+
+        In anticipation of removing
+        WK/chromium/public/WebMessagePortChannel.h (once all downstream
+        references have been updated)
+
+        * public/WebDOMMessageEvent.h:
+        * public/WebFrame.h:
+        * public/WebSharedWorkerClient.h:
+
+2013-03-07  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove WK/chromium/public/WebStorageArea.h
+        https://bugs.webkit.org/show_bug.cgi?id=111744
+
+        Reviewed by James Robinson.
+
+        File moved to new Platform/ directory. All references have already
+        been updated (including downstream).
+
+        * public/WebStorageArea.h: Removed.
+
+2013-03-07  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Update some #includes for WebFileInfo.h in WK/chromium/src/
+        https://bugs.webkit.org/show_bug.cgi?id=111741
+
+        Reviewed by James Robinson.
+
+        In preparation for removing WK/chromium/public/WebFileInfo.h.
+
+        * src/AssertMatchingEnums.cpp:
+
+2013-03-07  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Remove WK/chromium/public/WebWorkerRunLoop.h
+        https://bugs.webkit.org/show_bug.cgi?id=111740
+
+        Reviewed by James Robinson.
+
+        No longer needed; all references have been updated to new version
+        in top-level Platform/ directory.
+
+        * public/WebWorkerRunLoop.h: Removed.
+
+2013-03-07  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r186592.  Requested by
+        "Dana Jansens" <danakj@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-07  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Update some #includes for WebVideoFrame.h
+        https://bugs.webkit.org/show_bug.cgi?id=111739
+
+        Reviewed by James Robinson.
+
+        In anticipation of removing WebVideoFrame.h from WK/chromium/public/.
+
+        * public/WebMediaPlayer.h:
+
+2013-03-07  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove WebView's sharedGraphicsContext3D method.
+        https://bugs.webkit.org/show_bug.cgi?id=111499
+
+        Reviewed by James Robinson.
+
+        * public/WebView.h:
+        (WebView):
+        * src/WebViewImpl.cpp:
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2013-03-07  Vsevolod Vlasov  <vsevik@chromium.org>
+
+        Web Inspector: Support a shortcut for reloading front-end in debug mode.
+        https://bugs.webkit.org/show_bug.cgi?id=111709
+
+        Reviewed by Pavel Feldman.
+
+        * src/js/DevTools.js:
+
+2013-03-07  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: Add more diagnostics output to testRendererProcessNativeMemorySize
+        https://bugs.webkit.org/show_bug.cgi?id=111599
+
+        Reviewed by Yury Semikhatsky.
+
+        Add the process size to the test output.
+
+        * src/js/Tests.js:
+
+2013-03-07  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] expose UserGestureToken via WebKit API so PPAPI plugins can correctly consume it
+        https://bugs.webkit.org/show_bug.cgi?id=104268
+
+        Reviewed by Darin Fisher.
+
+        Currently, the PPAPI creates a WebScopedUserGesture up to 10 seconds
+        after a call with an currently active user gesture was made. It should
+        use the newly added WebUserGestureToken to make sure this user gesture
+        is not consumed multiple times.
+
+        We can't require a WebUserGestureToken for a WebScopedUserGesture, since
+        e.g. the extension API needs to be able to create a WebScopedUserGesture
+        out of the blue.
+
+        * WebKit.gyp:
+        * WebKit.gypi:
+        * public/WebScopedUserGesture.h:
+        (WebKit):
+        (WebKit::WebScopedUserGesture::WebScopedUserGesture):
+        (WebScopedUserGesture):
+        * public/WebUserGestureIndicator.h:
+        (WebKit):
+        (WebUserGestureIndicator):
+        * public/WebUserGestureToken.h: Copied from Source/WebKit/chromium/public/WebScopedUserGesture.h.
+        (WebCore):
+        (WebKit):
+        (WebUserGestureToken):
+        (WebKit::WebUserGestureToken::WebUserGestureToken):
+        (WebKit::WebUserGestureToken::operator=):
+        (WebKit::WebUserGestureToken::~WebUserGestureToken):
+        (WebKit::WebUserGestureToken::isNull):
+        * src/WebScopedUserGesture.cpp:
+        (WebKit::WebScopedUserGesture::initializeWithToken):
+        (WebKit):
+        * src/WebUserGestureIndicator.cpp:
+        (WebKit::WebUserGestureIndicator::currentUserGestureToken):
+        (WebKit):
+        * src/WebUserGestureToken.cpp: Copied from Source/WebKit/chromium/src/WebUserGestureIndicator.cpp.
+        (WebKit):
+        (WebKit::WebUserGestureToken::WebUserGestureToken):
+        (WebKit::WebUserGestureToken::operator WebCore::UserGestureToken*):
+        (WebKit::WebUserGestureToken::assign):
+        (WebKit::WebUserGestureToken::reset):
+        * tests/WebUserGestureTokenTest.cpp: Copied from Source/WebKit/chromium/src/WebUserGestureIndicator.cpp.
+        (WebCore):
+        (WebCore::TEST):
+
+2013-03-06  David Dorwin  <ddorwin@chromium.org>
+
+        [chromium] Fix typo: destoryPage() => destroyPage()
+        https://bugs.webkit.org/show_bug.cgi?id=111664
+
+        Reviewed by Kentaro Hara.
+
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::WebHelperPluginImpl::closeHelperPlugin):
+        (WebKit::WebHelperPluginImpl::destroyPage):
+        * src/WebHelperPluginImpl.h:
+        (WebHelperPluginImpl):
+        * src/WebPagePopupImpl.cpp:
+        (WebKit::WebPagePopupImpl::destroyPage):
+        (WebKit::WebPagePopupImpl::close):
+        (WebKit::WebPagePopupImpl::closePopup):
+        * src/WebPagePopupImpl.h:
+        (WebPagePopupImpl):
+
+2013-03-06  Ankur Taly  <ataly@google.com>
+
+        Modify log method in WebDOMActivityLogger so that the apiName and
+        extraInfo arguments are of type const WebString& instead of const char*.
+        This change gets rid of some of the memory ownership issues that arise
+        with char* pointers.
+        https://bugs.webkit.org/show_bug.cgi?id=111483
+
+        Reviewed by Adam Barth.
+
+        There are no new tests as there is no change in behavior.
+
+        * public/WebDOMActivityLogger.h: Added property svn:eol-style.
+        (WebKit::WebDOMActivityLogger::log):
+        * src/WebDOMActivityLogger.cpp: Added property svn:eol-style.
+        (WebKit::DOMActivityLoggerContainer::log):
+
+2013-03-06  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r186511.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-06  Terry Anderson  <tdanderson@chromium.org>
+
+        [chromium] |m_gestureScrollOnImplThread| is not reset to false following the end of a fling on the fast path
+        https://bugs.webkit.org/show_bug.cgi?id=111390
+
+        Reviewed by James Robinson.
+
+        If there is a fast path gesture scroll which turns into a fling, the member
+        |m_gestureScrollOnImplThread| is not reset to false once the fling ends. As a
+        result, GestureScrollUpdate events belonging to a subsequent scroll are always
+        handled on the fast path, even if they should have been handled on the slow
+        path instead.
+
+        * src/WebCompositorInputHandlerImpl.cpp:
+        (WebKit::WebCompositorInputHandlerImpl::cancelCurrentFling):
+        * src/WebCompositorInputHandlerImpl.h:
+        (WebCompositorInputHandlerImpl):
+        (WebKit::WebCompositorInputHandlerImpl::isGestureScrollOnImplThread):
+        * tests/WebCompositorInputHandlerImplTest.cpp:
+        (WebKit::TEST_F):
+        (WebKit):
+
+2013-03-06  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Express webkit_unit_tests' dependency on DumpRenderTree.pak in gyp
+        https://bugs.webkit.org/show_bug.cgi?id=111508
+
+        Reviewed by Dirk Pranke.
+
+        Some tests in webkit_unit_tests, for example WebPageSerializerTest.HTMLNodes, depend on localizable resources
+        from a pak file. Since unit tests initialize for testing with the same webkit_support functions as layout tests
+        they end up using DumpRenderTree.pak, but this dependency isn't listed explicitly in the gyp so if you manage to
+        run webkit_unit_tests without building DumpRenderTree first these tests just crash.
+
+        This adds a dependency from webkit_unit_tests to DumpRenderTree_resources so the pak is always built. It's a bit
+        weird for a gyp file in Source/WebKit/chromium/ to reach into Tools/DumpRenderTree, but I can't think of
+        anything better.
+
+        * WebKitUnitTests.gyp:
+
+2013-03-06  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] introduce WebUserGestureIndicator
+        https://bugs.webkit.org/show_bug.cgi?id=111531
+
+        Reviewed by Adam Barth.
+
+        Currently, an embedder needs to have a WebFrame to check whether a
+        user gesture is being processed and to consume a user gesture. However,
+        the user gesture state is independed of a frame.
+
+        * WebKit.gyp:
+        * public/WebFrame.h:
+        (WebFrame):
+        * public/WebUserGestureIndicator.h: Added.
+        (WebKit):
+        (WebUserGestureIndicator):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::isProcessingUserGesture):
+        (WebKit::WebFrameImpl::consumeUserGesture):
+        * src/WebUserGestureIndicator.cpp: Added.
+        (WebKit):
+        (WebKit::WebUserGestureIndicator::isProcessingUserGesture):
+        (WebKit::WebUserGestureIndicator::consumeUserGesture):
+
+2013-03-06  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r186371.  Requested by
+        "Dana Jansens" <danakj@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-06  Andrey Lushnikov  <lushnikov@chromium.org>
+
+        Web Inspector: test that "importScript" is used only in module heads.
+        https://bugs.webkit.org/show_bug.cgi?id=111548
+
+        Reviewed by Pavel Feldman.
+
+        Test that output file after all inlines does not have any 'importScript(s)' statements.
+
+        * scripts/inline_js_imports.py:
+        (main):
+
+2013-03-05  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Scroll deltas should be floats
+        https://bugs.webkit.org/show_bug.cgi?id=111465
+
+        Reviewed by James Robinson.
+
+        This converts the remaining scroll delta fields to floats so that
+        we no longer lose precision due to DIP conversion. The natural
+        type for deltas is WebFloatSize, which was missing, so I also created
+        that type based on the existing WebSize header.
+
+        * src/WebCompositorInputHandlerImpl.cpp:
+        (WebKit::WebCompositorInputHandlerImpl::handleInputEventInternal):
+        (WebKit::WebCompositorInputHandlerImpl::touchpadFlingScroll):
+        (WebKit::WebCompositorInputHandlerImpl::scrollBy):
+        * src/WebCompositorInputHandlerImpl.h:
+        (WebCompositorInputHandlerImpl):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::scrollBy):
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+        * tests/WebCompositorInputHandlerImplTest.cpp:
+        (MockWebInputHandlerClient):
+        (WebKit::TEST_F):
+
+2013-03-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Add IDBBackingStoreTest
+        https://bugs.webkit.org/show_bug.cgi?id=111233
+
+        Reviewed by Adam Barth.
+
+        Add some really simple IDBBackingStore tests
+        as a seed for additional tests later.
+
+        * WebKit.gypi:
+        * tests/IDBBackingStoreTest.cpp: Added.
+
+2013-03-04  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Move check for threaded compositing from WebCompositorSupport to Platform
+        https://bugs.webkit.org/show_bug.cgi?id=111386
+
+        Reviewed by Adrienne Walker.
+
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::composite):
+        (WebKit::WebViewImpl::scheduleAnimation):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        (WebKit::WebViewImpl::scheduleComposite):
+        * tests/Canvas2DLayerBridgeTest.cpp:
+        (Canvas2DLayerBridgeTest::fullLifecycleTest):
+        * tests/Canvas2DLayerManagerTest.cpp:
+        (FakeCanvas2DLayerBridge::FakeCanvas2DLayerBridge):
+
+2013-03-05  James Weatherall  <wez@chromium.org>
+
+        keydown and keyup events have zero keycode for some numeric pad keys under Chromium on Linux
+        https://bugs.webkit.org/show_bug.cgi?id=85642
+
+        Add tests to verify that the fixed keys generate the same keyCode values as their equivalents.
+
+        Reviewed by Ojan Vafai.
+
+        * WebKit.gypi:
+        * tests/KeyCodeConversionTestGtk.cpp: Added.
+        (WebCore):
+        (WebCore::TEST):
+
+2013-03-05  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Properly refactor frontend/backend code by #includes
+        https://bugs.webkit.org/show_bug.cgi?id=110653
+
+        Reviewed by Dimitri Glazkov.
+
+        Clean up the frontend/backend WebIDB* implementations to
+        match the changes to webkit.
+
+2013-03-05  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r144798.
+        http://trac.webkit.org/changeset/144798
+        https://bugs.webkit.org/show_bug.cgi?id=111478
+
+        "broke chromium windows build" (Requested by dpranke on
+        #webkit).
+
+        * src/AssertMatchingEnums.cpp:
+        * src/IDBDatabaseBackendProxy.cpp:
+        (WebKit::IDBDatabaseBackendProxy::openCursor):
+        * src/IDBDatabaseBackendProxy.h:
+        (IDBDatabaseBackendProxy):
+        * src/WebIDBCallbacksImpl.cpp:
+        * src/WebIDBDatabaseImpl.cpp:
+        (WebKit::WebIDBDatabaseImpl::openCursor):
+        * tests/IDBAbortOnCorruptTest.cpp:
+        * tests/IDBDatabaseBackendTest.cpp:
+        * tests/IDBFakeBackingStore.h:
+
+2013-03-05  Charlie Reis  <creis@chromium.org>
+
+        Add FrameLoaderClient::didAccessInitialDocument
+        https://bugs.webkit.org/show_bug.cgi?id=107963
+
+        Notifies WebFrameClient if another page accesses the initial
+        empty document of a main frame.  In this case, it is no longer
+        safe to display the provisional URL.
+
+        Reviewed by Adam Barth.
+
+        * public/WebFrameClient.h:
+        (WebFrameClient):
+        (WebKit::WebFrameClient::didAccessInitialDocument):
+        * src/FrameLoaderClientImpl.cpp:
+        (WebKit::FrameLoaderClientImpl::didAccessInitialDocument):
+        (WebKit):
+        * src/FrameLoaderClientImpl.h:
+        (FrameLoaderClientImpl):
+        * tests/WebFrameTest.cpp:
+
 2013-03-05  Alec Flett  <alecflett@chromium.org>
 
         IndexedDB: Properly refactor frontend/backend code by #includes

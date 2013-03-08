@@ -145,6 +145,7 @@ void TestShell::initialize(MockPlatform* platformSupport)
 
     if (m_threadedCompositingEnabled)
         m_webCompositorThread = adoptPtr(WebKit::Platform::current()->createThread("Compositor"));
+    webkit_support::SetThreadedCompositorEnabled(m_threadedCompositingEnabled);
 
     createMainWindow();
 }
@@ -161,13 +162,13 @@ void TestShell::createMainWindow()
 
 TestShell::~TestShell()
 {
+    if (m_webViewHost)
+        m_webViewHost->shutdown();
     m_testInterfaces->setDelegate(0);
     m_testInterfaces->setWebView(0, 0);
     m_devToolsTestInterfaces->setDelegate(0);
     m_devToolsTestInterfaces->setWebView(0, 0);
     m_drtDevToolsAgent->setWebView(0);
-    if (m_webViewHost)
-        m_webViewHost->shutdown();
 }
 
 void TestShell::createDRTDevToolsClient(DRTDevToolsAgent* agent)

@@ -89,6 +89,14 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isInstantProfile: function()
+    {
+        return false;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.ProfileHeader>}
      */
     getProfiles: function()
@@ -1422,15 +1430,6 @@ WebInspector.MemoryChartProfilerPanel = function()
 }
 
 WebInspector.MemoryChartProfilerPanel.prototype = {
-    /**
-     * @override
-     * @return {!WebInspector.ProfileLauncherView}
-     */
-    _createLauncherView: function()
-    {
-        return new WebInspector.NativeProfileLauncherView(this);
-    },
-
     __proto__: WebInspector.ProfilesPanel.prototype
 }
 
@@ -1453,6 +1452,7 @@ importScript("ProfileDataGridTree.js");
 importScript("BottomUpProfileDataGridTree.js");
 importScript("CPUProfileView.js");
 importScript("CSSSelectorProfileView.js");
+importScript("FlameChart.js");
 importScript("HeapSnapshot.js");
 importScript("HeapSnapshotDataGrids.js");
 importScript("HeapSnapshotGridNodes.js");

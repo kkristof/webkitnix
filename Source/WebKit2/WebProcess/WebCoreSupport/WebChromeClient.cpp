@@ -57,6 +57,7 @@
 #include <WebCore/FrameLoadRequest.h>
 #include <WebCore/FrameLoader.h>
 #include <WebCore/FrameView.h>
+#include <WebCore/HTMLInputElement.h>
 #include <WebCore/HTMLNames.h>
 #include <WebCore/HTMLParserIdioms.h>
 #include <WebCore/HTMLPlugInImageElement.h>
@@ -106,11 +107,16 @@ void WebChromeClient::chromeDestroyed()
 
 void WebChromeClient::setWindowRect(const FloatRect& windowFrame)
 {
-    m_page->send(Messages::WebPageProxy::SetWindowFrame(windowFrame));
+    m_page->sendSetWindowFrame(windowFrame);
 }
 
 FloatRect WebChromeClient::windowRect()
 {
+#if PLATFORM(MAC)
+    if (m_page->hasCachedWindowFrame())
+        return m_page->windowFrameInScreenCoordinates();
+#endif
+
     FloatRect newWindowFrame;
 
     if (!WebProcess::shared().connection()->sendSync(Messages::WebPageProxy::GetWindowFrame(), Messages::WebPageProxy::GetWindowFrame::Reply(newWindowFrame), m_page->pageID()))
@@ -152,9 +158,19 @@ void WebChromeClient::takeFocus(FocusDirection direction)
     m_page->send(Messages::WebPageProxy::TakeFocus(direction));
 }
 
-void WebChromeClient::focusedNodeChanged(Node*)
+void WebChromeClient::focusedNodeChanged(Node* node)
 {
-    notImplemented();
+    if (!node)
+        return;
+    if (!node->hasTagName(inputTag))
+        return;
+
+    HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(node);
+    if (!inputElement->isText())
+        return;
+
+    WebFrame* webFrame = static_cast<WebFrameLoaderClient*>(node->document()->frame()->loader()->client())->webFrame();
+    m_page->injectedBundleFormClient().didFocusTextField(m_page, inputElement, webFrame);
 }
 
 void WebChromeClient::focusedFrameChanged(Frame* frame)
