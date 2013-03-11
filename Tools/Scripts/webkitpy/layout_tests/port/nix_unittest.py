@@ -40,7 +40,7 @@ class NixPortTest(port_testcase.PortTestCase):
         {'search_paths':['nix'], 'os_name':'linux'}
     ]
     expectation_files_cases = [
-        {'search_paths':['nix', 'wk2'], 'os_name':'linux'}
+        {'search_paths':['', 'nix', 'wk2'], 'os_name':'linux'}
     ]
 
     def _assert_search_path(self, search_paths, os_name):
@@ -62,5 +62,5 @@ class NixPortTest(port_testcase.PortTestCase):
     def test_expectations_files(self):
         for case in self.expectation_files_cases:
             expectations_case = deepcopy(case)
-            expectations_case['search_paths'] = map(lambda path: '/mock-checkout/LayoutTests/platform/%s/TestExpectations' % (path), expectations_case['search_paths'])
+            expectations_case['search_paths'] = map(lambda path: '/mock-checkout/LayoutTests/TestExpectations'  if not path else '/mock-checkout/LayoutTests/platform/%s/TestExpectations' % (path), expectations_case['search_paths'])
             self._assert_expectations_files(**expectations_case)

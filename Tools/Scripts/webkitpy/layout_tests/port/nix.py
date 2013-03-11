@@ -114,12 +114,6 @@ class NixPort(Port):
         search_paths.append(self.port_name)
         return search_paths
 
-    def expectations_files(self):
-        paths = self._search_paths()
-        if self.get_option('webkit_test_runner'):
-            paths.append('wk2')
-        return [self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in paths]
-
     def show_results_html_file(self, results_filename):
         # FIXME: We should find a way to share this implmentation with Gtk,
         # or teach run-launcher how to call run-safari and move this down to WebKitPort.
@@ -127,3 +121,9 @@ class NixPort(Port):
         # FIXME: old-run-webkit-tests also added ["-graphicssystem", "raster", "-style", "windows"]
         # FIXME: old-run-webkit-tests converted results_filename path for cygwin.
         self._run_script("run-launcher", run_launcher_args)
+
+    def _port_specific_expectations_files(self):
+        paths = self._search_paths()
+        if self.get_option('webkit_test_runner'):
+            paths.append('wk2')
+        return list(([self._filesystem.join(self._webkit_baseline_path(p), 'TestExpectations') for p in paths]))
