@@ -226,7 +226,6 @@ set(WebCore_IDL_FILES
     Modules/mediastream/RTCSessionDescription.idl
     Modules/mediastream/RTCSessionDescriptionCallback.idl
     Modules/mediastream/RTCStatsCallback.idl
-    Modules/mediastream/RTCStatsElement.idl
     Modules/mediastream/RTCStatsReport.idl
     Modules/mediastream/RTCStatsResponse.idl
 
@@ -865,7 +864,6 @@ set(WebCore_SOURCES
     Modules/mediastream/RTCPeerConnection.cpp
     Modules/mediastream/RTCSessionDescription.cpp
     Modules/mediastream/RTCSessionDescriptionRequestImpl.cpp
-    Modules/mediastream/RTCStatsElement.cpp
     Modules/mediastream/RTCStatsReport.cpp
     Modules/mediastream/RTCStatsRequestImpl.cpp
     Modules/mediastream/RTCStatsResponse.cpp
@@ -1070,6 +1068,7 @@ set(WebCore_SOURCES
     css/CSSValuePool.cpp
     css/DOMWindowCSS.cpp
     css/DocumentRuleSets.cpp
+    css/ElementRuleCollector.cpp
     css/FontFeatureValue.cpp
     css/FontValue.cpp
     css/InspectorCSSOMWrappers.cpp
@@ -1082,6 +1081,7 @@ set(WebCore_SOURCES
     css/MediaQueryList.cpp
     css/MediaQueryListListener.cpp
     css/MediaQueryMatcher.cpp
+    css/PageRuleCollector.cpp
     css/PropertySetCSSStyleDeclaration.cpp
     css/RGBColor.cpp
     css/RuleFeature.h
@@ -1556,6 +1556,7 @@ set(WebCore_SOURCES
     html/parser/HTMLParserScheduler.cpp
     html/parser/HTMLParserThread.cpp
     html/parser/HTMLFormattingElementList.cpp
+    html/parser/HTMLIdentifier.cpp
     html/parser/HTMLMetaCharsetParser.cpp
     html/parser/HTMLPreloadScanner.cpp
     html/parser/HTMLResourcePreloader.cpp
@@ -1563,6 +1564,7 @@ set(WebCore_SOURCES
     html/parser/HTMLSourceTracker.cpp
     html/parser/HTMLTokenizer.cpp
     html/parser/HTMLTreeBuilder.cpp
+    html/parser/HTMLTreeBuilderSimulator.cpp
     html/parser/HTMLViewSourceParser.cpp
     html/parser/TextDocumentParser.cpp
     html/parser/TextViewSourceParser.cpp
@@ -1921,6 +1923,7 @@ set(WebCore_SOURCES
     platform/graphics/CrossfadeGeneratedImage.cpp
     platform/graphics/FloatPoint.cpp
     platform/graphics/FloatPoint3D.cpp
+    platform/graphics/FloatPolygon.cpp
     platform/graphics/FloatQuad.cpp
     platform/graphics/FloatRect.cpp
     platform/graphics/FloatSize.cpp
@@ -2523,6 +2526,7 @@ set(WebCore_SOURCES
     workers/DefaultSharedWorkerRepository.cpp
     workers/SharedWorker.cpp
     workers/SharedWorkerContext.cpp
+    workers/SharedWorkerRepository.cpp
     workers/SharedWorkerThread.cpp
     workers/Worker.cpp
     workers/WorkerContext.cpp

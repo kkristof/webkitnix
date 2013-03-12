@@ -1,3 +1,230 @@
+2013-03-11  Andreas Kling  <akling@apple.com>
+
+        [Mac][WK1] Add support for alert() in MiniBrowser.
+        <http://webkit.org/b/112090>
+
+        Reviewed by Anders Carlsson.
+
+        * MiniBrowser/mac/WK1BrowserWindowController.m:
+        (-[WK1BrowserWindowController webView:runJavaScriptAlertPanelWithMessage:initiatedByFrame:]):
+
+2013-03-11  Julie Parent  <jparent@chromium.org>
+
+        Dashboard cleanup: Create ui.Errors
+        https://bugs.webkit.org/show_bug.cgi?id=111785
+
+        Reviewed by Ojan Vafai.
+        
+        Create ui.Errors for handling errors the dashboards
+        encounter. Loader now has a Error object that it can add to,
+        and individual dashboards can show errors when desired.
+        Currently, only flakiness_db shows errors, but this is 
+        generic and there is no reason why other dbs wouldn't want to
+        show errors.
+
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (resourceLoadingComplete):
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (generatePage):
+        * TestResultServer/static-dashboards/loader.js:
+        (.):
+        * TestResultServer/static-dashboards/ui.js:
+        (.):
+
+2013-03-08  Geoffrey Garen  <ggaren@apple.com>
+
+        Some StringHasher tests are broken because of missing null termination
+        https://bugs.webkit.org/show_bug.cgi?id=111284
+
+        Reviewed by Darin Adler.
+
+        * TestWebKitAPI/Tests/WTF/StringHasher.cpp:
+        (TestWebKitAPI): Added null termination since C strings are null-terminated.
+        (TestWebKitAPI::TEST): Removed #ifdef's that disabled this testing since
+        the bug caught by it is now fixed.
+
+2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145200.
+        http://trac.webkit.org/changeset/145200
+        https://bugs.webkit.org/show_bug.cgi?id=112063
+
+        Broke a couple of unit tests (Requested by zdobersek on
+        #webkit).
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-03-11  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] WebKit2-only build fails
+        https://bugs.webkit.org/show_bug.cgi?id=112033
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Split the list of files the docs-build.stamp target depends on into the
+        generic part, WebKit1-specific part and WebKit2-specific part.
+        * TestWebKitAPI/GNUmakefile.am: The TestGtk executable should not link agains libwebkitgtk
+        as it is not WebKit1-specific, but should rather link to libWebCore.la and libWebCoreGtk.la
+        directly.
+
+2013-03-11  Dima Gorbik  <dgorbik@apple.com>
+
+        Adding myself to the committers list.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-03-11  Jeff Rogers  <jrogers@rim.com>
+
+        [BlackBerry] Disable MathML support
+        https://bugs.webkit.org/show_bug.cgi?id=111929
+
+        Reviewed by Rob Buis.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-03-11  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [EFL][GTK][WKTR] Regression(r145231): Undefined symbol in libTestRunnerInjectedBundle.so
+        https://bugs.webkit.org/show_bug.cgi?id=111970
+
+        Reviewed by Chris Fleizach.
+
+        Provide dummy implementation for AccessibilityUIElement::supportedActions() in ATK
+        or libTestRunnerInjectedBundle.so cannot be loaded in EFL / GTK otherwise, due to
+        undefined symbol.
+
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::AccessibilityUIElement::supportedActions):
+        (WTR):
+
+2013-03-11  Chris Hopman  <cjhopman@chromium.org>
+
+        [chromium] Android apk targets should depend directly on Java library targets
+        https://bugs.webkit.org/show_bug.cgi?id=111746
+
+        Reviewed by Eric Seidel.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+        Make DumpRenderTree_apk depend directly on base_java and net_java.
+        * TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:
+        Make TestWebKitAPI_apk depend directly on base_java.
+
+2013-03-11  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] remove obsolete user gesture methods from WebFrame
+        https://bugs.webkit.org/show_bug.cgi?id=111696
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/TestRunner/src/TestPlugin.cpp:
+        (WebTestRunner::TestPlugin::handleInputEvent):
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+
+2013-03-10  Silvia Pfeiffer  <silviapf@chromium.org>
+
+        Unreviewed, add myself to commiters.py.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-03-08  Julie Parent  <jparent@chromium.org>
+
+        Cleanup: Remove dead code.
+        https://bugs.webkit.org/show_bug.cgi?id=111900
+
+        Reviewed by Dirk Pranke.
+        
+        Treemap overrides a global function that used to be in 
+        dashboard_base, but was removed months ago in
+        https://bugs.webkit.org/show_bug.cgi?id=99246, so this code has
+        no caller. 
+
+        * TestResultServer/static-dashboards/treemap.html:
+
+2013-03-08  Harald Alvestrand  <hta@chromium.org>
+
+        Implemented new API for RTCStatsReport object.
+        https://bugs.webkit.org/show_bug.cgi?id=110333
+
+        Reviewed by Adam Barth.
+
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCPeerConnectionHandler.cpp:
+        (WebTestRunner::MockWebRTCPeerConnectionHandler::getStats):
+
+2013-03-08  Dirk Pranke  <dpranke@chromium.org>
+
+        [chromium] use custom freetype on linux asan builds again
+        https://bugs.webkit.org/show_bug.cgi?id=111884
+
+        Reviewed by Tony Chang.
+
+        We no longer need the workaround after chromium r186540.
+
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:
+
+2013-03-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Warning about the user not having edit rights on Bugzilla is confusing new contributors
+        https://bugs.webkit.org/show_bug.cgi?id=111798
+
+        Reviewed by Dirk Pranke.
+
+        Don't scare people by the warning. Instead, tell them to ignore it if they don't have EditBugs privileges.
+
+        * Scripts/webkitpy/common/net/bugzilla/bugzilla.py:
+
+2013-03-08  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Remove WebLayerTreeViewClient and WebLayerTreeView::Settings
+        https://bugs.webkit.org/show_bug.cgi?id=111632
+
+        Reviewed by Adrienne Walker.
+
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        (WebViewHost::initializeLayerTreeView):
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+
+2013-03-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        [Mac] Add a feature flag for 'view-mode' Media Feature, disable it on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=111297
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * WebKitTestRunner/InjectedBundle/TestRunner.cpp:
+        (WTR::TestRunner::setViewModeMediaFeature):
+
+2013-03-08  Chris Fleizach  <cfleizach@apple.com>
+
+        [Mac] [WK2] platform/mac/accessibility/press-action-is-first.html fails
+        https://bugs.webkit.org/show_bug.cgi?id=111814
+
+        Reviewed by Ryosuke Niwa.
+
+        Add the needed supportedActions() attribute to WKTestRunner.
+
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.cpp:
+        (WTR::AccessibilityUIElement::supportedActions):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * WebKitTestRunner/InjectedBundle/Bindings/AccessibilityUIElement.idl:
+        * WebKitTestRunner/InjectedBundle/mac/AccessibilityUIElementMac.mm:
+        (WTR::AccessibilityUIElement::supportedActions):
+
+2013-03-08  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [EFL] Memory leak at WKViewClientWebProcessCallbacks API test
+        https://bugs.webkit.org/show_bug.cgi?id=111851
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * TestWebKitAPI/Tests/WebKit2/efl/WKViewClientWebProcessCallbacks.cpp:
+        (TestWebKitAPI::TEST):
+
+            Fixed WKURLRef instance leaking.
+
 2013-03-08  Christophe Dumez  <ch.dumez@sisa.samsung.com>
 
         [EFL] [WK2] Some authentication tests fail in WebKit2

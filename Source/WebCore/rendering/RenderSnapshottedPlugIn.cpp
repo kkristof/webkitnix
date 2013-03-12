@@ -58,7 +58,7 @@ RenderSnapshottedPlugIn::~RenderSnapshottedPlugIn()
 
 HTMLPlugInImageElement* RenderSnapshottedPlugIn::plugInImageElement() const
 {
-    return static_cast<HTMLPlugInImageElement*>(node());
+    return toHTMLPlugInImageElement(node());
 }
 
 void RenderSnapshottedPlugIn::layout()
@@ -88,7 +88,7 @@ void RenderSnapshottedPlugIn::updateSnapshot(PassRefPtr<Image> image)
 
 void RenderSnapshottedPlugIn::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (paintInfo.phase == PaintPhaseBlockBackground && plugInImageElement()->displayState() < HTMLPlugInElement::PlayingWithPendingMouseClick) {
+    if (paintInfo.phase == PaintPhaseForeground && plugInImageElement()->displayState() < HTMLPlugInElement::PlayingWithPendingMouseClick) {
         paintSnapshot(paintInfo, paintOffset);
     }
 

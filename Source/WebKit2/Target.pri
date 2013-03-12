@@ -148,7 +148,6 @@ HEADERS += \
     Shared/qt/ArgumentCodersQt.h \
     Shared/qt/PlatformCertificateInfo.h \
     Shared/qt/WebEventFactoryQt.h \
-    Shared/qt/QtDefaultDataLocation.h \
     Shared/qt/QtNetworkReplyData.h \
     Shared/qt/QtNetworkRequestData.h \
     UIProcess/API/C/WKAPICast.h \
@@ -195,6 +194,7 @@ HEADERS += \
     UIProcess/API/C/WKVibration.h \
     UIProcess/API/C/WebKit2_C.h \
     UIProcess/API/C/qt/WKNativeEvent.h \
+    UIProcess/API/C/qt/WKIconDatabaseQt.h \
     UIProcess/API/cpp/WKRetainPtr.h \
     UIProcess/API/cpp/qt/WKStringQt.h \
     UIProcess/API/cpp/qt/WKURLQt.h \
@@ -505,7 +505,6 @@ SOURCES += \
     Shared/qt/ProcessExecutablePathQt.cpp \
     Shared/qt/WebCoreArgumentCodersQt.cpp \
     Shared/qt/WebEventFactoryQt.cpp \
-    Shared/qt/QtDefaultDataLocation.cpp \
     Shared/qt/QtNetworkReplyData.cpp \
     Shared/qt/QtNetworkRequestData.cpp \
     Shared/qt/WebURLRequestQt.cpp \
@@ -546,6 +545,7 @@ SOURCES += \
     UIProcess/API/C/WKResourceCacheManager.cpp \
     UIProcess/API/C/WKTextChecker.cpp \
     UIProcess/API/C/WKVibration.cpp \
+    UIProcess/API/C/qt/WKIconDatabaseQt.cpp \
     UIProcess/API/cpp/qt/WKStringQt.cpp \
     UIProcess/API/cpp/qt/WKURLQt.cpp \
     UIProcess/API/qt/raw/qrawwebview.cpp \

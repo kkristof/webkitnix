@@ -2194,7 +2194,7 @@ webkit.org/b/111031 fast/history/nested-visited-test.html [ Failure ]
 webkit.org/b/111031 fast/history/self-is-visited.html [ Failure ]
 webkit.org/b/111031 fast/history/sibling-visited-test.html [ Failure ]
 webkit.org/b/111031 fast/loader/stateobjects/state-url-sets-links-visited.html [ Failure ]
-webkit.org/b/111031 [ Mac Android ] fast/history/visited-link-background-color.html [ Failure ]
+webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyFailure ]
 
 # Tests that work with KURL, but fail with GURL
 webkit.org/b/71758 fast/url/invalid-urls-utf8.html [ Failure ]
@@ -2939,7 +2939,6 @@ webkit.org/b/66974 [ Debug ] fast/events/keydown-1.html [ Pass Timeout ]
 webkit.org/b/66989 transforms/3d/general/perspective-non-layer.html [ Failure ImageOnlyFailure ]
 webkit.org/b/66989 transforms/3d/general/transform-origin-z-change.html [ Failure ImageOnlyFailure ]
 webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ImageOnlyFailure ]
-webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Failure ImageOnlyFailure ]
 
 # We don't seem to load this glyph on windows
 webkit.org/b/96430 [ Win ] fast/text/fallback-traits-fixup.html [ Failure ]
@@ -3559,8 +3558,6 @@ webkit.org/b/87886 [ Linux Release ] perf/mouse-event.html [ Failure Pass ]
 
 webkit.org/b/88124 [ Debug ] fast/css/absolute-child-with-percent-height-inside-relative-parent.html [ Failure Pass ]
 
-webkit.org/b/88131 [ Debug ] fast/dom/HTMLMeterElement/meter-element-crash.html [ Failure Pass ]
-
 webkit.org/b/88593 fast/table/multiple-captions-display.xhtml [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
@@ -3732,9 +3729,6 @@ webkit.org/b/94002 [ Win7 Debug ] inspector/debugger [ Pass Timeout ]
 webkit.org/b/94002 [ Win7 Debug ] inspector/debugger/event-listener-breakpoints.html [ Pass Timeout Failure ]
 webkit.org/b/110963 [ Win7 Debug ] inspector/debugger/debugger-scripts-reload.html [ Pass Timeout Crash ]
 webkit.org/b/110963 [ Win7 Debug ] inspector/debugger/debugger-autocontinue-on-syntax-error.html [ Pass Timeout Crash ]
-
-# Flaky
-webkit.org/b/99389 [ Win ] inspector/debugger/xhr-breakpoints.html [ Pass Failure ]
 
 # Added by bug 89826
 webkit.org/b/94003 [ Win ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
@@ -4191,11 +4185,6 @@ webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-resize-reset
 webkit.org/b/90022 fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/101986 [ Linux Win ] platform/chromium/compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
-webkit.org/b/101988 [ Linux Mac Win ] transforms/3d/point-mapping/3d-point-mapping-3.html [ Pass ImageOnlyFailure ]
-webkit.org/b/101988 [ Linux Mac Win ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Pass ImageOnlyFailure ]
-webkit.org/b/101988 [ Linux Mac Win ] transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ Pass ImageOnlyFailure ]
-webkit.org/b/101988 [ Linux Mac Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass ImageOnlyFailure ]
-webkit.org/b/101988 [ Linux Mac Win ] transforms/3d/point-mapping/3d-point-mapping.html [ Pass ImageOnlyFailure ]
 webkit.org/b/102131 [ Win ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
@@ -4203,7 +4192,6 @@ webkit.org/b/102277 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Fail
 
 # This test is consistently leaking state into the next test.
 webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
-webkit.org/b/102542 [ Linux Mac Win ] compositing/checkerboard.html [ ImageOnlyFailure ]
 
 webkit.org/b/102724 [ Linux ] svg/carto.net/colourpicker.svg [ ImageOnlyFailure Pass ]
 
@@ -4249,9 +4237,6 @@ webkit.org/b/103149 [ Mac ] fast/events/stopPropagation-submit.html [ Pass Failu
 webkit.org/b/103700 compositing/masks/simple-composited-mask.html [ ImageOnlyFailure ]
 
 # Some compositing tests doesn't work on multiple platforms.
-webkit.org/b/103721 [ Mac Win Linux ] compositing/geometry/vertical-scroll-composited.html [ ImageOnlyFailure ]
-webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/load-video-in-reflection.html [ ImageOnlyFailure ]
-webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 
 # New tests added in r136492 that do not work in chromium
@@ -4442,7 +4427,9 @@ webkit.org/b/111199 [ Debug Mac ] compositing/rtl/rtl-iframe-fixed-overflow.html
 webkit.org/b/111199 [ Debug Win Mac ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 
 # The html5lib tests are all too slow to run in Debug, largely due to v8 per-document boot-up.
+# V8 bug: https://code.google.com/p/v8/issues/detail?id=2567
 webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
+webkit.org/b/ [ Linux Win ] html5lib/generated/run-tests16-data.html [ Slow ]
 
 # HALF_FLOAT_OES is not yet working in chromium.
 crbug.com/179503 fast/canvas/webgl/oes-texture-half-float.html [ Failure ]
@@ -4473,3 +4460,21 @@ webkit.org/b/111667 [ Debug Win ] media/encrypted-media/encrypted-media-events.h
 webkit.org/b/111774 [ Win ] http/tests/security/cross-origin-css.html [ Pass Failure ]
 
 webkit.org/b/111816 fast/borders/border-fit-2.html [ Failure ]
+
+webkit.org/b/111872 fast/dom/title-directionality-removeChild.html [ Pass Failure ]
+
+# Test is a performance test, not useful in debug
+webkit.org/b/111808 [ Debug ] fast/js/regress/nested-function-parsing-random.html [ Pass Timeout ]
+
+# Subtle pixel difference in debug only.
+webkit.org/b/112058 [ Debug SnowLeopard ] svg/custom/foreign-object-skew.svg [ Failure ]
+
+# Compositor mask shader busted by highp change
+crbug.com/183581 [ Mac Win Linux ] compositing/masks/direct-image-mask.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/masks/layer-mask-placement.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/masks/mask-of-clipped-layer.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/masks/masked-ancestor.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/masks/multiple-masks.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/reflections/masked-reflection-on-composited.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/reflections/nested-reflection-mask-change.html [ ImageOnlyFailure ]
+crbug.com/183581 [ Mac Win Linux ] compositing/text-on-scaled-surface.html [ ImageOnlyFailure ]

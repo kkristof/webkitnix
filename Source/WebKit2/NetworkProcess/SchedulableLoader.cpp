@@ -79,13 +79,6 @@ SchedulableLoader::~SchedulableLoader()
     ASSERT(!m_hostRecord);
 }
 
-void SchedulableLoader::connectionToWebProcessDidClose()
-{
-    m_connection = 0;
-
-    // FIXME (NetworkProcess): Cancel the load. The request may be long-living, so we don't want it to linger around after all clients are gone.
-}
-
 void SchedulableLoader::consumeSandboxExtensions()
 {
     for (size_t i = 0, count = m_requestBodySandboxExtensions.size(); i < count; ++i)
@@ -98,10 +91,10 @@ void SchedulableLoader::consumeSandboxExtensions()
 void SchedulableLoader::invalidateSandboxExtensions()
 {
     for (size_t i = 0, count = m_requestBodySandboxExtensions.size(); i < count; ++i)
-        m_requestBodySandboxExtensions[i]->invalidate();
+        m_requestBodySandboxExtensions[i]->revoke();
 
     for (size_t i = 0, count = m_resourceSandboxExtensions.size(); i < count; ++i)
-        m_resourceSandboxExtensions[i]->invalidate();
+        m_resourceSandboxExtensions[i]->revoke();
 }
 
 } // namespace WebKit

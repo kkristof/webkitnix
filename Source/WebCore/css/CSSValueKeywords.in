@@ -841,12 +841,14 @@ exact
 //default
 sRGB
 
+#if defined(ENABLE_VIEW_MODE_CSS_MEDIA) && ENABLE_VIEW_MODE_CSS_MEDIA
 // (-webkit-view-mode:) media feature:
 floating
 fullscreen
 maximized
 minimized
 windowed
+#endif // ENABLE_VIEW_MODE_CSS_MEDIA
 
 // -webkit-hyphenate-limit-lines
 no-limit
@@ -949,6 +951,10 @@ wrap
 
 // -webkit-line-align
 edges
+
+#if (defined(ENABLE_SVG) && ENABLE_SVG) || (defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT)
+alphabetic
+#endif
 
 // position
 #if defined(ENABLE_CSS_STICKY_POSITION) && ENABLE_CSS_STICKY_POSITION

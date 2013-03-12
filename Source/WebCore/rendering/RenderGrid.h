@@ -68,6 +68,19 @@ private:
         size_t columnIndex;
         size_t rowIndex;
     };
+
+    struct GridSpan {
+        GridSpan(size_t initialPosition, size_t finalPosition)
+            : initialPositionIndex(initialPosition)
+            , finalPositionIndex(finalPosition)
+        {
+            ASSERT(initialPositionIndex <= finalPositionIndex);
+        }
+
+        size_t initialPositionIndex;
+        size_t finalPositionIndex;
+    };
+
     class GridIterator;
     enum TrackSizingDirection { ForColumns, ForRows };
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks);
@@ -82,8 +95,6 @@ private:
     void placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*>);
     void placeAutoMajorAxisItemsOnGrid(Vector<RenderBox*>);
     void placeAutoMajorAxisItemOnGrid(RenderBox*);
-    const GridPosition& autoPlacementMajorAxisPositionForChild(const RenderBox*) const;
-    const GridPosition& autoPlacementMinorAxisPositionForChild(const RenderBox*) const;
     TrackSizingDirection autoPlacementMajorAxisDirection() const;
     TrackSizingDirection autoPlacementMinorAxisDirection() const;
 
@@ -104,7 +115,17 @@ private:
     LayoutUnit maxContentForChild(RenderBox*, TrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutPoint findChildLogicalPosition(RenderBox*, const Vector<GridTrack>& columnTracks, const Vector<GridTrack>& rowTracks);
     GridCoordinate cachedGridCoordinate(const RenderBox*) const;
-    size_t resolveGridPositionFromStyle(const GridPosition&) const;
+
+    PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const RenderBox*, TrackSizingDirection) const;
+    enum GridPositionSide {
+        StartSide,
+        EndSide,
+        BeforeSide,
+        AfterSide
+    };
+    size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
+
+    LayoutUnit gridAreaBreadthForChild(const RenderBox* child, TrackSizingDirection, const Vector<GridTrack>&) const;
 
 #ifndef NDEBUG
     bool tracksAreWiderThanMinTrackBreadth(TrackSizingDirection, const Vector<GridTrack>&);

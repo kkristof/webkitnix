@@ -103,10 +103,11 @@ private:
 
     KURL m_documentURL;
     bool m_isEnabled;
-    ContentSecurityPolicy::ReflectedXSSDisposition m_xssProtection;
 
-    String m_originalURL;
-    String m_originalHTTPBody;
+    ContentSecurityPolicy::ReflectedXSSDisposition m_xssProtection;
+    bool m_didSendValidCSPHeader;
+    bool m_didSendValidXSSProtectionHeader;
+
     String m_decodedURL;
     String m_decodedHTTPBody;
     OwnPtr<SuffixTree<ASCIICodebook> > m_decodedHTTPBodySuffixTree;

@@ -29798,6 +29798,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\platform\graphics\FloatPolygon.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\platform\graphics\FloatPolygon.h"
+					>
+				</File>
+				<File
 					RelativePath="..\platform\graphics\FloatQuad.cpp"
 					>
 				</File>
@@ -32629,6 +32637,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\platform\graphics\ca\PlatformCAFilters.h"
+						>
+					</File>
+					<File
 						RelativePath="..\platform\graphics\ca\PlatformCALayer.h"
 						>
 					</File>
@@ -32743,6 +32755,10 @@
 							RelativePath="..\platform\graphics\ca\win\PlatformCAAnimationWin.cpp"
 							>
 						</File>
+    					<File
+    						RelativePath="..\platform\graphics\ca\win\PlatformCAFiltersWin.cpp"
+    						>
+    					</File>
 						<File
 							RelativePath="..\platform\graphics\ca\win\PlatformCALayerWin.cpp"
 							>
@@ -56695,6 +56711,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\workers\SharedWorkerRepository.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\workers\SharedWorkerRepository.h"
 				>
 			</File>
@@ -65090,6 +65110,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\html\parser\HTMLIdentifier.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\html\parser\HTMLIdentifier.h"
+					>
+				</File>
+				<File
 					RelativePath="..\html\parser\HTMLInputStream.h"
 					>
 				</File>
@@ -65191,6 +65219,14 @@
 				</File>
 				<File
 					RelativePath="..\html\parser\HTMLTreeBuilder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\html\parser\HTMLTreeBuilderSimulator.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\html\parser\HTMLTreeBuilderSimulator.h"
 					>
 				</File>
 				<File
@@ -77359,6 +77395,10 @@
 				</File>
 				<File
 					RelativePath="..\inspector\front-end\cm\htmlmixed.js"
+					>
+				</File>
+				<File
+					RelativePath="..\inspector\front-end\cm\matchbrackets.js"
 					>
 				</File>
 				<File

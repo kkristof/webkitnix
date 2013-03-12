@@ -205,10 +205,11 @@ void RenderLayerBacking::adjustTiledBackingCoverage()
     Frame* frame = renderer()->frame();
     if (frame) {
         FrameView* frameView = frame->view();
-        if (frameView->horizontalScrollbarMode() != ScrollbarAlwaysOff)
+        bool clipsToExposedRect = tiledBacking()->clipsToExposedRect();
+        if (frameView->horizontalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
             tileCoverage |= TiledBacking::CoverageForHorizontalScrolling;
 
-        if (frameView->verticalScrollbarMode() != ScrollbarAlwaysOff)
+        if (frameView->verticalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
             tileCoverage |= TiledBacking::CoverageForVerticalScrolling;
 
         if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
@@ -538,7 +539,7 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
     }
 #if ENABLE(VIDEO)
     else if (renderer->isVideo()) {
-        HTMLMediaElement* mediaElement = static_cast<HTMLMediaElement*>(renderer->node());
+        HTMLMediaElement* mediaElement = toMediaElement(renderer->node());
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
     }
 #endif
@@ -679,8 +680,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         if (m_boundsConstrainedByClipping)
             m_graphicsLayer->setNeedsDisplay();
     }
-    if (!m_isMainFrameRenderViewLayer)
-        m_graphicsLayer->setContentsOpaque(m_owningLayer->contentsOpaqueInRect(localCompositingBounds));
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;

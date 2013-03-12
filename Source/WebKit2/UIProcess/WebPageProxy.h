@@ -965,6 +965,8 @@ private:
 
     // Spotlight.
     void searchWithSpotlight(const String&);
+        
+    void searchTheWeb(const String&);
 
     // Dictionary.
     void didPerformDictionaryLookup(const AttributedString&, const DictionaryPopupInfo&);

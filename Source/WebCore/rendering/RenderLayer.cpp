@@ -71,6 +71,7 @@
 #include "HTMLFrameElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
+#include "HistogramSupport.h"
 #include "HitTestingTransformState.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
@@ -2013,6 +2014,12 @@ void RenderLayer::updateNeedsCompositedScrolling()
 #else
         m_needsCompositedScrolling = forceUseCompositedScrolling;
 #endif
+        // We gather a boolean value for use with Google UMA histograms to
+        // quantify the actual effects of a set of patches attempting to
+        // relax composited scrolling requirements, thereby increasing the
+        // number of composited overflow divs.
+        if (acceleratedCompositingForOverflowScrollEnabled())
+            HistogramSupport::histogramEnumeration("Renderer.NeedsCompositedScrolling", m_needsCompositedScrolling, 2);
     }
 
     if (oldNeedsCompositedScrolling != m_needsCompositedScrolling) {
@@ -5514,56 +5521,6 @@ bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
     bool paintsToWindow = true;
 #endif    
     return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || paintsToWindow);
-}
-
-bool RenderLayer::contentsOpaqueInRect(const LayoutRect& localRect) const
-{
-    if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
-        return false;
-
-    if (paintsWithTransparency(PaintBehaviorNormal))
-        return false;
-
-    // FIXME: Handle simple transforms.
-    if (paintsWithTransform(PaintBehaviorNormal))
-        return false;
-
-    // FIXME: Remove this check.
-    // This function should not be called when layer-lists are dirty.
-    // It is somehow getting triggered during style update.
-    if (m_zOrderListsDirty || m_normalFlowListDirty)
-        return false;
-
-    // FIXME: We currently only check the immediate renderer,
-    // which will miss many cases.
-    return renderer()->isOpaqueInRect(localRect)
-        || listContentsOpaqueInRect(posZOrderList(), localRect)
-        || listContentsOpaqueInRect(negZOrderList(), localRect)
-        || listContentsOpaqueInRect(normalFlowList(), localRect);
-}
-
-bool RenderLayer::listContentsOpaqueInRect(const Vector<RenderLayer*>* list, const LayoutRect& localRect) const
-{
-    if (!list || list->isEmpty())
-        return false;
-
-    for (Vector<RenderLayer*>::const_reverse_iterator iter = list->rbegin(); iter != list->rend(); ++iter) {
-        const RenderLayer* childLayer = *iter;
-        if (childLayer->isComposited())
-            continue;
-
-        if (!childLayer->canUseConvertToLayerCoords())
-            continue;
-
-        LayoutPoint childOffset;
-        LayoutRect childLocalRect(localRect);
-        childLayer->convertToLayerCoords(this, childOffset);
-        childLocalRect.moveBy(-childOffset);
-
-        if (childLayer->contentsOpaqueInRect(childLocalRect))
-            return true;
-    }
-    return false;
 }
 
 void RenderLayer::setParent(RenderLayer* parent)

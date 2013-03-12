@@ -78,6 +78,7 @@ set(JavaScriptCore_SOURCES
     dfg/DFGArgumentsSimplificationPhase.cpp
     dfg/DFGArrayMode.cpp
     dfg/DFGAssemblyHelpers.cpp
+    dfg/DFGBackwardsPropagationPhase.cpp
     dfg/DFGByteCodeParser.cpp
     dfg/DFGCapabilities.cpp
     dfg/DFGCommon.cpp
@@ -355,7 +356,7 @@ if (ENABLE_LLINT)
     )
 
     set(OFFLINE_ASM
-        offlineasm/armv7.rb
+        offlineasm/arm.rb
         offlineasm/ast.rb
         offlineasm/backends.rb
         offlineasm/cloop.rb

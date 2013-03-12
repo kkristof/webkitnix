@@ -476,6 +476,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_wheelEventHandlerCount(0)
+    , m_lastHandledUserGestureTimestamp(0)
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_scheduledTasksAreSuspended(false)
     , m_visualUpdatesAllowed(true)
@@ -4241,7 +4242,9 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding))
         return;
     // FIXME: If the transform failed we should probably report an error (like Mozilla does).
-    processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, frame());
+    Frame* ownerFrame = frame();
+    processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, ownerFrame);
+    InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
 }
 
 void Document::setTransformSource(PassOwnPtr<TransformSource> source)
@@ -5674,6 +5677,11 @@ void Document::didRemoveEventTargetNode(Node* handler)
     }
 }
 #endif
+
+void Document::resetLastHandledUserGestureTimestamp()
+{
+    m_lastHandledUserGestureTimestamp = currentTime();
+}
 
 HTMLIFrameElement* Document::seamlessParentIFrame() const
 {

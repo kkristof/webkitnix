@@ -173,7 +173,6 @@
 #include "WebScriptSource.h"
 #include "WebSecurityOrigin.h"
 #include "WebSerializedScriptValue.h"
-#include "WebUserGestureIndicator.h"
 #include "WebViewImpl.h"
 #include "XPathResult.h"
 #include "htmlediting.h"
@@ -750,7 +749,7 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
     Node* node = xpathResult->iterateNext(ec);
     if (!node || !node->isFrameOwnerElement())
         return 0;
-    HTMLFrameOwnerElement* frameElement = static_cast<HTMLFrameOwnerElement*>(node);
+    HTMLFrameOwnerElement* frameElement = toFrameOwnerElement(node);
     return fromFrame(frameElement->contentFrame());
 }
 
@@ -863,7 +862,7 @@ v8::Handle<v8::Value> WebFrameImpl::executeScriptAndReturnValue(const WebScriptS
     // tests pass. If this isn't needed in non-test situations, we should
     // consider removing this code and changing the tests.
     // http://code.google.com/p/chromium/issues/detail?id=86397
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
     return frame()->script()->executeScript(ScriptSourceCode(source.code, source.url, position)).v8Value();
@@ -1106,16 +1105,6 @@ void WebFrameImpl::commitDocumentData(const char* data, size_t length)
 unsigned WebFrameImpl::unloadListenerCount() const
 {
     return frame()->document()->domWindow()->pendingUnloadEventListeners();
-}
-
-bool WebFrameImpl::isProcessingUserGesture() const
-{
-    return WebUserGestureIndicator::isProcessingUserGesture();
-}
-
-bool WebFrameImpl::consumeUserGesture() const
-{
-    return WebUserGestureIndicator::consumeUserGesture();
 }
 
 bool WebFrameImpl::willSuppressOpenerInNewFrame() const
@@ -2283,7 +2272,7 @@ WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
     // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebFrameImpl from an <object> element, for example.
     if (!element || !element->isFrameOwnerElement() || (!element->hasTagName(HTMLNames::iframeTag) && !element->hasTagName(HTMLNames::frameTag)))
         return 0;
-    HTMLFrameOwnerElement* frameElement = static_cast<HTMLFrameOwnerElement*>(element);
+    HTMLFrameOwnerElement* frameElement = toFrameOwnerElement(element);
     return fromFrame(frameElement->contentFrame());
 }
 

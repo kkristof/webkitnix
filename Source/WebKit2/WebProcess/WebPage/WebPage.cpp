@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2012 Intel Corporation. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  *
@@ -101,6 +101,7 @@
 #include <WebCore/HTMLFormElement.h>
 #include <WebCore/HTMLInputElement.h>
 #include <WebCore/HTMLPlugInElement.h>
+#include <WebCore/HTMLPlugInImageElement.h>
 #include <WebCore/HistoryItem.h>
 #include <WebCore/KeyboardEvent.h>
 #include <WebCore/MIMETypeRegistry.h>
@@ -235,6 +236,9 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     , m_artificialPluginInitializationDelayEnabled(false)
     , m_scrollingPerformanceLoggingEnabled(false)
     , m_mainFrameIsScrollable(true)
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    , m_didFindPrimarySnapshottedPlugin(false)
+#endif
 #if PLATFORM(MAC)
     , m_pdfPluginEnabled(false)
     , m_hasCachedWindowFrame(false)
@@ -1176,10 +1180,12 @@ void WebPage::windowScreenDidChange(uint64_t displayID)
     m_page->windowScreenDidChange(static_cast<PlatformDisplayID>(displayID));
 }
 
+#if ENABLE(VIEW_MODE_CSS_MEDIA)
 void WebPage::setViewMode(Page::ViewMode mode)
 {
     m_page->setViewMode(mode);
 }
+#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
 void WebPage::scalePage(double scale, const IntPoint& origin)
 {
@@ -1409,6 +1415,9 @@ PassRefPtr<WebImage> WebPage::scaledSnapshotWithOptions(const IntRect& rect, dou
         return 0;
 
     OwnPtr<WebCore::GraphicsContext> graphicsContext = snapshot->bitmap()->createGraphicsContext();
+
+    graphicsContext->clearRect(IntRect(IntPoint(), bitmapSize));
+
     graphicsContext->applyDeviceScaleFactor(combinedScaleFactor);
     graphicsContext->translate(-rect.x(), -rect.y());
 
@@ -2105,7 +2114,6 @@ void WebPage::getRenderTreeExternalRepresentation(uint64_t callbackID)
     send(Messages::WebPageProxy::StringCallback(resultString, callbackID));
 }
 
-#if PLATFORM(MAC)
 static Frame* frameWithSelection(Page* page)
 {
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
@@ -2115,7 +2123,6 @@ static Frame* frameWithSelection(Page* page)
 
     return 0;
 }
-#endif
 
 void WebPage::getSelectionAsWebArchiveData(uint64_t callbackID)
 {
@@ -2158,13 +2165,11 @@ void WebPage::getMainResourceDataOfFrame(uint64_t frameID, uint64_t callbackID)
     CoreIPC::DataReference dataReference;
 
     RefPtr<ResourceBuffer> buffer;
+    RefPtr<SharedBuffer> pdfResource;
     if (WebFrame* frame = WebProcess::shared().webFrame(frameID)) {
         if (PluginView* pluginView = pluginViewForFrame(frame->coreFrame())) {
-            const unsigned char* bytes;
-            unsigned length;
-
-            if (pluginView->getResourceData(bytes, length))
-                dataReference = CoreIPC::DataReference(bytes, length);
+            if ((pdfResource = pluginView->liveResourceData()))
+                dataReference = CoreIPC::DataReference(reinterpret_cast<const uint8_t*>(pdfResource->data()), pdfResource->size());
         }
 
         if (dataReference.isEmpty()) {
@@ -2562,13 +2567,8 @@ void WebPage::performDragControllerAction(uint64_t action, WebCore::IntPoint cli
         m_page->dragController()->performDrag(&dragData);
 
         // If we started loading a local file, the sandbox extension tracker would have adopted this
-        // pending drop sandbox extension. If not, we'll play it safe and invalidate it.
-        if (m_pendingDropSandboxExtension) {
-            m_pendingDropSandboxExtension->invalidate();
-            m_pendingDropSandboxExtension = nullptr;
-        }
-        for (size_t i = 0; i < m_pendingDropExtensionsForFileUpload.size(); i++)
-            m_pendingDropExtensionsForFileUpload[i]->invalidate();
+        // pending drop sandbox extension. If not, we'll play it safe and clear it.
+        m_pendingDropSandboxExtension = nullptr;
 
         m_pendingDropExtensionsForFileUpload.clear();
         break;
@@ -3084,19 +3084,16 @@ WebPage::SandboxExtensionTracker::~SandboxExtensionTracker()
 
 void WebPage::SandboxExtensionTracker::invalidate()
 {
-    if (m_pendingProvisionalSandboxExtension) {
-        m_pendingProvisionalSandboxExtension->invalidate();
-        m_pendingProvisionalSandboxExtension = 0;
-    }
+    m_pendingProvisionalSandboxExtension = nullptr;
 
     if (m_provisionalSandboxExtension) {
-        m_provisionalSandboxExtension->invalidate();
-        m_provisionalSandboxExtension = 0;
+        m_provisionalSandboxExtension->revoke();
+        m_provisionalSandboxExtension = nullptr;
     }
 
     if (m_committedSandboxExtension) {
-        m_committedSandboxExtension->invalidate();
-        m_committedSandboxExtension = 0;
+        m_committedSandboxExtension->revoke();
+        m_committedSandboxExtension = nullptr;
     }
 }
 
@@ -3114,13 +3111,6 @@ void WebPage::SandboxExtensionTracker::beginLoad(WebFrame* frame, const SandboxE
 
 void WebPage::SandboxExtensionTracker::setPendingProvisionalSandboxExtension(PassRefPtr<SandboxExtension> pendingProvisionalSandboxExtension)
 {
-    // If we get two beginLoad calls in succession, without a provisional load starting, then
-    // m_pendingProvisionalSandboxExtension will be non-null. Invalidate and null out the extension if that is the case.
-    if (m_pendingProvisionalSandboxExtension) {
-        m_pendingProvisionalSandboxExtension->invalidate();
-        m_pendingProvisionalSandboxExtension = nullptr;
-    }
-    
     m_pendingProvisionalSandboxExtension = pendingProvisionalSandboxExtension;    
 }
 
@@ -3153,10 +3143,8 @@ void WebPage::SandboxExtensionTracker::didStartProvisionalLoad(WebFrame* frame)
 
     // We should only reuse the commited sandbox extension if it is not null. It can be
     // null if the last load was for an error page.
-    if (m_committedSandboxExtension && shouldReuseCommittedSandboxExtension(frame)) {
-        m_pendingProvisionalSandboxExtension = m_committedSandboxExtension.release();
-        ASSERT(!m_committedSandboxExtension);
-    }
+    if (m_committedSandboxExtension && shouldReuseCommittedSandboxExtension(frame))
+        m_pendingProvisionalSandboxExtension = m_committedSandboxExtension;
 
     ASSERT(!m_provisionalSandboxExtension);
 
@@ -3174,15 +3162,10 @@ void WebPage::SandboxExtensionTracker::didCommitProvisionalLoad(WebFrame* frame)
 
     // Generally, there should be no pending extension at this stage, but we can have one if UI process
     // has an out of date idea of WebProcess state, and initiates a load or reload without stopping an existing one.
-    if (m_pendingProvisionalSandboxExtension) {
-        m_pendingProvisionalSandboxExtension->invalidate();
-        m_pendingProvisionalSandboxExtension = nullptr;
-    }
+    m_pendingProvisionalSandboxExtension = nullptr;
 
-    // The provisional load has been committed. Invalidate the currently committed sandbox
-    // extension and make the provisional sandbox extension the committed sandbox extension.
     if (m_committedSandboxExtension)
-        m_committedSandboxExtension->invalidate();
+        m_committedSandboxExtension->revoke();
 
     m_committedSandboxExtension = m_provisionalSandboxExtension.release();
 }
@@ -3194,15 +3177,12 @@ void WebPage::SandboxExtensionTracker::didFailProvisionalLoad(WebFrame* frame)
 
     // Generally, there should be no pending extension at this stage, but we can have one if UI process
     // has an out of date idea of WebProcess state, and initiates a load or reload without stopping an existing one.
-    if (m_pendingProvisionalSandboxExtension) {
-        m_pendingProvisionalSandboxExtension->invalidate();
-        m_pendingProvisionalSandboxExtension = nullptr;
-    }
+    m_pendingProvisionalSandboxExtension = nullptr;
 
     if (!m_provisionalSandboxExtension)
         return;
 
-    m_provisionalSandboxExtension->invalidate();
+    m_provisionalSandboxExtension->revoke();
     m_provisionalSandboxExtension = nullptr;
 }
 
@@ -3861,6 +3841,120 @@ void WebPage::didCancelCheckingText(uint64_t requestID)
 
     request->didCancel();
     m_pendingTextCheckingRequestMap.remove(requestID);
+}
+
+void WebPage::didCommitLoad(WebFrame* frame)
+{
+    // Only restore the scale factor for standard frame loads (of the main frame).
+    if (frame->isMainFrame() && frame->coreFrame()->loader()->loadType() == FrameLoadTypeStandard) {
+        Page* page = frame->coreFrame()->page();
+        if (page && page->pageScaleFactor() != 1)
+            scalePage(1, IntPoint());
+    }
+
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    if (frame->isMainFrame())
+        resetPrimarySnapshottedPlugIn();
+#endif
+}
+
+void WebPage::didFinishLoad(WebFrame* frame)
+{
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    determinePrimarySnapshottedPlugIn();
+#endif
+}
+
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+static int primarySnapshottedPlugInSearchLimit = 3000;
+static int primarySnapshottedPlugInSearchGap = 200;
+static float primarySnapshottedPlugInSearchBucketSize = 1.1;
+static int primarySnapshottedPlugInMinimumWidth = 450;
+static int primarySnapshottedPlugInMinimumHeight = 300;
+
+void WebPage::determinePrimarySnapshottedPlugIn()
+{
+    if (!corePage()->hasSeenAnyPlugin())
+        return;
+
+    if (m_didFindPrimarySnapshottedPlugin)
+        return;
+
+    RenderView* renderView = corePage()->mainFrame()->view()->renderView();
+
+    IntRect searchRect = IntRect(IntPoint(), corePage()->mainFrame()->view()->contentsSize());
+    searchRect.intersect(IntRect(IntPoint(), IntSize(primarySnapshottedPlugInSearchLimit, primarySnapshottedPlugInSearchLimit)));
+
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnoreClipping);
+
+    HashSet<RenderObject*> seenRenderers;
+    HTMLPlugInImageElement* candidatePlugIn = 0;
+    unsigned candidatePlugInArea = 0;
+
+    for (int x = searchRect.x(); x <= searchRect.width(); x += primarySnapshottedPlugInSearchGap) {
+        for (int y = searchRect.y(); y <= searchRect.height(); y += primarySnapshottedPlugInSearchGap) {
+            HitTestResult hitTestResult = HitTestResult(LayoutPoint(x, y));
+            renderView->hitTest(request, hitTestResult);
+
+            Element* element = hitTestResult.innerElement();
+            if (!element)
+                continue;
+
+            RenderObject* renderer = element->renderer();
+            if (!renderer || !renderer->isBox())
+                continue;
+
+            RenderBox* renderBox = toRenderBox(renderer);
+
+            if (seenRenderers.contains(renderer))
+                continue;
+            seenRenderers.add(renderer);
+
+            if (!element->isPluginElement())
+                continue;
+
+            HTMLPlugInElement* plugInElement = toHTMLPlugInElement(element);
+            if (!plugInElement->isPlugInImageElement())
+                continue;
+
+            HTMLPlugInImageElement* plugInImageElement = toHTMLPlugInImageElement(plugInElement);
+
+            if (plugInElement->displayState() == HTMLPlugInElement::Playing)
+                continue;
+
+            if (renderBox->contentWidth() < primarySnapshottedPlugInMinimumWidth || renderBox->contentHeight() < primarySnapshottedPlugInMinimumHeight)
+                continue;
+
+            LayoutUnit contentArea = renderBox->contentWidth() * renderBox->contentHeight();
+
+            if (contentArea > candidatePlugInArea * primarySnapshottedPlugInSearchBucketSize) {
+                candidatePlugIn = plugInImageElement;
+                candidatePlugInArea = contentArea;
+            }
+        }
+    }
+
+    if (!candidatePlugIn)
+        return;
+
+    m_didFindPrimarySnapshottedPlugin = true;
+
+    candidatePlugIn->setIsPrimarySnapshottedPlugIn(true);
+}
+
+void WebPage::resetPrimarySnapshottedPlugIn()
+{
+    m_didFindPrimarySnapshottedPlugin = false;
+}
+#endif // ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+
+PassRefPtr<Range> WebPage::currentSelectionAsRange()
+{
+    Frame* frame = frameWithSelection(m_page.get());
+    if (!frame)
+        return 0;
+
+    return frame->selection()->toNormalizedRange();
 }
 
 } // namespace WebKit

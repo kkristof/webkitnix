@@ -53,7 +53,6 @@
 #include <public/WebFloatQuad.h>
 #include <public/WebGestureCurveTarget.h>
 #include <public/WebLayer.h>
-#include <public/WebLayerTreeViewClient.h>
 #include <public/WebPoint.h>
 #include <public/WebRect.h>
 #include <public/WebSize.h>
@@ -105,6 +104,7 @@ class WebActiveGestureAnimation;
 class WebCompositorImpl;
 class WebDevToolsAgentClient;
 class WebDevToolsAgentPrivate;
+class WebDocument;
 class WebFrameImpl;
 class WebGestureEvent;
 class WebHelperPluginImpl;
@@ -120,7 +120,6 @@ class WebTouchEvent;
 class WebViewBenchmarkSupport;
 
 class WebViewImpl : public WebView
-    , public WebLayerTreeViewClient
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
 #if ENABLE(PAGE_POPUP)
@@ -316,10 +315,6 @@ public:
     virtual void setShowDebugBorders(bool);
     virtual void setShowFPSCounter(bool);
     virtual void setContinuousPaintingEnabled(bool);
-
-    // WebLayerTreeViewClient
-    virtual void updateAnimations(double monotonicFrameBeginTime);
-    virtual void didRecreateOutputSurface(bool success);
 
     // WebViewImpl
 
@@ -519,7 +514,8 @@ public:
 
     void hideAutofillPopup();
 
-    WebHelperPluginImpl* createHelperPlugin(const String& pluginType);
+    // Creates a Helper Plugin of |pluginType| for |hostDocument|.
+    WebHelperPluginImpl* createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.

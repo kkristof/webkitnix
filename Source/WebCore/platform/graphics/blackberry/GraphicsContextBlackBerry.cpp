@@ -361,7 +361,7 @@ void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* poin
     platformContext()->clipConvexPolygon(numPoints, (const BlackBerry::Platform::FloatPoint*)points);
 }
 
-void GraphicsContext::addRoundedRectClip(const RoundedRect& rect)
+void GraphicsContext::clipRoundedRect(const RoundedRect& rect)
 {
     if (paintingDisabled())
         return;
@@ -393,15 +393,6 @@ IntRect GraphicsContext::clipBounds() const
 {
     // FIXME: return the max IntRect for now
     return IntRect(IntPoint(INT_MIN / 2, INT_MIN / 2), IntSize(INT_MAX, INT_MAX));
-}
-
-
-void GraphicsContext::addInnerRoundedRectClip(const IntRect& rect, int thickness)
-{
-    if (paintingDisabled())
-        return;
-
-    fprintf(stderr, "clip rounded rect %d,%d,%d,%d - %d\n", rect.x(), rect.y(), rect.width(), rect.height(), thickness);
 }
 
 void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
@@ -448,12 +439,12 @@ void GraphicsContext::setPlatformFillColor(const Color& color, ColorSpace colorS
     platformContext()->setFillColor(color.rgb());
 }
 
-void GraphicsContext::setPlatformCompositeOperation(CompositeOperator op)
+void GraphicsContext::setPlatformCompositeOperation(CompositeOperator op, BlendMode blendMode)
 {
     if (paintingDisabled())
         return;
 
-    platformContext()->setCompositeOperation(static_cast<BlackBerry::Platform::Graphics::CompositeOperator>(op));
+    platformContext()->setCompositeOperation(static_cast<BlackBerry::Platform::Graphics::CompositeOperator>(op), blendMode);
 }
 
 void GraphicsContext::setPlatformShouldAntialias(bool enable)

@@ -305,6 +305,7 @@ SOURCES += \
     css/CSSValuePool.cpp \
     css/DOMWindowCSS.cpp \
     css/DocumentRuleSets.cpp \
+    css/ElementRuleCollector.cpp \
     css/FontFeatureValue.cpp \
     css/FontValue.cpp \
     css/InspectorCSSOMWrappers.cpp \
@@ -317,6 +318,7 @@ SOURCES += \
     css/MediaQueryList.cpp \
     css/MediaQueryListListener.cpp \
     css/MediaQueryMatcher.cpp \
+    css/PageRuleCollector.cpp \
     css/PropertySetCSSStyleDeclaration.cpp \
     css/RGBColor.cpp \
     css/RuleFeature.cpp \
@@ -735,6 +737,7 @@ SOURCES += \
     html/parser/HTMLEntityParser.cpp \
     html/parser/HTMLEntitySearch.cpp \
     html/parser/HTMLFormattingElementList.cpp \
+    html/parser/HTMLIdentifier.cpp \
     html/parser/HTMLMetaCharsetParser.cpp \
     html/parser/HTMLParserIdioms.cpp \
     html/parser/HTMLParserOptions.cpp \
@@ -746,6 +749,7 @@ SOURCES += \
     html/parser/HTMLSourceTracker.cpp \
     html/parser/HTMLTokenizer.cpp \
     html/parser/HTMLTreeBuilder.cpp \
+    html/parser/HTMLTreeBuilderSimulator.cpp \
     html/parser/HTMLViewSourceParser.cpp \
     html/parser/TextDocumentParser.cpp \
     html/parser/TextViewSourceParser.cpp \
@@ -1005,6 +1009,7 @@ SOURCES += \
     platform/graphics/CrossfadeGeneratedImage.cpp \
     platform/graphics/FloatPoint3D.cpp \
     platform/graphics/FloatPoint.cpp \
+    platform/graphics/FloatPolygon.cpp \
     platform/graphics/FloatQuad.cpp \
     platform/graphics/FloatRect.cpp \
     platform/graphics/FloatSize.cpp \
@@ -2231,6 +2236,7 @@ HEADERS += \
     platform/graphics/filters/SourceGraphic.h \
     platform/graphics/FloatPoint3D.h \
     platform/graphics/FloatPoint.h \
+    platform/graphics/FloatPolygon.h \
     platform/graphics/FloatQuad.h \
     platform/graphics/FloatRect.h \
     platform/graphics/FloatSize.h \
@@ -3263,6 +3269,7 @@ enable?(SHARED_WORKERS) {
         workers/DefaultSharedWorkerRepository.cpp \
         workers/SharedWorker.cpp \
         workers/SharedWorkerContext.cpp \
+        workers/SharedWorkerRepository.cpp \
         workers/SharedWorkerThread.cpp
 }
 

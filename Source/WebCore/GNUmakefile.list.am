@@ -661,8 +661,6 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSRTCSessionDescriptionCallback.h \
 	DerivedSources/WebCore/JSRTCStatsCallback.cpp \
 	DerivedSources/WebCore/JSRTCStatsCallback.h \
-	DerivedSources/WebCore/JSRTCStatsElement.cpp \
-	DerivedSources/WebCore/JSRTCStatsElement.h \
 	DerivedSources/WebCore/JSRTCStatsReport.cpp \
 	DerivedSources/WebCore/JSRTCStatsReport.h \
 	DerivedSources/WebCore/JSRTCStatsResponse.cpp \
@@ -1267,7 +1265,6 @@ dom_binding_idls += \
 	$(WebCore)/Modules/mediastream/RTCSessionDescription.idl \
 	$(WebCore)/Modules/mediastream/RTCSessionDescriptionCallback.idl \
 	$(WebCore)/Modules/mediastream/RTCStatsCallback.idl \
-	$(WebCore)/Modules/mediastream/RTCStatsElement.idl \
 	$(WebCore)/Modules/mediastream/RTCStatsReport.idl \
 	$(WebCore)/Modules/mediastream/RTCStatsResponse.idl \
 	$(WebCore)/Modules/navigatorcontentutils/NavigatorContentUtils.idl \
@@ -1979,8 +1976,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/mediastream/RTCSessionDescriptionRequestImpl.cpp \
 	Source/WebCore/Modules/mediastream/RTCSessionDescriptionRequestImpl.h \
 	Source/WebCore/Modules/mediastream/RTCStatsCallback.h \
-	Source/WebCore/Modules/mediastream/RTCStatsElement.cpp \
-	Source/WebCore/Modules/mediastream/RTCStatsElement.h \
 	Source/WebCore/Modules/mediastream/RTCStatsReport.cpp \
 	Source/WebCore/Modules/mediastream/RTCStatsReport.h \
 	Source/WebCore/Modules/mediastream/RTCStatsRequestImpl.cpp \
@@ -2660,6 +2655,8 @@ webcore_sources += \
 	Source/WebCore/css/DashboardRegion.h \
 	Source/WebCore/css/DocumentRuleSets.cpp \
 	Source/WebCore/css/DocumentRuleSets.h \
+	Source/WebCore/css/ElementRuleCollector.cpp \
+	Source/WebCore/css/ElementRuleCollector.h \
 	Source/WebCore/css/FontFeatureValue.cpp \
 	Source/WebCore/css/FontFeatureValue.h \
 	Source/WebCore/css/FontValue.cpp \
@@ -2684,6 +2681,8 @@ webcore_sources += \
 	Source/WebCore/css/MediaQueryListListener.h \
 	Source/WebCore/css/MediaQueryMatcher.cpp \
 	Source/WebCore/css/MediaQueryMatcher.h \
+	Source/WebCore/css/PageRuleCollector.cpp \
+	Source/WebCore/css/PageRuleCollector.h \
 	Source/WebCore/css/Pair.h \
 	Source/WebCore/css/PropertySetCSSStyleDeclaration.cpp \
 	Source/WebCore/css/PropertySetCSSStyleDeclaration.h \
@@ -3621,6 +3620,8 @@ webcore_sources += \
 	Source/WebCore/html/parser/HTMLEntityTable.h \
 	Source/WebCore/html/parser/HTMLFormattingElementList.cpp \
 	Source/WebCore/html/parser/HTMLFormattingElementList.h \
+	Source/WebCore/html/parser/HTMLIdentifier.cpp \
+	Source/WebCore/html/parser/HTMLIdentifier.h \
 	Source/WebCore/html/parser/HTMLInputStream.h \
 	Source/WebCore/html/parser/HTMLMetaCharsetParser.cpp \
 	Source/WebCore/html/parser/HTMLMetaCharsetParser.h \
@@ -3647,6 +3648,8 @@ webcore_sources += \
 	Source/WebCore/html/parser/HTMLTokenizer.h \
 	Source/WebCore/html/parser/HTMLTreeBuilder.cpp \
 	Source/WebCore/html/parser/HTMLTreeBuilder.h \
+	Source/WebCore/html/parser/HTMLTreeBuilderSimulator.cpp \
+	Source/WebCore/html/parser/HTMLTreeBuilderSimulator.h \
 	Source/WebCore/html/parser/HTMLViewSourceParser.cpp \
 	Source/WebCore/html/parser/HTMLViewSourceParser.h \
 	Source/WebCore/html/parser/InputStreamPreprocessor.h \
@@ -4721,6 +4724,7 @@ webcore_sources += \
 	Source/WebCore/workers/SharedWorkerContext.h \
 	Source/WebCore/workers/SharedWorker.cpp \
 	Source/WebCore/workers/SharedWorker.h \
+	Source/WebCore/workers/SharedWorkerRepository.cpp \
 	Source/WebCore/workers/SharedWorkerRepository.h \
 	Source/WebCore/workers/SharedWorkerStrategy.h \
 	Source/WebCore/workers/SharedWorkerThread.cpp \
@@ -5591,6 +5595,8 @@ webcore_platform_sources += \
 	Source/WebCore/platform/graphics/FloatPoint3D.h \
 	Source/WebCore/platform/graphics/FloatPoint.cpp \
 	Source/WebCore/platform/graphics/FloatPoint.h \
+	Source/WebCore/platform/graphics/FloatPolygon.cpp \
+	Source/WebCore/platform/graphics/FloatPolygon.h \
 	Source/WebCore/platform/graphics/FloatQuad.cpp \
 	Source/WebCore/platform/graphics/FloatQuad.h \
 	Source/WebCore/platform/graphics/FloatRect.cpp \

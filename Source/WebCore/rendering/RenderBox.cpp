@@ -1132,35 +1132,6 @@ void RenderBox::paintBackground(const PaintInfo& paintInfo, const LayoutRect& pa
     }
 }
 
-bool RenderBox::backgroundIsOpaqueInRect(const LayoutRect& localRect) const
-{
-    Color backgroundColor = style()->visitedDependentColor(CSSPropertyBackgroundColor);
-    if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
-        return false;
-
-    // FIXME: Check the opaqueness of background images.
-
-    // FIXME: Use rounded rect if border radius is present.
-    if (style()->hasBorderRadius())
-        return false;
-
-    LayoutRect backgroundRect;
-    switch (style()->backgroundClip()) {
-    case BorderFillBox:
-        backgroundRect = borderBoxRect();
-        break;
-    case PaddingFillBox:
-        backgroundRect = paddingBoxRect();
-        break;
-    case ContentFillBox:
-        backgroundRect = contentBoxRect();
-        break;
-    default:
-        break;
-    }
-    return backgroundRect.contains(localRect);
-}
-
 bool RenderBox::backgroundHasOpaqueTopLayer() const
 {
     const FillLayer* fillLayer = style()->backgroundLayers();
@@ -2054,7 +2025,7 @@ LayoutUnit RenderBox::fillAvailableMeasure(LayoutUnit availableLogicalWidth, Lay
     return availableLogicalWidth - marginStart - marginEnd;
 }
 
-LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth) const
+LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLength, LayoutUnit availableLogicalWidth, LayoutUnit borderAndPadding) const
 {
     if (logicalWidthLength.type() == FillAvailable)
         return fillAvailableMeasure(availableLogicalWidth);
@@ -2062,8 +2033,6 @@ LayoutUnit RenderBox::computeIntrinsicLogicalWidthUsing(Length logicalWidthLengt
     LayoutUnit minLogicalWidth = 0;
     LayoutUnit maxLogicalWidth = 0;
     computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
-
-    LayoutUnit borderAndPadding = borderAndPaddingLogicalWidth();
 
     if (logicalWidthLength.type() == MinContent)
         return minLogicalWidth + borderAndPadding;
@@ -2104,7 +2073,7 @@ LayoutUnit RenderBox::computeLogicalWidthInRegionUsing(SizeType widthType, Layou
     }
 
     if (logicalWidth.isIntrinsic())
-        return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth);
+        return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth, borderAndPaddingLogicalWidth());
 
     LayoutUnit marginStart = 0;
     LayoutUnit marginEnd = 0;
@@ -2609,7 +2578,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(SizeType sizeType, Length
         case MaxContent: {
             // MinContent/MaxContent don't need the availableLogicalWidth argument.
             LayoutUnit availableLogicalWidth = 0;
-            return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth) - borderAndPaddingLogicalWidth();
+            return computeIntrinsicLogicalWidthUsing(logicalWidth, availableLogicalWidth, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
         }
         case ViewportPercentageWidth:
         case ViewportPercentageHeight:
@@ -2628,7 +2597,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(SizeType sizeType, Length
             // FIXME: Handle cases when containing block width is calculated or viewport percent.
             // https://bugs.webkit.org/show_bug.cgi?id=91071
             if (logicalWidth.isIntrinsic())
-                return computeIntrinsicLogicalWidthUsing(logicalWidth, cw) - borderAndPaddingLogicalWidth();
+                return computeIntrinsicLogicalWidthUsing(logicalWidth, cw, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
             if (cw > 0 || (!cw && (containerLogicalWidth.isFixed() || containerLogicalWidth.isPercent())))
                 return adjustContentBoxLogicalWidthForBoxSizing(minimumValueForLength(logicalWidth, cw));
         }
@@ -3099,7 +3068,7 @@ void RenderBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
     if (widthSizeType == MinSize && logicalWidth.isAuto())
         logicalWidth = Length(0, Fixed);
     else if (logicalWidth.isIntrinsic())
-        logicalWidth = Length(computeIntrinsicLogicalWidthUsing(logicalWidth, containerLogicalWidth) - bordersPlusPadding, Fixed);
+        logicalWidth = Length(computeIntrinsicLogicalWidthUsing(logicalWidth, containerLogicalWidth, bordersPlusPadding) - bordersPlusPadding, Fixed);
 
     // 'left' and 'right' cannot both be 'auto' because one would of been
     // converted to the static position already

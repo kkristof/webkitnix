@@ -1111,6 +1111,10 @@ void WebGLRenderingContext::bufferData(GC3Denum target, long long size, GC3Denum
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "size < 0");
         return;
     }
+    if (!size) {
+        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "size == 0");
+        return;
+    }
     if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
         if (!buffer->associateBufferData(static_cast<GC3Dsizeiptr>(size))) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "invalid buffer");
@@ -3140,7 +3144,7 @@ WebGLGetInfo WebGLRenderingContext::getUniform(WebGLProgram* program, const WebG
                 case GraphicsContext3D::FLOAT: {
                     GC3Dfloat value[16] = {0};
                     if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformfvEXT(objectOrZero(program), location, 16, value);
+                        m_context->getExtensions()->getnUniformfvEXT(objectOrZero(program), location, 16 * sizeof(GC3Dfloat), value);
                     else
                         m_context->getUniformfv(objectOrZero(program), location, value);
                     if (length == 1)
@@ -3150,7 +3154,7 @@ WebGLGetInfo WebGLRenderingContext::getUniform(WebGLProgram* program, const WebG
                 case GraphicsContext3D::INT: {
                     GC3Dint value[4] = {0};
                     if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4, value);
+                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4 * sizeof(GC3Dint), value);
                     else
                         m_context->getUniformiv(objectOrZero(program), location, value);
                     if (length == 1)
@@ -3160,7 +3164,7 @@ WebGLGetInfo WebGLRenderingContext::getUniform(WebGLProgram* program, const WebG
                 case GraphicsContext3D::BOOL: {
                     GC3Dint value[4] = {0};
                     if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4, value);
+                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4 * sizeof(GC3Dint), value);
                     else
                         m_context->getUniformiv(objectOrZero(program), location, value);
                     if (length > 1) {

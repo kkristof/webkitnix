@@ -1,3 +1,68 @@
+2013-03-11  Tobias Mueller  <tobiasmue@gnome.org>
+
+        [Autotools] Set ENABLE_GTK_DOC to false if gtk-doc is not installed
+        https://bugs.webkit.org/show_bug.cgi?id=111980
+        
+        Reviewed by Martin Robinson.
+
+        WebKit did not configure if gtk-doc-am was not installed with the error:
+        Tools/GNUmakefile.am:419: ENABLE_GTK_DOC does not appear in AM_CONDITIONAL
+
+        * Source/autotools/FindDependencies.m4:
+
+2013-03-11  Claudio Saavedra  <csaavedra@igalia.com>
+
+        [GTK] Bump version
+        https://bugs.webkit.org/show_bug.cgi?id=112055
+
+        Reviewed by Martin Robinson.
+
+        * Source/autotools/Versions.m4: Bump to 2.1.0
+
+2013-03-11  Jeff Rogers  <jrogers@rim.com>
+
+        [BlackBerry] Disable MathML support
+        https://bugs.webkit.org/show_bug.cgi?id=111929
+
+        Reviewed by Rob Buis.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+
+2013-03-09  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Versions.m4 is missing some key dependencies version definitions
+        https://bugs.webkit.org/show_bug.cgi?id=111903
+
+        Reviewed by Carlos Garcia Campos.
+
+        * Source/autotools/Versions.m4: Add missing required version
+        definitions.
+
+2013-03-08  Dean Jackson  <dino@apple.com>
+
+        Don't snapshot Java plugins
+        https://bugs.webkit.org/show_bug.cgi?id=111899
+
+        Reviewed by Tim Horton.
+
+        Export MIMETypeRegistry::isJavaAppletMIMEType symbol.
+
+        * Source/autotools/symbols.filter:
+
+2013-03-08  Chandra Shekar Vallala  <brk376@motorola.com>
+
+        [chromium] Keydown event for 'shift+alt' returns win keycode instead of 'alt'
+        https://bugs.webkit.org/show_bug.cgi?id=111112
+
+        Reviewed by Tony Chang.
+
+        Return windows keycode of Alt incase of GDK_META_L, GDK_META_R.
+
+        Try press Shift then alt key. The test passes if the shiftKey, altKey values
+        of JSKeyEvent are true and keycode/which is 18.
+
+        * ManualTests/shift-alt-key-event.html: Added.
+
 2013-03-08  Zan Dobersek  <zdobersek@igalia.com>
 
         [Autotools] Remove definitions of unnecessary Automake conditionals

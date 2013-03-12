@@ -1028,7 +1028,7 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
             ASSERT_NOT_REACHED();
             return false;
         }
-        Element* element = static_cast<Element*>(node);
+        Element* element = toElement(node);
         if (!element->hasLocalName(HTMLNames::inputTag)) {
             ASSERT_NOT_REACHED();
             return false;
@@ -1039,7 +1039,7 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
         if (!m_autofillPopupClient->canRemoveSuggestionAtIndex(selectedIndex))
             return false;
 
-        WebString name = WebInputElement(static_cast<HTMLInputElement*>(element)).nameForAutofill();
+        WebString name = WebInputElement(toHTMLInputElement(element)).nameForAutofill();
         WebString value = m_autofillPopupClient->itemText(selectedIndex);
         m_autofillClient->removeAutocompleteSuggestion(name, value);
         // Update the entries in the currently showing popup to reflect the
@@ -1593,13 +1593,13 @@ void WebViewImpl::hideAutofillPopup()
     }
 }
 
-WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType)
+WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
 {
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypeHelperPlugin);
     ASSERT(popupWidget);
     WebHelperPluginImpl* helperPlugin = static_cast<WebHelperPluginImpl*>(popupWidget);
 
-    if (!helperPlugin->initialize(this, pluginType)) {
+    if (!helperPlugin->initialize(pluginType, hostDocument, this)) {
         helperPlugin->closeHelperPlugin();
         helperPlugin = 0;
     }
@@ -1845,11 +1845,6 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
     }
 }
 
-void WebViewImpl::updateAnimations(double monotonicFrameBeginTime)
-{
-    animate(monotonicFrameBeginTime);
-}
-
 void WebViewImpl::layout()
 {
     TRACE_EVENT0("webkit", "WebViewImpl::layout");
@@ -1979,7 +1974,7 @@ void WebViewImpl::enterFullScreenForElement(WebCore::Element* element)
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
     if (element && element->isMediaElement()) {
-        HTMLMediaElement* mediaElement = static_cast<HTMLMediaElement*>(element);
+        HTMLMediaElement* mediaElement = toMediaElement(element);
         if (mediaElement->player() && mediaElement->player()->canEnterFullscreen()) {
             mediaElement->player()->enterFullscreen();
             m_provisionalFullScreenElement = element;
@@ -4126,29 +4121,14 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     } else {
         TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
-        WebLayerTreeView::Settings layerTreeViewSettings;
-        layerTreeViewSettings.acceleratePainting = page()->settings()->acceleratedDrawingEnabled();
-        layerTreeViewSettings.showDebugBorders = page()->settings()->showDebugBorders();
-        layerTreeViewSettings.showFPSCounter = settingsImpl()->showFPSCounter();
-        layerTreeViewSettings.showPlatformLayerTree = settingsImpl()->showPlatformLayerTree();
-        layerTreeViewSettings.showPaintRects = settingsImpl()->showPaintRects();
-        layerTreeViewSettings.renderVSyncEnabled = settingsImpl()->renderVSyncEnabled();
-        layerTreeViewSettings.renderVSyncNotificationEnabled = settingsImpl()->renderVSyncNotificationEnabled();
-        layerTreeViewSettings.perTilePaintingEnabled = settingsImpl()->perTilePaintingEnabled();
-        layerTreeViewSettings.acceleratedAnimationEnabled = settingsImpl()->acceleratedAnimationEnabled();
-        layerTreeViewSettings.pageScalePinchZoomEnabled = settingsImpl()->applyPageScaleFactorInCompositor();
-        layerTreeViewSettings.recordRenderingStats = settingsImpl()->recordRenderingStats();
-
-        layerTreeViewSettings.defaultTileSize = settingsImpl()->defaultTileSize();
-        layerTreeViewSettings.maxUntiledLayerSize = settingsImpl()->maxUntiledLayerSize();
-
         m_nonCompositedContentHost = NonCompositedContentHost::create(this, graphicsLayerFactory());
         m_nonCompositedContentHost->setShowDebugBorders(page()->settings()->showDebugBorders());
         m_nonCompositedContentHost->setOpaque(!isTransparent());
 
-        m_client->initializeLayerTreeView(this, *m_rootLayer, layerTreeViewSettings);
+        m_client->initializeLayerTreeView();
         m_layerTreeView = m_client->layerTreeView();
         if (m_layerTreeView) {
+            m_layerTreeView->setRootLayer(*m_rootLayer);
             if (m_webSettings->applyDeviceScaleFactorInCompositor() && page()->deviceScaleFactor() != 1)
                 setDeviceScaleFactor(page()->deviceScaleFactor());
 
@@ -4213,12 +4193,6 @@ void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScal
         setPageScaleFactor(pageScaleFactor() * pageScaleDelta, scrollPoint);
         m_doubleTapZoomPending = false;
     }
-}
-
-void WebViewImpl::didRecreateOutputSurface(bool success)
-{
-    if (!success)
-        didExitCompositingMode();
 }
 
 void WebViewImpl::didExitCompositingMode()

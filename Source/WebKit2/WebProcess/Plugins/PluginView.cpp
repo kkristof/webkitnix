@@ -50,6 +50,7 @@
 #include <WebCore/GraphicsContext.h>
 #include <WebCore/HTMLPlugInElement.h>
 #include <WebCore/HostWindow.h>
+#include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/NetscapePlugInStreamLoader.h>
 #include <WebCore/NetworkingContext.h>
 #include <WebCore/Page.h>
@@ -902,12 +903,12 @@ bool PluginView::shouldAllowNavigationFromDrags() const
     return m_plugin->shouldAllowNavigationFromDrags();
 }
 
-bool PluginView::getResourceData(const unsigned char*& bytes, unsigned& length) const
+PassRefPtr<SharedBuffer> PluginView::liveResourceData() const
 {
     if (!m_isInitialized || !m_plugin)
-        return false;
+        return 0;
 
-    return m_plugin->getResourceData(bytes, length);
+    return m_plugin->liveResourceData();
 }
 
 bool PluginView::performDictionaryLookupAtLocation(const WebCore::FloatPoint& point)
@@ -1343,7 +1344,7 @@ bool PluginView::evaluate(NPObject* npObject, const String& scriptString, NPVari
     // protect the plug-in view from destruction.
     NPRuntimeObjectMap::PluginProtector pluginProtector(&m_npRuntimeObjectMap);
 
-    UserGestureIndicator gestureIndicator(allowPopups ? DefinitelyProcessingUserGesture : PossiblyProcessingUserGesture);
+    UserGestureIndicator gestureIndicator(allowPopups ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
     return m_npRuntimeObjectMap.evaluate(npObject, scriptString, result);
 }
 #endif
@@ -1636,6 +1637,10 @@ bool PluginView::shouldAlwaysAutoStart() const
 {
     if (!m_plugin)
         return PluginViewBase::shouldAlwaysAutoStart();
+
+    if (MIMETypeRegistry::isJavaAppletMIMEType(m_parameters.mimeType))
+        return true;
+
     return m_plugin->shouldAlwaysAutoStart();
 }
 

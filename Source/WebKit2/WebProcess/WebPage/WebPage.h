@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2010, 2011, 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -98,6 +98,8 @@
 OBJC_CLASS NSDictionary;
 OBJC_CLASS NSObject;
 OBJC_CLASS WKAccessibilityWebPageObject;
+
+#define ENABLE_PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC 1
 #endif
 
 namespace CoreIPC {
@@ -217,6 +219,8 @@ public:
 
     void didStartPageTransition();
     void didCompletePageTransition();
+    void didCommitLoad(WebFrame*);
+    void didFinishLoad(WebFrame*);
     void show();
     String userAgent() const { return m_userAgent; }
     WebCore::IntRect windowResizerRect() const;
@@ -280,6 +284,8 @@ public:
     WebCore::Frame* mainFrame() const; // May return 0.
     WebCore::FrameView* mainFrameView() const; // May return 0.
 
+    PassRefPtr<WebCore::Range> currentSelectionAsRange();
+
 #if ENABLE(NETSCAPE_PLUGIN_API)
     PassRefPtr<Plugin> createPlugin(WebFrame*, WebCore::HTMLPlugInElement*, const Plugin::Parameters&);
 #endif
@@ -307,7 +313,9 @@ public:
     void setPageZoomFactor(double);
     void setPageAndTextZoomFactors(double pageZoomFactor, double textZoomFactor);
     void windowScreenDidChange(uint64_t);
+#if ENABLE(VIEW_MODE_CSS_MEDIA)
     void setViewMode(WebCore::Page::ViewMode);
+#endif // ENABLE(VIEW_MODE_CSS_MEDIA)
 
     void scalePage(double scale, const WebCore::IntPoint& origin);
     double pageScaleFactor() const;
@@ -628,6 +636,11 @@ public:
     void didFinishCheckingText(uint64_t requestID, const Vector<WebCore::TextCheckingResult>&);
     void didCancelCheckingText(uint64_t requestID);
 
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    void determinePrimarySnapshottedPlugIn();
+    void resetPrimarySnapshottedPlugIn();
+#endif
+
 private:
     WebPage(uint64_t pageID, const WebPageCreationParameters&);
 
@@ -841,6 +854,10 @@ private:
     bool m_scrollingPerformanceLoggingEnabled;
 
     bool m_mainFrameIsScrollable;
+
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    bool m_didFindPrimarySnapshottedPlugin;
+#endif
 
 #if PLATFORM(MAC)
     bool m_pdfPluginEnabled;

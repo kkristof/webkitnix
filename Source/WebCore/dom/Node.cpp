@@ -383,11 +383,6 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2, Docum
     if ((s1 && s2) && (s1->regionThread() != s2->regionThread()))
         ch = Detach;
 
-    // Re-attach the renderer when either the element changes from position:static to position:absolute/fixed, vice-versa
-    // or float:none to floating, vice-versa.
-    if ((s1 && s2 ) && (s1->isFloating() != s2->isFloating() || s1->hasOutOfFlowPosition() != s2->hasOutOfFlowPosition()))
-        ch = Detach;
-
     return ch;
 }
 
@@ -906,6 +901,14 @@ Node* Node::focusDelegate()
 {
     return this;
 }
+
+#if ENABLE(DIALOG_ELEMENT)
+bool Node::isInert() const
+{
+    Element* dialog = document()->activeModalDialog();
+    return dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this);
+}
+#endif
 
 unsigned Node::nodeIndex() const
 {
@@ -2451,6 +2454,10 @@ void Node::dispatchInputEvent()
 
 bool Node::disabled() const
 {
+#if ENABLE(DIALOG_ELEMENT)
+    if (isInert())
+        return true;
+#endif
     return false;
 }
 

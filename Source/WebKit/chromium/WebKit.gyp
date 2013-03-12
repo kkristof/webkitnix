@@ -151,9 +151,6 @@
                 'public/WebExternalPopupMenuClient.h',
                 'public/WebFileChooserCompletion.h',
                 'public/WebFileChooserParams.h',
-                'public/WebFileError.h',
-                'public/WebFileSystemCallbacks.h',
-                'public/WebFileSystemEntry.h',
                 'public/WebFileWriter.h',
                 'public/WebFileWriterClient.h',
                 'public/WebFindOptions.h',
@@ -653,6 +650,7 @@
                                 # We should not include files depending on webkit_support.
                                 # These tests depend on webkit_support and
                                 # functions defined only in !WEBKIT_IMPLEMENTATION.
+                                'tests/IDBBackingStoreTest.cpp',
                                 'tests/IDBCleanupOnIOErrorTest.cpp',
                                 'tests/LevelDBTest.cpp',
                             ],

@@ -1101,6 +1101,9 @@ public:
     void didAddWheelEventHandler();
     void didRemoveWheelEventHandler();
 
+    double lastHandledUserGestureTimestamp() const { return m_lastHandledUserGestureTimestamp; }
+    void resetLastHandledUserGestureTimestamp();
+
 #if ENABLE(TOUCH_EVENTS)
     bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
 #else
@@ -1179,6 +1182,7 @@ public:
     void addToTopLayer(Element*);
     void removeFromTopLayer(Element*);
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
+    Element* activeModalDialog() const { return !m_topLayerElements.isEmpty() ? m_topLayerElements.last().get() : 0; }
 #endif
 
 #if ENABLE(TEMPLATE_ELEMENT)
@@ -1511,6 +1515,8 @@ private:
 #if ENABLE(TOUCH_EVENTS)
     OwnPtr<TouchEventTargetSet> m_touchEventTargets;
 #endif
+
+    double m_lastHandledUserGestureTimestamp;
 
 #if ENABLE(REQUEST_ANIMATION_FRAME)
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;

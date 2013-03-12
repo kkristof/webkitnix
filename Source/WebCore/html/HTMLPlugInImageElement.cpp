@@ -48,6 +48,7 @@
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include <wtf/CurrentTime.h>
 
 namespace WebCore {
 
@@ -58,6 +59,7 @@ static const int sizingSmallWidthThreshold = 250;
 static const int sizingMediumWidthThreshold = 450;
 static const int sizingMediumHeightThreshold = 300;
 static const float sizingFullPageAreaRatioThreshold = 0.96;
+static const float autostartSoonAfterUserGestureThreshold = 5.0;
 
 // This delay should not exceed the snapshot delay in PluginView.cpp
 static const double simulatedMouseClickTimerDelay = .75;
@@ -71,8 +73,10 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_needsDocumentActivationCallbacks(false)
+    , m_isPrimarySnapshottedPlugIn(false)
     , m_simulatedMouseClickTimer(this, &HTMLPlugInImageElement::simulatedMouseClickTimerFired, simulatedMouseClickTimerDelay)
     , m_swapRendererTimer(this, &HTMLPlugInImageElement::swapRendererTimerFired)
+    , m_createdDuringUserGesture(ScriptController::processingUserGesture())
 {
     setHasCustomStyleCallbacks();
 }
@@ -295,12 +299,13 @@ void HTMLPlugInImageElement::updateSnapshot(PassRefPtr<Image> image)
         renderer()->repaint();
 }
 
-static AtomicString classNameForShadowRoot(const Node* node)
+static AtomicString classNameForShadowRoot(const Node* node, bool isPrimary)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, plugInTinySizeClassName, ("tiny", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, plugInSmallSizeClassName, ("small", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, plugInMediumSizeClassName, ("medium", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, plugInLargeSizeClassName, ("large", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, plugInLargeSizePrimaryClassName, ("large primary", AtomicString::ConstructFromLiteral));
 
     RenderBox* renderBox = static_cast<RenderBox*>(node->renderer());
     LayoutUnit width = renderBox->contentWidth();
@@ -315,7 +320,14 @@ static AtomicString classNameForShadowRoot(const Node* node)
     if (width < sizingMediumWidthThreshold || height < sizingMediumHeightThreshold)
         return plugInMediumSizeClassName;
 
-    return plugInLargeSizeClassName;
+    return isPrimary ? plugInLargeSizePrimaryClassName : plugInLargeSizeClassName;
+}
+    
+void HTMLPlugInImageElement::setIsPrimarySnapshottedPlugIn(bool isPrimarySnapshottedPlugIn)
+{
+    m_isPrimarySnapshottedPlugIn = isPrimarySnapshottedPlugIn;
+    
+    updateSnapshotInfo();
 }
 
 void HTMLPlugInImageElement::updateSnapshotInfo()
@@ -325,7 +337,7 @@ void HTMLPlugInImageElement::updateSnapshotInfo()
         return;
 
     Element* shadowContainer = static_cast<Element*>(root->firstChild());
-    shadowContainer->setAttribute(classAttr, classNameForShadowRoot(this));
+    shadowContainer->setAttribute(classAttr, classNameForShadowRoot(this, m_isPrimarySnapshottedPlugIn));
 }
 
 void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
@@ -432,6 +444,19 @@ void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)
 
     if (ScriptController::processingUserGesture()) {
         LOG(Plugins, "%p Script is processing user gesture, set to play", this);
+        return;
+    }
+
+    if (m_createdDuringUserGesture) {
+        LOG(Plugins, "%p Plug-in was created when processing user gesture, set to play", this);
+        return;
+    }
+
+    double lastKnownUserGestureTimestamp = document()->lastHandledUserGestureTimestamp();
+    if (!inMainFrame && document()->page()->mainFrame() && document()->page()->mainFrame()->document())
+        lastKnownUserGestureTimestamp = std::max(lastKnownUserGestureTimestamp, document()->page()->mainFrame()->document()->lastHandledUserGestureTimestamp());
+    if (currentTime() - lastKnownUserGestureTimestamp < autostartSoonAfterUserGestureThreshold) {
+        LOG(Plugins, "%p Plug-in was created shortly after a user gesture, set to play", this);
         return;
     }
 

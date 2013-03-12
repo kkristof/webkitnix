@@ -1,3 +1,941 @@
+2013-03-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Layer QtDownloadManager on the C API
+        https://bugs.webkit.org/show_bug.cgi?id=109562
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        * UIProcess/API/cpp/qt/WKURLQt.cpp:
+        (WebKit::adoptToQString):
+        (WebKit):
+        (WebKit::adoptToQUrl):
+        * UIProcess/API/cpp/qt/WKURLQt.h:
+        (WebKit):
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::handleDownloadRequest):
+        * UIProcess/qt/QtDownloadManager.cpp:
+        (WebKit::toQtDownloadManager):
+        (WebKit):
+        (WebKit::QtDownloadManager::QtDownloadManager):
+        (WebKit::QtDownloadManager::addDownload):
+        (WebKit::QtDownloadManager::didReceiveResponse):
+        (WebKit::QtDownloadManager::didCreateDestination):
+        (WebKit::QtDownloadManager::didFinishDownload):
+        (WebKit::QtDownloadManager::didFailDownload):
+        (WebKit::QtDownloadManager::didReceiveDataForDownload):
+        * UIProcess/qt/QtDownloadManager.h:
+        (WebKit):
+        (QtDownloadManager):
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit::QtWebContext::QtWebContext):
+        * UIProcess/qt/QtWebError.cpp:
+        (WebKit::QtWebError::url):
+        (WebKit::QtWebError::description):
+
+2013-03-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Layer QtWebIconDatabaseClient on the C API
+        https://bugs.webkit.org/show_bug.cgi?id=109564
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        * Target.pri:
+        * UIProcess/API/C/qt/WKIconDatabaseQt.cpp: Added.
+        (WKIconDatabaseTryGetQImageForURL):
+          - New API added to get a QImage from the IconDatabase.
+            Based on WKIconDatabaseCG.h/cpp
+        * UIProcess/API/C/qt/WKIconDatabaseQt.h: Added.
+        * UIProcess/API/cpp/qt/WKURLQt.cpp:
+        (WKURLCreateWithQString):
+        (WKURLCopyQString):
+        (WKURLCreateWithQUrl):
+        (WKURLCopyQUrl):
+          - The WKUrlRef behind the scene is a WTF::String and encoding it back and forth to
+            a QUrl can slightly change its string representation. Allow converting a WKUrlRef
+            to and from a QString to ensure this.
+        * UIProcess/API/cpp/qt/WKURLQt.h:
+        * UIProcess/API/qt/qwebiconimageprovider.cpp:
+        (QWebIconImageProvider::iconURLForPageURLInContext):
+          - The icon URL isn't accessible form the C API and shouldn't need to be.
+            Use an ID incremented on each update to trigger an update of the QML Image component.
+        (QWebIconImageProvider::requestImage):
+          - The IconDatabase was previously assumed to resize the image to the requested size,
+            but this parameter is ignored, as stated in a comment in WebIconDatabase::imageForPageURL.
+            Explicitely do the resize after fetching the original icon to also be able to report
+            the original size properly to QtQuick.
+        * UIProcess/API/qt/qwebiconimageprovider_p.h:
+        * UIProcess/API/qt/tests/qmltests/WebView/tst_favIconLoad.qml:
+          - Set the image to load asynchronously to further test the possibility of threading issues
+            in QtWebIconDatabaseClient::iconImageForPageURL
+          - Add a few barriers to fix some issues where the load succeeded signal would be wrongly
+            catched by init() before the next test.
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit::QtWebContext::QtWebContext):
+        * UIProcess/qt/QtWebIconDatabaseClient.cpp:
+        (WebKit):
+        (WebKit::QtWebIconDatabaseClient::QtWebIconDatabaseClient):
+        (WebKit::QtWebIconDatabaseClient::~QtWebIconDatabaseClient):
+        (WebKit::QtWebIconDatabaseClient::updateID):
+        (WebKit::QtWebIconDatabaseClient::didChangeIconForPageURL):
+        (WebKit::QtWebIconDatabaseClient::iconImageForPageURL):
+          - Remove the Mutex. This mutex was useless given that it would only
+            be locked from a single thread. Since the IconDatabase runs in its own thread,
+            it already is thread-safe to access.
+        (WebKit::QtWebIconDatabaseClient::retainIconForPageURL):
+        (WebKit::QtWebIconDatabaseClient::releaseIconForPageURL):
+        * UIProcess/qt/QtWebIconDatabaseClient.h:
+        (QtWebIconDatabaseClient):
+        * WebKit2.pri:
+
+2013-03-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Specify storage paths through the C API
+        https://bugs.webkit.org/show_bug.cgi?id=111435
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        The WKIconDatabase should be opened through a call to
+        WKContextSetIconDatabasePath. To avoid having some paths
+        returned through WebContext::platformDefault* and some others
+        through the C API, make sure that all those paths are set
+        through the C API.
+
+        * Shared/qt/QtDefaultDataLocation.cpp: Removed.
+        * Shared/qt/QtDefaultDataLocation.h: Removed.
+        * Target.pri:
+        * UIProcess/Plugins/qt/PluginProcessProxyQt.cpp:
+        (WebKit::cacheFile):
+          - This part is left alone behind the C API.
+            Since PluginProcessProxy have no knowledge of the WebContext
+            it is rather difficult to fetch a configured directory that
+            could be used for this purpose (like the disk cache storage).
+            Hard-code a compatible logic to keep the current behavior.
+        (WebKit::removeCacheFile):
+        (WebKit):
+        (WebKit::readMetaDataFromCacheFile):
+        (WebKit::writeToCacheFile):
+        (WebKit::tryReadPluginMetaDataFromCacheFile):
+          - Update the code to better handle an empty cache file path.
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit::QtWebContext::defaultContext):
+        (WebKit::defaultLocation):
+        (WebKit):
+        (WebKit::QtWebContext::preparedStoragePath):
+        * UIProcess/qt/QtWebContext.h:
+        * UIProcess/qt/QtWebIconDatabaseClient.cpp:
+        (WebKit::QtWebIconDatabaseClient::QtWebIconDatabaseClient):
+        * UIProcess/qt/WebContextQt.cpp:
+        (WebKit::WebContext::applicationCacheDirectory):
+        (WebKit::WebContext::platformDefaultDatabaseDirectory):
+        (WebKit::WebContext::platformDefaultIconDatabasePath):
+        (WebKit::WebContext::platformDefaultLocalStorageDirectory):
+        (WebKit::WebContext::platformDefaultDiskCacheDirectory):
+        (WebKit::WebContext::platformDefaultCookieStorageDirectory):
+
+2013-02-14  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Properly layer QtWebContext on top of the C API
+        https://bugs.webkit.org/show_bug.cgi?id=108475
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit::initializeContextInjectedBundleClient):
+        (WebKit::QtWebContext::QtWebContext):
+        (WebKit::QtWebContext::create):
+        (WebKit::QtWebContext::defaultContext):
+        * UIProcess/qt/QtWebContext.h:
+        (WebKit):
+        (QtWebContext):
+        (WebKit::QtWebContext::context):
+
+2013-02-14  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Allow QtWebContext to call directly to QQuickWebView with a WKPageRef
+        https://bugs.webkit.org/show_bug.cgi?id=109829
+
+        Reviewed by Allan Sandfeld Jensen.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        Instead of going through WebPageProxy and PageClient to forward
+        injected bundle messages received by the context, maintain a static map
+        of WKPageRef to QQuickWebViewPrivate.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::get):
+        (QQuickWebViewPrivate::~QQuickWebViewPrivate):
+        (QQuickWebViewPrivate::initialize):
+        (QQuickWebViewPrivate::didReceiveMessageFromNavigatorQtObject):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+        * UIProcess/API/qt/raw/qrawwebview.cpp:
+        * UIProcess/API/qt/raw/qrawwebview_p_p.h:
+        * UIProcess/PageClient.h:
+        (PageClient):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/qt/QtPageClient.cpp:
+        * UIProcess/qt/QtPageClient.h:
+        (QtPageClient):
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit::didReceiveMessageFromInjectedBundle):
+        * UIProcess/qt/WebPageProxyQt.cpp:
+
+2013-02-14  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Keep the WebContext alive during the whole application's lifetime
+        https://bugs.webkit.org/show_bug.cgi?id=109827
+
+        Reviewed by Simon Hausmann.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        The lifetime of the WebContext is difficult to manage because of a circular
+        reference kept with the WebProcessProxy until it shuts itself down, 60
+        seconds after the last page is closed. There was some notification
+        in place to handle this in the upper layer, but having to go through the
+        C API (done in a following patch) makes this quite awkward.
+
+        Keeping the WebContext alive also includes the icon database which is
+        quite heavy, in the future we should only enable it once the
+        QQuickWebView::icon property is read.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::QQuickWebViewPrivate):
+        (QQuickWebViewPrivate::handleDownloadRequest):
+        (QQuickWebViewPrivate::updateIcon):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+        * UIProcess/API/qt/qwebiconimageprovider.cpp:
+        (QWebIconImageProvider::requestImage):
+        * UIProcess/qt/QtWebContext.cpp:
+        (WebKit):
+        (WebKit::QtWebContext::QtWebContext):
+        (WebKit::QtWebContext::~QtWebContext):
+        (WebKit::QtWebContext::create):
+        (WebKit::QtWebContext::defaultContext):
+        * UIProcess/qt/QtWebContext.h:
+        (QtWebContext):
+        (WebKit::QtWebContext::downloadManager):
+        (WebKit::QtWebContext::iconDatabase):
+        * UIProcess/qt/WebContextQt.cpp:
+        (WebKit::WebContext::platformInvalidateContext):
+
+2013-02-14  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt][WK2] Favor QUrl and QString over WTF::String in the Qt API layer
+        https://bugs.webkit.org/show_bug.cgi?id=109468
+
+        Reviewed by Allan Sandfeld Jensen.
+        Signed off for WebKit2 by Benjamin Poulain.
+
+        In preparation for patches using the C API types in some areas, remove the
+        usage of WTF::String on the affected line.
+
+        Use a QUrl for icon URL to avoid unnecessary conversion.
+        Use a QString for the page URL to keep it compatible with WebPageProxy and
+        WebIconDatabase and avoid QUrl parsing.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::_q_onIconChangedForPageURL):
+        (QQuickWebViewPrivate::updateIcon):
+        (QQuickWebView::emitUrlChangeIfNeeded):
+        (QQuickWebView::icon):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (QQuickWebViewPrivate):
+        * UIProcess/API/qt/qwebiconimageprovider.cpp:
+        (QWebIconImageProvider::iconURLForPageURLInContext):
+        * UIProcess/API/qt/qwebiconimageprovider_p.h:
+        * UIProcess/qt/QtWebIconDatabaseClient.cpp:
+        (WebKit::QtWebIconDatabaseClient::iconForPageURL):
+        (WebKit::QtWebIconDatabaseClient::iconImageForPageURL):
+        (WebKit::QtWebIconDatabaseClient::retainIconForPageURL):
+        (WebKit::QtWebIconDatabaseClient::releaseIconForPageURL):
+        * UIProcess/qt/QtWebIconDatabaseClient.h:
+        (QtWebIconDatabaseClient):
+
+2013-03-12  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] REGRESSION(r145081): Unit tests not working if locale is not English
+        https://bugs.webkit.org/show_bug.cgi?id=111973
+
+        Reviewed by Carlos Garcia Campos.
+
+        The problem is that the UIProcess locale is reseted to C in
+        gtk_test_init, however the WebProcess does not inherit the locale set in
+        the UIProcess and it uses the system one (that could be different to
+        English). So, there were problems in some tests that are comparing
+        strings from both processes like WebKit2APITests/TestPrinting and
+        WebKit2APITests/TestWebKitWebContext. The solution is to set the locale
+        environment variable LC_ALL to C in order to reset WebProcess locale
+        too.
+
+        * UIProcess/API/gtk/tests/TestMain.cpp:
+        (main): Set environment variable LC_ALL to C.
+
+2013-03-11  Brady Eidson  <beidson@apple.com>
+
+        Loads are never canceled in the NetworkProcess
+        <rdar://problem/12890500> and https://bugs.webkit.org/show_bug.cgi?id=112103
+
+        Reviewed by Alexey Proskuryakov.
+
+        If a connection to a WebProcess is closed (gracefully or by crashing) then:
+        - All scheduled loads for that connection should be forgotten.
+        - All in-progress loads for that connection should be aborted asap.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::requestsToCleanupMutex): The "request to stop" mechanism is now called "request to cleanup"
+        (WebKit::requestsToCleanup):
+        (WebKit::NetworkResourceLoader::scheduleCleanupOnMainThread):
+        (WebKit::NetworkResourceLoader::performCleanups):
+        (WebKit::NetworkResourceLoader::cleanup):
+        (WebKit::NetworkResourceLoader::didFinishLoading):
+        (WebKit::NetworkResourceLoader::didFail):
+
+        (WebKit::NetworkResourceLoader::connectionToWebProcessDidClose): If there is a resource handle, let
+          the loading thread notice the connection is invalid. Otherwise request to cleanup the loader.
+        (WebKit::NetworkResourceLoader::sendAbortingOnFailure):
+        (WebKit::NetworkResourceLoader::sendSyncAbortingOnFailure):
+        (WebKit::NetworkResourceLoader::abortInProgressLoad): Cancel the resource handle and schedule main thread cleanup.
+        (WebKit::NetworkResourceLoader::didReceiveResponse): Use sendAbortingOnFailure instead of send.
+        (WebKit::NetworkResourceLoader::didReceiveData): Ditto.
+
+        (WebKit::NetworkResourceLoader::willSendRequest): Call abortInProgressLoad if the sync message failed.
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpace): Ditto.
+        * NetworkProcess/NetworkResourceLoader.h:
+
+        Make connectionToWebProcessDidClose() pure virtual, moving its implementation to the subclasses:
+        * NetworkProcess/SchedulableLoader.cpp:
+        * NetworkProcess/SchedulableLoader.h:
+
+        * NetworkProcess/SyncNetworkResourceLoader.cpp:
+        (WebKit::SyncNetworkResourceLoader::start): Call cleanup().
+        (WebKit::SyncNetworkResourceLoader::connectionToWebProcessDidClose): Call cleanup().
+        (WebKit::SyncNetworkResourceLoader::cleanup): Factor out the sync loader cleanup code.
+        * NetworkProcess/SyncNetworkResourceLoader.h:
+
+2013-03-11  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Return PDFKit's data instead of the original resource data for save/etc.
+        https://bugs.webkit.org/show_bug.cgi?id=111956
+        <rdar://problem/13352282>
+
+        Reviewed by Alexey Proskuryakov.
+
+        If we return the original resource data, we lose changes made to annotations.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::pdfDocumentDidLoad): Adopt the renamed rawData().
+        (WebKit::PDFPlugin::saveToPDF): Use liveData so that "Save to PDF" persists changes to annotations.
+        (WebKit::PDFPlugin::openWithNativeApplication): Use liveData so that "Open With [native application]" persists changes to annotations.
+
+        * WebProcess/Plugins/PDF/PDFPluginAnnotation.h:
+        * WebProcess/Plugins/PDF/PDFPluginAnnotation.mm:
+        (WebKit::PDFPluginAnnotation::commit): Added, inform PDFPlugin that we're mutating the document.
+        * WebProcess/Plugins/PDF/PDFPluginChoiceAnnotation.mm:
+        (WebKit::PDFPluginChoiceAnnotation::commit): Let PDFPluginAnnotation do what it needs to inform PDFPlugin that we're going to mutate the document.
+        * WebProcess/Plugins/PDF/PDFPluginTextAnnotation.mm:
+        (WebKit::PDFPluginTextAnnotation::commit): Let PDFPluginAnnotation do what it needs to inform PDFPlugin that we're going to mutate the document.
+
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h:
+        (WebKit::SimplePDFPlugin::didMutatePDFDocument): Added.
+        (WebKit::SimplePDFPlugin::liveData): Added.
+        (WebKit::SimplePDFPlugin::rawData): Renamed from data(). Return NSData for consistency.
+        (WebKit::SimplePDFPlugin::pdfDocumentWasMutated): Added.
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.mm:
+        (WebKit::SimplePDFPlugin::liveData): Return PDFKit's data if the user has mutated the
+        document, otherwise the raw data. This way, PDFs that PDFKit can't process will still
+        be downloadable as long as the user doesn't interact with annotations.
+        (WebKit::SimplePDFPlugin::liveResourceData): Return a SharedData wrapping the PDFDocument's data.
+        
+        * WebProcess/Plugins/Netscape/NetscapePlugin.cpp:
+        * WebProcess/Plugins/Netscape/NetscapePlugin.h:
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h:
+        * WebProcess/Plugins/Plugin.h:
+        * WebProcess/Plugins/PluginProxy.h:
+        * WebProcess/Plugins/PluginView.cpp:
+        * WebProcess/Plugins/PluginView.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::getMainResourceDataOfFrame):
+        Use a SharedData instead of raw data for getResourceData, and rename it liveResourceData().
+
+2013-03-11  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] WebProcess and WebContentService don't respect system localization
+        https://bugs.webkit.org/show_bug.cgi?id=112091
+        <rdar://problem/13233590>
+
+        Reviewed by Dan Bernstein.
+
+        Allow CFBundle to use localizations that don't exist in the main bundle,
+        so that, for example, injected bundles can load and use strings from localized frameworks.
+
+        * WebProcess/EntryPoint/mac/LegacyProcess/Info.plist:
+        * WebProcess/EntryPoint/mac/XPCService/WebContentService.Development/Info.plist:
+        * WebProcess/EntryPoint/mac/XPCService/WebContentService/Info.plist:
+
+2013-03-11  Jochen Eisinger  <jochen@chromium.org>
+
+        Rename DefinitelyProcessingUserGesture to DefinitelyProcessingNewUserGesture
+        https://bugs.webkit.org/show_bug.cgi?id=111959
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebProcess/Notifications/WebNotificationManager.cpp:
+        (WebKit::WebNotificationManager::didClickNotification):
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::evaluate):
+        * WebProcess/WebCoreSupport/WebContextMenuClient.cpp:
+        (WebKit::WebContextMenuClient::searchWithGoogle):
+
+2013-03-11  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Make scrolling between pages in non-continuous modes work
+        https://bugs.webkit.org/show_bug.cgi?id=111415
+        <rdar://problem/12555320>
+
+        Reviewed by Alexey Proskuryakov.
+
+        * WebProcess/Plugins/PDF/PDFLayerControllerDetails.h:
+        Add some more PDFLayerController SPI.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Override handleWheelEvent.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::handleWheelEvent):
+        If PDFLayerController is in non-continuous mode, allow scrolling between
+        pages by intercepting scroll events, and checking whether we're at the
+        top or bottom of a page. If we are, and a single event exceeds the threshold
+        of 20px (0px for legacy scroll wheels), we jump to the next or previous
+        page and scroll to the right place. Do not allow momentum scrolling to
+        switch pages.
+
+2013-03-11  Mark Lam  <mark.lam@apple.com>
+
+        Fix some WebDatabaseManagerProxy methods to only send to one WebProcsess
+        instead of broadcasting to all WebProcesses.
+        https://bugs.webkit.org/show_bug.cgi?id=112074.
+
+        Reviewed by Alexey Proskuryakov.
+
+        The reason for this is because the intent of these messages is to act on
+        the tracker database that is shared between all WebProcesses. It is
+        redundant and inefficient for multiple WebProcesses to service the same
+        request/message. And because of multi-process contention on accessing
+        the tracker database, the results returned to the UIProcess may also be
+        erroneous.
+
+        For example, if getDatabaseOrigins() is broadcasted to all WebProcesses,
+        they will contend to open the tracker database at the same time. If one
+        of these processes fails because the database is already in use, then
+        it may return with an empty list when it should not be empty.
+
+        With this fix, only one WebProcess gets the message and will perform the
+        requested query/action on behalf of all WebProcesses.
+
+        * UIProcess/WebContext.h:
+        (WebKit::WebContext::sendToOneProcess):
+        * UIProcess/WebDatabaseManagerProxy.cpp:
+        (WebKit::WebDatabaseManagerProxy::getDatabasesByOrigin):
+        (WebKit::WebDatabaseManagerProxy::getDatabaseOrigins):
+        (WebKit::WebDatabaseManagerProxy::deleteDatabaseWithNameForOrigin):
+        (WebKit::WebDatabaseManagerProxy::deleteDatabasesForOrigin):
+        (WebKit::WebDatabaseManagerProxy::deleteAllDatabases):
+        (WebKit::WebDatabaseManagerProxy::setQuotaForOrigin):
+
+2013-03-11  Jeffrey Pfau  <jpfau@apple.com>
+
+        List cache partitions as units instead of as their contents
+        https://bugs.webkit.org/show_bug.cgi?id=111909
+
+        Reviewed by Maciej Stachowiak.
+
+        * WebProcess/ResourceCache/cf/WebResourceCacheManagerCFNet.cpp:
+        (WebKit::WebResourceCacheManager::cfURLCacheHostNames): Attempt to enumerate cache partitions based on information we have
+
+2013-01-30  Jer Noble  <jer.noble@apple.com>
+
+        Full screen mode should not exit when application resigns active state.
+        https://bugs.webkit.org/show_bug.cgi?id=106129
+
+        Reviewed by Darin Adler.
+
+        Allow the user to close the full screen window with Cmd-w by making the full screen window
+        closable, and by intercepting performClose:.
+
+        * UIProcess/mac/WKFullScreenWindowController.mm:
+        (-[WKFullScreenWindowController init]): Create a closable full screen window.
+        (-[WKFullScreenWindowController performClose:]): When we receive a close request in full screen mode,
+            animate out of full screen.
+
+2013-03-11  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] WebKit2-only build fails
+        https://bugs.webkit.org/show_bug.cgi?id=112033
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Introduce the artifical dependency of libwebkit2gtk on libwebkitgtk only
+        if building WebKit1 as well. Similarly with the WebKitPluginProcess, depend on libwebkitgtk
+        only if building WebKit1, the dependency is otherwise not necessary.
+
+2013-03-11  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Search With [your search provider here] should use NSPerformService in WebKit2/Mac
+        https://bugs.webkit.org/show_bug.cgi?id=111995
+        <rdar://problem/12975669>
+
+        Reviewed by Sam Weinig.
+
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy): Add searchTheWeb().
+        * UIProcess/WebPageProxy.messages.in: Add SearchTheWeb message.
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::WebPageProxy::searchTheWeb): Added. Call out to NSPerformService to search with the system default
+        search provider, in the browser.
+
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        (PDFPlugin): Add performWebSearch().
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (-[WKPDFLayerControllerDelegate performWebSearch:]): Added, forward the delegate callback to PDFPlugin.
+        (WebKit::PDFPlugin::performWebSearch): Added, forward the search string to WebPageProxy.
+        * WebProcess/WebCoreSupport/WebContextMenuClient.cpp:
+        (WebKit::WebContextMenuClient::searchWithGoogle): Don't build the old load-Google-in-the-main-frame code on Mac.
+        * WebProcess/WebCoreSupport/mac/WebContextMenuClientMac.mm:
+        (WebKit::WebContextMenuClient::searchWithGoogle): Instead, send the search string to WebPageProxy.
+
+2013-03-11  Helder Correia  <helder.correia@nokia.com>
+
+        [WK2] Add C API preference: accelerated compositing for overflow scroll
+        https://bugs.webkit.org/show_bug.cgi?id=111916
+
+        Reviewed by Simon Fraser.
+
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetAcceleratedCompositingForOverflowScrollEnabled):
+        (WKPreferencesGetAcceleratedCompositingForOverflowScrollEnabled):
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+
+2013-03-11  Brady Eidson  <beidson@apple.com>
+
+        CoreIPC crash in NetworkProcess after WebProcess crash.
+        <rdar://problem/13124146> and https://bugs.webkit.org/show_bug.cgi?id=112046
+
+        Reviewed by Alexey Proskuryakov.
+
+        * NetworkProcess/SchedulableLoader.cpp:
+        (WebKit::SchedulableLoader::connectionToWebProcessDidClose): Don't null out the connection backpointer on crash.
+
+2013-03-11  Alexey Proskuryakov  <ap@apple.com>
+
+        Make it possible to reuse sandbox extensions
+        https://bugs.webkit.org/show_bug.cgi?id=111883
+
+        Reviewed by Anders Carlsson.
+
+        This allows for properly keeping extensions in NetworkBlobRegistry for as long as
+        they are needed.
+
+        The patch also fixes a bug where extensions would leak when navigating between
+        file:// pages.
+
+        * NetworkProcess/SchedulableLoader.cpp:
+        Revoke the extensions, but don't invalidate - we may need them later.
+
+        * Shared/Downloads/Download.cpp:
+        (WebKit::Download::didFinish):
+        (WebKit::Download::didFail):
+        (WebKit::Download::didCancel):
+        Replaced invalidate() with revoke() and clearing out. SandboxExtension destructor
+        now requires revocations wto be balanced, as otherwise understanding dual reference
+        counting in SandboxExtension would be too difficult.
+
+        * Shared/SandboxExtension.h: We now keep track of how many times the extension
+        was consumed. Eventually, we should refactor the class to not have such duplicate
+        reference counting.
+        * Shared/mac/SandboxExtensionMac.mm:
+        (WebKit::SandboxExtension::SandboxExtension): Initialize use count.
+        (WebKit::SandboxExtension::~SandboxExtension): We now require consume/revoke calls
+        to be balanced. This is not hard to do in existing usage, and makes the design much
+        more reliable.
+        (WebKit::SandboxExtension::revoke): Don't permanently destroy the extension when
+        invalidatid, we may need it in the future.
+        (WebKit::SandboxExtension::consume): Added use counting.
+
+        * Shared/WebMemorySampler.cpp: (WebKit::WebMemorySampler::stop): This extension
+        is not going to be reused.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::performDragControllerAction): Pending extensions are not consumed,
+        so there is no need to revoke.
+        (WebKit::WebPage::SandboxExtensionTracker::invalidate): Pending extension is not
+        consumed, and the other two always are.
+        (WebKit::WebPage::SandboxExtensionTracker::setPendingProvisionalSandboxExtension):
+        Pending extension is never consumed in place, no need to revoke.
+        (WebKit::WebPage::SandboxExtensionTracker::didStartProvisionalLoad): Do not unset
+        reused committed extension yet - we may need it later if provisional load fails.
+        Thanks to use counting, we can now consume the same extension as both committed
+        and provisional.
+        (WebKit::WebPage::SandboxExtensionTracker::didCommitProvisionalLoad): Now the
+        committed extension can be revoked and replaced.
+        (WebKit::WebPage::SandboxExtensionTracker::didFailProvisionalLoad): Just revoke
+        provisional extension, committed one is still in place.
+
+2013-03-11  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        [EFL] Build fix after r143192 when SPELLCHECK is off
+
+        Unreviewed build fix when SPELLCHECK macro is off.
+
+        * UIProcess/efl/TextCheckerEfl.cpp:
+        (WebKit):
+
+2013-03-10  Tim Horton  <timothy_horton@apple.com>
+
+        WebPage::scaledSnapshotWithOptions returns a corrupt snapshot if you request a rect larger than the FrameView’s size
+        https://bugs.webkit.org/show_bug.cgi?id=111820
+        <rdar://problem/13375785>
+
+        Reviewed by Simon Fraser.
+
+        We have to clear the image - there could be area that won’t be painted by the FrameView,
+        or the FrameView could have a transparent background.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::scaledSnapshotWithOptions):
+
+2013-03-10  Tim Horton  <timothy_horton@apple.com>
+
+        Fix a typo in http://trac.webkit.org/changeset/145332.
+
+        Unreviewed.
+
+        ENABLE() doesn't use the WTF_ prefix.
+
+        * WebProcess/WebPage/WebPage.h:
+
+2013-03-10  Sam Weinig  <sam@webkit.org>
+
+        Add bundle API to get the current selection as a WKDOMRange
+        https://bugs.webkit.org/show_bug.cgi?id=111947
+        <rdar://problem/13205460>
+
+        Reviewed by Gavin Barraclough.
+
+        * WebProcess/InjectedBundle/API/mac/WKWebProcessPlugInBrowserContextController.h:
+        * WebProcess/InjectedBundle/API/mac/WKWebProcessPlugInBrowserContextController.mm:
+        (-[WKWebProcessPlugInBrowserContextController selectedRange]):
+        Add new selectedRange property.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::frameWithSelection):
+        (WebKit::WebPage::currentSelectionAsRange):
+        * WebProcess/WebPage/WebPage.h:
+        Get the range by finding the frame that has a selection, and then normalizing it.
+
+2013-03-10  Tim Horton  <timothy_horton@apple.com>
+
+        Add a heuristic to determine the “primary” snapshotted plugin
+        https://bugs.webkit.org/show_bug.cgi?id=111932
+        <rdar://problem/13270208>
+
+        Reviewed by Dean Jackson.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::dispatchDidCommitLoad):
+        Forward didCommitLoad to WebPage. Move existing code that manipulated WebPage
+        itself during didCommitLoad into WebPage, where it belongs.
+        (WebKit::WebFrameLoaderClient::dispatchDidFinishLoad): Forward didFinishLoad to WebPage.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage): Initialize m_didFindPrimarySnapshottedPlugin to false.
+        (WebKit::WebPage::didCommitLoad): Move code from WebPageFrameLoaderClient.
+        Reset the flag that says we've already found a snapshotted plugin.
+        (WebKit::WebPage::didFinishLoad):
+        Call determinePrimarySnapshottedPlugIn when any frame finishes loading. We call this for subframes,
+        not just the main frame, in case the main frame loads with no "primary" plugins, but a subframe later loads with one.
+        (WebKit::WebPage::determinePrimarySnapshottedPlugIn):
+        Attempt to find the primary snapshotted plugin on the page, by hit-testing a grid of points spaced 200px apart.
+        A plugin is considered if it is snapshotted and > 450x300. We scan vertically and left-to-right, only discarding
+        a previous candidate if another candidate is at least 110% the size of the previous candidate.
+        This tends to select plugins near the top left of the page, unless there is a significantly larger plugin elsewhere.
+        (WebKit::WebPage::resetPrimarySnapshottedPlugIn):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+
+2013-03-10  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145039 and r145096.
+        http://trac.webkit.org/changeset/145039
+        http://trac.webkit.org/changeset/145096
+        https://bugs.webkit.org/show_bug.cgi?id=111945
+
+        broke find indicator updates with scrolling subframes
+        (Requested by thorton on #webkit).
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::scroll):
+        (WebKit::TiledCoreAnimationDrawingArea::flushLayers):
+
+2013-03-10  Andreas Kling  <akling@apple.com>
+
+        WebPluginSiteDataManager should use OwnPtr.
+        <http://webkit.org/b/111940>
+
+        Reviewed by Anders Carlsson.
+
+        * UIProcess/Plugins/WebPluginSiteDataManager.cpp:
+        (WebKit::WebPluginSiteDataManager::invalidate):
+        (WebKit::WebPluginSiteDataManager::getSitesWithData):
+        (WebKit::WebPluginSiteDataManager::clearSiteData):
+        (WebKit::WebPluginSiteDataManager::didGetSitesWithDataForAllPlugins):
+        (WebKit::WebPluginSiteDataManager::didClearSiteDataForAllPlugins):
+        * UIProcess/Plugins/WebPluginSiteDataManager.h:
+        (WebPluginSiteDataManager):
+
+2013-03-09  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] Fix compilation warning missing-field-initializers in webkit-2.0 stable branch
+        https://bugs.webkit.org/show_bug.cgi?id=111863
+
+        Reviewed by Benjamin Poulain.
+
+        * UIProcess/API/gtk/WebKitUIClient.cpp:
+        (attachUIClientToView): Include missing initializer for pluginLoadPolicy.
+
+2013-03-08  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145254, r145264, and r145288.
+        http://trac.webkit.org/changeset/145254
+        http://trac.webkit.org/changeset/145264
+        http://trac.webkit.org/changeset/145288
+        https://bugs.webkit.org/show_bug.cgi?id=111917
+
+        Test breakage hints at conceptual unsoundness (Requested by ap
+        on #webkit).
+
+        * NetworkProcess/SchedulableLoader.cpp:
+        (WebKit::SchedulableLoader::invalidateSandboxExtensions):
+        * Shared/Downloads/Download.cpp:
+        (WebKit::Download::didFinish):
+        (WebKit::Download::didFail):
+        (WebKit::Download::didCancel):
+        * Shared/SandboxExtension.h:
+        (SandboxExtension):
+        (WebKit::SandboxExtension::invalidate):
+        * Shared/WebMemorySampler.cpp:
+        (WebKit::WebMemorySampler::stop):
+        * Shared/mac/SandboxExtensionMac.mm:
+        (WebKit::SandboxExtension::SandboxExtension):
+        (WebKit::SandboxExtension::invalidate):
+        (WebKit::SandboxExtension::consume):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::performDragControllerAction):
+        (WebKit::WebPage::SandboxExtensionTracker::invalidate):
+        (WebKit::WebPage::SandboxExtensionTracker::setPendingProvisionalSandboxExtension):
+        (WebKit::WebPage::SandboxExtensionTracker::didCommitProvisionalLoad):
+        (WebKit::WebPage::SandboxExtensionTracker::didFailProvisionalLoad):
+
+2013-03-08  Dean Jackson  <dino@apple.com>
+
+        Don't snapshot Java plugins
+        https://bugs.webkit.org/show_bug.cgi?id=111899
+
+        Reviewed by Tim Horton.
+
+        If the plugin is Java, return true from shouldAlwaysAutoStart.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::shouldAlwaysAutoStart): Check the mimetype for Java.
+
+2013-03-08  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13338743> Fix sandbox profile preprocessor flags for compatibility with new clang.
+
+        Reviewed by Alexey Proskuryakov.
+        Patch by Bob Wilson.
+
+        * DerivedSources.make: Only use -traditional when we have to work around old
+        behavior of -std=c89.
+
+2013-03-08  Joone Hur  <joone.hur@intel.com>
+
+        Unreviewed build fix for EFL, GTK and Qt after r145254.
+
+        * Shared/SandboxExtension.h:
+        (WebKit::SandboxExtension::revoke):
+
+2013-03-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        non-Mac ports build fix after r145235.
+
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::createInspectorPageGroup):
+
+2013-03-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        [Mac] Add a feature flag for 'view-mode' Media Feature, disable it on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=111297
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        * WebProcess/InjectedBundle/API/c/WKBundlePagePrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        * WebProcess/WebPage/WebPage.h:
+
+2013-03-08  Alexey Proskuryakov  <ap@apple.com>
+
+        Make it possible to reuse sandbox extensions
+        https://bugs.webkit.org/show_bug.cgi?id=111883
+
+        Reviewed by Anders Carlsson.
+
+        Replaced invalidate() with revoke().
+
+        We now count how many times consume() was called, and keep the extension active
+        for as long as revoke() hasn't been called as many times. Also, we only permanently
+        destroy the extension in destructor.
+
+        This allows for properly keeping extensions in NetworkBlobRegistry for as long as
+        they are needed.
+
+        * NetworkProcess/SchedulableLoader.cpp:
+        (WebKit::SchedulableLoader::invalidateSandboxExtensions):
+        * Shared/Downloads/Download.cpp:
+        (WebKit::Download::didFinish):
+        (WebKit::Download::didFail):
+        (WebKit::Download::didCancel):
+        * Shared/SandboxExtension.h:
+        (SandboxExtension):
+        * Shared/WebMemorySampler.cpp:
+        (WebKit::WebMemorySampler::stop):
+        * Shared/mac/SandboxExtensionMac.mm:
+        (WebKit::SandboxExtension::SandboxExtension):
+        (WebKit::SandboxExtension::revoke):
+        (WebKit::SandboxExtension::consume):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::performDragControllerAction):
+        (WebKit::WebPage::SandboxExtensionTracker::invalidate):
+        (WebKit::WebPage::SandboxExtensionTracker::setPendingProvisionalSandboxExtension):
+        (WebKit::WebPage::SandboxExtensionTracker::didCommitProvisionalLoad):
+        (WebKit::WebPage::SandboxExtensionTracker::didFailProvisionalLoad):
+
+2013-03-08  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [WK2][GTK] Invalid request returned by webkit_download_get_request if called before download starts
+        https://bugs.webkit.org/show_bug.cgi?id=111574
+
+        Reviewed by Alexey Proskuryakov.
+
+        webkit_download_get_request() creates the WebKitURIRequest object
+        on demand using the ResourceRequest from the DownloadProxy. The
+        ResourceRequest of the DownloadProxy is set in
+        DownloadProxy::didStart(), so if we call
+        webkit_download_get_request() before didStart we return an invalid
+        WebKitURIRequest created from a NULL ResourceRequest. This is not
+        a problem for downloads started in the web process, because we
+        create the WebKitDownload after DownloadProxy::didStart(). For
+        downloads started manually with webkit_web_context_download_uri()
+        we need to create download object with the ResourceRequest passed
+        to the DownloadProxy.
+
+        * UIProcess/API/gtk/WebKitDownload.cpp:
+        (webkitDownloadCreateForRequest): New helper function for
+        downloads started manually to created them with a given
+        ResourceRequest.
+        * UIProcess/API/gtk/WebKitDownloadPrivate.h:
+        * UIProcess/API/gtk/WebKitWebContext.cpp:
+        (webkitWebContextStartDownload): Use
+        webkitDownloadCreateForRequest().
+        * UIProcess/API/gtk/tests/TestDownloads.cpp:
+        (testDownloadLocalFile):
+        (testDownloadLocalFileError):
+        (testDownloadRemoteFile):
+        (testDownloadRemoteFileError):
+        (testPolicyResponseDownload):
+
+2013-03-07  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13363499> Blobs are not cleaned up when WebProcess terminates
+        https://bugs.webkit.org/show_bug.cgi?id=111803
+
+        Reviewed by Brady Eidson.
+
+        Track which blobs were created for each connection, and unregister them when
+        the connection closes.
+
+        Normally, this happens when a document is destroyed through PublicURLManager
+        in WebProcess. But we don't get there when the web process crashes, or is terminated
+        without waiting for document destruction.
+
+        * NetworkProcess/FileAPI/NetworkBlobRegistry.cpp:
+        (WebKit::NetworkBlobRegistry::registerBlobURL):
+        (WebKit::NetworkBlobRegistry::unregisterBlobURL):
+        (WebKit::NetworkBlobRegistry::connectionToWebProcessDidClose):
+        * NetworkProcess/FileAPI/NetworkBlobRegistry.h:
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::didClose):
+        (WebKit::NetworkConnectionToWebProcess::registerBlobURL):
+        (WebKit::NetworkConnectionToWebProcess::registerBlobURLFromURL):
+        (WebKit::NetworkConnectionToWebProcess::unregisterBlobURL):
+
+2013-03-08  Timothy Hatcher  <timothy@apple.com>
+
+        Make the WebKit2 Web Inspector use tiled drawing and accelerated drawing.
+
+        <rdar://problem/12676223>
+
+        Reviewed by David Kilzer.
+
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::createInspectorPageGroup): Call setAcceleratedDrawingEnabled with true on 10.8+.
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (-[WKWebInspectorWKView _shouldUseTiledDrawingArea]): Added. Return YES on 10.8+.
+
+2013-03-08  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Handle scrolling correctly.
+        https://bugs.webkit.org/show_bug.cgi?id=111406
+
+        Reviewed by Simon Fraser.
+
+        Coordinated Graphics deals with fast scrolling and slow scrolling in the same
+        routine, so WebChromeClient::invalidateContentsForSlowScroll() should call
+        DrawingArea:scroll().
+
+        When CoordinatedLayerTreeHost::scrollNonCompositedContents() is called, we
+        should call scheduleLayerFlush() to notify to UI Process. In addition, when we
+        don't use fixed layout, we should call setNonCompositedContentsNeedDisplay() to
+        update non composited contents.
+
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::invalidateContentsForSlowScroll):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::scrollNonCompositedContents):
+
+2013-03-08  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Remove EwkView::setImageData()
+        https://bugs.webkit.org/show_bug.cgi?id=111849
+
+        Reviewed by Andreas Kling.
+
+        EwkView::setImageData() removed as it is not used at the moment 
+        (it used to be part of eliminated non coord graphics code path). 
+
+        * UIProcess/API/efl/EwkView.cpp:
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView):
+        * UIProcess/cairo/BackingStoreCairo.cpp:
+        (WebKit::BackingStore::incorporateUpdate):
+
 2013-03-08  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Memory leak in webkit_web_view_load_request() in WebKit2 API

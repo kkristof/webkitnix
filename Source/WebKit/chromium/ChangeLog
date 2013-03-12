@@ -1,3 +1,292 @@
+2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145462.
+        http://trac.webkit.org/changeset/145462
+        https://bugs.webkit.org/show_bug.cgi?id=112097
+
+        Compilation failure in PluginView.cpp (Requested by jamesr_ on
+        #webkit).
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::focusedNodeChanged):
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::ContextMenuClientImpl::getCustomMenuFromDefaultItems):
+        * src/DOMUtilitiesPrivate.cpp:
+        (WebCore::toHTMLElement):
+        * src/WebSearchableFormData.cpp:
+        (HTMLNames::IsSelectInDefaultState):
+
+2013-03-11  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_casts with to* functions.
+        https://bugs.webkit.org/show_bug.cgi?id=112072
+
+        Reviewed by Philip Rogers.
+
+        to* functions are preferred over static_cast calls since they
+        help to catch bad casts easily on the testing infrastructure.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::focusedNodeChanged):
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::ContextMenuClientImpl::getCustomMenuFromDefaultItems):
+        * src/DOMUtilitiesPrivate.cpp:
+        (WebCore::toHTMLElement):
+        * src/WebSearchableFormData.cpp:
+        (HTMLNames::IsSelectInDefaultState):
+
+2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r187216.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-11  Jochen Eisinger  <jochen@chromium.org>
+
+        Rename DefinitelyProcessingUserGesture to DefinitelyProcessingNewUserGesture
+        https://bugs.webkit.org/show_bug.cgi?id=111959
+
+        Reviewed by Alexey Proskuryakov.
+
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::executeScriptAndReturnValue):
+        * src/WebNotification.cpp:
+        (WebKit::WebNotification::dispatchClickEvent):
+        * src/WebPluginContainerImpl.cpp:
+        (WebKit::WebPluginContainerImpl::handleEvent):
+        (WebKit::WebPluginContainerImpl::loadFrameRequest):
+        * src/WebScopedUserGesture.cpp:
+        (WebKit::WebScopedUserGesture::initialize):
+        * tests/WebUserGestureTokenTest.cpp:
+        (WebCore::TEST):
+
+2013-03-11  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Move WebFileSystemCallbacks to Platform/
+        https://bugs.webkit.org/show_bug.cgi?id=112049
+
+        Reviewed by Adam Barth.
+
+        In preparation for moving filesystem-related methods from
+        WebFrameClient to Platform.
+
+        * WebKit.gyp:
+        * public/WebFileError.h:
+        * public/WebFileSystemCallbacks.h:
+        * public/WebFileSystemEntry.h:
+        * public/WebFileWriterClient.h:
+        * src/AssertMatchingEnums.cpp:
+        * src/AsyncFileWriterChromium.h:
+        * src/LocalFileSystemChromium.cpp:
+        * src/WebFileSystemCallbacksImpl.cpp:
+        * src/WebFileSystemCallbacksImpl.h:
+        * src/WebSharedWorkerImpl.cpp:
+        * src/WebWorkerClientImpl.cpp:
+        * src/WorkerFileSystemCallbacksBridge.cpp:
+        * src/WorkerFileSystemCallbacksBridge.h:
+        * src/WorkerFileWriterCallbacksBridge.h:
+
+2013-03-11  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_cast with to* helper functions.
+        https://bugs.webkit.org/show_bug.cgi?id=112045
+
+        Reviewed by Eric Seidel.
+
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::findChildByExpression):
+        (WebKit::WebFrameImpl::fromFrameOwnerElement):
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::WebHelperPluginImpl::getPlugin):
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::loadInternal):
+        (WebKit::WebMediaPlayerClientImpl::create):
+        * src/WebPageSerializerImpl.cpp:
+        (WebKit::WebPageSerializerImpl::preActionBeforeSerializeOpenTag):
+        (WebKit::WebPageSerializerImpl::endTagToString):
+        (WebKit::WebPageSerializerImpl::buildContentForNode):
+        (WebKit::WebPageSerializerImpl::collectTargetFrames):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::autocompleteHandleKeyEvent):
+        (WebKit::WebViewImpl::enterFullScreenForElement):
+
+2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145435.
+        http://trac.webkit.org/changeset/145435
+        https://bugs.webkit.org/show_bug.cgi?id=112082
+
+        Still does not compile (Requested by jamesr on #webkit).
+
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp):
+        (IDBBackingStoreTest):
+        (WebCore::TEST_F):
+        * tests/IDBFakeBackingStore.h:
+        * tests/IDBLevelDBCodingTest.cpp:
+        (IDBLevelDBCoding):
+        (IDBLevelDBCoding::TEST):
+
+2013-03-11  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Protect against key prefix overflows
+        https://bugs.webkit.org/show_bug.cgi?id=111138
+
+        Reviewed by Tony Chang.
+
+        Add tests for invalid indexIds in basic get/put operations.
+
+2013-03-11  Xiyuan Xia  <xiyuan@chromium.org>
+
+        [Chromium] chromium/linux breaks expectation of select popup background due to bad UA css rules
+        https://bugs.webkit.org/show_bug.cgi?id=111873
+
+        Reviewed by Tony Chang.
+
+        Update PopupMenuStyle constructor call sites.
+
+        * src/AutofillPopupMenuClient.cpp:
+        (WebKit::AutofillPopupMenuClient::initialize):
+
+2013-03-11  Abhishek Arya  <inferno@chromium.org>
+
+        Add ASSERT_WITH_SECURITY_IMPLICATION to catch bad casts.
+        https://bugs.webkit.org/show_bug.cgi?id=112060
+
+        Reviewed by Eric Seidel.
+
+        * src/FrameLoaderClientImpl.cpp:
+        (WebKit::FrameLoaderClientImpl::redirectDataToPlugin):
+
+2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145375.
+        http://trac.webkit.org/changeset/145375
+        https://bugs.webkit.org/show_bug.cgi?id=112050
+
+        Does not compile (Requested by jamesr on #webkit).
+
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp):
+        (IDBBackingStoreTest):
+        (WebCore::TEST_F):
+        * tests/IDBFakeBackingStore.h:
+
+2013-03-11  Alec Flett  <alecflett@chromium.org>
+
+        IndexedDB: Protect against key prefix overflows
+        https://bugs.webkit.org/show_bug.cgi?id=111138
+
+        Reviewed by Tony Chang.
+
+        Add tests for invalid indexIds in basic get/put operations.
+
+2013-03-11  Chris Hopman  <cjhopman@chromium.org>
+
+        [chromium] Android apk targets should depend directly on Java library targets
+        https://bugs.webkit.org/show_bug.cgi?id=111746
+
+        Reviewed by Eric Seidel.
+
+        * WebKitUnitTests.gyp:
+        Make webkit_unit_tests_apk depend directly on base_java and net_java.
+
+2013-03-11  Jochen Eisinger  <jochen@chromium.org>
+
+        [chromium] remove obsolete user gesture methods from WebFrame
+        https://bugs.webkit.org/show_bug.cgi?id=111696
+
+        Reviewed by Adam Barth.
+
+        * public/WebFrame.h:
+        (WebFrame):
+        * src/FrameLoaderClientImpl.cpp:
+        (WebKit::FrameLoaderClientImpl::dispatchDidNavigateWithinPage):
+        * src/WebFrameImpl.cpp:
+        * src/WebFrameImpl.h:
+        (WebFrameImpl):
+
+2013-03-09  Sadrul Habib Chowdhury  <sadrul@chromium.org>
+
+        [chromium] Remove deprecated flingStart.sourceDevice from WebGestureEvent
+        https://bugs.webkit.org/show_bug.cgi?id=111866
+
+        Reviewed by James Robinson.
+
+        * public/WebInputEvent.h:
+
+2013-03-09  David Dorwin  <ddorwin@chromium.org>
+
+        [chromium] Set the Helper Plugin's URL to that of the host document.
+        https://bugs.webkit.org/show_bug.cgi?id=111913
+
+        This allows content settings, etc. to be based on the document hosting
+        the element that requested the Helper Plugin.
+
+        Reviewed by Adam Barth.
+
+        * src/WebHelperPluginImpl.cpp:
+        (WebKit::writeDocument):
+        (WebKit::WebHelperPluginImpl::initialize):
+        (WebKit::WebHelperPluginImpl::initializePage):
+        * src/WebHelperPluginImpl.h:
+        (WebKit):
+        (WebHelperPluginImpl):
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::createHelperPlugin):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::createHelperPlugin):
+        * src/WebViewImpl.h:
+        (WebViewImpl):
+
+2013-03-08  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r187037.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-08  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Remove WebLayerTreeViewClient and WebLayerTreeView::Settings
+        https://bugs.webkit.org/show_bug.cgi?id=111632
+
+        Reviewed by Adrienne Walker.
+
+        * public/WebWidgetClient.h:
+        (WebWidgetClient):
+        (WebKit::WebWidgetClient::initializeLayerTreeView):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        * src/WebViewImpl.h:
+        * tests/ScrollingCoordinatorChromiumTest.cpp:
+        (WebKit::FakeWebViewClient::initializeLayerTreeView):
+
+2013-03-08  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r186991.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-08  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Use WeakPtr for Factory-to-BackingStore reference
+        https://bugs.webkit.org/show_bug.cgi?id=111459
+
+        Reviewed by Adam Barth.
+
+        Add new test that verifies refcounts.
+
+        * WebKit.gyp: Don't include files depending on webkit_support.
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp): No need for dummy factory.
+        (MockIDBFactoryBackend): Allow access to protected openBackingStore method.
+        (WebCore::TEST): Add new test that verifies refcounts.
+        * tests/IDBCleanupOnIOErrorTest.cpp:
+        (WebCore::TEST): No need for dummy factory.
+
 2013-03-07  Keishi Hattori  <keishi@webkit.org>
 
         Update calendar picker UI

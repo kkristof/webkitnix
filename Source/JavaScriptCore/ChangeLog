@@ -1,3 +1,365 @@
+2013-03-12  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        Making more sophisticated cache flush on ARM Linux platform
+        https://bugs.webkit.org/show_bug.cgi?id=111854
+
+        Reviewed by Zoltan Herczeg.
+
+        The cache flush on ARM Linux invalidates whole pages
+        instead of just the required area.
+
+        * assembler/ARMAssembler.h:
+        (ARMAssembler):
+        (JSC::ARMAssembler::linuxPageFlush):
+        (JSC::ARMAssembler::cacheFlush):
+        * assembler/ARMv7Assembler.h:
+        (ARMv7Assembler):
+        (JSC::ARMv7Assembler::linuxPageFlush):
+        (JSC::ARMv7Assembler::cacheFlush):
+
+2013-03-12  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        Renaming the armv7.rb LLINT backend to arm.rb
+        https://bugs.webkit.org/show_bug.cgi?id=110565
+
+        Reviewed by Zoltan Herczeg.
+
+        This is the first step of a unified ARM backend for
+        all ARM 32 bit architectures in LLInt.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.gypi:
+        * LLIntOffsetsExtractor.pro:
+        * offlineasm/arm.rb: Copied from Source/JavaScriptCore/offlineasm/armv7.rb.
+        * offlineasm/armv7.rb: Removed.
+        * offlineasm/backends.rb:
+        * offlineasm/risc.rb:
+
+2013-03-12  Csaba Osztrogonác  <ossy@webkit.org>
+
+        REGRESSION(r145482): It broke 33 jsc tests and zillion layout tests on all platform
+        https://bugs.webkit.org/show_bug.cgi?id=112112
+
+        Reviewed by Oliver Hunt.
+
+        Rolling out https://trac.webkit.org/changeset/145482 to unbreak the bots.
+
+        * runtime/JSStringJoiner.cpp:
+        (JSC::JSStringJoiner::build):
+        * runtime/JSStringJoiner.h:
+        (JSStringJoiner):
+        (JSC::JSStringJoiner::JSStringJoiner):
+        (JSC::JSStringJoiner::append):
+
+2013-03-12  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG prediction propagation phase should not rerun forward propagation if double voting has already converged
+        https://bugs.webkit.org/show_bug.cgi?id=111920
+
+        Reviewed by Oliver Hunt.
+        
+        I don't know why we weren't exiting early after double voting if !m_changed.
+        
+        This change also removes backwards propagation from the voting fixpoint, since at that
+        point short-circuiting loops is probably not particularly profitable. Profiling shows
+        that this reduces the time spent in prediction propagation even further.
+        
+        This change appears to be a 1% SunSpider speed-up.
+
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::run):
+
+2013-03-11  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG overflow check elimination is too smart for its own good
+        https://bugs.webkit.org/show_bug.cgi?id=111832
+
+        Reviewed by Oliver Hunt and Gavin Barraclough.
+        
+        Rolling this back in after fixing accidental misuse of JSValue. The code was doing value < someInt
+        rather than value.asInt32() < someInt. This "worked" when isWithinPowerOfTwo wasn't templatized.
+        It worked by always being false and always disabling the relvant optimization.
+        
+        This improves overflow check elimination in three ways:
+        
+        1) It reduces the amount of time the compiler will spend doing it.
+        
+        2) It fixes bugs where overflow check elimination was overzealous. Precisely, for a binary operation
+           over @a and @b where both @a and @b will type check that their inputs (@a->children, @b->children)
+           are int32's and then perform a possibly-overflowing operation, we must be careful not to assume
+           that @a's non-int32 parts don't matter if at the point that @a runs we have as yet not proved that
+           @b->children are int32's and that hence @b might produce a large enough result that doubles would
+           start chopping low bits. The specific implication of this is that for a binary operation to not
+           propagate that it cares about non-int32 parts (NodeUsedAsNumber), we must prove that at least one
+           of the inputs is guaranteed to produce a result within 2^32 and that there won't be a tower of such
+           operations large enough to ultimately produce a double greater than 2^52 (roughly). We achieve the
+           latter by disabling this optimization for very large basic blocks. It's noteworthy that blocks that
+           large won't even make it into the DFG currently.
+        
+        3) It makes the overflow check elimination more precise for cases where the inputs to an Add or Sub
+           are the outputs of a bit-op. For example in (@a + (@b | 0)) | 0, we don't need to propagate
+           NodeUsedAsNumber to either @a or @b.
+        
+        This is neutral on V8v7 and a slight speed-up on compile time benchmarks.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::ArrayMode::refine):
+        * dfg/DFGBackwardsPropagationPhase.cpp: Added.
+        (DFG):
+        (BackwardsPropagationPhase):
+        (JSC::DFG::BackwardsPropagationPhase::BackwardsPropagationPhase):
+        (JSC::DFG::BackwardsPropagationPhase::run):
+        (JSC::DFG::BackwardsPropagationPhase::isNotNegZero):
+        (JSC::DFG::BackwardsPropagationPhase::isNotZero):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwoForConstant):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwoNonRecursive):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwo):
+        (JSC::DFG::BackwardsPropagationPhase::mergeDefaultFlags):
+        (JSC::DFG::BackwardsPropagationPhase::propagate):
+        (JSC::DFG::performBackwardsPropagation):
+        * dfg/DFGBackwardsPropagationPhase.h: Added.
+        (DFG):
+        * dfg/DFGCPSRethreadingPhase.cpp:
+        (JSC::DFG::CPSRethreadingPhase::run):
+        (JSC::DFG::CPSRethreadingPhase::clearIsLoadedFrom):
+        (CPSRethreadingPhase):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeGetLocalFor):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeFlushOrPhantomLocalFor):
+        * dfg/DFGDriver.cpp:
+        (JSC::DFG::compile):
+        * dfg/DFGGraph.cpp:
+        (JSC::DFG::Graph::dump):
+        * dfg/DFGNodeFlags.cpp:
+        (JSC::DFG::dumpNodeFlags):
+        (DFG):
+        * dfg/DFGNodeFlags.h:
+        (DFG):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (PredictionPropagationPhase):
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGUnificationPhase.cpp:
+        (JSC::DFG::UnificationPhase::run):
+        * dfg/DFGVariableAccessData.h:
+        (JSC::DFG::VariableAccessData::VariableAccessData):
+        (JSC::DFG::VariableAccessData::mergeIsLoadedFrom):
+        (VariableAccessData):
+        (JSC::DFG::VariableAccessData::setIsLoadedFrom):
+        (JSC::DFG::VariableAccessData::isLoadedFrom):
+
+2013-03-11  Oliver Hunt  <oliver@apple.com>
+
+        Harden JSStringJoiner
+        https://bugs.webkit.org/show_bug.cgi?id=112093
+
+        Reviewed by Filip Pizlo.
+
+        Harden JSStringJoiner, make it use our CheckedArithmetic
+        class to simplify everything.
+
+        * runtime/JSStringJoiner.cpp:
+        (JSC::JSStringJoiner::build):
+        * runtime/JSStringJoiner.h:
+        (JSStringJoiner):
+        (JSC::JSStringJoiner::JSStringJoiner):
+        (JSC::JSStringJoiner::append):
+
+2013-03-11  Michael Saboff  <msaboff@apple.com>
+
+        Crash beneath operationCreateInlinedArguments running fast/js/dfg-create-inlined-arguments-in-closure-inline.html (32-bit only)
+        https://bugs.webkit.org/show_bug.cgi?id=112067
+
+        Reviewed by Geoffrey Garen.
+
+        We weren't setting the tag in SetCallee.  Therefore set it to CellTag.
+
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+
+2013-03-11  Oliver Hunt  <oliver@apple.com>
+
+        Make SegmentedVector Noncopyable
+        https://bugs.webkit.org/show_bug.cgi?id=112059
+
+        Reviewed by Geoffrey Garen.
+
+        Copying a SegmentedVector is very expensive, and really shouldn't
+        be necessary.  So I've taken the one place where we currently copy
+        and replaced it with a regular Vector, and replaced the address
+        dependent logic with a indexing ref instead.
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::newLabelScope):
+        (JSC::BytecodeGenerator::emitComplexJumpScopes):
+        * bytecompiler/BytecodeGenerator.h:
+        (BytecodeGenerator):
+        * bytecompiler/LabelScope.h:
+        (JSC):
+        (JSC::LabelScopePtr::LabelScopePtr):
+        (LabelScopePtr):
+        (JSC::LabelScopePtr::operator=):
+        (JSC::LabelScopePtr::~LabelScopePtr):
+        (JSC::LabelScopePtr::operator*):
+        (JSC::LabelScopePtr::operator->):
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::DoWhileNode::emitBytecode):
+        (JSC::WhileNode::emitBytecode):
+        (JSC::ForNode::emitBytecode):
+        (JSC::ForInNode::emitBytecode):
+        (JSC::SwitchNode::emitBytecode):
+        (JSC::LabelNode::emitBytecode):
+
+2013-03-10  Andreas Kling  <akling@apple.com>
+
+        SpeculativeJIT should use OwnPtr<SlowPathGenerator>.
+        <http://webkit.org/b/111942>
+
+        Reviewed by Anders Carlsson.
+
+        There's no need to include DFGSlowPathGenerator.h from the header as long as the destructor is out-of-line,
+        so let's use OwnPtr instead of raw pointers + deleteAllValues().
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::~SpeculativeJIT):
+        (JSC::DFG::SpeculativeJIT::addSlowPathGenerator):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+
+2013-03-09  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r145299.
+        http://trac.webkit.org/changeset/145299
+        https://bugs.webkit.org/show_bug.cgi?id=111928
+
+        compilation failure with recent clang
+        (DFGBackwardsPropagationPhase.cpp:132:35: error: comparison of
+        constant 10 with expression of type 'bool' is always false)
+        (Requested by thorton on #webkit).
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::ArrayMode::refine):
+        * dfg/DFGBackwardsPropagationPhase.cpp: Removed.
+        * dfg/DFGBackwardsPropagationPhase.h: Removed.
+        * dfg/DFGCPSRethreadingPhase.cpp:
+        (JSC::DFG::CPSRethreadingPhase::run):
+        (CPSRethreadingPhase):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeGetLocalFor):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeFlushOrPhantomLocalFor):
+        * dfg/DFGDriver.cpp:
+        (JSC::DFG::compile):
+        * dfg/DFGGraph.cpp:
+        (JSC::DFG::Graph::dump):
+        * dfg/DFGNodeFlags.cpp:
+        (JSC::DFG::nodeFlagsAsString):
+        (DFG):
+        * dfg/DFGNodeFlags.h:
+        (DFG):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::isNotNegZero):
+        (PredictionPropagationPhase):
+        (JSC::DFG::PredictionPropagationPhase::isNotZero):
+        (JSC::DFG::PredictionPropagationPhase::isWithinPowerOfTwoForConstant):
+        (JSC::DFG::PredictionPropagationPhase::isWithinPowerOfTwoNonRecursive):
+        (JSC::DFG::PredictionPropagationPhase::isWithinPowerOfTwo):
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        (JSC::DFG::PredictionPropagationPhase::mergeDefaultFlags):
+        * dfg/DFGUnificationPhase.cpp:
+        (JSC::DFG::UnificationPhase::run):
+        * dfg/DFGVariableAccessData.h:
+        (JSC::DFG::VariableAccessData::VariableAccessData):
+        (VariableAccessData):
+
+2013-03-08  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG overflow check elimination is too smart for its own good
+        https://bugs.webkit.org/show_bug.cgi?id=111832
+
+        Reviewed by Oliver Hunt and Gavin Barraclough.
+        
+        This improves overflow check elimination in three ways:
+        
+        1) It reduces the amount of time the compiler will spend doing it.
+        
+        2) It fixes bugs where overflow check elimination was overzealous. Precisely, for a binary operation
+           over @a and @b where both @a and @b will type check that their inputs (@a->children, @b->children)
+           are int32's and then perform a possibly-overflowing operation, we must be careful not to assume
+           that @a's non-int32 parts don't matter if at the point that @a runs we have as yet not proved that
+           @b->children are int32's and that hence @b might produce a large enough result that doubles would
+           start chopping low bits. The specific implication of this is that for a binary operation to not
+           propagate that it cares about non-int32 parts (NodeUsedAsNumber), we must prove that at least one
+           of the inputs is guaranteed to produce a result within 2^32 and that there won't be a tower of such
+           operations large enough to ultimately produce a double greater than 2^52 (roughly). We achieve the
+           latter by disabling this optimization for very large basic blocks. It's noteworthy that blocks that
+           large won't even make it into the DFG currently.
+        
+        3) It makes the overflow check elimination more precise for cases where the inputs to an Add or Sub
+           are the outputs of a bit-op. For example in (@a + (@b | 0)) | 0, we don't need to propagate
+           NodeUsedAsNumber to either @a or @b.
+        
+        This is neutral on V8v7 and a slight speed-up on compile time benchmarks.
+
+        * CMakeLists.txt:
+        * GNUmakefile.list.am:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::ArrayMode::refine):
+        * dfg/DFGBackwardsPropagationPhase.cpp: Added.
+        (DFG):
+        (BackwardsPropagationPhase):
+        (JSC::DFG::BackwardsPropagationPhase::BackwardsPropagationPhase):
+        (JSC::DFG::BackwardsPropagationPhase::run):
+        (JSC::DFG::BackwardsPropagationPhase::isNotNegZero):
+        (JSC::DFG::BackwardsPropagationPhase::isNotZero):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwoForConstant):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwoNonRecursive):
+        (JSC::DFG::BackwardsPropagationPhase::isWithinPowerOfTwo):
+        (JSC::DFG::BackwardsPropagationPhase::mergeDefaultFlags):
+        (JSC::DFG::BackwardsPropagationPhase::propagate):
+        (JSC::DFG::performBackwardsPropagation):
+        * dfg/DFGBackwardsPropagationPhase.h: Added.
+        (DFG):
+        * dfg/DFGCPSRethreadingPhase.cpp:
+        (JSC::DFG::CPSRethreadingPhase::run):
+        (JSC::DFG::CPSRethreadingPhase::clearIsLoadedFrom):
+        (CPSRethreadingPhase):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeGetLocalFor):
+        (JSC::DFG::CPSRethreadingPhase::canonicalizeFlushOrPhantomLocalFor):
+        * dfg/DFGDriver.cpp:
+        (JSC::DFG::compile):
+        * dfg/DFGGraph.cpp:
+        (JSC::DFG::Graph::dump):
+        * dfg/DFGNodeFlags.cpp:
+        (JSC::DFG::dumpNodeFlags):
+        (DFG):
+        * dfg/DFGNodeFlags.h:
+        (DFG):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (PredictionPropagationPhase):
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGUnificationPhase.cpp:
+        (JSC::DFG::UnificationPhase::run):
+        * dfg/DFGVariableAccessData.h:
+        (JSC::DFG::VariableAccessData::VariableAccessData):
+        (JSC::DFG::VariableAccessData::mergeIsLoadedFrom):
+        (VariableAccessData):
+        (JSC::DFG::VariableAccessData::setIsLoadedFrom):
+        (JSC::DFG::VariableAccessData::isLoadedFrom):
+
+2013-03-08  Roger Fong  <roger_fong@apple.com>
+
+        Makefile fixes.
+
+        * JavaScriptCore.vcxproj/JavaScriptCore.make:
+
 2013-03-08  Gabor Rapcsanyi  <rgabor@webkit.org>
 
         Cache flush problem on ARMv7 JSC

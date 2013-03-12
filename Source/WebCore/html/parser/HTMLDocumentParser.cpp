@@ -34,6 +34,7 @@
 #include "DocumentLoader.h"
 #include "Element.h"
 #include "Frame.h"
+#include "HTMLIdentifier.h"
 #include "HTMLNames.h"
 #include "HTMLParserScheduler.h"
 #include "HTMLParserThread.h"
@@ -353,7 +354,8 @@ void HTMLDocumentParser::validateSpeculations()
     // sophisticated with the HTMLToken.
     if (m_currentChunk->tokenizerState == HTMLTokenizer::DataState
         && tokenizer->state() == HTMLTokenizer::DataState
-        && m_input.current().isEmpty()) {
+        && m_input.current().isEmpty()
+        && m_currentChunk->treeBuilderState == HTMLTreeBuilderSimulator::stateFor(m_treeBuilder.get())) {
         ASSERT(token->isUninitialized());
         return;
     }
@@ -370,6 +372,7 @@ void HTMLDocumentParser::didFailSpeculation(PassOwnPtr<HTMLToken> token, PassOwn
     checkpoint->parser = m_weakFactory.createWeakPtr();
     checkpoint->token = token;
     checkpoint->tokenizer = tokenizer;
+    checkpoint->treeBuilderState = HTMLTreeBuilderSimulator::stateFor(m_treeBuilder.get());
     checkpoint->inputCheckpoint = m_currentChunk->inputCheckpoint;
     checkpoint->preloadScannerCheckpoint = m_currentChunk->preloadScannerCheckpoint;
     checkpoint->unparsedInput = m_input.current().toString().isolatedCopy();
@@ -457,18 +460,31 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willWriteHTML(document(), lineNumber().zeroBasedInt());
 
     double startTime = currentTime();
+    HTMLInputCheckpoint lastCheckpointPassed = 0;
 
     while (!m_speculations.isEmpty()) {
-        processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
+        OwnPtr<ParsedChunk> chunk = m_speculations.takeFirst();
+        lastCheckpointPassed = chunk->inputCheckpoint;
+        processParsedChunkFromBackgroundParser(chunk.release());
 
-        if (isWaitingForScripts() || isStopped())
+        // Processing a chunk can call document.write, causing us to invalidate any remaining speculations.
+        if (m_speculations.isEmpty() || isStopped()) {
+            // We're aborting these speculations, so don't tell the parser we've passed a checkpoint (its already cleared its checkpoints).
+            lastCheckpointPassed = 0;
+            break;
+        }
+
+        if (isWaitingForScripts())
             break;
 
-        if (currentTime() - startTime > parserTimeLimit && !m_speculations.isEmpty()) {
+        if (currentTime() - startTime > parserTimeLimit) {
             m_parserScheduler->scheduleForResume();
             break;
         }
     }
+
+    if (lastCheckpointPassed)
+        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::passedCheckpoint, m_backgroundParser, lastCheckpointPassed));
 
     InspectorInstrumentation::didWriteHTML(cookie, lineNumber().zeroBasedInt());
 }
@@ -564,7 +580,7 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 
 void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
 {
-    RefPtr<AtomicHTMLToken> token = AtomicHTMLToken::create(rawToken);
+    AtomicHTMLToken token(rawToken);
 
     // We clear the rawToken in case constructTreeFromAtomicToken
     // synchronously re-enters the parser. We don't clear the token immedately
@@ -579,13 +595,7 @@ void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
     if (rawToken.type() != HTMLToken::Character)
         rawToken.clear();
 
-    m_treeBuilder->constructTree(token.get());
-
-    // AtomicHTMLToken keeps a pointer to the HTMLToken's buffer instead
-    // of copying the characters for performance.
-    // Clear the external characters pointer before the raw token is cleared
-    // to make sure that we won't have a dangling pointer.
-    token->clearExternalCharacters();
+    m_treeBuilder->constructTree(&token);
 
     if (!rawToken.isUninitialized()) {
         ASSERT(rawToken.type() == HTMLToken::Character);
@@ -597,9 +607,8 @@ void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
 
 void HTMLDocumentParser::constructTreeFromCompactHTMLToken(const CompactHTMLToken& compactToken)
 {
-    RefPtr<AtomicHTMLToken> token = AtomicHTMLToken::create(compactToken);
-    m_treeBuilder->constructTree(token.get());
-    token->clearExternalCharacters(); // The compact token could be destroyed any time after this method returns.
+    AtomicHTMLToken token(compactToken);
+    m_treeBuilder->constructTree(&token);
 }
 
 #endif
@@ -656,6 +665,8 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(shouldUseThreading());
     ASSERT(!m_haveBackgroundParser);
     m_haveBackgroundParser = true;
+
+    HTMLIdentifier::init();
 
     RefPtr<WeakReference<BackgroundHTMLParser> > reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);

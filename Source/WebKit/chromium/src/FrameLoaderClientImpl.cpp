@@ -61,6 +61,7 @@
 #endif
 #include "Settings.h"
 #include "SocketStreamHandleInternal.h"
+#include "UserGestureIndicator.h"
 #if ENABLE(REQUEST_AUTOCOMPLETE)
 #include "WebAutofillClient.h"
 #endif
@@ -689,11 +690,11 @@ void FrameLoaderClientImpl::dispatchDidNavigateWithinPage()
             // proper fix for this bug is identified and applied the following
             // block may no longer be required.
             //
-            // FIXME: Why do we call isProcessingUserGesture here but none of
+            // FIXME: Why do we call processingUserGesture here but none of
             // the other ports do?
             bool wasClientRedirect =
                 (url == m_expectedClientRedirectDest && chainEnd == m_expectedClientRedirectSrc)
-                || !m_webFrame->isProcessingUserGesture();
+                || !UserGestureIndicator::processingUserGesture();
 
             if (wasClientRedirect) {
                 if (m_webFrame->client())
@@ -1527,7 +1528,7 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
 // (e.g., acrobat reader).
 void FrameLoaderClientImpl::redirectDataToPlugin(Widget* pluginWidget)
 {
-    ASSERT(!pluginWidget || pluginWidget->isPluginContainer());
+    ASSERT_WITH_SECURITY_IMPLICATION(!pluginWidget || pluginWidget->isPluginContainer());
     m_pluginWidget = static_cast<WebPluginContainerImpl*>(pluginWidget);
 }
 

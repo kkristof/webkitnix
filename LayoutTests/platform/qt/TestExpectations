@@ -176,9 +176,6 @@ fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html
 fast/regions/style-scoped-in-flow-override-region-styling.html
 fast/regions/style-scoped-in-flow.html
 
-# Accelerated compositing is disabled for elements in a RenderFlowThread webkit.org/b/84900
-compositing/regions/webkit-flow-renderer-layer-compositing.html
-
 # LAYER_TREE_INCLUDES_VISIBLE_RECTS option to layerTreeAsText is only applicable to Mac.
 compositing/visible-rect [ Skip ]
 
@@ -1341,7 +1338,6 @@ svg/animations/animate-elem-08-t-drt.html
 
 # [Qt] Diverging test results on 32/64 bit architectures
 # https://bugs.webkit.org/show_bug.cgi?id=82601
-compositing/transitions/transform-on-large-layer.html
 fast/repaint/moving-shadow-on-container.html
 fast/repaint/moving-shadow-on-path.html
 ietestcenter/css3/valuesandunits/units-010.htm
@@ -2584,10 +2580,6 @@ webkit.org/b/61138 http/tests/w3c/webperf/submission/Google/resource-timing [ Sk
 # [Qt] A new compositing bug uncovered by r135859
 webkit.org/b/103424 fast/backgrounds/background-opaque-images-over-color.html
 
-# [Qt] Two tests hit assertion fail after r140999.
-webkit.org/b/108257 compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Skip ]
-webkit.org/b/108257 compositing/overflow/automatically-opt-into-composited-scrolling.html [ Skip ]
-
 # No support for exposing in-band text tracks
 webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-cues-added-once.html [ Skip ]
@@ -2637,9 +2629,6 @@ inspector/editor/text-editor-word-jumps.html
 inspector/editor/text-editor-home-button.html
 inspector/editor/text-editor-smart-braces.html
 
-# [Qt] REGRESSION(r141634) test failing
-webkit.org/b/108813 compositing/visibility/visibility-image-layers-dynamic.html [ Skip ]
-
 # [Qt] different result from other platforms
 webkit.org/b/108676 svg/custom/svg-fonts-in-text-controls.html [ Skip ]
 
@@ -2680,3 +2669,15 @@ webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failu
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Skip ]
 webkit.org/b/111606 fast/borders/border-fit.html [ Skip ]
 webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Skip ]
+
+# New test added in r145195 is failing
+webkit.org/b/111853 editing/selection/drag-list-item.html [ Skip ]
+
+# jack server is not running or cannot be started
+fast/dom/beforeload/remove-video-poster-in-beforeload-listener.html
+
+# New test fails due to resizeTo not firing an event.
+webkit.org/b/109179 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
+
+# [Qt] Two tests hit assertion fail after r140999.
+webkit.org/b/108257 compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Skip ]

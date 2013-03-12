@@ -79,6 +79,7 @@ public:
     void openWithNativeApplication();
     void writeItemsToPasteboard(NSArray *items, NSArray *types);
     void showDefinitionForAttributedString(NSAttributedString *, CGPoint);
+    void performWebSearch(NSString *);
 
     void focusNextAnnotation();
     void focusPreviousAnnotation();
@@ -112,6 +113,8 @@ private:
 
     virtual bool performDictionaryLookupAtLocation(const WebCore::FloatPoint&) OVERRIDE;
     virtual String getSelectionString() const OVERRIDE;
+
+    virtual bool handleWheelEvent(const WebWheelEvent& event) OVERRIDE;
 
     // ScrollableArea functions.
     virtual void setScrollOffset(const WebCore::IntPoint&) OVERRIDE;
