@@ -146,6 +146,11 @@ include_directories(
 set(test_webkitnix_api_LIBRARIES
     TestWebKitNixAPIBase
     ${CAIRO_LIBRARIES}
+    ${GLIB_LIBRARIES}
+    ${GLIB_GIO_LIBRARIES}
+    ${GLIB_GMODULE_LIBRARIES}
+    ${GLIB_GOBJECT_LIBRARIES}
+    ${LIBSOUP_LIBRARIES}
     ${WebKit2_LIBRARY_NAME}
     gtest
 )

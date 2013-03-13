@@ -122,8 +122,12 @@ add_dependencies(TestWebKitAPIBase ${WebKit2_LIBRARY_NAME} ${ForwardingHeadersFo
 
 set(test_webkit2_api_LIBRARIES
     TestWebKitAPIBase
+    ${GLIB_LIBRARIES}
+    ${GLIB_GIO_LIBRARIES}
+    ${GLIB_GMODULE_LIBRARIES}
+    ${GLIB_GOBJECT_LIBRARIES}
+    ${LIBSOUP_LIBRARIES}
     ${WTF_LIBRARY_NAME}
-#     ${GLIB_LIBRARIES}
     ${WebKit2_LIBRARY_NAME}
     gtest
 )
