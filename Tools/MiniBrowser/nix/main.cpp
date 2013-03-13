@@ -767,7 +767,8 @@ void MiniBrowser::handlePanning(double timestamp, WKPoint delta)
     // the user input came. This will be adjusted after the user interaction ends.
     NIXViewSuspendActiveDOMObjectsAndAnimations(m_view);
     WKPoint position = NIXViewScrollPosition(m_view);
-    position.x -= delta.x;
+    if ((m_contentsSize.width - NIXViewVisibleContentsSize(m_view).width) > 0)
+        position.x -= delta.x;
     position.y -= delta.y;
     NIXViewSetScrollPosition(m_view, position);
 }
