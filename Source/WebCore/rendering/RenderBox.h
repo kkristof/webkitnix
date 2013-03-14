@@ -591,7 +591,9 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     virtual void updateFromStyle() OVERRIDE;
 
-    virtual bool backgroundIsObscured() const { return false; }
+    LayoutRect backgroundPaintedExtent() const;
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const;
+    virtual bool backgroundIsKnownToBeObscured() const;
     void paintBackground(const PaintInfo&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone);
     
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer*, const LayoutRect&, BackgroundBleedAvoidance, CompositeOperator, RenderObject* backgroundObject);

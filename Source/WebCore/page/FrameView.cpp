@@ -37,6 +37,7 @@
 #include "FloatRect.h"
 #include "FocusController.h"
 #include "FontCache.h"
+#include "FontLoader.h"
 #include "Frame.h"
 #include "FrameActionScheduler.h"
 #include "FrameLoader.h"
@@ -1792,7 +1793,7 @@ bool FrameView::scrollToAnchor(const String& name)
 
 #if ENABLE(SVG)
     if (m_frame->document()->isSVGDocument()) {
-        if (SVGSVGElement* svg = static_cast<SVGDocument*>(m_frame->document())->rootElement()) {
+        if (SVGSVGElement* svg = toSVGDocument(m_frame->document())->rootElement()) {
             svg->setupInitialView(name, anchorNode);
             if (!anchorNode)
                 return true;
@@ -2641,6 +2642,10 @@ void FrameView::performPostLayoutTasks()
     }
 
     m_frame->loader()->didLayout(milestonesAchieved);
+#if ENABLE(FONT_LOAD_EVENTS)
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        m_frame->document()->fontloader()->didLayout();
+#endif
     
     // FIXME: We should consider adding DidLayout as a LayoutMilestone. That would let us merge this
     // with didLayout(LayoutMilestones).

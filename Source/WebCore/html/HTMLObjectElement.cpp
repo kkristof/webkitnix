@@ -364,9 +364,9 @@ bool HTMLObjectElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == dataAttr || (attribute.name() == usemapAttr && attribute.value().string()[0] != '#') || HTMLPlugInImageElement::isURLAttribute(attribute);
 }
 
-const QualifiedName& HTMLObjectElement::imageSourceAttributeName() const
+const AtomicString& HTMLObjectElement::imageSourceURL() const
 {
-    return dataAttr;
+    return getAttribute(dataAttr);
 }
 
 void HTMLObjectElement::renderFallbackContent()
@@ -442,7 +442,7 @@ void HTMLObjectElement::updateDocNamedItem()
         child = child->nextSibling();
     }
     if (isNamedItem != wasNamedItem && document()->isHTMLDocument()) {
-        HTMLDocument* document = static_cast<HTMLDocument*>(this->document());
+        HTMLDocument* document = toHTMLDocument(this->document());
         if (isNamedItem) {
             document->addNamedItem(getNameAttribute());
             document->addExtraNamedItem(getIdAttribute());

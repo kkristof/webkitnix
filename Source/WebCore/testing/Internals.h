@@ -288,6 +288,8 @@ public:
 
     String markerTextForListItem(Element*, ExceptionCode&);
 
+    void forceReload(bool endToEnd);
+
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     void initializeMockCDM();
 #endif
@@ -295,6 +297,8 @@ public:
 #if ENABLE(SPEECH_SYNTHESIS)
     void enableMockSpeechSynthesizer();
 #endif
+
+    String getImageSourceURL(Element*, ExceptionCode&);
                     
 private:
     explicit Internals(Document*);

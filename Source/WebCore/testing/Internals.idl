@@ -257,7 +257,11 @@
 
     void setUsesOverlayScrollbars(in boolean enabled);
 
+    void forceReload(in boolean endToEnd);
+
     [Conditional=ENCRYPTED_MEDIA_V2] void initializeMockCDM();
 
     [Conditional=SPEECH_SYNTHESIS] void enableMockSpeechSynthesizer();
+
+    DOMString getImageSourceURL(in Element element) raises(DOMException);
 };

@@ -47,6 +47,7 @@
 #include "ExceptionCode.h"
 #include "FormController.h"
 #include "Frame.h"
+#include "FrameLoader.h"
 #include "FrameView.h"
 #include "HTMLContentElement.h"
 #include "HTMLInputElement.h"
@@ -161,7 +162,6 @@ public:
     virtual void detachWindow() OVERRIDE { }
 
     virtual String localizedStringsURL() OVERRIDE { return String(); }
-    virtual String hiddenPanels() OVERRIDE { return String(); }
 
     virtual void bringToFront() OVERRIDE { }
     virtual void closeWindow() OVERRIDE { }
@@ -282,7 +282,7 @@ Internals::Internals(Document* document)
 
 Document* Internals::contextDocument() const
 {
-    return static_cast<Document*>(scriptExecutionContext());
+    return toDocument(scriptExecutionContext());
 }
 
 Frame* Internals::frame() const
@@ -2041,6 +2041,11 @@ void Internals::setUsesOverlayScrollbars(bool enabled)
     WebCore::Settings::setUsesOverlayScrollbars(enabled);
 }
 
+void Internals::forceReload(bool endToEnd)
+{
+    frame()->loader()->reload(endToEnd);
+}
+
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 void Internals::initializeMockCDM()
 {
@@ -2055,6 +2060,15 @@ String Internals::markerTextForListItem(Element* element, ExceptionCode& ec)
         return String();
     }
     return WebCore::markerTextForListItem(element);
+}
+
+String Internals::getImageSourceURL(Element* element, ExceptionCode& ec)
+{
+    if (!element) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+    return element->imageSourceURL();
 }
 
 }

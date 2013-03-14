@@ -1,3 +1,139 @@
+2013-03-13  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Threaded HTML Parser is missing feature define flags in all but Chromium port's build files
+        https://bugs.webkit.org/show_bug.cgi?id=112277
+
+        Reviewed by Adam Barth.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-13  Csaba Osztrogonác  <ossy@webkit.org>
+
+        LLINT C loop warning fix for GCC
+        https://bugs.webkit.org/show_bug.cgi?id=112145
+
+        Reviewed by Filip Pizlo.
+
+        * llint/LowLevelInterpreter.cpp:
+        (JSC::CLoop::execute):
+
+2013-02-13  Simon Hausmann  <simon.hausmann@digia.com>
+
+        Add support for convenient conversion from JSStringRef to QString
+        https://bugs.webkit.org/show_bug.cgi?id=109694
+
+        Reviewed by Allan Sandfeld Jensen.
+
+        Add JSStringCopyQString helper function that allows for the convenient
+        extraction of a QString out of a JSStringRef.
+
+        * API/JSStringRefQt.cpp: Added.
+        (JSStringCopyQString):
+        * API/JSStringRefQt.h: Added.
+        * API/OpaqueJSString.h:
+        (OpaqueJSString):
+        (OpaqueJSString::qString):
+        (OpaqueJSString::OpaqueJSString):
+        * Target.pri:
+
+2013-03-13  Peter Gal  <galpeter@inf.u-szeged.hu>
+
+        Token 'not' is ignored in the offlineasm.
+        https://bugs.webkit.org/show_bug.cgi?id=111568
+
+        Reviewed by Filip Pizlo.
+
+        * offlineasm/parser.rb: Build the Not AST node if the 'not' token is found.
+
+2013-03-12  Tim Horton  <timothy_horton@apple.com>
+
+        WTF uses macros for exports. Try to fix the Windows build. Unreviewed.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-03-12  Filip Pizlo  <fpizlo@apple.com>
+
+        Array.prototype.sort should at least try to be PTIME even when the array is in some bizarre mode
+        https://bugs.webkit.org/show_bug.cgi?id=112187
+        <rdar://problem/13393550>
+
+        Reviewed by Michael Saboff and Gavin Barraclough.
+        
+        If we have an array-like object in crazy mode passed into Array.prototype.sort, and its length is large,
+        then first copy all elements into a separate, compact, un-holy array and sort that. Then copy back.
+        This means that sorting will be at worst O(n^2) in the actual number of things in the array, rather than
+        O(n^2) in the array's length.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::attemptFastSort):
+        (JSC::performSlowSort):
+        (JSC):
+        (JSC::arrayProtoFuncSort):
+
+2013-03-12  Tim Horton  <timothy_horton@apple.com>
+
+        Try to fix the Windows build.
+
+        Not reviewed.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+
+2013-03-12  Geoffrey Garen  <ggaren@apple.com>
+
+        Try to fix the Windows build.
+
+        Not reviewed.
+
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+        Export a thing.
+
+2013-03-11  Oliver Hunt  <oliver@apple.com>
+
+        Harden JSStringJoiner
+        https://bugs.webkit.org/show_bug.cgi?id=112093
+
+        Reviewed by Filip Pizlo.
+
+        Harden JSStringJoiner, make it use our CheckedArithmetic
+        class to simplify everything.
+
+        * runtime/JSStringJoiner.cpp:
+        (JSC::JSStringJoiner::build):
+        * runtime/JSStringJoiner.h:
+        (JSStringJoiner):
+        (JSC::JSStringJoiner::JSStringJoiner):
+        (JSC::JSStringJoiner::append):
+
+2013-03-12  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG generic array access cases should not be guarded by CheckStructure even of the profiling tells us that it could be
+        https://bugs.webkit.org/show_bug.cgi?id=112183
+
+        Reviewed by Oliver Hunt.
+        
+        Slight speed-up on string-unpack-code.
+
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::findAndRemoveUnnecessaryStructureCheck):
+        (FixupPhase):
+        (JSC::DFG::FixupPhase::checkArray):
+        (JSC::DFG::FixupPhase::blessArrayOperation):
+
+2013-03-12  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        https://bugs.webkit.org/show_bug.cgi?id=112141
+        LLInt CLoop backend misses Double2Ints() on 32bit architectures
+
+        Reviewed by Filip Pizlo.
+
+        Implement Double2Ints() in CLoop backend of LLInt on 32bit architectures.
+
+        * llint/LowLevelInterpreter.cpp:
+        (LLInt):
+        (JSC::LLInt::Double2Ints):
+        * offlineasm/cloop.rb:
+
 2013-03-12  Gabor Rapcsanyi  <rgabor@webkit.org>
 
         Making more sophisticated cache flush on ARM Linux platform

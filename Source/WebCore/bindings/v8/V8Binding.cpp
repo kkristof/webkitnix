@@ -185,7 +185,7 @@ PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value> value, v8::Isola
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(value));
 
-    if (V8DOMStringList::HasInstance(v8Value, isolate)) {
+    if (V8DOMStringList::HasInstance(v8Value, isolate, worldType(isolate))) {
         RefPtr<DOMStringList> ret = V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(v8Value));
         return ret.release();
     }
@@ -205,7 +205,7 @@ PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value> value, v8::Isola
 PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     RefPtr<XPathNSResolver> resolver;
-    if (V8XPathNSResolver::HasInstance(value, isolate))
+    if (V8XPathNSResolver::HasInstance(value, isolate, worldType(isolate)))
         resolver = V8XPathNSResolver::toNative(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
         resolver = V8CustomXPathNSResolver::create(value->ToObject(), isolate);
@@ -261,7 +261,7 @@ Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldContextHandle& worldContext)
 {
     if (context->isDocument()) {
-        if (Frame* frame = static_cast<Document*>(context)->frame())
+        if (Frame* frame = toDocument(context)->frame())
             return worldContext.adjustedContext(frame->script());
 #if ENABLE(WORKERS)
     } else if (context->isWorkerContext()) {
@@ -275,7 +275,7 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, const WorldC
 v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWorld* world)
 {
     if (context->isDocument()) {
-        if (Frame* frame = static_cast<Document*>(context)->frame()) {
+        if (Frame* frame = toDocument(context)->frame()) {
             // FIXME: Store the DOMWrapperWorld for the main world in the v8::Context so callers
             // that are looking up their world with DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent())
             // won't end up passing null here when later trying to get their v8::Context back.

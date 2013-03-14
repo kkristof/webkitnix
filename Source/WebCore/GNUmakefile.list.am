@@ -113,6 +113,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSCrypto.h \
 	DerivedSources/WebCore/JSCSSCharsetRule.cpp \
 	DerivedSources/WebCore/JSCSSCharsetRule.h \
+	DerivedSources/WebCore/JSCSSFontFaceLoadEvent.cpp \
+	DerivedSources/WebCore/JSCSSFontFaceLoadEvent.h \
 	DerivedSources/WebCore/JSCSSFontFaceRule.cpp \
 	DerivedSources/WebCore/JSCSSFontFaceRule.h \
 	DerivedSources/WebCore/JSCSSHostRule.cpp \
@@ -292,6 +294,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSFloat64Array.h \
 	DerivedSources/WebCore/JSFocusEvent.cpp \
 	DerivedSources/WebCore/JSFocusEvent.h \
+	DerivedSources/WebCore/JSFontLoader.cpp \
+	DerivedSources/WebCore/JSFontLoader.h \
 	DerivedSources/WebCore/JSGamepad.cpp \
 	DerivedSources/WebCore/JSGamepad.h \
 	DerivedSources/WebCore/JSGamepadList.cpp \
@@ -715,12 +719,14 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSStorageEvent.h \
 	DerivedSources/WebCore/JSStorageInfo.cpp \
 	DerivedSources/WebCore/JSStorageInfo.h \
-	DerivedSources/WebCore/JSStorageInfoErrorCallback.cpp \
-	DerivedSources/WebCore/JSStorageInfoErrorCallback.h \
-	DerivedSources/WebCore/JSStorageInfoQuotaCallback.cpp \
-	DerivedSources/WebCore/JSStorageInfoQuotaCallback.h \
-	DerivedSources/WebCore/JSStorageInfoUsageCallback.cpp \
-	DerivedSources/WebCore/JSStorageInfoUsageCallback.h \
+	DerivedSources/WebCore/JSStorageErrorCallback.cpp \
+	DerivedSources/WebCore/JSStorageErrorCallback.h \
+	DerivedSources/WebCore/JSStorageQuota.cpp \
+	DerivedSources/WebCore/JSStorageQuota.h \
+	DerivedSources/WebCore/JSStorageQuotaCallback.cpp \
+	DerivedSources/WebCore/JSStorageQuotaCallback.h \
+	DerivedSources/WebCore/JSStorageUsageCallback.cpp \
+	DerivedSources/WebCore/JSStorageUsageCallback.h \
 	DerivedSources/WebCore/JSStringCallback.cpp \
 	DerivedSources/WebCore/JSStringCallback.h \
 	DerivedSources/WebCore/JSStyleMedia.cpp \
@@ -1275,10 +1281,12 @@ dom_binding_idls += \
 	$(WebCore)/Modules/notifications/WorkerContextNotifications.idl \
 	$(WebCore)/Modules/proximity/DeviceProximityEvent.idl \
 	$(WebCore)/Modules/quota/DOMWindowQuota.idl \
+	$(WebCore)/Modules/quota/NavigatorStorageQuota.idl \
 	$(WebCore)/Modules/quota/StorageInfo.idl \
-	$(WebCore)/Modules/quota/StorageInfoErrorCallback.idl \
-	$(WebCore)/Modules/quota/StorageInfoQuotaCallback.idl \
-	$(WebCore)/Modules/quota/StorageInfoUsageCallback.idl \
+	$(WebCore)/Modules/quota/StorageErrorCallback.idl \
+	$(WebCore)/Modules/quota/StorageQuota.idl \
+	$(WebCore)/Modules/quota/StorageQuotaCallback.idl \
+	$(WebCore)/Modules/quota/StorageUsageCallback.idl \
 	$(WebCore)/Modules/webaudio/AudioBuffer.idl \
 	$(WebCore)/Modules/webaudio/AudioBufferCallback.idl \
 	$(WebCore)/Modules/webaudio/AudioBufferSourceNode.idl \
@@ -1329,6 +1337,7 @@ dom_binding_idls += \
 	$(WebCore)/Modules/websockets/WebSocket.idl \
 	$(WebCore)/Modules/websockets/WorkerContextWebSocket.idl \
 	$(WebCore)/css/CSSCharsetRule.idl \
+	$(WebCore)/css/CSSFontFaceLoadEvent.idl \
 	$(WebCore)/css/CSSFontFaceRule.idl \
 	$(WebCore)/css/CSSHostRule.idl \
 	$(WebCore)/css/CSSImportRule.idl \
@@ -1345,6 +1354,7 @@ dom_binding_idls += \
 	$(WebCore)/css/CSSValueList.idl \
 	$(WebCore)/css/Counter.idl \
 	$(WebCore)/css/DOMWindowCSS.idl \
+	$(WebCore)/css/FontLoader.idl \
 	$(WebCore)/css/MediaList.idl \
 	$(WebCore)/css/MediaQueryList.idl \
 	$(WebCore)/css/RGBColor.idl \
@@ -2011,11 +2021,16 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/proximity/DeviceProximityEvent.h \
 	Source/WebCore/Modules/quota/DOMWindowQuota.cpp \
 	Source/WebCore/Modules/quota/DOMWindowQuota.h \
+	Source/WebCore/Modules/quota/NavigatorStorageQuota.cpp \
+	Source/WebCore/Modules/quota/NavigatorStorageQuota.h \
 	Source/WebCore/Modules/quota/StorageInfo.cpp \
 	Source/WebCore/Modules/quota/StorageInfo.h \
-	Source/WebCore/Modules/quota/StorageInfoErrorCallback.h \
-	Source/WebCore/Modules/quota/StorageInfoQuotaCallback.h \
-	Source/WebCore/Modules/quota/StorageInfoUsageCallback.h \
+	Source/WebCore/Modules/quota/StorageErrorCallback.cpp \
+	Source/WebCore/Modules/quota/StorageErrorCallback.h \
+	Source/WebCore/Modules/quota/StorageQuota.cpp \
+	Source/WebCore/Modules/quota/StorageQuota.h \
+	Source/WebCore/Modules/quota/StorageQuotaCallback.h \
+	Source/WebCore/Modules/quota/StorageUsageCallback.h \
 	Source/WebCore/Modules/webaudio/AsyncAudioDecoder.cpp \
 	Source/WebCore/Modules/webaudio/AsyncAudioDecoder.h \
 	Source/WebCore/Modules/webaudio/AudioBasicInspectorNode.cpp \
@@ -2567,6 +2582,8 @@ webcore_sources += \
 	Source/WebCore/css/CSSDefaultStyleSheets.h \
 	Source/WebCore/css/CSSFontFace.cpp \
 	Source/WebCore/css/CSSFontFace.h \
+	Source/WebCore/css/CSSFontFaceLoadEvent.cpp \
+	Source/WebCore/css/CSSFontFaceLoadEvent.h \
 	Source/WebCore/css/CSSFontFaceRule.cpp \
 	Source/WebCore/css/CSSFontFaceRule.h \
 	Source/WebCore/css/CSSFontFaceSource.cpp \
@@ -2659,6 +2676,8 @@ webcore_sources += \
 	Source/WebCore/css/ElementRuleCollector.h \
 	Source/WebCore/css/FontFeatureValue.cpp \
 	Source/WebCore/css/FontFeatureValue.h \
+	Source/WebCore/css/FontLoader.cpp \
+	Source/WebCore/css/FontLoader.h \
 	Source/WebCore/css/FontValue.cpp \
 	Source/WebCore/css/FontValue.h \
 	Source/WebCore/css/InspectorCSSOMWrappers.cpp \
@@ -4085,6 +4104,7 @@ webcore_sources += \
 	Source/WebCore/loader/ResourceLoader.cpp \
 	Source/WebCore/loader/ResourceLoader.h \
 	Source/WebCore/loader/ResourceLoaderOptions.h \
+	Source/WebCore/loader/ResourceLoaderTypes.h \
 	Source/WebCore/loader/ResourceLoadNotifier.cpp \
 	Source/WebCore/loader/ResourceLoadNotifier.h \
 	Source/WebCore/loader/ResourceLoadScheduler.cpp \
@@ -6215,8 +6235,6 @@ webcoregtk_sources += \
 	Source/WebCore/platform/gtk/GtkPluginWidget.h \
 	Source/WebCore/platform/gtk/GtkPopupMenu.cpp \
 	Source/WebCore/platform/gtk/GtkPopupMenu.h \
-	Source/WebCore/platform/gtk/GtkVersioning.c \
-	Source/WebCore/platform/gtk/GtkVersioning.h \
 	Source/WebCore/platform/gtk/KeyBindingTranslator.cpp \
 	Source/WebCore/platform/gtk/KeyBindingTranslator.h \
 	Source/WebCore/platform/gtk/LocalizedStringsGtk.cpp \

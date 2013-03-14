@@ -161,6 +161,8 @@ crbug.com/84572 storage/storageinfo-missing-arguments.html
 crbug.com/84572 storage/storageinfo-no-callbacks.html
 crbug.com/84572 storage/storageinfo-query-usage.html
 crbug.com/84572 storage/storageinfo-request-quota.html
+crbug.com/84572 storage/storagequota-query-usage.html
+crbug.com/84572 storage/storagequota-request-quota.html
 
 # Unskip after implementing DRT support for setDefersLoading and goBack.
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html
@@ -1299,9 +1301,9 @@ webkit.org/b/79454 [ Android Linux Mac ] svg/text/text-viewbox-rescale.html [ Im
 # These require more investigation. There is a small change, probably two pixels, in the filter offset
 # when comparing the former and new results. This may be due to bad test design or may be revealing a bug
 # in the code. Turbulence results are very different.
-webkit.org/b/80517 [ Android Lion SnowLeopard ] svg/dynamic-updates/SVGFEConvolveMatrixElement-dom-targetX-attr.html [ ImageOnlyFailure ]
+webkit.org/b/80517 [ Android ] svg/dynamic-updates/SVGFEConvolveMatrixElement-dom-targetX-attr.html [ ImageOnlyFailure ]
 webkit.org/b/80517 [ Android XP ] svg/dynamic-updates/SVGFEConvolveMatrixElement-dom-targetY-attr.html [ ImageOnlyFailure ]
-webkit.org/b/80517 [ Android Lion SnowLeopard ] svg/dynamic-updates/SVGFEConvolveMatrixElement-svgdom-targetX-prop.html [ ImageOnlyFailure ]
+webkit.org/b/80517 [ Android ] svg/dynamic-updates/SVGFEConvolveMatrixElement-svgdom-targetX-prop.html [ ImageOnlyFailure ]
 webkit.org/b/80517 [ Android XP ] svg/dynamic-updates/SVGFEConvolveMatrixElement-svgdom-targetY-prop.html [ ImageOnlyFailure ]
 webkit.org/b/80517 [ Android ] svg/dynamic-updates/SVGFETurbulenceElement-dom-baseFrequency-attr.html [ ImageOnlyFailure ]
 webkit.org/b/80517 [ Android ] svg/dynamic-updates/SVGFETurbulenceElement-svgdom-baseFrequency-prop.html [ ImageOnlyFailure ]
@@ -2871,13 +2873,6 @@ crbug.com/88588 fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 crbug.com/88894 http/tests/cache/subresource-expiration-1.html [ Pass Slow ]
 crbug.com/88894 http/tests/cache/subresource-expiration-2.html [ Pass Slow ]
 
-# The following are missing baselines.
-webkit.org/b/107935 platform/chromium/virtual/gpu/compositedscrolling/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Missing ]
-webkit.org/b/107935 platform/chromium/virtual/softwarecompositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Missing ]
-webkit.org/b/107935 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Missing ]
-webkit.org/b/107935 platform/chromium/virtual/gpu/compositedscrolling/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Missing ]
-webkit.org/b/107935 platform/chromium/virtual/softwarecompositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Missing ]
-webkit.org/b/107935 compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Missing ]
 webkit.org/b/107935 platform/chromium/virtual/gpu/compositedscrolling/overflow/composited-scrolling-creates-a-stacking-container.html [ Failure ]
 webkit.org/b/107935 compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Failure ]
 webkit.org/b/107935 platform/chromium/virtual/softwarecompositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Failure ]
@@ -2898,8 +2893,6 @@ webkit.org/b/65124 [ Android Win MountainLion ] fast/repaint/japanese-rl-selecti
 webkit.org/b/65124 [ Win MountainLion ] fast/repaint/japanese-rl-selection-repaint.html [ Failure ]
 webkit.org/b/65124 [ Android Win MountainLion ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ Failure ]
 webkit.org/b/65124 [ Android ] fast/repaint/line-flow-with-floats-in-regions.html [ Failure ]
-
-webkit.org/b/106097 [ SnowLeopard Lion ] fast/repaint/japanese-rl-selection-repaint-in-regions.html [ ImageOnlyFailure ]
 
 webkit.org/b/65199 [ Android Linux SnowLeopard Win ] fast/writing-mode/broken-ideograph-small-caps.html [ Failure ]
 
@@ -3096,11 +3089,9 @@ webkit.org/b/75786 platform/chromium/virtual/softwarecompositing/tiled-layers-hi
 webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Skip ]
 webkit.org/b/48454 platform/chromium/virtual/softwarecompositing/tiling/huge-layer-img.html [ Skip ]
 
-# Need image baselines for Chromium
-webkit.org/b/100808 compositing/tiling/rotated-tiled-clamped.html [ ImageOnlyFailure ]
-webkit.org/b/100808 platform/chromium/virtual/softwarecompositing/tiling/rotated-tiled-clamped.html [ ImageOnlyFailure ]
-webkit.org/b/100808 compositing/tiling/rotated-tiled-preserve3d-clamped.html [ ImageOnlyFailure ]
-webkit.org/b/100808 platform/chromium/virtual/softwarecompositing/tiling/rotated-tiled-preserve3d-clamped.html [ ImageOnlyFailure ]
+# Show seaming artifacts in software compositing
+crbug.com/181300 platform/chromium/virtual/softwarecompositing/tiling/rotated-tiled-clamped.html [ ImageOnlyFailure ]
+crbug.com/181300 platform/chromium/virtual/softwarecompositing/tiling/rotated-tiled-preserve3d-clamped.html [ ImageOnlyFailure ]
 
 webkit.org/b/75932 fast/js/array-defineOwnProperty.html [ Failure ]
 webkit.org/b/75932 fast/js/mozilla/strict/15.4.4.6.html [ Failure ]
@@ -3572,9 +3563,6 @@ webkit.org/b/88832 [ XP ] http/tests/xmlhttprequest/origin-exact-matching.html [
 
 crbug.com/132898 http/tests/websocket/tests/hybi/workers/close.html [ Failure Pass ]
 
-# Timing out on some Windows bots
-webkit.org/b/89510 [ Win ] gamepad/gamepad-polling-access.html [ Pass Timeout ]
-
 webkit.org/b/96839 compositing/geometry/fixed-position-transform-composited-page-scale.html [ ImageOnlyFailure ]
 webkit.org/b/96839 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-transform-composited-page-scale.html [ ImageOnlyFailure ]
 webkit.org/b/96839 compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ ImageOnlyFailure ]
@@ -3689,9 +3677,6 @@ webkit.org/b/92968 http/tests/appcache/abort-cache-onprogress.html
 
 # Scrolling content draws beneath scrollbars in composited scrolling mode.
 webkit.org/b/103156 platform/chromium/virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
-
-# Requires an updated baseline after 106142.
-webkit.org/b/106820 platform/chromium/virtual/gpu/compositedscrolling/overflow/overflow-scroll.html [ Failure ]
 
 # Fails due to Bug 85856.
 webkit.org/b/85856 [ Win Mac Android ] fast/block/float/028.html [ ImageOnlyFailure ]
@@ -4233,9 +4218,6 @@ webkit.org/b/103609 [ MountainLion ] fast/regions/listmarker-inside-flowthread.h
 webkit.org/b/102624 [ Linux Win ] fast/events/stopPropagation-submit.html [ Failure ]
 webkit.org/b/103149 [ Mac ] fast/events/stopPropagation-submit.html [ Pass Failure ]
 
-# Needs rebaseline after https://bugs.webkit.org/show_bug.cgi?id=103700
-webkit.org/b/103700 compositing/masks/simple-composited-mask.html [ ImageOnlyFailure ]
-
 # Some compositing tests doesn't work on multiple platforms.
 webkit.org/b/103721 [ Mac Win Linux ] compositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 
@@ -4429,7 +4411,6 @@ webkit.org/b/111199 [ Debug Win Mac ] platform/chromium/virtual/softwarecomposit
 # The html5lib tests are all too slow to run in Debug, largely due to v8 per-document boot-up.
 # V8 bug: https://code.google.com/p/v8/issues/detail?id=2567
 webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
-webkit.org/b/ [ Linux Win ] html5lib/generated/run-tests16-data.html [ Slow ]
 
 # HALF_FLOAT_OES is not yet working in chromium.
 crbug.com/179503 fast/canvas/webgl/oes-texture-half-float.html [ Failure ]
@@ -4443,8 +4424,6 @@ webkit.org/b/111462 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-bod
 
 # Failing since r144633
 webkit.org/b/111510 [ MountainLion ] fast/regions/region-style-in-columns.html [ ImageOnlyFailure ]
-
-webkit.org/b/111514 [ Mac ] plugins/plugin-clip-subframe.html [ Failure ]
 
 webkit.org/b/111524 [ Debug Win Mac ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
@@ -4469,12 +4448,8 @@ webkit.org/b/111808 [ Debug ] fast/js/regress/nested-function-parsing-random.htm
 # Subtle pixel difference in debug only.
 webkit.org/b/112058 [ Debug SnowLeopard ] svg/custom/foreign-object-skew.svg [ Failure ]
 
-# Compositor mask shader busted by highp change
-crbug.com/183581 [ Mac Win Linux ] compositing/masks/direct-image-mask.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/masks/layer-mask-placement.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/masks/mask-of-clipped-layer.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/masks/masked-ancestor.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/masks/multiple-masks.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/reflections/masked-reflection-on-composited.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/reflections/nested-reflection-mask-change.html [ ImageOnlyFailure ]
-crbug.com/183581 [ Mac Win Linux ] compositing/text-on-scaled-surface.html [ ImageOnlyFailure ]
+webkit.org/b/112193 fast/dom/Window/window-postmessage-clone.html [ Failure Pass ]
+
+webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ ImageOnlyFailure Pass ]
+webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ ImageOnlyFailure Pass ]
+webkit.org/b/112219 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ ImageOnlyFailure Pass ]

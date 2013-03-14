@@ -64,6 +64,12 @@
 #include "V8MediaStream.h"
 #endif
 
+#if ENABLE(FONT_LOAD_EVENTS)
+#include "V8CSSFontFaceRule.h"
+#include "V8DOMError.h"
+#include "V8VoidCallback.h"
+#endif
+
 namespace WebCore {
 
 Dictionary::Dictionary()
@@ -273,7 +279,7 @@ bool Dictionary::get(const String& key, RefPtr<Storage>& value) const
         return false;
 
     value = 0;
-    if (V8Storage::HasInstance(v8Value, m_isolate))
+    if (V8Storage::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8Storage::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -331,7 +337,7 @@ bool Dictionary::get(const String& key, RefPtr<Uint8Array>& value) const
         return false;
 
     value = 0;
-    if (V8Uint8Array::HasInstance(v8Value, m_isolate))
+    if (V8Uint8Array::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8Uint8Array::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -344,7 +350,7 @@ bool Dictionary::get(const String& key, RefPtr<MediaKeyError>& value) const
         return false;
 
     value = 0;
-    if (V8MediaKeyError::HasInstance(v8Value, m_isolate))
+    if (V8MediaKeyError::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8MediaKeyError::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -380,7 +386,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) c
         return false;
 
     value = 0;
-    if (V8SpeechRecognitionError::HasInstance(v8Value, m_isolate))
+    if (V8SpeechRecognitionError::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8SpeechRecognitionError::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -392,7 +398,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResult>& value) 
         return false;
 
     value = 0;
-    if (V8SpeechRecognitionResult::HasInstance(v8Value, m_isolate))
+    if (V8SpeechRecognitionResult::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8SpeechRecognitionResult::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -404,7 +410,7 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResultList>& val
         return false;
 
     value = 0;
-    if (V8SpeechRecognitionResultList::HasInstance(v8Value, m_isolate))
+    if (V8SpeechRecognitionResultList::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8SpeechRecognitionResultList::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -419,7 +425,7 @@ bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
         return false;
 
     value = 0;
-    if (V8MediaStream::HasInstance(v8Value, m_isolate))
+    if (V8MediaStream::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8MediaStream::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
@@ -497,6 +503,55 @@ bool Dictionary::get(const String& key, ArrayValue& value) const
     value = ArrayValue(v8::Local<v8::Array>::Cast(v8Value), m_isolate);
     return true;
 }
+
+#if ENABLE(FONT_LOAD_EVENTS)
+bool Dictionary::get(const String& key, RefPtr<CSSFontFaceRule>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    CSSFontFaceRule* source = 0;
+    if (v8Value->IsObject()) {
+        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
+        v8::Handle<v8::Object> fontface = wrapper->FindInstanceInPrototypeChain(V8CSSFontFaceRule::GetTemplate(m_isolate, worldType(m_isolate)));
+        if (!fontface.IsEmpty())
+            source = V8CSSFontFaceRule::toNative(fontface);
+    }
+    value = source;
+    return true;
+}
+
+bool Dictionary::get(const String& key, RefPtr<DOMError>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    DOMError* error = 0;
+    if (v8Value->IsObject()) {
+        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
+        v8::Handle<v8::Object> domError = wrapper->FindInstanceInPrototypeChain(V8DOMError::GetTemplate(m_isolate, worldType(m_isolate)));
+        if (!domError.IsEmpty())
+            error = V8DOMError::toNative(domError);
+    }
+    value = error;
+    return true;
+}
+
+bool Dictionary::get(const String& key, RefPtr<VoidCallback>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    if (!v8Value->IsFunction())
+        return false;
+
+    value = V8VoidCallback::create(v8Value, getScriptExecutionContext());
+    return true;
+}
+#endif
 
 bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMap) const
 {

@@ -1,3 +1,268 @@
+2013-03-14  Alice Liu  <alice.liu@apple.com>
+
+        Add to HistoryItem a way to know if its underlying CachedPage has expired.
+        https://bugs.webkit.org/show_bug.cgi?id=110652
+
+        Reviewed by Brady Eidson.
+
+        Hook up hasCachedPageExpired in InjectedBundle's BackForwardListItem.
+        * WebProcess/InjectedBundle/API/c/WKBundleBackForwardListItem.cpp:
+        (WKBundleBackForwardListItemHasCachedPageExpired):
+        * WebProcess/InjectedBundle/API/c/WKBundleBackForwardListItem.h:
+        * WebProcess/InjectedBundle/InjectedBundleBackForwardListItem.h:
+        (WebKit::InjectedBundleBackForwardListItem::hasCachedPageExpired):
+
+2013-03-13  Rik Cabanier  <cabanier@adobe.com>
+
+        create runtime flags for CSS Compositing
+        https://bugs.webkit.org/show_bug.cgi?id=111818
+
+        Reviewed by Ryosuke Niwa.
+
+        Added a preference to enable CSS compositing.
+
+        * Shared/WebPreferencesStore.h:
+        (WebKit):
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::overrideBoolPreferenceForTestRunner):
+        (WebKit::InjectedBundle::setCSSCompositingEnabled):
+        (WebKit):
+        * WebProcess/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+
+2013-03-13  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Threaded HTML Parser is missing feature define flags in all but Chromium port's build files
+        https://bugs.webkit.org/show_bug.cgi?id=112277
+
+        Reviewed by Adam Barth.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-13  Brady Eidson  <beidson@apple.com>
+
+        Small ResourceLoader cleanups.
+        https://bugs.webkit.org/show_bug.cgi?id=112279
+
+        Reviewed by Geoff Garen.
+
+        Replace the "bool allAtOnce" flag with a descriptive enum to make reading code easier.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::didReceiveData):
+
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::didReceiveData):
+        (WebKit::WebResourceLoader::didReceiveResource):
+        * WebProcess/Network/WebResourceLoader.h:
+        * WebProcess/Network/WebResourceLoader.messages.in: Get rid of the "allAtOnce" flag since it was always false.
+
+2013-03-13  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_casts with to* functions for document types.
+        https://bugs.webkit.org/show_bug.cgi?id=112225
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebProcess/InjectedBundle/API/mac/WKDOMDocument.mm: Remove the redundant helper.
+
+2013-03-13  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build fixes after 145552
+        https://bugs.webkit.org/show_bug.cgi?id=112267
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * GNUmakefile.am: Narrow down the dependency CFLAGS list to only ones that are actually needed
+        to build the platformgtk_sources into libPlatformGtk2.la. At the moment this means only
+        GTK+-2.0 CFLAGS are used.
+
+2013-03-13  Antoine Quint  <graouts@apple.com>
+
+        Calling WebInspectorClient::highlight() during a fade-out animation of the PageOverlay won't stop its animation
+        https://bugs.webkit.org/show_bug.cgi?id=112271
+
+        Reviewed by Tim Horton.
+
+        Add a new stopFadeOutAnimation() on PageOverlay that we call when
+        WebInspectorClient::highlight() is called and a page overlay
+        is already available. This ensures that any fade-out animation
+        is cleared before proceeding with showing the page overlay
+        for the new highlight.
+
+        * WebProcess/WebCoreSupport/WebInspectorClient.cpp:
+        (WebKit::WebInspectorClient::highlight):
+        * WebProcess/WebPage/PageOverlay.cpp:
+        (WebKit::PageOverlay::stopFadeOutAnimation):
+        (WebKit):
+        * WebProcess/WebPage/PageOverlay.h:
+        (PageOverlay):
+
+2013-03-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: get rid of hiddenPanels filter
+        https://bugs.webkit.org/show_bug.cgi?id=112252
+
+        Reviewed by Vsevolod Vlasov.
+
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.cpp:
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.h:
+        (WebInspectorFrontendClient):
+
+2013-03-13  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [WK2][Qt] Regression(145517) WebProcess asserts in debug build on WebKitTestRunner start
+        https://bugs.webkit.org/show_bug.cgi?id=112223
+
+        Reviewed by Simon Hausmann.
+
+        We need to only enable the cookie jar and the disk cache conditionally
+        in the web process since we removed default paths and WKTR doesn't provide
+        them.
+
+        * WebProcess/qt/WebProcessQt.cpp:
+        (WebKit::WebProcess::platformSetCacheModel):
+        (WebKit::WebProcess::platformInitializeWebProcess):
+
+2013-03-12  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [EFL][WK2] ewk_popup_menu_close() does not work as intended
+        https://bugs.webkit.org/show_bug.cgi?id=110209
+
+        Reviewed by Laszlo Gombos.
+
+        ewk_popup_menu_close() is called by the browser to notify WebKit that
+        the popup menu was closed. However, the implementation was calling
+        EwkView::closePopupMenu() which was asking the browser to close the
+        popup menu via an Evas smart function. This patch fixes the behavior
+        and ewk_popup_menu_close() now calls WKPopupMenuListenerSetSelection()
+        C API so that the WebProcess is notified that the popup menu was
+        hidden.
+
+        * UIProcess/API/efl/ewk_popup_menu.cpp:
+        (EwkPopupMenu::close):
+
+2013-03-12  Huang Dongsung  <luxtella@company100.net>
+
+        Coordinated Graphics: Remove CoordinatedGraphicsLayer::setRootLayer().
+        https://bugs.webkit.org/show_bug.cgi?id=111835
+
+        Reviewed by Luiz Agostini.
+
+        Amend CoordinatedLayerTreeHost because
+        CoordinatedGraphicsLayer::setRootLayer() is removed.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::CoordinatedLayerTreeHost):
+
+2013-03-12  Dean Jackson  <dino@apple.com>
+
+        Primary plugin hit detection needs to run after plugin creation
+        https://bugs.webkit.org/show_bug.cgi?id=112206
+
+        Reviewed by Tim Horton.
+
+        On some pages, the plugins are created after the page has loaded, and
+        thus our heuristic to determine the primary plugin fails. Run this
+        heuristic more often: after each PluginView is created. It already exits
+        early if it has found a primary. But we also need to make sure that it
+        doesn't run before load.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::addPluginView): Run detection when view is added.
+        (WebKit::WebPage::didFinishLoad): Remember that we have loaded.
+        (WebKit::WebPage::determinePrimarySnapshottedPlugIn): Look at the PluginViews to see if we have a plugin.
+        (WebKit::WebPage::resetPrimarySnapshottedPlugIn): Reset both flags.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): New member variable, m_readyToFindPrimarySnapshottedPlugin.
+
+2013-03-12  Beth Dakin  <bdakin@apple.com>
+
+        WKView -printOperationWithPrintInfo:forFrame: doesn’t use the print info that is 
+        passed in
+        https://bugs.webkit.org/show_bug.cgi?id=112212
+        -and corresponding-
+        <rdar://problem/12994883>
+
+        Reviewed by Anders Carlsson.
+
+        We should call [NSPrintOperation printOperationWithView: printInfo:] to use the 
+        printInfo parameter instead of [NSPrintOperation printOperationWithView:] which 
+        will just use the sharedPrintInfo.
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView printOperationWithPrintInfo:forFrame:]):
+
+2013-03-12  Geoffrey Garen  <ggaren@apple.com>
+
+        Moved RunLoopTimer and SchedulePair to WTF
+        https://bugs.webkit.org/show_bug.cgi?id=112171
+
+        Reviewed by Oliver Hunt.
+
+        This will allow us to use timers in lower level primitives without
+        duplicating all the code.
+
+        * WebProcess/WebCoreSupport/mac/WebFrameNetworkingContext.h:
+        (WebFrameNetworkingContext):
+
+2013-03-12  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Remove HILDON_CPPFLAGS and HILDON_CFLAGS references from GNUmakefiles
+        https://bugs.webkit.org/show_bug.cgi?id=112163
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: The Hildon dependency doesn't exist anymore so there's no need for
+        references to HILDON_CPPFLAGS and HILDON_CFLAGS.
+
+2013-03-12  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Set up the libPlatformGtk.la library
+        https://bugs.webkit.org/show_bug.cgi?id=111738
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Reference platformgtk_cppflags variable, libPlatformGtk.la along with webcoregtk_cppflags variable, libWebCoreGtk.la.
+        Adjust the path to GtkVersioning.c, the file has moved under Source/Platform.
+
+2013-03-12  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Fix EwkContext class API
+        https://bugs.webkit.org/show_bug.cgi?id=111706
+
+        Reviewed by Alexey Proskuryakov.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (createWKView):
+        * UIProcess/API/efl/ewk_context.cpp:
+        (EwkContext::findOrCreateWrapper):
+
+            Renamed from create() as it returns the same instance of EwkContext
+            for the given WKContextRef if present.
+
+        (EwkContext::create):
+        (EwkContext::defaultContext):
+
+            Returns raw pointer rather than PassRefPtr<EwkContext> as ownership
+            is not transferred.
+
+        (ewk_context_default_get):
+        * UIProcess/API/efl/ewk_context_private.h:
+        (EwkContext):
+        * UIProcess/efl/WebInspectorProxyEfl.cpp:
+        (WebKit::WebInspectorProxy::platformCreateInspectorPage):
+
+2013-03-12  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Enable Web Audio in development builds
+        https://bugs.webkit.org/show_bug.cgi?id=111831
+
+        Reviewed by Philippe Normand.
+
+        * GNUmakefile.am: Link the plugin process against libWebCoreModules.la as well.
+
 2013-03-11  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
 
         [Qt][WK2] Layer QtDownloadManager on the C API

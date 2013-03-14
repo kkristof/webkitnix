@@ -32,11 +32,11 @@
 #include "RenderLayer.h"
 #include "SelectionOverlay.h"
 #include "TouchEventHandler.h"
+#include "VisibleUnits.h"
 #include "WebPageClient.h"
 #include "WebPage_p.h"
 
 #include "htmlediting.h"
-#include "visible_units.h"
 
 #include <BlackBerryPlatformKeyboardEvent.h>
 #include <BlackBerryPlatformLog.h>
@@ -90,6 +90,8 @@ void SelectionHandler::cancelSelection()
     // Notify client with empty selection to ensure the handles are removed if
     // rendering happened prior to processing on webkit thread
     m_webPage->m_client->notifySelectionDetailsChanged(SelectionDetails());
+
+    m_webPage->updateSelectionScrollView(0);
 
     SelectionLog(Platform::LogLevelInfo, "SelectionHandler::cancelSelection");
 
@@ -536,6 +538,9 @@ void SelectionHandler::setSelection(const WebCore::IntPoint& start, const WebCor
         }
     }
 
+    if (!controller->selection().isRange())
+        m_webPage->updateSelectionScrollView(newSelection.visibleEnd().deepEquivalent().anchorNode());
+
     newSelection.setIsDirectional(true);
 
     if (m_webPage->m_inputHandler->isInputMode()) {
@@ -635,6 +640,7 @@ void SelectionHandler::selectAtPoint(const WebCore::IntPoint& location, Selectio
         m_animationOverlayEndPos = VisiblePosition();
         m_currentAnimationOverlayRegion = IntRectRegion();
         m_nextAnimationOverlayRegion = IntRectRegion();
+        m_selectionViewportRect = WebCore::IntRect();
     }
 
     // If point is invalid trigger selection based expansion.
@@ -648,7 +654,7 @@ void SelectionHandler::selectAtPoint(const WebCore::IntPoint& location, Selectio
     FatFingersResult fatFingersResult = m_webPage->m_touchEventHandler->lastFatFingersResult();
     if (selectNodeIfFatFingersResultIsLink(fatFingersResult))
         return;
-    if (!fatFingersResult.resultMatches(location, FatFingers::Text) || !fatFingersResult.positionWasAdjusted() || !fatFingersResult.nodeAsElem
+    if (!fatFingersResult.resultMatches(location, FatFingers::Text) || !fatFingersResult.positionWasAdjusted() || !fatFingersResult.nodeAsElementIfApplicable())
         fatFingersResult = FatFingers(m_webPage, location, FatFingers::Text).findBestPoint();
 
     if (!fatFingersResult.positionWasAdjusted()) {
@@ -774,12 +780,13 @@ void SelectionHandler::expandSelection(bool isScrollStarted)
 
 bool SelectionHandler::ensureSelectedTextVisible(const WebCore::IntPoint& point, bool scrollIfNeeded)
 {
-    WebCore::IntPoint scrollPosition = m_webPage->scrollPosition();
-    WebCore::IntSize actualVisibleSize = m_webPage->client()->userInterfaceViewportAccessor()->documentViewportRect().size(); // viewport size for both Cascades and browser
-    WebCore::IntRect actualScreenRect = WebCore::IntRect(scrollPosition, actualVisibleSize);
-
+    WebCore::IntRect viewportRect = selectionViewportRect();
     if (!scrollIfNeeded)
-        return actualScreenRect.maxY() >= point.y() + m_scrollMargin.height();
+        return viewportRect.maxY() >= point.y() + m_scrollMargin.height();
+
+    // Scroll position adjustment here is based on main frame. If selecting in a subframe, don't do animation.
+    if (!m_selectionViewportRect.isEmpty())
+        return false;
 
     WebCore::IntRect endLocation = m_animationOverlayEndPos.absoluteCaretBounds();
 
@@ -800,13 +807,23 @@ bool SelectionHandler::ensureSelectedTextVisible(const WebCore::IntPoint& point,
     endLocation.inflateX(m_scrollMargin.width());
     endLocation.inflateY(m_scrollMargin.height());
 
-    WebCore::IntRect revealRect(layer->getRectToExpose(actualScreenRect, endLocation, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded));
+    WebCore::IntRect revealRect(layer->getRectToExpose(viewportRect, endLocation, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded));
     revealRect.setX(std::min(std::max(revealRect.x(), 0), m_webPage->maximumScrollPosition().x()));
     revealRect.setY(std::min(std::max(revealRect.y(), 0), m_webPage->maximumScrollPosition().y()));
 
     // Animate scroll position to revealRect.
     m_webPage->animateToScaleAndDocumentScrollPosition(m_webPage->currentScale() /* Don't zoom */, WebCore::FloatPoint(revealRect.x(), revealRect.y()));
     return true;
+}
+
+WebCore::IntRect SelectionHandler::selectionViewportRect() const
+{
+    if (m_selectionViewportRect.isEmpty()) {
+        WebCore::IntPoint scrollPosition = m_webPage->scrollPosition();
+        WebCore::IntSize actualVisibleSize = m_webPage->client()->userInterfaceViewportAccessor()->documentViewportRect().size(); // viewport size for both Cascades and browser
+        return WebCore::IntRect(scrollPosition, actualVisibleSize);
+    }
+    return m_selectionViewportRect;
 }
 
 void SelectionHandler::setParagraphExpansionScrollMargin(const WebCore::IntSize& scrollMargin)
@@ -836,6 +853,8 @@ bool SelectionHandler::expandSelectionToGranularity(Frame* frame, VisibleSelecti
     m_animationOverlayEndPos = selection.visibleEnd();
 
     if (granularity == WordGranularity) {
+        m_webPage->updateSelectionScrollView(selection.visibleEnd().deepEquivalent().anchorNode());
+
         Element* element = m_animationOverlayStartPos.deepEquivalent().element();
         if (!element)
             return false;
@@ -847,7 +866,6 @@ bool SelectionHandler::expandSelectionToGranularity(Frame* frame, VisibleSelecti
     frame->selection()->setSelection(selection);
     if (granularity == ParagraphGranularity)
         findNextAnimationOverlayRegion();
-
     return true;
 }
 
@@ -915,6 +933,7 @@ void SelectionHandler::selectObject(Node* node)
     VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(node);
     drawAnimationOverlay(regionForSelectionQuads(selection), false /* isExpandingOverlayAtConstantRate */, true /* isStartOfSelection */);
     focusedFrame->selection()->setSelection(selection);
+    m_webPage->updateSelectionScrollView(node);
 }
 
 static TextDirection directionOfEnclosingBlock(FrameSelection* selection)
@@ -1140,6 +1159,13 @@ void SelectionHandler::selectionPositionChanged(bool forceUpdateWithoutChange)
         m_selectionActive = true;
     else if (!m_selectionActive)
         return;
+
+    if (Node* focusedNode = frame->document()->focusedNode()
+        && (focusedNode->hasTagName(HTMLNames::selectTag) || (focusedNode->isElementNode() && DOMSupport::isPopupInputField(toElement(focusedNode))))) {
+            SelectionLog(Platform::LogLevelInfo, "SelectionHandler::selectionPositionChanged selection is on a popup control, skipping rendering.");
+            return;
+        }
+    }
 
     SelectionTimingLog(Platform::LogLevelInfo,
         "SelectionHandler::selectionPositionChanged starting at %f",

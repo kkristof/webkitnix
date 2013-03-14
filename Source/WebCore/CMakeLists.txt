@@ -242,12 +242,6 @@ set(WebCore_IDL_FILES
 
     Modules/proximity/DeviceProximityEvent.idl
 
-    Modules/quota/DOMWindowQuota.idl
-    Modules/quota/StorageInfo.idl
-    Modules/quota/StorageInfoErrorCallback.idl
-    Modules/quota/StorageInfoQuotaCallback.idl
-    Modules/quota/StorageInfoUsageCallback.idl
-
     Modules/vibration/NavigatorVibration.idl
 
     Modules/webaudio/AudioBuffer.idl
@@ -303,6 +297,7 @@ set(WebCore_IDL_FILES
 
     css/Counter.idl
     css/CSSCharsetRule.idl
+    css/CSSFontFaceLoadEvent.idl
     css/CSSFontFaceRule.idl
     css/CSSHostRule.idl
     css/CSSImportRule.idl
@@ -318,6 +313,7 @@ set(WebCore_IDL_FILES
     css/CSSValue.idl
     css/CSSValueList.idl
     css/DOMWindowCSS.idl
+    css/FontLoader.idl
     css/MediaList.idl
     css/MediaQueryList.idl
     css/RGBColor.idl
@@ -887,9 +883,6 @@ set(WebCore_SOURCES
     Modules/proximity/DeviceProximityController.cpp
     Modules/proximity/DeviceProximityEvent.cpp
 
-    Modules/quota/DOMWindowQuota.cpp
-    Modules/quota/StorageInfo.cpp
-
     Modules/vibration/NavigatorVibration.cpp
     Modules/vibration/Vibration.cpp
 
@@ -1028,6 +1021,7 @@ set(WebCore_SOURCES
     css/CSSCursorImageValue.cpp
     css/CSSDefaultStyleSheets.cpp
     css/CSSFontFace.cpp
+    css/CSSFontFaceLoadEvent.cpp
     css/CSSFontFaceRule.cpp
     css/CSSFontFaceSource.cpp
     css/CSSFontFaceSrcValue.cpp
@@ -1070,6 +1064,7 @@ set(WebCore_SOURCES
     css/DocumentRuleSets.cpp
     css/ElementRuleCollector.cpp
     css/FontFeatureValue.cpp
+    css/FontLoader.cpp
     css/FontValue.cpp
     css/InspectorCSSOMWrappers.cpp
     css/LengthFunctions.cpp
@@ -2707,6 +2702,27 @@ if (ENABLE_VIDEO_TRACK)
         platform/graphics/TextTrackRepresentation.cpp
     )
 endif ()
+
+if (ENABLE_QUOTA)
+    list(APPEND WebCore_SOURCES
+        Modules/quota/DOMWindowQuota.cpp
+        Modules/quota/NavigatorStorageQuota.cpp
+        Modules/quota/StorageErrorCallback.cpp
+        Modules/quota/StorageInfo.cpp
+        Modules/quota/StorageQuota.cpp
+    )
+
+    list(APPEND WebCore_IDL_FILES
+        Modules/quota/DOMWindowQuota.idl
+        Modules/quota/NavigatorStorageQuota.idl
+        Modules/quota/StorageErrorCallback.idl
+        Modules/quota/StorageInfo.idl
+        Modules/quota/StorageQuota.idl
+        Modules/quota/StorageQuotaCallback.idl
+        Modules/quota/StorageUsageCallback.idl
+    )
+endif ()
+
 
 if (WTF_USE_LEVELDB)
     list(APPEND WebCore_INCLUDE_DIRECTORIES

@@ -190,6 +190,10 @@ class TextAutosizer;
 class DOMSecurityPolicy;
 #endif
 
+#if ENABLE(FONT_LOAD_EVENTS)
+class FontLoader;
+#endif
+
 typedef int ExceptionCode;
 
 enum PageshowEventPersistence {
@@ -340,6 +344,7 @@ public:
 
     bool cssStickyPositionEnabled() const;
     bool cssRegionsEnabled() const;
+    bool cssCompositingEnabled() const;
 #if ENABLE(CSS_REGIONS)
     PassRefPtr<DOMNamedFlowCollection> webkitGetNamedFlows();
 #endif
@@ -1196,6 +1201,10 @@ public:
 
     virtual const SecurityOrigin* topOrigin() const OVERRIDE;
 
+#if ENABLE(FONT_LOAD_EVENTS)
+    PassRefPtr<FontLoader> fontloader();
+#endif
+
 protected:
     Document(Frame*, const KURL&, bool isXHTML, bool isHTML);
 
@@ -1214,7 +1223,7 @@ private:
     typedef void (*ArgumentsCallback)(const String& keyString, const String& valueString, Document*, void* data);
     void processArguments(const String& features, void* data, ArgumentsCallback);
 
-    virtual bool isDocument() const { return true; }
+    virtual bool isDocument() const OVERRIDE { return true; }
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
@@ -1564,6 +1573,10 @@ private:
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
 #endif
+
+#if ENABLE(FONT_LOAD_EVENTS)
+    RefPtr<FontLoader> m_fontloader;
+#endif
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()
@@ -1582,6 +1595,33 @@ inline const Document* Document::templateDocument() const
     return m_templateDocument.get();
 }
 #endif
+
+inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
+    return static_cast<Document*>(scriptExecutionContext);
+}
+
+inline const Document* toDocument(const ScriptExecutionContext* scriptExecutionContext)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
+    return static_cast<const Document*>(scriptExecutionContext);
+}
+
+inline Document* toDocument(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isDocumentNode());
+    return static_cast<Document*>(node);
+}
+
+inline const Document* toDocument(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isDocumentNode());
+    return static_cast<const Document*>(node);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toDocument(const Document*);
 
 // Put these methods here, because they require the Document definition, but we really want to inline them.
 

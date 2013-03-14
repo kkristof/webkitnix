@@ -1,3 +1,301 @@
+2013-03-14  Marja Hölttä  <marja@chromium.org>
+
+        [V8] Store main world and non-main world templates separately.
+        https://bugs.webkit.org/show_bug.cgi?id=111724
+
+        Reviewed by Jochen Eisinger.
+
+        This is needed for generating specialized bindings for the main
+        world (bug 110874).
+
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::createFromV8Value):
+        * src/WebArrayBufferView.cpp:
+        (WebKit::WebArrayBufferView::createFromV8Value):
+        * src/WebBindings.cpp:
+        (WebKit::getRangeImpl):
+        (WebKit::getNodeImpl):
+        (WebKit::getElementImpl):
+        (WebKit::getArrayBufferImpl):
+        (WebKit::getArrayBufferViewImpl):
+
+2013-03-13  Rik Cabanier  <cabanier@adobe.com>
+
+        create runtime flags for CSS Compositing
+        https://bugs.webkit.org/show_bug.cgi?id=111818
+
+        Reviewed by Ryosuke Niwa.
+
+        Added a runtime flags to enable CSS compositing for chromium.
+
+        * public/WebRuntimeFeatures.h:
+        (WebRuntimeFeatures):
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableCSSCompositing):
+        (WebKit):
+        (WebKit::WebRuntimeFeatures::isCSSCompositingEnabled):
+
+2013-03-11  Kinuko Yasuda  <kinuko@chromium.org>
+
+        Quota API: Update IDL to make it match the latest WD
+        https://bugs.webkit.org/show_bug.cgi?id=88396
+
+        Reviewed by Adam Barth.
+
+        Add a new interface object (navigator.StorageQuota) and deprecate the old one (window.StorageInfo)
+        to make the code match with the latest Quota API WD:
+        http://www.w3.org/TR/quota-api/
+
+        * WebKit.gyp:
+        * src/AssertMatchingEnums.cpp:
+        * src/StorageQuotaChromium.cpp: Renamed from Source/WebKit/chromium/src/StorageInfoChromium.cpp.
+        (WebCore):
+        (WebCore::StorageQuota::queryUsageAndQuota):
+        (WebCore::StorageQuota::requestQuota):
+        * src/WebStorageQuotaCallbacksImpl.cpp:
+        (WebKit::WebStorageQuotaCallbacksImpl::WebStorageQuotaCallbacksImpl):
+        * src/WebStorageQuotaCallbacksImpl.h:
+        (WebCore):
+        (WebStorageQuotaCallbacksImpl):
+
+2013-03-13  Chris Palmer  <palmer@google.com>
+
+        Enable V8 binding integriy on Android.
+        https://bugs.webkit.org/show_bug.cgi?id=112297
+
+        Reviewed by Adam Barth.
+
+        * features.gypi:
+
+2013-03-13  Michael Nordman  <michaeln@google.com>
+
+        [Chromium] FileSystem mods: Changes to snapshot file creation to reduce dependencies on blobs.
+        No longer send a |blobURL| to the browser process, no longer expect the browser process
+        to have registered a blob with that url.
+        https://bugs.webkit.org/show_bug.cgi?id=108851
+
+        Reviewed by Adam Barth.
+
+        * src/AsyncFileSystemChromium.cpp:
+        (WebCore):
+        (WebCore::FileWriterHelperCallbacks::didCreateSnapshotFile):
+        (WebCore::AsyncFileSystemChromium::createSnapshotFileAndReadMetadata):
+        * src/AsyncFileSystemChromium.h:
+        (AsyncFileSystemChromium):
+        * src/LocalFileSystemChromium.cpp:
+        (WebCore):
+        * src/WebFileSystemCallbacksImpl.cpp:
+        (WebKit::WebFileSystemCallbacksImpl::didCreateSnapshotFile):
+        (WebKit):
+        * src/WebFileSystemCallbacksImpl.h:
+        (WebCore):
+        (WebFileSystemCallbacksImpl):
+        * src/WorkerAsyncFileSystemChromium.cpp:
+        (WebCore::WorkerAsyncFileSystemChromium::createSnapshotFileAndReadMetadata):
+        (WebCore::WorkerAsyncFileSystemChromium::createWorkerFileSystemCallbacksBridge):
+        * src/WorkerFileSystemCallbacksBridge.cpp:
+        (WebKit::MainThreadFileSystemCallbacks::didCreateSnapshotFile):
+        (MainThreadFileSystemCallbacks):
+        (WebKit::WorkerFileSystemCallbacksBridge::postCreateSnapshotFileToMainThread):
+        (WebKit::WorkerFileSystemCallbacksBridge::createSnapshotFileOnMainThread):
+        (WebKit::WorkerFileSystemCallbacksBridge::didCreateSnapshotFileOnMainThread):
+        (WebKit):
+        (WebKit::WorkerFileSystemCallbacksBridge::WorkerFileSystemCallbacksBridge):
+        (WebKit::WorkerFileSystemCallbacksBridge::didCreateSnapshotFileOnWorkerThread):
+        * src/WorkerFileSystemCallbacksBridge.h:
+        (WebCore):
+        (WebKit):
+        (WebKit::WorkerFileSystemCallbacksBridge::create):
+        (WorkerFileSystemCallbacksBridge):
+
+2013-03-13  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Restrict WebNode::addEventListener and friends to a whitelist of event types
+        https://bugs.webkit.org/show_bug.cgi?id=112195
+
+        Reviewed by Eric Seidel.
+
+        Chromium only uses these APIs in extremely narrow ways. In order to
+        discourage Chromium from using these APIs in broader ways, this patch
+        restricts the APIs to a small whitelist of event types.
+
+        We might want to add some sort of flag to let CEF use expose these APIs
+        more broadly.
+
+        * WebKit.gypi:
+        * public/WebNode.h:
+        * src/WebNode.cpp:
+        (WebKit::WebNode::hasEventListeners):
+        (WebKit::WebNode::addEventListener):
+        * tests/EventListenerTest.cpp: Removed.
+            - These tests of DOM mutation events are no longer needed because we
+              don't support listening for DOM mutation events via the API
+              anymore.
+
+2013-03-13  Stephen Chenney  <schenney@chromium.org>
+
+        Add new Skia code suppression flags
+
+        Unreviewed build update.
+
+        * skia_webkit.gyp: Add 'SK_DISABLE_BLUR_ROUNDING', 'SK_IGNORE_SUBPIXEL_AXIS_ALIGN_FIX',
+            'SK_IGNORE_PICTURE_RECORD_SAVE_LAYER_OPT', 'SK_IGNORE_FAST_RECT_BLUR', 'SK_IGNORE_CUBIC_STROKE_FIX'
+
+2013-03-13  Aaron Colwell  <acolwell@chromium.org>
+
+        Cleanup dead MediaSource code now that the Chromium-side refactor is complete.
+        https://bugs.webkit.org/show_bug.cgi?id=110371
+
+        Reviewed by Adam Barth.
+
+        * public/WebMediaPlayer.h:
+        (WebKit):
+        (WebMediaPlayer): Remove old MediaSource methods and default MediaSource load() implementation.
+        * public/WebMediaPlayerClient.h: Remove old MediaSource methods.
+        * src/WebMediaPlayerClientImpl.cpp: Remove WebMediaSourceClientImpl & WebSourceBufferImpl classes that
+                                            are no longer needed.
+        * src/WebMediaPlayerClientImpl.h: Remove old MediaSource methods.
+        (WebMediaPlayerClientImpl):
+
+2013-03-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: get rid of hiddenPanels filter
+        https://bugs.webkit.org/show_bug.cgi?id=112252
+
+        Reviewed by Vsevolod Vlasov.
+
+        * src/InspectorFrontendClientImpl.cpp:
+        * src/InspectorFrontendClientImpl.h:
+        (InspectorFrontendClientImpl):
+
+2013-03-13  Mikhail Naganov  <mnaganov@chromium.org>
+
+        [Chromium] Rename android_build_type to android_webview_build in .gyp files.
+        https://bugs.webkit.org/show_bug.cgi?id=112129
+
+        Reviewed by Adam Barth.
+
+        Following Chromium
+        http://src.chromium.org/viewvc/chrome?view=rev&revision=187556
+        this is being renamed to better explain what it does.
+
+        * WebKitUnitTests.gyp:
+
+2013-03-13  Pavel Feldman  <pfeldman@chromium.org>
+
+        Web Inspector: convert workers inspection into capability
+        https://bugs.webkit.org/show_bug.cgi?id=112251
+
+        Reviewed by Vsevolod Vlasov.
+
+        * src/InspectorFrontendClientImpl.cpp:
+        * src/InspectorFrontendClientImpl.h:
+        (InspectorFrontendClientImpl):
+
+2013-03-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r187688.  Requested by
+        "James Robinson" <jamesr@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-12  Jun Jiang  <jun.a.jiang@intel.com>
+
+        Enable GPU-GPU texture copy in texImage2D() for HTMLVideoElement if hardware accelerated video decode is in use
+        https://bugs.webkit.org/show_bug.cgi?id=111126
+
+        Reviewed by Kenneth Russell.
+
+        * public/WebMediaPlayer.h:
+        (WebKit::WebMediaPlayer::copyVideoTextureToPlatformTexture):
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture): do a GPU-GPU textures copy if possible.
+        * src/WebMediaPlayerClientImpl.h:
+        (WebMediaPlayerClientImpl):
+
+2013-03-12  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] WebFrame event listener APIs are unused and can be removed
+        https://bugs.webkit.org/show_bug.cgi?id=112189
+
+        Reviewed by Darin Fisher.
+
+        As far as I can tell, there are no callers for these APIs. They appear
+        to have been added for out-of-process postMessages, but those are now
+        implemented using a different mechanism.
+
+        * public/WebFrame.h:
+        (WebFrame):
+        * src/WebFrameImpl.cpp:
+        * src/WebFrameImpl.h:
+        (WebFrameImpl):
+
+2013-03-12  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r187660.  Requested by
+        "Adam Barth" <abarth@webkit.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-12  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Remove WEBKIT_USING_V8 from the WebKit API
+        https://bugs.webkit.org/show_bug.cgi?id=112120
+
+        Reviewed by Tony Chang.
+
+        Chromium always uses V8. This macro has outlived it's usefulness. It's
+        now just noise.
+
+        * README:
+        * public/WebArrayBuffer.h:
+        (WebArrayBuffer):
+        * public/WebArrayBufferView.h:
+        (WebArrayBufferView):
+        * public/WebBindings.h:
+        (WebBindings):
+        * public/WebBlob.h:
+        (WebBlob):
+        * public/WebFrame.h:
+        (WebFrame):
+        * public/WebFrameClient.h:
+        * public/WebSerializedScriptValue.h:
+        (WebSerializedScriptValue):
+        * src/WebArrayBuffer.cpp:
+        (WebKit::WebArrayBuffer::createFromV8Value):
+        * src/WebArrayBufferView.cpp:
+        (WebKit::WebArrayBufferView::createFromV8Value):
+        * src/WebBindings.cpp:
+        (WebKit::WebBindings::toV8Value):
+        * src/WebBlob.cpp:
+        (WebKit::WebBlob::toV8Value):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrame::frameForContext):
+        * src/WebFrameImpl.h:
+        (WebFrameImpl):
+        * src/WebSerializedScriptValue.cpp:
+        (WebKit::WebSerializedScriptValue::serialize):
+        (WebKit::WebSerializedScriptValue::deserialize):
+
+2013-03-12  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_casts with to* functions.
+        https://bugs.webkit.org/show_bug.cgi?id=112072
+
+        Reviewed by Philip Rogers.
+
+        to* functions are preferred over static_cast calls since they
+        help to catch bad casts easily on the testing infrastructure.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::focusedNodeChanged):
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::ContextMenuClientImpl::getCustomMenuFromDefaultItems):
+        * src/DOMUtilitiesPrivate.cpp:
+        (WebCore::toHTMLElement):
+        * src/WebSearchableFormData.cpp:
+        (HTMLNames::IsSelectInDefaultState):
+
 2013-03-11  Sheriff Bot  <webkit.review.bot@gmail.com>
 
         Unreviewed, rolling out r145462.

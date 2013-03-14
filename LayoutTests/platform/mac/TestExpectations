@@ -401,6 +401,8 @@ storage/storageinfo-missing-arguments.html
 storage/storageinfo-no-callbacks.html
 storage/storageinfo-query-usage.html
 storage/storageinfo-request-quota.html
+storage/storagequota-query-usage.html
+storage/storagequota-request-quota.html
 
 # Tests that require ENABLE(DOWNLOAD_ATTRIBUTE).
 fast/dom/HTMLAnchorElement/anchor-nodownload.html
@@ -878,7 +880,6 @@ platform/mac/fast/forms/listbox-scrollbar-hit-test.html
 # <rdar://problem/11224894> Several Japanese vertical text tests failing on Mountain Lion
 fast/dynamic/text-combine.html
 fast/repaint/japanese-rl-selection-clear.html
-fast/repaint/japanese-rl-selection-repaint-in-regions.html
 fast/repaint/japanese-rl-selection-repaint.html
 fast/repaint/repaint-across-writing-mode-boundary.html
 fast/ruby/base-shorter-than-text.html
@@ -1445,19 +1446,37 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
 
 webkit.org/b/111521 editing/selection/selection-invalid-offset.html [ Crash Pass ]
+webkit.org/b/111521 editing/selection/selection-in-iframe-removed-crash.html [ Crash Pass ]
 
 webkit.org/b/111613 platform/mac/fast/speechsynthesis/speech-synthesis-cancel.html [ Crash Pass ]
 
-webkit.org/b/110546 fast/parser/document-write-fighting-eof.html [ Crash ]
+webkit.org/b/110546 [ DEBUG ] fast/parser/document-write-fighting-eof.html [ Skip ]
+webkit.org/b/110546 [ DEBUG ] fast/parser/document-write-partial-entity-before-load.html [ Skip ]
 
 webkit.org/b/111647 sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A1.1_T2.html [ Skip ]
 webkit.org/b/111647 sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A2.1_T2.html [ Skip ]
 
 webkit.org/b/111650 http/tests/cookies/third-party-cookie-relaxing.html [ Failure Pass ]
-webkit.org/b/111650 http/tests/cookies/third-party-cookie-accept-policy.html [ Failure Pass ]
+webkit.org/b/111650 http/tests/plugins/third-party-cookie-accept-policy.html [ Failure Pass ]
 
 webkit.org/b/111754 inspector/debugger/debugger-expand-scope.html [ Crash Pass ]
 
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure Pass ]
 webkit.org/b/111606 fast/borders/border-fit.html [ Failure Pass ]
 webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure Pass ]
+
+# The following tests only fail on Mac EWS bots. Unfortunately, we haven't been able to figure out the cause of these failures.
+webkit.org/b/112176 canvas/philip/tests/2d.path.arc.scale.2.html [ Failure Pass ]
+webkit.org/b/112176 canvas/philip/tests/2d.path.arcTo.scale.html [ Failure Pass ]
+webkit.org/b/112176 canvas/philip/tests/2d.path.arcTo.transformation.html [ Failure Pass ]
+webkit.org/b/112176 canvas/philip/tests/2d.path.stroke.scale1.html [ Failure Pass ]
+webkit.org/b/112176 canvas/philip/tests/2d.path.stroke.skew.html [ Failure Pass ]
+webkit.org/b/112176 compositing/overflow/composited-scrolling-paint-phases.html [ Failure Pass ]
+webkit.org/b/112176 fast/canvas/canvas-composite-alpha.html [ Failure Pass ]
+webkit.org/b/112176 fast/canvas/webgl/read-pixels-test.html [ Failure Pass ]
+
+# The following ref-test appears to fail on EWS bots as well.
+webkit.org/b/112176 fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure Pass ]
+# Once the bug 112176 is fixed, potentially restore the following test expectations.
+# webkit.org/b/105998 [ Lion Release ] fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure ]
+# webkit.org/b/105998 [ MountainLion Debug ] fast/css/sticky/inline-sticky-abspos-child.html [ ImageOnlyFailure Pass ]

@@ -237,6 +237,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     , m_scrollingPerformanceLoggingEnabled(false)
     , m_mainFrameIsScrollable(true)
 #if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    , m_readyToFindPrimarySnapshottedPlugin(false)
     , m_didFindPrimarySnapshottedPlugin(false)
 #endif
 #if PLATFORM(MAC)
@@ -2341,6 +2342,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setAggressiveTileRetentionEnabled(store.getBoolValueForKey(WebPreferencesKey::aggressiveTileRetentionEnabledKey()));
     settings->setCSSCustomFilterEnabled(store.getBoolValueForKey(WebPreferencesKey::cssCustomFilterEnabledKey()));
     RuntimeEnabledFeatures::setCSSRegionsEnabled(store.getBoolValueForKey(WebPreferencesKey::cssRegionsEnabledKey()));
+    RuntimeEnabledFeatures::setCSSCompositingEnabled(store.getBoolValueForKey(WebPreferencesKey::cssCompositingEnabledKey()));
     settings->setCSSGridLayoutEnabled(store.getBoolValueForKey(WebPreferencesKey::cssGridLayoutEnabledKey()));
     settings->setRegionBasedColumnsEnabled(store.getBoolValueForKey(WebPreferencesKey::regionBasedColumnsEnabledKey()));
     settings->setWebGLEnabled(store.getBoolValueForKey(WebPreferencesKey::webGLEnabledKey()));
@@ -2898,6 +2900,9 @@ void WebPage::addPluginView(PluginView* pluginView)
     ASSERT(!m_pluginViews.contains(pluginView));
 
     m_pluginViews.add(pluginView);
+#if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    determinePrimarySnapshottedPlugIn();
+#endif
 }
 
 void WebPage::removePluginView(PluginView* pluginView)
@@ -3861,6 +3866,7 @@ void WebPage::didCommitLoad(WebFrame* frame)
 void WebPage::didFinishLoad(WebFrame* frame)
 {
 #if ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
+    m_readyToFindPrimarySnapshottedPlugin = true;
     determinePrimarySnapshottedPlugIn();
 #endif
 }
@@ -3874,7 +3880,10 @@ static int primarySnapshottedPlugInMinimumHeight = 300;
 
 void WebPage::determinePrimarySnapshottedPlugIn()
 {
-    if (!corePage()->hasSeenAnyPlugin())
+    if (!m_readyToFindPrimarySnapshottedPlugin)
+        return;
+
+    if (m_pluginViews.isEmpty())
         return;
 
     if (m_didFindPrimarySnapshottedPlugin)
@@ -3944,6 +3953,7 @@ void WebPage::determinePrimarySnapshottedPlugIn()
 
 void WebPage::resetPrimarySnapshottedPlugIn()
 {
+    m_readyToFindPrimarySnapshottedPlugin = false;
     m_didFindPrimarySnapshottedPlugin = false;
 }
 #endif // ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)

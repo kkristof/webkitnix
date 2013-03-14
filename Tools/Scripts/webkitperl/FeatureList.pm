@@ -137,6 +137,7 @@ my (
     $templateElementSupport,
     $textAutosizingSupport,
     $tiledBackingStoreSupport,
+    $threadedHTMLParserSupport,
     $touchEventsSupport,
     $touchSliderSupport,
     $touchIconLoadingSupport,
@@ -440,6 +441,9 @@ my @features = (
     { option => "tiled-backing-store", desc => "Toggle Tiled Backing Store support",
       define => "WTF_USE_TILED_BACKING_STORE", default => (isQt() || isEfl()), value => \$tiledBackingStoreSupport },
 
+    { option => "threaded-html-parser", desc => "Toggle threaded HTML parser support",
+      define => "ENABLE_THREADED_HTML_PARSER", default => isChromium(), value => \$threadedHTMLParserSupport },
+
     { option => "touch-events", desc => "Toggle Touch Events support",
       define => "ENABLE_TOUCH_EVENTS", default => (isQt() || isBlackBerry() || isEfl()), value => \$touchEventsSupport },
 
@@ -465,7 +469,7 @@ my @features = (
       define => "ENABLE_WEBGL", default => (isAppleMacWebKit() || isGtk() || isEfl()), value => \$webglSupport },
 
     { option => "web-audio", desc => "Toggle Web Audio support",
-      define => "ENABLE_WEB_AUDIO", default => (isEfl()), value => \$webAudioSupport },
+      define => "ENABLE_WEB_AUDIO", default => (isEfl() || isGtk()), value => \$webAudioSupport },
 
     { option => "web-sockets", desc => "Toggle Web Sockets support",
       define => "ENABLE_WEB_SOCKETS", default => 1, value => \$webSocketsSupport },

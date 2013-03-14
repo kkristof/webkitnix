@@ -74,6 +74,7 @@
 #include "ExceptionCodePlaceholder.h"
 #include "FlowThreadController.h"
 #include "FocusController.h"
+#include "FontLoader.h"
 #include "FormController.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -487,6 +488,9 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
 #endif
 #if ENABLE(TEMPLATE_ELEMENT)
     , m_templateDocumentHost(0)
+#endif
+#if ENABLE(FONT_LOAD_EVENTS)
+    , m_fontloader(0)
 #endif
 {
     m_printing = false;
@@ -1124,6 +1128,11 @@ bool Document::cssStickyPositionEnabled() const
 bool Document::cssRegionsEnabled() const
 {
     return RuntimeEnabledFeatures::cssRegionsEnabled(); 
+}
+
+bool Document::cssCompositingEnabled() const
+{
+    return RuntimeEnabledFeatures::cssCompositingEnabled();
 }
 
 bool Document::cssGridLayoutEnabled() const
@@ -2864,7 +2873,7 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
         if (isHTMLDocument()) {
             // Exception (for sandboxed documents) ignored.
-            static_cast<HTMLDocument*>(this)->setCookie(content, IGNORE_EXCEPTION);
+            toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
         }
     } else if (equalIgnoringCase(equiv, "content-language"))
         setContentLanguage(content);
@@ -5755,7 +5764,7 @@ Node* eventTargetNodeForDocument(Document* doc)
         return 0;
     Node* node = doc->focusedNode();
     if (!node && doc->isPluginDocument()) {
-        PluginDocument* pluginDocument = static_cast<PluginDocument*>(doc);
+        PluginDocument* pluginDocument = toPluginDocument(doc);
         node =  pluginDocument->pluginNode();
     }
     if (!node && doc->isHTMLDocument())
@@ -6083,6 +6092,15 @@ Document* Document::ensureTemplateDocument()
     m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
 
     return m_templateDocument.get();
+}
+#endif
+
+#if ENABLE(FONT_LOAD_EVENTS)
+PassRefPtr<FontLoader> Document::fontloader()
+{
+    if (!m_fontloader)
+        m_fontloader = FontLoader::create(this);
+    return m_fontloader;
 }
 #endif
 

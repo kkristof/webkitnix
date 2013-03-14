@@ -211,11 +211,6 @@ String InspectorFrontendHost::localizedStringsURL()
     return m_client ? m_client->localizedStringsURL() : "";
 }
 
-String InspectorFrontendHost::hiddenPanels()
-{
-    return m_client ? m_client->hiddenPanels() : "";
-}
-
 void InspectorFrontendHost::copyText(const String& text)
 {
     Pasteboard::generalPasteboard()->writePlainText(text, Pasteboard::CannotSmartReplace);
@@ -248,17 +243,6 @@ void InspectorFrontendHost::append(const String& url, const String& content)
 
 void InspectorFrontendHost::close(const String&)
 {
-}
-
-bool InspectorFrontendHost::canInspectWorkers()
-{
-#if ENABLE(WORKERS)
-    if (m_client)
-        return m_client->canInspectWorkers();
-    return false;
-#else
-    return false;
-#endif
 }
 
 void InspectorFrontendHost::sendMessageToBackend(const String& message)

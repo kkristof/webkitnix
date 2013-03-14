@@ -19,7 +19,7 @@
 #include "config.h"
 #include "FontPlatformData.h"
 
-#include "HarfBuzzNGFace.h"
+#include "HarfBuzzFace.h"
 #include "ITypeUtils.h"
 
 #include <BlackBerryPlatformGraphicsContext.h>
@@ -28,17 +28,16 @@
 
 namespace WebCore {
 
-FontPlatformData::FontPlatformData(FILECHAR* name, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, TextOrientation textOrientation, FontWidthVariant widthVariant)
+FontPlatformData::FontPlatformData(FILECHAR* name, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
     : m_syntheticBold(syntheticBold)
     , m_syntheticOblique(syntheticOblique)
     , m_orientation(orientation)
-    , m_textOrientation(textOrientation)
     , m_size(size)
     , m_widthVariant(widthVariant)
     , m_font(0)
     , m_name(fastStrDup(name))
     , m_scaledFont(0)
-    , m_harfbuzzFace()
+    , m_harfBuzzFace()
     , m_isColorBitmapFont(false)
 {
     ASSERT(name);
@@ -101,7 +100,7 @@ bool FontPlatformData::applyState(FS_STATE* font, float scale) const
         return false;
 
     if (m_orientation == Vertical) {
-        if (FS_set_flags(font, (m_textOrientation == TextOrientationVerticalRight) ? FLAGS_VERTICAL_ROTATE_LEFT_ON : FLAGS_VERTICAL_ON) != SUCCESS)
+        if (FS_set_flags(font, FLAGS_VERTICAL_ON) != SUCCESS)
             return false;
     }
     return true;
@@ -109,7 +108,7 @@ bool FontPlatformData::applyState(FS_STATE* font, float scale) const
 
 void FontPlatformData::platformDataInit(const FontPlatformData& source)
 {
-    m_harfbuzzFace = source.m_harfbuzzFace;
+    m_harfBuzzFace = source.m_harfBuzzFace;
     m_scaledFont = 0;
     if (source.m_font && source.m_font != hashTableDeletedFontValue()) {
         m_font = FS_new_client(source.m_font, 0);
@@ -122,7 +121,7 @@ void FontPlatformData::platformDataInit(const FontPlatformData& source)
 
 const FontPlatformData& FontPlatformData::platformDataAssign(const FontPlatformData& other)
 {
-    m_harfbuzzFace = other.m_harfbuzzFace;
+    m_harfBuzzFace = other.m_harfBuzzFace;
     m_scaledFont = 0;
     if (other.m_font && other.m_font != hashTableDeletedFontValue()) {
         m_font = FS_new_client(other.m_font, 0);
@@ -154,14 +153,14 @@ String FontPlatformData::description() const
 }
 #endif
 
-HarfBuzzNGFace* FontPlatformData::harfbuzzFace()
+HarfBuzzFace* FontPlatformData::harfBuzzFace()
 {
-    if (!m_harfbuzzFace) {
+    if (!m_harfBuzzFace) {
         uint64_t uniqueID = reinterpret_cast<uintptr_t>(m_font);
-        m_harfbuzzFace = HarfBuzzNGFace::create(const_cast<FontPlatformData*>(this), uniqueID);
+        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID);
     }
 
-    return m_harfbuzzFace.get();
+    return m_harfBuzzFace.get();
 }
 
 FS_STATE* FontPlatformData::scaledFont(float scale) const

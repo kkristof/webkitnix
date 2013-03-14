@@ -1,3 +1,152 @@
+2013-03-14  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] InRegionScrollableArea: fix call to visibleContentRect()
+        https://bugs.webkit.org/show_bug.cgi?id=112244
+
+        Reviewed by Rob Buis.
+
+        Since r143295 visibleContentRect() receives an enum, not a boolean.
+
+        * WebKitSupport/InRegionScrollableArea.cpp:
+        (BlackBerry::WebKit::InRegionScrollableArea::InRegionScrollableArea):
+
+2013-03-13  Iris Wu  <shuwu@blackberry.com>
+
+        [BlackBerry] Do not do scroll position adjustment if selecting in a subframe
+        https://bugs.webkit.org/show_bug.cgi?id=112290
+
+        Reviewed by Rob Buis.
+
+        PR 267394
+
+        In SelectionHandler::ensureSelectedTextVisible(), scroll position
+        animation is based on main frame. If selecting in a subframe, don't
+        do animation.
+
+        Internally Reviewed By Genevieve Mak.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::ensureSelectedTextVisible):
+
+2013-03-13  Genevieve Mak  <gmak@rim.com>
+
+        [BlackBerry] Add Proximity Detector.
+        https://bugs.webkit.org/show_bug.cgi?id=112278
+
+        Reviewed by Rob Buis.
+
+        Internally Reviewed by Mike Lattanzio.
+        PR #243385
+
+        * WebKitSupport/ProximityDetector.cpp: Added.
+        (WebKit):
+        (BlackBerry::WebKit::getPriorityLevel):
+        (BlackBerry::WebKit::ProximityDetector::ProximityDetector):
+        (BlackBerry::WebKit::ProximityDetector::~ProximityDetector):
+        (BlackBerry::WebKit::ProximityDetector::findBestPoint):
+        * WebKitSupport/ProximityDetector.h: Added.
+        (WebCore):
+        (WebKit):
+        (ProximityDetector):
+
+2013-03-13  Iris Wu  <shuwu@blackberry.com>
+
+        [BlackBerry] Touch Hold selection does not scroll text area or other subframe until selection reaches bottom of the page.
+        https://bugs.webkit.org/show_bug.cgi?id=112259
+
+        Reviewed by Rob Buis.
+
+        PR 267394
+
+        While selecting in a subframe, check that the selection reaches
+        the bottom of the current subframe instead of the page.
+
+        Internally Reviewed by Genevieve Mak.
+
+        * Api/InRegionScroller.cpp:
+        (BlackBerry::WebKit::InRegionScrollerPrivate::updateSelectionScrollView):
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::selectAtPoint):
+        (BlackBerry::WebKit::SelectionHandler::ensureSelectedTextVisible):
+        (BlackBerry::WebKit::SelectionHandler::selectionViewportRect):
+        (WebKit):
+        (BlackBerry::WebKit::SelectionHandler::expandSelectionToGranularity):
+        * WebKitSupport/SelectionHandler.h:
+        (BlackBerry::WebKit::SelectionHandler::setSelectionViewportRect):
+        (SelectionHandler):
+
+2013-03-12  Mike Fenton  <mifenton@rim.com>
+
+        [BlackBerry] Prevent text selection inside Colour and Date/Time input fields
+        https://bugs.webkit.org/show_bug.cgi?id=111733
+
+        Reviewed by Rob Buis.
+
+        PR 305194.
+
+        Skip rendering of selection if it is in a popup driven
+        input field.  This covers situations where EditorClientBlackBerry::shouldChangeSelectedRange
+        is either not called or focus is not complete when called.
+
+        Informally reviewed by Gen Mak.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::selectionPositionChanged):
+        (WebKit):
+
+2013-03-12  Genevieve Mak  <gmak@rim.com>
+
+        [BlackBerry] Notify client if the selection is in a subframe when started.
+        https://bugs.webkit.org/show_bug.cgi?id=112065
+
+        Reviewed by Rob Buis.
+
+        PR #278490
+        Internally Reviewed by Mike Fenton.
+
+        * Api/InRegionScroller.cpp:
+        (BlackBerry::WebKit::InRegionScrollerPrivate::updateSelectionScrollView):
+        (WebKit):
+        * Api/InRegionScroller_p.h:
+        (InRegionScrollerPrivate):
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::updateSelectionScrollView):
+        (WebKit):
+        * Api/WebPageClient.h:
+        * Api/WebPage_p.h:
+        (WebPagePrivate):
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::cancelSelection):
+        (BlackBerry::WebKit::SelectionHandler::setSelection):
+
+2013-03-12  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] SelectionHandler: fix truncated line
+        https://bugs.webkit.org/show_bug.cgi?id=112133
+
+        Reviewed by Carlos Garcia Campos.
+
+        One of the calls to fatFingersResult.nodeAsElementIfApplicable()
+        was somehow truncated when the selection start animation was
+        upstreamed in r144640.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::selectAtPoint):
+
+2013-03-12  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] Fix visible_units.h includes
+        https://bugs.webkit.org/show_bug.cgi?id=112131
+
+        Reviewed by Carlos Garcia Campos.
+
+        This file was renamed to VisibleUnits.h in r144911.
+
+        * WebKitSupport/DOMSupport.cpp:
+        * WebKitSupport/InputHandler.cpp:
+        * WebKitSupport/SelectionHandler.cpp:
+        * WebKitSupport/SpellingHandler.cpp:
+
 2013-03-11  Jochen Eisinger  <jochen@chromium.org>
 
         Rename DefinitelyProcessingUserGesture to DefinitelyProcessingNewUserGesture

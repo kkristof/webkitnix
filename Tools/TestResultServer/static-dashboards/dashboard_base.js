@@ -410,26 +410,6 @@ function isTipOfTreeWebKitBuilder()
 var g_resultsByBuilder = {};
 var g_expectationsByPlatform = {};
 
-// TODO(aboxhall): figure out whether this is a performance bottleneck and
-// change calling code to understand the trie structure instead if necessary.
-function flattenTrie(trie, prefix)
-{
-    var result = {};
-    for (var name in trie) {
-        var fullName = prefix ? prefix + "/" + name : name;
-        var data = trie[name];
-        if ("results" in data)
-            result[fullName] = data;
-        else {
-            var partialResult = flattenTrie(data, fullName);
-            for (var key in partialResult) {
-                result[key] = partialResult[key];
-            }
-        }
-    }
-    return result;
-}
-
 function isTreeMap()
 {
     return string.endsWith(window.location.pathname, 'treemap.html');
@@ -438,11 +418,6 @@ function isTreeMap()
 function isFlakinessDashboard()
 {
     return string.endsWith(window.location.pathname, 'flakiness_dashboard.html');
-}
-
-function resourceLoadingComplete()
-{
-    handleLocationChange();
 }
 
 function handleLocationChange()
@@ -645,6 +620,6 @@ function decompressResults(builderResults)
 }
 
 window.addEventListener('load', function() {
-    g_resourceLoader = new loader.Loader();
+    g_resourceLoader = new loader.Loader(handleLocationChange);
     g_resourceLoader.load();
 }, false);

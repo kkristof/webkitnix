@@ -3624,7 +3624,7 @@ void HTMLMediaElement::mediaPlayerSawUnsupportedTracks(MediaPlayer*)
     // This is normally acceptable except when we are in a standalone
     // MediaDocument. If so, tell the document what has happened.
     if (ownerDocument()->isMediaDocument()) {
-        MediaDocument* mediaDocument = static_cast<MediaDocument*>(ownerDocument());
+        MediaDocument* mediaDocument = toMediaDocument(ownerDocument());
         mediaDocument->mediaElementSawUnsupportedTracks();
     }
 }
@@ -4140,7 +4140,8 @@ void HTMLMediaElement::getPluginProxyParams(KURL& url, Vector<String>& names, Ve
     Frame* frame = document()->frame();
 
     if (isVideo()) {
-        KURL posterURL = getNonEmptyURLAttribute(posterAttr);
+        HTMLVideoElement* video = static_cast<HTMLVideoElement*>(this);
+        KURL posterURL = video->posterImageURL();
         if (!posterURL.isEmpty() && frame && frame->loader()->willLoadMediaElementURL(posterURL)) {
             names.append(ASCIILiteral("_media_element_poster_"));
             values.append(posterURL.string());
