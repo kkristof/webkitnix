@@ -37,11 +37,6 @@
 
 namespace WebKit {
 
-PlatformWidget WebPageProxy::viewWidget()
-{
-    return 0;
-}
-
 String WebPageProxy::standardUserAgent(const String&)
 {
     WTF::String platform;

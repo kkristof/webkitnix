@@ -519,12 +519,45 @@ void testObjectiveCAPI()
     }
 
     @autoreleasepool {
+        JSContext *context = [[JSContext alloc] init];
+        TestObject *testObject = [TestObject testObject];
+        context[@"testObject"] = testObject;
+        JSValue *result = [context evaluateScript:@"Function.prototype.toString.call(testObject.callback)"];
+        NSLog(@"toString = %@", [result toString]);
+        checkResult(@"Function.prototype.toString", !context.exception && ![result isUndefined]);
+    }
+
+    @autoreleasepool {
         JSContext *context1 = [[JSContext alloc] init];
         JSContext *context2 = [[JSContext alloc] initWithVirtualMachine:context1.virtualMachine];
         JSValue *value = [JSValue valueWithDouble:42 inContext:context2];
         context1[@"passValueBetweenContexts"] = value;
         JSValue *result = [context1 evaluateScript:@"passValueBetweenContexts"];
         checkResult(@"[value isEqualToObject:result]", [value isEqualToObject:result]);
+    }
+
+    @autoreleasepool {
+        JSContext *context = [[JSContext alloc] init];
+        context[@"handleTheDictionary"] = ^(NSDictionary *dict) {
+            NSDictionary *expectedDict = @{
+                @"foo" : [NSNumber numberWithInt:1],
+                @"bar" : @{
+                    @"baz": [NSNumber numberWithInt:2]
+                }
+            };
+            checkResult(@"recursively convert nested dictionaries", [dict isEqualToDictionary:expectedDict]);
+        };
+        [context evaluateScript:@"var myDict = { \
+            'foo': 1, \
+            'bar': {'baz': 2} \
+        }; \
+        handleTheDictionary(myDict);"];
+
+        context[@"handleTheArray"] = ^(NSArray *array) {
+            NSArray *expectedArray = @[@"foo", @"bar", @[@"baz"]];
+            checkResult(@"recursively convert nested arrays", [array isEqualToArray:expectedArray]);
+        };
+        [context evaluateScript:@"var myArray = ['foo', 'bar', ['baz']]; handleTheArray(myArray);"];
     }
 
     @autoreleasepool {

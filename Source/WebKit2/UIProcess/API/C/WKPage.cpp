@@ -875,3 +875,12 @@ void WKPageContextMenuItemSelected(WKPageRef page, WKContextMenuItemRef item)
 #endif
 }
 
+void WKPageSetOverridePrivateBrowsingEnabled(WKPageRef pageRef, bool enabled)
+{
+    toImpl(pageRef)->setOverridePrivateBrowsingEnabled(enabled);
+}
+
+bool WKPageGetOverridePrivateBrowsingEnabled(WKPageRef pageRef)
+{
+    return toImpl(pageRef)->overridePrivateBrowsingEnabled();
+}

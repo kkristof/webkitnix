@@ -1,3 +1,54 @@
+2013-03-14  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        Add selectTrailingWhitespaceEnabled setting to WebCore::Page
+        https://bugs.webkit.org/show_bug.cgi?id=109404
+
+        Reviewed by Tony Chang.
+
+        Use new settings for smartInsertDeleteEnabled and
+        selectTrailingWhitespaceEnabled.
+
+        * WebCoreSupport/WebEditorClient.cpp:
+        (WebEditorClient::smartInsertDeleteEnabled):
+        (WebEditorClient::isSelectTrailingWhitespaceEnabled):
+        * WebView.cpp:
+        (WebView::WebView):
+        (WebView::setSmartInsertDeleteEnabled):
+        (WebView::smartInsertDeleteEnabled):
+        (WebView::setSelectTrailingWhitespaceEnabled):
+        (WebView::isSelectTrailingWhitespaceEnabled):
+        * WebView.h:
+        (WebView):
+
+2013-03-14  Jesus Sanchez-Palencia  <jesus.palencia@openbossa.org>
+
+        Move platform-specific typedefs to PlatformMenuDescription.h
+        https://bugs.webkit.org/show_bug.cgi?id=111876
+
+        Reviewed by Caio Marcelo de Oliveira Filho.
+
+        Rename NativeMenuItem to PlatformContextMenuItem and the getter
+        function call.
+
+        * WebCoreSupport/WebContextMenuClient.cpp:
+        (WebContextMenuClient::customizeMenu):
+        (WebContextMenuClient::contextMenuItemSelected):
+        * WebView.cpp:
+        (WebView::handleContextMenuEvent):
+
+2013-03-14  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_casts with to* helper functions.
+        https://bugs.webkit.org/show_bug.cgi?id=112296
+
+        Reviewed by Kentaro Hara.
+
+        to* helper functions are preferred over static_cast calls since they
+        help to catch bad casts easily on the testing infrastructure.
+
+        * WebView.cpp:
+        (WebView::enterFullscreenForNode):
+
 2013-03-13  Nate Chapin  <japhet@chromium.org>
 
         Expose symbols for internals

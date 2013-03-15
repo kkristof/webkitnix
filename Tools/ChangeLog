@@ -1,3 +1,232 @@
+2013-03-15  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Remove simple getters and setters from TestRunnerQt
+        https://bugs.webkit.org/show_bug.cgi?id=112343
+
+        Reviewed by Benjamin Poulain.
+
+        The removed functions and boolean members
+        are being replaced by the implementations in the
+        generic TestRunner.h.
+
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp:
+        (DumpRenderTree::dumpFrameScrollPosition):
+        (DumpRenderTree::dumpFramesAsText):
+        (DumpRenderTree::dump):
+        (DumpRenderTree::titleChanged):
+        (DumpRenderTree::dumpDatabaseQuota):
+        (DumpRenderTree::dumpApplicationCacheQuota):
+        (DumpRenderTree::statusBarMessage):
+        (DumpRenderTree::createWindow):
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        (TestRunnerQt::reset):
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+
+2013-03-15  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Update the link on build.webkit.org to refer to perf.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=112416
+
+        Reviewed by Philip Rogers.
+
+        Updated the link. Also updated the template to use HTML5 DOCTYPE.
+
+        * BuildSlaveSupport/build.webkit.org-config/templates/root.html:
+
+2013-03-15  Tobias Mueller  <tobiasmue@gnome.org>
+
+        Build fix for Tools/GtkLauncher/Programs_GtkLauncher-main.o if gstreamer is not installed
+        https://bugs.webkit.org/show_bug.cgi?id=112394
+
+        Reviewed by Philippe Normand.
+
+        * GtkLauncher/main.c:
+        (main): Guard using the gstreamer function with #ifdef WTF_USE_GSTREAMER
+
+2013-03-14  Andreas Kling  <akling@apple.com>
+
+        REGRESSION(r145169): [Mac][WK2] http/tests/security/cross-frame-access-put.html fails.
+        <http://webkit.org/b/111815>
+        <rdar://problem/13380145>
+
+        Reviewed by Anders Carlsson.
+
+        Add PlatformWebView::didInitializeClients() and call it after setting up all the clients
+        after creating a PlatformWebView. Otherwise, the initial WindowAndViewFramesChanged message
+        will be sent before there's a UI client set up to adjust the frame with WTR's fake origin.
+
+        * WebKitTestRunner/PlatformWebView.h:
+        (PlatformWebView):
+        * WebKitTestRunner/TestController.cpp:
+        (WTR::TestController::createOtherPage):
+        (WTR::TestController::createWebViewWithOptions):
+        * WebKitTestRunner/mac/PlatformWebViewMac.mm:
+        (WTR::PlatformWebView::didInitializeClients):
+
+2013-03-14  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][MiniBrowser] Add a search field to the MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=112122
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Implement a search field to test API ewk_view_text_find() and add a shortcut 'ctrl' + f.
+
+        * MiniBrowser/efl/main.c:
+        (_Browser_Window):
+        (search_box_show):
+        (search_box_hide):
+        (on_key_down):
+        (on_url_changed):
+        (on_search_field_aborted):
+        (on_search_field_activated):
+        (on_search_field_clicked):
+        (on_search_backward_button_clicked):
+        (on_search_forward_button_clicked):
+        (window_create):
+
+2013-03-14  Julie Parent  <jparent@chromium.org>
+
+        Cleanup: Remove g_resourceLoader.
+        https://bugs.webkit.org/show_bug.cgi?id=112305
+
+        Reviewed by Dirk Pranke.
+        
+        Removing another global.
+        
+        Now, each dashboard creates its own loader, rather than having
+        a general global one.
+        
+        Remove usage of g_resourceLoader.isLoadingComplete from 
+        handleLocationChange by ensuring that handleLocationChange is
+        never called before the loader is done.  It was called in two
+        places before: 1 was from the callback when the loader is done,
+        so that was obviously true, and the other was from onhashchange,
+        where it would just return rather than running.  Instead, lets
+        only register the onhashchange handler once the loader is
+        setup, so the check is no longer necessary.
+        
+        Remove isLoadingComplete since it is now unused.
+        
+        Callback for loader is now initializeHistory, rather than just
+        handleLocationChange which will set up the hashchange handler now.
+        This will all eventually be moving to a new History object.
+
+        * TestResultServer/static-dashboards/aggregate_results.html:
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (handleLocationChange):
+        (intializeHistory):
+        (decompressResults):
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (generatePage):
+        * TestResultServer/static-dashboards/loader.js:
+        (.):
+        * TestResultServer/static-dashboards/loader_unittests.js:
+        * TestResultServer/static-dashboards/timeline_explorer.html:
+        * TestResultServer/static-dashboards/treemap.html:
+
+2013-03-14  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        Add selectTrailingWhitespaceEnabled setting to WebCore::Page
+        https://bugs.webkit.org/show_bug.cgi?id=109404
+
+        Reviewed by Tony Chang.
+
+        Removes all the code related to smartInsertDeleteEnabled and
+        selectTrailingWhitespaceEnabled settings as they will be managed from
+        internals from now on.
+
+        * DumpRenderTree/TestRunner.cpp:
+        (TestRunner::staticFunctions):
+        * DumpRenderTree/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/blackberry/DumpRenderTree.cpp:
+        (WebKit):
+        (BlackBerry::WebKit::DumpRenderTree::resetToConsistentStateBeforeTesting):
+        * DumpRenderTree/blackberry/DumpRenderTreeBlackBerry.h:
+        (DumpRenderTree):
+        * DumpRenderTree/blackberry/TestRunnerBlackBerry.cpp:
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h:
+        (WebTestRunner::WebTestProxy::didStopLoading):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp:
+        (WebTestRunner::TestRunner::TestRunner):
+        (WebTestRunner::TestRunner::reset):
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h:
+        (TestRunner):
+        * DumpRenderTree/chromium/TestRunner/src/WebPreferences.cpp:
+        (WebTestRunner::WebPreferences::applyTo): Set default values for
+        smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled settings as
+        Chromium DRT default values are different from Chromium browser.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp:
+        * DumpRenderTree/chromium/WebViewHost.cpp:
+        * DumpRenderTree/chromium/WebViewHost.h:
+        (WebViewHost):
+        * DumpRenderTree/efl/DumpRenderTreeChrome.cpp:
+        (DumpRenderTreeChrome::resetDefaultsToConsistentValues):
+        * DumpRenderTree/efl/TestRunnerEfl.cpp:
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (resetDefaultsToConsistentValues):
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (resetWebViewToConsistentStateBeforeTesting):
+        * DumpRenderTree/mac/TestRunnerMac.mm:
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp:
+        (WebCore::WebPage::resetSettings):
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+        * DumpRenderTree/win/DumpRenderTree.cpp:
+        (resetWebViewToConsistentStateBeforeTesting):
+        * DumpRenderTree/win/TestRunnerWin.cpp:
+        * DumpRenderTree/wx/TestRunnerWx.cpp:
+
+2013-03-14  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Disable DRT on Windows
+
+        Reviewed by Jocelyn Turcotte.
+
+        We don't run and maintain DRT on Windows, so let's not try to maintain the build of it.
+
+        * qmake/mkspecs/features/configure.prf:
+
+2013-03-14  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL][WK2] Add an API for adding and removing user style sheets from a page group
+        https://bugs.webkit.org/show_bug.cgi?id=110728
+
+        Reviewed by Gyuyoung Kim.
+
+        Use the page group to create the view object.
+
+        * MiniBrowser/efl/main.c:
+        (window_create):
+
+2013-03-14  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Improve the handling of mock geolocation, device orientation and motion clients
+
+        Reviewed by Tor Arne Vestbø.
+
+        The mock versions of these web facing features should be instantiated when
+        running in DumpRenderTree only. In order for them to work, no extra Qt modules
+        such as QtLocation are actually needed.
+
+        This patch decouples enabling device orientation/motion and geolocation from
+        the underlying Qt modules and makes them available in developer builds
+        (!production_build) and backed by mock backends when running in drt.
+
+        So if the Qt 5 modules are available, they'll be used (unless drtRun). For
+        developers the web facing features are always enabled (although requests will
+        time out) and the mock backends are enabled inside DRT, allowing for the layout
+        tests to run with less dependencies.
+
+        In addition this also enables the mock device motion client, which was
+        previously never instantiated.
+
+        * qmake/mkspecs/features/features.prf:
+
 2013-03-14  Zeno Albisser  <zeno@webkit.org>
 
         [Qt] Removing no-ops and simple setters/getters from TestRunnerQt
