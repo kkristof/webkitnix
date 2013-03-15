@@ -56,6 +56,8 @@ void BackingStore::incorporateUpdate(ShareableBitmap* bitmap, const UpdateInfo& 
     if (!m_backingStore)
 #if PLATFORM(EFL)
         m_backingStore = WidgetBackingStore::create(EwkView::toEvasObject(toAPI(m_webPageProxy)), size());
+#elif PLATFORM(NIX)
+        m_backingStore = WidgetBackingStore::create(0, size());
 #else
         m_backingStore = WidgetBackingStore::create(m_webPageProxy->viewWidget(), size());
 #endif
