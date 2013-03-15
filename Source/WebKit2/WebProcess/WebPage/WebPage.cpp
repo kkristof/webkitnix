@@ -167,7 +167,7 @@
 #endif
 
 #if PLATFORM(QT)
-#if ENABLE(DEVICE_ORIENTATION)
+#if ENABLE(DEVICE_ORIENTATION) && HAVE(QTSENSORS)
 #include "DeviceMotionClientQt.h"
 #include "DeviceOrientationClientQt.h"
 #endif
@@ -316,7 +316,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 #if ENABLE(GEOLOCATION)
     WebCore::provideGeolocationTo(m_page.get(), new WebGeolocationClient(this));
 #endif
-#if ENABLE(DEVICE_ORIENTATION) && PLATFORM(QT)
+#if ENABLE(DEVICE_ORIENTATION) && PLATFORM(QT) && HAVE(QTSENSORS)
     WebCore::provideDeviceMotionTo(m_page.get(), new DeviceMotionClientQt);
     WebCore::provideDeviceOrientationTo(m_page.get(), new DeviceOrientationClientQt);
 #endif
@@ -335,6 +335,7 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 
     m_page->setCanStartMedia(false);
     m_mayStartMediaWhenInWindow = parameters.mayStartMediaWhenInWindow;
+    m_overridePrivateBrowsingEnabled = parameters.overridePrivateBrowsingEnabled;
 
     m_pageGroup = WebProcess::shared().webPageGroup(parameters.pageGroupData);
     m_page->setGroupName(m_pageGroup->identifier());
@@ -2289,8 +2290,8 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setLocalStorageEnabled(store.getBoolValueForKey(WebPreferencesKey::localStorageEnabledKey()));
     settings->setXSSAuditorEnabled(store.getBoolValueForKey(WebPreferencesKey::xssAuditorEnabledKey()));
     settings->setFrameFlatteningEnabled(store.getBoolValueForKey(WebPreferencesKey::frameFlatteningEnabledKey()));
-
-    bool privateBrowsingEnabled = store.getBoolValueForKey(WebPreferencesKey::privateBrowsingEnabledKey());
+    
+    bool privateBrowsingEnabled = store.getBoolValueForKey(WebPreferencesKey::privateBrowsingEnabledKey()) || m_overridePrivateBrowsingEnabled;
     if (privateBrowsingEnabled)
         WebProcess::shared().ensurePrivateBrowsingSession();
     settings->setPrivateBrowsingEnabled(privateBrowsingEnabled);
@@ -3783,6 +3784,12 @@ void WebPage::didChangeSelection()
 void WebPage::setMainFrameInViewSourceMode(bool inViewSourceMode)
 {
     m_mainFrame->coreFrame()->setInViewSourceMode(inViewSourceMode);
+}
+
+void WebPage::setOverridePrivateBrowsingEnabled(bool overridePrivateBrowsingEnabled)
+{
+    m_overridePrivateBrowsingEnabled = overridePrivateBrowsingEnabled;
+    m_page->settings()->setPrivateBrowsingEnabled(m_page->settings()->privateBrowsingEnabled() || m_overridePrivateBrowsingEnabled);
 }
 
 void WebPage::setMinimumLayoutWidth(double minimumLayoutWidth)

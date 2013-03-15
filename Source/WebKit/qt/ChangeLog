@@ -1,3 +1,103 @@
+2013-03-15  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Unreviewed trivial DRT ASSERT fix
+
+        r145805 erroneously added setController calls for device orientation/motion
+        mock clients. Those ASSERT, the controller ctor already calls setController
+        on the client.
+
+        * WebCoreSupport/QWebPageAdapter.cpp:
+        (QWebPageAdapter::initializeWebCorePage):
+
+2013-03-14  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        Add selectTrailingWhitespaceEnabled setting to WebCore::Page
+        https://bugs.webkit.org/show_bug.cgi?id=109404
+
+        Reviewed by Tony Chang.
+
+        Use new settings for smartInsertDeleteEnabled and
+        selectTrailingWhitespaceEnabled.
+
+        Remove code related to DRT as it is not needed anymore.
+
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        * WebCoreSupport/DumpRenderTreeSupportQt.h:
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::smartInsertDeleteEnabled):
+        (WebCore::EditorClientQt::toggleSmartInsertDelete):
+        (WebCore::EditorClientQt::isSelectTrailingWhitespaceEnabled):
+        (WebCore::EditorClientQt::EditorClientQt):
+        * WebCoreSupport/EditorClientQt.h:
+        (EditorClientQt):
+
+2013-03-14  Rik Cabanier  <cabanier@adobe.com>
+
+        [Qt][WK1] REGRESSION(r145784): Blend tests are failing
+        https://bugs.webkit.org/show_bug.cgi?id=112333
+
+        Reviewed by Ryosuke Niwa.
+
+        Added code to passed compositing prefence to WebCore.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        * Api/qwebsettings.h:
+
+2013-03-14  Abhishek Arya  <inferno@chromium.org>
+
+        Replace static_casts with to* helper functions.
+        https://bugs.webkit.org/show_bug.cgi?id=112296
+
+        Reviewed by Kentaro Hara.
+
+        to* helper functions are preferred over static_cast calls since they
+        help to catch bad casts easily on the testing infrastructure.
+
+        * Api/qwebelement.cpp:
+        (QWebElement::firstChild):
+        (QWebElement::lastChild):
+        (QWebElement::nextSibling):
+        (QWebElement::previousSibling):
+        (QWebElementCollection::at):
+        (QWebElementCollection::toList):
+        * WebCoreSupport/QWebFrameAdapter.cpp:
+        (QWebHitTestResultPrivate::elementForInnerNode):
+
+2013-03-14  Simon Hausmann  <simon.hausmann@digia.com>
+
+        [Qt] Improve the handling of mock geolocation, device orientation and motion clients
+
+        Reviewed by Tor Arne Vestbø.
+
+        The mock versions of these web facing features should be instantiated when
+        running in DumpRenderTree only. In order for them to work, no extra Qt modules
+        such as QtLocation are actually needed.
+
+        This patch decouples enabling device orientation/motion and geolocation from
+        the underlying Qt modules and makes them available in developer builds
+        (!production_build) and backed by mock backends when running in drt.
+
+        So if the Qt 5 modules are available, they'll be used (unless drtRun). For
+        developers the web facing features are always enabled (although requests will
+        time out) and the mock backends are enabled inside DRT, allowing for the layout
+        tests to run with less dependencies.
+
+        In addition this also enables the mock device motion client, which was
+        previously never instantiated.
+
+        * WebCoreSupport/QWebFrameAdapter.cpp:
+        (QWebFrameAdapter::_q_orientationChanged):
+        * WebCoreSupport/QWebFrameAdapter.h:
+        * WebCoreSupport/QWebPageAdapter.cpp:
+        (QWebPageAdapter::initializeWebCorePage):
+        * WebCoreSupport/QWebPageAdapter.h:
+        * WidgetApi/qwebframe.cpp:
+        (QWebFrame::QWebFrame):
+        * WidgetApi/qwebpage.cpp:
+        (QWebPage::setFeaturePermission):
+
 2013-03-13  Simon Hausmann  <simon.hausmann@digia.com>
 
         [Qt] Port TestRunner::findString to shared interface

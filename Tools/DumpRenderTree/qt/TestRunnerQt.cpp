@@ -58,14 +58,7 @@ void TestRunnerQt::reset()
     m_hasDumped = false;
     m_loadFinished = false;
     m_audioDump = false;
-    m_dumpChildrenAsText = false;
-    m_dumpChildFrameScrollPositions = false;
-    m_canOpenWindows = false;
     m_waitForDone = false;
-    m_dumpTitleChanges = false;
-    m_dumpDatabaseCallbacks = false;
-    m_dumpApplicationCacheDelegateCallbacks = false;
-    m_dumpStatusCallbacks = false;
     m_timeoutTimer.stop();
     m_topLoadingFrame = 0;
     m_waitForPolicy = false;
@@ -75,7 +68,6 @@ void TestRunnerQt::reset()
     m_userStyleSheetEnabled = false;
     m_ignoreDesktopNotification = false;
     m_isGeolocationPermissionSet = false;
-    m_isPrinting = false;
     m_geolocationPermission = false;
     m_audioData.clear();
 
@@ -715,16 +707,6 @@ void TestRunnerQt::setScrollbarPolicy(const QString& orientation, const QString&
     m_drt->webPage()->mainFrame()->setScrollBarPolicy(o, p);
 }
 
-void TestRunnerQt::setSmartInsertDeleteEnabled(bool enable)
-{
-    DumpRenderTreeSupportQt::setSmartInsertDeleteEnabled(m_drt->pageAdapter(), enable);
-}
-
-void TestRunnerQt::setSelectTrailingWhitespaceEnabled(bool enable)
-{
-    DumpRenderTreeSupportQt::setSelectTrailingWhitespaceEnabled(m_drt->pageAdapter(), enable);
-}
-
 void TestRunnerQt::execCommand(const QString& name, const QString& value)
 {
     DumpRenderTreeSupportQt::executeCoreCommandByName(m_drt->pageAdapter(), name, value);
@@ -1223,14 +1205,6 @@ void TestRunner::setUseDashboardCompatibilityMode(bool flag)
 }
 
 void TestRunner::setTabKeyCyclesThroughElements(bool)
-{
-}
-
-void TestRunner::setSmartInsertDeleteEnabled(bool)
-{
-}
-
-void TestRunner::setSelectTrailingWhitespaceEnabled(bool)
 {
 }
 

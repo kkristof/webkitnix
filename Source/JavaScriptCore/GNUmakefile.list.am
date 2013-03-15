@@ -24,7 +24,6 @@ javascriptcore_built_nosources += \
 	DerivedSources/JavaScriptCore/NumberConstructor.lut.h \
 	DerivedSources/JavaScriptCore/NumberPrototype.lut.h \
 	DerivedSources/JavaScriptCore/ObjectConstructor.lut.h \
-	DerivedSources/JavaScriptCore/ObjectPrototype.lut.h \
 	DerivedSources/JavaScriptCore/RegExpConstructor.lut.h \
 	DerivedSources/JavaScriptCore/RegExpObject.lut.h \
 	DerivedSources/JavaScriptCore/RegExpPrototype.lut.h \
@@ -59,6 +58,7 @@ javascriptcore_sources += \
 	Source/JavaScriptCore/API/JSStringRef.cpp \
 	Source/JavaScriptCore/API/JSValueRef.cpp \
 	Source/JavaScriptCore/API/JSWeakObjectMapRefInternal.h \
+    Source/JavaScriptCore/API/ObjCCallbackFunction.h \
 	Source/JavaScriptCore/API/OpaqueJSString.cpp \
 	Source/JavaScriptCore/API/OpaqueJSString.h \
 	Source/JavaScriptCore/assembler/AbstractMacroAssembler.h \

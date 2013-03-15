@@ -299,7 +299,11 @@ public:
 #endif
 
     String getImageSourceURL(Element*, ExceptionCode&);
-                    
+
+#if ENABLE(VIDEO)
+    void simulateAudioInterruption(Node*);
+#endif
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

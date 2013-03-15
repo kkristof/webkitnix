@@ -918,7 +918,7 @@ enable?(GESTURE_EVENTS) {
         Shared/qt/NativeWebGestureEventQt.cpp
 }
 
-enable?(GEOLOCATION): QT += location
+have?(qtlocation):enable?(GEOLOCATION): QT += location
 
 use?(3D_GRAPHICS): WEBKIT += angle
 
