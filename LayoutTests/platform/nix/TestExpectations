@@ -684,11 +684,8 @@ fast/css/transform-inline-style-remove.html
 fast/css/transform-inline-style.html
 
 fast/dynamic/012.html [ Skip ]
-fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
-fast/dynamic/floating-to-non-floating.html [ Skip ]
 fast/dynamic/layer-hit-test-crash.html [ Skip ]
 fast/dynamic/positioned-movement-with-positioned-children.html [ Skip ]
-fast/dynamic/static-positioned-to-absolute-positioned.html [ Skip ]
 fast/dynamic/subtree-table-cell-height.html [ Skip ]
 fast/dynamic/window-resize-scrollbars-test.html [ Skip ]
 
@@ -3258,7 +3255,6 @@ fast/masking/parsing-clip-path-shape.html [ Crash Pass ]
 http/tests/appcache/404-manifest.html [ Crash Pass ]
 inspector-protocol/dom-focus.html [ Crash Pass ]
 inspector-protocol/dom-request-child-nodes-depth.html [ Crash Pass ]
-inspector-protocol/layer-tree-generated-content.html [ Crash Pass ]
 canvas/philip/tests/2d.canvas.reference.html [ Timeout Pass ]
 compositing/absolute-position-changed-in-composited-layer.html [ Timeout Pass ]
 compositing/animation/animation-compositing.html [ Timeout Pass ]
@@ -3407,9 +3403,6 @@ compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure ]
 compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
 
 # Text diff: Graphics Layers hidden/appearing.
-compositing/contents-opaque/contents-opaque-background-color.html [ Failure ]
-compositing/contents-opaque/contents-opaque-layer-opacity.html [ Failure ]
-compositing/contents-opaque/contents-opaque-layer-transform.html [ Failure ]
 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
 compositing/geometry/limit-layer-bounds-fixed-positioned.html [ Failure ]
 compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
@@ -3591,7 +3584,6 @@ compositing/reflections/nested-reflection-on-overflow.html [ Missing ]
 compositing/reflections/nested-reflection-transition.html [ Missing ]
 compositing/reflections/nested-reflection-size-change.html [ Missing ]
 compositing/reflections/reflection-positioning.html [ Missing ]
-compositing/reflections/masked-reflection-on-composited.html [ Missing ]
 compositing/reflections/nested-reflection-animated.html [ Missing ]
 compositing/reflections/transform-inside-reflection.html [ Missing ]
 compositing/reflections/nested-reflection-anchor-point.html [ Missing ]
@@ -3952,6 +3944,63 @@ http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 fast/events/touch/multi-touch-inside-iframes.html [ Failure Pass ]
 fast/workers/worker-document-leak.html [ Failure Pass ]
 fast/workers/worker-lifecycle.html [ Failure Pass ]
+
+# Flakey and failing tests before merge 40a701d 8335e4a
+editing/pasteboard/preserve-line-break-at-end-of-pasted-content.html
+editing/spelling/grammar-markers-hidpi.html
+editing/spelling/grammar-markers.html
+editing/spelling/grammar-paste.html
+editing/spelling/spellcheck-async-mutation.html
+editing/spelling/spellcheck-async.html
+editing/spelling/spellcheck-queue.html
+editing/spelling/spelling-marker-description.html
+fast/exclusions/shape-inside/shape-inside-circle-padding.html
+fast/exclusions/shape-inside/shape-inside-circle.html
+fast/exclusions/shape-inside/shape-inside-ellipse-padding.html
+fast/exclusions/shape-inside/shape-inside-ellipse.html
+printing/quirks-percentage-height-body.html
+printing/quirks-percentage-height.html
+printing/standards-percentage-heights.html
+
+# Flakey and failing tests after merge 40a701d 8335e4a
+animations/animation-delay-changed.html
+compositing/overflow/composited-scrolling-paint-phases.html
+css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html
+css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html
+editing/pasteboard/line-feed-between-br-and-b-should-not-reorder-pasted-content.html
+editing/pasteboard/paste-table-003.html
+editing/pasteboard/paste-table-cells.html
+editing/pasteboard/paste-text-005.html
+editing/pasteboard/paste-text-006.html
+editing/pasteboard/paste-text-007.html
+editing/pasteboard/pasting-into-p-should-not-nest-p.html
+fast/borders/border-fit-2.html
+fast/css/first-letter-removed-added.html
+fast/css/getComputedStyle/computed-style-without-renderer.html
+fast/css/getComputedStyle/computed-style.html
+fast/css/tab-size.html
+fast/dom/HTMLDialogElement/closed-dialog-does-not-block-mouse-events.html
+fast/dom/HTMLDialogElement/modal-dialog-blocks-mouse-events.html
+fast/dom/HTMLDialogElement/non-modal-dialog-does-not-block-mouse-events.html
+fast/dom/shadow/touch-event-retargeting.html
+fast/forms/date-multiple-fields/date-multiple-fields-clearbutton-change-and-input-events.html
+fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-clearbutton-change-and-input-events.html
+fast/forms/month-multiple-fields/month-multiple-fields-clearbutton-change-and-input-events.html
+fast/forms/time-multiple-fields/time-multiple-fields-clearbutton-change-and-input-events.html
+fast/forms/week-multiple-fields/week-multiple-fields-clearbutton-change-and-input-events.html
+fast/regions/seamless-iframe-flowed-into-regions.html
+fullscreen/full-screen-table-section.html
+fullscreen/video-cursor-auto-hide.html
+http/tests/misc/delete-frame-during-readystatechange-with-gc-after-video-removal.html
+ietestcenter/css3/flexbox/flexbox-align-baseline-001.htm
+
+# Flakey and failing tests after merge dff29f8 8abe6e2
+editing/pasteboard/cleanup-on-move.html
+editing/pasteboard/copy-paste-content-starting-and-ending-canvas.html
+editing/pasteboard/drag-list-item.html
+storage/storagequota-query-usage.html
+storage/storagequota-request-quota.html
+fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html
 
 # Flakey tests when running pixel tests.
 compositing/background-color/background-color-padding-change.html [ ImageOnlyFailure Pass ]
