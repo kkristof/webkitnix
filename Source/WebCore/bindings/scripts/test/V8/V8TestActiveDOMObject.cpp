@@ -82,17 +82,6 @@ static v8::Handle<v8::Value> excitingAttrAttrGetterCallback(v8::Local<v8::String
     return TestActiveDOMObjectV8Internal::excitingAttrAttrGetter(name, info);
 }
 
-static v8::Handle<v8::Value> excitingAttrAttrGetterForMainWorld(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
-    return v8Integer(imp->excitingAttr(), info.GetIsolate());
-}
-
-static v8::Handle<v8::Value> excitingAttrAttrGetterCallbackForMainWorld(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestActiveDOMObjectV8Internal::excitingAttrAttrGetterForMainWorld(name, info);
-}
-
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     TestActiveDOMObject* imp =  V8TestActiveDOMObject::toNative(host);
@@ -186,12 +175,7 @@ static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> na
 
 static const V8DOMConfiguration::BatchedAttribute V8TestActiveDOMObjectAttrs[] = {
     // Attribute 'excitingAttr' (Type: 'readonly attribute' ExtAttr: '')
-    {"excitingAttr", TestActiveDOMObjectV8Internal::excitingAttrAttrGetterCallback, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-};
-
-static const V8DOMConfiguration::BatchedAttribute V8TestActiveDOMObjectAttrsForMainWorld[] = {
-    // Attribute 'excitingAttr' (Type: 'readonly attribute' ExtAttr: '')
-    {"excitingAttr", TestActiveDOMObjectV8Internal::excitingAttrAttrGetterCallbackForMainWorld, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"excitingAttr", TestActiveDOMObjectV8Internal::excitingAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -201,16 +185,13 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTempla
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestActiveDOMObject", v8::Persistent<v8::FunctionTemplate>(), V8TestActiveDOMObject::internalFieldCount,
         V8TestActiveDOMObjectAttrs, WTF_ARRAY_LENGTH(V8TestActiveDOMObjectAttrs),
-        0, 0, isolate);
+        0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     instance->SetAccessCheckCallbacks(TestActiveDOMObjectV8Internal::namedSecurityCheck, TestActiveDOMObjectV8Internal::indexedSecurityCheck, v8::External::New(&V8TestActiveDOMObject::info));
-
-    if (currentWorldType == MainWorld)
-        V8DOMConfiguration::addToTemplate(desc, V8TestActiveDOMObjectAttrsForMainWorld, WTF_ARRAY_LENGTH(V8TestActiveDOMObjectAttrsForMainWorld), 0, 0, isolate, defaultSignature);
 
     // Custom Signature 'excitingFunction'
     const int excitingFunctionArgc = 1;
@@ -243,6 +224,13 @@ v8::Persistent<v8::FunctionTemplate> V8TestActiveDOMObject::GetTemplate(v8::Isol
 bool V8TestActiveDOMObject::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+}
+
+bool V8TestActiveDOMObject::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
 

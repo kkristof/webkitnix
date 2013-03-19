@@ -36,6 +36,7 @@ class V8TestEventConstructor {
 public:
     static const bool hasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestEventConstructor* toNative(v8::Handle<v8::Object> object)
     {
@@ -50,6 +51,12 @@ public:
 private:
     friend v8::Handle<v8::Object> wrap(TestEventConstructor*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestEventConstructor>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+};
+
+template<>
+class WrapperTypeTraits<TestEventConstructor > {
+public:
+    static WrapperTypeInfo* info() { return &V8TestEventConstructor::info; }
 };
 
 

@@ -1344,6 +1344,9 @@ class Port(object):
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         pass
 
+    def look_for_new_samples(self, unresponsive_processes, start_time):
+        pass
+
     def sample_process(self, name, pid):
         pass
 

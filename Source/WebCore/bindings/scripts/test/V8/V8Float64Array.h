@@ -36,6 +36,7 @@ class V8Float64Array {
 public:
     static const bool hasDependentLifetime = V8ArrayBufferView::hasDependentLifetime;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static Float64Array* toNative(v8::Handle<v8::Object> object)
     {
@@ -50,6 +51,12 @@ public:
 private:
     friend v8::Handle<v8::Object> wrap(Float64Array*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<Float64Array>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+};
+
+template<>
+class WrapperTypeTraits<Float64Array > {
+public:
+    static WrapperTypeInfo* info() { return &V8Float64Array::info; }
 };
 
 

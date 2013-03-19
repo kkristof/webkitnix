@@ -80,27 +80,11 @@ static v8::Handle<v8::Value> nameAttrGetterCallback(v8::Local<v8::String> name, 
     return TestExceptionV8Internal::nameAttrGetter(name, info);
 }
 
-static v8::Handle<v8::Value> nameAttrGetterForMainWorld(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestException* imp = V8TestException::toNative(info.Holder());
-    return v8String(imp->name(), info.GetIsolate(), ReturnUnsafeHandle);
-}
-
-static v8::Handle<v8::Value> nameAttrGetterCallbackForMainWorld(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestExceptionV8Internal::nameAttrGetterForMainWorld(name, info);
-}
-
 } // namespace TestExceptionV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestExceptionAttrs[] = {
     // Attribute 'name' (Type: 'readonly attribute' ExtAttr: '')
-    {"name", TestExceptionV8Internal::nameAttrGetterCallback, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-};
-
-static const V8DOMConfiguration::BatchedAttribute V8TestExceptionAttrsForMainWorld[] = {
-    // Attribute 'name' (Type: 'readonly attribute' ExtAttr: '')
-    {"name", TestExceptionV8Internal::nameAttrGetterCallbackForMainWorld, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"name", TestExceptionV8Internal::nameAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -110,12 +94,9 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8:
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestException", v8::Persistent<v8::FunctionTemplate>(), V8TestException::internalFieldCount,
         V8TestExceptionAttrs, WTF_ARRAY_LENGTH(V8TestExceptionAttrs),
-        0, 0, isolate);
+        0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     
-
-    if (currentWorldType == MainWorld)
-        V8DOMConfiguration::addToTemplate(desc, V8TestExceptionAttrsForMainWorld, WTF_ARRAY_LENGTH(V8TestExceptionAttrsForMainWorld), 0, 0, isolate, defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -139,6 +120,13 @@ v8::Persistent<v8::FunctionTemplate> V8TestException::GetTemplate(v8::Isolate* i
 bool V8TestException::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+}
+
+bool V8TestException::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
 

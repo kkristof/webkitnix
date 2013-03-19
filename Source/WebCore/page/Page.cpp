@@ -54,6 +54,7 @@
 #include "Navigator.h"
 #include "NetworkStateNotifier.h"
 #include "PageCache.h"
+#include "PageConsole.h"
 #include "PageGroup.h"
 #include "PlugInClient.h"
 #include "PluginData.h"
@@ -176,6 +177,7 @@ Page::Page(PageClients& pageClients)
 #endif
     , m_alternativeTextClient(pageClients.alternativeTextClient)
     , m_scriptedAnimationsSuspended(false)
+    , m_console(PageConsole::create(this))
 {
     ASSERT(m_editorClient);
 
@@ -1174,7 +1176,7 @@ void Page::collectPluginViews(Vector<RefPtr<PluginViewBase>, 32>& pluginViewBase
         for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(); it != end; ++it) {
             Widget* widget = (*it).get();
             if (widget->isPluginViewBase())
-                pluginViewBases.append(static_cast<PluginViewBase*>(widget));
+                pluginViewBases.append(toPluginViewBase(widget));
         }
     }
 }
