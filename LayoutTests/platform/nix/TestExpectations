@@ -84,6 +84,16 @@ canvas/philip/tests/2d.text.draw.space.collapse.start.html [ Skip ]
 canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
 
+compositing/background-color/background-color-alpha.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-change-to-text.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-composite.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-container.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-content-clip.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-padding-clip.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-simple.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-text-change.html [ ImageOnlyFailure ]
+compositing/background-color/background-color-text-clip.html [ ImageOnlyFailure ]
+
 css1/box_properties/acid_test.html
 
 #failing css tests that need further investigation
@@ -940,6 +950,7 @@ fast/dom/shadow/user-modify-in-datalist-crash.html [ Skip ]
 fast/dom/shadow/user-modify-inheritance.html [ Skip ]
 fast/dom/shadow/wheel-event-in-shadow-dom.html [ Skip ]
 fast/dom/shadow/wheel-event-on-input-in-shadow-dom.html [ Skip ]
+fast/dom/shadow/distributed-pseudo-element-specifiers-in-left-side.html [ ImageOnlyFailure ]
 
 fast/dom/Window/Plug-ins.html [ Skip ]
 fast/dom/Window/custom-constructors.html [ Skip ]
@@ -1980,6 +1991,8 @@ storage/indexeddb/pending-version-change-on-exit.html [ Skip ]
 storage/indexeddb/pending-version-change-stuck.html [ Skip ]
 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Skip ]
 storage/indexeddb/transaction-complete-workers.html [ Skip ]
+storage/indexeddb/cursor-delete.html [ Skip ]
+storage/indexeddb/keypath-edges.html [ Skip ]
 
 svg/path-arc-invalid.html [ Skip ]
 
@@ -4001,6 +4014,15 @@ editing/pasteboard/drag-list-item.html
 storage/storagequota-query-usage.html
 storage/storagequota-request-quota.html
 fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html
+
+# Flakey and failing tests after merge 1545593 eb8adb3
+editing/pasteboard/smart-drag-drop.html [ Failure Pass ]  
+http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+http/tests/security/xss-DENIED-xsl-external-entity.xml [ Failure ]
+fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ ImageOnlyFailure ]
+fast/parser/document-write-basic.html [ Crash ]
+svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
+sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A3.1_T2.html [ Crash ]
 
 # Flakey tests when running pixel tests.
 compositing/background-color/background-color-padding-change.html [ ImageOnlyFailure Pass ]
