@@ -35,6 +35,7 @@ class V8TestCustomNamedGetter {
 public:
     static const bool hasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestCustomNamedGetter* toNative(v8::Handle<v8::Object> object)
     {
@@ -49,6 +50,12 @@ public:
 private:
     friend v8::Handle<v8::Object> wrap(TestCustomNamedGetter*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestCustomNamedGetter>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+};
+
+template<>
+class WrapperTypeTraits<TestCustomNamedGetter > {
+public:
+    static WrapperTypeInfo* info() { return &V8TestCustomNamedGetter::info; }
 };
 
 

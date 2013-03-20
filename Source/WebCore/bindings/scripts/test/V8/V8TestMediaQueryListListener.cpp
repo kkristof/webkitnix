@@ -99,16 +99,13 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListene
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestMediaQueryListListener", v8::Persistent<v8::FunctionTemplate>(), V8TestMediaQueryListListener::internalFieldCount,
         0, 0,
-        V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods), isolate);
+        V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     
-
-    if (currentWorldType == MainWorld)
-        V8DOMConfiguration::addToTemplate(desc, 0, 0, 0, 0, isolate, defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -132,6 +129,13 @@ v8::Persistent<v8::FunctionTemplate> V8TestMediaQueryListListener::GetTemplate(v
 bool V8TestMediaQueryListListener::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+}
+
+bool V8TestMediaQueryListListener::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
 

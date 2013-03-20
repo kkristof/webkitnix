@@ -361,6 +361,7 @@ END
 
     push(@headerContent, <<END);
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
@@ -512,6 +513,12 @@ END
     }
 
     push(@headerContent, <<END);
+};
+
+template<>
+class WrapperTypeTraits<${nativeType} > {
+public:
+    static WrapperTypeInfo* info() { return &${v8InterfaceName}::info; }
 };
 
 END
@@ -1033,9 +1040,14 @@ END
     }
 
     my $useExceptions = 1 if @{$attribute->getterExceptions};
+    my $isNullable = $attribute->signature->isNullable;
     if ($useExceptions) {
         AddToImplIncludes("ExceptionCode.h");
         push(@implContentInternals, "    ExceptionCode ec = 0;\n");
+    }
+
+    if ($isNullable) {
+        push(@implContentInternals, "    bool isNull = false;\n");
     }
 
     my $returnType = $attribute->signature->type;
@@ -1043,6 +1055,7 @@ END
 
     if ($getterStringUsesImp) {
         my ($functionName, @arguments) = $codeGenerator->GetterExpression(\%implIncludes, $interfaceName, $attribute);
+        push(@arguments, "isNull") if $isNullable;
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
@@ -1066,18 +1079,26 @@ END
         push(@implContentInternals, "        return v8Undefined();\n");
     }
 
-    if ($useExceptions) {
+    if ($useExceptions || $isNullable) {
         if ($nativeType =~ /^V8StringResource/) {
             push(@implContentInternals, "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $getterString) . ";\n");
         } else {
             push(@implContentInternals, "    $nativeType v = $getterString;\n");
         }
-        push(@implContentInternals, "    if (UNLIKELY(ec))\n");
-        push(@implContentInternals, "        return setDOMException(ec, info.GetIsolate());\n");
 
-        if ($codeGenerator->ExtendedAttributeContains($attribute->signature->extendedAttributes->{"CallWith"}, "ScriptState")) {
-            push(@implContentInternals, "    if (state.hadException())\n");
-            push(@implContentInternals, "        return throwError(state.exception(), info.GetIsolate());\n");
+        if ($isNullable) {
+            push(@implContentInternals, "    if (isNull)\n");
+            push(@implContentInternals, "        return v8Null(info.GetIsolate());\n");
+        }
+
+        if ($useExceptions) {
+            push(@implContentInternals, "    if (UNLIKELY(ec))\n");
+            push(@implContentInternals, "        return setDOMException(ec, info.GetIsolate());\n");
+
+            if ($codeGenerator->ExtendedAttributeContains($attribute->signature->extendedAttributes->{"CallWith"}, "ScriptState")) {
+                push(@implContentInternals, "    if (state.hadException())\n");
+                push(@implContentInternals, "        return throwError(state.exception(), info.GetIsolate());\n");
+            }
         }
 
         $result = "v";
@@ -1355,6 +1376,8 @@ END
             push(@implContentInternals, "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $value, "VOID") . "\n");
         } elsif ($arrayType) {
             push(@implContentInternals, "    Vector<$arrayType> v = $value;\n");
+        } elsif ($attribute->signature->extendedAttributes->{"EnforceRange"}) {
+            push(@implContentInternals, "    V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, v, $value, info.GetIsolate());\n");
         } else {
             push(@implContentInternals, "    $nativeType v = $value;\n");
         }
@@ -1934,8 +1957,12 @@ sub GenerateParametersCheck
                     $parameterCheckString .= "        return throwTypeError(0, args.GetIsolate());\n";
                 }
             }
-            $parameterCheckString .= "    V8TRYCATCH($nativeType, $parameterName, " .
-                 JSValueToNative($parameter, $optional && $optional eq "DefaultIsNullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()") . ");\n";
+            my $value = JSValueToNative($parameter, $optional && $optional eq "DefaultIsNullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
+            if ($parameter->extendedAttributes->{"EnforceRange"}) {
+                $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK($nativeType, $parameterName, $value, args.GetIsolate());\n";
+            } else {
+                $parameterCheckString .= "    V8TRYCATCH($nativeType, $parameterName, $value);\n";
+            }
             if ($nativeType eq 'Dictionary') {
                $parameterCheckString .= "    if (!$parameterName.isUndefinedOrNull() && !$parameterName.isObject())\n";
                $parameterCheckString .= "        return throwTypeError(\"Not an object.\", args.GetIsolate());\n";
@@ -2327,13 +2354,12 @@ sub GenerateBatchedAttributeData
 {
     my $interface = shift;
     my $attributes = shift;
-    my $forMainWorldSuffix = shift;
     my $interfaceName = $interface->name;
 
     foreach my $attribute (@$attributes) {
         my $conditionalString = $codeGenerator->GenerateConditionalString($attribute->signature);
         push(@implContent, "#if ${conditionalString}\n") if $conditionalString;
-        GenerateSingleBatchedAttribute($interfaceName, $attribute, ",", "", $forMainWorldSuffix);
+        GenerateSingleBatchedAttribute($interfaceName, $attribute, ",", "");
         push(@implContent, "#endif // ${conditionalString}\n") if $conditionalString;
     }
 }
@@ -2344,7 +2370,6 @@ sub GenerateSingleBatchedAttribute
     my $attribute = shift;
     my $delimiter = shift;
     my $indent = shift;
-    my $forMainWorldSuffix = shift;
     my $attrName = $attribute->signature->name;
     my $attrExt = $attribute->signature->extendedAttributes;
 
@@ -2372,6 +2397,8 @@ sub GenerateSingleBatchedAttribute
 
     my $getter;
     my $setter;
+    my $getterForMainWorld;
+    my $setterForMainWorld;
     my $propAttr = "v8::None";
 
     # Check attributes.
@@ -2398,19 +2425,25 @@ sub GenerateSingleBatchedAttribute
         $data = "&V8${constructorType}::info";
         $getter = "${interfaceName}V8Internal::${interfaceName}ConstructorGetter";
         $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetterCallback";
+        $getterForMainWorld = "0";
+        $setterForMainWorld = "0";
     } else {
         # Default Getter and Setter
-        $getter = "${interfaceName}V8Internal::${attrName}AttrGetterCallback${forMainWorldSuffix}";
-        $setter = "${interfaceName}V8Internal::${attrName}AttrSetterCallback${forMainWorldSuffix}";
+        $getter = "${interfaceName}V8Internal::${attrName}AttrGetterCallback";
+        $setter = "${interfaceName}V8Internal::${attrName}AttrSetterCallback";
+        $getterForMainWorld = "${getter}ForMainWorld";
+        $setterForMainWorld = "${setter}ForMainWorld";
 
         if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
             $setter = "${interfaceName}V8Internal::${interfaceName}ReplaceableAttrSetterCallback";
+            $setterForMainWorld = "0";
         }
     }
 
     # Read only attributes
     if (IsReadonly($attribute)) {
         $setter = "0";
+        $setterForMainWorld = "0";
     }
 
     # An accessor can be installed on the proto
@@ -2418,11 +2451,16 @@ sub GenerateSingleBatchedAttribute
         $on_proto = "1 /* on proto */";
     }
 
+    if (!$attrExt->{"V8PerWorldBindings"}) {
+      $getterForMainWorld = "0";
+      $setterForMainWorld = "0";
+    }
+
     my $commentInfo = "Attribute '$attrName' (Type: '" . $attribute->type .
                       "' ExtAttr: '" . join(' ', keys(%{$attrExt})) . "')";
 
     push(@implContent, $indent . "    \/\/ $commentInfo\n");
-    push(@implContent, $indent . "    {\"$attrName\", $getter, $setter, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttr), $on_proto}" . $delimiter . "\n");
+    push(@implContent, $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttr), $on_proto}" . $delimiter . "\n");
 }
 
 sub IsStandardFunction
@@ -2808,20 +2846,18 @@ END
 
         GenerateNormalAttrGetter($attribute, $interface, "");
         GenerateNormalAttrGetterCallback($attribute, $interface, "");
-
-        if (!$attrExt->{"V8EnabledPerContext"}) {
+        if ($attrExt->{"V8PerWorldBindings"}) {
             GenerateNormalAttrGetter($attribute, $interface, "ForMainWorld");
             GenerateNormalAttrGetterCallback($attribute, $interface, "ForMainWorld");
         }
-
         if (!HasCustomSetter($attrExt) && $attrExt->{"Replaceable"}) {
             $hasReplaceable = 1;
         } elsif (!IsReadonly($attribute)) {
             GenerateNormalAttrSetter($attribute, $interface, "");
             GenerateNormalAttrSetterCallback($attribute, $interface, "");
-            if (!$attrExt->{"V8EnabledPerContext"}) {
-                GenerateNormalAttrSetter($attribute, $interface, "ForMainWorld");
-                GenerateNormalAttrSetterCallback($attribute, $interface, "ForMainWorld");
+            if ($attrExt->{"V8PerWorldBindings"}) {
+              GenerateNormalAttrSetter($attribute, $interface, "ForMainWorld");
+              GenerateNormalAttrSetterCallback($attribute, $interface, "ForMainWorld");
             }
         }
     }
@@ -2933,11 +2969,7 @@ END
     # Put the attributes that disallow shadowing on the shadow object.
     if (@disallowsShadowing) {
         push(@implContent, "static const V8DOMConfiguration::BatchedAttribute shadowAttrs[] = {\n");
-        GenerateBatchedAttributeData($interface, \@disallowsShadowing, "");
-        push(@implContent, "};\n\n");
-
-        push(@implContent, "static const V8DOMConfiguration::BatchedAttribute shadowAttrsForMainWorld[] = {\n");
-        GenerateBatchedAttributeData($interface, \@disallowsShadowing, "ForMainWorld");
+        GenerateBatchedAttributeData($interface, \@disallowsShadowing);
         push(@implContent, "};\n\n");
     }
 
@@ -2945,12 +2977,7 @@ END
     if (@$attributes) {
         $has_attributes = 1;
         push(@implContent, "static const V8DOMConfiguration::BatchedAttribute ${v8InterfaceName}Attrs[] = {\n");
-        GenerateBatchedAttributeData($interface, $attributes, "");
-        push(@implContent, "};\n\n");
-
-        # Setup attributes with specialized getters.
-        push(@implContent, "static const V8DOMConfiguration::BatchedAttribute ${v8InterfaceName}AttrsForMainWorld[] = {\n");
-        GenerateBatchedAttributeData($interface, $attributes, "ForMainWorld");
+        GenerateBatchedAttributeData($interface, $attributes);
         push(@implContent, "};\n\n");
     }
 
@@ -3044,10 +3071,7 @@ END
         push(@implContent, <<END);
 static v8::Persistent<v8::ObjectTemplate> ConfigureShadowObjectTemplate(v8::Persistent<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate);
-
-    if (currentWorldType == MainWorld)
-        V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrsForMainWorld, WTF_ARRAY_LENGTH(shadowAttrsForMainWorld), isolate);
+    V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate, currentWorldType);
 
     // Install a security handler with V8.
     templ->SetAccessCheckCallbacks(V8DOMWindow::namedSecurityCheckCustom, V8DOMWindow::indexedSecurityCheckCustom, v8::External::New(&V8DOMWindow::info));
@@ -3073,7 +3097,7 @@ END
         my $enable_function = GetRuntimeEnableFunctionName($interface);
         push(@implContent, <<END);
     if (!${enable_function}())
-        defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"\", $parentClassTemplate, ${v8InterfaceName}::internalFieldCount, 0, 0, 0, 0, isolate);
+        defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"\", $parentClassTemplate, ${v8InterfaceName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
     }
@@ -3093,11 +3117,11 @@ END
 
     if ($has_callbacks) {
         push(@implContent, <<END);
-        ${v8InterfaceName}Methods, WTF_ARRAY_LENGTH(${v8InterfaceName}Methods), isolate);
+        ${v8InterfaceName}Methods, WTF_ARRAY_LENGTH(${v8InterfaceName}Methods), isolate, currentWorldType);
 END
     } else {
         push(@implContent, <<END);
-        0, 0, isolate);
+        0, 0, isolate, currentWorldType);
 END
     }
 
@@ -3131,17 +3155,9 @@ END
         push(@implContent, "\n#if ${conditionalString}\n") if $conditionalString;
         push(@implContent, "    if (${enable_function}()) {\n");
         push(@implContent, "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n");
-        GenerateSingleBatchedAttribute($interfaceName, $runtime_attr, ";", "    ", "");
+        GenerateSingleBatchedAttribute($interfaceName, $runtime_attr, ";", "    ");
         push(@implContent, <<END);
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
-END
-        push(@implContent, "        if (currentWorldType == MainWorld) {\n");
-
-        push(@implContent, "            static const V8DOMConfiguration::BatchedAttribute attrDataForMainWorld =\\\n");
-        GenerateSingleBatchedAttribute($interfaceName, $runtime_attr, ";", "    ", "ForMainWorld");
-        push(@implContent, <<END);
-            V8DOMConfiguration::configureAttribute(instance, proto, attrDataForMainWorld, isolate);
-        }
+        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
 END
         push(@implContent, "\n#endif // ${conditionalString}\n") if $conditionalString;
@@ -3167,34 +3183,6 @@ END
     GenerateImplementationNamedPropertyGetter($interface, $namedPropertyGetter);
     GenerateImplementationCustomCall($interface);
     GenerateImplementationMasqueradesAsUndefined($interface);
-
-    my $addToTemplate = "V8DOMConfiguration::addToTemplate(desc, ";
-    if ($has_attributes) {
-        $addToTemplate = $addToTemplate . "${v8InterfaceName}AttrsForMainWorld, WTF_ARRAY_LENGTH(${v8InterfaceName}AttrsForMainWorld), ";
-    } else {
-        $addToTemplate = $addToTemplate . "0, 0, "
-    }
-    # No specialized callbacks yet.
-    $addToTemplate = $addToTemplate . "0, 0, ";
-    $addToTemplate = $addToTemplate . "isolate, defaultSignature);";
-
-    push(@implContent, <<END);
-
-    if (currentWorldType == MainWorld)
-END
-
-    if ($interface->extendedAttributes->{"V8EnabledAtRuntime"}) {
-        my $enable_function = GetRuntimeEnableFunctionName($interface);
-
-        push(@implContent, <<END);
-        if (${enable_function}())
-            ${addToTemplate}
-END
-   } else {
-        push(@implContent, <<END);
-        ${addToTemplate}
-END
-   }
 
     # Define our functions with Set() or SetAccessor()
     my $total_functions = 0;
@@ -3271,6 +3259,13 @@ bool ${v8InterfaceName}::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* i
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
 }
 
+bool ${v8InterfaceName}::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+}
+
 END
 
     if (@enabledPerContextAttributes) {
@@ -3289,7 +3284,7 @@ END
             push(@implContent, "\n#if ${conditionalString}\n") if $conditionalString;
             push(@implContent, "    if (${enableFunction}(impl->document())) {\n");
             push(@implContent, "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n");
-            GenerateSingleBatchedAttribute($interfaceName, $runtimeAttr, ";", "    ", "");
+            GenerateSingleBatchedAttribute($interfaceName, $runtimeAttr, ";", "    ");
             push(@implContent, <<END);
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
 END
@@ -4080,14 +4075,23 @@ sub JSValueToNative
     my $getIsolate = shift;
 
     my $type = $signature->type;
+    my $intConversion = $signature->extendedAttributes->{"EnforceRange"} ? "EnforceRange" : "NormalConversion";
 
     return "$value" if $type eq "JSObject";
     return "$value->BooleanValue()" if $type eq "boolean";
     return "static_cast<$type>($value->NumberValue())" if $type eq "float" or $type eq "double";
 
-    return "toInt32($value)" if $type eq "long" or $type eq "short";
-    return "toUInt32($value)" if $type eq "unsigned long" or $type eq "unsigned short";
-    return "toInt64($value)" if $type eq "unsigned long long" or $type eq "long long";
+    if ($intConversion ne "NormalConversion") {
+        return "toInt32($value, $intConversion, ok)" if $type eq "long" or $type eq "short";
+        return "toUInt32($value, $intConversion, ok)" if $type eq "unsigned long" or $type eq "unsigned short";
+        return "toInt64($value, $intConversion, ok)" if $type eq "long long";
+        return "toUInt64($value, $intConversion, ok)" if $type eq "unsigned long long";
+    } else {
+        return "toInt32($value)" if $type eq "long" or $type eq "short";
+        return "toUInt32($value)" if $type eq "unsigned long" or $type eq "unsigned short";
+        return "toInt64($value)" if $type eq "long long";
+        return "toUInt64($value)" if $type eq "unsigned long long";
+    }
     return "static_cast<Range::CompareHow>($value->Int32Value())" if $type eq "CompareHow";
     return "toWebCoreDate($value)" if $type eq "Date";
     return "toDOMStringList($value, $getIsolate)" if $type eq "DOMStringList";

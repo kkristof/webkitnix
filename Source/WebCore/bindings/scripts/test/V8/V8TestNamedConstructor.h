@@ -41,6 +41,7 @@ class V8TestNamedConstructor {
 public:
     static const bool hasDependentLifetime = true;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestNamedConstructor* toNative(v8::Handle<v8::Object> object)
     {
@@ -55,6 +56,12 @@ public:
 private:
     friend v8::Handle<v8::Object> wrap(TestNamedConstructor*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestNamedConstructor>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+};
+
+template<>
+class WrapperTypeTraits<TestNamedConstructor > {
+public:
+    static WrapperTypeInfo* info() { return &V8TestNamedConstructor::info; }
 };
 
 

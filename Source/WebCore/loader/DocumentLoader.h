@@ -35,6 +35,7 @@
 #include "IconDatabaseBase.h"
 #include "NavigationAction.h"
 #include "ResourceError.h"
+#include "ResourceLoaderOptions.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "StringWithDirection.h"
@@ -43,6 +44,10 @@
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
+
+#if HAVE(RUNLOOP_TIMER)
+#include "RunLoopTimer.h"
+#endif
 
 namespace WTF {
 class SchedulePair;
@@ -57,6 +62,7 @@ namespace WebCore {
     class ArchiveResourceCollection;
     class CachedResourceLoader;
     class ContentFilter;
+    class FormState;
     class Frame;
     class FrameLoader;
     class MainResourceLoader;
@@ -84,7 +90,7 @@ namespace WebCore {
         virtual void detachFromFrame();
 
         FrameLoader* frameLoader() const;
-        MainResourceLoader* mainResourceLoader() const { return m_mainResourceLoader.get(); }
+        ResourceLoader* mainResourceLoader() const;
         PassRefPtr<ResourceBuffer> mainResourceData() const;
         
         DocumentWriter* writer() const { return &m_writer; }
@@ -196,6 +202,7 @@ namespace WebCore {
         void setDidCreateGlobalHistoryEntry(bool didCreateGlobalHistoryEntry) { m_didCreateGlobalHistoryEntry = didCreateGlobalHistoryEntry; }
         
         void setDefersLoading(bool);
+        void setMainResourceDataBufferingPolicy(DataBufferingPolicy);
 
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
@@ -209,7 +216,7 @@ namespace WebCore {
         void getIconDataForIconURL(const String&);
         
         bool isLoadingMainResource() const;
-        bool isLoadingMultipartContent() const;
+        bool isLoadingMultipartContent() const { return m_isLoadingMultipartContent; }
 
         void stopLoadingPlugIns();
         void stopLoadingSubresources();
@@ -255,6 +262,9 @@ namespace WebCore {
         virtual void reportMemoryUsage(MemoryObjectInfo*) const;
         void checkLoadComplete();
 
+        // FIXME: This should be private once DocumentLoader and MainResourceLoader are merged.
+        void willSendRequest(ResourceRequest&, const ResourceResponse&);
+
     protected:
         DocumentLoader(const ResourceRequest&, const SubstituteData&);
 
@@ -274,6 +284,25 @@ namespace WebCore {
         bool maybeLoadEmpty();
 
         bool isMultipartReplacingLoad() const;
+        bool isPostOrRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
+
+        static void callContinueAfterNavigationPolicy(void*, const ResourceRequest&, PassRefPtr<FormState>, bool shouldContinue);
+        void continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue);
+
+        static void callContinueAfterContentPolicy(void*, PolicyAction);
+        void continueAfterContentPolicy(PolicyAction);
+
+        void stopLoadingForPolicyChange();
+        ResourceError interruptedForPolicyChangeError() const;
+
+#if HAVE(RUNLOOP_TIMER)
+        typedef RunLoopTimer<DocumentLoader> DocumentLoaderTimer;
+#else
+        typedef Timer<DocumentLoader> DocumentLoaderTimer;
+#endif
+        void handleSubstituteDataLoadSoon();
+        void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
+        void startDataLoadTimer();
 
         void deliverSubstituteResourcesAfterDelay();
         void substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*);
@@ -315,6 +344,7 @@ namespace WebCore {
         bool m_isStopping;
         bool m_gotFirstByte;
         bool m_isClientRedirect;
+        bool m_isLoadingMultipartContent;
         bool m_loadingEmptyDocument;
 
         // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
@@ -358,7 +388,11 @@ namespace WebCore {
         DocumentLoadTiming m_documentLoadTiming;
 
         double m_timeOfLastDataReceived;
-    
+        unsigned long m_identifierForLoadWithoutResourceLoader;
+
+        DocumentLoaderTimer m_dataLoadTimer;
+        bool m_waitingForContentPolicy;
+
         RefPtr<IconLoadDecisionCallback> m_iconLoadDecisionCallback;
         RefPtr<IconDataCallback> m_iconDataCallback;
 

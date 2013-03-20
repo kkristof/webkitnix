@@ -35,6 +35,7 @@ class V8TestActiveDOMObject {
 public:
     static const bool hasDependentLifetime = false;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestActiveDOMObject* toNative(v8::Handle<v8::Object> object)
     {
@@ -48,6 +49,12 @@ public:
 private:
     friend v8::Handle<v8::Object> wrap(TestActiveDOMObject*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestActiveDOMObject>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+};
+
+template<>
+class WrapperTypeTraits<TestActiveDOMObject > {
+public:
+    static WrapperTypeInfo* info() { return &V8TestActiveDOMObject::info; }
 };
 
 

@@ -36,15 +36,8 @@
 #include "SubstituteData.h"
 #include <wtf/Forward.h>
 
-#if HAVE(RUNLOOP_TIMER)
-#include <wtf/RunLoopTimer.h>
-#else
-#include "Timer.h"
-#endif
-
 namespace WebCore {
 
-class FormState;
 class ResourceRequest;
 
 class MainResourceLoader : public RefCounted<MainResourceLoader>, public CachedRawResourceClient {
@@ -53,29 +46,20 @@ public:
     static PassRefPtr<MainResourceLoader> create(DocumentLoader*);
     virtual ~MainResourceLoader();
 
-    void load(const ResourceRequest&, const SubstituteData&);
-    void cancel();
-    void cancel(const ResourceError&);
+    void load(const ResourceRequest&);
     ResourceLoader* loader() const;
     PassRefPtr<ResourceBuffer> resourceData();
 
     void setDefersLoading(bool);
     void setDataBufferingPolicy(DataBufferingPolicy);
 
-#if HAVE(RUNLOOP_TIMER)
-    typedef RunLoopTimer<MainResourceLoader> MainResourceLoaderTimer;
-#else
-    typedef Timer<MainResourceLoader> MainResourceLoaderTimer;
-#endif
-
     CachedRawResource* cachedMainResource() { return m_resource.get(); }
-    unsigned long identifierForLoadWithoutResourceLoader() const { return m_identifierForLoadWithoutResourceLoader; }
-    void clearIdentifierForLoadWithoutResourceLoader() { m_identifierForLoadWithoutResourceLoader = 0; }
 
     unsigned long identifier() const;
-    bool isLoadingMultipartContent() const { return m_loadingMultipartContent; }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
+
+    void clearResource();
 
 private:
     explicit MainResourceLoader(DocumentLoader*);
@@ -85,49 +69,18 @@ private:
     virtual void dataReceived(CachedResource*, const char* data, int dataLength) OVERRIDE;
     virtual void notifyFinished(CachedResource*) OVERRIDE;
 
-    void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
-    void didFinishLoading(double finishTime);
-    void handleSubstituteDataLoadSoon(const ResourceRequest&);
-    void handleSubstituteDataLoadNow(MainResourceLoaderTimer*);
-
-    void startDataLoadTimer();
-
-    void receivedError(const ResourceError&);
-    ResourceError interruptedForPolicyChangeError() const;
-    void stopLoadingForPolicyChange();
-    bool isPostOrRedirectAfterPost(const ResourceRequest& newRequest, const ResourceResponse& redirectResponse);
-
-    static void callContinueAfterNavigationPolicy(void*, const ResourceRequest&, PassRefPtr<FormState>, bool shouldContinue);
-    void continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue);
-
-    static void callContinueAfterContentPolicy(void*, PolicyAction);
-    void continueAfterContentPolicy(PolicyAction);
-    void continueAfterContentPolicy(PolicyAction, const ResourceResponse&);
-    
-#if PLATFORM(QT)
-    void substituteMIMETypeFromPluginDatabase(const ResourceResponse&);
-#endif
-
     FrameLoader* frameLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
 
     const ResourceRequest& request() const;
-    void clearResource();
 
     bool defersLoading() const;
 
     CachedResourceHandle<CachedRawResource> m_resource;
 
     ResourceRequest m_initialRequest;
-    SubstituteData m_substituteData;
-    ResourceResponse m_response;
 
-    MainResourceLoaderTimer m_dataLoadTimer;
     RefPtr<DocumentLoader> m_documentLoader;
-
-    bool m_loadingMultipartContent;
-    bool m_waitingForContentPolicy;
-    unsigned long m_identifierForLoadWithoutResourceLoader;
 };
 
 }

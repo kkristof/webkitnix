@@ -134,12 +134,9 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestNamedConstructorTempl
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestNamedConstructor", v8::Persistent<v8::FunctionTemplate>(), V8TestNamedConstructor::internalFieldCount,
         0, 0,
-        0, 0, isolate);
+        0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     
-
-    if (currentWorldType == MainWorld)
-        V8DOMConfiguration::addToTemplate(desc, 0, 0, 0, 0, isolate, defaultSignature);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
@@ -163,6 +160,13 @@ v8::Persistent<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Iso
 bool V8TestNamedConstructor::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+}
+
+bool V8TestNamedConstructor::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
 ActiveDOMObject* V8TestNamedConstructor::toActiveDOMObject(v8::Handle<v8::Object> object)
