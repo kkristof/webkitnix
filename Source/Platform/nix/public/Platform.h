@@ -49,16 +49,18 @@ namespace WebKit {
 
 class WebAudioBus;
 
-class WebString {
+class NixString {
 public:
 #if WEBKIT_IMPLEMENTATION
-    WebString(const WTF::String&);
+    NixString(const WTF::String&);
 #endif
     const char* data() const { return m_data; }
 private:
-    WebString();
+    NixString();
     const char* m_data;
 };
+
+typedef NixString WebString;
 
 class Platform {
 public:

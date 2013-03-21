@@ -39,7 +39,7 @@
 
 namespace WebKit {
 
-WebString::WebString(const WTF::String& string)
+NixString::NixString(const WTF::String& string)
     : m_data(string.utf8().data())
 {
 }
