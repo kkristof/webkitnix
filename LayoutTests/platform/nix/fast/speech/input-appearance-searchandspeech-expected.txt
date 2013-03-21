@@ -14,127 +14,127 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (2,3) size 152x443 [r=0 c=0 rs=1 cs=1]
                 RenderBlock {DIV} at (1,1) size 150x441
                   RenderTextControl {INPUT} at (0,0) size 86x15 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 80x9
+                    RenderFlexibleBox {DIV} at (3,3) size 80x9
                       RenderBlock {DIV} at (0,4) size 0x0
                       RenderBlock {DIV} at (0,0) size 80x9
                       RenderBlock {DIV} at (80,4) size 0x0
                   RenderBR {BR} at (86,11) size 0x0
                   RenderTextControl {INPUT} at (0,15) size 86x15 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 80x9
+                    RenderFlexibleBox {DIV} at (3,3) size 80x9
                       RenderBlock {DIV} at (0,4) size 0x0
                       RenderBlock {DIV} at (0,0) size 80x9
                       RenderBlock {DIV} at (80,4) size 0x0
                   RenderBR {BR} at (86,26) size 0x0
                   RenderTextControl {INPUT} at (0,30) size 86x15 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 80x9
+                    RenderFlexibleBox {DIV} at (3,3) size 80x9
                       RenderBlock {DIV} at (0,4) size 0x0
                       RenderBlock {DIV} at (0,0) size 80x9
                       RenderBlock {DIV} at (80,4) size 0x0
                   RenderBR {BR} at (86,41) size 0x0
                   RenderTextControl {INPUT} at (0,45) size 106x16 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x10
+                    RenderFlexibleBox {DIV} at (3,3) size 100x10
                       RenderBlock {DIV} at (0,5) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x10
                       RenderBlock {DIV} at (100,5) size 0x0
                   RenderBR {BR} at (106,57) size 0x0
                   RenderTextControl {INPUT} at (0,61) size 106x16 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x10
+                    RenderFlexibleBox {DIV} at (3,3) size 100x10
                       RenderBlock {DIV} at (0,5) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x10
                       RenderBlock {DIV} at (100,5) size 0x0
                   RenderBR {BR} at (106,73) size 0x0
                   RenderTextControl {INPUT} at (0,77) size 106x16 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x10
+                    RenderFlexibleBox {DIV} at (3,3) size 100x10
                       RenderBlock {DIV} at (0,5) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x10
                       RenderBlock {DIV} at (100,5) size 0x0
                   RenderBR {BR} at (106,89) size 0x0
                   RenderTextControl {INPUT} at (0,93) size 106x18 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x12
+                    RenderFlexibleBox {DIV} at (3,3) size 100x12
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x12
                       RenderBlock {DIV} at (100,6) size 0x0
                   RenderBR {BR} at (106,105) size 0x0
                   RenderTextControl {INPUT} at (0,111) size 106x18 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x12
+                    RenderFlexibleBox {DIV} at (3,3) size 100x12
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x12
                       RenderBlock {DIV} at (100,6) size 0x0
                   RenderBR {BR} at (106,123) size 0x0
                   RenderTextControl {INPUT} at (0,129) size 106x18 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 100x12
+                    RenderFlexibleBox {DIV} at (3,3) size 100x12
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 100x12
                       RenderBlock {DIV} at (100,6) size 0x0
                   RenderBR {BR} at (106,141) size 0x0
                   RenderTextControl {INPUT} at (2,149) size 126x19 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x13
+                    RenderFlexibleBox {DIV} at (3,3) size 120x13
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x13
                       RenderBlock {DIV} at (120,6) size 0x0
                   RenderBR {BR} at (130,162) size 0x0
                   RenderTextControl {INPUT} at (2,172) size 126x19 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x13
+                    RenderFlexibleBox {DIV} at (3,3) size 120x13
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x13
                       RenderBlock {DIV} at (120,6) size 0x0
                   RenderBR {BR} at (130,185) size 0x0
                   RenderTextControl {INPUT} at (2,195) size 126x19 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x13
+                    RenderFlexibleBox {DIV} at (3,3) size 120x13
                       RenderBlock {DIV} at (0,6) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x13
                       RenderBlock {DIV} at (120,6) size 0x0
                   RenderBR {BR} at (130,208) size 0x0
                   RenderTextControl {INPUT} at (2,218) size 126x20 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x14
+                    RenderFlexibleBox {DIV} at (3,3) size 120x14
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x14
                       RenderBlock {DIV} at (120,7) size 0x0
                   RenderBR {BR} at (130,232) size 0x0
                   RenderTextControl {INPUT} at (2,242) size 126x20 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x14
+                    RenderFlexibleBox {DIV} at (3,3) size 120x14
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x14
                       RenderBlock {DIV} at (120,7) size 0x0
                   RenderBR {BR} at (130,256) size 0x0
                   RenderTextControl {INPUT} at (2,266) size 126x20 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 120x14
+                    RenderFlexibleBox {DIV} at (3,3) size 120x14
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 120x14
                       RenderBlock {DIV} at (120,7) size 0x0
                   RenderBR {BR} at (130,280) size 0x0
                   RenderTextControl {INPUT} at (2,290) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x15
+                    RenderFlexibleBox {DIV} at (3,3) size 140x15
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x15
                       RenderBlock {DIV} at (140,7) size 0x0
                   RenderBR {BR} at (150,305) size 0x0
                   RenderTextControl {INPUT} at (2,315) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x15
+                    RenderFlexibleBox {DIV} at (3,3) size 140x15
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x15
                       RenderBlock {DIV} at (140,7) size 0x0
                   RenderBR {BR} at (150,330) size 0x0
                   RenderTextControl {INPUT} at (2,340) size 146x21 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x15
+                    RenderFlexibleBox {DIV} at (3,3) size 140x15
                       RenderBlock {DIV} at (0,7) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x15
                       RenderBlock {DIV} at (140,7) size 0x0
                   RenderBR {BR} at (150,355) size 0x0
                   RenderTextControl {INPUT} at (2,365) size 146x22 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x16
+                    RenderFlexibleBox {DIV} at (3,3) size 140x16
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x16
                       RenderBlock {DIV} at (140,8) size 0x0
                   RenderBR {BR} at (150,381) size 0x0
                   RenderTextControl {INPUT} at (2,391) size 146x22 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x16
+                    RenderFlexibleBox {DIV} at (3,3) size 140x16
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x16
                       RenderBlock {DIV} at (140,8) size 0x0
                   RenderBR {BR} at (150,407) size 0x0
                   RenderTextControl {INPUT} at (2,417) size 146x22 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 140x16
+                    RenderFlexibleBox {DIV} at (3,3) size 140x16
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 140x16
                       RenderBlock {DIV} at (140,8) size 0x0
@@ -142,91 +142,91 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (156,2) size 212x446 [r=0 c=1 rs=1 cs=1]
                 RenderBlock {DIV} at (1,1) size 210x444
                   RenderTextControl {INPUT} at (2,2) size 166x23 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x17
+                    RenderFlexibleBox {DIV} at (3,3) size 160x17
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x17
                       RenderBlock {DIV} at (160,8) size 0x0
                   RenderBR {BR} at (170,19) size 0x0
                   RenderTextControl {INPUT} at (2,29) size 166x23 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x17
+                    RenderFlexibleBox {DIV} at (3,3) size 160x17
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x17
                       RenderBlock {DIV} at (160,8) size 0x0
                   RenderBR {BR} at (170,46) size 0x0
                   RenderTextControl {INPUT} at (2,56) size 166x23 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x17
+                    RenderFlexibleBox {DIV} at (3,3) size 160x17
                       RenderBlock {DIV} at (0,8) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x17
                       RenderBlock {DIV} at (160,8) size 0x0
                   RenderBR {BR} at (170,73) size 0x0
                   RenderTextControl {INPUT} at (2,83) size 166x24 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x18
+                    RenderFlexibleBox {DIV} at (3,3) size 160x18
                       RenderBlock {DIV} at (0,9) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x18
                       RenderBlock {DIV} at (160,9) size 0x0
                   RenderBR {BR} at (170,101) size 0x0
                   RenderTextControl {INPUT} at (2,111) size 166x24 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x18
+                    RenderFlexibleBox {DIV} at (3,3) size 160x18
                       RenderBlock {DIV} at (0,9) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x18
                       RenderBlock {DIV} at (160,9) size 0x0
                   RenderBR {BR} at (170,129) size 0x0
                   RenderTextControl {INPUT} at (2,139) size 166x24 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 160x18
+                    RenderFlexibleBox {DIV} at (3,3) size 160x18
                       RenderBlock {DIV} at (0,9) size 0x0
                       RenderBlock {DIV} at (0,0) size 160x18
                       RenderBlock {DIV} at (160,9) size 0x0
                   RenderBR {BR} at (170,157) size 0x0
                   RenderTextControl {INPUT} at (2,167) size 186x26 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x20
+                    RenderFlexibleBox {DIV} at (3,3) size 180x20
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x20
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,186) size 0x0
                   RenderTextControl {INPUT} at (2,197) size 186x26 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x20
+                    RenderFlexibleBox {DIV} at (3,3) size 180x20
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x20
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,216) size 0x0
                   RenderTextControl {INPUT} at (2,227) size 186x26 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x20
+                    RenderFlexibleBox {DIV} at (3,3) size 180x20
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x20
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,246) size 0x0
                   RenderTextControl {INPUT} at (2,257) size 186x27 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x21
+                    RenderFlexibleBox {DIV} at (3,3) size 180x21
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x21
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,277) size 0x0
                   RenderTextControl {INPUT} at (2,288) size 186x27 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x21
+                    RenderFlexibleBox {DIV} at (3,3) size 180x21
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x21
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,308) size 0x0
                   RenderTextControl {INPUT} at (2,319) size 186x27 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 180x21
+                    RenderFlexibleBox {DIV} at (3,3) size 180x21
                       RenderBlock {DIV} at (0,10) size 0x0
                       RenderBlock {DIV} at (0,0) size 180x21
                       RenderBlock {DIV} at (180,10) size 0x0
                   RenderBR {BR} at (190,339) size 0x0
                   RenderTextControl {INPUT} at (2,350) size 206x28 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x22
+                    RenderFlexibleBox {DIV} at (3,3) size 200x22
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x22
                       RenderBlock {DIV} at (200,11) size 0x0
                   RenderBR {BR} at (210,370) size 0x0
                   RenderTextControl {INPUT} at (2,382) size 206x28 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x22
+                    RenderFlexibleBox {DIV} at (3,3) size 200x22
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x22
                       RenderBlock {DIV} at (200,11) size 0x0
                   RenderBR {BR} at (210,402) size 0x0
                   RenderTextControl {INPUT} at (2,414) size 206x28 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x22
+                    RenderFlexibleBox {DIV} at (3,3) size 200x22
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x22
                       RenderBlock {DIV} at (200,11) size 0x0
@@ -234,73 +234,73 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (370,17) size 252x416 [r=0 c=2 rs=1 cs=1]
                 RenderBlock {DIV} at (1,1) size 250x414
                   RenderTextControl {INPUT} at (2,2) size 206x29 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x23
+                    RenderFlexibleBox {DIV} at (3,3) size 200x23
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x23
                       RenderBlock {DIV} at (200,11) size 0x0
                   RenderBR {BR} at (210,23) size 0x0
                   RenderTextControl {INPUT} at (2,35) size 206x29 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x23
+                    RenderFlexibleBox {DIV} at (3,3) size 200x23
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x23
                       RenderBlock {DIV} at (200,11) size 0x0
                   RenderBR {BR} at (210,56) size 0x0
                   RenderTextControl {INPUT} at (2,68) size 206x29 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 200x23
+                    RenderFlexibleBox {DIV} at (3,3) size 200x23
                       RenderBlock {DIV} at (0,11) size 0x0
                       RenderBlock {DIV} at (0,0) size 200x23
                       RenderBlock {DIV} at (200,11) size 0x0
                   RenderBR {BR} at (210,89) size 0x0
                   RenderTextControl {INPUT} at (2,101) size 226x30 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x24
+                    RenderFlexibleBox {DIV} at (3,3) size 220x24
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x24
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,123) size 0x0
                   RenderTextControl {INPUT} at (2,135) size 226x30 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x24
+                    RenderFlexibleBox {DIV} at (3,3) size 220x24
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x24
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,157) size 0x0
                   RenderTextControl {INPUT} at (2,169) size 226x30 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x24
+                    RenderFlexibleBox {DIV} at (3,3) size 220x24
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x24
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,191) size 0x0
                   RenderTextControl {INPUT} at (2,203) size 226x31 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x25
+                    RenderFlexibleBox {DIV} at (3,3) size 220x25
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x25
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,226) size 0x0
                   RenderTextControl {INPUT} at (2,238) size 226x31 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x25
+                    RenderFlexibleBox {DIV} at (3,3) size 220x25
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x25
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,261) size 0x0
                   RenderTextControl {INPUT} at (2,273) size 226x31 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 220x25
+                    RenderFlexibleBox {DIV} at (3,3) size 220x25
                       RenderBlock {DIV} at (0,12) size 0x0
                       RenderBlock {DIV} at (0,0) size 220x25
                       RenderBlock {DIV} at (220,12) size 0x0
                   RenderBR {BR} at (230,296) size 0x0
                   RenderTextControl {INPUT} at (2,308) size 246x32 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 240x26
+                    RenderFlexibleBox {DIV} at (3,3) size 240x26
                       RenderBlock {DIV} at (0,13) size 0x0
                       RenderBlock {DIV} at (0,0) size 240x26
                       RenderBlock {DIV} at (240,13) size 0x0
                   RenderBR {BR} at (250,332) size 0x0
                   RenderTextControl {INPUT} at (2,344) size 246x32 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 240x26
+                    RenderFlexibleBox {DIV} at (3,3) size 240x26
                       RenderBlock {DIV} at (0,13) size 0x0
                       RenderBlock {DIV} at (0,0) size 240x26
                       RenderBlock {DIV} at (240,13) size 0x0
                   RenderBR {BR} at (250,368) size 0x0
                   RenderTextControl {INPUT} at (2,380) size 246x32 [bgcolor=#FFFFFF] [border: (2px inset #000000)]
-                    RenderDeprecatedFlexibleBox {DIV} at (3,3) size 240x26
+                    RenderFlexibleBox {DIV} at (3,3) size 240x26
                       RenderBlock {DIV} at (0,13) size 0x0
                       RenderBlock {DIV} at (0,0) size 240x26
                       RenderBlock {DIV} at (240,13) size 0x0
