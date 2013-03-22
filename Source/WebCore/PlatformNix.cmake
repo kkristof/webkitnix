@@ -172,6 +172,7 @@ if (WTF_USE_EGL)
 else ()
     list(APPEND WebCore_INCLUDE_DIRECTORIES
         platform/graphics/surfaces/glx
+        platform/graphics/surfaces/efl
         ${X11_X11_INCLUDE_PATH}
     )
     list(APPEND WebCore_SOURCES
@@ -179,10 +180,10 @@ else ()
         platform/graphics/efl/GraphicsContext3DPrivate.cpp
         platform/graphics/opengl/GLPlatformContext.cpp
         platform/graphics/opengl/GLPlatformSurface.cpp
-        platform/graphics/surfaces/GLTransportSurface.cpp
+        platform/graphics/surfaces/efl/GLTransportSurface.cpp
+        platform/graphics/surfaces/efl/GraphicsSurfaceCommon.cpp
         platform/graphics/surfaces/GraphicsSurface.cpp
 
-        platform/graphics/surfaces/glx/GraphicsSurfaceGLX.cpp
         platform/graphics/surfaces/glx/X11Helper.cpp
         platform/graphics/surfaces/glx/GLXContext.cpp
         platform/graphics/surfaces/glx/GLXSurface.cpp
