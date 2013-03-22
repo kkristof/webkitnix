@@ -1510,14 +1510,6 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     return false;
 }
 
-void RenderObject::repaintDuringLayoutIfMoved(const LayoutRect&)
-{
-}
-
-void RenderObject::repaintOverhangingFloats(bool)
-{
-}
-
 bool RenderObject::checkForRepaintDuringLayout() const
 {
     return !document()->view()->needsFullRepaint() && !hasLayer() && everHadLayout();
@@ -1911,7 +1903,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             clearPositionedState();
         }
         setHorizontalWritingMode(true);
-        setPaintBackground(false);
+        setHasBoxDecorations(false);
         setHasOverflowClip(false);
         setHasTransform(false);
         setHasReflection(false);

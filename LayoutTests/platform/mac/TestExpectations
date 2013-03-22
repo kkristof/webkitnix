@@ -1154,6 +1154,7 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
+webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ]
 
 # Our slow tests, in alphabetical order.
 webkit.org/b/57672 http/tests/local/fileapi/send-sliced-dragged-file.html [ Failure Pass ]
@@ -1272,22 +1273,8 @@ webkit.org/b/90987 fast/forms/input-in-table-cell-no-value.html [ ImageOnlyFailu
 # Skip tests in fast/text/shaping
 webkit.org/b/90951 fast/text/shaping
 
-# Rebaseline required after https://bugs.webkit.org/show_bug.cgi?id=101177
-webkit.org/b/101177 svg/dynamic-updates/SVGUseElement-dom-requiredFeatures.html [ ImageOnlyFailure Pass ]
-webkit.org/b/101177 svg/repaint/inner-svg-change-viewBox.svg [ ImageOnlyFailure Pass ]
-
-# These tests need to be rebaselined after https://bugs.webkit.org/show_bug.cgi?id=99984
-webkit.org/b/99984 svg/as-image/image-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
-webkit.org/b/99984 svg/dynamic-updates/SVGFEImageElement-svgdom-preserveAspectRatio-prop.html [ ImageOnlyFailure Pass ]
-
 # Needs rebaseline after bug https://bugs.webkit.org/show_bug.cgi?id=104462
 webkit.org/b/98687 fast/css-generated-content/table-row-group-to-inline.html [ Failure ]
-webkit.org/b/104595 fast/css/empty-generated-content.html [ Failure ]
-
-# Needs a rebaseline after WK108429 lands.
-webkit.org/b/108429 svg/custom/text-ctm.svg [ Pass Failure ]
 
 # (r125790): Newly added test inspector/timeline/timeline-decode-resize.html is failing on mac
 webkit.org/b/94374 inspector/timeline/timeline-decode-resize.html [ Failure ]
@@ -1350,9 +1337,6 @@ fast/css/sticky/sticky-top-zoomed.html [ ImageOnlyFailure ]
 webkit.org/b/100846 inspector-protocol/debugger-pause-dedicated-worker.html [ Skip ]
 webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Skip ]
 
-webkit.org/b/100142 css3/filters/effect-reference-hw.html [ Failure ]
-webkit.org/b/100142 css3/filters/effect-reference.html [ Failure ]
-
 # Mac doesn't have a toggle for CC any more, it's based on a menu of choices.
 webkit.org/b/101670 media/video-controls-captions.html [ Skip ]
 
@@ -1398,29 +1382,6 @@ webkit.org/b/106957 svg/dom/SVGViewSpec-invalid-ref-crash.html [ Failure ]
 # Enable when support drag-and-drop autoscrolling
 webkit.org/b/39725 fast/events/drag-and-drop-autoscroll.html [ Skip ]
 
-# Transient. Needs rebaseline.
-webkit.org/b/103955 fast/repaint/caret-with-transformation.html [ Missing ]
-
-# Needs rebaseline.
-webkit.org/b/105574 editing/input/caret-at-the-edge-of-contenteditable.html [ Failure ]
-webkit.org/b/105574 editing/input/reveal-caret-of-multiline-contenteditable.html [ Failure ]
-webkit.org/b/105574 editing/input/reveal-caret-of-multiline-input.html [ Failure ]
-webkit.org/b/105574 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Failure ]
-
-# Rebaseline required after https://webkit.org/b/31397
-webkit.org/b/107567 svg/batik/text/xmlSpace.svg [ Failure ] 
-webkit.org/b/107567 fast/text/capitalize-empty-generated-string.html [ Failure ] 
-webkit.org/b/107567 fast/text/whitespace/007.html [ Failure ] 
-webkit.org/b/107567 fast/text/whitespace/006.html [ Failure ] 
-webkit.org/b/107567 fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ] 
-webkit.org/b/107567 tables/mozilla/bugs/bug1318.html [ Failure ] 
-webkit.org/b/107567 fast/inline/drawStyledEmptyInlines.html [ Failure ] 
-webkit.org/b/107567 tables/mozilla/bugs/bug113235-3.html [ Failure ] 
-webkit.org/b/107567 css2.1/t0505-c16-descendant-01-e.html [ Failure ] 
-webkit.org/b/107567 tables/mozilla/bugs/bug1188.html [ Failure ] 
-webkit.org/b/107567 editing/selection/extend-by-sentence-001.html [ Failure ] 
-webkit.org/b/107567 svg/carto.net/combobox.svg [ Failure ] 
-
 webkit.org/b/106415 fast/workers/worker-close-more.html [ Pass Failure ] 
 webkit.org/b/106415 fast/workers/worker-document-leak.html [ Pass Failure ] 
 webkit.org/b/106415 fast/workers/worker-lifecycle.html [ Pass Failure ]
@@ -1439,12 +1400,6 @@ webkit.org/b/108370 editing/spelling/spelling-with-underscore-selection.html [ S
 webkit.org/b/108370 editing/spelling/spelling-with-whitespace-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-changed-text.html [ Skip ]
 
-# Rebaseline required after https://webkit.org/b/95772
-webkit.org/b/109209 fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
-
-# Crashing after https://webkit.org/b/105667
-webkit.org/b/109232 [ Debug ] inspector/debugger/debugger-reload-on-pause.html [ Crash ]
-
 webkit.org/b/110027 compositing/transitions/transform-on-large-layer.html [ Pass ImageOnlyFailure ]
 
 webkit.org/b/110173 media/video-controls-captions-trackmenu.html [ Crash Pass ]
@@ -1454,13 +1409,6 @@ webkit.org/b/110186 inspector-protocol/page/javascriptDialogEvents.html [ Skip ]
 webkit.org/b/110554 http/tests/security/feed-urls-from-remote.html [ Failure ]
 webkit.org/b/110555 fast/canvas/canvas-currentPath.html [ Failure ]
 webkit.org/b/110555 fast/canvas/canvas-path-constructors.html [ Failure ]
-
-# Need rebaseline
-webkit.org/b/110654 css2.1/20110323/replaced-elements-001.htm [ Failure ]
-webkit.org/b/110654 svg/custom/foreign-object-skew.svg [ Failure ]
-webkit.org/b/110654 tables/mozilla/bugs/bug92647-2.html [ Failure ]
-# New test
-webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
@@ -1492,6 +1440,7 @@ webkit.org/b/111754 inspector/debugger/debugger-expand-scope.html [ Crash Pass ]
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure Pass ]
 webkit.org/b/111606 fast/borders/border-fit.html [ Failure Pass ]
 webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure Pass ]
+
 
 # Flakey
 webkit.org/b/112533 media/auto-play-in-sandbox-with-allow-scripts.html [ Pass Failure ]

@@ -40,7 +40,7 @@ WebInspector.CPUProfileView = function(profile)
     this._viewType = WebInspector.settings.createSetting("cpuProfilerView", WebInspector.CPUProfileView._TypeHeavy);
 
     var columns = [];
-    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "72px", sort: "descending", sortable: true});
+    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "72px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
     columns.push({id: "total", title: WebInspector.UIString("Total"), width: "72px", sortable: true});
     if (!Capabilities.samplingCPUProfiler) {
         columns.push({id: "average", title: WebInspector.UIString("Average"), width: "72px", sortable: true});
@@ -49,7 +49,7 @@ WebInspector.CPUProfileView = function(profile)
     columns.push({id: "function", title: WebInspector.UIString("Function"), disclosure: true, sortable: true});
 
     this.dataGrid = new WebInspector.DataGrid(columns);
-    this.dataGrid.addEventListener("sorting changed", this._sortProfile, this);
+    this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortProfile, this);
     this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
 
     if (WebInspector.experimentsSettings.cpuFlameChart.isEnabled()) {
@@ -122,11 +122,14 @@ WebInspector.CPUProfileView.prototype = {
             return;
         }
         this.profileHead = profile.head;
+        this.samples = profile.samples;
 
         if (profile.idleTime)
             this._injectIdleTimeNode(profile);
 
         this._assignParentsInProfile();
+        if (this.samples)
+            this._buildIdToNodeMap();
         this._changeView();
         this._updatePercentButton();
         if (this.flameChart)
@@ -496,8 +499,8 @@ WebInspector.CPUProfileView.prototype = {
 
     _sortProfile: function()
     {
-        var sortAscending = this.dataGrid.sortOrder === "ascending";
-        var sortColumnIdentifier = this.dataGrid.sortColumnIdentifier;
+        var sortAscending = this.dataGrid.isSortOrderAscending();
+        var sortColumnIdentifier = this.dataGrid.sortColumnIdentifier();
         var sortProperty = {
                 "average": "averageTime",
                 "self": "selfTime",
@@ -549,6 +552,18 @@ WebInspector.CPUProfileView.prototype = {
                 if (children[i].children.length > 0)
                     nodesToTraverse.push({ parent: children[i], children: children[i].children });
             }
+        }
+    },
+
+    _buildIdToNodeMap: function()
+    {
+        var idToNode = this._idToNode = {};
+        var stack = [this.profileHead];
+        while (stack.length) {
+            var node = stack.pop();
+            idToNode[node.id] = node;
+            for (var i = 0; i < node.children.length; i++)
+                stack.push(node.children[i]);
         }
     },
 

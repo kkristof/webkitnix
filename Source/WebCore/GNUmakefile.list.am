@@ -51,8 +51,6 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSAudioContext.h \
 	DerivedSources/WebCore/JSAudioDestinationNode.cpp \
 	DerivedSources/WebCore/JSAudioDestinationNode.h \
-	DerivedSources/WebCore/JSAudioGain.cpp \
-	DerivedSources/WebCore/JSAudioGain.h \
 	DerivedSources/WebCore/JSGainNode.cpp \
 	DerivedSources/WebCore/JSGainNode.h \
 	DerivedSources/WebCore/JSAudioListener.cpp \
@@ -675,6 +673,8 @@ webcore_built_sources += \
 	DerivedSources/WebCore/JSScriptProfile.h \
 	DerivedSources/WebCore/JSScriptProfileNode.cpp \
 	DerivedSources/WebCore/JSScriptProfileNode.h \
+	DerivedSources/WebCore/JSSecurityPolicyViolationEvent.cpp \
+	DerivedSources/WebCore/JSSecurityPolicyViolationEvent.h \
 	DerivedSources/WebCore/JSShadowRoot.cpp \
 	DerivedSources/WebCore/JSShadowRoot.h \
 	DerivedSources/WebCore/JSSharedWorkerContext.cpp \
@@ -1227,6 +1227,7 @@ dom_binding_idls += \
 	$(WebCore)/Modules/gamepad/Gamepad.idl \
 	$(WebCore)/Modules/gamepad/GamepadList.idl \
 	$(WebCore)/Modules/gamepad/NavigatorGamepad.idl \
+	$(WebCore)/Modules/geolocation/Coordinates.idl \
 	$(WebCore)/Modules/geolocation/Geolocation.idl \
 	$(WebCore)/Modules/geolocation/Geoposition.idl \
 	$(WebCore)/Modules/geolocation/NavigatorGeolocation.idl \
@@ -1294,7 +1295,6 @@ dom_binding_idls += \
 	$(WebCore)/Modules/webaudio/ChannelSplitterNode.idl \
 	$(WebCore)/Modules/webaudio/AudioContext.idl \
 	$(WebCore)/Modules/webaudio/AudioDestinationNode.idl \
-	$(WebCore)/Modules/webaudio/AudioGain.idl \
 	$(WebCore)/Modules/webaudio/GainNode.idl \
 	$(WebCore)/Modules/webaudio/AudioListener.idl \
 	$(WebCore)/Modules/webaudio/AudioNode.idl \
@@ -1426,6 +1426,7 @@ dom_binding_idls += \
 	$(WebCore)/dom/Range.idl \
 	$(WebCore)/dom/RangeException.idl \
 	$(WebCore)/dom/RequestAnimationFrameCallback.idl \
+	$(WebCore)/dom/SecurityPolicyViolationEvent.idl \
 	$(WebCore)/dom/ShadowRoot.idl \
 	$(WebCore)/dom/StringCallback.idl \
 	$(WebCore)/dom/Text.idl \
@@ -1594,7 +1595,6 @@ dom_binding_idls += \
 	$(WebCore)/loader/appcache/DOMApplicationCache.idl \
 	$(WebCore)/page/BarInfo.idl \
 	$(WebCore)/page/Console.idl \
-	$(WebCore)/page/Coordinates.idl \
 	$(WebCore)/page/Crypto.idl \
 	$(WebCore)/page/DOMSecurityPolicy.idl \
 	$(WebCore)/page/DOMSelection.idl \
@@ -1856,8 +1856,11 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/gamepad/GamepadList.h \
 	Source/WebCore/Modules/gamepad/NavigatorGamepad.cpp \
 	Source/WebCore/Modules/gamepad/NavigatorGamepad.h \
+	Source/WebCore/Modules/geolocation/Coordinates.cpp \
+	Source/WebCore/Modules/geolocation/Coordinates.h \
 	Source/WebCore/Modules/geolocation/Geolocation.cpp \
 	Source/WebCore/Modules/geolocation/Geolocation.h \
+	Source/WebCore/Modules/geolocation/GeolocationClient.h \
 	Source/WebCore/Modules/geolocation/GeolocationController.cpp \
 	Source/WebCore/Modules/geolocation/GeolocationController.h \
 	Source/WebCore/Modules/geolocation/GeolocationError.h \
@@ -2050,7 +2053,6 @@ webcore_modules_sources += \
 	Source/WebCore/Modules/webaudio/AudioContext.h \
 	Source/WebCore/Modules/webaudio/AudioDestinationNode.cpp \
 	Source/WebCore/Modules/webaudio/AudioDestinationNode.h \
-	Source/WebCore/Modules/webaudio/AudioGain.h \
 	Source/WebCore/Modules/webaudio/GainNode.cpp \
 	Source/WebCore/Modules/webaudio/GainNode.h \
 	Source/WebCore/Modules/webaudio/AudioListener.cpp \
@@ -2331,7 +2333,6 @@ webcore_sources += \
 	Source/WebCore/bindings/js/JSCanvasRenderingContextCustom.cpp \
 	Source/WebCore/bindings/js/JSClipboardCustom.cpp \
 	Source/WebCore/bindings/js/JSConsoleCustom.cpp \
-	Source/WebCore/bindings/js/JSCoordinatesCustom.cpp \
 	Source/WebCore/bindings/js/JSCryptoCustom.cpp \
 	Source/WebCore/bindings/js/JSCustomSQLStatementErrorCallback.cpp \
 	Source/WebCore/bindings/js/JSCustomXPathNSResolver.cpp \
@@ -3032,6 +3033,7 @@ webcore_sources += \
 	Source/WebCore/dom/ScriptRunner.h \
 	Source/WebCore/dom/SecurityContext.cpp \
 	Source/WebCore/dom/SecurityContext.h \
+	Source/WebCore/dom/SecurityPolicyViolationEvent.h \
 	Source/WebCore/dom/SelectorQuery.cpp \
 	Source/WebCore/dom/SelectorQuery.h \
 	Source/WebCore/dom/ShadowRoot.cpp \
@@ -4074,8 +4076,6 @@ webcore_sources += \
 	Source/WebCore/loader/LinkLoaderClient.h \
 	Source/WebCore/loader/LoaderStrategy.cpp \
 	Source/WebCore/loader/LoaderStrategy.h \
-	Source/WebCore/loader/MainResourceLoader.cpp \
-	Source/WebCore/loader/MainResourceLoader.h \
 	Source/WebCore/loader/MixedContentChecker.cpp \
 	Source/WebCore/loader/MixedContentChecker.h \
 	Source/WebCore/loader/NavigationAction.cpp \
@@ -4166,7 +4166,6 @@ webcore_sources += \
 	Source/WebCore/page/ContextMenuController.cpp \
 	Source/WebCore/page/ContextMenuController.h \
 	Source/WebCore/page/ContextMenuProvider.h \
-	Source/WebCore/page/Coordinates.h \
 	Source/WebCore/page/Crypto.cpp \
 	Source/WebCore/page/Crypto.h \
 	Source/WebCore/page/DeviceClient.h \
@@ -4212,7 +4211,6 @@ webcore_sources += \
 	Source/WebCore/page/FrameTree.h \
 	Source/WebCore/page/FrameView.cpp \
 	Source/WebCore/page/FrameView.h \
-	Source/WebCore/page/GeolocationClient.h \
 	Source/WebCore/page/GestureTapHighlighter.cpp \
 	Source/WebCore/page/GestureTapHighlighter.h \
 	Source/WebCore/page/GroupSettings.cpp \
@@ -4665,7 +4663,10 @@ webcore_sources += \
 	Source/WebCore/rendering/style/StyleCachedImageSet.h \
 	Source/WebCore/rendering/style/StyleCachedShader.cpp \
 	Source/WebCore/rendering/style/StyleCachedShader.h \
+	Source/WebCore/rendering/style/StyleCustomFilterProgram.cpp \
 	Source/WebCore/rendering/style/StyleCustomFilterProgram.h \
+	Source/WebCore/rendering/style/StyleCustomFilterProgramCache.cpp \
+	Source/WebCore/rendering/style/StyleCustomFilterProgramCache.h \
 	Source/WebCore/rendering/style/StyleDashboardRegion.h \
 	Source/WebCore/rendering/style/StyleDeprecatedFlexibleBoxData.cpp \
 	Source/WebCore/rendering/style/StyleDeprecatedFlexibleBoxData.h \
@@ -5602,7 +5603,6 @@ webcore_platform_sources += \
 	Source/WebCore/platform/graphics/filters/FilterOperation.cpp \
 	Source/WebCore/platform/graphics/filters/FilterOperations.cpp \
 	Source/WebCore/platform/graphics/filters/FilterOperations.h \
-	Source/WebCore/platform/graphics/filters/LightSource.cpp \
 	Source/WebCore/platform/graphics/filters/LightSource.h \
 	Source/WebCore/platform/graphics/filters/PointLightSource.cpp \
 	Source/WebCore/platform/graphics/filters/PointLightSource.h \
@@ -5927,6 +5927,7 @@ webcore_platform_sources += \
 	Source/WebCore/platform/network/ProtectionSpace.h \
 	Source/WebCore/platform/network/ResourceErrorBase.cpp \
 	Source/WebCore/platform/network/ResourceErrorBase.h \
+	Source/WebCore/platform/network/ResourceHandleClient.cpp \
 	Source/WebCore/platform/network/ResourceHandleClient.h \
 	Source/WebCore/platform/network/ResourceHandle.cpp \
 	Source/WebCore/platform/network/ResourceHandle.h \
@@ -6348,146 +6349,6 @@ webcoregtk_sources += \
 	Source/WebCore/platform/graphics/gstreamer/GStreamerVersioning.h
 endif
 
-# ---
-# 3D canvas (WebGL) support
-# ---
-if ENABLE_WEBGL
-webcore_built_sources += \
-	DerivedSources/ANGLE/glslang.cpp \
-	DerivedSources/ANGLE/glslang_tab.cpp \
-	DerivedSources/ANGLE/glslang_tab.h
-
-webcore_sources += \
-	Source/ThirdParty/ANGLE/include/EGL/egl.h \
-	Source/ThirdParty/ANGLE/include/EGL/eglplatform.h \
-	Source/ThirdParty/ANGLE/include/GLSLANG/ShaderLang.h \
-	Source/ThirdParty/ANGLE/include/KHR/khrplatform.h \
-	Source/ThirdParty/ANGLE/src/common/angleutils.h \
-	Source/ThirdParty/ANGLE/src/compiler/BaseTypes.h \
-	Source/ThirdParty/ANGLE/src/compiler/BuiltInFunctionEmulator.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/BuiltInFunctionEmulator.h \
-	Source/ThirdParty/ANGLE/src/compiler/CodeGenGLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/Common.h \
-	Source/ThirdParty/ANGLE/src/compiler/Compiler.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ConstantUnion.h \
-	Source/ThirdParty/ANGLE/src/compiler/debug.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/debug.h \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraph.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraph.h \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraphBuilder.h \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraphBuilder.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraphOutput.h \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraphOutput.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/depgraph/DependencyGraphTraverse.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/DetectDiscontinuity.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/DetectDiscontinuity.h \
-	Source/ThirdParty/ANGLE/src/compiler/DetectRecursion.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/DetectRecursion.h \
-	Source/ThirdParty/ANGLE/src/compiler/Diagnostics.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/Diagnostics.h \
-	Source/ThirdParty/ANGLE/src/compiler/DirectiveHandler.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/DirectiveHandler.h \
-	Source/ThirdParty/ANGLE/src/compiler/ExtensionBehavior.h \
-	Source/ThirdParty/ANGLE/src/compiler/ForLoopUnroll.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ForLoopUnroll.h \
-	Source/ThirdParty/ANGLE/src/compiler/glslang.h \
-	Source/ThirdParty/ANGLE/src/compiler/HashNames.h \
-	Source/ThirdParty/ANGLE/src/compiler/InfoSink.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/InfoSink.h \
-	Source/ThirdParty/ANGLE/src/compiler/Initialize.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/InitializeDll.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/InitializeDll.h \
-	Source/ThirdParty/ANGLE/src/compiler/InitializeGlobals.h \
-	Source/ThirdParty/ANGLE/src/compiler/Initialize.h \
-	Source/ThirdParty/ANGLE/src/compiler/InitializeParseContext.h \
-	Source/ThirdParty/ANGLE/src/compiler/InitializeParseContext.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/Intermediate.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/intermediate.h \
-	Source/ThirdParty/ANGLE/src/compiler/intermOut.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/IntermTraverse.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/localintermediate.h \
-	Source/ThirdParty/ANGLE/src/compiler/MapLongVariableNames.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/MapLongVariableNames.h \
-	Source/ThirdParty/ANGLE/src/compiler/MMap.h \
-	Source/ThirdParty/ANGLE/src/compiler/osinclude.h \
-	Source/ThirdParty/ANGLE/src/compiler/ossource_posix.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/OutputESSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/OutputESSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/OutputGLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/OutputGLSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/OutputGLSLBase.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/OutputGLSLBase.h \
-	Source/ThirdParty/ANGLE/src/compiler/OutputHLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/OutputHLSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/parseConst.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ParseHelper.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ParseHelper.h \
-	Source/ThirdParty/ANGLE/src/compiler/PoolAlloc.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/PoolAlloc.h \
-	Source/ThirdParty/ANGLE/src/compiler/Pragma.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/length_limits.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/numeric_lex.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DiagnosticsBase.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DiagnosticsBase.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveHandlerBase.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveHandlerBase.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveParser.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/DirectiveParser.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/ExpressionParser.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/ExpressionParser.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Input.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Input.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Lexer.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Lexer.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Macro.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Macro.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/MacroExpander.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/MacroExpander.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Preprocessor.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Preprocessor.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/SourceLocation.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Token.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Token.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Tokenizer.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/Tokenizer.h \
-	Source/ThirdParty/ANGLE/src/compiler/preprocessor/pp_utils.h \
-	Source/ThirdParty/ANGLE/src/compiler/QualifierAlive.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/QualifierAlive.h \
-	Source/ThirdParty/ANGLE/src/compiler/RemoveTree.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/RemoveTree.h \
-	Source/ThirdParty/ANGLE/src/compiler/RenameFunction.h \
-	Source/ThirdParty/ANGLE/src/compiler/SearchSymbol.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/SearchSymbol.h \
-	Source/ThirdParty/ANGLE/src/compiler/ShaderLang.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ShHandle.h \
-	Source/ThirdParty/ANGLE/src/compiler/SymbolTable.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/SymbolTable.h \
-	Source/ThirdParty/ANGLE/src/compiler/VariablePacker.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/VariablePacker.h \
-	Source/ThirdParty/ANGLE/src/compiler/VersionGLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/VersionGLSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/timing/RestrictFragmentShaderTiming.h \
-	Source/ThirdParty/ANGLE/src/compiler/timing/RestrictVertexShaderTiming.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/timing/RestrictVertexShaderTiming.h \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorESSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorESSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorGLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorGLSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorHLSL.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/TranslatorHLSL.h \
-	Source/ThirdParty/ANGLE/src/compiler/Types.h \
-	Source/ThirdParty/ANGLE/src/compiler/UnfoldShortCircuit.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/UnfoldShortCircuit.h \
-	Source/ThirdParty/ANGLE/src/compiler/util.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/util.h \
-	Source/ThirdParty/ANGLE/src/compiler/ValidateLimitations.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/ValidateLimitations.h \
-	Source/ThirdParty/ANGLE/src/compiler/VariableInfo.cpp \
-	Source/ThirdParty/ANGLE/src/compiler/VariableInfo.h \
-	Source/ThirdParty/ANGLE/src/third_party/compiler/ArrayBoundsClamper.cpp \
-	Source/ThirdParty/ANGLE/src/third_party/compiler/ArrayBoundsClamper.h
-
 if USE_CLUTTER
 webcore_sources += \
 	Source/WebCore/platform/graphics/clutter/DrawingBufferClutter.cpp \
@@ -6501,8 +6362,6 @@ webcore_sources += \
 	Source/WebCore/platform/graphics/cairo/GraphicsContext3DPrivate.cpp \
 	Source/WebCore/platform/graphics/cairo/GraphicsContext3DPrivate.h
 endif  # END USE_CLUTTER
-
-endif  # END ENABLE_WEBGL
 
 # ---
 # Accelerated compositing support
@@ -6583,95 +6442,3 @@ webcore_sources += \
 	Source/WebCore/platform/graphics/texmap/TextureMapperTiledBackingStore.h
 endif  # END USE_TEXTURE_MAPPER_GL
 endif  # USE_ACCELERATED_COMPOSITING
-
-libLevelDB_la_SOURCES = \
-	Source/ThirdParty/leveldb/db/builder.cc\
-	Source/ThirdParty/leveldb/db/builder.h \
-	Source/ThirdParty/leveldb/db/c.cc \
-	Source/ThirdParty/leveldb/db/dbformat.cc \
-	Source/ThirdParty/leveldb/db/dbformat.h \
-	Source/ThirdParty/leveldb/db/db_impl.cc \
-	Source/ThirdParty/leveldb/db/db_impl.h \
-	Source/ThirdParty/leveldb/db/db_iter.cc \
-	Source/ThirdParty/leveldb/db/db_iter.h \
-	Source/ThirdParty/leveldb/db/filename.cc \
-	Source/ThirdParty/leveldb/db/filename.h \
-	Source/ThirdParty/leveldb/db/log_format.h \
-	Source/ThirdParty/leveldb/db/log_reader.cc \
-	Source/ThirdParty/leveldb/db/log_reader.h \
-	Source/ThirdParty/leveldb/db/log_writer.cc \
-	Source/ThirdParty/leveldb/db/log_writer.h \
-	Source/ThirdParty/leveldb/db/memtable.cc \
-	Source/ThirdParty/leveldb/db/memtable.h \
-	Source/ThirdParty/leveldb/db/repair.cc \
-	Source/ThirdParty/leveldb/db/skiplist.h \
-	Source/ThirdParty/leveldb/db/snapshot.h \
-	Source/ThirdParty/leveldb/db/table_cache.cc \
-	Source/ThirdParty/leveldb/db/table_cache.h \
-	Source/ThirdParty/leveldb/db/version_edit.cc \
-	Source/ThirdParty/leveldb/db/version_edit.h \
-	Source/ThirdParty/leveldb/db/version_set.cc \
-	Source/ThirdParty/leveldb/db/version_set.h \
-	Source/ThirdParty/leveldb/db/write_batch.cc \
-	Source/ThirdParty/leveldb/db/write_batch_internal.h \
-	Source/ThirdParty/leveldb/helpers/memenv/memenv.cc \
-	Source/ThirdParty/leveldb/helpers/memenv/memenv.h \
-	Source/ThirdParty/leveldb/include/leveldb/cache.h \
-	Source/ThirdParty/leveldb/include/leveldb/c.h \
-	Source/ThirdParty/leveldb/include/leveldb/comparator.h \
-	Source/ThirdParty/leveldb/include/leveldb/db.h \
-	Source/ThirdParty/leveldb/include/leveldb/env.h \
-	Source/ThirdParty/leveldb/include/leveldb/filter_policy.h \
-	Source/ThirdParty/leveldb/include/leveldb/iterator.h \
-	Source/ThirdParty/leveldb/include/leveldb/options.h \
-	Source/ThirdParty/leveldb/include/leveldb/slice.h \
-	Source/ThirdParty/leveldb/include/leveldb/status.h \
-	Source/ThirdParty/leveldb/include/leveldb/table_builder.h \
-	Source/ThirdParty/leveldb/include/leveldb/table.h \
-	Source/ThirdParty/leveldb/include/leveldb/write_batch.h \
-	Source/ThirdParty/leveldb/port/atomic_pointer.h \
-	Source/ThirdParty/leveldb/port/port_example.h \
-	Source/ThirdParty/leveldb/port/port.h \
-	Source/ThirdParty/leveldb/port/port_posix.cc \
-	Source/ThirdParty/leveldb/port/port_posix.h \
-	Source/ThirdParty/leveldb/port/thread_annotations.h \
-	Source/ThirdParty/leveldb/port/win/stdint.h \
-	Source/ThirdParty/leveldb/table/block_builder.cc \
-	Source/ThirdParty/leveldb/table/block_builder.h \
-	Source/ThirdParty/leveldb/table/block.cc \
-	Source/ThirdParty/leveldb/table/block.h \
-	Source/ThirdParty/leveldb/table/filter_block.cc \
-	Source/ThirdParty/leveldb/table/filter_block.h \
-	Source/ThirdParty/leveldb/table/format.cc \
-	Source/ThirdParty/leveldb/table/format.h \
-	Source/ThirdParty/leveldb/table/iterator.cc \
-	Source/ThirdParty/leveldb/table/iterator_wrapper.h \
-	Source/ThirdParty/leveldb/table/merger.cc \
-	Source/ThirdParty/leveldb/table/merger.h \
-	Source/ThirdParty/leveldb/table/table_builder.cc \
-	Source/ThirdParty/leveldb/table/table.cc \
-	Source/ThirdParty/leveldb/table/two_level_iterator.cc \
-	Source/ThirdParty/leveldb/table/two_level_iterator.h \
-	Source/ThirdParty/leveldb/util/arena.cc \
-	Source/ThirdParty/leveldb/util/arena.h \
-	Source/ThirdParty/leveldb/util/bloom.cc \
-	Source/ThirdParty/leveldb/util/cache.cc \
-	Source/ThirdParty/leveldb/util/coding.cc \
-	Source/ThirdParty/leveldb/util/coding.h \
-	Source/ThirdParty/leveldb/util/comparator.cc \
-	Source/ThirdParty/leveldb/util/crc32c.cc \
-	Source/ThirdParty/leveldb/util/crc32c.h \
-	Source/ThirdParty/leveldb/util/env.cc \
-	Source/ThirdParty/leveldb/util/env_posix.cc \
-	Source/ThirdParty/leveldb/util/filter_policy.cc \
-	Source/ThirdParty/leveldb/util/hash.cc \
-	Source/ThirdParty/leveldb/util/hash.h \
-	Source/ThirdParty/leveldb/util/histogram.cc \
-	Source/ThirdParty/leveldb/util/histogram.h \
-	Source/ThirdParty/leveldb/util/logging.cc \
-	Source/ThirdParty/leveldb/util/logging.h \
-	Source/ThirdParty/leveldb/util/mutexlock.h \
-	Source/ThirdParty/leveldb/util/options.cc \
-	Source/ThirdParty/leveldb/util/posix_logger.h \
-	Source/ThirdParty/leveldb/util/random.h \
-	Source/ThirdParty/leveldb/util/status.cc

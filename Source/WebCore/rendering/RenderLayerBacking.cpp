@@ -695,6 +695,11 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         if (m_boundsConstrainedByClipping)
             m_graphicsLayer->setNeedsDisplay();
     }
+    if (!m_isMainFrameRenderViewLayer) {
+        // For non-root layers, background is always painted by the primary graphics layer.
+        ASSERT(!m_backgroundLayer);
+        m_graphicsLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(localCompositingBounds));
+    }
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
@@ -804,7 +809,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         ASSERT(m_scrollingContentsLayer);
         RenderBox* renderBox = toRenderBox(renderer());
         IntRect paddingBox(renderBox->borderLeft(), renderBox->borderTop(), renderBox->width() - renderBox->borderLeft() - renderBox->borderRight(), renderBox->height() - renderBox->borderTop() - renderBox->borderBottom());
-        IntSize scrollOffset = m_owningLayer->scrolledContentOffset();
+        IntSize scrollOffset = m_owningLayer->scrollOffset();
 
         m_scrollingLayer->setPosition(FloatPoint(paddingBox.location() - localCompositingBounds.location()));
 
@@ -1895,7 +1900,8 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         || graphicsLayer == m_backgroundLayer.get()
         || graphicsLayer == m_maskLayer.get()
         || graphicsLayer == m_scrollingContentsLayer.get()) {
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willPaint(m_owningLayer->renderer()->frame());
+        Frame* frame = m_owningLayer->renderer()->frame();
+        InspectorInstrumentation::willPaint(frame);
 
         // The dirtyRect is in the coords of the painting root.
         IntRect dirtyRect = clip;
@@ -1906,9 +1912,9 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         paintIntoLayer(graphicsLayer, &context, dirtyRect, PaintBehaviorNormal, paintingPhase);
 
         if (m_usingTiledCacheLayer)
-            m_owningLayer->renderer()->frame()->view()->setLastPaintTime(currentTime());
+            frame->view()->setLastPaintTime(currentTime());
 
-        InspectorInstrumentation::didPaint(cookie, &context, clip);
+        InspectorInstrumentation::didPaint(frame, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {

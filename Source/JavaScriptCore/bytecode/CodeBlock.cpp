@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009, 2010, 2012, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Cameron Zwarich <cwzwarich@uwaterloo.ca>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -2003,6 +2003,15 @@ CodeBlock::CodeBlock(ScriptExecutable* ownerExecutable, UnlinkedCodeBlock* unlin
             instructions[i + 1] = &globalObject->registerAt(entry.getIndex());
             break;
         }
+
+        case op_debug: {
+            size_t charPosition = pc[i + 4].u.operand;
+            size_t actualCharPosition = charPosition + m_sourceOffset;
+            size_t column = m_source->charPositionToColumnNumber(actualCharPosition);
+            instructions[i + 4] = column;
+            break;
+        }
+
         default:
             break;
         }

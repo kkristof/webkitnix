@@ -2490,6 +2490,8 @@ fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-color.html
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-underline-position.html
+fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent-inherited.html
+fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html
 
 # ACCELERATED_OVERFLOW_SCROLLING is disabled on Windows
 compositing/overflow/scrolling-without-painting.html
@@ -2697,3 +2699,17 @@ fast/repaint/border-fit-lines.html
 
 # Snapshotted plugins not enabled
 webkit.org/b/98696 plugins/snapshotting [ Skip ]
+
+webkit.org/b/112867 compositing/geometry/limit-layer-bounds-fixed.html [ Pass Failure ]
+
+webkit.org/b/112868 fast/dom/MutationObserver/database-callback-delivery.html [ Pass Failure ]
+
+webkit.org/b/112764 fast/frames/xss-auditor-handles-file-urls.html [ Failure ]
+webkit.org/b/112766 media/media-higher-prio-audio-stream.html [ Failure ]
+
+webkit.org/b/112881 fast/text/custom-font-data-crash2.html [ Crash Pass ]
+
+webkit.org/b/113012 compositing/overflow/composited-scrolling-paint-phases.html [ Pass Failure ]
+
+webkit.org/b/113075 media/video-seek-by-small-increment.html [ Pass Crash ]
+webkit.org/b/113076 media/video-volume.html [ Pass Crash ]

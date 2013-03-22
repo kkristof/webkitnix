@@ -1230,10 +1230,15 @@ void ByteCodeParser::handleCall(Interpreter* interpreter, Instruction* currentIn
             // the inputs must be kept alive whatever exits the intrinsic may do.
             addToGraph(Phantom, callTarget);
             emitArgumentPhantoms(registerOffset, argumentCountIncludingThis, kind);
+            if (m_graph.m_compilation)
+                m_graph.m_compilation->noticeInlinedCall();
             return;
         }
-    } else if (handleInlining(usesResult, callTarget, resultOperand, callLinkStatus, registerOffset, argumentCountIncludingThis, nextOffset, kind))
+    } else if (handleInlining(usesResult, callTarget, resultOperand, callLinkStatus, registerOffset, argumentCountIncludingThis, nextOffset, kind)) {
+        if (m_graph.m_compilation)
+            m_graph.m_compilation->noticeInlinedCall();
         return;
+    }
     
     addCall(interpreter, currentInstruction, op);
 }
@@ -1717,6 +1722,8 @@ void ByteCodeParser::handleGetById(
     // execution if it doesn't have a prediction, so we do it manually.
     if (prediction == SpecNone)
         addToGraph(ForceOSRExit);
+    else if (m_graph.m_compilation)
+        m_graph.m_compilation->noticeInlinedGetById();
     
     Node* originalBaseForBaselineJIT = base;
                 
@@ -2352,9 +2359,31 @@ bool ByteCodeParser::parseBlock(unsigned limit)
         case op_strcat: {
             int startOperand = currentInstruction[2].u.operand;
             int numOperands = currentInstruction[3].u.operand;
-            for (int operandIdx = startOperand; operandIdx < startOperand + numOperands; ++operandIdx)
-                addVarArgChild(get(operandIdx));
-            set(currentInstruction[1].u.operand, addToGraph(Node::VarArg, StrCat, OpInfo(0), OpInfo(0)));
+#if CPU(X86)
+            // X86 doesn't have enough registers to compile MakeRope with three arguments.
+            // Rather than try to be clever, we just make MakeRope dumber on this processor.
+            const unsigned maxRopeArguments = 2;
+#else
+            const unsigned maxRopeArguments = 3;
+#endif
+            Node* operands[AdjacencyList::Size];
+            unsigned indexInOperands = 0;
+            for (unsigned i = 0; i < AdjacencyList::Size; ++i)
+                operands[i] = 0;
+            for (int operandIdx = startOperand; operandIdx < startOperand + numOperands; ++operandIdx) {
+                if (indexInOperands == maxRopeArguments) {
+                    operands[0] = addToGraph(MakeRope, operands[0], operands[1], operands[2]);
+                    for (unsigned i = 1; i < AdjacencyList::Size; ++i)
+                        operands[i] = 0;
+                    indexInOperands = 1;
+                }
+                
+                ASSERT(indexInOperands < AdjacencyList::Size);
+                ASSERT(indexInOperands < maxRopeArguments);
+                operands[indexInOperands++] = addToGraph(ToString, get(operandIdx));
+            }
+            set(currentInstruction[1].u.operand,
+                addToGraph(MakeRope, operands[0], operands[1], operands[2]));
             NEXT_OPCODE(op_strcat);
         }
 
@@ -2573,8 +2602,11 @@ bool ByteCodeParser::parseBlock(unsigned limit)
                 m_inlineStackTop->m_profiledBlock,
                 m_currentIndex,
                 m_codeBlock->identifier(identifierNumber));
-            if (!putByIdStatus.isSet())
+            bool canCountAsInlined = true;
+            if (!putByIdStatus.isSet()) {
                 addToGraph(ForceOSRExit);
+                canCountAsInlined = false;
+            }
             
             bool hasExitSite = m_inlineStackTop->m_exitProfile.hasExitSite(m_currentIndex, BadCache);
             
@@ -2662,7 +2694,11 @@ bool ByteCodeParser::parseBlock(unsigned limit)
                     addToGraph(PutByIdDirect, OpInfo(identifierNumber), base, value);
                 else
                     addToGraph(PutById, OpInfo(identifierNumber), base, value);
+                canCountAsInlined = false;
             }
+            
+            if (canCountAsInlined && m_graph.m_compilation)
+                m_graph.m_compilation->noticeInlinedPutById();
 
             NEXT_OPCODE(op_put_by_id);
         }

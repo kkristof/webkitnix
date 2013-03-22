@@ -1,3 +1,699 @@
+2013-03-22  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r146558): Build testapi.mm with ARC enabled for armv7s
+        <http://webkit.org/b/112608>
+
+        Fixes the following build failure:
+
+            Source/JavaScriptCore/API/tests/testapi.mm:205:1: error: method possibly missing a [super dealloc] call [-Werror,-Wobjc-missing-super-calls]
+            }
+            ^
+            1 error generated.
+
+        * Configurations/ToolExecutable.xcconfig: Enable ARC for armv7s
+        architecture.
+
+2013-03-22  David Kilzer  <ddkilzer@apple.com>
+
+        Revert "BUILD FIX (r146558): Call [super dealloc] from -[TinyDOMNode dealloc]"
+
+        This fixes a build failure introduced by this change:
+
+            Source/JavaScriptCore/API/tests/testapi.mm:206:6: error: ARC forbids explicit message send of 'dealloc'
+                [super dealloc];
+                 ^     ~~~~~~~
+            1 error generated.
+
+        Not sure why this didn't fail locally on my Mac Pro.
+
+        * API/tests/testapi.mm:
+        (-[TinyDOMNode dealloc]): Remove call to [super dealloc].
+
+2013-03-22  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r146558): Call [super dealloc] from -[TinyDOMNode dealloc]
+        <http://webkit.org/b/112608>
+
+        Fixes the following build failure:
+
+            Source/JavaScriptCore/API/tests/testapi.mm:205:1: error: method possibly missing a [super dealloc] call [-Werror,-Wobjc-missing-super-calls]
+            }
+            ^
+            1 error generated.
+
+        * API/tests/testapi.mm:
+        (-[TinyDOMNode dealloc]): Call [super dealloc].
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Leak bots erroneously report JSC::WatchpointSet as leaking
+        https://bugs.webkit.org/show_bug.cgi?id=107781
+
+        Reviewed by Filip Pizlo.
+
+        Since leaks doesn't support tagged pointers, avoid using it by flipping the bit flag to indicate
+        the entry is "fat". We set the flag when the entry is NOT fat; i.e. slim.
+
+        Replaced FatFlag by SlimFlag and initialized m_bits with this flag to indicate that the entry is
+        initially "slim".
+
+        * runtime/SymbolTable.cpp:
+        (JSC::SymbolTableEntry::copySlow): Don't set FatFlag since it has been replaced by SlimFlag.
+        (JSC::SymbolTableEntry::inflateSlow): Ditto.
+
+        * runtime/SymbolTable.h:
+        (JSC::SymbolTableEntry::Fast::Fast): Set SlimFlag by default.
+        (JSC::SymbolTableEntry::Fast::isNull): Ignore SlimFlag.
+        (JSC::SymbolTableEntry::Fast::isFat): An entry is fat when m_bits is not entirely zero and SlimFlag
+        is not set.
+
+        (JSC::SymbolTableEntry::SymbolTableEntry): Set SlimFlag by default.
+        (JSC::SymbolTableEntry::SymbolTableEntry::getFast): Set SlimFlag when creating Fast from a fat entry.
+        (JSC::SymbolTableEntry::isNull): Ignore SlimFlag.
+        (JSC::SymbolTableEntry::FatEntry::FatEntry): Strip SlimFlag.
+        (JSC::SymbolTableEntry::isFat): An entry is fat when m_bits is not entirely zero and SlimFlag is unset.
+        (JSC::SymbolTableEntry::fatEntry): Don't strip FatFlag as this flag doesn't exist anymore.
+        (JSC::SymbolTableEntry::pack): Preserve SlimFlag.
+
+        (JSC::SymbolTableIndexHashTraits): empty value is no longer zero so don't set emptyValueIsZero true.
+
+2013-03-21  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: Need a good way to preserve custom properties on JS wrappers
+        https://bugs.webkit.org/show_bug.cgi?id=112608
+
+        Reviewed by Geoffrey Garen.
+
+        Currently, we just use a weak map, which means that garbage collection can cause a wrapper to 
+        disappear if it isn't directly exported to JavaScript.
+
+        The most straightforward and safe way (with respect to garbage collection and concurrency) is to have 
+        clients add and remove their external references along with their owners. Effectively, the client is 
+        recording the structure of the external object graph so that the garbage collector can make sure to 
+        mark any wrappers that are reachable through either the JS object graph of the external Obj-C object 
+        graph. By keeping these wrappers alive, this has the effect that custom properties on these wrappers 
+        will also remain alive.
+
+        The rule for if an object needs to be tracked by the runtime (and therefore whether the client should report it) is as follows:
+        For a particular object, its references to its children should be added if:
+        1. The child is referenced from JavaScript.
+        2. The child contains references to other objects for which (1) or (2) are true.
+
+        * API/JSAPIWrapperObject.mm:
+        (JSAPIWrapperObjectHandleOwner::finalize):
+        (JSAPIWrapperObjectHandleOwner::isReachableFromOpaqueRoots): A wrapper object is kept alive only if its JSGlobalObject
+        is marked and its corresponding Objective-C object was added to the set of opaque roots.
+        (JSC::JSAPIWrapperObject::visitChildren): We now call out to scanExternalObjectGraph, which handles adding all Objective-C
+        objects to the set of opaque roots.
+        * API/JSAPIWrapperObject.h:
+        (JSAPIWrapperObject):
+        * API/JSContext.mm: Moved dealloc to its proper place in the main implementation.
+        (-[JSContext dealloc]):
+        * API/JSVirtualMachine.h:
+        * API/JSVirtualMachine.mm:
+        (-[JSVirtualMachine initWithContextGroupRef:]):
+        (-[JSVirtualMachine dealloc]):
+        (getInternalObjcObject): Helper funciton to get the Objective-C object out of JSManagedValues or JSValues if there is one.
+        (-[JSVirtualMachine addManagedReference:withOwner:]): Adds the Objective-C object to the set of objects 
+        owned by the owner object in that particular virtual machine.
+        (-[JSVirtualMachine removeManagedReference:withOwner:]): Removes the relationship between the two objects.
+        (-[JSVirtualMachine externalObjectGraph]):
+        (scanExternalObjectGraph): Does a depth-first search of the external object graph in a particular virtual machine starting at
+        the specified root. Each new object it encounters it adds to the set of opaque roots. These opaque roots will keep their 
+        corresponding wrapper objects alive if they have them. 
+        * API/JSManagedReferenceInternal.h: Added.
+        * API/JSVirtualMachine.mm: Added the per-JSVirtualMachine map between objects and the objects they own, which is more formally
+        known as that virtual machine's external object graph.
+        * API/JSWrapperMap.mm:
+        (-[JSWrapperMap dealloc]): We were leaking this before :-(
+        (-[JSVirtualMachine initWithContextGroupRef:]):
+        (-[JSVirtualMachine dealloc]):
+        (-[JSVirtualMachine externalObjectGraph]):
+        * API/JSVirtualMachineInternal.h:
+        * API/tests/testapi.mm: Added two new tests using the TinyDOMNode class. The first tests that a custom property added to a wrapper 
+        doesn't vanish after GC, even though that wrapper isn't directly accessible to the JS garbage collector but is accessible through 
+        the external Objective-C object graph. The second test makes sure that adding an object to the external object graph with the same 
+        owner doesn't cause any sort of problems.
+        (+[TinyDOMNode sharedVirtualMachine]):
+        (-[TinyDOMNode init]):
+        (-[TinyDOMNode dealloc]):
+        (-[TinyDOMNode appendChild:]):
+        (-[TinyDOMNode numberOfChildren]):
+        (-[TinyDOMNode childAtIndex:]):
+        (-[TinyDOMNode removeChildAtIndex:]):
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * heap/SlotVisitor.h:
+        (SlotVisitor):
+        * heap/SlotVisitorInlines.h:
+        (JSC::SlotVisitor::containsOpaqueRootTriState): Added a new method to SlotVisitor to allow scanExternalObjectGraph to have a 
+        thread-safe view of opaque roots during parallel marking. The set of opaque roots available to any one SlotVisitor isn't guaranteed
+        to be 100% correct, but that just results in a small duplication of work in scanExternalObjectGraph. To indicate this change for
+        false negatives we return a TriState that's either true or mixed, but never false.
+
+2013-03-21  Mark Lam  <mark.lam@apple.com>
+
+        Fix O(n^2) op_debug bytecode charPosition to column computation.
+        https://bugs.webkit.org/show_bug.cgi?id=112957.
+
+        Reviewed by Geoffrey Garen.
+
+        The previous algorithm does a linear reverse scan of the source string
+        to find the line start for any given char position. This results in a
+        O(n^2) algortithm when the source string has no line breaks.
+
+        The new algorithm computes a line start column table for a
+        SourceProvider on first use. This line start table is used to fix up
+        op_debug's charPosition operand into a column operand when an
+        UnlinkedCodeBlock is linked into a CodeBlock. The initialization of
+        the line start table is O(n), and the CodeBlock column fix up is
+        O(log(n)).
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dumpBytecode): 
+        (JSC::CodeBlock::CodeBlock): - do column fix up.
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::debug): - no need to do column fixup anymore.
+        * interpreter/Interpreter.h:
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+        * parser/SourceProvider.cpp:
+        (JSC::SourceProvider::lineStarts):
+        (JSC::charPositionExtractor):
+        (JSC::SourceProvider::charPositionToColumnNumber):
+        - initialize line start column table if needed.
+        - look up line start for the given char position.
+        * parser/SourceProvider.h:
+
+2013-03-21  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC profiler should have an at-a-glance report of the success of DFG optimization
+        https://bugs.webkit.org/show_bug.cgi?id=112988
+
+        Reviewed by Geoffrey Garen.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::handleCall):
+        (JSC::DFG::ByteCodeParser::handleGetById):
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * profiler/ProfilerCompilation.cpp:
+        (JSC::Profiler::Compilation::Compilation):
+        (JSC::Profiler::Compilation::toJS):
+        * profiler/ProfilerCompilation.h:
+        (JSC::Profiler::Compilation::noticeInlinedGetById):
+        (JSC::Profiler::Compilation::noticeInlinedPutById):
+        (JSC::Profiler::Compilation::noticeInlinedCall):
+        (Compilation):
+        * runtime/CommonIdentifiers.h:
+
+2013-03-21  Mark Lam  <mark.lam@apple.com>
+
+        Fix lexer charPosition computation when "rewind"ing the lexer.
+        https://bugs.webkit.org/show_bug.cgi?id=112952.
+
+        Reviewed by Michael Saboff.
+
+        Changed the Lexer to no longer keep a m_charPosition. Instead, we compute
+        currentCharPosition() from m_code and m_codeStartPlusOffset, where
+        m_codeStartPlusOffset is the SourceProvider m_codeStart + the SourceCode
+        start offset. This ensures that the charPosition is always in sync with
+        m_code.
+
+        * parser/Lexer.cpp:
+        (JSC::::setCode):
+        (JSC::::internalShift):
+        (JSC::::shift):
+        (JSC::::lex):
+        * parser/Lexer.h:
+        (JSC::Lexer::currentCharPosition):
+        (JSC::::lexExpectIdentifier):
+
+2013-03-21  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] GCActivityCallback: replace JSLock with JSLockHolder
+        https://bugs.webkit.org/show_bug.cgi?id=112448
+
+        Reviewed by Xan Lopez.
+
+        This changed in r121381.
+
+        * runtime/GCActivityCallbackBlackBerry.cpp:
+        (JSC::DefaultGCActivityCallback::doWork):
+
+2013-03-21  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: wrapperClass holds a static JSClassRef, which causes JSGlobalObjects to leak
+        https://bugs.webkit.org/show_bug.cgi?id=112856
+
+        Reviewed by Geoffrey Garen.
+
+        Through a very convoluted path that involves the caching of prototypes on the JSClassRef, we can leak 
+        JSGlobalObjects when inserting an Objective-C object into multiple independent JSContexts.
+
+        * API/JSAPIWrapperObject.cpp: Removed.
+        * API/JSAPIWrapperObject.h:
+        (JSAPIWrapperObject):
+        * API/JSAPIWrapperObject.mm: Copied from Source/JavaScriptCore/API/JSAPIWrapperObject.cpp. Made this an
+        Objective-C++ file so that we can call release on the wrappedObject. Also added a WeakHandleOwner for 
+        JSAPIWrapperObjects. This will also be used in a future patch for https://bugs.webkit.org/show_bug.cgi?id=112608.
+        (JSAPIWrapperObjectHandleOwner):
+        (jsAPIWrapperObjectHandleOwner):
+        (JSAPIWrapperObjectHandleOwner::finalize): This finalize replaces the old finalize that was done through
+        the C API.
+        (JSC::JSAPIWrapperObject::finishCreation): Allocate the WeakImpl. Balanced in finalize.
+        (JSC::JSAPIWrapperObject::setWrappedObject): We now do the retain of the wrappedObject here rather than in random
+        places scattered around JSWrapperMap.mm
+        * API/JSObjectRef.cpp: Added some ifdefs for platforms that don't support the Obj-C API.
+        (JSObjectGetPrivate): Ditto.
+        (JSObjectSetPrivate): Ditto.
+        (JSObjectGetPrivateProperty): Ditto.
+        (JSObjectSetPrivateProperty): Ditto.
+        (JSObjectDeletePrivateProperty): Ditto.
+        * API/JSValueRef.cpp: Ditto.
+        (JSValueIsObjectOfClass): Ditto.
+        * API/JSWrapperMap.mm: Remove wrapperClass().
+        (objectWithCustomBrand): Change to no longer use a parent class, which was only used to give the ability to 
+        finalize wrapper objects.
+        (-[JSObjCClassInfo initWithContext:forClass:superClassInfo:]): Change to no longer use wrapperClass(). 
+        (-[JSObjCClassInfo allocateConstructorAndPrototypeWithSuperClassInfo:]): Ditto.
+        (tryUnwrapObjcObject): We now check if the object inherits from JSAPIWrapperObject.
+        * API/tests/testapi.mm: Added a test that exports an Objective-C object to two different JSContexts and makes 
+        sure that the first one is collected properly by using a weak JSManagedValue for the wrapper in the first JSContext.
+        * CMakeLists.txt: Build file modifications.
+        * GNUmakefile.list.am: Ditto.
+        * JavaScriptCore.gypi: Ditto.
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj: Ditto.
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj: Ditto.
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters: Ditto.
+        * JavaScriptCore.xcodeproj/project.pbxproj: Ditto.
+        * runtime/JSGlobalObject.cpp: More ifdefs for unsupported platforms.
+        (JSC::JSGlobalObject::reset): Ditto.
+        (JSC::JSGlobalObject::visitChildren): Ditto.
+        * runtime/JSGlobalObject.h: Ditto.
+        (JSGlobalObject): Ditto.
+        (JSC::JSGlobalObject::objcCallbackFunctionStructure): Ditto.
+
+2013-03-21  Anton Muhin  <antonm@chromium.org>
+
+        Unreviewed, rolling out r146483.
+        http://trac.webkit.org/changeset/146483
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Breaks debug builds.
+
+        * bytecode/GlobalResolveInfo.h: Removed property svn:mergeinfo.
+
+2013-03-21  Gabor Rapcsanyi  <rgabor@webkit.org>
+
+        Implement LLInt for CPU(ARM_TRADITIONAL)
+        https://bugs.webkit.org/show_bug.cgi?id=97589
+
+        Reviewed by Zoltan Herczeg.
+
+        Enable LLInt for ARMv5 and ARMv7 traditional as well.
+
+        * llint/LLIntOfflineAsmConfig.h:
+        * llint/LowLevelInterpreter.asm:
+        * llint/LowLevelInterpreter32_64.asm:
+        * offlineasm/arm.rb:
+        * offlineasm/backends.rb:
+        * offlineasm/instructions.rb:
+
+2013-03-20  Cosmin Truta  <ctruta@blackberry.com>
+
+        [QNX][ARM] REGRESSION(r135330): Various failures in Octane
+        https://bugs.webkit.org/show_bug.cgi?id=112863
+
+        Reviewed by Yong Li.
+
+        This was fixed in http://trac.webkit.org/changeset/146396 on Linux only.
+        Enable this fix on QNX.
+
+        * assembler/ARMv7Assembler.h:
+        (ARMv7Assembler):
+        (JSC::ARMv7Assembler::replaceWithJump):
+        (JSC::ARMv7Assembler::maxJumpReplacementSize):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::revertJumpReplacementToBranchPtrWithPatch):
+
+2013-03-20  Filip Pizlo  <fpizlo@apple.com>
+
+        Fix indentation of JSString.h
+
+        Rubber stamped by Mark Hahnenberg.
+
+        * runtime/JSString.h:
+
+2013-03-20  Filip Pizlo  <fpizlo@apple.com>
+
+        "" + x where x is not a string should be optimized by the DFG to some manner of ToString conversion
+        https://bugs.webkit.org/show_bug.cgi?id=112845
+
+        Reviewed by Mark Hahnenberg.
+        
+        I like to do "" + x. So I decided to make DFG recognize it, and related idioms.
+
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        (JSC::DFG::FixupPhase::fixupToPrimitive):
+        (FixupPhase):
+        (JSC::DFG::FixupPhase::fixupToString):
+        (JSC::DFG::FixupPhase::attemptToMakeFastStringAdd):
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::resultOfToPrimitive):
+        (DFG):
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGPredictionPropagationPhase.h:
+        (DFG):
+
+2013-03-20  Zoltan Herczeg  <zherczeg@webkit.org>
+
+        ARMv7 replaceWithJump ASSERT failure after r135330.
+        https://bugs.webkit.org/show_bug.cgi?id=103146
+
+        Reviewed by Filip Pizlo.
+
+        On Linux, the 24 bit distance range of jumps sometimes does not
+        enough to cover all targets addresses. This patch supports jumps
+        outside of this range using a mov/movt/bx 10 byte long sequence.
+
+        * assembler/ARMv7Assembler.h:
+        (ARMv7Assembler):
+        (JSC::ARMv7Assembler::revertJumpTo_movT3movtcmpT2):
+        (JSC::ARMv7Assembler::nopw):
+        (JSC::ARMv7Assembler::label):
+        (JSC::ARMv7Assembler::replaceWithJump):
+        (JSC::ARMv7Assembler::maxJumpReplacementSize):
+        * assembler/MacroAssemblerARMv7.h:
+        (JSC::MacroAssemblerARMv7::revertJumpReplacementToBranchPtrWithPatch):
+
+2013-03-20  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: Fix over-releasing in allocateConstructorAndPrototypeWithSuperClassInfo:
+        https://bugs.webkit.org/show_bug.cgi?id=112832
+
+        Reviewed by Geoffrey Garen.
+
+        If either the m_constructor or m_prototype (but not both) is collected, we will call 
+        allocateConstructorAndPrototypeWithSuperClassInfo, which will create a new object to replace the one 
+        that was collected, but at the end of the method we call release on both of them. 
+        This is incorrect since we autorelease the JSValue in the case that the object doesn't need to be 
+        reallocated. Thus we'll end up overreleasing later during the drain of the autorelease pool.
+
+        * API/JSWrapperMap.mm:
+        (objectWithCustomBrand): We no longer alloc here. We instead call the JSValue valueWithValue class method,
+        which autoreleases for us.
+        (-[JSObjCClassInfo allocateConstructorAndPrototypeWithSuperClassInfo:]): We no longer call release on the 
+        constructor or prototype JSValues.
+        * API/tests/testapi.mm: Added a new test that crashes on ToT due to over-releasing.
+
+2013-03-19  Filip Pizlo  <fpizlo@apple.com>
+
+        It's called "Hash Consing" not "Hash Consting"
+        https://bugs.webkit.org/show_bug.cgi?id=112768
+
+        Rubber stamped by Mark Hahnenberg.
+        
+        See http://en.wikipedia.org/wiki/Hash_consing
+
+        * heap/GCThreadSharedData.cpp:
+        (JSC::GCThreadSharedData::GCThreadSharedData):
+        (JSC::GCThreadSharedData::reset):
+        * heap/GCThreadSharedData.h:
+        (GCThreadSharedData):
+        * heap/SlotVisitor.cpp:
+        (JSC::SlotVisitor::SlotVisitor):
+        (JSC::SlotVisitor::setup):
+        (JSC::SlotVisitor::reset):
+        (JSC::JSString::tryHashConsLock):
+        (JSC::JSString::releaseHashConsLock):
+        (JSC::JSString::shouldTryHashCons):
+        (JSC::SlotVisitor::internalAppend):
+        * heap/SlotVisitor.h:
+        (SlotVisitor):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        (JSC::JSGlobalData::haveEnoughNewStringsToHashCons):
+        (JSC::JSGlobalData::resetNewStringsSinceLastHashCons):
+        * runtime/JSString.h:
+        (JSC::JSString::finishCreation):
+        (JSString):
+        (JSC::JSString::isHashConsSingleton):
+        (JSC::JSString::clearHashConsSingleton):
+        (JSC::JSString::setHashConsSingleton):
+
+2013-03-20  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG implementation of op_strcat should inline rope allocations
+        https://bugs.webkit.org/show_bug.cgi?id=112780
+
+        Reviewed by Oliver Hunt.
+        
+        This gets rid of the StrCat node and adds a MakeRope node. The MakeRope node can
+        take either two or three operands, and allocates a rope string with either two or
+        three fibers. (The magic choice of three children for non-VarArg nodes happens to
+        match exactly with the magic choice of three fibers for rope strings.)
+        
+        ValueAdd on KnownString is replaced with MakeRope with two children.
+        
+        StrCat gets replaced by an appropriate sequence of MakeRope's.
+        
+        MakeRope does not do the dynamic check to see if its children are empty strings.
+        This is replaced by a static check, instead. The downside is that we may use more
+        memory if the strings passed to MakeRope turn out to dynamically be empty. The
+        upside is that we do fewer checks in the cases where either the strings are not
+        empty, or where the strings are statically known to be empty. I suspect both of
+        those cases are more common, than the case where the string is dynamically empty.
+        
+        This also results in some badness for X86. MakeRope needs six registers if it is
+        allocating a three-rope. We don't have six registers to spare on X86. Currently,
+        the code side-steps this problem by just never usign three-ropes in optimized
+        code on X86. All other architectures, including X86_64, don't have this problem.
+        
+        This is a shocking speed-up. 9% progressions on both V8/splay and
+        SunSpider/date-format-xparb. 1% progression on V8v7 overall, and ~0.5% progression
+        on SunSpider. 2x speed-up on microbenchmarks that test op_strcat.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::executeEffects):
+        * dfg/DFGAdjacencyList.h:
+        (AdjacencyList):
+        (JSC::DFG::AdjacencyList::removeEdge):
+        * dfg/DFGArgumentsSimplificationPhase.cpp:
+        (JSC::DFG::ArgumentsSimplificationPhase::removeArgumentsReferencingPhantomChild):
+        * dfg/DFGBackwardsPropagationPhase.cpp:
+        (JSC::DFG::BackwardsPropagationPhase::propagate):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::putStructureStoreElimination):
+        (JSC::DFG::CSEPhase::eliminateIrrelevantPhantomChildren):
+        (JSC::DFG::CSEPhase::performNodeCSE):
+        * dfg/DFGDCEPhase.cpp:
+        (JSC::DFG::DCEPhase::eliminateIrrelevantPhantomChildren):
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        (JSC::DFG::FixupPhase::createToString):
+        (JSC::DFG::FixupPhase::attemptToForceStringArrayModeByToStringConversion):
+        (JSC::DFG::FixupPhase::convertStringAddUse):
+        (FixupPhase):
+        (JSC::DFG::FixupPhase::convertToMakeRope):
+        (JSC::DFG::FixupPhase::fixupMakeRope):
+        (JSC::DFG::FixupPhase::attemptToMakeFastStringAdd):
+        * dfg/DFGNodeType.h:
+        (DFG):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileAdd):
+        (JSC::DFG::SpeculativeJIT::compileMakeRope):
+        (DFG):
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+        (SpeculativeJIT):
+        (JSC::DFG::SpeculateCellOperand::SpeculateCellOperand):
+        (JSC::DFG::SpeculateCellOperand::~SpeculateCellOperand):
+        (JSC::DFG::SpeculateCellOperand::gpr):
+        (JSC::DFG::SpeculateCellOperand::use):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * runtime/JSString.h:
+        (JSRopeString):
+
+2013-03-20  Peter Gal  <galpeter@inf.u-szeged.hu>
+
+        Implement and32 on MIPS platform
+        https://bugs.webkit.org/show_bug.cgi?id=112665
+
+        Reviewed by Zoltan Herczeg.
+
+        * assembler/MacroAssemblerMIPS.h:
+        (JSC::MacroAssemblerMIPS::and32): Added missing method.
+        (MacroAssemblerMIPS):
+
+2013-03-20  Mark Lam  <mark.lam@apple.com>
+
+        Fix incorrect debugger column number value.
+        https://bugs.webkit.org/show_bug.cgi?id=112741.
+
+        Reviewed by Oliver Hunt.
+
+        1. In lexer, parser, and debugger code, renamed column to charPosition.
+        2. Convert the charPosition to the equivalent column number before
+           passing it to the debugger.
+        3. Changed ScopeNodes to take both a startLocation and an endLocation.
+           This allows FunctionBodyNodes, ProgramNodes, and EvalNodess to emit
+           correct debug hooks with correct starting line and column numbers.
+        4. Fixed the Lexer to not reset the charPosition (previously
+           columnNumber) in Lexer::lex().
+
+        * JavaScriptCore.order:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dumpBytecode):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitDebugHook):
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::emitExpressionInfo):
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::ArrayNode::toArgumentList):
+        (JSC::ConstStatementNode::emitBytecode):
+        (JSC::EmptyStatementNode::emitBytecode):
+        (JSC::DebuggerStatementNode::emitBytecode):
+        (JSC::ExprStatementNode::emitBytecode):
+        (JSC::VarStatementNode::emitBytecode):
+        (JSC::IfNode::emitBytecode):
+        (JSC::IfElseNode::emitBytecode):
+        (JSC::DoWhileNode::emitBytecode):
+        (JSC::WhileNode::emitBytecode):
+        (JSC::ForNode::emitBytecode):
+        (JSC::ForInNode::emitBytecode):
+        (JSC::ContinueNode::emitBytecode):
+        (JSC::BreakNode::emitBytecode):
+        (JSC::ReturnNode::emitBytecode):
+        (JSC::WithNode::emitBytecode):
+        (JSC::SwitchNode::emitBytecode):
+        (JSC::LabelNode::emitBytecode):
+        (JSC::ThrowNode::emitBytecode):
+        (JSC::TryNode::emitBytecode):
+        (JSC::ProgramNode::emitBytecode):
+        (JSC::EvalNode::emitBytecode):
+        (JSC::FunctionBodyNode::emitBytecode):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::debug):
+        - convert charPosition to column for the debugger.
+        * interpreter/Interpreter.h:
+        * jit/JITStubs.cpp:
+        (DEFINE_STUB_FUNCTION(void, op_debug)):
+        * llint/LLIntSlowPaths.cpp:
+        (LLINT_SLOW_PATH_DECL(slow_op_debug)):
+        * parser/ASTBuilder.h:
+        (JSC::ASTBuilder::createFunctionExpr):
+        (JSC::ASTBuilder::createFunctionBody):
+        (JSC::ASTBuilder::createGetterOrSetterProperty):
+        (JSC::ASTBuilder::createFuncDeclStatement):
+        (JSC::ASTBuilder::createBlockStatement):
+        (JSC::ASTBuilder::createExprStatement):
+        (JSC::ASTBuilder::createIfStatement):
+        (JSC::ASTBuilder::createForLoop):
+        (JSC::ASTBuilder::createForInLoop):
+        (JSC::ASTBuilder::createVarStatement):
+        (JSC::ASTBuilder::createReturnStatement):
+        (JSC::ASTBuilder::createBreakStatement):
+        (JSC::ASTBuilder::createContinueStatement):
+        (JSC::ASTBuilder::createTryStatement):
+        (JSC::ASTBuilder::createSwitchStatement):
+        (JSC::ASTBuilder::createWhileStatement):
+        (JSC::ASTBuilder::createDoWhileStatement):
+        (JSC::ASTBuilder::createWithStatement):
+        (JSC::ASTBuilder::createThrowStatement):
+        (JSC::ASTBuilder::createDebugger):
+        (JSC::ASTBuilder::createConstStatement):
+        * parser/Lexer.cpp:
+        (JSC::::setCode):
+        (JSC::::internalShift):
+        (JSC::::shift):
+        (JSC::::lex):
+        * parser/Lexer.h:
+        (JSC::Lexer::currentCharPosition):
+        (Lexer):
+        (JSC::::lexExpectIdentifier):
+        * parser/NodeConstructors.h:
+        (JSC::Node::Node):
+        * parser/Nodes.cpp:
+        (JSC::StatementNode::setLoc):
+        (JSC::ScopeNode::ScopeNode):
+        (JSC::ProgramNode::ProgramNode):
+        (JSC::ProgramNode::create):
+        (JSC::EvalNode::EvalNode):
+        (JSC::EvalNode::create):
+        (JSC::FunctionBodyNode::FunctionBodyNode):
+        (JSC::FunctionBodyNode::create):
+        * parser/Nodes.h:
+        (JSC::Node::charPosition):
+        (Node):
+        (StatementNode):
+        (JSC::StatementNode::lastLine):
+        (ScopeNode):
+        (JSC::ScopeNode::startLine):
+        (JSC::ScopeNode::startCharPosition):
+        (ProgramNode):
+        (EvalNode):
+        (FunctionBodyNode):
+        * parser/Parser.cpp:
+        (JSC::::Parser):
+        (JSC::::parseFunctionBody):
+        (JSC::::parseFunctionInfo):
+        * parser/Parser.h:
+        (JSC::::parse):
+        * parser/ParserTokens.h:
+        (JSC::JSTokenLocation::JSTokenLocation):
+        (JSTokenLocation):
+        * parser/SyntaxChecker.h:
+        (JSC::SyntaxChecker::createFunctionBody):
+
+2013-03-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        REGRESSION(r146089): It broke 20 sputnik tests on ARM traditional and Thumb2
+        https://bugs.webkit.org/show_bug.cgi?id=112676
+
+        Rubber-stamped by Filip Pizlo.
+
+        Add one more EABI_32BIT_DUMMY_ARG to make DFG JIT ARM EABI compatible
+        again after r146089 similar to https://bugs.webkit.org/show_bug.cgi?id=84449
+
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+
+2013-03-19  Michael Saboff  <msaboff@apple.com>
+
+        Crash when loading http://www.jqchart.com/jquery/gauges/RadialGauge/LiveData
+        https://bugs.webkit.org/show_bug.cgi?id=112694
+
+        Reviewed by Filip Pizlo.
+
+        We were trying to convert an NewArray to a Phantom, but convertToPhantom doesn't handle
+        nodes with variable arguments.  Added code to insert a Phantom node in front of all the
+        live children of a var args node.  Added ASSERT not var args for convertToPhantom to
+        catch any other similar cases.  Added a new convertToPhantomUnchecked() for converting 
+        var arg nodes.
+
+        * dfg/DFGDCEPhase.cpp:
+        (JSC::DFG::DCEPhase::run):
+        * dfg/DFGNode.h:
+        (Node):
+        (JSC::DFG::Node::setOpAndDefaultNonExitFlags): Added ASSERT(!(m_flags & NodeHasVarArgs))
+        (JSC::DFG::Node::setOpAndDefaultNonExitFlagsUnchecked):
+        (JSC::DFG::Node::convertToPhantomUnchecked):
+
 2013-03-19  Mark Hahnenberg  <mhahnenberg@apple.com>
 
         Crash in SpeculativeJIT::fillSpeculateIntInternal<false> on http://bellard.org/jslinux

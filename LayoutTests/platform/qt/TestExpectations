@@ -349,6 +349,7 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
+webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ]
 
 # Web Inspector: Implement support for InspectorClient::overrideDeviceMetrics() in platforms other than Chromium
 # https://bugs.webkit.org/show_bug.cgi?id=82886
@@ -1918,6 +1919,10 @@ webkit.org/b/111290 fast/regions/seamless-iframe-flowed-into-regions.html [ Skip
 webkit.org/b/110546 [ DEBUG ] fast/parser/document-write-fighting-eof.html [ Skip ]
 webkit.org/b/110546 [ DEBUG ] fast/parser/document-write-partial-entity-before-load.html [ Skip ]
 
+webkit.org/b/112914 fast/media/mq-resolution-dpi-dpcm-warning.html [ Skip ]
+webkit.org/b/112914 fast/media/mq-resolution.html [ Skip ]
+webkit.org/b/112914 fast/media/w3c/test_media_queries.html [ Skip ]
+
 # ============================================================================= #
 # failing security tests
 # ============================================================================= #
@@ -2602,6 +2607,10 @@ webkit.org/b/103424 fast/backgrounds/background-opaque-images-over-color.html
 webkit.org/b/101491 compositing/text-on-scaled-layer.html [ Skip ]
 webkit.org/b/101491 compositing/text-on-scaled-surface.html [ Skip ]
 
+webkit.org/b/112895 compositing/rtl/rtl-overflow-scrolling.html [ Skip ]
+
+webkit.org/b/112893 editing/spelling/spellcheck-paste-continuous-disabled.html [ Skip ]
+
 # No support for exposing in-band text tracks
 webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-cues-added-once.html [ Skip ]
@@ -2686,6 +2695,7 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
+
 
 # Border-fit should happen at layout time rather than paint time
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Skip ]

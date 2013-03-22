@@ -1,3 +1,357 @@
+2013-03-22  Timothy Hatcher  <timothy@apple.com>
+
+        Fix an assert when opening the Web Inspector window for the first time.
+
+        rdar://problem/13471765
+        https://webkit.org/b/113053
+
+        Reviewed by Eric Carlson.
+
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (WebKit::WebInspectorProxy::createInspectorWindow): Assign m_inspectorWindow
+        earlier so it is ready for when center is called and windowDidMove: gets called.
+
+2013-03-21  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Page Overlays: Don't create backing store until the client asks us to paint
+        https://bugs.webkit.org/show_bug.cgi?id=112989
+        <rdar://problem/13355759>
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebCoreSupport/WebInspectorClient.cpp:
+        (WebKit::WebInspectorClient::highlight):
+        * WebProcess/WebPage/FindController.cpp:
+        (WebKit::FindController::updateFindUIAfterPageScroll):
+        Invalidate the entire overlay on installation, to maintain existing behavior
+        on platforms where the fade-in animation is not performed by invalidating the overlay.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::installPageOverlay):
+        Don't invalidate the overlay upon installation.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::setPageOverlayNeedsDisplay):
+        Create backing store for the page overlay layer the first time it is painted into.
+        (WebKit::TiledCoreAnimationDrawingArea::updateGeometry):
+        Don't update the size of the page overlay layer unless we intend for it to have backing store.
+        (WebKit::TiledCoreAnimationDrawingArea::createPageOverlayLayer):
+        Don't create backing store when we create the page overlay layer.
+
+2013-03-21  Brady Eidson  <beidson@apple.com>
+
+        If a previously loaded resource is later stored to the disk cache, replace the buffer with MMAP'ed memory.
+        <rdar://problem/13414154> and https://bugs.webkit.org/show_bug.cgi?id=112943
+
+        Reviewed by Geoff Garen.
+
+        Add a timer that will try to look up the disk cached buffer for the resource a few seconds after the load
+        completes and - if the resource is disk backed - send it to the WebProcess for sharing:
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::NetworkResourceLoader):
+        (WebKit::NetworkResourceLoader::diskCacheTimerFired):
+        (WebKit::NetworkResourceLoader::didReceiveResponse):
+        (WebKit::NetworkResourceLoader::didReceiveData):
+        (WebKit::NetworkResourceLoader::didFinishLoading):
+        * NetworkProcess/NetworkResourceLoader.h:
+
+        * NetworkProcess/mac/NetworkResourceLoaderMac.mm:
+        (WebKit::NetworkResourceLoader::tryGetShareableHandleForResource):
+
+        Refactor SharedMemory to remove the unnecessary vm_copy and only vm_allocate when an appropriate buffer
+        doesn't already exist:
+        * Platform/SharedMemory.h:
+        * Platform/mac/SharedMemoryMac.cpp:
+        (WebKit::SharedMemory::create):
+        (WebKit::SharedMemory::createFromVMBuffer):
+        (WebKit::SharedMemory::~SharedMemory):
+
+        Give ShareableResource the ability to create a CFDataRef that wraps "this", and return it in a SharedBuffer:
+        * Shared/ShareableResource.cpp:
+        (WebKit::shareableResourceDeallocate):
+        (WebKit::createShareableResourceDeallocator):
+        (WebKit::ShareableResource::Handle::tryWrapInSharedBuffer):
+        * Shared/ShareableResource.h:
+
+        * Shared/WebCoreArgumentCoders.cpp: Encode/decode the cache partition for ResourceRequest.
+
+        * WebProcess/Network/NetworkProcessConnection.cpp:
+        (WebKit::NetworkProcessConnection::didReceiveMessage):
+        (WebKit::NetworkProcessConnection::didCacheResource): Lookup the CachedResource in the WebCore memory cache
+          and try to replace its encoded data with the shared mmap'ed buffer.
+        * WebProcess/Network/NetworkProcessConnection.h:
+        * WebProcess/Network/NetworkProcessConnection.messages.in:
+
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::didReceiveResource):
+
+2013-03-21  Tim Horton  <timothy_horton@apple.com>
+
+        Unreviewed build fix, forgot to stage one file.
+
+        * WebProcess/WebPage/DrawingArea.h:
+        (WebKit::DrawingArea::didChangeScrollOffsetForAnyFrame):
+        (DrawingArea):
+
+2013-03-21  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Page overlays shouldn't dirty the entire layer when flushing if the main frame can't scroll
+        https://bugs.webkit.org/show_bug.cgi?id=111662
+        <rdar://problem/13355808>
+
+        Reviewed by Dean Jackson.
+
+        Instead of setNeedsDisplay()ing the whole page overlay layer every time through
+        TCADA::flushLayers, do it at scroll time instead. Repainting on scroll is
+        necessary to keep things painted in the right place when we scroll (the overlay
+        is fixed to the size of the view), but is quite wasteful in apps that don’t scroll.
+
+        This works with threaded scrolling because overlay installation forces us
+        into main-thread scrolling mode.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::didChangeScrollOffset):
+        Plumb scroll offset changes through to the drawing area, so it can invalidate the page overlay.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+        Add didChangeScrollOffsetForAnyFrame, for WebFrameLoaderClient to call us back when any frame scrolls.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::didChangeScrollOffsetForAnyFrame):
+        Invalidate the page overlay when any frame scrolls, so that find indicators in subframes are kept in the right place.
+        (WebKit::TiledCoreAnimationDrawingArea::flushLayers):
+        Stop unconditionally invalidating the page overlay when we flush layers.
+
+2013-03-21  Alexey Proskuryakov  <ap@apple.com>
+
+        [Mac] Move NSOperationQueue out of NetworkingContext
+        https://bugs.webkit.org/show_bug.cgi?id=112970
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkResourceLoader.h:
+        * NetworkProcess/mac/RemoteNetworkingContext.h:
+        * NetworkProcess/mac/RemoteNetworkingContext.mm:
+        Tell ResourceHandle to use an operation queue in the new way.
+
+2013-03-21  Timothy Hatcher  <timothy@apple.com>
+
+        Support connecting the Web Inspector without showing it.
+
+        This allows you to get the debugger attached in the background. When a breakpoint is hit
+        the Inspector will open. This change also reduces some WebProcess messaging by removing
+        the DidLoadInspectorPage message and stops sending the SetAttachedWindow message on close.
+
+        https://bugs.webkit.org/show_bug.cgi?id=112445
+
+        Reviewed by Sam Weinig.
+
+        * UIProcess/API/C/WKInspector.cpp:
+        (WKInspectorIsConnected): Added.
+        (WKInspectorConnect): Added.
+        (WKInspectorHide): Added.
+
+        * UIProcess/API/C/WKInspector.h:
+        Added new APIs.
+
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::WebInspectorProxy):
+        Initialize new state booleans.
+
+        (WebKit::WebInspectorProxy::invalidate):
+        Don't set state booleans that didClose already resets.
+
+        (WebKit::WebInspectorProxy::connect): Added.
+        (WebKit::WebInspectorProxy::show):
+        Open if we are already connected. Call connect().
+
+        (WebKit::WebInspectorProxy::hide): Added.
+
+        (WebKit::WebInspectorProxy::close):
+        Call didClose we can detach or close the window immediately instead of waiting for a
+        message from the WebProcess.
+
+        (WebKit::WebInspectorProxy::attach):
+        (WebKit::WebInspectorProxy::detach):
+        Check for !m_page to match other functions.
+
+        (WebKit::WebInspectorProxy::createInspectorPage):
+        (WebKit::WebInspectorProxy::didLoadInspectorPage):
+        Removed. Moved logic to open().
+
+        (WebKit::WebInspectorProxy::open): Added.
+
+        (WebKit::WebInspectorProxy::didClose):
+        Clear new state booleans. Don't perform work again if already closed. Use platformDetach()
+        instead of detach() to avoid sending the SetAttachedWindow message.
+
+        (WebKit::WebInspectorProxy::bringToFront):
+        Call open() if we are not visible yet, otherwise platformBringToFront.
+
+        * UIProcess/WebInspectorProxy.h:
+        (WebKit::WebInspectorProxy::isConnected): Added.
+
+        * UIProcess/WebInspectorProxy.messages.in: Removed DidLoadInspectorPage.
+
+        * UIProcess/gtk/WebInspectorProxyGtk.cpp:
+        (WebKit::WebInspectorProxy::platformHide): Added stub.
+
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (WebKit::WebInspectorProxy::platformHide): Added.
+
+        * UIProcess/qt/WebInspectorProxyQt.cpp:
+        (WebKit::WebInspectorProxy::platformHide): Added stub.
+
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.cpp:
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.h:
+        Removed frontendLoaded().
+
+        * WebProcess/WebPage/WebInspector.cpp:
+        * WebProcess/WebPage/WebInspector.h:
+        Removed didLoadInspectorPage().
+
+2013-03-21  Alexey Proskuryakov  <ap@apple.com>
+
+        Build fix.
+
+        * NetworkProcess/mac/NetworkResourceLoaderMac.mm: Include CurrentTime.h, as needed
+        to call currentTime().
+
+2013-03-21  Tim Horton  <timothy_horton@apple.com>
+
+        Tiled page overlay layers don't create tiles until the first flush after they switch to being tiled
+        https://bugs.webkit.org/show_bug.cgi?id=112860
+        <rdar://problem/13468400>
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea): Add storage for m_clipsToExposedRect.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::flushLayers):
+        The page overlay layer will never have children, so we can use flushCompositingState instead of the ForThisLayerOnly variant.
+        Pass the visible rect of the page overlay layer (computed by intersecting its bounds with the exposed
+        rect that comes from the WKView) to flushCompositingState; don't bother setting the visible rect manually.
+        (WebKit::TiledCoreAnimationDrawingArea::mainFrameScrollabilityChanged):
+        Store m_clipsToExposedRect so we can use it in flushLayers.
+
+2013-03-20  Benjamin Poulain  <bpoulain@apple.com>
+
+        [WK2] Remove VIEW_MODE_CSS_MEDIA from WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=112849
+
+        Reviewed by Sam Weinig.
+
+        The code was added in r137148 for the sole purpose of testing,
+        and it is not even being properly tested.
+
+        Remove the code until someone actually implement the feature in WebKit2.
+
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageCanShowMIMEType):
+        * WebProcess/InjectedBundle/API/c/WKBundlePagePrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+
+2013-03-20  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build ANGLE sources into a separate library from libWebCore.la
+        https://bugs.webkit.org/show_bug.cgi?id=112778
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Add libLevelDB.la to the libwebkit2gtk library if using the OpenGL accelerated backend.
+
+2013-03-20  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] Clean up sanity checks related to gesture recognition
+        https://bugs.webkit.org/show_bug.cgi?id=112679
+
+        Reviewed by Jocelyn Turcotte.
+
+        The only callers of the panGestureActive and pinchGestureActive member
+        functions of the page viewport controller client are event delivery
+        related sanity check assers, thus they can be replaced by checking
+        for the corresponding internal states and therefore the superfluous
+        members can be removed.
+        Also update other asserts in the page viewport controller client to
+        be more accurate about the expected states.
+
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::animateContentRectVisible):
+        (WebKit::PageViewportControllerClientQt::touchBegin):
+        (WebKit::PageViewportControllerClientQt::panGestureStarted):
+        (WebKit::PageViewportControllerClientQt::pinchGestureStarted):
+        * UIProcess/qt/PageViewportControllerClientQt.h:
+        (PageViewportControllerClientQt):
+        * UIProcess/qt/QtWebPageEventHandler.cpp:
+        (WebKit::QtWebPageEventHandler::handleInputEvent):
+
+2013-03-20  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] Refactor handling of content suspension to properly cover corner cases
+        https://bugs.webkit.org/show_bug.cgi?id=111751
+
+        Reviewed by Jocelyn Turcotte.
+
+        The current suspend / resume infrastructure turned out to be insufficient to cover
+        all corner cases during transitions between gestures of complex gesture chains.
+
+        The requirements for robust suspend / resume handling are:
+            - Keep the content suspended while the user is continuously interacting,
+        eg. does not lift the finger between transition from a pan to a pinch gesture
+        and vice versa.
+            - The content should not be suspended unnecessarily (like for a tap gesture),
+        only during panning and scroll animation (flick), as well as pinch zoom and scale
+        animation (also includes double-tap-to-zoom).
+            - The content should never end up stuck in suspended state after long gesture
+        chains and continuous interaction.
+
+        This patch reintroduces reference counting based suspension in form of a new
+        ViewportInteractionTracker member class to make it possible to reliably control the
+        suspend / resume cycles during scrolling and scaling.
+        During continuous gestures, while the user is interacting, the reference count is
+        increased without actually suspending the content to prevent resuming unnecessarily
+        during continuous interaction. At the same time this also assures that the page is
+        not suspended for simple tap gestures, which was a side-effect of the previous
+        approach based on update deferrers.
+        The newly added functionality replaces boolean members that tried to achive the
+        above requirements.
+        Additionally this patch also removes the redundant m_hasSuspendedContent member
+        from the PageViewportController since WebPageProxy already keeps this information.
+
+        * UIProcess/PageViewportController.cpp:
+        (WebKit::PageViewportController::PageViewportController):
+        (WebKit::PageViewportController::pageDidRequestScroll):
+        (WebKit::PageViewportController::updateMinimumScaleToFit):
+        * UIProcess/PageViewportController.h:
+        (PageViewportController):
+        * UIProcess/WebPageProxy.h:
+        (WebKit::WebPageProxy::areActiveDOMObjectsAndAnimationsSuspended):
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::PageViewportControllerClientQt):
+        (WebKit::PageViewportControllerClientQt::ViewportInteractionTracker::begin):
+        (WebKit):
+        (WebKit::PageViewportControllerClientQt::ViewportInteractionTracker::end):
+        (WebKit::PageViewportControllerClientQt::animateContentRectVisible):
+        (WebKit::PageViewportControllerClientQt::flickMoveStarted):
+        (WebKit::PageViewportControllerClientQt::flickMoveEnded):
+        (WebKit::PageViewportControllerClientQt::pageItemPositionChanged):
+        (WebKit::PageViewportControllerClientQt::scaleAnimationStateChanged):
+        (WebKit::PageViewportControllerClientQt::touchBegin):
+        (WebKit::PageViewportControllerClientQt::touchEnd):
+        (WebKit::PageViewportControllerClientQt::zoomToAreaGestureEnded):
+        (WebKit::PageViewportControllerClientQt::pinchGestureStarted):
+        (WebKit::PageViewportControllerClientQt::pinchGestureRequestUpdate):
+        (WebKit::PageViewportControllerClientQt::pinchGestureEnded):
+        (WebKit::PageViewportControllerClientQt::pinchGestureCancelled):
+        (WebKit::PageViewportControllerClientQt::didChangeContentsSize):
+        * UIProcess/qt/PageViewportControllerClientQt.h:
+        (ViewportInteractionTracker):
+        (WebKit::PageViewportControllerClientQt::ViewportInteractionTracker::ViewportInteractionTracker):
+        (WebKit::PageViewportControllerClientQt::ViewportInteractionTracker::inProgress):
+        (PageViewportControllerClientQt):
+
 2013-03-19  Kenneth Rohde Christiansen  <kenneth@webkit.org> and Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
 
         [EFL][WK2] Separate WebView further from EwkView

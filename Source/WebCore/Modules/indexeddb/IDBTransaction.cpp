@@ -91,7 +91,7 @@ const AtomicString& IDBTransaction::modeReadWriteLegacy()
 
 
 IDBTransaction::IDBTransaction(ScriptExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
-    : ActiveDOMObject(context, this)
+    : ActiveDOMObject(context)
     , m_id(id)
     , m_database(db)
     , m_objectStoreNames(objectStoreNames)
@@ -333,7 +333,7 @@ bool IDBTransaction::hasPendingActivity() const
     // FIXME: In an ideal world, we should return true as long as anyone has a or can
     //        get a handle to us or any child request object and any of those have
     //        event listeners. This is  in order to handle user generated events properly.
-    return m_hasPendingActivity;
+    return m_hasPendingActivity && !m_contextStopped;
 }
 
 IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ScriptExecutionContext* context, ExceptionCode& ec)
@@ -422,7 +422,6 @@ bool IDBTransaction::canSuspend() const
 
 void IDBTransaction::stop()
 {
-    ActiveDOMObject::stop();
     m_contextStopped = true;
 
     abort(IGNORE_EXCEPTION);

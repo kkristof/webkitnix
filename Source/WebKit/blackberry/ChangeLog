@@ -1,3 +1,136 @@
+2013-03-22  Andrew Lo  <anlo@rim.com>
+
+        [BlackBerry] Selection overlay clipped incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=113069
+
+        Reviewed by George Staikos.
+        Internally reviewed by Arvid Nilsson.
+
+        As a follow-up to r146278, the clip rect also needs to be
+        adjusted by the parent's offset when drawing the
+        selection overlay.
+
+        * WebKitSupport/SelectionOverlay.cpp:
+        (BlackBerry::WebKit::SelectionOverlay::paintContents):
+
+2013-03-22  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Add custom BackForwardList client implementation
+        https://bugs.webkit.org/show_bug.cgi?id=113024
+
+        Reviewed by Rob Buis.
+
+        PR 310030
+        Internally reviewed by Joe Mason.
+
+        Adds a new class BackForwardListBlackBerry that implements
+        BackForwardList client and wraps the BackForwardListImpl including
+        the BlackBerry specific changes to notify the API layer when the
+        BackForwardList changes.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::init): Create a
+        BackForwardListBlackBerry.
+        (BlackBerry::WebKit::WebPage::getBackForwardList): Use
+        BackForwardListBlackBerry instead of BackForwardListImpl.
+        (BlackBerry::WebKit::WebPage::clearBackForwardList): Ditto.
+        * WebCoreSupport/BackForwardListBlackBerry.cpp: Added.
+        (WebCore):
+        (WebCore::BackForwardListBlackBerry::BackForwardListBlackBerry):
+        (WebCore::BackForwardListBlackBerry::~BackForwardListBlackBerry):
+        (WebCore::BackForwardListBlackBerry::current):
+        (WebCore::BackForwardListBlackBerry::notifyBackForwardListChanged):
+        (WebCore::BackForwardListBlackBerry::addItem):
+        (WebCore::BackForwardListBlackBerry::goToItem):
+        (WebCore::BackForwardListBlackBerry::itemAtIndex):
+        (WebCore::BackForwardListBlackBerry::backListCount):
+        (WebCore::BackForwardListBlackBerry::forwardListCount):
+        (WebCore::BackForwardListBlackBerry::isActive):
+        (WebCore::BackForwardListBlackBerry::close):
+        (WebCore::BackForwardListBlackBerry::clear):
+        (WebCore::BackForwardListBlackBerry::entries):
+        (WebCore::BackForwardListBlackBerry::currentItem):
+        * WebCoreSupport/BackForwardListBlackBerry.h: Added.
+        (WebKit):
+        (WebCore):
+        (BackForwardListBlackBerry):
+        (WebCore::BackForwardListBlackBerry::create):
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        * WebCoreSupport/FrameLoaderClientBlackBerry.h:
+        (FrameLoaderClientBlackBerry):
+
+2013-03-21  Iris Wu  <shuwu@blackberry.com>
+
+        [BlackBerry] Last paragraph can't be selected by touch hold selection if there is no new line after it in subframe.
+        https://bugs.webkit.org/show_bug.cgi?id=112966
+
+        Reviewed by Rob Buis.
+
+        PR 312044
+        Reviewed Internally By Genevieve Mak.
+
+        If selection reaches the bottom of content, ignore scroll margin
+        so the text on the bottom can be selected.
+        Stop expanding selection only if the end of document is selected
+        or touch is released.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::expandSelection):
+        (BlackBerry::WebKit::SelectionHandler::ensureSelectedTextVisible):
+
+2013-03-21  Otto Derek Cheung  <otcheung@rim.com>
+
+        [BlackBerry] addSearchProvider shouldn't match the full host, only the server
+        https://bugs.webkit.org/show_bug.cgi?id=112960
+
+        Reviewed by Rob Buis.
+        Internally Reviewed by Jeff Rogers.
+
+        Remove full host matching. only check if domains are from the same server.
+
+        Also, check user gesture before dispatching the addSearchProvider event to the browser.
+
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::addSearchProvider):
+        (WebCore::ChromeClientBlackBerry::isSearchProviderInstalled):
+        * WebCoreSupport/ChromeClientBlackBerry.h:
+        (ChromeClientBlackBerry):
+        * WebCoreSupport/ExternalExtension.cpp:
+        (IsSearchProviderInstalledMethod):
+
+2013-03-19  Andrew Lo  <anlo@rim.com>
+
+        [BlackBerry] Selection overlay is sometimes in wrong position.
+        https://bugs.webkit.org/show_bug.cgi?id=112748
+
+        Reviewed by Rob Buis.
+        Internally reviewed by Arvid Nilsson.
+
+        Internal PR 305384.
+        Translate by parent's offset when drawing selection overlay.
+
+        * WebKitSupport/SelectionOverlay.cpp:
+        (BlackBerry::WebKit::SelectionOverlay::paintContents):
+
+2013-03-19  Iris Wu  <shuwu@blackberry.com>
+
+        [BlackBerry] Hook up scroll position to proximity detector
+        https://bugs.webkit.org/show_bug.cgi?id=112743
+
+        Reviewed by Rob Buis.
+
+        PR 243385
+        Reviewed Internally By Genevieve Mak.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::WebPagePrivate):
+        (BlackBerry::WebKit::WebPagePrivate::~WebPagePrivate):
+        (BlackBerry::WebKit::WebPage::adjustDocumentScrollPosition):
+        (WebKit):
+        * Api/WebPage.h:
+        * Api/WebPage_p.h:
+        (WebPagePrivate):
+
 2013-03-19  Chris Hutten-Czapski  <chutten@blackberry.com>
 
         [BlackBerry] Don't handle keyboard scrolling shortcuts in webkit

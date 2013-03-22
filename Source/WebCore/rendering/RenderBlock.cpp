@@ -1388,6 +1388,8 @@ void RenderBlock::layout()
     // If we have a lightweight clip, there can never be any overflow from children.
     if (hasControlClip() && m_overflow)
         clearLayoutOverflow();
+
+    invalidateBackgroundObscurationStatus();
 }
 
 #if ENABLE(CSS_EXCLUSIONS)
@@ -2843,7 +2845,7 @@ void RenderBlock::repaintOverhangingFloats(bool paintAllDescendants)
         // condition is replaced with being a descendant of us.
         if (logicalBottomForFloat(r) > logicalHeight() && ((paintAllDescendants && r->m_renderer->isDescendantOf(this)) || r->shouldPaint()) && !r->m_renderer->hasSelfPaintingLayer()) {
             r->m_renderer->repaint();
-            r->m_renderer->repaintOverhangingFloats();
+            r->m_renderer->repaintOverhangingFloats(false);
         }
     }
 }

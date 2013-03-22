@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="DerivedSources">
@@ -1734,6 +1734,9 @@
     <ClCompile Include="..\Modules\filesystem\WorkerContextFileSystem.cpp">
       <Filter>Modules\filesystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\Modules\geolocation\Coordinates.cpp">
+      <Filter>Modules\geolocation</Filter>
+    </ClCompile>
     <ClCompile Include="..\Modules\geolocation\Geolocation.cpp">
       <Filter>Modules\geolocation</Filter>
     </ClCompile>
@@ -2272,9 +2275,6 @@
       <Filter>loader</Filter>
     </ClCompile>
     <ClCompile Include="..\loader\LoaderStrategy.cpp">
-      <Filter>loader</Filter>
-    </ClCompile>
-    <ClCompile Include="..\loader\MainResourceLoader.cpp">
       <Filter>loader</Filter>
     </ClCompile>
     <ClCompile Include="..\loader\MixedContentChecker.cpp">
@@ -3192,9 +3192,6 @@
     <ClCompile Include="..\platform\graphics\filters\FilterOperations.cpp">
       <Filter>platform\graphics\filters</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\graphics\filters\LightSource.cpp">
-      <Filter>platform\graphics\filters</Filter>
-    </ClCompile>
     <ClCompile Include="..\platform\graphics\filters\PointLightSource.cpp">
       <Filter>platform\graphics\filters</Filter>
     </ClCompile>
@@ -3304,6 +3301,9 @@
       <Filter>platform\network</Filter>
     </ClCompile>
     <ClCompile Include="..\platform\network\ResourceHandle.cpp">
+      <Filter>platform\network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\network\ResourceHandleClient.cpp">
       <Filter>platform\network</Filter>
     </ClCompile>
     <ClCompile Include="..\platform\network\ResourceLoadTiming.cpp">
@@ -5874,9 +5874,6 @@
     <ClCompile Include="..\bindings\js\JSConsoleCustom.cpp">
       <Filter>bindings\js</Filter>
     </ClCompile>
-    <ClCompile Include="..\bindings\js\JSCoordinatesCustom.cpp">
-      <Filter>bindings\js</Filter>
-    </ClCompile>
     <ClCompile Include="..\bindings\js\JSCSSFontFaceRuleCustom.cpp">
       <Filter>bindings\js</Filter>
     </ClCompile>
@@ -6864,6 +6861,9 @@
     </ClCompile>
     <ClCompile Include="..\platform\image-decoders\ImageDecoder.cpp">
       <Filter>platform\image-decoders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\platform\network\curl\CookieJarCurl.cpp">
+      <Filter>platform\network\curl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -8367,8 +8367,14 @@
     <ClInclude Include="..\Modules\filesystem\WorkerContextFileSystem.h">
       <Filter>Modules\filesystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\Modules\geolocation\Coordinates.h">
+      <Filter>Modules\geolocation</Filter>
+    </ClInclude>
     <ClInclude Include="..\Modules\geolocation\Geolocation.h">
       <Filter>Modules\geolocation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Modules\geolocation\GeolocationClient.h">
+      <Filter>page</Filter>
     </ClInclude>
     <ClInclude Include="..\Modules\geolocation\GeolocationController.h">
       <Filter>Modules\geolocation</Filter>
@@ -8838,9 +8844,6 @@
     <ClInclude Include="..\page\ContextMenuProvider.h">
       <Filter>page</Filter>
     </ClInclude>
-    <ClInclude Include="..\page\Coordinates.h">
-      <Filter>page</Filter>
-    </ClInclude>
     <ClInclude Include="..\page\Crypto.h">
       <Filter>page</Filter>
     </ClInclude>
@@ -8911,9 +8914,6 @@
       <Filter>page</Filter>
     </ClInclude>
     <ClInclude Include="..\page\FrameView.h">
-      <Filter>page</Filter>
-    </ClInclude>
-    <ClInclude Include="..\page\GeolocationClient.h">
       <Filter>page</Filter>
     </ClInclude>
     <ClInclude Include="..\page\GroupSettings.h">
@@ -9067,9 +9067,6 @@
       <Filter>loader</Filter>
     </ClInclude>
     <ClInclude Include="..\loader\LoaderStrategy.h">
-      <Filter>loader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\loader\MainResourceLoader.h">
       <Filter>loader</Filter>
     </ClInclude>
     <ClInclude Include="..\loader\MixedContentChecker.h">
@@ -15297,9 +15294,6 @@
       <Filter>platform\network\cf</Filter>
     </CustomBuildStep>
     <CustomBuildStep Include="..\platform\network\curl\AuthenticationChallenge.h">
-      <Filter>platform\network\curl</Filter>
-    </CustomBuildStep>
-    <CustomBuildStep Include="..\platform\network\curl\CookieJarCurl.cpp">
       <Filter>platform\network\curl</Filter>
     </CustomBuildStep>
     <CustomBuildStep Include="..\platform\network\curl\FormDataStreamCurl.h">

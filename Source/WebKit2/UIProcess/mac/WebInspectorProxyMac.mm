@@ -250,6 +250,8 @@ void WebInspectorProxy::createInspectorWindow()
     [window setContentBorderThickness:windowContentBorderThickness forEdge:NSMaxYEdge];
     WKNSWindowMakeBottomCornersSquare(window);
 
+    m_inspectorWindow.adoptNS(window);
+
     NSView *contentView = [window contentView];
 
     // Create a full screen button so we can turn it into a dock button.
@@ -297,8 +299,6 @@ void WebInspectorProxy::createInspectorWindow()
     // Center the window if the saved frame was empty.
     if (NSIsEmptyRect(savedWindowFrame))
         [window center];
-
-    m_inspectorWindow.adoptNS(window);
 
     updateInspectorWindowTitle();
 }
@@ -417,6 +417,20 @@ void WebInspectorProxy::platformDidClose()
 
     [m_inspectorProxyObjCAdapter.get() close];
     m_inspectorProxyObjCAdapter = 0;
+}
+
+void WebInspectorProxy::platformHide()
+{
+    if (m_isAttached) {
+        platformDetach();
+        return;
+    }
+
+    if (m_inspectorWindow) {
+        [m_inspectorWindow.get() setDelegate:nil];
+        [m_inspectorWindow.get() orderOut:nil];
+        m_inspectorWindow = 0;
+    }
 }
 
 void WebInspectorProxy::platformBringToFront()

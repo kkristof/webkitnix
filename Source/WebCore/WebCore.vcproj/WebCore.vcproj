@@ -13859,6 +13859,62 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="$(ConfigurationBuildDir)\obj\$(ProjectName)\DerivedSources\JSSecurityPolicyViolationEvent.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release_Cairo_CFLite|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_All|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Production|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="$(ConfigurationBuildDir)\obj\$(ProjectName)\DerivedSources\JSSecurityPolicyViolationEvent.h"
+				>
+			</File>
+			<File
 				RelativePath="$(ConfigurationBuildDir)\obj\WebCore\DerivedSources\JSShadowRoot.h"
 				>
 			</File>
@@ -25122,11 +25178,23 @@
 				Name="geolocation"
 				>
 				<File
+					RelativePath="..\Modules\geolocation\Coordinates.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Modules\geolocation\Coordinates.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Modules\geolocation\Geolocation.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\Modules\geolocation\Geolocation.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Modules\geolocation\GeolocationClient.h"
 					>
 				</File>
 				<File
@@ -27319,10 +27387,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\page\Coordinates.h"
-				>
-			</File>
-			<File
 				RelativePath="..\page\Crypto.cpp"
 				>
 			</File>
@@ -27504,10 +27568,6 @@
 			</File>
 			<File
 				RelativePath="..\page\FrameView.h"
-				>
-			</File>
-			<File
-				RelativePath="..\page\GeolocationClient.h"
 				>
 			</File>
 			<File
@@ -28072,14 +28132,6 @@
 			</File>
 			<File
 				RelativePath="..\loader\LoaderStrategy.h"
-				>
-			</File>
-			<File
-				RelativePath="..\loader\MainResourceLoader.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\loader\MainResourceLoader.h"
 				>
 			</File>
 			<File
@@ -32689,10 +32741,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\platform\graphics\filters\LightSource.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\platform\graphics\filters\LightSource.h"
 						>
 					</File>
@@ -33167,6 +33215,10 @@
 				</File>
 				<File
 					RelativePath="..\platform\network\ResourceHandle.h"
+					>
+				</File>
+				<File
+					RelativePath="..\platform\network\ResourceHandleClient.cpp"
 					>
 				</File>
 				<File
@@ -46920,6 +46972,18 @@
 					>
 				</File>
 				<File
+					RelativePath="..\rendering\style\StyleCustomFilterProgram.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\rendering\style\StyleCustomFilterProgramCache.h"
+					>
+				</File>
+				<File
+					RelativePath="..\rendering\style\StyleCustomFilterProgramCache.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\rendering\style\StyleDeprecatedFlexibleBoxData.cpp"
 					>
 					<FileConfiguration
@@ -55312,6 +55376,10 @@
 			</File>
 			<File
 				RelativePath="..\dom\SecurityContext.h"
+				>
+			</File>
+			<File
+				RelativePath="..\dom\SecurityPolicyViolationEvent.h"
 				>
 			</File>
 			<File
@@ -66735,58 +66803,6 @@
 				</File>
 				<File
 					RelativePath="..\bindings\js\JSConsoleCustom.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug_Cairo_CFLite|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release_Cairo_CFLite|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug_All|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Production|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\bindings\js\JSCoordinatesCustom.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"

@@ -75,11 +75,13 @@ class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
 
 public:
+    struct Location;
+
     CSSParser(const CSSParserContext&);
 
     ~CSSParser();
 
-    void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, RuleSourceDataList* = 0);
+    void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, RuleSourceDataList* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
 #if ENABLE(CSS3_CONDITIONAL_RULES)
@@ -158,8 +160,7 @@ public:
     bool cssGridLayoutEnabled() const;
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
     bool parseGridTrackList(CSSPropertyID, bool important);
-    bool parseGridTrackGroup(CSSValueList*);
-    bool parseGridTrackMinMax(CSSValueList*);
+    PassRefPtr<CSSPrimitiveValue> parseGridTrackSize();
     PassRefPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
 
     bool parseDashboardRegions(CSSPropertyID, bool important);
@@ -268,6 +269,8 @@ public:
     bool parseTextUnderlinePosition(bool important);
 #endif // CSS3_TEXT
 
+    PassRefPtr<CSSValue> parseTextIndent();
+    
     bool parseLineBoxContain(bool important);
     bool parseCalculation(CSSParserValue*, CalculationPermittedValueRange);
 
@@ -386,6 +389,7 @@ public:
 
     bool m_hasFontFaceOnlyValues;
     bool m_hadSyntacticallyValidCSSRule;
+    bool m_logErrors;
 
 #if ENABLE(CSS_SHADERS)
     bool m_inFilterRule;
@@ -415,6 +419,7 @@ public:
     PassRefPtr<CSSRuleSourceData> popRuleData();
     void resetPropertyRange() { m_propertyRange.start = m_propertyRange.end = UINT_MAX; }
     bool isExtractingSourceData() const { return !!m_currentRuleDataStack; }
+    void syntaxError(Location);
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
@@ -433,6 +438,8 @@ public:
 #endif
 
     static KURL completeURL(const CSSParserContext&, const String& url);
+
+    Location currentLocation();
 
 private:
     bool is8BitSource() { return m_is8BitSource; }
@@ -572,6 +579,7 @@ private:
     unsigned m_length;
     int m_token;
     int m_lineNumber;
+    int m_tokenStartLineNumber;
     int m_lastSelectorLineNumber;
 
     bool m_allowImportRules;
@@ -639,6 +647,9 @@ private:
         DoNotReleaseParsedCalcValue
     };
 
+    bool isLoggingErrors();
+    void logError(const String& message, int lineNumber);
+
     bool validCalculationUnit(CSSParserValue*, Units, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 
     bool shouldAcceptUnitLessValues(CSSParserValue*, Units, CSSParserMode);
@@ -680,6 +691,11 @@ public:
 
 private:
     CSSParser* m_parser;
+};
+
+struct CSSParser::Location {
+    int lineNumber;
+    CSSParserString token;
 };
 
 String quoteCSSString(const String&);

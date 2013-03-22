@@ -24,7 +24,7 @@
 #include "AuthenticationChallengeManager.h"
 #include "AutofillManager.h"
 #include "BackForwardController.h"
-#include "BackForwardListImpl.h"
+#include "BackForwardListBlackBerry.h"
 #include "BackingStoreClient.h"
 #include "BackingStore_p.h"
 #if ENABLE(BATTERY_STATUS)
@@ -392,6 +392,7 @@ WebPagePrivate::WebPagePrivate(WebPage* webPage, WebPageClient* client, const In
     , m_inputHandler(new InputHandler(this))
     , m_selectionHandler(new SelectionHandler(this))
     , m_touchEventHandler(new TouchEventHandler(this))
+    , m_proximityDetector(new ProximityDetector(this))
 #if ENABLE(EVENT_MODE_METATAGS)
     , m_cursorEventMode(ProcessedCursorEvents)
     , m_touchEventMode(ProcessedTouchEvents)
@@ -488,6 +489,9 @@ WebPagePrivate::~WebPagePrivate()
     delete m_touchEventHandler;
     m_touchEventHandler = 0;
 
+    delete m_proximityDetector;
+    m_proximityDetector = 0;
+
 #if !defined(PUBLIC_BUILD) || !PUBLIC_BUILD
     delete m_dumpRenderTree;
     m_dumpRenderTree = 0;
@@ -531,6 +535,7 @@ void WebPagePrivate::init(const BlackBerry::Platform::String& pageGroupName)
     pageClients.editorClient = editorClient;
     pageClients.dragClient = dragClient;
     pageClients.inspectorClient = m_inspectorClient;
+    pageClients.backForwardClient = BackForwardListBlackBerry::create(this);
 
     m_page = new Page(pageClients);
 #if !defined(PUBLIC_BUILD) || !PUBLIC_BUILD
@@ -4837,7 +4842,7 @@ JSValueRef WebPage::windowObject() const
 // will be used by the client as an opaque reference to identify the item.
 void WebPage::getBackForwardList(SharedArray<BackForwardEntry>& result) const
 {
-    HistoryItemVector entries = static_cast<BackForwardListImpl*>(d->m_page->backForward()->client())->entries();
+    HistoryItemVector entries = static_cast<BackForwardListBlackBerry*>(d->m_page->backForward()->client())->entries();
     result.reset(new BackForwardEntry[entries.size()], entries.size());
 
     for (unsigned i = 0; i < entries.size(); ++i) {
@@ -4923,12 +4928,11 @@ void WebPage::clearCache()
 
 void WebPage::clearBackForwardList(bool keepCurrentPage) const
 {
-    BackForwardListImpl* backForwardList = static_cast<BackForwardListImpl*>(d->m_page->backForward()->client());
+    BackForwardListBlackBerry* backForwardList = static_cast<BackForwardListBlackBerry*>(d->m_page->backForward()->client());
     RefPtr<HistoryItem> currentItem = backForwardList->currentItem();
-    while (!backForwardList->entries().isEmpty())
-        backForwardList->removeItem(backForwardList->entries().last().get());
+    backForwardList->clear();
     if (keepCurrentPage)
-        backForwardList->addItem(currentItem);
+        d->m_page->backForward()->client()->addItem(currentItem);
 }
 
 bool WebPage::isEnableLocalAccessToAllCookies() const
@@ -5286,6 +5290,11 @@ void WebPage::inspectCurrentContextElement()
 {
     if (isWebInspectorEnabled() && d->m_currentContextNode.get())
         d->m_page->inspectorController()->inspect(d->m_currentContextNode.get());
+}
+
+Platform::IntPoint WebPage::adjustDocumentScrollPosition(const Platform::IntPoint& documentScrollPosition, const Platform::IntRect& documentPaddingRect)
+{
+    return d->m_proximityDetector->findBestPoint(documentScrollPosition, documentPaddingRect);
 }
 
 bool WebPagePrivate::compositorDrawsRootLayer() const

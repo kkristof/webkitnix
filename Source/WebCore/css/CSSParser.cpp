@@ -67,6 +67,7 @@
 #include "MediaList.h"
 #include "MediaQueryExp.h"
 #include "Page.h"
+#include "PageConsole.h"
 #include "Pair.h"
 #include "Rect.h"
 #include "RenderTheme.h"
@@ -318,6 +319,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_implicitShorthand(false)
     , m_hasFontFaceOnlyValues(false)
     , m_hadSyntacticallyValidCSSRule(false)
+    , m_logErrors(false)
 #if ENABLE(CSS_SHADERS)
     , m_inFilterRule(false)
 #endif
@@ -332,6 +334,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_length(0)
     , m_token(0)
     , m_lineNumber(0)
+    , m_tokenStartLineNumber(0)
     , m_lastSelectorLineNumber(0)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
@@ -453,7 +456,7 @@ void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const Str
     m_lexFunc = &CSSParser::realLex<UChar>;
 }
 
-void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int startLineNumber, RuleSourceDataList* ruleSourceDataResult)
+void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int startLineNumber, RuleSourceDataList* ruleSourceDataResult, bool logErrors)
 {
     setStyleSheet(sheet);
     m_defaultNamespace = starAtom; // Reset the default namespace.
@@ -461,6 +464,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int 
         m_currentRuleDataStack = adoptPtr(new RuleSourceDataList());
     m_ruleSourceDataResult = ruleSourceDataResult;
 
+    m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->page();
     m_lineNumber = startLineNumber;
     setupParser("", string, "");
     cssyyparse(this);
@@ -468,6 +472,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int 
     m_currentRuleDataStack.clear();
     m_ruleSourceDataResult = 0;
     m_rule = 0;
+    m_logErrors = false;
 }
 
 PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const String& string)
@@ -594,7 +599,6 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyMarginRight:
     case CSSPropertyMarginTop:
     case CSSPropertyRight:
-    case CSSPropertyTextIndent:
     case CSSPropertyTop:
     case CSSPropertyWebkitMarginAfter:
     case CSSPropertyWebkitMarginBefore:
@@ -2185,8 +2189,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = validUnit(value, FLength);
         break;
 
-    case CSSPropertyTextIndent:          // <length> | <percentage> | inherit
-        validPrimitive = (!id && validUnit(value, FLength | FPercent));
+    case CSSPropertyTextIndent:
+        parsedValue = parseTextIndent();
         break;
 
     case CSSPropertyPaddingTop:          //// <padding-width> | inherit
@@ -2609,6 +2613,13 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         }
         return false;
     }
+
+    case CSSPropertyWebkitGridAutoColumns:
+    case CSSPropertyWebkitGridAutoRows:
+        if (!cssGridLayoutEnabled())
+            return false;
+        parsedValue = parseGridTrackSize();
+        break;
 
     case CSSPropertyWebkitGridColumns:
     case CSSPropertyWebkitGridRows:
@@ -4735,52 +4746,45 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
 
     RefPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     while (m_valueList->current()) {
-        if (!parseGridTrackGroup(values.get()))
+        RefPtr<CSSPrimitiveValue> primitiveValue = parseGridTrackSize();
+        if (!primitiveValue)
             return false;
 
-        m_valueList->next();
+        values->append(primitiveValue.release());
     }
     addProperty(propId, values.release(), important);
     return true;
 }
 
-bool CSSParser::parseGridTrackGroup(CSSValueList* values)
-{
-    return parseGridTrackMinMax(values);
-}
-
-bool CSSParser::parseGridTrackMinMax(CSSValueList* values)
+PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridTrackSize()
 {
     CSSParserValue* currentValue = m_valueList->current();
-    if (currentValue->id == CSSValueAuto) {
-        values->append(cssValuePool().createIdentifierValue(CSSValueAuto));
-        return true;
-    }
+    m_valueList->next();
+
+    if (currentValue->id == CSSValueAuto)
+        return cssValuePool().createIdentifierValue(CSSValueAuto);
 
     if (currentValue->unit == CSSParserValue::Function && equalIgnoringCase(currentValue->function->name, "minmax(")) {
         // The spec defines the following grammar: minmax( <track-breadth> , <track-breadth> )
         CSSParserValueList* arguments = currentValue->function->args.get();
         if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
-            return false;
+            return 0;
 
         RefPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0));
         if (!minTrackBreadth)
-            return false;
+            return 0;
 
         RefPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
         if (!maxTrackBreadth)
-            return false;
+            return 0;
 
-        values->append(createPrimitiveValuePair(minTrackBreadth, maxTrackBreadth));
-        return true;
+        return createPrimitiveValuePair(minTrackBreadth, maxTrackBreadth);
     }
 
-    if (PassRefPtr<CSSPrimitiveValue> trackBreadth = parseGridBreadth(currentValue)) {
-        values->append(trackBreadth);
-        return true;
-    }
+    if (PassRefPtr<CSSPrimitiveValue> trackBreadth = parseGridBreadth(currentValue))
+        return trackBreadth;
 
-    return false;
+    return 0;
 }
 
 PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* currentValue)
@@ -9240,6 +9244,50 @@ bool CSSParser::parseTextEmphasisStyle(bool important)
     return false;
 }
 
+PassRefPtr<CSSValue> CSSParser::parseTextIndent()
+{
+    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+
+    // <length> | <percentage> | inherit
+    if (m_valueList->size() == 1) {
+        CSSParserValue* value = m_valueList->current();
+        if (!value->id && validUnit(value, FLength | FPercent)) {
+            list->append(createPrimitiveNumericValue(value));
+            m_valueList->next();
+            return list.release();
+        }
+    }
+
+#if ENABLE(CSS3_TEXT)
+    // The case where text-indent has only <length>(or <percentage>) value
+    // is handled above if statement even though CSS3_TEXT is enabled.
+
+    // [ [ <length> | <percentage> ] && -webkit-each-line ] | inherit
+    if (m_valueList->size() != 2)
+        return 0;
+
+    CSSParserValue* firstValue = m_valueList->current();
+    CSSParserValue* secondValue = m_valueList->next();
+    CSSParserValue* lengthOrPercentageValue = 0;
+
+    // [ <length> | <percentage> ] -webkit-each-line
+    if (validUnit(firstValue, FLength | FPercent) && secondValue->id == CSSValueWebkitEachLine)
+        lengthOrPercentageValue = firstValue;
+    // -webkit-each-line [ <length> | <percentage> ]
+    else if (firstValue->id == CSSValueWebkitEachLine && validUnit(secondValue, FLength | FPercent))
+        lengthOrPercentageValue = secondValue;
+
+    if (lengthOrPercentageValue) {
+        list->append(createPrimitiveNumericValue(lengthOrPercentageValue));
+        list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+        m_valueList->next();
+        return list.release();
+    }
+#endif
+
+    return 0;
+}
+
 bool CSSParser::parseLineBoxContain(bool important)
 {
     LineBoxContain lineBoxContain = LineBoxContainNone;
@@ -9688,6 +9736,17 @@ template <>
 inline UChar* CSSParser::tokenStart<UChar>()
 {
     return m_tokenStart.ptr16;
+}
+
+CSSParser::Location CSSParser::currentLocation()
+{
+    Location location;
+    location.lineNumber = m_tokenStartLineNumber;
+    if (is8BitSource())
+        location.token.init(tokenStart<LChar>(), currentCharacter<LChar>() - tokenStart<LChar>());
+    else
+        location.token.init(tokenStart<UChar>(), currentCharacter<UChar>() - tokenStart<UChar>());
+    return location;
 }
 
 template <typename CharacterType>
@@ -10545,6 +10604,7 @@ int CSSParser::realLex(void* yylvalWithoutType)
 restartAfterComment:
     result = currentCharacter<SrcCharacterType>();
     setTokenStart(result);
+    m_tokenStartLineNumber = m_lineNumber;
     m_token = *currentCharacter<SrcCharacterType>();
     ++currentCharacter<SrcCharacterType>();
 
@@ -11208,6 +11268,30 @@ PassRefPtr<CSSRuleSourceData> CSSParser::popRuleData()
     RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack->last();
     m_currentRuleDataStack->removeLast();
     return data.release();
+}
+
+void CSSParser::syntaxError(Location location)
+{
+    if (!isLoggingErrors())
+        return;
+    StringBuilder builder;
+    builder.appendLiteral("Unexpected CSS token: ");
+    if (location.token.is8Bit())
+        builder.append(location.token.characters8(), location.token.length());
+    else
+        builder.append(location.token.characters16(), location.token.length());
+    logError(builder.toString(), location.lineNumber);
+}
+
+bool CSSParser::isLoggingErrors()
+{
+    return m_logErrors;
+}
+
+void CSSParser::logError(const String& message, int lineNumber)
+{
+    PageConsole* console = m_styleSheet->singleOwnerDocument()->page()->console();
+    console->addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumber + 1);
 }
 
 StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes)

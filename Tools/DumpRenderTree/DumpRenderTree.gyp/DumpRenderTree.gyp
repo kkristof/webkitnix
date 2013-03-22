@@ -154,6 +154,11 @@
                         '<(source_dir)/WebKit/chromium/public/gtk',
                     ],
                 }],
+                ['OS!="win"', {
+                    'sources/': [
+                        ['exclude', 'Win\\.cpp$'],
+                    ],
+                }],
             ],
             # Disable c4267 warnings until we fix size_t to int truncations. 
             'msvs_disabled_warnings': [ 4267, ],
@@ -374,6 +379,12 @@
         {
             'target_name': 'DumpRenderTree_resources',
             'type': 'none',
+            'dependencies': [
+                '<(chromium_src_dir)/net/net.gyp:net_resources',
+                '<(chromium_src_dir)/ui/ui.gyp:ui_resources',
+                '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_resources',
+                '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_strings',
+            ],
             'actions': [{
                 'action_name': 'repack_local',
                 'variables': {

@@ -27,6 +27,7 @@ CONFIG += staticlib
 }
 
 SOURCES += \
+    Modules/geolocation/Coordinates.cpp \
     Modules/geolocation/Geolocation.cpp \
     Modules/geolocation/GeolocationController.cpp \
     Modules/geolocation/NavigatorGeolocation.cpp \
@@ -95,7 +96,6 @@ SOURCES += \
      bindings/js/JSCanvasRenderingContextCustom.cpp \
      bindings/js/JSClipboardCustom.cpp \
      bindings/js/JSConsoleCustom.cpp \
-     bindings/js/JSCoordinatesCustom.cpp \
      bindings/js/JSCryptoCustom.cpp \
      bindings/js/JSCustomXPathNSResolver.cpp \
      bindings/js/JSDictionary.cpp \
@@ -884,7 +884,6 @@ SOURCES += \
     loader/ImageLoader.cpp \
     loader/LinkLoader.cpp \
     loader/LoaderStrategy.cpp \
-    loader/MainResourceLoader.cpp \
     loader/MixedContentChecker.cpp \
     loader/NavigationAction.cpp \
     loader/NetscapePlugInStreamLoader.cpp \
@@ -1112,6 +1111,7 @@ SOURCES += \
     platform/network/ProxyServer.cpp \
     platform/network/ResourceErrorBase.cpp \
     platform/network/ResourceHandle.cpp \
+    platform/network/ResourceHandleClient.cpp \
     platform/network/ResourceLoadTiming.cpp \
     platform/network/ResourceRequestBase.cpp \
     platform/network/ResourceResponseBase.cpp \
@@ -1286,6 +1286,8 @@ SOURCES += \
     rendering/style/StyleCachedImage.cpp \
     rendering/style/StyleCachedImageSet.cpp \
     rendering/style/StyleCachedShader.cpp \
+    rendering/style/StyleCustomFilterProgram.cpp \
+    rendering/style/StyleCustomFilterProgramCache.cpp \
     rendering/style/StyleDeprecatedFlexibleBoxData.cpp \
     rendering/style/StyleFilterData.cpp \
     rendering/style/StyleFlexibleBoxData.cpp \
@@ -1445,6 +1447,7 @@ HEADERS += \
     plugins/npruntime.h
 
 HEADERS += \
+    Modules/geolocation/Coordinates.h \
     Modules/geolocation/Geolocation.h \
     Modules/geolocation/GeolocationController.h \
     Modules/geolocation/GeolocationError.h \
@@ -2082,7 +2085,6 @@ HEADERS += \
     loader/LinkLoader.h \
     loader/LinkLoaderClient.h \
     loader/LoaderStrategy.h \
-    loader/MainResourceLoader.h \
     loader/MixedContentChecker.h \
     loader/NavigationAction.h \
     loader/NetscapePlugInStreamLoader.h \
@@ -2117,7 +2119,6 @@ HEADERS += \
     page/ConsoleTypes.h \
     page/ContextMenuController.h \
     page/ContextMenuProvider.h \
-    page/Coordinates.h \
     page/DeviceClient.h \
     page/DeviceController.h \
     page/DiagnosticLoggingKeys.h \
@@ -2584,6 +2585,7 @@ HEADERS += \
     rendering/style/StyleCachedImage.h \
     rendering/style/StyleCachedShader.h \
     rendering/style/StyleCustomFilterProgram.h \
+    rendering/style/StyleCustomFilterProgramCache.h \
     rendering/style/StyleDeprecatedFlexibleBoxData.h \
     rendering/style/StyleFilterData.h \
     rendering/style/StyleFlexibleBoxData.h \
@@ -3438,7 +3440,6 @@ enable?(WEB_AUDIO) {
         Modules/webaudio/ChannelSplitterNode.h \
         Modules/webaudio/AudioContext.h \
         Modules/webaudio/AudioDestinationNode.h \
-        Modules/webaudio/AudioGain.h \
         Modules/webaudio/GainNode.h \
         Modules/webaudio/AudioListener.h \
         Modules/webaudio/AudioNode.h \
@@ -3688,7 +3689,6 @@ enable?(FILTERS) {
         platform/graphics/filters/FilterOperations.cpp \
         platform/graphics/filters/FilterOperation.cpp \
         platform/graphics/filters/FilterEffect.cpp \
-        platform/graphics/filters/LightSource.cpp \
         platform/graphics/filters/PointLightSource.cpp \
         platform/graphics/filters/SpotLightSource.cpp \
         platform/graphics/filters/SourceAlpha.cpp \
@@ -4254,7 +4254,7 @@ contains(CONFIG, opengl-shims) {
     DEFINES += QT_OPENGL_SHIMS=1
 }
 
-contains(DEFINES, ENABLE_OPENCL=1) {
+enable?(opencl) {
     HEADERS += \
         platform/graphics/gpu/opencl/OpenCLHandle.h \
         platform/graphics/gpu/opencl/FilterContextOpenCL.h

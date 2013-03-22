@@ -1,3 +1,88 @@
+2013-03-22  Yuki Sekiguchi  <yuki.sekiguchi@access-company.com>
+
+        Cannot run All Source (target WebProcess) on Xcode.
+        https://bugs.webkit.org/show_bug.cgi?id=111042
+
+        Reviewed by Alexey Proskuryakov.
+
+        WebProcessShim is renamed by r139066.
+        However, WebProcessShim is not renamed to SecItemShim in WebKit.xcworkspace.
+        This make WebProcess.app load WebProcessShim.dylib, and it cause dyld loading error.
+
+        * WebKit.xcworkspace/xcshareddata/xcschemes/All Source (target WebProcess).xcscheme: Renamed WebProcessShim to SecItemShim.
+
+2013-03-21  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Move libLevelDB.la setup into a separate GNUmakefile.am
+        https://bugs.webkit.org/show_bug.cgi?id=112947
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Include the new GNUmakefile.am, located under Source/ThirdParty/leveldb.
+
+2013-03-21  Martin Robinson  <mrobinson@igalia.com>
+
+        Source/ThirdParty/leveldb/db/builder.cc does not build on systems without <endian.h>
+        https://bugs.webkit.org/show_bug.cgi?id=111817
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Improve processing of the autoconf host variable.  Setup up the wiring to detect
+        whether or not we are compiling for Darwin.
+
+        * Source/autotools/CheckSystemAndBasicDependencies.m4: Improve host detection.
+        * Source/autotools/SetupAutomake.m4: Tell automake if we are compiling for Darwin or not.
+
+2013-03-20  Michael Pruett  <michael@68k.org>
+
+        [JSC] Implement EnforceRange IDL attribute for integer conversions
+        https://bugs.webkit.org/show_bug.cgi?id=112506
+
+        Reviewed by Kentaro Hara.
+
+        * Source/autotools/symbols.filter:
+
+2013-03-20  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build ANGLE sources into a separate library from libWebCore.la
+        https://bugs.webkit.org/show_bug.cgi?id=112778
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Include the GNUmakefile.am covering the libANGLE.la library.
+
+2013-03-20  Jocelyn Turcotte  <jocelyn.turcotte@digia.com>
+
+        [Qt] Define MODULE_VERSION
+        https://bugs.webkit.org/show_bug.cgi?id=112808
+
+        Reviewed by Allan Sandfeld Jensen.
+
+        Upstream http://codereview.qt-project.org/49052
+        Use 5.2.0 as this is the next release that will be branched from trunk.
+
+        * .qmake.conf:
+
+2013-03-20  Rouslan Solomakhin  <rouslan@chromium.org>
+
+        Copy-paste should not spellcheck when continuous spellcheck is turned off
+        https://bugs.webkit.org/show_bug.cgi?id=112464
+
+        Reviewed by Ryosuke Niwa.
+
+        * Source/autotools/symbols.filter: Export WebCore::Editor::isContinuousSpellCheckingEnabled() and WebCore::Editor::toggleContinuousSpellChecking() for use by internals.
+
+2013-03-20  JungJik Lee  <jungjik.lee@samsung.com>
+
+        [EFL] Disable REQUEST_ANIMATION_FRAME_TIMER to render a new animation frame.
+        https://bugs.webkit.org/show_bug.cgi?id=112114
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add a manual test to check the running of scripted transition animation.
+
+        * ManualTests/animation/transition-on-and-offscreen-animation.html: Added.
+
 2013-03-19  David Rosca  <nowrep@gmail.com>
 
         [Qt] QStyle: Set State_Enabled by default when painting style widgets.

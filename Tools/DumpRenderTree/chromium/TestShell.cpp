@@ -115,7 +115,6 @@ TestShell::TestShell()
     , m_forceCompositingMode(false)
     , m_threadedHTMLParser(true)
     , m_accelerated2dCanvasEnabled(false)
-    , m_deferred2dCanvasEnabled(false)
     , m_perTilePaintingEnabled(false)
     , m_deferredImageDecodingEnabled(false)
     , m_stressOpt(false)
@@ -138,6 +137,11 @@ void TestShell::initialize(MockPlatform* platformSupport)
 #if ENABLE(LINK_PRERENDER)
     m_prerenderingSupport = adoptPtr(new MockWebPrerenderingSupport());
 #endif
+#if !defined(USE_DEFAULT_RENDER_THEME) && (OS(WINDOWS) || OS(MAC_OS_X))
+    // Set theme engine.
+    webkit_support::SetThemeEngine(m_testInterfaces->themeEngine());
+#endif
+
 
     WTF::initializeThreading();
 
@@ -215,7 +219,6 @@ void TestShell::resetWebSettings(WebView& webView)
     m_prefs.acceleratedCompositingForOverflowScrollEnabled = m_acceleratedCompositingForOverflowScrollEnabled;
     m_prefs.forceCompositingMode = m_forceCompositingMode;
     m_prefs.accelerated2dCanvasEnabled = m_accelerated2dCanvasEnabled;
-    m_prefs.deferred2dCanvasEnabled = m_deferred2dCanvasEnabled;
     m_prefs.perTilePaintingEnabled = m_perTilePaintingEnabled;
     m_prefs.deferredImageDecodingEnabled = m_deferredImageDecodingEnabled;
     m_prefs.threadedHTMLParser = m_threadedHTMLParser;
@@ -236,7 +239,6 @@ void TestShell::runFileTest(const TestParams& params, bool shouldDumpPixels)
         if (!m_softwareCompositingEnabled)
             m_prefs.accelerated2dCanvasEnabled = true;
         m_prefs.acceleratedCompositingForVideoEnabled = true;
-        m_prefs.deferred2dCanvasEnabled = true;
         m_prefs.mockScrollbarsEnabled = true;
         m_prefs.applyTo(m_webView);
     }
@@ -276,9 +278,6 @@ void TestShell::resetTestController()
     m_testInterfaces->resetAll();
     m_devToolsTestInterfaces->resetAll();
     m_webViewHost->reset();
-#if OS(ANDROID)
-    webkit_support::ReleaseMediaResources();
-#endif
     m_drtDevToolsAgent->reset();
     if (m_drtDevToolsClient)
         m_drtDevToolsClient->reset();

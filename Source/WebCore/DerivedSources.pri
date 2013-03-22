@@ -110,6 +110,7 @@ IDL_BINDINGS += \
     $$PWD/Modules/filesystem/Metadata.idl \
     $$PWD/Modules/filesystem/MetadataCallback.idl \
     $$PWD/Modules/filesystem/WorkerContextFileSystem.idl \
+    $$PWD/Modules/geolocation/Coordinates.idl \
     $$PWD/Modules/geolocation/Geolocation.idl \
     $$PWD/Modules/geolocation/Geoposition.idl \
     $$PWD/Modules/geolocation/NavigatorGeolocation.idl \
@@ -146,7 +147,6 @@ IDL_BINDINGS += \
     $$PWD/Modules/webaudio/ChannelSplitterNode.idl \
     $$PWD/Modules/webaudio/AudioContext.idl \
     $$PWD/Modules/webaudio/AudioDestinationNode.idl \
-    $$PWD/Modules/webaudio/AudioGain.idl \
     $$PWD/Modules/webaudio/GainNode.idl \
     $$PWD/Modules/webaudio/AudioListener.idl \
     $$PWD/Modules/webaudio/AudioNode.idl \
@@ -442,7 +442,6 @@ IDL_BINDINGS += \
     $$PWD/loader/appcache/DOMApplicationCache.idl \
     $$PWD/page/BarInfo.idl \
     $$PWD/page/Console.idl \
-    $$PWD/page/Coordinates.idl \
     $$PWD/page/Crypto.idl \
     $$PWD/page/DOMSecurityPolicy.idl \
     $$PWD/page/DOMSelection.idl \

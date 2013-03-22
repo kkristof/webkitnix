@@ -1256,6 +1256,25 @@ END
 END
 }
 
+sub GenerateCustomElementInvocationScopeIfNeeded
+{
+    my $out = shift;
+    my $ext = shift;
+
+    if ($ext->{"V8DeliverCustomElementCallbacks"}) {
+        if ($ext->{"Reflect"}) {
+            die "IDL error: Reflect and V8DeliverCustomElementCallbacks cannot coexist yet";
+        }
+
+        AddToImplIncludes("CustomElementRegistry.h", "CUSTOM_ELEMENTS");
+        push(@$out, <<END);
+#if ENABLE(CUSTOM_ELEMENTS)
+    CustomElementRegistry::CallbackDeliveryScope deliveryScope;
+#endif
+END
+    }
+}
+
 sub GenerateNormalAttrSetterCallback
 {
     my $attribute = shift;
@@ -1403,6 +1422,8 @@ END
     if ($codeGenerator->IsRefPtrType($returnType) && !$codeGenerator->GetArrayType($returnType)) {
         $result = "WTF::getPtr(" . $result . ")";
     }
+
+    GenerateCustomElementInvocationScopeIfNeeded(\@implContentInternals, $attribute->signature->extendedAttributes);
 
     my $useExceptions = 1 if @{$attribute->setterExceptions};
 
@@ -1701,6 +1722,8 @@ END
 END
     }
 
+    GenerateCustomElementInvocationScopeIfNeeded(\@implContentInternals, $funcExt);
+
     # Check domain security if needed
     if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->signature->extendedAttributes->{"DoNotCheckSecurity"}) {
         # We have not find real use cases yet.
@@ -1942,6 +1965,17 @@ sub GenerateParametersCheck
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $value = JSValueToNative($parameter, $optional && $optional eq "DefaultIsNullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value) . "\n";
+            if ($codeGenerator->IsEnumType($parameter->type)) {
+                my @enumValues = $codeGenerator->ValidEnumValues($parameter->type);
+                my @validEqualities = ();
+                foreach my $enumValue (@enumValues) {
+                    push(@validEqualities, "string == \"$enumValue\"");
+                }
+                my $enumValidationExpression = join(" || ", @validEqualities);
+                $parameterCheckString .=  "    String string = $parameterName;\n";
+                $parameterCheckString .=  "    if (!($enumValidationExpression))\n";
+                $parameterCheckString .=  "        return throwTypeError(0, args.GetIsolate());\n";
+            }
         } else {
             # If the "StrictTypeChecking" extended attribute is present, and the argument's type is an
             # interface type, then if the incoming value does not implement that interface, a TypeError

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugSuffix|Win32">
@@ -82,7 +82,7 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="WebCoreDebug.props" />
-    <Import Project="..\..\WebKit\WebKit.vcxproj\debugsuffix.props" />
+    <Import Project="$(WebKit_Libraries)\tools\vsprops\debugsuffix.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -3634,6 +3634,7 @@
     <ClCompile Include="..\Modules\filesystem\FileWriterSync.cpp" />
     <ClCompile Include="..\Modules\filesystem\LocalFileSystem.cpp" />
     <ClCompile Include="..\Modules\filesystem\WorkerContextFileSystem.cpp" />
+    <ClCompile Include="..\Modules\geolocation\Coordinates.cpp" />
     <ClCompile Include="..\Modules\geolocation\Geolocation.cpp" />
     <ClCompile Include="..\Modules\geolocation\GeolocationController.cpp" />
     <ClCompile Include="..\Modules\geolocation\NavigatorGeolocation.cpp" />
@@ -3993,7 +3994,6 @@
     <ClCompile Include="..\loader\ImageLoader.cpp" />
     <ClCompile Include="..\loader\LinkLoader.cpp" />
     <ClCompile Include="..\loader\LoaderStrategy.cpp" />
-    <ClCompile Include="..\loader\MainResourceLoader.cpp" />
     <ClCompile Include="..\loader\MixedContentChecker.cpp" />
     <ClCompile Include="..\loader\NavigationAction.cpp" />
     <ClCompile Include="..\loader\NavigationScheduler.cpp" />
@@ -4268,10 +4268,8 @@
     <ClCompile Include="..\platform\graphics\ImageOrientation.cpp" />
     <ClCompile Include="..\platform\graphics\ImageSource.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\platform\graphics\IntRect.cpp" />
@@ -4604,7 +4602,6 @@
     <ClCompile Include="..\platform\graphics\filters\FilterEffect.cpp" />
     <ClCompile Include="..\platform\graphics\filters\FilterOperation.cpp" />
     <ClCompile Include="..\platform\graphics\filters\FilterOperations.cpp" />
-    <ClCompile Include="..\platform\graphics\filters\LightSource.cpp" />
     <ClCompile Include="..\platform\graphics\filters\PointLightSource.cpp" />
     <ClCompile Include="..\platform\graphics\filters\SourceAlpha.cpp" />
     <ClCompile Include="..\platform\graphics\filters\SourceGraphic.cpp" />
@@ -4638,10 +4635,8 @@
     <ClCompile Include="..\platform\network\NetworkStateNotifier.cpp" />
     <ClCompile Include="..\platform\network\NetworkStorageSessionStub.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\platform\network\ParsedContentType.cpp" />
@@ -4649,6 +4644,7 @@
     <ClCompile Include="..\platform\network\ProxyServer.cpp" />
     <ClCompile Include="..\platform\network\ResourceErrorBase.cpp" />
     <ClCompile Include="..\platform\network\ResourceHandle.cpp" />
+    <ClCompile Include="..\platform\network\ResourceHandleClient.cpp" />
     <ClCompile Include="..\platform\network\ResourceLoadTiming.cpp" />
     <ClCompile Include="..\platform\network\ResourceRequestBase.cpp" />
     <ClCompile Include="..\platform\network\ResourceResponseBase.cpp" />
@@ -4709,12 +4705,12 @@
     </ClCompile>
     <ClCompile Include="..\platform\network\win\DownloadBundleWin.cpp" />
     <ClCompile Include="..\platform\network\win\NetworkStateNotifierWin.cpp" />
-    <CustomBuildStep Include="..\platform\network\curl\CookieJarCurl.cpp">
+    <ClCompile Include="..\platform\network\curl\CookieJarCurl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
-    </CustomBuildStep>
+    </ClCompile>
     <ClCompile Include="..\platform\network\curl\CredentialStorageCurl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
@@ -9234,14 +9230,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\bindings\js\JSCoordinatesCustom.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\bindings\js\JSCSSFontFaceRuleCustom.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
@@ -11238,7 +11226,9 @@
     <ClInclude Include="..\Modules\filesystem\MetadataCallback.h" />
     <ClInclude Include="..\Modules\filesystem\SyncCallbackHelper.h" />
     <ClInclude Include="..\Modules\filesystem\WorkerContextFileSystem.h" />
+    <ClInclude Include="..\Modules\geolocation\Coordinates.h" />
     <ClInclude Include="..\Modules\geolocation\Geolocation.h" />
+    <ClInclude Include="..\Modules\geolocation\GeolocationClient.h" />
     <ClInclude Include="..\Modules\geolocation\GeolocationController.h" />
     <ClInclude Include="..\Modules\geolocation\GeolocationError.h" />
     <ClInclude Include="..\Modules\geolocation\GeolocationPosition.h" />
@@ -11401,7 +11391,6 @@
     <ClInclude Include="..\page\ContextMenuClient.h" />
     <ClInclude Include="..\page\ContextMenuController.h" />
     <ClInclude Include="..\page\ContextMenuProvider.h" />
-    <ClInclude Include="..\page\Coordinates.h" />
     <ClInclude Include="..\page\Crypto.h" />
     <ClInclude Include="..\page\animation\CSSPropertyAnimation.h" />
     <ClInclude Include="..\page\DeviceClient.h" />
@@ -11426,7 +11415,6 @@
     <ClInclude Include="..\page\FrameDestructionObserver.h" />
     <ClInclude Include="..\page\FrameTree.h" />
     <ClInclude Include="..\page\FrameView.h" />
-    <ClInclude Include="..\page\GeolocationClient.h" />
     <ClInclude Include="..\page\GroupSettings.h" />
     <ClInclude Include="..\page\History.h" />
     <ClInclude Include="..\page\animation\ImplicitAnimation.h" />
@@ -11494,7 +11482,6 @@
     <ClInclude Include="..\loader\LinkLoader.h" />
     <ClInclude Include="..\loader\LinkLoaderClient.h" />
     <ClInclude Include="..\loader\LoaderStrategy.h" />
-    <ClInclude Include="..\loader\MainResourceLoader.h" />
     <ClInclude Include="..\loader\MixedContentChecker.h" />
     <ClInclude Include="..\loader\NavigationAction.h" />
     <ClInclude Include="..\loader\NavigationScheduler.h" />

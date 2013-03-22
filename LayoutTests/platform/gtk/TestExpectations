@@ -427,7 +427,7 @@ webkit.org/b/107825 [ Release ] media/video-controls-fullscreen-volume.html [ Fa
 webkit.org/b/107825 media/media-controls-clone.html [ Failure ]
 
 # Require ENABLE(CUSTOM_ELEMENTS) support
-webkit.org/b/110735 fast/dom/custom [ Failure ]
+webkit.org/b/110735 fast/dom/custom [ Skip ]
 
 # Snapshotted plugins not enabled
 webkit.org/b/98696 plugins/snapshotting [ Skip ]
@@ -471,9 +471,8 @@ webkit.org/b/107257 [ Debug ] fast/js/toString-stack-overflow.html [ Crash ]
 
 webkit.org/b/107261 [ Debug ] dom/xhtml/level2/html/HTMLInputElement20.xhtml [ Crash Pass ]
 
-webkit.org/b/107376 webkit.org/b/112468 storage/indexeddb/cursor-advance.html [ Crash Failure ]
-webkit.org/b/107377 webkit.org/b/112468 storage/indexeddb/cursor-advance-workers.html [ Crash Failure ]
-webkit.org/b/112468 storage/indexeddb/intversion-bad-parameters.html [ Crash Failure ]
+webkit.org/b/107376 storage/indexeddb/cursor-advance.html [ Crash Pass ]
+webkit.org/b/107377 storage/indexeddb/cursor-advance-workers.html [ Crash Pass ]
 webkit.org/b/107377 storage/indexeddb/index-get-key-argument-required.html [ Crash Pass ]
 webkit.org/b/107377 storage/indexeddb/keypath-basics.html [ Crash Pass ]
 webkit.org/b/107377 storage/indexeddb/mozilla/remove-index.html [ Crash Pass ]
@@ -502,6 +501,9 @@ webkit.org/b/112152 [ Debug ] accessibility/table-with-hidden-head-section.html 
 
 webkit.org/b/111451 [ Debug ] editing/selection/selection-in-iframe-removed-crash.html [ Crash Pass ]
 
+webkit.org/b/113019 [ Debug ] storage/indexeddb/factory-basics-workers.html [ Crash ]
+webkit.org/b/113019 [ Debug ] storage/indexeddb/transaction-error.html [ Crash ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Crashing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -509,8 +511,6 @@ webkit.org/b/111451 [ Debug ] editing/selection/selection-in-iframe-removed-cras
 #////////////////////////////////////////////////////////////////////////////////////////
 # Flaky tests
 #////////////////////////////////////////////////////////////////////////////////////////
-
-webkit.org/b/44199 perf [ Skip ]
 
 webkit.org/b/55126 media/video-aspect-ratio.html [ Failure Pass ]
 
@@ -632,6 +632,8 @@ webkit.org/b/107018 svg/animations/animate-linear-discrete-additive.svg [ ImageO
 webkit.org/b/107018 svg/animations/animate-linear-discrete-additive-b.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/107018 svg/animations/animate-linear-discrete-additive-c.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/107018 svg/animations/mozilla/animateMotion-mpath-pathLength-1.svg [ ImageOnlyFailure Pass ]
+
+webkit.org/b/112918 http/tests/appcache/abort-cache-ondownloading-resource-404.html [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
@@ -790,7 +792,6 @@ webkit.org/b/79757 fast/selectors/selection-window-inactive.html [ ImageOnlyFail
 
 webkit.org/b/98355 accessibility/aria-link-supports-press.html [ Failure ]
 webkit.org/b/98357 accessibility/aria-readonly.html [ Failure ]
-webkit.org/b/98358 accessibility/aria-scrollbar-role.html [ Failure ]
 webkit.org/b/98359 accessibility/aria-text-role.html [ Failure ]
 webkit.org/b/98360 accessibility/aria-used-on-image-maps.html [ Failure ]
 webkit.org/b/98361 accessibility/button-press-action.html [ Failure ]
@@ -1083,8 +1084,6 @@ Bug(GTK) fast/frames/meta-refresh-user-gesture.html [ Failure ]
 # Rounding color problems inside pixman
 webkit.org/b/49964 fast/canvas/canvas-fillPath-shadow.html [ Failure ]
 
-webkit.org/b/50740 editing/spelling/spellcheck-async-mutation.html [ Failure ]
-
 # DRT does not obey testRunner.addURLToRedirect()
 Bug(GTK) http/tests/loading/cross-origin-XHR-willLoadRequest.html [ Failure ]
 
@@ -1369,6 +1368,7 @@ webkit.org/b/105574 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html 
 
 webkit.org/b/106563 fast/css/image-orientation/image-orientation.html [ Failure ]
 
+webkit.org/b/108169 fast/dom/shadow/gesture-tap.html [ Failure ]
 webkit.org/b/108169 fast/dom/shadow/touch-event.html [ Failure ]
 webkit.org/b/108169 fast/dom/shadow/touch-event-retargeting.html [ Failure ]
 

@@ -568,6 +568,9 @@ public:
 #endif
 
     Length textIndent() const { return rareInheritedData->indent; }
+#if ENABLE(CSS3_TEXT)
+    TextIndentLine textIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
+#endif
     ETextAlign textAlign() const { return static_cast<ETextAlign>(inherited_flags._text_align); }
     ETextTransform textTransform() const { return static_cast<ETextTransform>(inherited_flags._text_transform); }
     ETextDecoration textDecorationsInEffect() const { return static_cast<ETextDecoration>(inherited_flags._text_decorations); }
@@ -777,6 +780,8 @@ public:
     const Vector<GridTrackSize>& gridColumns() const { return rareNonInheritedData->m_grid->m_gridColumns; }
     const Vector<GridTrackSize>& gridRows() const { return rareNonInheritedData->m_grid->m_gridRows; }
     GridAutoFlow gridAutoFlow() const { return rareNonInheritedData->m_grid->m_gridAutoFlow; }
+    const GridTrackSize& gridAutoColumns() const { return rareNonInheritedData->m_grid->m_gridAutoColumns; }
+    const GridTrackSize& gridAutoRows() const { return rareNonInheritedData->m_grid->m_gridAutoRows; }
 
     const GridPosition& gridItemStart() const { return rareNonInheritedData->m_gridItem->m_gridStart; }
     const GridPosition& gridItemEnd() const { return rareNonInheritedData->m_gridItem->m_gridEnd; }
@@ -1130,6 +1135,9 @@ public:
 
     void setColor(const Color&);
     void setTextIndent(Length v) { SET_VAR(rareInheritedData, indent, v); }
+#if ENABLE(CSS3_TEXT)
+    void setTextIndentLine(TextIndentLine v) { SET_VAR(rareInheritedData, m_textIndentLine, v); }
+#endif
     void setTextAlign(ETextAlign v) { inherited_flags._text_align = v; }
     void setTextTransform(ETextTransform v) { inherited_flags._text_transform = v; }
     void addToTextDecorationsInEffect(ETextDecoration v) { inherited_flags._text_decorations |= v; }
@@ -1287,6 +1295,8 @@ public:
     void setFlexDirection(EFlexDirection direction) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexDirection, direction); }
     void setFlexWrap(EFlexWrap w) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexWrap, w); }
     void setJustifyContent(EJustifyContent p) { SET_VAR(rareNonInheritedData, m_justifyContent, p); }
+    void setGridAutoColumns(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoColumns, length); }
+    void setGridAutoRows(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoRows, length); }
     void setGridColumns(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridColumns, lengths); }
     void setGridRows(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridRows, lengths); }
     void setGridAutoFlow(GridAutoFlow flow) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoFlow, flow); }
@@ -1607,6 +1617,9 @@ public:
     static Length initialMargin() { return Length(Fixed); }
     static Length initialPadding() { return Length(Fixed); }
     static Length initialTextIndent() { return Length(Fixed); }
+#if ENABLE(CSS3_TEXT)
+    static TextIndentLine initialTextIndentLine() { return TextIndentFirstLine; }
+#endif
     static EVerticalAlign initialVerticalAlign() { return BASELINE; }
     static short initialWidows() { return 2; }
     static short initialOrphans() { return 2; }
@@ -1707,6 +1720,9 @@ public:
     static Vector<GridTrackSize> initialGridRows() { return Vector<GridTrackSize>(); }
 
     static GridAutoFlow initialGridAutoFlow() { return AutoFlowNone; }
+
+    static GridTrackSize initialGridAutoColumns() { return GridTrackSize(Auto); }
+    static GridTrackSize initialGridAutoRows() { return GridTrackSize(Auto); }
 
     // 'auto' is the default.
     static GridPosition initialGridPosition() { return GridPosition(); }

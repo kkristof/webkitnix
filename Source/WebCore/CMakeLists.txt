@@ -179,6 +179,7 @@ set(WebCore_IDL_FILES
     Modules/gamepad/GamepadList.idl
     Modules/gamepad/NavigatorGamepad.idl
 
+    Modules/geolocation/Coordinates.idl
     Modules/geolocation/Geolocation.idl
     Modules/geolocation/Geoposition.idl
     Modules/geolocation/NavigatorGeolocation.idl
@@ -251,7 +252,6 @@ set(WebCore_IDL_FILES
     Modules/webaudio/ChannelMergerNode.idl
     Modules/webaudio/AudioContext.idl
     Modules/webaudio/AudioDestinationNode.idl
-    Modules/webaudio/AudioGain.idl
     Modules/webaudio/GainNode.idl
     Modules/webaudio/AudioListener.idl
     Modules/webaudio/AudioNode.idl
@@ -385,6 +385,7 @@ set(WebCore_IDL_FILES
     dom/RangeException.idl
     dom/Range.idl
     dom/RequestAnimationFrameCallback.idl
+    dom/SecurityPolicyViolationEvent.idl
     dom/ShadowRoot.idl
     dom/StringCallback.idl
     dom/TextEvent.idl
@@ -563,7 +564,6 @@ set(WebCore_IDL_FILES
 
     page/BarInfo.idl
     page/Console.idl
-    page/Coordinates.idl
     page/Crypto.idl
     page/DOMSecurityPolicy.idl
     page/DOMSelection.idl
@@ -804,6 +804,7 @@ set(WebCore_SOURCES
     Modules/gamepad/GamepadList.cpp
     Modules/gamepad/NavigatorGamepad.cpp
 
+    Modules/geolocation/Coordinates.cpp
     Modules/geolocation/Geolocation.cpp
     Modules/geolocation/GeolocationController.cpp
     Modules/geolocation/NavigatorGeolocation.cpp
@@ -1685,7 +1686,6 @@ set(WebCore_SOURCES
     loader/ImageLoader.cpp
     loader/LinkLoader.cpp
     loader/LoaderStrategy.cpp
-    loader/MainResourceLoader.cpp
     loader/MixedContentChecker.cpp
     loader/NavigationAction.cpp
     loader/NetscapePlugInStreamLoader.cpp
@@ -1997,7 +1997,6 @@ set(WebCore_SOURCES
     platform/graphics/filters/FilterEffect.cpp
     platform/graphics/filters/FilterOperation.cpp
     platform/graphics/filters/FilterOperations.cpp
-    platform/graphics/filters/LightSource.cpp
     platform/graphics/filters/PointLightSource.cpp
     platform/graphics/filters/SourceAlpha.cpp
     platform/graphics/filters/SourceGraphic.cpp
@@ -2081,6 +2080,7 @@ set(WebCore_SOURCES
     platform/network/ProxyServer.cpp
     platform/network/ResourceErrorBase.cpp
     platform/network/ResourceHandle.cpp
+    platform/network/ResourceHandleClient.cpp
     platform/network/ResourceLoadTiming.cpp
     platform/network/ResourceRequestBase.cpp
     platform/network/ResourceResponseBase.cpp

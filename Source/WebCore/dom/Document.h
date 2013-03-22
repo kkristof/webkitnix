@@ -307,6 +307,9 @@ public:
 #if ENABLE(PAGE_VISIBILITY_API)
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
 #endif
+#if ENABLE(CSP_NEXT)
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
+#endif
 
     void setViewportArguments(const ViewportArguments& viewportArguments) { m_viewportArguments = viewportArguments; }
     ViewportArguments viewportArguments() const { return m_viewportArguments; }
@@ -1165,6 +1168,7 @@ public:
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionCode&);
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
     CustomElementRegistry* registry() const { return m_registry.get(); }
+    void didCreateCustomElement(Element*, CustomElementConstructor*);
 #endif
 
     void adjustFloatQuadsForScrollAndAbsoluteZoomAndFrameScale(Vector<FloatQuad>&, RenderObject*);

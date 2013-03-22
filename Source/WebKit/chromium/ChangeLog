@@ -1,3 +1,219 @@
+2013-03-22  Stephen Chenney  <schenney@chromium.org>
+
+        Skia flag removal to enable bug fixes and performance improvements.
+
+        Unreviewed code enabling.
+
+        * skia_webkit.gyp:
+
+2013-03-22  Tommy Widenflycht  <tommyw@google.com>
+
+        Clean up the speach recognintion API
+        https://bugs.webkit.org/show_bug.cgi?id=112916
+
+        Reviewed by Adam Barth.
+
+        * public/WebSpeechRecognizerClient.h:
+        * src/SpeechRecognitionClientProxy.cpp:
+        * src/SpeechRecognitionClientProxy.h:
+        (SpeechRecognitionClientProxy):
+
+2013-03-22  Hajime Morrita  <morrita@google.com>
+
+        Custom Elements: "readyCallback" lifecycle callback should be called.
+        https://bugs.webkit.org/show_bug.cgi?id=112538
+
+        Reviewed by Elliott Sprehn.
+
+        * src/WebKit.cpp: Added deliverAllLifecycleCallbacks()
+
+2013-03-22  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Finalize the RTCPeerConnection states
+        https://bugs.webkit.org/show_bug.cgi?id=112792
+
+        Reviewed by Adam Barth.
+
+        * src/AssertMatchingEnums.cpp:
+
+2013-03-22  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146534 and r146565.
+        http://trac.webkit.org/changeset/146534
+        http://trac.webkit.org/changeset/146565
+        https://bugs.webkit.org/show_bug.cgi?id=113017
+
+        "r146534 caused perf regression on Chromium Linux x64"
+        (Requested by yurys on #webkit).
+
+        * src/WebKit.cpp:
+
+2013-03-21  Hajime Morrita  <morrita@google.com>
+
+        Custom Elements: "readyCallback" lifecycle callback should be called.
+        https://bugs.webkit.org/show_bug.cgi?id=112538
+
+        Reviewed by Elliott Sprehn.
+
+        * src/WebKit.cpp: Added deliverAllLifecycleCallbacks()
+
+2013-03-21  Garrett Casto  <gcasto@chromium.org>
+
+        [chromium] Add possibleUserNames to WebPasswordFormData
+        https://bugs.webkit.org/show_bug.cgi?id=112375
+
+        Reviewed by Adam Barth.
+
+        * public/WebPasswordFormData.h:
+        (WebPasswordFormData):
+        * src/WebPasswordFormData.cpp:
+        (WebKit::WebPasswordFormData::WebPasswordFormData):
+        * src/WebPasswordFormUtils.cpp:
+        (WebKit::findPasswordFormFields):
+        * src/WebPasswordFormUtils.h:
+        (PasswordFormFields):
+
+2013-03-21  Terry Anderson  <tdanderson@chromium.org>
+
+        [chromium] Remove SK_SUPPORT_HINTING_SCALE_FACTOR flag and code
+        https://bugs.webkit.org/show_bug.cgi?id=112928
+
+        Reviewed by Stephen White.
+
+        This flag was only for ChromeOS builds with HighDPI. It is no longer needed and can be removed. 
+        See http://crbug.com/17550
+
+        * features.gypi:
+        * tests/OpaqueRectTrackingContentLayerDelegateTest.cpp:
+        * tests/PlatformContextSkiaTest.cpp:
+
+2013-03-21  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Remove onVersionChange(string) plumbing
+        https://bugs.webkit.org/show_bug.cgi?id=112712
+
+        Reviewed by Adam Barth.
+
+        * public/WebIDBDatabaseCallbacks.h: Remove onVersionChange(string) overload.
+        * src/IDBDatabaseCallbacksProxy.cpp: Ditto.
+        * src/IDBDatabaseCallbacksProxy.h: Ditto.
+        * src/WebIDBDatabaseCallbacksImpl.cpp: Ditto.
+        * src/WebIDBDatabaseCallbacksImpl.h: Ditto.
+        * tests/IDBAbortOnCorruptTest.cpp: Ditto.
+        * tests/IDBDatabaseBackendTest.cpp: Ditto.
+
+2013-03-20  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r189497.  Requested by
+        "Dana Jansens" <danakj@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-20  Tien-Ren Chen  <trchen@chromium.org>
+
+        Correct coordinated scrolling for RTL iframe and overflow:scroll
+        https://bugs.webkit.org/show_bug.cgi?id=112088
+
+        Reviewed by James Robinson.
+
+        Added test to ensure RTL iframe has appropriate impl-side scroll position.
+
+        * tests/ScrollingCoordinatorChromiumTest.cpp:
+        (WebKit::TEST_F):
+        (WebKit):
+        * tests/data/rtl-iframe-inner.html: Added.
+        * tests/data/rtl-iframe.html: Added.
+
+2013-03-20  Yufeng Shen  <miletus@chromium.org>
+
+        Remove PlatformEvent::GestureDoubleTap
+        https://bugs.webkit.org/show_bug.cgi?id=93045
+
+        Reviewed by Antonio Gomes.
+
+        PlatformEvent::GestureDoubleTap is not currently
+        used in WebCore so remove it.
+
+        * src/WebInputEventConversion.cpp:
+        (WebKit::PlatformGestureEventBuilder::PlatformGestureEventBuilder):
+
+2013-03-20  Justin Novosad  <junov@google.com>
+
+        [Chromium] Code cleanup: removing support for non-deferred 2d canvas rendering
+        https://bugs.webkit.org/show_bug.cgi?id=112605
+
+        Reviewed by James Robinson.
+
+        Deleting all the code that was used for propagating and supporting
+        the Chromium setting for disabling deferred 2d canvas rendering.
+
+        * public/WebSettings.h:
+        (WebKit::WebSettings::setDeferred2dCanvasEnabled):
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setDeferred2dCanvasEnabled):
+        * tests/Canvas2DLayerBridgeTest.cpp:
+        (Canvas2DLayerBridgeTest::fullLifecycleTest):
+        * tests/Canvas2DLayerManagerTest.cpp:
+        (FakeCanvas2DLayerBridge::FakeCanvas2DLayerBridge):
+
+2013-03-20  Ken Kania  <kkania@chromium.org>
+
+        Web Inspector: Add promptText param to Page.handleJavaScriptDialog
+        https://bugs.webkit.org/show_bug.cgi?id=112706
+
+        Reviewed by Pavel Feldman.
+
+        * src/InspectorClientImpl.cpp:
+        (WebKit::InspectorClientImpl::handleJavaScriptDialog):
+        * src/InspectorClientImpl.h:
+        (InspectorClientImpl):
+        * src/WebDevToolsAgentImpl.cpp:
+        (WebKit::WebDevToolsAgentImpl::handleJavaScriptDialog):
+        * src/WebDevToolsAgentImpl.h:
+        (WebDevToolsAgentImpl):
+
+2013-03-19  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Migrate to WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+        https://bugs.webkit.org/show_bug.cgi?id=112754
+
+        Reviewed by Darin Fisher.
+
+        Remove old code behind ifndef WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
+        now that it's always defined.
+
+        * public/WebCommonWorkerClient.h:
+        (WebCommonWorkerClient):
+        * public/WebFrame.h:
+        (WebFrame):
+        * public/WebFrameClient.h:
+        (WebFrameClient):
+        (WebKit::WebFrameClient::openFileSystem):
+        (WebKit::WebFrameClient::deleteFileSystem):
+        * src/LocalFileSystemChromium.cpp:
+        (WebCore):
+        (WebCore::openFileSystemHelper):
+        (WebCore::LocalFileSystem::deleteFileSystem):
+        * src/WebFrameImpl.cpp:
+        * src/WebFrameImpl.h:
+        (WebFrameImpl):
+        * src/WebWorkerClientImpl.cpp:
+        (WebKit::WebWorkerClientImpl::openFileSystem):
+        * src/WebWorkerClientImpl.h:
+        * src/WorkerFileSystemCallbacksBridge.cpp:
+        * src/WorkerFileSystemCallbacksBridge.h:
+        (WorkerFileSystemCallbacksBridge):
+
+2013-03-19  Kenneth Russell  <kbr@google.com>
+
+        Unreviewed, rolling out r146277.
+        http://trac.webkit.org/changeset/146277
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Broke Chromium Android build
+
+        * features.gypi:
+
 2013-03-19  James Robinson  <jamesr@chromium.org>
 
         [chromium] Remove compositor settings that don't go through WebKit

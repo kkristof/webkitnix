@@ -1,3 +1,198 @@
+2013-03-22  David Grogan  <dgrogan@chromium.org>
+
+        IndexedDB: Histogram available disk space on attempt to open database
+        https://bugs.webkit.org/show_bug.cgi?id=112862
+
+        Reviewed by Tony Chang.
+
+        * chromium/public/Platform.h:
+        (WebKit::Platform::availableDiskSpaceInBytes):
+        (Platform):
+
+2013-03-22  Tommy Widenflycht  <tommyw@google.com>
+
+        MediaStream API: Finalize the RTCPeerConnection states
+        https://bugs.webkit.org/show_bug.cgi?id=112792
+
+        Reviewed by Adam Barth.
+
+        * chromium/public/WebRTCPeerConnectionHandlerClient.h:
+
+2013-03-21  David Grogan  <dgrogan@chromium.org>
+
+        Unreviewed, rolling out r146560.
+        http://trac.webkit.org/changeset/146560
+        https://bugs.webkit.org/show_bug.cgi?id=112862
+
+        invalid parameter to histogram
+
+        * chromium/public/Platform.h:
+
+2013-03-21  David Grogan  <dgrogan@chromium.org>
+
+        IndexedDB: Histogram available disk space on attempt to open database
+        https://bugs.webkit.org/show_bug.cgi?id=112862
+
+        Reviewed by Adam Barth.
+
+        * chromium/public/Platform.h:
+        (WebKit::Platform::availableDiskSpaceInBytes):
+        (Platform):
+
+2013-03-21  Mark Pilgrim  <pilgrim@chromium.org>
+
+        [Chromium] Removed unused WEBKIT_USE_NEW_WEBFILESYSTEMTYPE flag
+        https://bugs.webkit.org/show_bug.cgi?id=112931
+
+        Reviewed by Adam Barth.
+
+        Migration complete; flag no longer needed.
+
+        * chromium/public/WebFileSystemType.h:
+
+2013-03-21  Anton Muhin  <antonm@chromium.org>
+
+        Unreviewed, rolling out r146483.
+        http://trac.webkit.org/changeset/146483
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Breaks
+
+        * Platform.gypi:
+        * chromium/public/Platform.h:
+        (WebKit):
+        (Platform):
+        * chromium/public/WebSpeechSynthesisUtterance.h: Removed.
+        * chromium/public/WebSpeechSynthesisVoice.h: Removed.
+        * chromium/public/WebSpeechSynthesizer.h: Removed.
+        * chromium/public/WebSpeechSynthesizerClient.h: Removed.
+
+2013-03-21  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Add isOrphan() to the WebLayer API
+        https://bugs.webkit.org/show_bug.cgi?id=112649
+
+        Reviewed by James Robinson.
+
+        This method will be used by WebMediaPlayerClientImpl to tell
+        if the compositing video layer is currently being used to
+        display the video content or not.
+
+        * chromium/public/WebLayer.h:
+        (WebLayer):
+
+2013-03-21  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Implement Web Speech Synthesis for Chromium
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Reviewed by Adam Barth.
+
+        Exposes a platform API that the embedder can implement to
+        provide speech synthesis for the Chromium port.
+
+        * Platform.gypi:
+        * chromium/public/Platform.h:
+        (WebKit):
+        (Platform):
+        (WebKit::Platform::speechSynthesizer):
+        * chromium/public/WebSpeechSynthesisUtterance.h: Added.
+        (WebKit):
+        (WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::~WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::operator=):
+        (WebKit::WebSpeechSynthesisUtterance::isNull):
+        * chromium/public/WebSpeechSynthesisVoice.h: Added.
+        (WebCore):
+        (WebKit):
+        (WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::~WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::operator=):
+        * chromium/public/WebSpeechSynthesizer.h: Added.
+        (WebKit):
+        (WebSpeechSynthesizer):
+        (WebKit::WebSpeechSynthesizer::~WebSpeechSynthesizer):
+        * chromium/public/WebSpeechSynthesizerClient.h: Added.
+        (WebKit):
+        (WebSpeechSynthesizerClient):
+        (WebKit::WebSpeechSynthesizerClient::~WebSpeechSynthesizerClient):
+
+2013-03-20  Harald Alvestrand  <hta@google.com>
+
+        Remove Local/Remote and RTCStatsElement from WebRTCStats API
+        https://bugs.webkit.org/show_bug.cgi?id=112678
+
+        Reviewed by Adam Barth.
+
+        * chromium/public/WebRTCStatsResponse.h:
+        (WebRTCStatsResponse):
+
+2013-03-20  Aaron Colwell  <acolwell@chromium.org>
+
+        Add support for MediaSource::isTypeSupported()
+        https://bugs.webkit.org/show_bug.cgi?id=112301
+
+        Reviewed by Darin Fisher.
+
+        * chromium/public/WebMimeRegistry.h:
+        (WebMimeRegistry): Added supportsMediaSourceMIMEType() method.
+
+2013-03-19  Kenneth Russell  <kbr@google.com>
+
+        Unreviewed, rolling out r146277.
+        http://trac.webkit.org/changeset/146277
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Broke Chromium Android build
+
+        * Platform.gypi:
+        * chromium/public/Platform.h:
+        (WebKit):
+        * chromium/public/WebSpeechSynthesisUtterance.h: Removed.
+        * chromium/public/WebSpeechSynthesisVoice.h: Removed.
+        * chromium/public/WebSpeechSynthesizer.h: Removed.
+        * chromium/public/WebSpeechSynthesizerClient.h: Removed.
+
+2013-03-19  Dominic Mazzoni  <dmazzoni@google.com>
+
+        Implement Web Speech Synthesis for Chromium
+        https://bugs.webkit.org/show_bug.cgi?id=111695
+
+        Reviewed by Adam Barth.
+
+        Exposes a platform API that the embedder can implement to
+        provide speech synthesis for the Chromium port.
+
+        * Platform.gypi:
+        * chromium/public/Platform.h:
+        (WebKit):
+        (Platform):
+        (WebKit::Platform::speechSynthesizer):
+        * chromium/public/WebSpeechSynthesisUtterance.h: Added.
+        (WebKit):
+        (WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::~WebSpeechSynthesisUtterance):
+        (WebKit::WebSpeechSynthesisUtterance::operator=):
+        (WebKit::WebSpeechSynthesisUtterance::isNull):
+        * chromium/public/WebSpeechSynthesisVoice.h: Added.
+        (WebCore):
+        (WebKit):
+        (WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::~WebSpeechSynthesisVoice):
+        (WebKit::WebSpeechSynthesisVoice::operator=):
+        * chromium/public/WebSpeechSynthesizer.h: Added.
+        (WebKit):
+        (WebSpeechSynthesizer):
+        (WebKit::WebSpeechSynthesizer::~WebSpeechSynthesizer):
+        * chromium/public/WebSpeechSynthesizerClient.h: Added.
+        (WebKit):
+        (WebSpeechSynthesizerClient):
+        (WebKit::WebSpeechSynthesizerClient::~WebSpeechSynthesizerClient):
+
 2013-03-19  Mark Pilgrim  <pilgrim@chromium.org>
 
         [Chromium] Flip WEBKIT_USE_NEW_WEBFILESYSTEMTYPE
