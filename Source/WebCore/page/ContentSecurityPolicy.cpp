@@ -1672,16 +1672,25 @@ void ContentSecurityPolicy::enforceSandboxFlags(SandboxFlags mask) const
     m_scriptExecutionContext->enforceSandboxFlags(mask);
 }
 
+static String stripURLForUseInReport(Document* document, const KURL& url)
+{
+    if (!url.isValid())
+        return String();
+    if (!url.isHierarchical() || url.protocolIs("file"))
+        return url.protocol();
+    return document->securityOrigin()->canRequest(url) ? url.strippedForUseAsReferrer() : SecurityOrigin::create(url)->toString();
+}
+
 #if ENABLE(CSP_NEXT)
 static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header)
 {
     init.documentURI = document->url().string();
     init.referrer = document->referrer();
-    init.blockedURI = blockedURL.isValid() ? blockedURL.string() : String();
+    init.blockedURI = stripURLForUseInReport(document, blockedURL);
     init.violatedDirective = directiveText;
     init.effectiveDirective = effectiveDirective;
     init.originalPolicy = header;
-    init.sourceURL = String();
+    init.sourceFile = String();
     init.lineNumber = 0;
 
     RefPtr<ScriptCallStack> stack = createScriptCallStack(2, false);
@@ -1692,7 +1701,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 
     if (callFrame.lineNumber()) {
         KURL source = KURL(ParsedURLString, callFrame.sourceURL());
-        init.sourceURL = source.string();
+        init.sourceFile = stripURLForUseInReport(document, source);
         init.lineNumber = callFrame.lineNumber();
     }
 }
@@ -1735,24 +1744,16 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
     RefPtr<InspectorObject> cspReport = InspectorObject::create();
     cspReport->setString("document-uri", document->url().strippedForUseAsReferrer());
-    String referrer = document->referrer();
-    cspReport->setString("referrer", referrer);
-    if (!directiveText.isEmpty())
-        cspReport->setString("violated-directive", directiveText);
+    cspReport->setString("referrer", document->referrer());
+    cspReport->setString("violated-directive", directiveText);
 #if ENABLE(CSP_NEXT)
-    if (!effectiveDirective.isEmpty() && experimentalFeaturesEnabled())
+    if (experimentalFeaturesEnabled())
         cspReport->setString("effective-directive", effectiveDirective);
 #else
     UNUSED_PARAM(effectiveDirective);
 #endif
     cspReport->setString("original-policy", header);
-    if (blockedURL.isValid())
-        if (blockedURL.isHierarchical())
-            cspReport->setString("blocked-uri", document->securityOrigin()->canRequest(blockedURL) ? blockedURL.strippedForUseAsReferrer() : SecurityOrigin::create(blockedURL)->toString());
-        else
-            cspReport->setString("blocked-uri", blockedURL.protocol());
-    else
-        cspReport->setString("blocked-uri", String());
+    cspReport->setString("blocked-uri", stripURLForUseInReport(document, blockedURL));
 
     RefPtr<ScriptCallStack> stack = createScriptCallStack(2, false);
     if (stack) {
@@ -1760,7 +1761,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
 
         if (callFrame.lineNumber()) {
             KURL source = KURL(ParsedURLString, callFrame.sourceURL());
-            cspReport->setString("source-file", document->securityOrigin()->canRequest(source) ? source.strippedForUseAsReferrer() : SecurityOrigin::create(source)->toString());
+            cspReport->setString("source-file", stripURLForUseInReport(document, source));
             cspReport->setNumber("line-number", callFrame.lineNumber());
         }
     }

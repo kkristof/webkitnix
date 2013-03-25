@@ -6353,6 +6353,10 @@ PassRefPtr<CSSValueList> CSSParser::parseShadow(CSSParserValueList* valueList, C
             if (!context.allowLength())
                 return 0;
 
+            // Blur radius must be non-negative.
+            if (context.allowBlur && !validUnit(val, FLength | FNonNeg, CSSStrictMode))
+                return 0;
+
             // A length is allowed here.  Construct the value and add it.
             context.commitLength(val);
         } else if (val->id == CSSValueInset) {
@@ -11270,16 +11274,25 @@ PassRefPtr<CSSRuleSourceData> CSSParser::popRuleData()
     return data.release();
 }
 
-void CSSParser::syntaxError(Location location)
+void CSSParser::syntaxError(const Location& location, SyntaxErrorType error)
 {
     if (!isLoggingErrors())
         return;
     StringBuilder builder;
-    builder.appendLiteral("Unexpected CSS token: ");
+    switch (error) {
+    case PropertyDeclarationError:
+        builder.appendLiteral("Invalid CSS property declaration at: ");
+        break;
+
+    default:
+        builder.appendLiteral("Unexpected CSS token: ");
+    }
+
     if (location.token.is8Bit())
         builder.append(location.token.characters8(), location.token.length());
     else
         builder.append(location.token.characters16(), location.token.length());
+
     logError(builder.toString(), location.lineNumber);
 }
 

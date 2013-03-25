@@ -1,3 +1,247 @@
+2013-03-23  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        HandleSet should use HeapBlocks for storing handles
+        https://bugs.webkit.org/show_bug.cgi?id=113145
+
+        Reviewed by Geoffrey Garen.
+
+        * GNUmakefile.list.am: Build project changes.
+        * JavaScriptCore.gypi: Ditto.
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj: Ditto.
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj: Ditto.
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters: Ditto.
+        * JavaScriptCore.xcodeproj/project.pbxproj: Ditto.
+        * heap/BlockAllocator.cpp: Rename the RegionSet to m_fourKBBlockRegionSet because there are 
+        too many block types to include them all in the name now.
+        (JSC::BlockAllocator::BlockAllocator):
+        * heap/BlockAllocator.h:
+        (BlockAllocator): Add the appropriate override for regionSetFor.
+        (JSC::WeakBlock):
+        (JSC::MarkStackSegment):
+        (JSC::HandleBlock):
+        * heap/HandleBlock.h: Added.
+        (HandleBlock): New class for HandleBlocks.
+        (JSC::HandleBlock::blockFor): Static method to get the block of the given HandleNode pointer. Allows
+        us to quickly figure out which HandleSet the HandleNode belongs to without storing the pointer to it
+        in the HandleNode.
+        (JSC::HandleBlock::handleSet): Getter.
+        * heap/HandleBlockInlines.h: Added.
+        (JSC::HandleBlock::create):
+        (JSC::HandleBlock::HandleBlock):
+        (JSC::HandleBlock::payloadEnd):
+        (JSC::HandleBlock::payload):
+        (JSC::HandleBlock::nodes):
+        (JSC::HandleBlock::nodeAtIndex):
+        (JSC::HandleBlock::nodeCapacity):
+        * heap/HandleSet.cpp:
+        (JSC::HandleSet::~HandleSet): 
+        (JSC::HandleSet::grow):
+        * heap/HandleSet.h:
+        (HandleNode): Move the internal Node class from HandleSet to be its own public class so it can be 
+        used by HandleBlock.
+        (HandleSet): Add a typedef so that Node refers to the new HandleNode class.
+        (JSC::HandleSet::toHandle):
+        (JSC::HandleSet::toNode):
+        (JSC::HandleSet::allocate):
+        (JSC::HandleSet::deallocate):
+        (JSC::HandleNode::HandleNode):
+        (JSC::HandleNode::slot):
+        (JSC::HandleNode::handleSet): Use the new blockFor static function to get the right HandleBlock and lookup 
+        the HandleSet.
+        (JSC::HandleNode::setPrev):
+        (JSC::HandleNode::prev):
+        (JSC::HandleNode::setNext):
+        (JSC::HandleNode::next):
+        (JSC::HandleSet::forEachStrongHandle):
+        * heap/Heap.h: Friend HandleSet so that it can access the BlockAllocator when allocating HandleBlocks.
+
+2013-03-22  David Kilzer  <ddkilzer@apple.com>
+
+        BUILD FIX (r145119): Make JSValue* properties default to (assign)
+        <rdar://problem/13380794>
+
+        Reviewed by Mark Hahnenberg.
+
+        Fixes the following build failures:
+
+            Source/JavaScriptCore/API/tests/testapi.mm:106:1: error: no 'assign', 'retain', or 'copy' attribute is specified - 'assign' is assumed [-Werror,-Wobjc-property-no-attribute]
+            @property JSValue *onclick;
+            ^
+            Source/JavaScriptCore/API/tests/testapi.mm:106:1: error: default property attrib ute 'assign' not appropriate for non-GC object [-Werror,-Wobjc-property-no-attribute]
+            Source/JavaScriptCore/API/tests/testapi.mm:107:1: error: no 'assign', 'retain', or 'copy' attribute is specified - 'assign' is assumed [-Werror,-Wobjc-property-no-attribute]
+            @property JSValue *weakOnclick;
+            ^
+            Source/JavaScriptCore/API/tests/testapi.mm:107:1: error: default property attribute 'assign' not appropriate for non-GC object [-Werror,-Wobjc-property-no-attribute]
+            4 errors generated.
+
+        * API/tests/testapi.mm: Default to (assign) for JSValue*
+        properties.
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        testLeakingPrototypesAcrossContexts added in r146682 doesn't compile on Win and fails on Mac
+        https://bugs.webkit.org/show_bug.cgi?id=113125
+
+        Reviewed by Mark Hahnenberg
+
+        Remove the test added in r146682 as it's now failing on Mac.
+        This is the test that was causing a compilation failure on Windows.
+
+        * API/tests/testapi.c:
+        (main):
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix the typo: WIN -> WINDOWS.
+
+        * API/tests/testapi.c:
+        (main):
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        I really can't figure out what's wrong with this one.
+        Temporarily disable the test added by r146682 on Windows since it doesn't compile.
+
+        * API/tests/testapi.c:
+        (main):
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Another build fix (after r146693) for r146682.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-03-22  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. AppleWin build fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/copy-files.cmd:
+        * JavaScriptCore.vcxproj/copy-files.cmd:
+
+2013-03-22  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        -[TinyDOMNode dealloc] should call [super dealloc] when ARC is not enabled
+        https://bugs.webkit.org/show_bug.cgi?id=113054
+
+        Reviewed by Geoffrey Garen.
+
+        * API/tests/testapi.mm:
+        (-[TinyDOMNode dealloc]):
+
+2013-03-22  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        opaqueJSClassData should be cached on JSGlobalObject, not the JSGlobalData
+        https://bugs.webkit.org/show_bug.cgi?id=113086
+
+        Reviewed by Geoffrey Garen.
+
+        opaqueJSClassData stores cached prototypes for JSClassRefs in the C API. It doesn't make sense to 
+        share these prototypes within a JSGlobalData across JSGlobalObjects, and in fact doing so will cause 
+        a leak of the original JSGlobalObject that these prototypes were created in. Therefore we should move 
+        this cache to JSGlobalObject where it belongs and where it won't cause memory leaks.
+
+        * API/JSBase.cpp: Needed to add an extern "C" so that testapi.c can use the super secret GC function.
+        * API/JSClassRef.cpp: We now grab the cached context data from the global object rather than the global data.
+        (OpaqueJSClass::contextData):
+        * API/JSClassRef.h: Remove this header because it's unnecessary and causes circular dependencies.
+        * API/tests/testapi.c: Added a new test that makes sure that using the same JSClassRef in two different contexts
+        doesn't cause leaks of the original global object.
+        (leakFinalize):
+        (nestedAllocateObject): This is a hack to bypass the conservative scan of the GC, which was unnecessarily marking
+        objects and keeping them alive, ruining the test result.
+        (testLeakingPrototypesAcrossContexts):
+        (main):
+        * API/tests/testapi.mm: extern "C" this so we can continue using it here.
+        * runtime/JSGlobalData.cpp: Remove JSClassRef related stuff.
+        (JSC::JSGlobalData::~JSGlobalData):
+        * runtime/JSGlobalData.h:
+        (JSGlobalData):
+        * runtime/JSGlobalObject.h: Add the stuff that JSGlobalData had. We add it to JSGlobalObjectRareData so that 
+        clients who don't use the C API don't have to pay the memory cost of this extra HashMap.
+        (JSGlobalObject):
+        (JSGlobalObjectRareData):
+        (JSC::JSGlobalObject::opaqueJSClassData):
+
+2013-03-19  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Add support for building the WebCore bindings to the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=112638
+
+        Reviewed by Nico Weber.
+
+        * JavaScriptCore.gyp/JavaScriptCoreGTK.gyp: Export all include directories to direct
+        dependents and fix the indentation of the libjavascriptcore target.
+
+2013-03-21  Filip Pizlo  <fpizlo@apple.com>
+
+        Fix some minor issues in the DFG's profiling of heap accesses
+        https://bugs.webkit.org/show_bug.cgi?id=113010
+
+        Reviewed by Goeffrey Garen.
+        
+        1) If a CodeBlock gets jettisoned by GC, we should count the exit sites.
+
+        2) If a CodeBlock clears a structure stub during GC, it should record this, and
+        the DFG should prefer to not inline that access (i.e. treat it as if it had an
+        exit site).
+
+        3) If a PutById was seen by the baseline JIT, and the JIT attempted to cache it,
+        but it chose not to, then assume that it will take slow path.
+
+        4) If we frequently exited because of a structure check on a weak constant,
+        don't try to inline that access in the future.
+
+        5) Treat all exits that were counted as being frequent.
+        
+        81% speed-up on Octane/gbemu. Small speed-ups elsewhere, and no regressions.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::finalizeUnconditionally):
+        (JSC):
+        (JSC::CodeBlock::resetStubDuringGCInternal):
+        (JSC::CodeBlock::reoptimize):
+        (JSC::CodeBlock::jettison):
+        (JSC::ProgramCodeBlock::jettisonImpl):
+        (JSC::EvalCodeBlock::jettisonImpl):
+        (JSC::FunctionCodeBlock::jettisonImpl):
+        (JSC::CodeBlock::tallyFrequentExitSites):
+        * bytecode/CodeBlock.h:
+        (CodeBlock):
+        (JSC::CodeBlock::tallyFrequentExitSites):
+        (ProgramCodeBlock):
+        (EvalCodeBlock):
+        (FunctionCodeBlock):
+        * bytecode/GetByIdStatus.cpp:
+        (JSC::GetByIdStatus::computeFor):
+        * bytecode/PutByIdStatus.cpp:
+        (JSC::PutByIdStatus::computeFor):
+        * bytecode/StructureStubInfo.h:
+        (JSC::StructureStubInfo::StructureStubInfo):
+        (StructureStubInfo):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::handleGetById):
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * dfg/DFGOSRExit.cpp:
+        (JSC::DFG::OSRExit::considerAddingAsFrequentExitSiteSlow):
+        * dfg/DFGOSRExit.h:
+        (JSC::DFG::OSRExit::considerAddingAsFrequentExitSite):
+        (OSRExit):
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/Options.h:
+        (JSC):
+
+2013-03-22  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG folding of PutById to SimpleReplace should consider the specialized function case
+        https://bugs.webkit.org/show_bug.cgi?id=113093
+
+        Reviewed by Geoffrey Garen and Mark Hahnenberg.
+
+        * bytecode/PutByIdStatus.cpp:
+        (JSC::PutByIdStatus::computeFor):
+
 2013-03-22  David Kilzer  <ddkilzer@apple.com>
 
         BUILD FIX (r146558): Build testapi.mm with ARC enabled for armv7s

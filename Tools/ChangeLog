@@ -1,3 +1,208 @@
+2013-03-25  Julie Parent  <jparent@chromium.org>
+
+        Dashboard refactor: Move cross dashboard history related code into history.js.
+        https://bugs.webkit.org/show_bug.cgi?id=113104
+
+        Reviewed by Ojan Vafai.
+
+        All functions relating to cross dashboard behavior move from being
+        globals to methods on the history.History object. Names stay the same,
+        except many are made private, ones that should have been constants now
+        are, and the long standing TODO to change "currentState" to 
+        dashboardSpecificState is done.
+        
+        We now create a global history object in dashboard_base, as an 
+        intermediate measure.  Once the dashboard specific code is
+        added to history, each DB will need to create its own, and this
+        global will be eliminated.
+        
+        * TestResultServer/static-dashboards/aggregate_results.js:
+        (handleValidHashParameter):
+        (htmlForBuilder):
+        (rawValuesHTML):
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (parseDashboardSpecificParameters):
+        (defaultValue):
+        (currentBuilderGroupCategory):
+        (currentBuilderGroupName):
+        (handleLocationChange):
+        (expectationsMap):
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (generatePage):
+        (.switch.return):
+        (platformAndBuildType):
+        (individualTests):
+        (substringList):
+        (processMissingAndExtraExpectations):
+        (pathToFailureLog):
+        (showPopupForBuild):
+        (htmlForTestsWithExpectationsButNoFailures):
+        (shouldHideTest):
+        (isCrossBuilderView):
+        (tableHeaders):
+        (htmlForSingleTestRow):
+        (htmlForTableColumnHeader):
+        (generatePageForExpectationsUpdate):
+        (handleUpdate):
+        (nextUpdate):
+        (setUpdateIndex):
+        (htmlForIndividualTestOnAllBuildersWithResultsLinks):
+        (.appendExpectationsItem):
+        (loadExpectations):
+        (.dummyNode.onload):
+        (loadExpectationsLayoutTests):
+        (appendExpectations):
+        (htmlForNavBar):
+        (checkBoxToToggleState):
+        (linkHTMLToToggleState):
+        (generatePageForBuilder):
+        (isInvalidKeyForCrossBuilderView):
+        (handleQueryParameterChange):
+        (showLegend):
+        * TestResultServer/static-dashboards/flakiness_dashboard_unittests.js:
+        (resetGlobals):
+        (test):
+        * TestResultServer/static-dashboards/history.js:
+        (.):
+        * TestResultServer/static-dashboards/history_unittests.js:
+        * TestResultServer/static-dashboards/loader.js:
+        (.):
+        * TestResultServer/static-dashboards/loader_unittests.js:
+        * TestResultServer/static-dashboards/timeline_explorer.js:
+        (generatePage):
+        (initCurrentBuilderTestResults):
+        (selectBuild):
+        (showResultsDelta):
+        * TestResultServer/static-dashboards/treemap.js:
+        (generatePage):
+        (.switch.return):
+        (handleFocus):
+        * TestResultServer/static-dashboards/ui.js:
+
+2013-03-25  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Enable WinEWS tests again.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-03-25  Dominik Röttsches  <dominik.rottsches@intel.com>
+
+        [HarfBuzz] ICU detection fix in HarfBuzz obsoletes our workaround
+        https://bugs.webkit.org/show_bug.cgi?id=112166
+
+        HarfBuzz 0.9.14 merged my patch for icu detection without
+        pkg-config files, as needed by for example Ubuntu 12.04.
+        This obsoletes our local workaround. Removed it for GTK and EFL.
+
+        Reviewed by Martin Robinson.
+
+        * efl/jhbuild.modules: Patch reference removed, version bumped to 0.9.14.
+        * efl/patches/harfbuzz-icu-detection-fix.patch: Removed.
+        * gtk/jhbuild.modules: Patch reference removed, version bumped to 0.9.14.
+        * gtk/patches/harfbuzz-icu-detection-fix.patch: Removed.
+
+2013-03-22  Kiran Muppala  <cmuppala@apple.com>
+
+        Unreviewed.  Move self from contributor to committer list.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        EWS should use a human readable port name when uploading layout test archives
+        https://bugs.webkit.org/show_bug.cgi?id=113099
+
+        Reviewed by Dirk Pranke.
+
+        Use new port's object's name() method to report human readable port names.
+        This will also help us resolving the bug to apply layout test results posted by EWS.
+
+        * Scripts/webkitpy/tool/bot/botinfo.py:
+        (BotInfo.__init__): Take port's name.
+        (BotInfo.summary_text):
+
+        * Scripts/webkitpy/tool/bot/botinfo_unittest.py:
+        (BotInfoTest.test_summary_text):
+
+        * Scripts/webkitpy/tool/bot/flakytestreporter.py:
+        (FlakyTestReporter.__init__): Preserve the old behavior since we don't have a real port object here.
+
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (PatchProcessingQueue.__init__): Initialize self._port.
+        (PatchProcessingQueue._upload_results_archive_for_patch): Intansitate a real port object if needed,
+        and use that for the attachment filename and the comment posted.
+
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (PatchProcessingQueueTest.test_upload_results_archive_for_patch): Port name is updated to be
+        "mac-snowleopard" as expected for TestPort.
+
+2013-03-22  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Turn off EWS test on Win again.
+        The battle continues.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-03-22  Ryosuke Niwa  <rniwa@webkit.org>
+
+        NRWT: Enable pixel tests when retrying tests
+        https://bugs.webkit.org/show_bug.cgi?id=112898
+
+        Reviewed by Dirk Pranke.
+
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (Manager.run): Call _force_pixel_tests_if_needed before retrying tests and set pixel_tests False
+        if we've forced pixel tests in the retry.
+        (Manager._run_tests):
+        (Manager._clean_up_run): Fixed the capitalizations.
+        (Manager._force_pixel_tests_if_needed): Added.
+
+        * Scripts/webkitpy/layout_tests/models/test_run_results.py:
+        (_interpret_test_failures): Now that this function maybe called multiple times, only set
+        'image_diff_percent' if it doesn't already exist.
+
+        (summarize_results): When the first attempt resulted in a text failure and the second attempt
+        resulted in image and text failures and we've forced to run pixel tests in the retry run,
+        treat this as a regular regression instead of a flakiness.
+
+        Also update test_dict with retry_result so that image_diff_percent maybe filled in if retry
+        run had image diffs.
+
+        * Scripts/webkitpy/layout_tests/models/test_run_results_unittest.py:
+        (summarized_results):
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (parse_full_results): Moved out of EndToEndTest to be used in test_retrying_force_pixel_tests.
+        Also removed some dead code.
+
+        (RunTest.test_retrying_force_pixel_tests): Added. Assert that we generate and only generate
+        pixel results in retries when pixel tests is turned off. Also assert that image_diff_percent
+        is set and pixel_tests_enabled is set to false.
+        (EndToEndTest.test_reftest_with_two_notrefs):
+
+2013-03-22  Tim Horton  <timothy_horton@apple.com>
+
+        Make it possible to run layout tests on Retina MBP
+        https://bugs.webkit.org/show_bug.cgi?id=93673
+
+        Reviewed by Ryosuke Niwa.
+
+        Use NSWindow SPI and override -backingScaleFactor so that WKTR and DRT
+        windows on 2x machines still run at 1x.
+
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (createWebViewAndOffscreenWindow):
+        Reset the window resolution to 1x on creation.
+        * DumpRenderTree/mac/DumpRenderTreeWindow.h: Add NSWindow details.
+        * DumpRenderTree/mac/DumpRenderTreeWindow.mm:
+        (-[DumpRenderTreeWindow backingScaleFactor]): Override, always return 1.
+        * WebKitTestRunner/mac/PlatformWebViewMac.mm:
+        (-[WebKitTestRunnerWindow backingScaleFactor]): Override, always return 1.
+        (WTR::PlatformWebView::PlatformWebView):
+        Add NSWindow details, reset the window resolution to 1x on creation.
+
 2013-03-19  Ryosuke Niwa  <rniwa@webkit.org>
 
         Leak bots shouldn't build

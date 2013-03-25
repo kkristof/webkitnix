@@ -1,3 +1,70 @@
+2013-03-23  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK][Regression] webkit_dom_html_table_element_insert_row returns value that doesn't pass WEBKIT_DOM_IS_HTML_TABLE_ROW_ELEMENT macro
+        https://bugs.webkit.org/show_bug.cgi?id=111714
+
+        Reviewed by Martin Robinson.
+
+        Add test that checks webkit_dom_html_table_element_insert_row() to
+        also preproduce this issue.
+
+        * tests/testdomdocument.c:
+        (test_dom_document_insert_row):
+        (main):
+
+2013-03-22  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Trivial fixes to the gyp-build autogen.sh script.
+
+        Reviewed by Martin Robinson (mrobinson).
+
+        * gyp/autogen.sh: add /bin/sh -e as hashbang, so stricter shells will be happy to
+        run the script; deal with automake exiting with an error code because there is no
+        Makefile.am for it to work on.
+
+2013-03-19  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Add support for building the WebCore bindings to the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=112638
+
+        Reviewed by Nico Weber.
+
+        * gyp/Configuration.gypi.in: Added options for enabling SVG and setting the location of
+        the WebCore derived sources.
+        * gyp/run-gyp: Include the gyp scripts directory on the Python path and make the WebCoreGTK
+        gyp file the default for the build.
+
+2013-03-22  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] [gyp] Expose a few more compiler defines for the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=113109
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gyp/Configuration.gypi.in: Expose the version number string and data
+        directory to the gyp build as command-line arguments.
+
+2013-03-22  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] [gyp] Feature defines are not space separated
+        https://bugs.webkit.org/show_bug.cgi?id=113108
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gyp/configure.ac: Properly export feature defines for gyp during
+        configure phase.
+
+2013-03-22  Mario Sanchez Prada  <mario.prada@samsung.com>
+
+        [GTK] Include the right GL header for GLES2
+        https://bugs.webkit.org/show_bug.cgi?id=113034
+
+        Reviewed by Martin Robinson.
+
+        Include GLES2/gl2.h when using GLES2.
+
+        * WebCoreSupport/AcceleratedCompositingContextGL.cpp:
+
 2013-03-20  Zan Dobersek  <zdobersek@igalia.com>
 
         [GTK] Build ANGLE sources into a separate library from libWebCore.la

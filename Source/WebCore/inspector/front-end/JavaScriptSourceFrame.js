@@ -40,10 +40,6 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._breakpointManager = WebInspector.breakpointManager;
     this._uiSourceCode = uiSourceCode;
 
-    var locations = this._breakpointManager.breakpointLocationsForUISourceCode(this._uiSourceCode);
-    for (var i = 0; i < locations.length; ++i)
-        this._breakpointAdded({data:locations[i]});
-
     WebInspector.UISourceCodeFrame.call(this, uiSourceCode);
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger)
         this.element.addStyleClass("source-frame-debugger-script");
@@ -556,6 +552,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     toggleBreakpointOnCurrentLine: function()
     {
+        if (this._uiSourceCode.isDirty() && !this._supportsEnabledBreakpointsWhileEditing())
+            return;
+
         var selection = this.textEditor.selection();
         if (!selection)
             return;

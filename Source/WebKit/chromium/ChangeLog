@@ -1,3 +1,133 @@
+2013-03-25  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: Fonts refactoring
+        https://bugs.webkit.org/show_bug.cgi?id=113047
+
+        Reviewed by Pavel Feldman.
+
+        Unify fonts usage across inspector.
+        Make inspector default font depend on platform.
+
+        * src/js/devTools.css:
+        (body.platform-linux):
+        (body.platform-mac):
+        (body.platform-windows):
+
+2013-03-24  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Roll chromium deps to 190311.
+        https://bugs.webkit.org/show_bug.cgi?id=113161
+
+        Unreviewed, rolling deps.
+
+        * DEPS:
+
+2013-03-24  Alpha Lam  <hclam@chromium.org>
+
+        GIFImageReader should reports parsing error to client
+        https://bugs.webkit.org/show_bug.cgi?id=113141
+
+        Reviewed by Stephen White.
+
+        Updated unit test that runs on a broken GIF image file, decoding should fail.
+
+        * tests/GIFImageDecoderTest.cpp:
+        (WebKit::TEST):
+
+2013-03-22  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Wire windows scrollByPage enum up to compositor thread input handling
+        https://bugs.webkit.org/show_bug.cgi?id=113117
+
+        Reviewed by Adrienne Walker.
+
+        * src/WebCompositorInputHandlerImpl.cpp:
+        (WebKit::WebCompositorInputHandlerImpl::handleInputEventInternal):
+        * tests/WebCompositorInputHandlerImplTest.cpp:
+        (MockWebInputHandlerClient):
+
+2013-03-24  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r190276.  Requested by
+        "Dana Jansens" <danakj@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-22  Dane Wallinga  <dgwallinga@chromium.org>
+
+        Add client callbacks to notify of changes of associated from controls
+        https://bugs.webkit.org/show_bug.cgi?id=110375
+
+        Reviewed by Ryosuke Niwa.
+
+        Implement form association methods of ChromeClient
+        to inform autofill of form changes after a page has loaded
+
+        * public/WebAutofillClient.h:
+        (WebAutofillClient):
+        (WebKit::WebAutofillClient::didAssociateInput):
+        (WebKit::WebAutofillClient::didAddForm):
+        (WebKit::WebAutofillClient::didAssociateFormControls):
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::didAssociateFormControls):
+        (WebKit):
+        (WebKit::ChromeClientImpl::shouldNotifyOnFormChanges):
+        * src/ChromeClientImpl.h:
+        (ChromeClientImpl):
+
+2013-03-22  Alec Flett  <alecflett@chromium.org>
+
+        [chromium] Support Quota API in Worker
+        https://bugs.webkit.org/show_bug.cgi?id=112713
+
+        Hook up WebKit side of queryUsageAndQuota. Tests
+        and WebCore code will come in https://bugs.webkit.org/show_bug.cgi?id=112972
+
+        Reviewed by David Levin.
+
+        * WebKit.gyp:
+        * public/WebCommonWorkerClient.h:
+        (WebKit::WebCommonWorkerClient::queryUsageAndQuota):
+        * src/StorageQuotaChromium.cpp:
+        (WebCore::StorageQuota::queryUsageAndQuota):
+        (WebCore::StorageQuota::requestQuota):
+        * src/WebWorkerClientImpl.cpp:
+        (WebKit::WebWorkerClientImpl::queryUsageAndQuota):
+        (WebKit):
+        * src/WebWorkerClientImpl.h:
+        * src/WorkerStorageQuotaCallbacksBridge.cpp: Added.
+        (WebKit):
+        (MainThreadStorageQuotaCallbacks):
+        (WebKit::MainThreadStorageQuotaCallbacks::createLeakedPtr):
+        (WebKit::MainThreadStorageQuotaCallbacks::~MainThreadStorageQuotaCallbacks):
+        (WebKit::MainThreadStorageQuotaCallbacks::didQueryStorageUsageAndQuota):
+        (WebKit::MainThreadStorageQuotaCallbacks::didFail):
+        (WebKit::MainThreadStorageQuotaCallbacks::didGrantStorageQuota):
+        (WebKit::MainThreadStorageQuotaCallbacks::MainThreadStorageQuotaCallbacks):
+        (WorkerStorageQuotaContextObserver):
+        (WebKit::WorkerStorageQuotaContextObserver::create):
+        (WebKit::WorkerStorageQuotaContextObserver::notifyStop):
+        (WebKit::WorkerStorageQuotaContextObserver::WorkerStorageQuotaContextObserver):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::stop):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::cleanUpAfterCallback):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::WorkerStorageQuotaCallbacksBridge):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::~WorkerStorageQuotaCallbacksBridge):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::postQueryUsageAndQuotaToMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::queryUsageAndQuotaOnMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::didFailOnMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::didQueryStorageUsageAndQuotaOnMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::didFailOnWorkerThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::didQueryStorageUsageAndQuotaOnWorkerThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::runTaskOnMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::runTaskOnWorkerThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::dispatchTaskToMainThread):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::mayPostTaskToWorker):
+        * src/WorkerStorageQuotaCallbacksBridge.h: Added.
+        (WebCore):
+        (WebKit):
+        (WorkerStorageQuotaCallbacksBridge):
+        (WebKit::WorkerStorageQuotaCallbacksBridge::create):
+
 2013-03-22  Stephen Chenney  <schenney@chromium.org>
 
         Skia flag removal to enable bug fixes and performance improvements.

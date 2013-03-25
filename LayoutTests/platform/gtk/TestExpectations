@@ -245,6 +245,8 @@ webkit.org/b/98942 storage/storageinfo-query-usage.html [ Failure ]
 webkit.org/b/98942 storage/storageinfo-request-quota.html [ Failure ]
 webkit.org/b/98942 storage/storagequota-query-usage.html [ Failure ]
 webkit.org/b/98942 storage/storagequota-request-quota.html [ Failure ]
+webkit.org/b/98942 fast/workers/worker-storagequota-query-usage.html [ Failure ]
+webkit.org/b/98942 fast/workers/shared-worker-storagequota-query-usage.html [ Failure ]
 
 # This platform does not support the Page Visibility API.
 webkit.org/b/97324 fast/events/page-visibility-iframe-delete-test.html [ Skip ]
@@ -1439,6 +1441,8 @@ webkit.org/b/112228 svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure Pass ]
 
 webkit.org/b/112705 fast/dom/icon-url-property.html [ Failure ]
+
+webkit.org/b/113127 media/track/track-prefer-captions.html [ Timeout ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

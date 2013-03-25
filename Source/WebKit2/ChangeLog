@@ -1,3 +1,126 @@
+2013-03-25  Maxim Ermilov  <maxim.ermilov@canonical.com>
+
+        [Qt] Qml WebKit needs preferences to change security knobs
+        https://bugs.webkit.org/show_bug.cgi?id=111979
+
+        Reviewed by Jocelyn Turcotte.
+
+        * UIProcess/API/qt/qwebpreferences.cpp:
+        (QWebPreferencesPrivate::testAttribute):
+        (QWebPreferencesPrivate::setAttribute):
+        (QWebPreferences::universalAccessFromFileURLsAllowed):
+        (QWebPreferences::setUniversalAccessFromFileURLsAllowed):
+        (QWebPreferences::fileAccessFromFileURLsAllowed):
+        (QWebPreferences::setFileAccessFromFileURLsAllowed):
+        * UIProcess/API/qt/qwebpreferences_p.h:
+        * UIProcess/API/qt/qwebpreferences_p_p.h:
+
+2013-03-23  Geoffrey Garen  <ggaren@apple.com>
+
+        Added a setting for whether JavaScript markup is enabled
+        https://bugs.webkit.org/show_bug.cgi?id=112999
+
+        Rolled out a line from r146664 that was left over from before I adopted
+        the Settings.in way of adding a new setting.
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::overrideBoolPreferenceForTestRunner): No need
+        to initialize / override -- Settings.in settings do this automatically.
+
+        Also, dydx noticed that this line of code had a typo, and was totaly wrong.
+
+2013-03-21  Kiran Muppala  <cmuppala@apple.com>
+
+        Add runtime setting for hidden page DOM timer throttling and CSS animation suspension
+        https://bugs.webkit.org/show_bug.cgi?id=112308
+
+        Reviewed by Gavin Barraclough.
+
+        Add private preference for enabling/disabling hidden page DOM timer
+        throttling and CSS animation suspension.  The preference should be
+        enabled by default only on Mac, where WebKit2 is a private API and
+        hence compatibility is less of a issue.
+
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesSetHiddenPageDOMTimerThrottlingEnabled):
+        (WKPreferencesGetHiddenPageDOMTimerThrottlingEnabled):
+        (WKPreferencesSetHiddenPageCSSAnimationSuspensionEnabled):
+        (WKPreferencesGetHiddenPageCSSAnimationSuspensionEnabled):
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::overrideBoolPreferenceForTestRunner): Allow
+        WebKitTestRunner to override hiddenPageDOMTimerThrottlingEnabled.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences):
+
+2013-03-22  Tim Horton  <timothy_horton@apple.com>
+
+        Plugin Snapshotting: Auto-start dominant plugins
+        https://bugs.webkit.org/show_bug.cgi?id=113111
+        <rdar://problem/13475726>
+
+        Reviewed by Dean Jackson.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::didInitializePlugin):
+        (WebKit::PluginView::paint):
+        (WebKit::PluginView::invalidateRect):
+        (WebKit::PluginView::isAcceleratedCompositingEnabled):
+        Acknowledge the new "Restarting" DisplayState.
+
+2013-03-21  Jer Noble  <jer.noble@apple.com>
+
+        After switching to another space and back, video races to catch up with audio
+        https://bugs.webkit.org/show_bug.cgi?id=113006
+
+        Reviewed by Anders Carlsson.
+
+        Add an observer for the NSWorkspaceActiveSpaceDidChangeNotification notification, and trigger
+        a visibility update when that notification is observed.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView dealloc]): Unregister the observer.
+        (-[WKView _activeSpaceDidChange:]): Notify the view that its visibility may have changed.
+        (-[WKView initWithFrame:contextRef:pageGroupRef:relatedToPage:]): Add the observer.
+
+2013-03-21  Geoffrey Garen  <ggaren@apple.com>
+
+        Added a setting for whether JavaScript markup is enabled
+        https://bugs.webkit.org/show_bug.cgi?id=112999
+
+        Reviewed by Maciej Stachowiak.
+
+        This setting is useful for clients that want protection from script
+        injection attacks.
+
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/API/C/WKPreferences.cpp:
+        (WKPreferencesGetJavaScriptMarkupEnabled):
+        (WKPreferencesSetJavaScriptMarkupEnabled):
+        (WKPreferencesGetJavaScriptEnabled):
+        * UIProcess/API/C/WKPreferences.h:
+        * UIProcess/API/mac/WKBrowsingContextGroup.mm:
+        (-[WKBrowsingContextGroup allowsJavaScriptMarkup]):
+        (-[WKBrowsingContextGroup setAllowsJavaScriptMarkup:]):
+        * WebProcess/InjectedBundle/InjectedBundle.cpp:
+        (WebKit::InjectedBundle::overrideBoolPreferenceForTestRunner):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences): Plumbed through to API.
+
+2013-03-22  Mario Sanchez Prada  <mario.prada@samsung.com>
+
+        [GTK] Include the right GL header for GLES2
+        https://bugs.webkit.org/show_bug.cgi?id=113034
+
+        Reviewed by Martin Robinson.
+
+        Include GLES2/gl2.h when using GLES2.
+
+        * WebProcess/WebPage/gtk/LayerTreeHostGtk.cpp:
+
 2013-03-22  Timothy Hatcher  <timothy@apple.com>
 
         Fix an assert when opening the Web Inspector window for the first time.

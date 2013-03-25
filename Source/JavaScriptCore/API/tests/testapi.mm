@@ -25,7 +25,7 @@
 
 #import <JavaScriptCore/JavaScriptCore.h>
 
-void JSSynchronousGarbageCollectForDebugging(JSContextRef);
+extern "C" void JSSynchronousGarbageCollectForDebugging(JSContextRef);
 
 extern "C" bool _Block_has_signature(id);
 extern "C" const char * _Block_signature(id);
@@ -103,8 +103,8 @@ bool testXYZTested = false;
 @protocol TextXYZ <JSExport>
 @property int x;
 @property (readonly) int y;
-@property JSValue *onclick;
-@property JSValue *weakOnclick;
+@property (assign) JSValue *onclick;
+@property (assign) JSValue *weakOnclick;
 - (void)test:(NSString *)message;
 @end
 
@@ -202,6 +202,10 @@ static JSVirtualMachine *sharedInstance = nil;
     id nextChild;
     while ((nextChild = [enumerator nextObject]))
         [[TinyDOMNode sharedVirtualMachine] removeManagedReference:nextChild withOwner:self];
+
+#if !__has_feature(objc_arc)
+    [super dealloc];
+#endif
 }
 
 - (void)appendChild:(TinyDOMNode *)child

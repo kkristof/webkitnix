@@ -841,6 +841,7 @@ set(WebCore_SOURCES
     Modules/indexeddb/WorkerContextIndexedDatabase.cpp
 
     Modules/mediasource/MediaSource.cpp
+    Modules/mediasource/MediaSourceRegistry.cpp
     Modules/mediasource/SourceBuffer.cpp
     Modules/mediasource/SourceBufferList.cpp
 
@@ -2711,6 +2712,7 @@ if (ENABLE_QUOTA)
         Modules/quota/StorageErrorCallback.cpp
         Modules/quota/StorageInfo.cpp
         Modules/quota/StorageQuota.cpp
+        Modules/quota/WorkerNavigatorStorageQuota.cpp
     )
 
     list(APPEND WebCore_IDL_FILES
@@ -2721,6 +2723,7 @@ if (ENABLE_QUOTA)
         Modules/quota/StorageQuota.idl
         Modules/quota/StorageQuotaCallback.idl
         Modules/quota/StorageUsageCallback.idl
+        Modules/quota/WorkerNavigatorStorageQuota.idl
     )
 endif ()
 

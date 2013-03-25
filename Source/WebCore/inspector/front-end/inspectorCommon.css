@@ -11,7 +11,7 @@ body {
     right: 0;
     overflow: hidden;
     font-family: Lucida Grande, sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     margin: 0;
     tab-size: 4;
     -webkit-user-select: none;
@@ -90,6 +90,7 @@ iframe.view {
     height: 20px;
     z-index: 200;
     pointer-events: none;
+    cursor: move;
 }
 
 .resources-divider {
