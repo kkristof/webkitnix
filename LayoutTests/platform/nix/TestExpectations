@@ -27,9 +27,13 @@ webaudio/realtimeanalyser-fft-sizing.html [ Skip ]
 fast/frames/seamless/seamless-window-location-href.html [ Skip ]
 fast/hidpi/image-set-without-specified-width.html [ Skip ]
 inspector-protocol/media-query-listener-exception.html [ Skip ]
+sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A2.4_T1.html [ Skip ]
+storage/indexeddb/keypath-intrinsic-properties.html [ Skip ]
 storage/indexeddb/keypath-fetch-key.html [ Skip ]
 
 # sometimes crash
+fast/dom/Window/redirect-with-timer.html [ Pass Crash ]
+fast/frames/seamless/seamless-window-location-sandbox.html [ Pass Crash ]
 fast/replaced/object-with-embed-url-param.html [ Pass Crash ]
 fast/spatial-navigation/snav-1st-stop.html [ Pass Crash ]
 fast/spatial-navigation/snav-clipped-overflowed-content.html [ Pass Crash ]
@@ -46,6 +50,7 @@ fast/sub-pixel/column-clipping.html [ Pass Crash ]
 fast/sub-pixel/ellipsis-table.html [ Pass Crash ]
 fast/sub-pixel/ellipsis-zoom.html [ Pass Crash ]
 fast/sub-pixel/float-containing-block-with-margin.html [ Pass Crash ]
+fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 
 ################################################################################
 # FAILURES
@@ -95,7 +100,8 @@ compositing/background-color/background-color-padding-clip.html [ ImageOnlyFailu
 compositing/background-color/background-color-simple.html [ ImageOnlyFailure ]
 compositing/background-color/background-color-text-change.html [ ImageOnlyFailure ]
 compositing/background-color/background-color-text-clip.html [ ImageOnlyFailure ]
-compositing/video/video-reflection.html
+compositing/rtl/rtl-overflow-scrolling.html [ Skip ]
+compositing/video/video-reflection.html [ Skip ]
 
 css1/box_properties/acid_test.html
 
@@ -564,6 +570,7 @@ editing/shadow/selection-of-orphan-shadowroot.html [ Skip ]
 editing/shadow/selection-of-shadowroot.html [ Skip ]
 editing/spelling/grammar-edit-word.html [ Skip ]
 editing/spelling/markers.html [ Skip ]
+editing/spelling/spellcheck-paste-continuous-disabled.html [ Skip ]
 editing/spelling/spellcheck-paste-disabled.html [ Skip ]
 editing/spelling/spellcheck-paste.html [ Skip ]
 editing/spelling/spelling.html [ Skip ]
@@ -678,7 +685,6 @@ fast/compact/002.html [ Skip ]
 
 # failing fast/css tests:
 fast/css/acid2-pixel.html
-fast/css/apple-prefix.html
 fast/css/color-leakage.html
 fast/css/css2-system-fonts.html
 fast/css/media-rule-screenDepthPerComponent.html
@@ -704,6 +710,7 @@ fast/dynamic/subtree-table-cell-height.html [ Skip ]
 fast/dynamic/window-resize-scrollbars-test.html [ Skip ]
 
 fast/dom/52776.html [ Skip ]
+fast/dom/shadow/athost-apply-dynamically.html [ Skip ]
 fast/dom/boolean-attribute-reflection.html [ Failure ]
 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
 fast/dom/constructed-objects-prototypes.html [ Failure ]
@@ -713,6 +720,13 @@ fast/dom/custom/document-register-basic.html [ Skip ]
 fast/dom/custom/document-register-reentrant-null-constructor.html [ Skip ]
 fast/dom/custom/document-register-reentrant-returning-fake.html [ Skip ]
 fast/dom/custom/document-register-type-extensions.html [ Skip ]
+fast/dom/custom/lifecycle-ready-createElement-recursion.html [ Skip ]
+fast/dom/custom/lifecycle-ready-createElement-reentrancy.html [ Skip ]
+fast/dom/custom/lifecycle-ready-creation-api.html [ Skip ]
+fast/dom/custom/lifecycle-ready-innerHTML.html [ Skip ]
+fast/dom/custom/lifecycle-ready-parser-only.html [ Skip ]
+fast/dom/custom/lifecycle-ready-parser-script.html [ Skip ]
+fast/dom/custom/lifecycle-ready-paste.html [ Skip ]
 fast/dom/dom-constructors.html [ Failure ]
 fast/dom/frame-loading-via-document-write.html [ Failure ]
 fast/dom/gc-10.html [ Skip ]
@@ -802,6 +816,7 @@ fast/dom/shadow/elements-in-frameless-document.html [ Skip ]
 fast/dom/shadow/events-stopped-at-shadow-boundary.html [ Skip ]
 fast/dom/shadow/focus-navigation-with-distributed-nodes.html [ Skip ]
 fast/dom/shadow/focus-navigation.html [ Skip ]
+fast/dom/shadow/gesture-tap.html [ Skip ]
 fast/dom/shadow/get-distributed-nodes-orphan.html [ Skip ]
 fast/dom/shadow/get-element-by-id-in-shadow-mutation.html [ Skip ]
 fast/dom/shadow/get-element-by-id-in-shadow-root.html [ Skip ]
@@ -811,6 +826,7 @@ fast/dom/shadow/has-content-elements.html [ Skip ]
 fast/dom/shadow/has-shadow-insertion-point.html [ Skip ]
 fast/dom/shadow/host-wrapper-reclaimed.html [ Skip ]
 fast/dom/shadow/input-with-validation.html [ Skip ]
+fast/dom/shadow/insertion-parent.html [ Skip ]
 fast/dom/shadow/insertion-point-list-menu-crash.html [ Skip ]
 fast/dom/shadow/insertion-point-resetStyleInheritance.html [ Skip ]
 fast/dom/shadow/insertion-point-shadow-crash.html [ Skip ]
@@ -1124,6 +1140,7 @@ fast/forms/date-multiple-fields/date-multiple-fields-ax-aria-attributes.html [ S
 fast/forms/date-multiple-fields/date-multiple-fields-ax-value-changed-notification.html [ Skip ]
 fast/forms/date-multiple-fields/date-multiple-fields-blur-and-focus-events.html [ Skip ]
 fast/forms/date-multiple-fields/date-multiple-fields-change-layout-by-value.html [ Skip ]
+fast/forms/date-multiple-fields/date-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/date-multiple-fields/date-multiple-fields-focus.html [ Skip ]
 fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html [ Skip ]
 fast/forms/date-multiple-fields/date-multiple-fields-mouse-events.html [ Skip ]
@@ -1149,6 +1166,7 @@ fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-ax-aria-a
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-ax-value-changed-notification.html [ Skip ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-blur-and-focus-events.html [ Skip ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-change-layout-by-value.html [ Skip ]
+fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html [ Skip ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-mouse-events.html [ Skip ]
 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Skip ]
@@ -1161,6 +1179,7 @@ fast/forms/datetimelocal/ValidityState-rangeOverflow-datetimelocal.html [ Skip ]
 fast/forms/datetimelocal/ValidityState-rangeUnderflow-datetimelocal.html [ Skip ]
 fast/forms/datetimelocal/ValidityState-stepMismatch-datetimelocal.html [ Skip ]
 fast/forms/datetimelocal/ValidityState-typeMismatch-datetimelocal.html [ Skip ]
+fast/forms/datetime-multiple-fields/datetime-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/datetime-multiple-fields/datetime-multiple-fields-validity-badinput.html [ Skip ]
 fast/forms/datetime-multiple-fields/datetime-multiple-fields-value-set-empty.html [ Skip ]
 fast/forms/datetime/ValidityState-rangeOverflow-datetime.html [ Skip ]
@@ -1226,6 +1245,7 @@ fast/forms/month-multiple-fields/month-multiple-fields-ax-aria-attributes.html [
 fast/forms/month-multiple-fields/month-multiple-fields-ax-value-changed-notification.html [ Skip ]
 fast/forms/month-multiple-fields/month-multiple-fields-blur-and-focus-events.html [ Skip ]
 fast/forms/month-multiple-fields/month-multiple-fields-change-layout-by-value.html [ Skip ]
+fast/forms/month-multiple-fields/month-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/month-multiple-fields/month-multiple-fields-keyboard-events.html [ Skip ]
 fast/forms/month-multiple-fields/month-multiple-fields-mouse-events.html [ Skip ]
 fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Skip ]
@@ -1313,6 +1333,7 @@ fast/forms/time-multiple-fields/time-multiple-fields-ax-value-changed-notificati
 fast/forms/time-multiple-fields/time-multiple-fields-blur-and-focus-events.html [ Skip ]
 fast/forms/time-multiple-fields/time-multiple-fields-change-layout-by-value.html [ Skip ]
 fast/forms/time-multiple-fields/time-multiple-fields-change-type-on-focus.html [ Skip ]
+fast/forms/time-multiple-fields/time-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/time-multiple-fields/time-multiple-fields-focus.html [ Skip ]
 fast/forms/time-multiple-fields/time-multiple-fields-focus-style.html [ Skip ]
 fast/forms/time-multiple-fields/time-multiple-fields-keyboard-events.html [ Skip ]
@@ -1346,6 +1367,7 @@ fast/forms/week-multiple-fields/week-multiple-fields-ax-aria-attributes.html [ S
 fast/forms/week-multiple-fields/week-multiple-fields-ax-value-changed-notification.html [ Skip ]
 fast/forms/week-multiple-fields/week-multiple-fields-blur-and-focus-events.html [ Skip ]
 fast/forms/week-multiple-fields/week-multiple-fields-change-layout-by-value.html [ Skip ]
+fast/forms/week-multiple-fields/week-multiple-fields-fallback-format.html [ Skip ]
 fast/forms/week-multiple-fields/week-multiple-fields-keyboard-events.html [ Skip ]
 fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Skip ]
 fast/forms/week-multiple-fields/week-multiple-fields-preserve-value-after-history-back.html [ Skip ]
@@ -1482,6 +1504,12 @@ fast/media/color-does-not-include-alpha.html [ Skip ]
 fast/media/implicit-media-all.html [ Skip ]
 fast/media/matchmedium-query-api.html [ Skip ]
 fast/media/media-query-list-01.html [ Skip ]
+fast/media/media-query-list-02.html [ Skip ]
+fast/media/media-query-list-03.html [ Skip ]
+fast/media/media-query-list-04.html [ Skip ]
+fast/media/media-query-list-05.html [ Skip ]
+fast/media/media-query-list-06.html [ Skip ]
+fast/media/media-query-list-07.html [ Skip ]
 fast/media/mq-js-update-media.html [ Skip ]
 fast/media/mq-resolution-dpi-dpcm-warning.html [ Skip ]
 fast/media/mq-resolution.html [ Skip ]
@@ -3712,12 +3740,6 @@ http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html
 http/tests/security/webgl-remote-read-remote-image-allowed.html [ Skip ]
 http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Skip ]
 
-# The future of Web Intents is uncertain. There is also work to be done to allow
-# the API to be fully used by WK2, e.g. having a way to know when the delivered intent
-# called postResult or postFailure.
-# See also http://lists.w3.org/Archives/Public/public-web-intents/2012Nov/0000.html
-webintents [ Skip ]
-
 ################################################################################
 # MISSING RESULTS
 ################################################################################
@@ -4036,6 +4058,16 @@ fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectang
 fast/parser/document-write-basic.html [ Crash ]
 svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
 sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A3.1_T2.html [ Crash ]
+
+# Flakey tests after merge 5494e11 a55ee6c
+fast/exclusions/shape-outside-floats/shape-outside-floats-positioning.html [ Failure Pass ]
+fast/sub-pixel/zoomed-image-tiles.html [ Failure Pass ]
+http/tests/security/cross-origin-appcache-allowed.html [ Failure Pass ]
+http/tests/security/cross-origin-appcache.html [ Failure Pass ]
+storage/indexeddb/index-basics.html [ Failure Pass ]
+svg/batik/masking/maskRegions.svg [ Failure Pass ]
+webaudio/javascriptaudionode-upmix2-8channel-input.html [ Failure Pass ]
+webaudio/javascriptaudionode.html [ Failure Pass ]
 
 # Newly added failing test before merge 1545593 eb8adb3
 fast/events/touch/gesture/gesture-tap-hover-clear.html
