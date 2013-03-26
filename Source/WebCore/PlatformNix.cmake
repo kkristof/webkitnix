@@ -93,6 +93,9 @@ list(APPEND WebCore_SOURCES
     platform/graphics/texmap/TextureMapperShaderProgram.cpp
     platform/graphics/texmap/GraphicsLayerTextureMapper.cpp
 
+    platform/graphics/filters/CustomFilterMeshGenerator.cpp
+    platform/graphics/filters/CustomFilterValidatedProgram.cpp
+
     platform/image-decoders/ImageDecoder.cpp
     platform/image-decoders/bmp/BMPImageDecoder.cpp
     platform/image-decoders/bmp/BMPImageReader.cpp
@@ -139,6 +142,12 @@ list(APPEND WebCore_SOURCES
     platform/chromium/support/WebAudioBus.cpp
     platform/chromium/support/WebData.cpp
     platform/nix/WebCommon.cpp
+
+    css/WebKitCSSArrayFunctionValue.cpp
+    css/WebKitCSSMixFunctionValue.cpp
+    rendering/style/StyleCachedShader.cpp
+    rendering/style/StyleCustomFilterProgram.cpp
+    rendering/style/StyleCustomFilterProgramCache.cpp
 )
 
 if (WTF_USE_OPENGL_ES_2)
