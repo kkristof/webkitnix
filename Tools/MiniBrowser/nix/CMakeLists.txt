@@ -1,8 +1,8 @@
-FIND_PACKAGE(X11 REQUIRED)
+find_package(X11 REQUIRED)
 
-SET(MiniBrowser_DIR "${TOOLS_DIR}/MiniBrowser/nix")
+set(MiniBrowser_DIR "${TOOLS_DIR}/MiniBrowser/nix")
 
-SET(MiniBrowser_SOURCES
+set(MiniBrowser_SOURCES
     ${MiniBrowser_DIR}/main.cpp
     ${MiniBrowser_DIR}/LinuxWindow.cpp
     ${MiniBrowser_DIR}/GestureRecognizer.cpp
@@ -11,7 +11,7 @@ SET(MiniBrowser_SOURCES
     ${MiniBrowser_DIR}/XlibEventSource.cpp
 )
 
-SET(MiniBrowser_LIBRARIES
+set(MiniBrowser_LIBRARIES
     ${WebKit2_LIBRARY_NAME}
     ${OPENGL_LIBRARIES}
     ${GLIB_LIBRARIES}
@@ -20,7 +20,7 @@ SET(MiniBrowser_LIBRARIES
     ${X11_LIBRARIES}
 )
 
-SET(MiniBrowser_INCLUDE_DIRECTORIES
+set(MiniBrowser_INCLUDE_DIRECTORIES
     ${GLIB_INCLUDE_DIRS}
     ${CAIRO_INCLUDE_DIRS}
     ${DERIVED_SOURCES_WEBKIT2_DIR}/include
@@ -32,16 +32,17 @@ SET(MiniBrowser_INCLUDE_DIRECTORIES
     ${OPENGL_INCLUDE_DIR}
 )
 
-IF (WTF_USE_EGL)
-  LIST(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowEGL.cpp)
-  LIST(APPEND MiniBrowser_LIBRARIES ${EGL_LIBRARY})
-  LIST(APPEND MiniBrowser_INCLUDE_DIRECTORIES ${EGL_INCLUDE_DIR})
-ELSE ()
-  LIST(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowGLX.cpp)
-ENDIF ()
+if (WTF_USE_EGL)
+  list(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowEGL.cpp)
+  list(APPEND MiniBrowser_LIBRARIES ${EGL_LIBRARY})
+  list(APPEND MiniBrowser_INCLUDE_DIRECTORIES ${EGL_INCLUDE_DIR})
+else ()
+  list(APPEND MiniBrowser_SOURCES ${MiniBrowser_DIR}/LinuxWindowGLX.cpp)
+endif ()
 
-INCLUDE_DIRECTORIES(${MiniBrowser_INCLUDE_DIRECTORIES})
+include_directories(${MiniBrowser_INCLUDE_DIRECTORIES})
 
-ADD_EXECUTABLE(MiniBrowser ${MiniBrowser_SOURCES})
-TARGET_LINK_LIBRARIES(MiniBrowser ${MiniBrowser_LIBRARIES})
-SET_TARGET_PROPERTIES(MiniBrowser PROPERTIES FOLDER "Tools")
+add_executable(MiniBrowser ${MiniBrowser_SOURCES})
+target_link_libraries(MiniBrowser ${MiniBrowser_LIBRARIES})
+set_target_properties(MiniBrowser PROPERTIES FOLDER "Tools")
+
