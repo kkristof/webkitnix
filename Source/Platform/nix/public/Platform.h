@@ -34,13 +34,11 @@
 #if WEBKIT_IMPLEMENTATION
 #include <public/WebAudioDevice.h>
 #include <public/WebData.h>
-#include <public/WebFFTFrame.h>
 #include <public/WebGamepads.h>
 #include <wtf/Forward.h>
 #else
 #include "WebAudioDevice.h"
 #include "WebData.h"
-#include "WebFFTFrame.h"
 #include "WebGamepads.h"
 #endif
 
@@ -48,6 +46,7 @@
 namespace WebKit {
 
 class WebAudioBus;
+class WebFFTFrame;
 
 class NixString {
 public:
