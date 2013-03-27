@@ -54,7 +54,7 @@ void Pasteboard::writePlainText(const String&, SmartReplaceOption)
     notImplemented();
 }
 
-void Pasteboard::writeSelection(Range*, bool, Frame*)
+void Pasteboard::writeSelection(Range*, bool, Frame*, ShouldSerializeSelectedTextForClipboard)
 {
     notImplemented();
 }
