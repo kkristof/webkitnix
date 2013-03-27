@@ -286,7 +286,7 @@ my @features = (
       define => "ENABLE_IFRAME_SEAMLESS", default => 1, value => \$iframeSeamlessSupport },
 
     { option => "indexed-database", desc => "Toggle Indexed Database support",
-      define => "ENABLE_INDEXED_DATABASE", default => isGtk(), value => \$indexedDatabaseSupport },
+      define => "ENABLE_INDEXED_DATABASE", default => (isGtk() || isEfl()), value => \$indexedDatabaseSupport },
 
     { option => "input-speech", desc => "Toggle Input Speech support",
       define => "ENABLE_INPUT_SPEECH", default => 0, value => \$inputSpeechSupport },
@@ -297,8 +297,8 @@ my @features = (
     { option => "input-type-date", desc => "Toggle Input Type Date support",
       define => "ENABLE_INPUT_TYPE_DATE", default => 0, value => \$inputTypeDateSupport },
 
-    { option => "input-type-datetime", desc => "Toggle Input Type Datetime support",
-      define => "ENABLE_INPUT_TYPE_DATETIME", default => 0, value => \$inputTypeDatetimeSupport },
+    { option => "input-type-datetime", desc => "Toggle broken Input Type Datetime support",
+      define => "ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE", default => 0, value => \$inputTypeDatetimeSupport },
 
     { option => "input-type-datetimelocal", desc => "Toggle Input Type Datetimelocal support",
       define => "ENABLE_INPUT_TYPE_DATETIMELOCAL", default => 0, value => \$inputTypeDatetimelocalSupport },

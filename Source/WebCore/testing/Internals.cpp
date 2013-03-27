@@ -274,6 +274,8 @@ void Internals::resetToConsistentState(Page* page)
 #endif
     if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
         page->mainFrame()->editor()->toggleContinuousSpellChecking();
+    if (page->mainFrame()->editor()->isOverwriteModeEnabled())
+        page->mainFrame()->editor()->toggleOverwriteModeEnabled();
 }
 
 Internals::Internals(Document* document)
@@ -1413,8 +1415,8 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int x, int y, 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active;
     if (ignoreClipping)
         hitType |= HitTestRequest::IgnoreClipping;
-    if (allowShadowContent)
-        hitType |= HitTestRequest::AllowShadowContent;
+    if (!allowShadowContent)
+        hitType |= HitTestRequest::DisallowShadowContent;
     if (allowChildFrameContent)
         hitType |= HitTestRequest::AllowChildFrameContent;
 
@@ -1511,6 +1513,22 @@ void Internals::setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&)
 
     if (enabled != contextDocument()->frame()->editor()->isContinuousSpellCheckingEnabled())
         contextDocument()->frame()->editor()->toggleContinuousSpellChecking();
+}
+
+bool Internals::isOverwriteModeEnabled(Document* document, ExceptionCode&)
+{
+    if (!document || !document->frame())
+        return 0;
+
+    return document->frame()->editor()->isOverwriteModeEnabled();
+}
+
+void Internals::toggleOverwriteModeEnabled(Document* document, ExceptionCode&)
+{
+    if (!document || !document->frame())
+        return;
+
+    document->frame()->editor()->toggleOverwriteModeEnabled();
 }
 
 #if ENABLE(INSPECTOR)

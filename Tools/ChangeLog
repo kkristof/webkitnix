@@ -1,3 +1,218 @@
+2013-03-27  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Remove Qt specific WorkQueueItem definitions.
+        https://bugs.webkit.org/show_bug.cgi?id=112891
+
+        This patch is preparation work for removing
+        WorkQueue related code from TestRunnerQt and
+        replacing it with generic TestRunner code.
+
+        Reviewed by Benjamin Poulain.
+
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        (TestRunnerQt::queueBackNavigation):
+        (TestRunnerQt::queueForwardNavigation):
+        (TestRunnerQt::queueLoadHTMLString):
+        (TestRunnerQt::queueReload):
+        (TestRunnerQt::queueLoadingScript):
+        (TestRunnerQt::queueNonLoadingScript):
+        (TestRunner::queueLoad):
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+        * DumpRenderTree/qt/WorkQueueItemQt.cpp:
+        (LoadItem::invoke):
+        (LoadHTMLStringItem::invoke):
+        (LoadAlternateHTMLStringItem::invoke):
+        (ReloadItem::invoke):
+        (ScriptItem::invoke):
+        (BackForwardItem::invoke):
+        * DumpRenderTree/qt/WorkQueueItemQt.h:
+        (LoadAlternateHTMLStringItem::LoadAlternateHTMLStringItem):
+        (LoadAlternateHTMLStringItem):
+
+2013-03-26  Julie Parent  <jparent@chromium.org>
+
+        Flakiness dashboard: simplify logic around which tests to show.
+        https://bugs.webkit.org/show_bug.cgi?id=113250
+
+        Reviewed by Ojan Vafai.
+        
+        The different filters for showing results are only used for layout
+        tests, otherwise, we show everything.
+        
+        Change the defaults to false (what layout tests used), and only
+        look at the values when viewing layout tests.
+
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (htmlForTestsWithExpectationsButNoFailures):
+        (shouldHideTest):
+
+2013-03-26  Isaac Levy  <ilevy@google.com>
+
+        Update bots on test-results.appspot
+        https://bugs.webkit.org/show_bug.cgi?id=113333
+
+        Reviewed by Ojan Vafai.
+
+        * TestResultServer/static-dashboards/builders.jsonp:
+
+2013-03-26  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK gardening.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner): A follow-up to 146859, skipping the complete WebKit2APITests/TestInspector unit test.
+
+2013-03-26  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Enable release/debug/2/webkit2 options for run-qtwebkit-tests
+        https://bugs.webkit.org/show_bug.cgi?id=113287
+
+        Reviewed by Jocelyn Turcotte.
+
+        * Scripts/run-qtwebkit-tests:
+        (Options.__init__):
+
+2013-03-26  Rijubrata Bhaumik  <rijubrata.bhaumik@intel.com>
+
+        [EFL] Enable IndexedDB by default
+        https://bugs.webkit.org/show_bug.cgi?id=107248
+
+        Reviewed by Laszlo Gombos.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        Enable IndexedDB by default on EFL.
+
+2013-03-26  Alan Cutter  <alancutter@chromium.org>
+
+        Sheriffbot should explain rollout failures in a human readable form.
+        https://bugs.webkit.org/show_bug.cgi?id=107092
+
+        Reviewed by Ryosuke Niwa.
+
+        Improved sheriffbot's error reporting when a rollout command fails to reverse diff files (the most common failure).
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Rollout._check_diff_failure):
+        (Rollout.execute):
+        * Scripts/webkitpy/tool/bot/irc_command_unittest.py:
+        (IRCCommandTest.test_rollout):
+
+2013-03-26  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK gardening.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner): Skipping a failing unit test after r146518.
+
+2013-03-25  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Lion leaks builder
+        https://bugs.webkit.org/show_bug.cgi?id=113252
+
+        Reviewed by Andreas Kling.
+
+        Removed.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+
+2013-03-25  Kent Tamura  <tkent@chromium.org>
+
+        Rename ENABLE_INPUT_TYPE_DATETIME
+        https://bugs.webkit.org/show_bug.cgi?id=113254
+
+        Reviewed by Kentaro Hara.
+
+        Rename ENABLE_INPUT_TYPE_DATETIME to ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE.
+        Actually I'd like to remove the code, but we shouldn't remove it yet
+        because we shipped products with it on some platforms.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * qmake/mkspecs/features/features.pri:
+
+2013-03-25  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove one more line that was intended to be removed in r146657.
+
+        * Scripts/webkitpy/layout_tests/models/test_run_results.py:
+        (summarize_results):
+
+2013-03-25  Roger Fong  <roger_fong@apple.com>
+
+        No longer run bindings tests on WinEWS bots which are causing hangs on the bots.
+        Re-enable WinEWS tests.
+
+        * Scripts/webkitpy/common/config/ports.py:
+        (WinPort.run_bindings_tests_command):
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-03-25  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146793.
+        http://trac.webkit.org/changeset/146793
+        https://bugs.webkit.org/show_bug.cgi?id=113248
+
+        Fix did not work (Requested by rfong on #webkit).
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-03-25  Ryosuke Niwa  <rniwa@webkit.org>
+
+        REGRESSION(r146657): Test failures reported incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=113223
+
+        Reviewed by Dirk Pranke.
+
+        The bug was caused by BuildBotPrinter not taking the new behavior into account.
+
+        Fixed the bug by exposing enabled_pixel_tests_in_retry flag via ResultDetails object and have BuildBotPrinter
+        treat ['TEXT', 'IMAGE+TEXT'] as a regular failure when the flag is set true.
+
+        * Scripts/webkitpy/layout_tests/controllers/manager.py:
+        (Manager.run):
+
+        * Scripts/webkitpy/layout_tests/models/test_run_results.py:
+        (RunDetails.__init__):
+        (summarize_results): Remove the line I intended to remove in r146657.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (logging_run): Return details instead of the exit code.
+        (run_and_capture): Ditto.
+
+        (RunTest.test_full_results_html):
+        (RunTest.test_hung_thread):
+        (RunTest.test_no_tests_found):
+        (RunTest.test_no_tests_found_2):
+        (RunTest.test_repeat_each_iterations_num_tests):
+        (RunTest.test_run_singly_actually_runs_tests):
+        (RunTest.test_test_list):
+        (RunTest.test_missing_and_unexpected_results):
+        (RunTest.test_pixel_test_directories):
+        (RunTest.test_missing_and_unexpected_results_with_custom_exit_code):
+        (RunTest.test_crash_with_stderr):
+        (RunTest.test_no_image_failure_with_image_diff):
+        (RunTest.test_crash_log):
+        (RunTest.test_exit_after_n_failures_upload):
+        (RunTest.test_results_directory_absolute):
+        (RunTest.test_results_directory_relative):
+        (RunTest.test_retrying_and_flaky_tests):
+        (RunTest.test_retrying_force_pixel_tests): Added a test case to ensure enabled_pixel_tests_in_retry is set.
+        (RunTest.test_retrying_uses_retries_directory):
+        (RunTest.test_reftest_should_not_use_naming_convention_if_not_listed_in_reftestlist):
+        (RunTest.test_output_diffs):
+        (EndToEndTest.test_reftest_with_two_notrefs):
+        (RebaselineTest.test_reset_results):
+        (RebaselineTest.test_missing_results):
+        (RebaselineTest.test_new_baseline):
+
+        * Scripts/webkitpy/layout_tests/views/buildbot_results.py:
+        (BuildBotPrinter.print_results):
+        (BuildBotPrinter.print_unexpected_results):
+        (BuildBotPrinter.print_unexpected_results.add_result): Don't treat ['TEXT', 'IMAGE+TEXT'] as flaky
+        when we forced pixel tests in retry (i.e. pixel test was initially disabled).
+
 2013-03-25  Julie Parent  <jparent@chromium.org>
 
         Dashboard refactor: Move cross dashboard history related code into history.js.

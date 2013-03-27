@@ -1693,6 +1693,13 @@ void Element::childrenChanged(bool changedByParser, Node* beforeChange, Node* af
         shadow->invalidateDistribution();
 }
 
+void Element::removeAllEventListeners()
+{
+    ContainerNode::removeAllEventListeners();
+    if (ElementShadow* shadow = this->shadow())
+        shadow->removeAllEventListeners();
+}
+
 void Element::beginParsingChildren()
 {
     clearIsParsingChildrenFinished();
@@ -2380,6 +2387,11 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(this);
+}
+
+bool Element::shouldAppearIndeterminate() const
+{
+    return false;
 }
 
 DOMTokenList* Element::classList()

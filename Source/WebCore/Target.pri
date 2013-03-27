@@ -975,7 +975,6 @@ SOURCES += \
     plugins/PluginMainThreadScheduler.cpp \
     plugins/DOMMimeType.cpp \
     plugins/DOMMimeTypeArray.cpp \
-    plugins/PlugInOriginHash.cpp \
     platform/animation/Animation.cpp \
     platform/animation/AnimationList.cpp \
     platform/Arena.cpp \
@@ -1102,7 +1101,6 @@ SOURCES += \
     platform/network/HTTPHeaderMap.cpp \
     platform/network/HTTPParsers.cpp \
     platform/network/HTTPRequest.cpp \
-    platform/network/HTTPValidation.cpp \
     platform/network/MIMEHeader.cpp \
     platform/network/NetworkStateNotifier.cpp \
     platform/network/NetworkStorageSessionStub.cpp \
@@ -2364,7 +2362,6 @@ HEADERS += \
     platform/network/HTTPHeaderMap.h \
     platform/network/HTTPParsers.h \
     platform/network/HTTPRequest.h \
-    platform/network/HTTPValidation.h \
     platform/network/HTTPStatusCodes.h \
     platform/network/MIMESniffing.h \
     platform/network/NetworkStorageSession.h \
@@ -2449,7 +2446,6 @@ HEADERS += \
     plugins/PluginDebug.h \
     plugins/DOMPlugin.h \
     plugins/IFrameShimSupport.h \
-    plugins/PlugInOriginHash.h \
     plugins/PluginMainThreadScheduler.h \
     plugins/PluginPackage.h \
     plugins/PluginStream.h \
@@ -4050,6 +4046,7 @@ enable?(WEBGL) {
         html/canvas/WebGLActiveInfo.h \
         html/canvas/WebGLBuffer.h \
         html/canvas/WebGLCompressedTextureATC.h \
+        html/canvas/WebGLCompressedTexturePVRTC.h \
         html/canvas/WebGLCompressedTextureS3TC.h \
         html/canvas/WebGLContextAttributes.h \
         html/canvas/WebGLContextEvent.h \
@@ -4087,6 +4084,7 @@ enable?(WEBGL) {
         html/canvas/WebGLObject.cpp \
         html/canvas/WebGLBuffer.cpp \
         html/canvas/WebGLCompressedTextureATC.cpp \
+        html/canvas/WebGLCompressedTexturePVRTC.cpp \
         html/canvas/WebGLCompressedTextureS3TC.cpp \
         html/canvas/WebGLContextAttributes.cpp \
         html/canvas/WebGLContextEvent.cpp \

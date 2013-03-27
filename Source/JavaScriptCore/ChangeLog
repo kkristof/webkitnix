@@ -1,3 +1,167 @@
+2013-03-27  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Remove Qt specific WorkQueueItem definitions.
+        https://bugs.webkit.org/show_bug.cgi?id=112891
+
+        This patch is preparation work for removing
+        WorkQueue related code from TestRunnerQt and
+        replacing it with generic TestRunner code.
+
+        Reviewed by Benjamin Poulain.
+
+        * API/JSStringRefQt.cpp:
+        (JSStringCreateWithQString):
+            Adding a convenience function to create a
+            JSStringRef from a QString.
+        * API/JSStringRefQt.h:
+
+2013-03-26  Filip Pizlo  <fpizlo@apple.com>
+
+        REGRESSION: Sometimes, operations on proven strings ignore changes to the string prototype
+        https://bugs.webkit.org/show_bug.cgi?id=113353
+        <rdar://problem/13510778>
+
+        Reviewed by Mark Hahnenberg and Geoffrey Garen.
+        
+        ToString should call speculateStringObject() even if you know that it's a string object, since
+        it calls it to also get the watchpoint. Note that even with this change, if you do
+        Phantom(Check:StringObject:@a), it might get eliminated just because we proved that @a is a
+        string object (thereby eliminating the prototype watchpoint); that's fine since ToString is
+        MustGenerate and never decays to Phantom.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileToStringOnCell):
+        (JSC::DFG::SpeculativeJIT::speculateStringObject):
+        (JSC::DFG::SpeculativeJIT::speculateStringOrStringObject):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+        (JSC::DFG::SpeculativeJIT::speculateStringObjectForStructure):
+
+2013-03-26  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        REGRESSION(r144131): It made fast/js/regress/string-repeat-arith.html assert on 32 bit
+        https://bugs.webkit.org/show_bug.cgi?id=112106
+
+        Rubber stamped by Filip Pizlo.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::checkGeneratedTypeForToInt32): Get rid of the case for constants because
+        we would have done constant folding anyways on a ValueToInt32.
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::fillSpeculateBoolean): Fixed a random compile error with this flag enabled.
+
+2013-03-26  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC_enableProfiler=true should also cause JSGlobalData to save the profiler output somewhere
+        https://bugs.webkit.org/show_bug.cgi?id=113144
+
+        Reviewed by Geoffrey Garen.
+        
+        Forgot to include Geoff's requested change in the original commit.
+
+        * profiler/ProfilerDatabase.cpp:
+        (Profiler):
+
+2013-03-25  Filip Pizlo  <fpizlo@apple.com>
+
+        JSC_enableProfiler=true should also cause JSGlobalData to save the profiler output somewhere
+        https://bugs.webkit.org/show_bug.cgi?id=113144
+
+        Reviewed by Geoffrey Garen.
+        
+        Added the ability to save profiler output with JSC_enableProfiler=true. It will save it
+        to the current directory, or JSC_PROFILER_PATH if the latter was specified.
+        
+        This works by saving the Profiler::Database either when it is destroyed or atexit(),
+        whichever happens first.
+        
+        This allows use of the profiler from any WebKit client.
+
+        * jsc.cpp:
+        (jscmain):
+        * profiler/ProfilerDatabase.cpp:
+        (Profiler):
+        (JSC::Profiler::Database::Database):
+        (JSC::Profiler::Database::~Database):
+        (JSC::Profiler::Database::registerToSaveAtExit):
+        (JSC::Profiler::Database::addDatabaseToAtExit):
+        (JSC::Profiler::Database::removeDatabaseFromAtExit):
+        (JSC::Profiler::Database::performAtExitSave):
+        (JSC::Profiler::Database::removeFirstAtExitDatabase):
+        (JSC::Profiler::Database::atExitCallback):
+        * profiler/ProfilerDatabase.h:
+        (JSC::Profiler::Database::databaseID):
+        (Database):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+
+2013-03-25  Filip Pizlo  <fpizlo@apple.com>
+
+        ArrayMode should not consider SpecOther when refining the base
+        https://bugs.webkit.org/show_bug.cgi?id=113271
+
+        Reviewed by Geoffrey Garen.
+        
+        9% speed-up on Octane/pdfjs.
+
+        * dfg/DFGArrayMode.cpp:
+        (JSC::DFG::ArrayMode::refine):
+
+2013-03-26  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Fix unused parameter warnings in JITInlines.h
+        https://bugs.webkit.org/show_bug.cgi?id=112560
+
+        Reviewed by Zoltan Herczeg.
+
+        * jit/JITInlines.h:
+        (JSC::JIT::beginUninterruptedSequence):
+        (JSC::JIT::endUninterruptedSequence):
+        (JSC):
+
+2013-03-25  Kent Tamura  <tkent@chromium.org>
+
+        Rename ENABLE_INPUT_TYPE_DATETIME
+        https://bugs.webkit.org/show_bug.cgi?id=113254
+
+        Reviewed by Kentaro Hara.
+
+        Rename ENABLE_INPUT_TYPE_DATETIME to ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE.
+        Actually I'd like to remove the code, but we shouldn't remove it yet
+        because we shipped products with it on some platforms.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-25  Mark Lam  <mark.lam@apple.com>
+
+        Offlineasm cloop backend compiles op+branch incorrectly.
+        https://bugs.webkit.org/show_bug.cgi?id=113146.
+
+        Reviewed by Geoffrey Garen.
+
+        * dfg/DFGRepatch.h:
+        (JSC::DFG::dfgResetGetByID):
+        (JSC::DFG::dfgResetPutByID):
+        - These functions never return when the DFG is dsiabled, not just when
+          asserts are enabled. Changing the attribute from NO_RETURN_DUE_TO_ASSERT
+          to NO_RETURN.
+        * llint/LLIntOfflineAsmConfig.h:
+        - Added some #defines needed to get the cloop building again.
+        * offlineasm/cloop.rb:
+        - Fix cloopEmitOpAndBranchIfOverflow() and cloopEmitOpAndBranch() to
+          emit code that unconditionally executes the specified operation before
+          doing the conditional branch.
+
+2013-03-25  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        JSObject::enterDictionaryIndexingMode doesn't have a case for ALL_BLANK_INDEXING_TYPES
+        https://bugs.webkit.org/show_bug.cgi?id=113236
+
+        Reviewed by Geoffrey Garen.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::enterDictionaryIndexingMode): We forgot blank indexing types.
+
 2013-03-23  Mark Hahnenberg  <mhahnenberg@apple.com>
 
         HandleSet should use HeapBlocks for storing handles

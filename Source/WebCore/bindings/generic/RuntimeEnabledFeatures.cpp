@@ -55,8 +55,8 @@ bool RuntimeEnabledFeatures::isDeviceMotionEnabled = true;
 bool RuntimeEnabledFeatures::isDeviceOrientationEnabled = true;
 bool RuntimeEnabledFeatures::isSpeechInputEnabled = true;
 bool RuntimeEnabledFeatures::isCanvasPathEnabled = false;
-bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = true;
-bool RuntimeEnabledFeatures::isCSSRegionsEnabled = true;
+bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = false;
+bool RuntimeEnabledFeatures::isCSSRegionsEnabled = false;
 bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
 
@@ -207,12 +207,8 @@ bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 bool RuntimeEnabledFeatures::isInputTypeDateEnabled = true;
 #endif
 
-#if ENABLE(INPUT_TYPE_DATETIME)
-#if PLATFORM(CHROMIUM) && !OS(ANDROID)
+#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
 bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
-#else
-bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = true;
-#endif
 #endif
 
 #if ENABLE(INPUT_TYPE_DATETIMELOCAL)

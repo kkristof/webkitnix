@@ -4630,7 +4630,6 @@
     <ClCompile Include="..\platform\network\HTTPHeaderMap.cpp" />
     <ClCompile Include="..\platform\network\HTTPParsers.cpp" />
     <ClCompile Include="..\platform\network\HTTPRequest.cpp" />
-    <ClCompile Include="..\platform\network\HTTPValidation.cpp" />
     <ClCompile Include="..\platform\network\MIMEHeader.cpp" />
     <ClCompile Include="..\platform\network\NetworkStateNotifier.cpp" />
     <ClCompile Include="..\platform\network\NetworkStorageSessionStub.cpp">
@@ -10198,7 +10197,6 @@
     <ClCompile Include="..\plugins\PluginDatabase.cpp" />
     <ClCompile Include="..\plugins\PluginDebug.cpp" />
     <ClCompile Include="..\plugins\PluginMainThreadScheduler.cpp" />
-    <ClCompile Include="..\plugins\PlugInOriginHash.cpp" />
     <ClCompile Include="..\plugins\PluginPackage.cpp" />
     <ClCompile Include="..\plugins\PluginStream.cpp" />
     <ClCompile Include="..\plugins\PluginView.cpp" />
@@ -11911,7 +11909,6 @@
     <ClInclude Include="..\platform\network\HTTPHeaderMap.h" />
     <ClInclude Include="..\platform\network\HTTPParsers.h" />
     <ClInclude Include="..\platform\network\HTTPRequest.h" />
-    <ClInclude Include="..\platform\network\HTTPValidation.h" />
     <ClInclude Include="..\platform\network\MIMEHeader.h" />
     <ClInclude Include="..\platform\network\NetworkingContext.h" />
     <ClInclude Include="..\platform\network\NetworkStateNotifier.h" />
@@ -13000,7 +12997,6 @@
     <ClInclude Include="..\plugins\PluginDatabase.h" />
     <ClInclude Include="..\plugins\PluginDebug.h" />
     <ClInclude Include="..\plugins\PluginMainThreadScheduler.h" />
-    <ClInclude Include="..\plugins\PlugInOriginHash.h" />
     <ClInclude Include="..\plugins\PluginPackage.h" />
     <ClInclude Include="..\plugins\PluginQuirkSet.h" />
     <ClInclude Include="..\plugins\PluginStrategy.h" />

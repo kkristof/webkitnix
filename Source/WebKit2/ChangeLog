@@ -1,3 +1,356 @@
+2013-03-27  Kondapally Kalyan  <kalyan.kondapally@intel.com>
+
+        [CoordGfx] Support to share GraphicsSurface flags with client.
+        https://bugs.webkit.org/show_bug.cgi?id=112982
+
+        Reviewed by Noam Rosenthal.
+
+        Covered by existing WebGL tests.
+
+        This patch adds support to pass GraphicsSurface flags
+        during it's client creation.
+
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::::encode):
+        (CoreIPC::::decode):
+
+2013-03-26  Hayato Ito  <hayato@chromium.org>
+
+        Allow ShadowContents in HitTests by default.
+        https://bugs.webkit.org/show_bug.cgi?id=113171
+
+        Reviewed by Dimitri Glazkov.
+
+        * WebProcess/WebPage/WebFrame.cpp:
+        (WebKit::WebFrame::hitTest):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::highlightPotentialActivation):
+        (WebKit::WebPage::findZoomableAreaForPoint):
+        (WebKit::WebPage::determinePrimarySnapshottedPlugIn):
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::shouldDelayWindowOrderingEvent):
+        (WebKit::WebPage::acceptsFirstMouse):
+
+2013-03-26  Tim Horton  <timothy_horton@apple.com>
+
+        [ca] Tell CA to clean up unused resources if a given WebProcess won't be drawing
+        https://bugs.webkit.org/show_bug.cgi?id=107539
+        <rdar://problem/13032692>
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/WebCoreSupport/mac/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface): Update WebCoreSystemInterface.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage): Initially move the Page out of the window if necessary;
+        Page defaults to in-window, which is wrong in many cases - we depend on
+        Page::isInWindow being accurate to decide whether WebPage::setIsInWindow is actually
+        a state change or not.
+        (WebKit::WebPage::setIsInWindow):
+        * WebProcess/WebProcess.cpp: Inform WebProcess when we go on/off screen.
+        (WebKit::WebProcess::WebProcess):
+        (WebKit::WebProcess::pageDidMoveOnscreen): Keep track of the number of on-screen pages in this process.
+        (WebKit::WebProcess::pageWillMoveOffscreen): If the number of on-screen pages drops to zero,  clean up unused rendering resources.
+        * WebProcess/WebProcess.h:
+
+2013-03-26  Dean Jackson  <dino@apple.com>
+
+        When a primary plugin is restarted, also start similar plugins
+        https://bugs.webkit.org/show_bug.cgi?id=113265
+
+        Reviewed by Tim Horton.
+
+        Remember the origin of the primary plugin, so that we can
+        autostart anything that is similar.
+
+        * WebProcess/WebCoreSupport/WebPlugInClient.cpp:
+        (WebKit::WebPlugInClient::WebPlugInClient): Keep a pointer to the WebPage.
+        (WebKit::WebPlugInClient::shouldAutoStartFromOrigin): Pass the page onto the process.
+        * WebProcess/WebCoreSupport/WebPlugInClient.h:
+        (WebPlugInClient): New member variable for the WebPage we were created with.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::determinePrimarySnapshottedPlugIn): Remember the origin information
+            for the primary plugin.
+        (WebKit::WebPage::matchesPrimaryPlugIn): Returns true if we're seeing something that
+            looks like the primary plugin.
+        * WebProcess/WebPage/WebPage.h: New method matchesPrimaryPlugIn.
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::shouldPlugInAutoStartFromOrigin): Check if the page thinks this is
+            the primary plugin.
+        * WebProcess/WebProcess.h: Accept a reference to the page in shouldPlugInAutoStartFromOrigin.
+
+2013-03-26  Alexey Proskuryakov  <ap@apple.com>
+
+        Follow-up to:
+        <rdar://problem/13194263> Crashes in NetworkProcess due to threading issues
+        https://bugs.webkit.org/show_bug.cgi?id=113256
+
+        Reviewed by Mark Rowe.
+
+        * NetworkProcess/NetworkResourceLoader.h: Added some forgotten OVERRIDEs.
+
+2013-03-26  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13194263> Crashes in NetworkProcess due to threading issues
+        https://bugs.webkit.org/show_bug.cgi?id=113256
+
+        Reviewed by Brady Eidson.
+
+        Use asynchronous version of ResourceHandle/ResourceHandleClient in NetworkProcess.
+        We now run WebCore code on main thread, so we can't block it.
+
+        * DerivedSources.make:
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::didReceiveMessage):
+        * NetworkProcess/NetworkResourceLoader.messages.in: Added.
+        * WebKit2.xcodeproj/project.pbxproj:
+        Made NetworkResourceLoader a message receiver. Messages that used to be sync are
+        now async, and responses need to be sent to the loader.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::willSendRequestAsync): This now happens on main
+        thread, and thus cannot be sync.
+        (WebKit::NetworkResourceLoader::continueWillSendRequest): Notify the resource
+        handle once a response is ready.
+        (WebKit::NetworkResourceLoader::didSendData): Removed unnecessary WebCore prefixes.
+        (WebKit::NetworkResourceLoader::didReceiveCachedMetadata): Ditto.
+        (WebKit::NetworkResourceLoader::wasBlocked):  Ditto.
+        (WebKit::NetworkResourceLoader::cannotShowURL): Ditto.
+        (WebKit::NetworkResourceLoader::shouldUseCredentialStorageAsync): This function
+        doesn't call through to WebProcess, so we can keep it synchronous. But we still
+        need to implement the async version, since that's what ResourceHandle calls.
+        (WebKit::NetworkResourceLoader::canAuthenticateAgainstProtectionSpaceAsync):
+        Made async.
+        (WebKit::NetworkResourceLoader::continueCanAuthenticateAgainstProtectionSpace):
+        Notify ResourceHandle when response is ready.
+        (WebKit::NetworkResourceLoader::didReceiveDataArray): Removed unnecessary WebCore prefixes.
+        (WebKit::NetworkResourceLoader::willCacheResponseAsync): This matches default
+        implementation, but we are overriding everything to make it clearer what's missing.
+        (WebKit::NetworkResourceLoader::willStopBufferingData): Removed unnecessary WebCore prefixes.
+
+        * NetworkProcess/NetworkResourceLoader.h: Updated to use async client methods.
+        Keep ResourceRequest around while handling willSendRequest, as we need the original
+        to recombine the request. Removed CFNet version of willCacheResponse for now,
+        as we are not using it yet.
+
+        * Shared/Authentication/AuthenticationManager.cpp: Assert that methods touching
+        a global HashMap all run on main thread. Changed generateAuthenticationChallengeID()
+        to use regular increment, as there is no need to run it from a secondary thread.
+
+        * WebProcess/Network/NetworkProcessConnection.cpp:
+        (WebKit::NetworkProcessConnection::didReceiveSyncMessage): We no longer have any
+        sync messages.
+
+        * WebProcess/Network/WebResourceLoader.h:
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::willSendRequest):
+        (WebKit::WebResourceLoader::canAuthenticateAgainstProtectionSpace):
+        * WebProcess/Network/WebResourceLoader.messages.in:
+        Changed to use async messages.
+
+2013-03-26  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Don't send intrinsic content size updates more than once per runloop
+        https://bugs.webkit.org/show_bug.cgi?id=113258
+        <rdar://problem/13492038>
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::mainFrameContentSizeChanged):
+        Only start the zero-delay timer if it's not already active.
+
+2013-03-26  Tony Chang  <tony@chromium.org>
+
+        Autogenerate the scrollAnimatorEnabled setting in Settings.in
+        https://bugs.webkit.org/show_bug.cgi?id=113253
+
+        Reviewed by James Robinson.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setUseFixedLayout): Update call to WebCore to use setScrollAnimatorEnabled(bool).
+        (WebKit::WebPage::updatePreferences): Update call to WebCore to use setScrollAnimatorEnabled(bool).
+
+2013-03-26  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] Fails to start QtWebProcess.exe if installed in a path containing spaces
+        https://bugs.webkit.org/show_bug.cgi?id=113328
+
+        Reviewed by Jocelyn Turcotte.
+
+        Downstream bugreport: https://bugreports.qt-project.org/browse/QTBUG-30249
+
+        We use QProcess::start() with a commandline string to start the web process
+        and the string is treated by QProcess as a whitespace delimeted list of the
+        command and the arguments, thus we have to escape the path to the process
+        binaries so that if the path contains spaces we still run the appropriate
+        command.
+
+        * UIProcess/Launcher/qt/ProcessLauncherQt.cpp:
+        (WebKit::ProcessLauncher::launchProcess):
+
+2013-03-26  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] QML WebView asserts when double clicking a link
+        https://bugs.webkit.org/show_bug.cgi?id=113329
+
+        Reviewed by Jocelyn Turcotte.
+
+        Downstream bugreport: https://bugreports.qt-project.org/browse/QTBUG-30288
+
+        Remove an erroneous assert which is no longer valid if
+        mouse gestures are enabled.
+
+        * UIProcess/qt/QtWebPageEventHandler.cpp:
+        (WebKit::QtWebPageEventHandler::handleInputEvent):
+
+2013-03-26  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Don't send intrinsic content size updates more than once per runloop
+        https://bugs.webkit.org/show_bug.cgi?id=113258
+        <rdar://problem/13492038>
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+        Add a zero-delay timer for intrinsic content size updates.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::TiledCoreAnimationDrawingArea):
+        Add a zero-delay timer for intrinsic content size updates.
+        (WebKit::TiledCoreAnimationDrawingArea::mainFrameContentSizeChanged):
+        Start our new one-shot zero-delay timer.
+        (WebKit::TiledCoreAnimationDrawingArea::updateIntrinsicContentSizeTimerFired):
+        Inform the WebPage that the intrinsic content size has changed.
+
+2013-03-26  Simon Cooper  <scooper@apple.com>
+
+        bundle-ids need to be sanitized before using them in filesystem paths
+        https://bugs.webkit.org/show_bug.cgi?id=113030
+        <rdar://problem/13300254>
+
+        Reviewed by Alexey Proskuryakov.
+
+        When choosing / looking for a specialized Sandbox for a Plugin the
+        bundle-id needs to be sanitized before using it to construct a
+        filesystem name to look up. The “/“ character should not be allowed
+        and transformed into something else, in this case a “:”
+
+        * PluginProcess/mac/PluginProcessMac.mm:
+        (WebKit::loadSandboxProfile):
+
+2013-03-26  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] UIProcess should initialize WebCoreSystemInterface.
+        https://bugs.webkit.org/show_bug.cgi?id=113300
+
+        The WebCoreSystemInterface is necessary to detect supported
+        mime types on Mac OS. In particular it is needed for download
+        support.
+        This patch fixes in particular the previously failing
+        Qt API qmltest WebViewDownload::test_downloadRequest.
+        The test was crashing when using QTKit, because functions
+        in WebCoreSystemInterface could not be resolved on the UIProcess side.
+
+        Reviewed by Jocelyn Turcotte.
+
+        * UIProcess/qt/WebContextQt.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess):
+
+2013-03-25  Kent Tamura  <tkent@chromium.org>
+
+        Rename ENABLE_INPUT_TYPE_DATETIME
+        https://bugs.webkit.org/show_bug.cgi?id=113254
+
+        Reviewed by Kentaro Hara.
+
+        Rename ENABLE_INPUT_TYPE_DATETIME to ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE.
+        Actually I'd like to remove the code, but we shouldn't remove it yet
+        because we shipped products with it on some platforms.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-03-25  Dean Jackson  <dino@apple.com>
+
+        Cleanup plugin snapshotting autostart decision making
+        https://bugs.webkit.org/show_bug.cgi?id=113231
+
+        Reviewed by Tim Horton.
+
+        Two major changes to the way snapshotting plugins may autostart.
+
+        The first is that previously WebCore was keeping a hash that
+        represented the combination of page origin, plugin origin and
+        mime type. WebKit was responsible for deciding if that particular
+        hash should autostart. Now, WebKit keeps the hash, and WebCore
+        just asks us whether the combination of origins and mimetype
+        should start immediately. You can see this change the in WebPluginClient
+        and WebProcess APIs.
+
+        The second change is that we now keep two types of structures
+        around to decide whether a plugin should autostart. One is the
+        existing page + plugin origin combination. The other is simply
+        the plugin origin, which allows plugins from major providers
+        to autostart no matter what page they were embedded on.
+
+        * Shared/WebProcessCreationParameters.cpp:
+        (WebKit::WebProcessCreationParameters::encode): Encode the new parameter.
+        (WebKit::WebProcessCreationParameters::decode): Decode the new parameter.
+        * Shared/WebProcessCreationParameters.h: Also keep a list of strings around.
+
+        * UIProcess/API/C/WKContext.cpp:
+        (WKContextSetPlugInAutoStartOrigins): The C API to send the list of plugin
+            origins over to the context.
+        * UIProcess/API/C/WKContext.h:
+
+        * UIProcess/Plugins/PlugInAutoStartProvider.cpp:
+        (WebKit::PlugInAutoStartProvider::addAutoStartOriginHash): Renamed from addAutoStartOrigin.
+            No functional change other than new names for members.
+        (WebKit::PlugInAutoStartProvider::autoStartOriginHashesCopy): Ditto.
+        (WebKit::PlugInAutoStartProvider::autoStartOriginsTableCopy): Ditto.
+        (WebKit::PlugInAutoStartProvider::setAutoStartOriginsTable): Ditto.
+        (WebKit::PlugInAutoStartProvider::setAutoStartOriginsArray): New method that converts the
+            incoming ImmutableArray into a Vector of Strings.
+        (WebKit::PlugInAutoStartProvider::didReceiveUserInteraction): Rename for new members.
+        * UIProcess/Plugins/PlugInAutoStartProvider.h: Renaming member variables. Adding
+            some typedefs to clean up code.
+        (WebKit::PlugInAutoStartProvider::autoStartOrigins): New accessor.
+
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::createNewWebProcess): Renaming, and copy the new parameter into the process creation.
+        (WebKit::WebContext::addPlugInAutoStartOriginHash): Renaming.
+        (WebKit::WebContext::setPlugInAutoStartOriginHashes): Renaming.
+        (WebKit::WebContext::setPlugInAutoStartOrigins): New method.
+        * UIProcess/WebContext.h: Adds the new setPlugInAutoStartOrigin method.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::didInitializePlugin): Drive-by fix that was attempting to restart plugins
+            that were in the process of restarting.
+        (WebKit::PluginView::pluginDidReceiveUserInteraction): Temporarily suspend update of
+            expiration time if the user interacts with a plugin.
+
+        * WebProcess/WebCoreSupport/WebPlugInClient.cpp:
+        (WebKit::WebPlugInClient::shouldAutoStartFromOrigin): Renaming.
+        (WebKit::WebPlugInClient::didStartFromOrigin): Ditto.
+        * WebProcess/WebCoreSupport/WebPlugInClient.h: Renaming.
+
+        * WebProcess/WebProcess.cpp: Drive-by - noticed that we forgot to count seconds in
+            a timeout threshold.
+        (WebKit::WebProcess::initializeWebProcess): Also add the list of origins when we initialize.
+        (WebKit::addCaseFoldedCharacters): Copied from WebCore - adds a String to a hash input.
+        (WebKit::hashForPlugInOrigin): Copied from WebCore - hashing function.
+        (WebKit::WebProcess::isPlugInAutoStartOriginHash): Renaming.
+        (WebKit::WebProcess::shouldPlugInAutoStartFromOrigin): Check the list of pure origins first. If
+            that fails, fall back to the hash list of pairs.
+        (WebKit::WebProcess::plugInDidStartFromOrigin): Renaming.
+        (WebKit::WebProcess::didAddPlugInAutoStartOriginHash): Ditto.
+        (WebKit::WebProcess::resetPlugInAutoStartOriginHashes): Ditto.
+        (WebKit::WebProcess::plugInDidReceiveUserInteraction): Ditto.
+        * WebProcess/WebProcess.h: Renaming some methods, but also adding the input of the new
+            origin-only list.
+
+        * WebProcess/WebProcess.messages.in: Renaming a message.
+
 2013-03-25  Maxim Ermilov  <maxim.ermilov@canonical.com>
 
         [Qt] Qml WebKit needs preferences to change security knobs

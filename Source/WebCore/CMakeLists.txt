@@ -528,6 +528,7 @@ set(WebCore_IDL_FILES
     html/canvas/WebGLActiveInfo.idl
     html/canvas/WebGLBuffer.idl
     html/canvas/WebGLCompressedTextureATC.idl
+    html/canvas/WebGLCompressedTexturePVRTC.idl
     html/canvas/WebGLCompressedTextureS3TC.idl
     html/canvas/WebGLContextAttributes.idl
     html/canvas/WebGLContextEvent.idl
@@ -1516,6 +1517,7 @@ set(WebCore_SOURCES
     html/canvas/OESElementIndexUint.cpp
     html/canvas/WebGLBuffer.cpp
     html/canvas/WebGLCompressedTextureATC.cpp
+    html/canvas/WebGLCompressedTexturePVRTC.cpp
     html/canvas/WebGLCompressedTextureS3TC.cpp
     html/canvas/WebGLContextAttributes.cpp
     html/canvas/WebGLContextEvent.cpp
@@ -2073,7 +2075,6 @@ set(WebCore_SOURCES
     platform/network/HTTPHeaderMap.cpp
     platform/network/HTTPParsers.cpp
     platform/network/HTTPRequest.cpp
-    platform/network/HTTPValidation.cpp
     platform/network/MIMEHeader.cpp
     platform/network/NetworkStateNotifier.cpp
     platform/network/ParsedContentType.cpp
@@ -2121,7 +2122,6 @@ set(WebCore_SOURCES
     plugins/DOMMimeType.cpp
     plugins/DOMPluginArray.cpp
     plugins/DOMPlugin.cpp
-    plugins/PlugInOriginHash.cpp
     plugins/PluginData.cpp
     plugins/PluginMainThreadScheduler.cpp
 
@@ -2639,6 +2639,7 @@ if (ENABLE_WEBGL)
         html/canvas/OESElementIndexUint.cpp
         html/canvas/WebGLBuffer.cpp
         html/canvas/WebGLCompressedTextureATC.cpp
+        html/canvas/WebGLCompressedTexturePVRTC.cpp
         html/canvas/WebGLCompressedTextureS3TC.cpp
         html/canvas/WebGLContextAttributes.cpp
         html/canvas/WebGLContextEvent.cpp
@@ -2680,6 +2681,7 @@ if (ENABLE_WEBGL)
         html/canvas/WebGLActiveInfo.idl
         html/canvas/WebGLBuffer.idl
         html/canvas/WebGLCompressedTextureATC.idl
+        html/canvas/WebGLCompressedTexturePVRTC.idl
         html/canvas/WebGLCompressedTextureS3TC.idl
         html/canvas/WebGLContextAttributes.idl
         html/canvas/WebGLContextEvent.idl

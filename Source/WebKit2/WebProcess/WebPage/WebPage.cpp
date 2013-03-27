@@ -365,6 +365,11 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
 
     setActive(parameters.isActive);
     setFocused(parameters.isFocused);
+
+    // Page defaults to in-window, but setIsInWindow depends on it being a valid indicator of actually having been put into a window.
+    if (!parameters.isInWindow)
+        m_page->setIsInWindow(false);
+
     setIsInWindow(parameters.isInWindow);
 
     m_userAgent = parameters.userAgent;
@@ -1255,7 +1260,7 @@ void WebPage::setUseFixedLayout(bool fixed)
 #if USE(TILED_BACKING_STORE) && ENABLE(SMOOTH_SCROLLING)
     // Delegated scrolling will be enabled when the FrameView is created if fixed layout is enabled.
     // Ensure we don't do animated scrolling in the WebProcess in that case.
-    m_page->settings()->setEnableScrollAnimator(!fixed);
+    m_page->settings()->setScrollAnimatorEnabled(!fixed);
 #endif
 
     FrameView* view = mainFrameView();
@@ -1754,7 +1759,7 @@ void WebPage::highlightPotentialActivation(const IntPoint& point, const IntSize&
             return;
 
 #else
-        HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
+        HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
         adjustedNode = result.innerNode();
 #endif
         // Find the node to highlight. This is not the same as the node responding the tap gesture, because many
@@ -1958,10 +1963,15 @@ inline bool WebPage::canHandleUserEvents() const
 
 void WebPage::setIsInWindow(bool isInWindow)
 {
+    bool pageWasInWindow = m_page->isInWindow();
+    
     if (!isInWindow) {
         m_setCanStartMediaTimer.stop();
         m_page->setCanStartMedia(false);
         m_page->willMoveOffscreen();
+        
+        if (pageWasInWindow)
+            WebProcess::shared().pageWillLeaveWindow(this);
     } else {
         // Defer the call to Page::setCanStartMedia() since it ends up sending a synchronous message to the UI process
         // in order to get plug-in connections, and the UI process will be waiting for the Web process to update the backing
@@ -1970,6 +1980,9 @@ void WebPage::setIsInWindow(bool isInWindow)
             m_setCanStartMediaTimer.startOneShot(0);
 
         m_page->didMoveOnscreen();
+        
+        if (!pageWasInWindow)
+            WebProcess::shared().pageDidEnterWindow(this);
     }
 
     m_page->setIsInWindow(isInWindow);
@@ -2343,7 +2356,7 @@ void WebPage::updatePreferences(const WebPreferencesStore& store)
     settings->setHyperlinkAuditingEnabled(store.getBoolValueForKey(WebPreferencesKey::hyperlinkAuditingEnabledKey()));
     settings->setRequestAnimationFrameEnabled(store.getBoolValueForKey(WebPreferencesKey::requestAnimationFrameEnabledKey()));
 #if ENABLE(SMOOTH_SCROLLING)
-    settings->setEnableScrollAnimator(store.getBoolValueForKey(WebPreferencesKey::scrollAnimatorEnabledKey()));
+    settings->setScrollAnimatorEnabled(store.getBoolValueForKey(WebPreferencesKey::scrollAnimatorEnabledKey()));
 #endif
     settings->setInteractiveFormValidationEnabled(store.getBoolValueForKey(WebPreferencesKey::interactiveFormValidationEnabledKey()));
 
@@ -3043,7 +3056,7 @@ void WebPage::findZoomableAreaForPoint(const WebCore::IntPoint& point, const Web
 {
     UNUSED_PARAM(area);
     Frame* mainframe = m_mainFrame->coreFrame();
-    HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
+    HitTestResult result = mainframe->eventHandler()->hitTestResultAtPoint(mainframe->view()->windowToContents(point), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
 
     Node* node = result.innerNode();
 
@@ -3897,7 +3910,7 @@ void WebPage::determinePrimarySnapshottedPlugIn()
     IntRect searchRect = IntRect(IntPoint(), corePage()->mainFrame()->view()->contentsSize());
     searchRect.intersect(IntRect(IntPoint(), IntSize(primarySnapshottedPlugInSearchLimit, primarySnapshottedPlugInSearchLimit)));
 
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnoreClipping);
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
 
     HashSet<RenderObject*> seenRenderers;
     HTMLPlugInImageElement* candidatePlugIn = 0;
@@ -3950,6 +3963,9 @@ void WebPage::determinePrimarySnapshottedPlugIn()
         return;
 
     m_didFindPrimarySnapshottedPlugin = true;
+    m_primaryPlugInPageOrigin = m_page->mainFrame()->document()->baseURL().host();
+    m_primaryPlugInOrigin = candidatePlugIn->loadedUrl().host();
+    m_primaryPlugInMimeType = candidatePlugIn->loadedMimeType();
 
     candidatePlugIn->setIsPrimarySnapshottedPlugIn(true);
 }
@@ -3958,6 +3974,14 @@ void WebPage::resetPrimarySnapshottedPlugIn()
 {
     m_readyToFindPrimarySnapshottedPlugin = false;
     m_didFindPrimarySnapshottedPlugin = false;
+}
+
+bool WebPage::matchesPrimaryPlugIn(const String& pageOrigin, const String& pluginOrigin, const String& mimeType) const
+{
+    if (!m_didFindPrimarySnapshottedPlugin)
+        return false;
+
+    return (pageOrigin == m_primaryPlugInPageOrigin && pluginOrigin == m_primaryPlugInOrigin && mimeType == m_primaryPlugInMimeType);
 }
 #endif // ENABLE(PRIMARY_SNAPSHOTTED_PLUGIN_HEURISTIC)
 

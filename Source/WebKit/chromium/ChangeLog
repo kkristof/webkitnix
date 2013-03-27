@@ -1,3 +1,310 @@
+2013-03-27  Kent Tamura  <tkent@chromium.org>
+
+        Rename HTMLFormControlElement::readOnly to isReadOnly
+        https://bugs.webkit.org/show_bug.cgi?id=113297
+
+        Reviewed by Alexey Proskuryakov.
+
+        * src/WebFormControlElement.cpp:
+        (WebKit::WebFormControlElement::isReadOnly):
+
+2013-03-26  Hayato Ito  <hayato@chromium.org>
+
+        Allow ShadowContents in HitTests by default.
+        https://bugs.webkit.org/show_bug.cgi?id=113171
+
+        Reviewed by Dimitri Glazkov.
+
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::selectMisspelledWord):
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::visiblePositionForWindowPoint):
+        * src/WebPluginContainerImpl.cpp:
+        (WebKit::WebPluginContainerImpl::isRectTopmost):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::computeBlockBounds):
+        (WebKit::WebViewImpl::bestTapNode):
+
+2013-03-26  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Remove the WebVideoFrame, WebVideoFrameProvider, WebStreamTextureClient, and WebVideoLayer classes.
+        https://bugs.webkit.org/show_bug.cgi?id=112483
+
+        Reviewed by James Robinson.
+
+        These classes are no longer used, so remove them.
+
+        * WebKit.gyp:
+        * public/WebMediaPlayer.h:
+        (WebKit):
+        (WebMediaPlayer):
+        * public/WebStreamTextureClient.h: Removed.
+        * public/WebVideoFrame.h: Removed.
+
+2013-03-26  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r190706.  Requested by
+        danakj_ via sheriffbot.
+
+        * DEPS:
+
+2013-03-26  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Heap-use-after-free regression
+        https://bugs.webkit.org/show_bug.cgi?id=113337
+
+        Reviewed by Abhishek Arya and Alexey Proskuryakov.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::didAssociateFormControls):
+        * src/ChromeClientImpl.h:
+        (ChromeClientImpl):
+
+2013-03-26  Tony Chang  <tony@chromium.org>
+
+        Autogenerate the scrollAnimatorEnabled setting in Settings.in
+        https://bugs.webkit.org/show_bug.cgi?id=113253
+
+        Reviewed by James Robinson.
+
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setEnableScrollAnimator): Update call to WebCore to use setScrollAnimatorEnabled(bool).
+
+2013-03-26  Tony Chang  <tony@chromium.org>
+
+        [chromium] Expose setSelectionIncludesAltImageText in WebSettings
+        https://bugs.webkit.org/show_bug.cgi?id=113316
+
+        Reviewed by Dimitri Glazkov.
+
+        Enabling this setting allows plain text clipboard content to include alt
+        text like on Firefox and IE10.
+
+        * public/WebSettings.h:
+        (WebSettings):
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::setSelectionIncludesAltImageText):
+        * src/WebSettingsImpl.h:
+        (WebSettingsImpl):
+
+2013-03-26  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        Code duplication between HTTPParsers and HTTPValidation
+        https://bugs.webkit.org/show_bug.cgi?id=113283
+
+        Reviewed by Alexey Proskuryakov.
+
+        * src/AssociatedURLLoader.cpp: Include HTTPParsers.h instead
+        of HTTPValidation.h to use isValidHTTPToken().
+
+2013-03-26  Yufeng Shen  <miletus@chromium.org>
+
+        Convert WebInputEvent::GestureDoubleTap to  PlatformEvent::NoType
+        https://bugs.webkit.org/show_bug.cgi?id=113215
+
+        In bug 93045 we removed PlatformEvent::GestureDoubleTap since now DoubleTap gesture
+        is implemented as a Tap gesture with tap_count = 2.
+
+        In WebViewImpl::handleGestureEvent(), a PlatformEvent is built from the WebGestureEvent
+        regardless, even though the PlatfromEvent will never reach the WebCore. DoubleTap, in
+        our case, is only handled in WebViewImpl for doube-tap-to-zoom, will also go through
+        conversion in WebInpuEventConversion.cpp::PlatformGestureEventBuilder() and reach
+        ASSERT_NOT_REACHED()
+
+        This patch converts WebGestureEvent::DoubleTap to PlatformEvent::NoType, this makes the
+        conversion list from WebInputEvent to PlatformEvent complete and we don't need a special
+        handling for the DoubleTap event in WebViewImpl::handleGestureEvent()
+
+        Reviewed by Antonio Gomes.
+
+        * src/WebInputEventConversion.cpp:
+        (WebKit::PlatformGestureEventBuilder::PlatformGestureEventBuilder):
+
+2013-03-26  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146767.
+        http://trac.webkit.org/changeset/146767
+        https://bugs.webkit.org/show_bug.cgi?id=113295
+
+        Rolling out until nicer fonts / sizes are chosen (Requested by
+        pfeldman on #webkit).
+
+        * src/js/devTools.css:
+
+2013-03-25  Kent Tamura  <tkent@chromium.org>
+
+        Rename ENABLE_INPUT_TYPE_DATETIME
+        https://bugs.webkit.org/show_bug.cgi?id=113254
+
+        Reviewed by Kentaro Hara.
+
+        Rename ENABLE_INPUT_TYPE_DATETIME to ENABLE_INPUT_TYPE_DATETIME_INCOMPLETE.
+        Actually I'd like to remove the code, but we shouldn't remove it yet
+        because we shipped products with it on some platforms.
+
+        * src/WebRuntimeFeatures.cpp:
+        (WebKit::WebRuntimeFeatures::enableInputTypeDateTime):
+        (WebKit::WebRuntimeFeatures::isInputTypeDateTimeEnabled):
+        * tests/WebViewTest.cpp:
+
+2013-03-25  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Move ownership of compositor VideoLayer to WebMediaPlayer
+        https://bugs.webkit.org/show_bug.cgi?id=112971
+
+        Reviewed by James Robinson.
+
+        This moves ownership of the compositor's video layer over to the
+        implementation of WebMediaPlayer, as well as all interaction
+        between the media player system and the compositor layer or its
+        interfaces such as cc::VideoFrameProvider.
+
+        Now, the WebMediaPlayer implementation calls setWebLayer() to
+        provide the WebLayer* to the WebMediaPlayerClientImpl so that
+        it can be inserted into the GraphicsLayer tree appropriately.
+
+        Defines REMOVE_WEBVIDEOFRAME in related headers to enable this code
+        path in chromium.
+
+        Once chromium removes its use of WebVideoFrame and its related
+        classes, we can remove them from WebKit entirely.
+
+        * WebKit.gypi:
+        * public/WebMediaPlayer.h:
+        (WebKit):
+        * public/WebMediaPlayerClient.h:
+        * public/WebStreamTextureClient.h:
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl):
+        (WebKit::WebMediaPlayerClientImpl::readyStateChanged):
+        (WebKit::WebMediaPlayerClientImpl::repaint):
+        (WebKit::WebMediaPlayerClientImpl::setOpaque):
+        (WebKit::WebMediaPlayerClientImpl::setWebLayer):
+        (WebKit::WebMediaPlayerClientImpl::loadRequested):
+        (WebKit::WebMediaPlayerClientImpl::platformLayer):
+        (WebKit::WebMediaPlayerClientImpl::paint):
+        (WebKit::WebMediaPlayerClientImpl::needsWebLayer):
+        (WebKit::WebMediaPlayerClientImpl::supportsAcceleratedRendering):
+        (WebKit::WebMediaPlayerClientImpl::acceleratedRenderingInUse):
+        (WebKit::WebMediaPlayerClientImpl::create):
+        (WebKit::WebMediaPlayerClientImpl::supportsType):
+        * src/WebMediaPlayerClientImpl.h:
+        (WebKit):
+        (WebMediaPlayerClientImpl):
+        * tests/WebMediaPlayerClientImplTest.cpp: Removed.
+
+2013-03-25  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r190515.  Requested by
+        "Dana Jansens" <danakj@chromium.org> via sheriffbot.
+
+        * DEPS:
+
+2013-03-25  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Support GraphicsLayer::setContentsToSolidColor
+        https://bugs.webkit.org/show_bug.cgi?id=104396
+
+        Reviewed by Adrienne Walker.
+
+        Updates some unit tests for better include discipline.
+
+        * tests/GraphicsLayerChromiumTest.cpp:
+        * tests/ImageLayerChromiumTest.cpp:
+
+2013-03-25  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146819.
+        http://trac.webkit.org/changeset/146819
+        https://bugs.webkit.org/show_bug.cgi?id=113249
+
+        broke component build (Requested by danakj on #webkit).
+
+        * WebKit.gypi:
+        * public/WebMediaPlayerClient.h:
+        (WebKit):
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl):
+        (WebKit::WebMediaPlayerClientImpl::readyStateChanged):
+        (WebKit::WebMediaPlayerClientImpl::repaint):
+        (WebKit::WebMediaPlayerClientImpl::setOpaque):
+        (WebKit::WebMediaPlayerClientImpl::disableAcceleratedCompositing):
+        (WebKit::WebMediaPlayerClientImpl::loadRequested):
+        (WebKit::WebMediaPlayerClientImpl::loadInternal):
+        (WebKit):
+        (WebKit::WebMediaPlayerClientImpl::platformLayer):
+        (WebKit::WebMediaPlayerClientImpl::paint):
+        (WebKit::WebMediaPlayerClientImpl::supportsAcceleratedRendering):
+        (WebKit::WebMediaPlayerClientImpl::acceleratedRenderingInUse):
+        (WebKit::WebMediaPlayerClientImpl::setVideoFrameProviderClient):
+        (WebKit::WebMediaPlayerClientImpl::getCurrentFrame):
+        (WebKit::WebMediaPlayerClientImpl::putCurrentFrame):
+        (WebKit::WebMediaPlayerClientImpl::create):
+        (WebKit::WebMediaPlayerClientImpl::supportsType):
+        * src/WebMediaPlayerClientImpl.h:
+        (WebKit):
+        (WebMediaPlayerClientImpl):
+        * tests/WebMediaPlayerClientImplTest.cpp: Added.
+        (WebKit):
+        (FakeWebMediaPlayerClientImpl):
+        (WebKit::FakeWebMediaPlayerClientImpl::create):
+        (WebKit::FakeWebMediaPlayerClientImpl::FakeWebMediaPlayerClientImpl):
+        (FakeVideoFrameProviderClient):
+        (WebKit::FakeVideoFrameProviderClient::create):
+        (WebKit::FakeVideoFrameProviderClient::~FakeVideoFrameProviderClient):
+        (WebKit::FakeVideoFrameProviderClient::didReceiveFrame):
+        (WebKit::FakeVideoFrameProviderClient::didUpdateMatrix):
+        (WebKit::FakeVideoFrameProviderClient::stopUsingProvider):
+        (WebKit::FakeVideoFrameProviderClient::provider):
+        (WebKit::FakeVideoFrameProviderClient::FakeVideoFrameProviderClient):
+        (WebKit::TEST):
+
+2013-03-25  Dana Jansens  <danakj@chromium.org>
+
+        [chromium] Move ownership of compositor VideoLayer to WebMediaPlayer
+        https://bugs.webkit.org/show_bug.cgi?id=112971
+
+        Reviewed by James Robinson.
+
+        This moves ownership of the compositor's video layer over to the
+        implementation of WebMediaPlayer, as well as all interaction
+        between the media player system and the compositor layer or its
+        interfaces such as cc::VideoFrameProvider.
+
+        Now, the WebMediaPlayer implementation calls setWebLayer() to
+        provide the WebLayer* to the WebMediaPlayerClientImpl so that
+        it can be inserted into the GraphicsLayer tree appropriately.
+
+        Defines REMOVE_WEBVIDEOFRAME in related headers to enable this code
+        path in chromium.
+
+        Once chromium removes its use of WebVideoFrame and its related
+        classes, we can remove them from WebKit entirely.
+
+        * WebKit.gypi:
+        * public/WebMediaPlayer.h:
+        (WebKit):
+        * public/WebMediaPlayerClient.h:
+        * public/WebStreamTextureClient.h:
+        * src/WebMediaPlayerClientImpl.cpp:
+        (WebKit::WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl):
+        (WebKit::WebMediaPlayerClientImpl::readyStateChanged):
+        (WebKit::WebMediaPlayerClientImpl::repaint):
+        (WebKit::WebMediaPlayerClientImpl::setOpaque):
+        (WebKit::WebMediaPlayerClientImpl::setWebLayer):
+        (WebKit::WebMediaPlayerClientImpl::loadRequested):
+        (WebKit::WebMediaPlayerClientImpl::platformLayer):
+        (WebKit::WebMediaPlayerClientImpl::paint):
+        (WebKit::WebMediaPlayerClientImpl::needsWebLayer):
+        (WebKit::WebMediaPlayerClientImpl::supportsAcceleratedRendering):
+        (WebKit::WebMediaPlayerClientImpl::acceleratedRenderingInUse):
+        (WebKit::WebMediaPlayerClientImpl::create):
+        (WebKit::WebMediaPlayerClientImpl::supportsType):
+        * src/WebMediaPlayerClientImpl.h:
+        (WebKit):
+        (WebMediaPlayerClientImpl):
+        * tests/WebMediaPlayerClientImplTest.cpp: Removed.
+
 2013-03-25  Alexei Filippov  <alph@chromium.org>
 
         Web Inspector: Fonts refactoring

@@ -2502,6 +2502,7 @@ WEBCORE_COMMAND(moveWordLeftAndModifySelection)
 WEBCORE_COMMAND(moveWordRight)
 WEBCORE_COMMAND(moveWordRightAndModifySelection)
 WEBCORE_COMMAND(outdent)
+WEBCORE_COMMAND(overWrite)
 WEBCORE_COMMAND(pageDown)
 WEBCORE_COMMAND(pageDownAndModifySelection)
 WEBCORE_COMMAND(pageUp)
@@ -6204,7 +6205,7 @@ static void extractUnderlines(NSAttributedString *string, Vector<CompositionUnde
     if (!coreFrame)
         return nil;
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active
-        | (allow ? HitTestRequest::AllowShadowContent : 0);
+        | (allow ? 0 : HitTestRequest::DisallowShadowContent);
     return [[[WebElementDictionary alloc] initWithHitTestResult:coreFrame->eventHandler()->hitTestResultAtPoint(IntPoint(point), hitType)] autorelease];
 }
 

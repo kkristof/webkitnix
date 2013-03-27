@@ -572,7 +572,8 @@ void WebPagePrivate::init(const BlackBerry::Platform::String& pageGroupName)
 #endif
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
-    WebCore::provideNavigatorContentUtilsTo(m_page, new NavigatorContentUtilsClientBlackBerry(this));
+    m_navigatorContentUtilsClient = adoptPtr(new NavigatorContentUtilsClientBlackBerry(this));
+    WebCore::provideNavigatorContentUtilsTo(m_page, m_navigatorContentUtilsClient.get());
 #endif
 
 #if ENABLE(NETWORK_INFO)
@@ -663,7 +664,7 @@ private:
     }
 };
 
-void WebPagePrivate::load(const BlackBerry::Platform::String& url, const BlackBerry::Platform::String& networkToken, const BlackBerry::Platform::String& method, Platform::NetworkRequest::CachePolicy cachePolicy, const char* data, size_t dataLength, const char* const* headers, size_t headersLength, bool isInitial, bool mustHandleInternally, bool forceDownload, const BlackBerry::Platform::String& overrideContentType, const BlackBerry::Platform::String& suggestedSaveName)
+void WebPagePrivate::load(const BlackBerry::Platform::String& url, const BlackBerry::Platform::String& networkToken, const BlackBerry::Platform::String& method, Platform::NetworkRequest::CachePolicy cachePolicy, const char* data, size_t dataLength, const char* const* headers, size_t headersLength, bool isInitial, bool mustHandleInternally, bool needReferer, bool forceDownload, const BlackBerry::Platform::String& overrideContentType, const BlackBerry::Platform::String& suggestedSaveName)
 {
     stopCurrentLoad();
     DeferredTaskLoadManualScript::finishOrCancel(this);
@@ -702,6 +703,8 @@ void WebPagePrivate::load(const BlackBerry::Platform::String& url, const BlackBe
 
     for (unsigned i = 0; i + 1 < headersLength; i += 2)
         request.addHTTPHeaderField(headers[i], headers[i + 1]);
+    if (needReferer && focusedOrMainFrame() && focusedOrMainFrame()->document())
+        request.addHTTPHeaderField("Referer", focusedOrMainFrame()->document()->url().string().utf8().data());
 
     if (forceDownload)
         request.setForceDownload(true);
@@ -711,14 +714,14 @@ void WebPagePrivate::load(const BlackBerry::Platform::String& url, const BlackBe
     m_mainFrame->loader()->load(FrameLoadRequest(m_mainFrame, request));
 }
 
-void WebPage::load(const BlackBerry::Platform::String& url, const BlackBerry::Platform::String& networkToken, bool isInitial)
+void WebPage::load(const BlackBerry::Platform::String& url, const BlackBerry::Platform::String& networkToken, bool isInitial, bool needReferer, bool forceDownload)
 {
-    d->load(url, networkToken, "GET", Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, 0, 0, isInitial, false);
+    d->load(url, networkToken, "GET", Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, 0, 0, isInitial, false, needReferer, forceDownload);
 }
 
 void WebPage::loadExtended(const char* url, const char* networkToken, const char* method, Platform::NetworkRequest::CachePolicy cachePolicy, const char* data, size_t dataLength, const char* const* headers, size_t headersLength, bool mustHandleInternally)
 {
-    d->load(url, networkToken, method, cachePolicy, data, dataLength, headers, headersLength, false, mustHandleInternally, false, "");
+    d->load(url, networkToken, method, cachePolicy, data, dataLength, headers, headersLength, false, mustHandleInternally, false, false, "");
 }
 
 void WebPage::loadFile(const BlackBerry::Platform::String& path, const BlackBerry::Platform::String& overrideContentType)
@@ -729,7 +732,7 @@ void WebPage::loadFile(const BlackBerry::Platform::String& path, const BlackBerr
     else if (!fileUrl.startsWith("file:///"))
         return;
 
-    d->load(fileUrl, BlackBerry::Platform::String::emptyString(), BlackBerry::Platform::String("GET", 3), Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, 0, 0, false, false, false, overrideContentType.c_str());
+    d->load(fileUrl, BlackBerry::Platform::String::emptyString(), BlackBerry::Platform::String("GET", 3), Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, 0, 0, false, false, false, false, overrideContentType.c_str());
 }
 
 void WebPage::download(const Platform::NetworkRequest& request)
@@ -740,7 +743,7 @@ void WebPage::download(const Platform::NetworkRequest& request)
         headers.push_back(list[i].first.c_str());
         headers.push_back(list[i].second.c_str());
     }
-    d->load(request.getUrlRef(), BlackBerry::Platform::String::emptyString(), "GET", Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, headers.empty() ? 0 : &headers[0], headers.size(), false, false, true, "", request.getSuggestedSaveName().c_str());
+    d->load(request.getUrlRef(), BlackBerry::Platform::String::emptyString(), "GET", Platform::NetworkRequest::UseProtocolCachePolicy, 0, 0, headers.empty() ? 0 : &headers[0], headers.size(), false, false, false, true, "", request.getSuggestedSaveName().c_str());
 }
 
 void WebPagePrivate::loadString(const BlackBerry::Platform::String& string, const BlackBerry::Platform::String& baseURL, const BlackBerry::Platform::String& contentType, const BlackBerry::Platform::String& failingURL)
@@ -1040,9 +1043,7 @@ void WebPagePrivate::setLoadState(LoadState state)
         m_mainFrame->document()->updateStyleIfNeeded();
 
     // Dispatch the backingstore background color at important state changes.
-    m_backingStore->d->setWebPageBackgroundColor(m_mainFrame && m_mainFrame->view()
-        ? m_mainFrame->view()->documentBackgroundColor()
-        : m_webSettings->backgroundColor());
+    m_backingStore->d->setWebPageBackgroundColor(documentBackgroundColor());
 
     m_loadState = state;
 
@@ -2418,8 +2419,9 @@ void WebPagePrivate::updateCursor()
 
     BlackBerry::Platform::MouseEvent event(buttonMask, buttonMask, mapToTransformed(m_lastMouseEvent.position()), mapToTransformed(m_lastMouseEvent.globalPosition()), 0, modifiers,  0);
 
-    // We have added document viewport position and document content position as members of the mouse event, when we create the event, we should initial them as well.
-    event.populateDocumentPosition(m_lastMouseEvent.position(), mapFromTransformedViewportToTransformedContents(m_lastMouseEvent.position()));
+    // We have added document viewport position and document content position as members of the mouse event. When we create the event, we should initialize them as well.
+    event.populateDocumentPosition(m_lastMouseEvent.position(), mapFromViewportToContents(m_lastMouseEvent.position()));
+
     m_webPage->mouseEvent(event);
 }
 
@@ -5976,18 +5978,7 @@ void WebPagePrivate::didChangeSettings(WebSettings* webSettings)
     coreSettings->setWebSecurityEnabled(!webSettings->allowCrossSiteRequests());
     coreSettings->setApplyPageScaleFactorInCompositor(webSettings->applyDeviceScaleFactorInCompositor());
 
-    if (m_mainFrame && m_mainFrame->view()) {
-        Color backgroundColor(webSettings->backgroundColor());
-        m_mainFrame->view()->updateBackgroundRecursively(backgroundColor, backgroundColor.hasAlpha());
-
-        Platform::userInterfaceThreadMessageClient()->dispatchMessage(
-            createMethodCallMessage(&WebPagePrivate::setCompositorBackgroundColor, this, backgroundColor));
-    }
-    if (m_backingStore) {
-        m_backingStore->d->setWebPageBackgroundColor(m_mainFrame && m_mainFrame->view()
-            ? m_mainFrame->view()->documentBackgroundColor()
-            : webSettings->backgroundColor());
-    }
+    updateBackgroundColor(webSettings->backgroundColor());
 
     m_page->setDeviceScaleFactor(webSettings->devicePixelRatio());
 }
@@ -6236,7 +6227,7 @@ const HitTestResult& WebPagePrivate::hitTestResult(const IntPoint& contentPos)
 {
     if (m_cachedHitTestContentPos != contentPos) {
         m_cachedHitTestContentPos = contentPos;
-        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::AllowShadowContent);
+        m_cachedHitTestResult = m_mainFrame->eventHandler()->hitTestResultAtPoint(m_cachedHitTestContentPos, HitTestRequest::ReadOnly | HitTestRequest::Active);
     }
 
     return m_cachedHitTestResult;
@@ -6321,6 +6312,32 @@ void WebPagePrivate::animateToScaleAndDocumentScrollPosition(double destinationZ
 void WebPage::animateToScaleAndDocumentScrollPosition(double destinationZoomScale, const BlackBerry::Platform::FloatPoint& destinationScrollPosition, bool shouldConstrainScrollingToContentEdge)
 {
     d->animateToScaleAndDocumentScrollPosition(destinationZoomScale, destinationScrollPosition, shouldConstrainScrollingToContentEdge);
+}
+
+void WebPagePrivate::updateBackgroundColor(const Color& backgroundColor)
+{
+    if (!m_mainFrame || !m_mainFrame->view())
+        return;
+
+    m_mainFrame->view()->updateBackgroundRecursively(backgroundColor, backgroundColor.hasAlpha());
+
+    // FIXME: The BackingStore uses the document background color but the WebPageCompositor gets
+    // the color from settings, which can be different.
+    Platform::userInterfaceThreadMessageClient()->dispatchMessage(
+        createMethodCallMessage(&WebPagePrivate::setCompositorBackgroundColor, this, backgroundColor));
+
+    if (m_backingStore)
+        m_backingStore->d->setWebPageBackgroundColor(documentBackgroundColor());
+}
+
+Color WebPagePrivate::documentBackgroundColor() const
+{
+    Color color;
+    if (m_mainFrame && m_mainFrame->view())
+        color = m_mainFrame->view()->documentBackgroundColor();
+    if (!color.isValid())
+        color = m_webSettings->backgroundColor();
+    return color;
 }
 
 }

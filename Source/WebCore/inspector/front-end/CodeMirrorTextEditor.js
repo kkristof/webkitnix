@@ -102,6 +102,19 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isClean: function()
+    {
+        return this._codeMirror.isClean();
+    },
+
+    markClean: function()
+    {
+        this._codeMirror.markClean();
+    },
+
+    /**
      * @param {string} mimeType
      */
     set mimeType(mimeType)
@@ -146,7 +159,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     highlightRange: function(range, cssClass)
     {
         var pos = this._toPos(range);
-        return this._codeMirror.markText(pos.start, pos.end, { className: cssClass });
+        ++pos.end.ch;
+        return this._codeMirror.markText(pos.start, pos.end, {
+            className: cssClass,
+            startStyle: cssClass + "-start",
+            endStyle: cssClass + "-end"
+        });
     },
 
     /**

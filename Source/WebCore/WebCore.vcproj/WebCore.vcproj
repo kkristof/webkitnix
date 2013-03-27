@@ -33102,14 +33102,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\platform\network\HTTPValidation.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\platform\network\HTTPValidation.h"
-					>
-				</File>
-				<File
 					RelativePath="..\platform\network\MIMEHeader.cpp"
 					>
 				</File>
@@ -73556,14 +73548,6 @@
 			</File>
 			<File
 				RelativePath="..\plugins\PluginMainThreadScheduler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\plugins\PlugInOriginHash.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\plugins\PlugInOriginHash.h"
 				>
 			</File>
 			<File

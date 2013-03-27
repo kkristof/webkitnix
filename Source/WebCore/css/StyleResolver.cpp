@@ -543,7 +543,7 @@ bool StyleResolver::canShareStyleWithControl(StyledElement* element) const
         return false;
     if (thisInputElement->shouldAppearChecked() != otherInputElement->shouldAppearChecked())
         return false;
-    if (thisInputElement->isIndeterminate() != otherInputElement->isIndeterminate())
+    if (thisInputElement->shouldAppearIndeterminate() != otherInputElement->shouldAppearIndeterminate())
         return false;
     if (thisInputElement->isRequired() != otherInputElement->isRequired())
         return false;
@@ -613,7 +613,7 @@ bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(StyledE
 
 #if ENABLE(PROGRESS_ELEMENT)
     if (state.element()->hasTagName(progressTag)) {
-        if (static_cast<HTMLProgressElement*>(state.element())->isDeterminate() != static_cast<HTMLProgressElement*>(sharingCandidate)->isDeterminate())
+        if (state.element()->shouldAppearIndeterminate() != sharingCandidate->shouldAppearIndeterminate())
             return false;
     }
 #endif
@@ -1272,7 +1272,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 
     NodeRenderingContext context(textNode);
     Node* parentNode = context.parentNodeForRenderingAndStyle();
-    return context.resetStyleInheritance() || !parentNode ?
+    return context.resetStyleInheritance() || !parentNode || !parentNode->renderStyle() ?
         defaultStyleForElement() : parentNode->renderStyle();
 }
 

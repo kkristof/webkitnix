@@ -619,7 +619,7 @@ void WebSettingsImpl::setShouldPrintBackgrounds(bool enabled)
 void WebSettingsImpl::setEnableScrollAnimator(bool enabled)
 {
 #if ENABLE(SMOOTH_SCROLLING)
-    m_settings->setEnableScrollAnimator(enabled);
+    m_settings->setScrollAnimatorEnabled(enabled);
 #else
     UNUSED_PARAM(enabled);
 #endif
@@ -729,6 +729,11 @@ void WebSettingsImpl::setCompositedScrollingForFramesEnabled(bool enabled)
 void WebSettingsImpl::setSelectTrailingWhitespaceEnabled(bool enabled)
 {
     m_settings->setSelectTrailingWhitespaceEnabled(enabled);
+}
+
+void WebSettingsImpl::setSelectionIncludesAltImageText(bool enabled)
+{
+    m_settings->setSelectionIncludesAltImageText(enabled);
 }
 
 void WebSettingsImpl::setSmartInsertDeleteEnabled(bool enabled)

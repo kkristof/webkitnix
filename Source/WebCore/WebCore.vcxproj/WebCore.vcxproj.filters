@@ -3276,9 +3276,6 @@
     <ClCompile Include="..\platform\network\HTTPRequest.cpp">
       <Filter>platform\network</Filter>
     </ClCompile>
-    <ClCompile Include="..\platform\network\HTTPValidation.cpp">
-      <Filter>platform\network</Filter>
-    </ClCompile>
     <ClCompile Include="..\platform\network\MIMEHeader.cpp">
       <Filter>platform\network</Filter>
     </ClCompile>
@@ -6217,9 +6214,6 @@
       <Filter>plugins</Filter>
     </ClCompile>
     <ClCompile Include="..\plugins\PluginMainThreadScheduler.cpp">
-      <Filter>plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\plugins\PlugInOriginHash.cpp">
       <Filter>plugins</Filter>
     </ClCompile>
     <ClCompile Include="..\plugins\PluginPackage.cpp">
@@ -10086,9 +10080,6 @@
     <ClInclude Include="..\platform\network\HTTPRequest.h">
       <Filter>platform\network</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform\network\HTTPValidation.h">
-      <Filter>platform\network</Filter>
-    </ClInclude>
     <ClInclude Include="..\platform\network\MIMEHeader.h">
       <Filter>platform\network</Filter>
     </ClInclude>
@@ -13015,9 +13006,6 @@
       <Filter>plugins</Filter>
     </ClInclude>
     <ClInclude Include="..\plugins\PluginMainThreadScheduler.h">
-      <Filter>plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\plugins\PlugInOriginHash.h">
       <Filter>plugins</Filter>
     </ClInclude>
     <ClInclude Include="..\plugins\PluginPackage.h">
