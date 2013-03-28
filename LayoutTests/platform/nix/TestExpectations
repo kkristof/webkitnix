@@ -27,9 +27,10 @@ webaudio/realtimeanalyser-fft-sizing.html [ Skip ]
 fast/frames/seamless/seamless-window-location-href.html [ Skip ]
 fast/hidpi/image-set-without-specified-width.html [ Skip ]
 inspector-protocol/media-query-listener-exception.html [ Skip ]
-sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A2.4_T1.html [ Skip ]
 storage/indexeddb/keypath-intrinsic-properties.html [ Skip ]
 storage/indexeddb/keypath-fetch-key.html [ Skip ]
+storage/indexeddb/keyrange-required-arguments.html [ Skip ]
+fast/hidpi/resize-corner-hidpi.html [ Skip ]
 
 # sometimes crash
 fast/dom/Window/redirect-with-timer.html [ Pass Crash ]
@@ -49,6 +50,7 @@ fast/sub-pixel/client-and-offset-width.html [ Pass Crash ]
 fast/sub-pixel/column-clipping.html [ Pass Crash ]
 fast/sub-pixel/float-containing-block-with-margin.html [ Pass Crash ]
 fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
+sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/ [ Pass Crash ]
 
 ################################################################################
 # FAILURES
@@ -89,6 +91,7 @@ canvas/philip/tests/2d.text.draw.space.collapse.start.html [ Skip ]
 canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
 
+compositing/rtl/rtl-overflow-scrolling.html [ Skip ]
 compositing/video/video-reflection.html [ Skip ]
 
 css1/box_properties/acid_test.html
@@ -288,6 +291,7 @@ css3/flexbox/repaint-during-resize-no-flex.html
 css3/flexbox/repaint-rtl-column.html
 css3/filters/multiple-filters-invalidation.html
 css3/filters/composited-during-animation.html
+css3/filters/composited-during-animation-layertree.html
 css3/filters/composited-during-transition-layertree.html
 css3/images/cross-fade-invalidation.html
 css3/masking/clip-path-reference-userSpaceOnUse.html
@@ -378,6 +382,7 @@ editing/pasteboard/contenteditable-pre-2.html [ Skip ]
 editing/pasteboard/contenteditable-pre.html [ Skip ]
 editing/pasteboard/copy-backslash-with-euc.html [ Skip ]
 editing/pasteboard/copy-element-with-conflicting-background-color-from-rule.html [ Skip ]
+editing/pasteboard/copy-image-with-alt-text.html [ Skip ]
 editing/pasteboard/copy-in-password-field.html [ Skip ]
 editing/pasteboard/copy-null-characters.html [ Skip ]
 editing/pasteboard/copy-paste-bidi.html [ Skip ]
@@ -910,7 +915,9 @@ fast/dom/shadow/shadow-root-innerHTML.html [ Skip ]
 fast/dom/shadow/shadow-root-js-api.html [ Skip ]
 fast/dom/shadow/shadow-root-new.html [ Skip ]
 fast/dom/shadow/shadow-root-resetStyleInheritance.html [ Skip ]
+fast/dom/shadow/shadow-root-touch-listener-crash.html [ Skip ]
 fast/dom/shadow/shadow-select-attribute-featureset.html [ Skip ]
+fast/dom/shadow/shadow-tree-listener-clearance.html [ Skip ]
 fast/dom/shadow/shadow-ul-li.html [ Skip ]
 fast/dom/shadow/shadowdom-dynamic-styling.html [ Skip ]
 fast/dom/shadow/shadowdom-for-button-complex-shadow.html [ Skip ]
@@ -955,6 +962,7 @@ fast/dom/shadow/style-scoped-not-enabled.html [ Skip ]
 fast/dom/shadow/styling-pseudo-attribute.html [ Skip ]
 fast/dom/shadow/suppress-mutation-events-in-shadow-characterdata.html [ Skip ]
 fast/dom/shadow/tab-order-iframe-and-shadow.html [ Skip ]
+fast/dom/shadow/text-node-distributed-crash.html [ Skip ]
 fast/dom/shadow/text-node-in-shadow.html [ Skip ]
 fast/dom/shadow/touch-event.html [ Skip ]
 fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Skip ]
@@ -1836,6 +1844,7 @@ fast/text-autosizing/wide-child.html [ Skip ]
 fast/text-autosizing/wide-iframe.html [ Skip ]
 fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ Skip ]
 
+fast/text/complex-text-opacity.html [ Skip ]
 fast/text/descent-clip-in-scaled-page.html [ Skip ]
 fast/text/emphasis-avoid-ruby.html [ Skip ]
 fast/text/emphasis-overlap.html [ Skip ]
@@ -1843,10 +1852,17 @@ fast/text/fallback-traits-fixup.html [ Skip ]
 fast/text/font-kerning.html [ Skip ]
 fast/text/hyphen-min-preferred-width.html [ Skip ]
 fast/text/international/bidi-ignored-for-first-child-inline.html [ Skip ]
+fast/text/international/complex-character-based-fallback.html [ Skip ]
+fast/text/international/danda-space.html [ Skip ]
 fast/text/international/hebrew-selection.html [ Skip ]
+fast/text/international/hindi-spacing.html [ Skip ]
+fast/text/international/hindi-whitespace.html [ Skip ]
+fast/text/international/khmer-selection.html [ Skip ]
 fast/text/international/lang-sensitive-fonts-xml.xhtml [ Skip ]
 fast/text/international/spaces-combined-in-vertical-text.html [ Skip ]
+fast/text/international/thai-baht-space.html [ Skip ]
 fast/text/international/thai-cursor-position.html [ Skip ]
+fast/text/international/thai-line-breaks.html [ Skip ]
 fast/text/line-initial-and-final-swashes.html [ Skip ]
 fast/text/justify-padding-distribution.html [ Skip ]
 fast/text/reset-drag-on-mouse-down.html [ Skip ]
@@ -4100,6 +4116,14 @@ webaudio/javascriptaudionode.html [ Failure Pass ]
 
 # Newly added failing test before merge 1545593 eb8adb3
 fast/events/touch/gesture/gesture-tap-hover-clear.html
+
+# Failing test after merge 0da688d be5f74c
+css3/filters/filter-property-parsing-invalid.html [ Failure ]
+editing/pasteboard/can-read-in-copy-and-cut-events.html [ Failure ]
+editing/pasteboard/can-read-in-dragstart-event.html [ Failure ]
+fast/dom/shadow/insertion-parent-shadow.html [ Failure ]
+fast/workers/shared-worker-storagequota-query-usage.html [ Failure ]
+fast/workers/worker-storagequota-query-usage.html [ Failure ]
 
 # Flakey tests when running pixel tests.
 compositing/background-color/background-color-padding-change.html [ ImageOnlyFailure Pass ]
