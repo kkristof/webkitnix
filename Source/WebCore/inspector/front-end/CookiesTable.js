@@ -33,8 +33,9 @@
  * @extends {WebInspector.View}
  * @param {boolean} expandable
  * @param {function()=} refreshCallback
+ * @param {function()=} selectedCallback
  */
-WebInspector.CookiesTable = function(expandable, refreshCallback)
+WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallback)
 {
     WebInspector.View.call(this);
     this.element.className = "fill";
@@ -53,8 +54,15 @@ WebInspector.CookiesTable = function(expandable, refreshCallback)
         {id: "secure", title: WebInspector.UIString("Secure"), sortable: true, align: WebInspector.DataGrid.Align.Center, width: "7%"}
     ];
 
-    this._dataGrid = new WebInspector.DataGrid(columns, null, readOnly ? null : this._onDeleteCookie.bind(this), refreshCallback);
+    if (readOnly)
+        this._dataGrid = new WebInspector.DataGrid(columns);
+    else
+        this._dataGrid = new WebInspector.DataGrid(columns, undefined, this._onDeleteCookie.bind(this), refreshCallback, this._onContextMenu.bind(this));
+
     this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._rebuildTable, this);
+
+    if (selectedCallback)
+        this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, selectedCallback, this);
 
     this._nextSelectedCookie = /** @type {?WebInspector.Cookie} */ (null);
 
@@ -69,7 +77,31 @@ WebInspector.CookiesTable.prototype = {
             this._dataGrid.updateWidths();
     },
 
-    /*
+    /**
+     * @param {?string} domain
+     */
+    _clearAndRefresh: function(domain)
+    {
+        this.clear(domain);
+        this._refresh();
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {WebInspector.DataGridNode} node
+     */
+    _onContextMenu: function(contextMenu, node)
+    {
+        if (node === this._dataGrid.creationNode)
+            return;
+        var cookie = node.cookie;
+        var domain = cookie.domain();
+        if (domain)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear all from \"%s\"" : "Clear All from \"%s\"", domain), this._clearAndRefresh.bind(this, domain));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear all" : "Clear All"), this._clearAndRefresh.bind(this, null));
+    },
+
+    /**
      * @param {!Array.<!WebInspector.Cookie>} cookies
      */
     setCookies: function(cookies)
@@ -93,6 +125,20 @@ WebInspector.CookiesTable.prototype = {
     {
         var node = this._dataGrid.selectedNode;
         return node ? node.cookie : null;
+    },
+
+    /**
+     * @param {?string=} domain
+     */
+    clear: function(domain)
+    {
+        for (var i = 0, length = this._data.length; i < length; ++i) {
+            var cookies = this._data[i].cookies;
+            for (var j = 0, cookieCount = cookies.length; j < cookieCount; ++j) {
+                if (!domain || cookies[j].domain() === domain)
+                    cookies[j].remove();
+            }
+        }
     },
 
     _rebuildTable: function()
@@ -229,6 +275,11 @@ WebInspector.CookiesTable.prototype = {
         if (neighbour)
             this._nextSelectedCookie = neighbour.cookie;
         cookie.remove();
+        this._refresh();
+    },
+
+    _refresh: function()
+    {
         if (this._refreshCallback)
             this._refreshCallback();
     },

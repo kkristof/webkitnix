@@ -135,6 +135,9 @@ public:
 
     // Called when the GraphicsLayer for the given RenderLayer has flushed changes inside of flushPendingLayerChanges().
     void didFlushChangesForLayer(RenderLayer*, const GraphicsLayer*);
+
+    // Called when something outside WebKit affects the visible rect (e.g. delegated scrolling). Might schedule a layer flush.
+    void didChangeVisibleRect();
     
     // Rebuild the tree of compositing layers
     void updateCompositingLayers(CompositingUpdateType, RenderLayer* updateRoot = 0);
@@ -153,9 +156,6 @@ public:
     bool clippedByAncestor(RenderLayer*) const;
     // Whether layer's backing needs a graphics layer to clip z-order children of the given layer.
     bool clipsCompositingDescendants(const RenderLayer*) const;
-
-    // Whether the layer is fixed positioned to the view by an ancestor layer.
-    bool fixedPositionedByAncestor(const RenderLayer*) const;
 
     // Whether the given layer needs an extra 'contents' layer.
     bool needsContentsCompositingLayer(const RenderLayer*) const;
@@ -259,6 +259,8 @@ public:
 
     GraphicsLayer* updateLayerForTopOverhangArea(bool wantsLayer);
     GraphicsLayer* updateLayerForBottomOverhangArea(bool wantsLayer);
+    GraphicsLayer* updateLayerForHeader(bool wantsLayer);
+    GraphicsLayer* updateLayerForFooter(bool wantsLayer);
 #endif
 
     void updateViewportConstraintStatus(RenderLayer*);
@@ -433,6 +435,8 @@ private:
     OwnPtr<GraphicsLayer> m_contentShadowLayer;
     OwnPtr<GraphicsLayer> m_layerForTopOverhangArea;
     OwnPtr<GraphicsLayer> m_layerForBottomOverhangArea;
+    OwnPtr<GraphicsLayer> m_layerForHeader;
+    OwnPtr<GraphicsLayer> m_layerForFooter;
 #endif
 
     OwnPtr<GraphicsLayerUpdater> m_layerUpdater; // Updates tiled layer visible area periodically while animations are running.

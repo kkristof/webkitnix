@@ -1,12 +1,6 @@
 {
     'variables': {
         'project_dir': ['.'],
-        'javascriptcore_yarr_files': [
-            'yarr/YarrCanonicalizeUCS2.cpp',
-            'yarr/YarrInterpreter.cpp',
-            'yarr/YarrPattern.cpp',
-            'yarr/YarrSyntaxChecker.cpp',
-        ],
         'javascriptcore_derived_source_files': [
             '<(PRODUCT_DIR)/DerivedSources/JavaScriptCore/RegExpJitTables.h',
             '<(PRODUCT_DIR)/DerivedSources/JavaScriptCore/Lexer.lut.h',
@@ -393,6 +387,7 @@
             'heap/MarkStack.h',
             'heap/MarkStackInlines.h',
             'heap/PassWeak.h',
+            'heap/Region.h',
             'heap/SlotVisitor.cpp',
             'heap/SlotVisitor.h',
             'heap/SlotVisitorInlines.h',
@@ -825,13 +820,17 @@
             'tools/CodeProfiling.h',
             'tools/ProfileTreeNode.h',
             'tools/TieredMMapArray.h',
-            'yarr/YarrCanonicalizeUCS2.h',
             'yarr/Yarr.h',
+            'yarr/YarrCanonicalizeUCS2.cpp',
+            'yarr/YarrCanonicalizeUCS2.h',
+            'yarr/YarrInterpreter.cpp',
             'yarr/YarrInterpreter.h',
             'yarr/YarrJIT.cpp',
             'yarr/YarrJIT.h',
             'yarr/YarrParser.h',
+            'yarr/YarrPattern.cpp',
             'yarr/YarrPattern.h',
+            'yarr/YarrSyntaxChecker.cpp',
             'yarr/YarrSyntaxChecker.h',
         ],
         'minidom_files': [

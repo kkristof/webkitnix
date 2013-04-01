@@ -1,3 +1,68 @@
+2013-03-28  Matt Falkenhagen  <falken@chromium.org>
+
+        Refactoring: Replace Element::disabled and isEnabledFormControl with isDisabledFormControl
+        https://bugs.webkit.org/show_bug.cgi?id=113273
+
+        Reviewed by Kent Tamura.
+
+        Element::disabled is about form controls and Element::isEnabledFormControl
+        is redundant with it, so replace them with a single function
+        Element::isDisabledFormControl.
+
+        * DOMHTMLClasses.cpp:
+        (DOMHTMLInputElement::disabled):
+
+2013-03-27  Mark Lam  <mark.lam@apple.com>
+
+        Rolling out r147044.
+        https://bugs.webkit.org/show_bug.cgi?id=113352.
+
+        Not Reviewed.
+
+        * WebKit.vcproj/WebKitExports.def.in:
+
+2013-03-27  Mark Lam  <mark.lam@apple.com>
+
+        Greening the Apple Win bot (debug build).
+        https://bugs.webkit.org/show_bug.cgi?id=113352.
+
+        Not Reviewed.
+
+        * WebKit.vcproj/WebKitExports.def.in:
+
+2013-03-27  Mark Lam  <mark.lam@apple.com>
+
+        Greening the Apple Win bot.
+        https://bugs.webkit.org/show_bug.cgi?id=113352.
+
+        Not Reviewed.
+
+        * WebKit.vcproj/WebKitExports.def.in:
+
+2013-03-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Another Windows build fix attempt after r147004.
+
+        * WebKit.vcproj/WebKitExports.def.in:
+
+2013-03-27  Timothy Hatcher  <timothy@apple.com>
+
+        Add support for dock-to-right of the Web Inspector in the Mac port.
+
+        Unfortunately this requires Safari changes, so it is disabled in the nightly builds.
+
+        https://webkit.org/b/113341
+        rdar://problem/10368152
+
+        Reviewed by Joseph Pecoraro.
+
+        * WebCoreSupport/WebInspectorClient.cpp:
+        (WebInspectorFrontendClient::frontendLoaded):
+        (WebInspectorFrontendClient::attachWindow):
+        (WebInspectorFrontendClient::setAttachedWindowWidth):
+        * WebCoreSupport/WebInspectorClient.h:
+        (WebInspectorFrontendClient):
+
 2013-03-27  Kent Tamura  <tkent@chromium.org>
 
         Rename HTMLFormControlElement::readOnly to isReadOnly

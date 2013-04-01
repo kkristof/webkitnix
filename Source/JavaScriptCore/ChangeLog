@@ -1,3 +1,329 @@
+2013-04-01  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove an unused variable from the ARMv7 Assembler
+        https://bugs.webkit.org/show_bug.cgi?id=113653
+
+        Reviewed by Andreas Kling.
+
+        * assembler/ARMv7Assembler.h:
+        (ARMv7Assembler):
+
+2013-03-31  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Yarr should build using a separate GYP file from JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=113652
+
+        Reviewed by Nico Weber.
+
+        This patch moves JavaScriptCore.gyp to yarr.gyp because Chromium only
+        uses this GYP file to build yarr.
+
+        * JavaScriptCore.gyp/JavaScriptCoreGTK.gyp:
+        * JavaScriptCore.gypi:
+        * yarr/yarr.gyp: Renamed from Source/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp.
+
+2013-03-31  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed, fix a comment. While thinking about TBAA for array accesses,
+        I realized that we have to be super careful about aliasing of typed arrays.
+
+        * dfg/DFGCSEPhase.cpp:
+        (JSC::DFG::CSEPhase::getByValLoadElimination):
+
+2013-03-30  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Move Region into its own header
+        https://bugs.webkit.org/show_bug.cgi?id=113617
+
+        Reviewed by Geoffrey Garen.
+
+        BlockAllocator.h is getting a little crowded. We should move the Region class into its own 
+        header, since it's pretty independent from the BlockAllocator.
+
+        * GNUmakefile.list.am:
+        * JavaScriptCore.gypi:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * heap/BlockAllocator.h:
+        (JSC):
+        * heap/Region.h: Added.
+        (JSC):
+        (DeadBlock):
+        (JSC::DeadBlock::DeadBlock):
+        (Region):
+        (JSC::Region::blockSize):
+        (JSC::Region::isFull):
+        (JSC::Region::isEmpty):
+        (JSC::Region::isCustomSize):
+        (JSC::Region::create):
+        (JSC::Region::createCustomSize):
+        (JSC::Region::Region):
+        (JSC::Region::~Region):
+        (JSC::Region::reset):
+        (JSC::Region::allocate):
+        (JSC::Region::deallocate):
+
+2013-03-29  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Objective-C API: Remove -[JSManagedValue managedValueWithValue:owner:]
+        https://bugs.webkit.org/show_bug.cgi?id=113602
+
+        Reviewed by Geoffrey Garen.
+
+        Since we put the primary way of keeping track of external object graphs (i.e. "managed" references) 
+        in JSVirtualMachine, there is some overlap in the functionality of that interface and JSManagedValue.
+        Specifically, we no longer need the methods that include an owner, since ownership is now tracked 
+        by JSVirtualMachine. These JSManagedValues will become weak pointers unless they are used 
+        with [JSVirtualMachine addManagedReference:withOwner:], in which case their lifetime is tied to that 
+        of their owner.
+
+        * API/JSManagedValue.h:
+        * API/JSManagedValue.mm:
+        (-[JSManagedValue init]):
+        (-[JSManagedValue initWithValue:]):
+        (JSManagedValueHandleOwner::isReachableFromOpaqueRoots):
+        * API/JSVirtualMachine.mm:
+        (getInternalObjcObject):
+        * API/tests/testapi.mm:
+        (-[TextXYZ setOnclick:]):
+        (-[TextXYZ dealloc]):
+
+2013-03-29  Geoffrey Garen  <ggaren@apple.com>
+
+        Simplified bytecode generation by unforking "condition context" codegen
+        https://bugs.webkit.org/show_bug.cgi?id=113554
+
+        Reviewed by Mark Hahnenberg.
+
+        Now, a node that establishes a condition context can always ask its child
+        nodes to generate into that context.
+
+        This has a few advantages:
+
+        (*) Removes a bunch of code;
+
+        (*) Optimizes a few missed cases like "if (!(x < 2))", "if (!!x)", and
+        "if (!x || !y)";
+
+        (*) Paves the way to removing more opcodes.
+
+        * bytecode/Opcode.h:
+        (JSC): Separated out the branching opcodes for clarity.
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::ExpressionNode::emitBytecodeInConditionContext): All expressions
+        can be emitted in a condition context now -- the default behavior is
+        to branch based on the expression's value.
+
+        (JSC::LogicalNotNode::emitBytecodeInConditionContext):
+        (JSC::LogicalOpNode::emitBytecodeInConditionContext):
+        (JSC::ConditionalNode::emitBytecode):
+        (JSC::IfNode::emitBytecode):
+        (JSC::IfElseNode::emitBytecode):
+        (JSC::DoWhileNode::emitBytecode):
+        (JSC::WhileNode::emitBytecode):
+        (JSC::ForNode::emitBytecode):
+        * parser/Nodes.h:
+        (JSC::ExpressionNode::isSubtract):
+        (ExpressionNode):
+        (LogicalNotNode):
+        (LogicalOpNode): Removed lots of code for handling expressions
+        that couldn't generate into a condition context because all expressions
+        can now.
+
+2013-03-28  Geoffrey Garen  <ggaren@apple.com>
+
+        Simplified the bytecode by removing op_loop and op_loop_if_*
+        https://bugs.webkit.org/show_bug.cgi?id=113548
+
+        Reviewed by Filip Pizlo.
+
+        Regular jumps will suffice.
+
+        These opcodes are identical to branches, except they also do timeout
+        checking. That style of timeout checking has been broken for a long 
+        time, and when we add back timeout checking, it won't use these opcodes.
+
+        * JavaScriptCore.order:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dumpBytecode):
+        * bytecode/Opcode.h:
+        (JSC):
+        (JSC::padOpcodeName):
+        * bytecode/PreciseJumpTargets.cpp:
+        (JSC::computePreciseJumpTargets):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitJump):
+        (JSC::BytecodeGenerator::emitJumpIfTrue):
+        (JSC::BytecodeGenerator::emitJumpIfFalse):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::parseBlock):
+        * dfg/DFGCapabilities.h:
+        (JSC::DFG::canCompileOpcode):
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        (JSC::JIT::privateCompileSlowCases):
+        * jit/JIT.h:
+        (JIT):
+        (JSC):
+        * llint/LowLevelInterpreter.asm:
+        * llint/LowLevelInterpreter32_64.asm:
+        * llint/LowLevelInterpreter64.asm:
+
+2013-03-28  Geoffrey Garen  <ggaren@apple.com>
+
+        Simplified the bytecode by removing op_jmp_scopes
+        https://bugs.webkit.org/show_bug.cgi?id=113545
+
+        Reviewed by Filip Pizlo.
+
+        We already have op_pop_scope and op_jmp, so we don't need op_jmp_scopes.
+        Using op_jmp_scopes was also adding a "jump to self" to codegen for
+        return statements, which was pretty silly.
+
+        * JavaScriptCore.order:
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::dumpBytecode):
+        * bytecode/Opcode.h:
+        (JSC::padOpcodeName):
+        * bytecode/PreciseJumpTargets.cpp:
+        (JSC::computePreciseJumpTargets):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitComplexPopScopes):
+        (JSC::BytecodeGenerator::emitPopScopes):
+        * bytecompiler/BytecodeGenerator.h:
+        (BytecodeGenerator):
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::ContinueNode::emitBytecode):
+        (JSC::BreakNode::emitBytecode):
+        (JSC::ReturnNode::emitBytecode):
+        * jit/JIT.cpp:
+        (JSC::JIT::privateCompileMainPass):
+        * jit/JIT.h:
+        * jit/JITOpcodes.cpp:
+        * jit/JITOpcodes32_64.cpp:
+        * jit/JITStubs.cpp:
+        * jit/JITStubs.h:
+        * llint/LLIntSlowPaths.cpp:
+        * llint/LLIntSlowPaths.h:
+        * llint/LowLevelInterpreter.asm:
+
+2013-03-28  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        Safari hangs during test262 run in CodeCache::pruneSlowCase
+        https://bugs.webkit.org/show_bug.cgi?id=113469
+
+        Reviewed by Geoffrey Garen.
+
+        We can end up hanging for quite some time if we add a lot of small keys to the CodeCache.
+        By the time we get around to pruning the cache, we have a potentially tens or hundreds of 
+        thousands of small entries, which can cause a noticeable hang when pruning them.
+
+        To fix this issue we added a hard cap to the number of entries in the cache because we 
+        could potentially have to remove every element in the map.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCacheMap::pruneSlowCase): We need to prune until we're both under the hard cap and the
+        capacity in bytes.
+        * runtime/CodeCache.h:
+        (CodeCacheMap):
+        (JSC::CodeCacheMap::numberOfEntries): Convenience accessor function to the number of entries in 
+        the map that does the cast to size_t of m_map.size() for us. 
+        (JSC::CodeCacheMap::canPruneQuickly): Checks that the total number is under the hard cap. We put this 
+        check inside a function to more accurately describe why we're doing the check and to abstract out 
+        the actual calculation in case we want to coalesce calls to pruneSlowCase in the future.
+        (JSC::CodeCacheMap::prune): Check the number of entries against our hard cap. If it's greater than
+        the cap then we need to drop down to pruneSlowCase.
+
+2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed build fix for the EFL and GTK ports.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCacheMap::pruneSlowCase): Pass a 0 casted to the int64_t type instead of 0LL
+        to the std::max call so the arguments' types match.
+
+2013-03-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Unreviewed build fix: Removed a dead field.
+
+        Pointed out by Mark Lam.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::ByteCodeParser):
+        (ByteCodeParser):
+
+2013-03-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Unreviewed build fix: Removed a dead field.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::ByteCodeParser):
+        (ByteCodeParser):
+
+2013-03-27  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed some dead code in the DFG bytecode parser
+        https://bugs.webkit.org/show_bug.cgi?id=113472
+
+        Reviewed by Sam Weinig.
+
+        Now that Phi creation and liveness analysis are separate passes, we can
+        remove the vestiges of code that used to do that in the bytecode
+        parser.
+
+        * dfg/DFGByteCodeParser.cpp:
+        (ByteCodeParser):
+        (JSC::DFG::ByteCodeParser::addToGraph):
+        (JSC::DFG::ByteCodeParser::parse):
+
+2013-03-27  Filip Pizlo  <fpizlo@apple.com>
+
+        JIT and DFG should NaN-check loads from Float32 arrays
+        https://bugs.webkit.org/show_bug.cgi?id=113462
+        <rdar://problem/13490804>
+
+        Reviewed by Mark Hahnenberg.
+
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileGetByValOnFloatTypedArray):
+        * jit/JITPropertyAccess.cpp:
+        (JSC::JIT::emitFloatTypedArrayGetByVal):
+
+2013-03-27  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        CodeCache::m_capacity can becoming negative, producing undefined results in pruneSlowCase
+        https://bugs.webkit.org/show_bug.cgi?id=113453
+
+        Reviewed by Geoffrey Garen.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCacheMap::pruneSlowCase): We make sure that m_minCapacity doesn't drop below zero now.
+        This prevents m_capacity from doing the same.
+
+2013-03-27  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should use CheckStructure for typed array checks whenever possible
+        https://bugs.webkit.org/show_bug.cgi?id=113374
+
+        Reviewed by Geoffrey Garen.
+        
+        We used to do the right thing, but it appears that this regressed at some point. Since the
+        FixupPhase now has the ability to outright remove spurious CheckStructures on array
+        operations, it is profitable for the ByteCodeParser to insert CheckStructures whenver there
+        is a chance that it might be profitable, and when the profiling tells us what structure to
+        check.
+        
+        Also added some code for doing ArrayProfile debugging.
+        
+        This is a slightly speed-up. Maybe 3% on Mandreel.
+
+        * bytecode/ArrayProfile.cpp:
+        (JSC::ArrayProfile::computeUpdatedPrediction):
+        * dfg/DFGArrayMode.h:
+        (JSC::DFG::ArrayMode::benefitsFromStructureCheck):
+
 2013-03-27  Zeno Albisser  <zeno@webkit.org>
 
         [Qt] Remove Qt specific WorkQueueItem definitions.

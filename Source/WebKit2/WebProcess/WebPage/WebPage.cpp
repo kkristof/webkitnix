@@ -546,7 +546,7 @@ PassRefPtr<Plugin> WebPage::createPlugin(WebFrame* frame, HTMLPlugInElement* plu
         if ((parameters.mimeType == "application/pdf" || parameters.mimeType == "application/postscript")
             || (parameters.mimeType.isEmpty() && (path.endsWith(".pdf", false) || path.endsWith(".ps", false)))) {
 #if ENABLE(PDFKIT_PLUGIN)
-            if (pdfPluginEnabled())
+            if (shouldUsePDFPlugin())
                 return PDFPlugin::create(frame);
 #endif
             return SimplePDFPlugin::create(frame);
@@ -791,6 +791,10 @@ void WebPage::close()
         return;
 
     m_isClosed = true;
+
+    // If there is still no URL, then we never loaded anything in this page, so nothing to report.
+    if (!mainWebFrame()->url().isEmpty())
+        reportUsedFeatures();
 
     if (pageGroup()->isVisibleToInjectedBundle() && WebProcess::shared().injectedBundle())
         WebProcess::shared().injectedBundle()->willDestroyPage(this);
@@ -3866,6 +3870,11 @@ void WebPage::didCancelCheckingText(uint64_t requestID)
 
 void WebPage::didCommitLoad(WebFrame* frame)
 {
+    // If previous URL is invalid, then it's not a real page that's being navigated away from.
+    // Most likely, this is actually the first load to be committed in this page.
+    if (frame->isMainFrame() && frame->coreFrame()->loader()->previousURL().isValid())
+        reportUsedFeatures();
+
     // Only restore the scale factor for standard frame loads (of the main frame).
     if (frame->isMainFrame() && frame->coreFrame()->loader()->loadType() == FrameLoadTypeStandard) {
         Page* page = frame->coreFrame()->page();
@@ -3992,6 +4001,17 @@ PassRefPtr<Range> WebPage::currentSelectionAsRange()
         return 0;
 
     return frame->selection()->toNormalizedRange();
+}
+
+void WebPage::reportUsedFeatures()
+{
+    // FIXME: Feature names should not be hardcoded.
+    const BitVector* features = m_page->featureObserver()->accumulatedFeatureBits();
+    Vector<String> namedFeatures;
+    if (features && features->quickGet(FeatureObserver::SharedWorkerStart))
+        namedFeatures.append("SharedWorker");
+
+    m_loaderClient.featuresUsedInPage(this, namedFeatures);
 }
 
 } // namespace WebKit

@@ -336,7 +336,7 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ScriptExecutionContext* context, ExceptionCode& ec)
+IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionCode& ec)
 {
     if (modeString.isNull()
         || modeString == IDBTransaction::modeReadOnly())
@@ -362,11 +362,10 @@ const AtomicString& IDBTransaction::modeToString(IndexedDB::TransactionMode mode
     case IndexedDB::TransactionVersionChange:
         return IDBTransaction::modeVersionChange();
         break;
-
-    default:
-        ASSERT_NOT_REACHED();
-        return IDBTransaction::modeReadOnly();
     }
+
+    ASSERT_NOT_REACHED();
+    return IDBTransaction::modeReadOnly();
 }
 
 const AtomicString& IDBTransaction::interfaceName() const

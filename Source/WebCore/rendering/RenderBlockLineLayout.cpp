@@ -178,7 +178,7 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
 #if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->exclusionShapeOutsideInfo();
     if (shapeOutsideInfo)
-        shapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(newFloat), logicalHeightForLine(m_block, m_isFirstLine));
+        shapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(newFloat) + shapeOutsideInfo->shapeLogicalTop(), logicalHeightForLine(m_block, m_isFirstLine));
 #endif
 
     if (newFloat->type() == RenderBlock::FloatingObject::FloatLeft) {
@@ -784,9 +784,6 @@ public:
 static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, RenderText* renderer, float xPos, const LineInfo& lineInfo,
                                              GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache, WordMeasurements& wordMeasurements)
 {
-#if !(PLATFORM(CHROMIUM) && OS(DARWIN))
-    UNUSED_PARAM(wordMeasurements);
-#endif
     HashSet<const SimpleFontData*> fallbackFonts;
     GlyphOverflow glyphOverflow;
     
@@ -812,13 +809,20 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     }
     float measuredWidth = 0;
 
-#if !(PLATFORM(CHROMIUM) && OS(DARWIN))
     bool kerningIsEnabled = font.typesettingFeatures() & Kerning;
+
+#if PLATFORM(CHROMIUM) && OS(DARWIN)
+    // FIXME: Having any font feature settings enabled can lead to selection gaps on
+    // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
+    bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
+#else
+    bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath();
+#endif
     
     // Since we don't cache glyph overflows, we need to re-measure the run if
     // the style is linebox-contain: glyph.
     
-    if (!lineBox->fitsToGlyphs() && renderer->canUseSimpleFontCodePath()) {
+    if (!lineBox->fitsToGlyphs() && canUseSimpleFontCodePath) {
         int lastEndOffset = run->m_start;
         for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
             const WordMeasurement& wordMeasurement = wordMeasurements[i];
@@ -847,7 +851,6 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
             fallbackFonts.clear();
         }
     }
-#endif
 
     if (!measuredWidth)
         measuredWidth = renderer->width(run->m_start, run->m_stop - run->m_start, xPos, lineInfo.isFirstLine(), &fallbackFonts, &glyphOverflow);
@@ -1576,6 +1579,12 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         // Begin layout at the logical top of our shape inside.
         if (logicalHeight() + absoluteLogicalTop < exclusionShapeInsideInfo->shapeLogicalTop())
             setLogicalHeight(exclusionShapeInsideInfo->shapeLogicalTop() - absoluteLogicalTop);
+    }
+
+    if (layoutState.flowThread()) {
+        // In a flow thread we need to update absoluteLogicalTop in every run to match to the current logical top increased by the height of the current line to calculate the right values for the
+        // actual shape when a line is beginning in a new region which has a shape on it. Usecase: shape-inside is applied not on the first, but on either of the following regions in the region chain.
+        absoluteLogicalTop = logicalTop() + lineHeight(layoutState.lineInfo().isFirstLine(), isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
     }
 #endif
 

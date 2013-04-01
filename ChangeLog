@@ -1,3 +1,76 @@
+2013-04-01  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [EFL] Enable user-select:all for EFL port
+        https://bugs.webkit.org/show_bug.cgi?id=113494
+
+        Reviewed by Gyuyoung Kim.
+        
+        Add a feature flag for user-select:all and enable it for EFL port.
+
+        * Source/cmake/OptionsEfl.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2013-03-29  Charles Wei  <charles.wei@torchmobile.com.cn>
+
+        [BlackBerry] Cleanup the CONTEXT_MENUS in BlackBerry porting
+        https://bugs.webkit.org/show_bug.cgi?id=113562
+
+        Reviewed by George Staikos.
+        Internally reviewed by Mike Fenton and Gen Mak.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build GTK-specific, non-layer-violating source code into WebCore-independent libPlatformGtk.la
+        https://bugs.webkit.org/show_bug.cgi?id=112546
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Define the new platform_webcore_cppflags.
+
+2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK build fix after r147039.
+
+        * Source/autotools/symbols.filter: Export the missing symbols.
+
+2013-03-27  Patrick Gansterer  <paroga@webkit.org>
+
+        Set WTF_ARM_ARCH_VERSION to correct value when used with MSVC
+        https://bugs.webkit.org/show_bug.cgi?id=113436
+
+        Reviewed by Benjamin Poulain.
+
+        * Source/cmake/OptionsWinCE.cmake: CPU(ARM_TRADITIONAL) is now set correctly by Platform.h.
+
+2013-03-27  Timothy Hatcher  <timothy@apple.com>
+
+        Add support for dock-to-right of the Web Inspector in the Mac port.
+
+        Unfortunately this requires Safari changes, so it is disabled in the nightly builds.
+
+        https://webkit.org/b/113341
+        rdar://problem/10368152
+
+        Reviewed by Joseph Pecoraro.
+
+        * Source/autotools/symbols.filter:
+
+2013-03-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146864.
+        http://trac.webkit.org/changeset/146864
+        https://bugs.webkit.org/show_bug.cgi?id=113391
+
+        causes crashes on Wk2 EFL release bot (Requested by drott on
+        #webkit).
+
+        * Source/cmake/OptionsEfl.cmake:
+
 2013-03-26  Rijubrata Bhaumik  <rijubrata.bhaumik@intel.com>
 
         [EFL] Enable IndexedDB by default

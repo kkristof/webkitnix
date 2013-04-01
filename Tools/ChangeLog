@@ -1,3 +1,339 @@
+2013-04-01  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] Unskip /webkit2/WebKitWebContext/uri-scheme
+        https://bugs.webkit.org/show_bug.cgi?id=104779
+
+        Reviewed by Carlos Garcia Campos.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner): Unskip /webkit2/WebKitWebContext/uri-scheme as it is
+        passing in current trunk.
+
+2013-03-31  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r147289.
+        http://trac.webkit.org/changeset/147289
+        https://bugs.webkit.org/show_bug.cgi?id=113678
+
+        broke Win7 (dbg) build (Requested by shinyak|gardener on
+        #webkit).
+
+        * DumpRenderTree/DumpRenderTree.gypi:
+        * DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.h: Renamed from Tools/DumpRenderTree/chromium/TestRunner/public/WebUserMediaClientMock.h.
+        (WebTestRunner):
+        (WebUserMediaClientMock):
+        (WebTestRunner::WebUserMediaClientMock::~WebUserMediaClientMock):
+        (WebTestRunner::WebUserMediaClientMock::taskList):
+        * Scripts/webkitpy/style/checkers/cpp.py:
+        (check_function_definition):
+
+2013-03-31  Adam Barth  <abarth@webkit.org>
+
+        configure-svn-config.sh fails
+        https://codereview.chromium.org/13392007/
+
+        Reviewed by Eric Seidel.
+
+        This script was trying to use "svn checkout" to dowload a file from
+        svn.webkit.org, but "svn checkout" only works with directories.
+        Instead, we should use "svn export".
+
+        * EWSTools/configure-svn-config.sh:
+
+2013-03-31  Wei Jia  <wjia@chromium.org>
+
+        Allow WebUserMediaClientMock to be used by client
+        https://bugs.webkit.org/show_bug.cgi?id=113633
+
+        Reviewed by Adam Barth.
+
+        Export WebUserMediaClientMock.
+        Allow files in chromium/TestRunner/public to have WEBKIT_EXPORT.
+
+        * DumpRenderTree/DumpRenderTree.gypi:
+        * DumpRenderTree/chromium/TestRunner/public/WebUserMediaClientMock.h: Copied from Tools/DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.h.
+        (WebUserMediaClientMock):
+        * DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.h: Removed.
+        * Scripts/webkitpy/style/checkers/cpp.py:
+        (check_function_definition):
+
+2013-03-29  Alexey Proskuryakov  <ap@apple.com>
+
+        Expose FeatureObserver data to WebKit clients
+        https://bugs.webkit.org/show_bug.cgi?id=113613
+
+        Reviewed by Sam Weinig.
+
+        * WebKitTestRunner/InjectedBundle/InjectedBundlePage.cpp:
+        (WTR::InjectedBundlePage::InjectedBundlePage): Added an initializer for featuresUsedInPage.
+
+2013-03-29  Greg Hughes  <ghughes@apple.com>
+
+        Allow multiple searchKeys to be passed to AXUIElementCopyParameterizedAttributeValue
+        https://bugs.webkit.org/show_bug.cgi?id=112276
+
+        Reviewed by Chris Fleizach.
+
+        Added support to test accessibility search predicates with multiple keys.  
+
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        (uiElementForSearchPredicateCallback):
+        * DumpRenderTree/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * DumpRenderTree/atk/AccessibilityUIElementAtk.cpp:
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        * DumpRenderTree/blackberry/AccessibilityUIElementBlackBerry.cpp:
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        * DumpRenderTree/ios/AccessibilityUIElementIOS.mm:
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        * DumpRenderTree/mac/AccessibilityUIElementMac.mm:
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        * DumpRenderTree/win/AccessibilityUIElementWin.cpp:
+        (AccessibilityUIElement::uiElementForSearchPredicate):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.cpp:
+        (WTR::AccessibilityUIElement::uiElementForSearchPredicate):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * WebKitTestRunner/InjectedBundle/Bindings/AccessibilityUIElement.idl:
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::AccessibilityUIElement::uiElementForSearchPredicate):
+        * WebKitTestRunner/InjectedBundle/mac/AccessibilityUIElementMac.mm:
+        (WTR::AccessibilityUIElement::uiElementForSearchPredicate):
+
+2013-03-29  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix a typo in r147147 to fix Mac EWS.
+
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (PatchProcessingQueue._new_port_name_from_old):
+
+2013-03-28  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL] Build break with latest EFL libraries after r146265
+        https://bugs.webkit.org/show_bug.cgi?id=113558
+
+        Unreviewed build fix.
+
+        * TestWebKitAPI/PlatformWebView.h:
+        * WebKitTestRunner/PlatformWebView.h:
+
+2013-03-28  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        Unreviewed. Fix build break when running --update-efl in WebKit EFL.
+
+        * efl/jhbuild.modules: Remove to run autogen.sh in libgcrypt autogen. It causes configuration fail
+        in libgcrypt build.
+
+2013-03-28  Lucas Forschler  <lforschler@apple.com>
+
+        Disable running tests on Mac EWS until we can find a way to keep the queue at a reasonable length.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (MacEWS):
+
+2013-03-28  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Use the right OS name on Mac EWS instead of mac-future.
+
+        Rubber-stamped by Dirk Pranke.
+
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (PatchProcessingQueue._new_port_name_from_old):
+        (PatchProcessingQueue.begin_work_queue):
+        (PatchProcessingQueue._upload_results_archive_for_patch):
+
+2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build GTK-specific, non-layer-violating source code into WebCore-independent libPlatformGtk.la
+        https://bugs.webkit.org/show_bug.cgi?id=112546
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Reference the platformgtk_cppflags amongst the libWebCoreInternals' CPPFLAGS. GtkVersioning.c file has
+        moved back to Source/WebCore/platform. Fix an indentation issue as well.
+
+2013-03-28  Ming Xie  <mxie@blackberry.com>
+
+        [BlackBerry] Committer Email Updates
+        https://bugs.webkit.org/show_bug.cgi?id=113435
+
+        Reviewed by Rob Buis.
+
+        Add the @blackberry.com email address for all our BlackBerry
+        WebKit committers. This is the first step for our email address
+        migration.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-03-28  Philippe Normand  <pnormand@igalia.com>
+
+        [jhbuild] GStreamer system plugins conflict with the ones built in jhbuild
+        https://bugs.webkit.org/show_bug.cgi?id=113508
+
+        Reviewed by Martin Robinson.
+
+        Prevent the GStreamer plugin scanner to load system-wide
+        plugins. Only the ones built in JHBuild should be loaded and used
+        at runtime.
+
+        * efl/jhbuildrc:
+        * gtk/jhbuildrc:
+
+2013-03-27  Philippe Normand  <pnormand@igalia.com>
+
+        [GTK] run-launcher --gtk -2 fails on a WK2-only build
+        https://bugs.webkit.org/show_bug.cgi?id=113386
+
+        Reviewed by Carlos Garcia Campos.
+
+        * Scripts/webkitdirs.pm:
+        (builtDylibPathForName): The WebKit2GTK .so name change from 1.0
+        version to 3.0. Reflect this change so the builtDylibPathForName
+        function doesn't fail to report the library as found.
+
+2013-03-28  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [CMAKE] Build fix after r147052. Add WebKit2/Shared/Plugins to include path
+        https://bugs.webkit.org/show_bug.cgi?id=113484
+
+        Unreviewed build fix.
+
+        Add "WebKit2/Shared/Plugins" to include path for TestWebKitAPI, WebKitTestRunner.
+
+        * TestWebKitAPI/CMakeLists.txt:
+        * WebKitTestRunner/CMakeLists.txt:
+
+2013-03-27  Mario Sanchez Prada  <mario.prada@samsung.com>
+
+        Revision for the internal jhbuild is too old
+        https://bugs.webkit.org/show_bug.cgi?id=113324
+
+        Reviewed by Martin Robinson.
+
+        Update the minimum required version to a point where jhbuild won't
+        fail installing packages when trying to remove a symlink to a directory.
+
+        * jhbuild/jhbuild-wrapper: Updated revision.
+
+2013-03-27  Gustavo Noronha Silva  <gns@gnome.org>
+
+        [GTK][jhbuild] gst-plugins-good mixes system libsoup-gnome with custom libsoup
+        https://bugs.webkit.org/show_bug.cgi?id=113203
+
+        Reviewed by Philippe Normand.
+
+        We build our libsoup without GNOME support. gst-plugins-good does separate
+        pkg-config checks for libsoup-gnome and libsoup, causing the build to use
+        libsoup-gnome from the system and soup from the jhbuild prefix. This may lead to
+        build failures as the headers of those diverge. We do not use souphttpsrc, so
+        disable it when building gst-plugins-good.
+
+        * gtk/jhbuild.modules: disable soup support in gst-plugins-good.
+
+2013-03-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix after r146852. Please another reference to the Lion leaks builder.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+
+2013-03-27  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK][webkitpy] A huge list of warnings about missing bugs in expectations when running NRWT with WKTR
+        https://bugs.webkit.org/show_bug.cgi?id=113421
+
+        Reviewed by Dirk Pranke.
+
+        When running the layout tests with WKTR through NRWT, the GTK port also uses the generic WK2 TestExpectations file.
+        This file contains a large amount of expectations that are not listing a specific bug modifier, so this produces an
+        equally large amount of warnings due to the GTK port preferring for every expectation to have the bug modifier present
+        in the GTK-specific TestExpectations files.
+
+        To avoid this only enable the warnings only when not using WKTR.
+
+        * Scripts/webkitpy/layout_tests/port/gtk.py:
+        (GtkPort.warn_if_bug_missing_in_test_expectations):
+
+2013-03-27  Antti Koivisto  <antti@apple.com>
+
+        Fix Zalan's email.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-03-27  Csaba Osztrogonác  <ossy@webkit.org>
+
+        master.cfg cleanup
+        https://bugs.webkit.org/show_bug.cgi?id=113195
+
+        Reviewed by Ryosuke Niwa.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+
+2013-03-27  Csaba Osztrogonác  <ossy@webkit.org>
+
+        master.cfg fine-tuning for Qt Mountain Lion Release bot
+        https://bugs.webkit.org/show_bug.cgi?id=113191
+
+        Reviewed by Ryosuke Niwa.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+          - Rename the slave due to its location change.
+          - Update the platform of the slave.
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (RunQtAPITests): Enable running WK2 API tests on Qt.
+        (RunQtAPITests.start):
+        (RunWebKit2Tests.start): Force pixel tests on the Qt Mountain Lion Release builder.
+        (BuildAndTestWebKit2Factory): Added. (Build WK1 and WK2 too, but run only WK2 tests.)
+
+2013-03-27  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL][jhbuild] Evas fails to build when Wayland is present on the system
+        https://bugs.webkit.org/show_bug.cgi?id=113403
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        As of Evas 1.7.5, when Wayland is detected on the system, support for
+        both Wayland SHM and Wayland EGL is automatically enabled in autoconf.
+        The code, however, seems to depend on a few other flags which must be
+        explicitly enabled.
+
+        If those additional GL-related options are passed, we end up
+        having issues on the WebKit side, so disable Wayland support for
+        now.
+
+        * efl/jhbuild.modules:
+
+2013-03-27  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r146864.
+        http://trac.webkit.org/changeset/146864
+        https://bugs.webkit.org/show_bug.cgi?id=113391
+
+        causes crashes on Wk2 EFL release bot (Requested by drott on
+        #webkit).
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-03-27  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [jhbuild] Correctly specify an alternate number of make jobs.
+        https://bugs.webkit.org/show_bug.cgi?id=113396
+
+        Reviewed by Philippe Normand.
+
+        So far, we were using the `MAKEFLAGS' environment variable to pass the
+        number of compilation jobs we wanted to jhbuild. jhbuild itself, on the
+        other hand, prefers to use the `jobs' variable from jhbuildrc for that.
+
+        We now behave more closely to the rest of the WebKit tools by first
+        checking the `NUMBER_OF_PROCESSORS' environment variable and, if it is
+        not set, just letting jhbuild itself figure out how many jobs to use.
+
+        * efl/jhbuildrc:
+        * gtk/jhbuildrc:
+
 2013-03-27  Zeno Albisser  <zeno@webkit.org>
 
         [Qt] Remove Qt specific WorkQueueItem definitions.

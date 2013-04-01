@@ -860,14 +860,11 @@ void RenderLayerBacking::registerScrollingLayers()
 
     compositor()->updateViewportConstraintStatus(m_owningLayer);
 
-    // FIXME: it would be nice to avoid all this work if the platform doesn't implement setLayerIsFixedToContainerLayer().
-    if (renderer()->style()->position() == FixedPosition || compositor()->fixedPositionedByAncestor(m_owningLayer))
-        scrollingCoordinator->setLayerIsFixedToContainerLayer(childForSuperlayers(), true);
-    else {
-        if (m_ancestorClippingLayer)
-            scrollingCoordinator->setLayerIsFixedToContainerLayer(m_ancestorClippingLayer.get(), false);
-        scrollingCoordinator->setLayerIsFixedToContainerLayer(m_graphicsLayer.get(), false);
-    }
+    if (!scrollingCoordinator->supportsFixedPositionLayers())
+        return;
+
+    scrollingCoordinator->updateLayerPositionConstraint(m_owningLayer);
+
     // Page scale is applied as a transform on the root render view layer. Because the scroll
     // layer is further up in the hierarchy, we need to avoid marking the root render view
     // layer as a container.
@@ -1900,8 +1897,7 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         || graphicsLayer == m_backgroundLayer.get()
         || graphicsLayer == m_maskLayer.get()
         || graphicsLayer == m_scrollingContentsLayer.get()) {
-        Frame* frame = m_owningLayer->renderer()->frame();
-        InspectorInstrumentation::willPaint(frame);
+        InspectorInstrumentation::willPaint(renderer());
 
         // The dirtyRect is in the coords of the painting root.
         IntRect dirtyRect = clip;
@@ -1912,9 +1908,9 @@ void RenderLayerBacking::paintContents(const GraphicsLayer* graphicsLayer, Graph
         paintIntoLayer(graphicsLayer, &context, dirtyRect, PaintBehaviorNormal, paintingPhase);
 
         if (m_usingTiledCacheLayer)
-            frame->view()->setLastPaintTime(currentTime());
+            renderer()->frame()->view()->setLastPaintTime(currentTime());
 
-        InspectorInstrumentation::didPaint(frame, &context, clip);
+        InspectorInstrumentation::didPaint(renderer(), &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
         paintScrollbar(m_owningLayer->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {

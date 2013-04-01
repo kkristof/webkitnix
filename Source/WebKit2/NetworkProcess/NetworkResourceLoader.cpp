@@ -54,9 +54,6 @@ namespace WebKit {
 NetworkResourceLoader::NetworkResourceLoader(const NetworkResourceLoadParameters& loadParameters, NetworkConnectionToWebProcess* connection)
     : SchedulableLoader(loadParameters, connection)
     , m_bytesReceived(0)
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-    , m_diskCacheTimer(RunLoop::main(), this, &NetworkResourceLoader::diskCacheTimerFired)
-#endif // __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
 {
     ASSERT(isMainThread());
 }
@@ -174,21 +171,6 @@ void NetworkResourceLoader::connectionToWebProcessDidClose()
     cleanup();
 }
 
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-void NetworkResourceLoader::diskCacheTimerFired()
-{
-    ASSERT(isMainThread());
-    RefPtr<NetworkResourceLoader> adoptedRef = adoptRef(this); // Balance out the ref() when setting the timer.
-
-    ShareableResource::Handle handle;
-    tryGetShareableHandleForResource(handle);
-    if (handle.isNull())
-        return;
-
-    send(Messages::NetworkProcessConnection::DidCacheResource(request(), handle));
-}
-#endif // #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-
 template<typename U> bool NetworkResourceLoader::sendAbortingOnFailure(const U& message)
 {
     bool result = send(message);
@@ -208,8 +190,8 @@ template<typename U> bool NetworkResourceLoader::sendSyncAbortingOnFailure(const
 void NetworkResourceLoader::abortInProgressLoad()
 {
     ASSERT(m_handle);
-    ASSERT(!isMainThread());
- 
+    ASSERT(isMainThread());
+
     m_handle->cancel();
 
     scheduleCleanupOnMainThread();
@@ -221,30 +203,35 @@ void NetworkResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceRe
     if (FormData* formData = request().httpBody())
         formData->removeGeneratedFilesIfNeeded();
 
-    if (!sendAbortingOnFailure(Messages::WebResourceLoader::DidReceiveResponseWithCertificateInfo(response, PlatformCertificateInfo(response))))
-        return;
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-    ShareableResource::Handle handle;
-    tryGetShareableHandleForResource(handle);
-    if (handle.isNull())
-        return;
-
-    // Since we're delivering this resource by ourselves all at once, we'll abort the resource handle since we don't need anymore callbacks from ResourceHandle.
-    abortInProgressLoad();
-    
-    send(Messages::WebResourceLoader::DidReceiveResource(handle, currentTime()));
-#endif // __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
+    sendAbortingOnFailure(Messages::WebResourceLoader::DidReceiveResponseWithCertificateInfo(response, PlatformCertificateInfo(response)));
 }
 
 void NetworkResourceLoader::didReceiveData(ResourceHandle*, const char* data, int length, int encodedDataLength)
 {
+    // The NetworkProcess should never get a didReceiveData callback.
+    // We should always be using didReceiveBuffer.
+    ASSERT_NOT_REACHED();
+}
+
+void NetworkResourceLoader::didReceiveBuffer(WebCore::ResourceHandle*, PassRefPtr<WebCore::SharedBuffer> buffer, int encodedDataLength)
+{
     // FIXME (NetworkProcess): For the memory cache we'll also need to cache the response data here.
     // Such buffering will need to be thread safe, as this callback is happening on a background thread.
     
-    m_bytesReceived += length;
+    m_bytesReceived += buffer->size();
+    
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
+    ShareableResource::Handle handle;
+    tryGetShareableHandleFromSharedBuffer(handle, buffer.get());
+    if (!handle.isNull()) {
+        // Since we're delivering this resource by ourselves all at once, we'll abort the resource handle since we don't need anymore callbacks from ResourceHandle.
+        abortInProgressLoad();
+        send(Messages::WebResourceLoader::DidReceiveResource(handle, currentTime()));
+        return;
+    }
+#endif // __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
 
-    CoreIPC::DataReference dataReference(reinterpret_cast<const uint8_t*>(data), length);
+    CoreIPC::DataReference dataReference(reinterpret_cast<const uint8_t*>(buffer->data()), buffer->size());
     sendAbortingOnFailure(Messages::WebResourceLoader::DidReceiveData(dataReference, encodedDataLength));
 }
 
@@ -254,16 +241,6 @@ void NetworkResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
     // Such bookkeeping will need to be thread safe, as this callback is happening on a background thread.
     invalidateSandboxExtensions();
     send(Messages::WebResourceLoader::DidFinishResourceLoad(finishTime));
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-    // If this resource was large enough that it should be cached to disk as a separate file,
-    // then we should try to re-deliver the resource to the WebProcess once it *is* saved as a separate file.    
-    if (m_bytesReceived >= fileBackedResourceMinimumSize()) {
-        // FIXME: Once a notification API exists that obliviates this timer, use that instead.
-        ref(); // Balanced by an adoptRef() in diskCacheTimerFired().
-        m_diskCacheTimer.startOneShot(10);
-    }
-#endif // __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
     
     scheduleCleanupOnMainThread();
 }
@@ -373,12 +350,6 @@ void NetworkResourceLoader::didReceiveDataArray(ResourceHandle*, CFArrayRef)
 #endif
 
 #if PLATFORM(MAC)
-void NetworkResourceLoader::willCacheResponseAsync(ResourceHandle* handle, NSCachedURLResponse* response)
-{
-    notImplemented();
-    handle->continueWillCacheResponse(response);
-}
-
 void NetworkResourceLoader::willStopBufferingData(ResourceHandle*, const char*, int)
 {
     notImplemented();

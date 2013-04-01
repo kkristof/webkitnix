@@ -380,13 +380,19 @@ bool RenderBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
     if (!logicalHeightLength.isPercent() || isOutOfFlowPositioned() || document()->inQuirksMode())
         return false;
 
+    // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
+    // the closest non-anonymous ancestor box is used instead.
     RenderBlock* cb = containingBlock(); 
-    while (cb->isAnonymousBlock()) {
-        if (cb->isTableCell())
-            return true;
+    while (cb->isAnonymous())
         cb = cb->containingBlock();
-    }
 
+    // Matching RenderBox::percentageLogicalHeightIsResolvableFromBlock() by
+    // ignoring table cell's attribute value, where it says that table cells violate
+    // what the CSS spec says to do with heights. Basically we
+    // don't care if the cell specified a height or not.
+    if (cb->isTableCell())
+        return false;
+    
     if (!cb->style()->logicalHeight().isAuto() || (!cb->style()->logicalTop().isAuto() && !cb->style()->logicalBottom().isAuto()))
         return false;
 

@@ -161,7 +161,7 @@ class InspectorFrontendClientDummy : public InspectorFrontendClientLocal {
 public:
     InspectorFrontendClientDummy(InspectorController*, Page*);
     virtual ~InspectorFrontendClientDummy() { }
-    virtual void attachWindow() OVERRIDE { }
+    virtual void attachWindow(DockSide) OVERRIDE { }
     virtual void detachWindow() OVERRIDE { }
 
     virtual String localizedStringsURL() OVERRIDE { return String(); }
@@ -173,6 +173,7 @@ public:
 
 protected:
     virtual void setAttachedWindowHeight(unsigned) OVERRIDE { }
+    virtual void setAttachedWindowWidth(unsigned) OVERRIDE { }
 };
 
 InspectorFrontendClientDummy::InspectorFrontendClientDummy(InspectorController* controller, Page* page)
@@ -256,6 +257,10 @@ void Internals::resetToConsistentState(Page* page)
 
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
+    if (FrameView* mainFrameView = page->mainFrame()->view()) {
+        mainFrameView->setHeaderHeight(0);
+        mainFrameView->setFooterHeight(0);
+    }
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
     WebCore::Settings::setUsesOverlayScrollbars(false);
@@ -1837,6 +1842,24 @@ void Internals::setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCod
     }
     Page* page = document->page();
     page->setPageScaleFactor(scaleFactor, IntPoint(x, y));
+}
+
+void Internals::setHeaderHeight(Document* document, float height)
+{
+    if (!document || !document->view())
+        return;
+
+    FrameView* frameView = document->view();
+    frameView->setHeaderHeight(height);
+}
+
+void Internals::setFooterHeight(Document* document, float height)
+{
+    if (!document || !document->view())
+        return;
+
+    FrameView* frameView = document->view();
+    frameView->setFooterHeight(height);
 }
 
 #if ENABLE(FULLSCREEN_API)

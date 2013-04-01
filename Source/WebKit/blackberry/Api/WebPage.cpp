@@ -514,8 +514,8 @@ Page* WebPagePrivate::core(const WebPage* webPage)
 void WebPagePrivate::init(const BlackBerry::Platform::String& pageGroupName)
 {
     ChromeClientBlackBerry* chromeClient = new ChromeClientBlackBerry(this);
-    ContextMenuClientBlackBerry* contextMenuClient = 0;
 #if ENABLE(CONTEXT_MENUS)
+    ContextMenuClientBlackBerry* contextMenuClient = 0;
     contextMenuClient = new ContextMenuClientBlackBerry();
 #endif
     EditorClientBlackBerry* editorClient = new EditorClientBlackBerry(this);
@@ -531,7 +531,9 @@ void WebPagePrivate::init(const BlackBerry::Platform::String& pageGroupName)
 
     Page::PageClients pageClients;
     pageClients.chromeClient = chromeClient;
+#if ENABLE(CONTEXT_MENUS)
     pageClients.contextMenuClient = contextMenuClient;
+#endif
     pageClients.editorClient = editorClient;
     pageClients.dragClient = dragClient;
     pageClients.inspectorClient = m_inspectorClient;
@@ -2274,7 +2276,7 @@ Platform::WebContext WebPagePrivate::webContext(TargetDetectionStrategy strategy
     // which node we want, we can send it directly to the node and not do a hit test. The onContextMenu event doesn't require
     // mouse positions so we just set the position at (0,0)
     PlatformMouseEvent mouseEvent(IntPoint(), IntPoint(), PlatformEvent::MouseMoved, 0, NoButton, false, false, false, TouchScreen);
-    if (m_currentContextNode->dispatchMouseEvent(mouseEvent, eventNames().contextmenuEvent, 0)) {
+    if (!m_currentContextNode->dispatchMouseEvent(mouseEvent, eventNames().contextmenuEvent, 0)) {
         context.setFlag(Platform::WebContext::IsOnContextMenuPrevented);
         return context;
     }
@@ -2318,10 +2320,25 @@ Platform::WebContext WebPagePrivate::webContext(TargetDetectionStrategy strategy
         if (imageElement && imageElement->renderer()) {
             context.setFlag(Platform::WebContext::IsImage);
             // FIXME: At the mean time, we only show "Save Image" when the image data is available.
-            if (CachedResource* cachedResource = imageElement->cachedImage()) {
-                if (cachedResource->isLoaded() && cachedResource->resourceBuffer()) {
+            if (CachedImage* cachedImage = imageElement->cachedImage()) {
+                if (cachedImage->isLoaded() && cachedImage->resourceBuffer()) {
                     String url = stripLeadingAndTrailingHTMLSpaces(imageElement->getAttribute(HTMLNames::srcAttr).string());
                     context.setSrc(node->document()->completeURL(url).string());
+
+                    String mimeType = cachedImage->response().mimeType();
+                    if (mimeType.isEmpty()) {
+                        StringBuilder builder;
+                        String extension = cachedImage->image()->filenameExtension();
+                        builder.append("image/");
+                        if (extension.isEmpty())
+                            builder.append("unknown");
+                        else if (extension == "jpg")
+                            builder.append("jpeg");
+                        else
+                            builder.append(extension);
+                        mimeType = builder.toString();
+                    }
+                    context.setMimeType(mimeType);
                 }
             }
             String alt = imageElement->altText();
@@ -5167,7 +5184,7 @@ void WebPage::setExtraPluginDirectory(const BlackBerry::Platform::String& path)
     PluginDatabase* database = PluginDatabase::installedPlugins(true /* true for loading default directories */);
     if (!database)
         return;
-    
+
     Vector<String> pluginDirectories = database->pluginDirectories();
     if (path.empty() || pluginDirectories.contains(String(path)))
         return;
@@ -5513,7 +5530,6 @@ bool WebPagePrivate::commitRootLayerIfNeeded()
         return false;
     }
 
-    willComposite();
     m_needsCommit = false;
     // We get here either due to the commit timer, which would have called
     // render if a one shot sync was needed. Or we get called from render
@@ -5530,6 +5546,7 @@ bool WebPagePrivate::commitRootLayerIfNeeded()
     if (m_overlayLayer)
         m_overlayLayer->platformLayer()->commitOnWebKitThread(scale);
 
+    willComposite();
     // Stash the visible content rect according to webkit thread
     // This is the rectangle used to layout fixed positioned elements,
     // and that's what the layer renderer wants.

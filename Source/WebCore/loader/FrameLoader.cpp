@@ -683,14 +683,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
             if (!headerContentLanguage.isEmpty())
                 m_frame->document()->setContentLanguage(headerContentLanguage);
         }
-
-        if (SecurityPolicy::allowSubstituteDataAccessToLocal() && m_documentLoader->substituteData().isValid()) {
-            // If this document was loaded with substituteData, then the document can
-            // load local resources. See https://bugs.webkit.org/show_bug.cgi?id=16756
-            // and https://bugs.webkit.org/show_bug.cgi?id=19760 for further
-            // discussion.
-            m_frame->document()->securityOrigin()->grantLoadLocalResources();
-        }
     }
 
     history()->restoreDocumentState();
@@ -1363,7 +1355,7 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
         return;
 
     if (m_frame->document())
-        m_previousUrl = m_frame->document()->url();
+        m_previousURL = m_frame->document()->url();
 
     policyChecker()->setLoadType(type);
     RefPtr<FormState> formState = prpFormState;
@@ -1726,7 +1718,7 @@ void FrameLoader::commitProvisionalLoad()
     if (pdl && m_documentLoader) {
         // Check if the destination page is allowed to access the previous page's timing information.
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
-        m_documentLoader->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_previousUrl));
+        m_documentLoader->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_previousURL));
     }
 
     // Call clientRedirectCancelledOrFinished() here so that the frame load delegate is notified that the redirect's
@@ -2956,9 +2948,10 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
     if (m_frame == topFrame)
         return false;
 
-    if (equalIgnoringCase(content, "deny"))
-        return true;
-    else if (equalIgnoringCase(content, "sameorigin")) {
+    XFrameOptionsDisposition disposition = parseXFrameOptionsHeader(content);
+
+    switch (disposition) {
+    case XFrameOptionsSameOrigin: {
         FeatureObserver::observe(m_frame->document(), FeatureObserver::XFrameOptionsSameOrigin);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
         if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
@@ -2969,12 +2962,22 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
                 break;
             }
         }
-    } else if (!equalIgnoringCase(content, "allowall")) {
-        String message = "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.";
-        m_frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, requestIdentifier);
+        return false;
     }
-
-    return false;
+    case XFrameOptionsDeny:
+        return true;
+    case XFrameOptionsAllowAll:
+        return false;
+    case XFrameOptionsConflict:
+        m_frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.", requestIdentifier);
+        return true;
+    case XFrameOptionsInvalid:
+        m_frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.", requestIdentifier);
+        return false;
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
 }
 
 void FrameLoader::loadProvisionalItemFromCachedPage()
@@ -3350,7 +3353,7 @@ void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_openedFrames, "openedFrames");
     info.addMember(m_outgoingReferrer, "outgoingReferrer");
     info.addMember(m_networkingContext, "networkingContext");
-    info.addMember(m_previousUrl, "previousUrl");
+    info.addMember(m_previousURL, "previousURL");
     info.addMember(m_requestedHistoryItem, "requestedHistoryItem");
 }
 

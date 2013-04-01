@@ -227,9 +227,6 @@ storage/domstorage/localstorage/storagetracker
 userscripts
 plugins/plugin-document-load-prevented-userscript.html
 
-# ------ Doesn't support WOFF yet.
-fast/css/font-face-woff.html
-
 # Need to implement getFormValue().
 plugins/form-value.html
 
@@ -1813,6 +1810,9 @@ fast/writing-mode/japanese-rl-text.html
 # Requires WebP support.
 fast/canvas/canvas-toDataURL-webp.html
 fast/images/webp-image-decoding.html
+fast/images/webp-color-profile-lossless.html
+fast/images/webp-color-profile-lossy-alpha.html
+fast/images/webp-color-profile-lossy.html
 http/tests/images/webp-partial-load.html
 http/tests/images/webp-progressive-load.html
 
@@ -2273,6 +2273,7 @@ fast/block/lineboxcontain/font.html
 css3/flexbox/flexbox-overflow-auto.html
 fast/block/line-layout/selection-highlight-overlap.html
 fast/css/empty-cell-baseline.html
+fast/exclusions/shape-inside/shape-inside-polygon-padding-002.html
 fast/forms/datalist/input-appearance-range-with-datalist-rtl.html
 fast/forms/datalist/update-range-with-datalist.html
 fast/multicol/cell-shrinkback.html
@@ -2299,7 +2300,7 @@ webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse-padding.ht
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-circle.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-ellipse.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ Skip ]
-webkit.org/b/110447 fast/regions/shape-inside-on-regions.html [ Skip ]
+webkit.org/b/110447 fast/regions/shape-inside/shape-inside-on-regions.html [ Skip ]
 
 # Failing fast/css/sticky/ tests with minor pixel differences
 # https://bugs.webkit.org/show_bug.cgi?id=92080
@@ -2572,6 +2573,7 @@ webkit.org/b/102226 fast/dom/Window/open-window-min-size.html
 webkit.org/b/100196 http/tests/inspector/network/image-as-text-loading-data-url.html
 
 webkit.org/b/100424 editing/selection/user-select-all-selection.html [ Failure ]
+webkit.org/b/100424 editing/selection/user-select-all-with-shift.html [ Failure ]
 
 webkit.org/b/101539 editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
@@ -2618,6 +2620,7 @@ webkit.org/b/112893 editing/spelling/spellcheck-paste-continuous-disabled.html [
 webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-cues-added-once.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-style.html [ Skip ]
+webkit.org/b/103769 media/track/track-in-band-legacy-api.html [ Skip ]
 
 webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
 
@@ -2699,6 +2702,8 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
 
+Bug(ojan) fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
+Bug(ojan) scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
 
 # Border-fit should happen at layout time rather than paint time
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Skip ]
@@ -2717,3 +2722,6 @@ webkit.org/b/108257 compositing/overflow/composited-scrolling-creates-a-stacking
 
 # Feature not implemented
 webkit.org/b/91611 [ Mac Win ] media/media-higher-prio-audio-stream.html [ Skip ]
+
+# Newly added test in r147094 fails
+webkit.org/b/113513 inspector/styles/paste-property.html [ Skip ]

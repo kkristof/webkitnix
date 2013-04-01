@@ -48,6 +48,10 @@ WebInspector.HeapSnapshotGridNode = function(tree, hasChildren)
     this._retrievedChildrenRanges = [];
 }
 
+WebInspector.HeapSnapshotGridNode.Events = {
+    PopulateComplete: "PopulateComplete"
+}
+
 WebInspector.HeapSnapshotGridNode.prototype = {
     /**
      * @return {WebInspector.HeapSnapshotProviderProxy}
@@ -141,6 +145,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 percentSpan.className = "percent-column";
                 percentSpan.textContent = this.data[percentColumn];
                 div.appendChild(percentSpan);
+                div.addStyleClass("heap-snapshot-multiple-values");
             }
             cell.appendChild(div);
         }
@@ -291,7 +296,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
             if (afterPopulate)
                 afterPopulate();
-            this.dispatchEventToListeners("populate complete");
+            this.dispatchEventToListeners(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete);
         }
         serializeNextChunk.call(this);
     },

@@ -1,3 +1,172 @@
+2013-03-30  Adam Barth  <abarth@webkit.org>
+
+        [Chromium] Remove unused includes of stdio.h
+        https://bugs.webkit.org/show_bug.cgi?id=113650
+
+        Reviewed by Dimitri Glazkov.
+
+        We shouldn't include stdio.h. These includes aren't used anyway.
+
+        * src/WebInputEvent.cpp:
+        * src/x11/WebScreenInfoFactory.cpp:
+
+2013-03-30  Tom Sepez  <tsepez@chromium.org>
+
+        View-source iframes are dangerous (and not very useful).
+        https://bugs.webkit.org/show_bug.cgi?id=113345
+
+        Reviewed by Adam Barth.
+
+        * features.gypi:
+        Disable VIEWSOURCE_ATTRIBUTE for chromium.
+
+2013-03-30  Alexei Filippov  <alph@chromium.org>
+
+        Web Inspector: Fonts refactoring
+        https://bugs.webkit.org/show_bug.cgi?id=113047
+
+        Reviewed by Pavel Feldman.
+
+        Unify fonts usage across inspector.
+        Make inspector default font depend on platform.
+
+        * src/js/devTools.css:
+        (body.platform-linux):
+        (body.platform-mac):
+        (body.platform-windows):
+
+2013-03-29  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r191432.  Requested by
+        "Philip Rogers" <pdr@google.com> via sheriffbot.
+
+        * DEPS:
+
+2013-03-29  Joshua Bell  <jsbell@chromium.org>
+
+        IndexedDB: Bind lifetime of in-memory backing stores to IDBFactory backend
+        https://bugs.webkit.org/show_bug.cgi?id=110820
+
+        Reviewed by Tony Chang.
+
+        * tests/IDBBackingStoreTest.cpp:
+        (WebCore::IDBBackingStoreTest::SetUp): Use openInMemory rather than empty path.
+        (WebCore::TEST): Added IDBFactoryBackendTest.MemoryBackingStoreLifetime to verify refs.
+
+2013-03-28  James Robinson  <jamesr@chromium.org>
+
+        [chromium] Remove unused WebRegularExpression API
+        https://bugs.webkit.org/show_bug.cgi?id=113520
+
+        Reviewed by Kent Tamura.
+
+        Last reference to these files removed in r190880.
+
+        * WebKit.gyp:
+        * public/WebRegularExpression.h: Removed.
+        * public/WebTextCaseSensitivity.h: Removed.
+        * src/AssertMatchingEnums.cpp:
+        * src/WebRegularExpression.cpp: Removed.
+
+2013-03-28  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Use widget.parent() for plugin WebMouseEvents
+        https://bugs.webkit.org/show_bug.cgi?id=113543
+
+        Reviewed by James Robinson.
+
+        In r142571 I switches widget.parent() to widget.root() in the plugin
+        WebCore event -> WebMouseEvent creator, to make the converter the
+        inverse of the one going the other way and avoid null pointer crashes.
+        But the plugin code expects it to be parent() (see
+        http://crbug.com/223335).
+
+        * src/WebInputEventConversion.cpp:
+        (WebKit::updateWebMouseEventFromWebCoreMouseEvent):
+
+2013-03-28  Xianzhu Wang  <wangxianzhu@chromium.org>
+
+        [Chromium] Don't create SolidColorLayer for full transparent background
+        https://bugs.webkit.org/show_bug.cgi?id=113524
+
+        Reviewed by James Robinson.
+
+        * tests/GraphicsLayerChromiumTest.cpp:
+        (GraphicsLayerChromiumTest::setContentsToSolidColor):
+
+2013-03-28  Kent Tamura  <tkent@chromium.org>
+
+        [Chromium] REGRESSION(r88030): Right-click on invalid form controls unexpectedly dispatches 'invalid' events
+        https://bugs.webkit.org/show_bug.cgi?id=113377
+
+        Reviewed by Dimitri Glazkov.
+
+        * src/ContextMenuClientImpl.cpp:
+        (WebKit::ContextMenuClientImpl::getCustomMenuFromDefaultItems):
+        We don't need to call HTMLFormElement::checkValidity here.
+
+2013-03-28  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed.  Rolled Chromium DEPS to r191172.  Requested by
+        pdr2 via sheriffbot.
+
+        * DEPS:
+
+2013-03-28  Matt Falkenhagen  <falken@chromium.org>
+
+        Refactoring: Replace Element::disabled and isEnabledFormControl with isDisabledFormControl
+        https://bugs.webkit.org/show_bug.cgi?id=113273
+
+        Reviewed by Kent Tamura.
+
+        Element::disabled is about form controls and Element::isEnabledFormControl
+        is redundant with it, so replace them with a single function
+        Element::isDisabledFormControl.
+
+        * src/WebFormControlElement.cpp:
+        (WebKit::WebFormControlElement::isEnabled):
+        * src/WebOptionElement.cpp:
+        (WebKit::WebOptionElement::isEnabled):
+        * src/WebPasswordFormUtils.cpp:
+        (WebKit::findPasswordFormFields):
+        * src/WebSearchableFormData.cpp:
+        (HTMLNames::findSuitableSearchInputElement):
+        (HTMLNames::buildSearchString):
+
+2013-03-27  Keishi Hattori  <keishi@webkit.org>
+
+        [Chromium] Enable touch events in PagePopup
+        https://bugs.webkit.org/show_bug.cgi?id=113380
+
+        We want to use touch events inside the calendar picker. This patch adds
+        PagePopupChromeClient::needTouchEvents() and moved hasTouchEventHandlers()
+        from WebViewClient to WebWidgetClient.
+
+        Reviewed by Kent Tamura.
+
+        * public/WebViewClient.h:
+        * public/WebWidgetClient.h:
+        (WebWidgetClient):
+        (WebKit::WebWidgetClient::hasTouchEventHandlers): Moved from WebViewClient.
+        * src/WebPagePopupImpl.cpp:
+        (WebKit):
+
+2013-03-27  Timothy Hatcher  <timothy@apple.com>
+
+        Add support for dock-to-right of the Web Inspector in the Mac port.
+
+        Unfortunately this requires Safari changes, so it is disabled in the nightly builds.
+
+        https://webkit.org/b/113341
+        rdar://problem/10368152
+
+        Reviewed by Joseph Pecoraro.
+
+        * src/InspectorFrontendClientImpl.cpp:
+        (WebKit::InspectorFrontendClientImpl::changeAttachedWindowWidth):
+        * src/InspectorFrontendClientImpl.h:
+        (InspectorFrontendClientImpl):
+
 2013-03-27  Kent Tamura  <tkent@chromium.org>
 
         Rename HTMLFormControlElement::readOnly to isReadOnly

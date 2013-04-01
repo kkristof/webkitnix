@@ -250,6 +250,9 @@ perf/
 # https://bugs.webkit.org/show_bug.cgi?id=42821
 animations/play-state.html
 
+webkit.org/b/113598 animations/animation-delay-changed.html [ Pass Failure ]
+webkit.org/b/113599 svg/animations/reinserting-svg-into-document.html [ Pass Failure ]
+
 # window.eventSender doesn't exist in devtools front-end on mac.
 # https://bugs.webkit.org/show_bug.cgi?id=106793
 inspector/editor/text-editor-formatter.html [ Skip ]
@@ -265,6 +268,9 @@ inspector/debugger/dom-breakpoints.html
 inspector/debugger/event-listener-breakpoints.html
 inspector/debugger/step-through-event-listeners.html
 inspector/debugger/xhr-breakpoints.html
+
+# Test is flaky and thus not useful until fixed.
+webkit.org/b/113589 inspector/debugger/debugger-scripts-reload.html [ Pass Failure ]
 
 # JSC doesn't support heap profiling
 # https://bugs.webkit.org/show_bug.cgi?id=50485
@@ -354,6 +360,9 @@ plugins/plugin-initiate-popup-window.html
 # Requires WebP support.
 fast/canvas/canvas-toDataURL-webp.html
 fast/images/webp-image-decoding.html
+fast/images/webp-color-profile-lossless.html
+fast/images/webp-color-profile-lossy-alpha.html
+fast/images/webp-color-profile-lossy.html
 http/tests/images/webp-partial-load.html
 http/tests/images/webp-progressive-load.html
 
@@ -1189,6 +1198,7 @@ webkit.org/b/82752 plugins/netscape-dom-access-and-reload.html [ Failure Pass ]
 # Asserts sometimes
 webkit.org/b/111902 [ Debug ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Crash Pass ]
 webkit.org/b/111902 [ Debug ] fast/frames/sandboxed-iframe-plugins.html [ Crash Pass ]
+webkit.org/b/111902 [ Debug ] http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Crash Pass ]
 
 # Flaky tests when run multi-process
 webkit.org/b/58192 fast/dom/frame-loading-via-document-write.html [ Failure Pass ]
@@ -1355,6 +1365,7 @@ Bug(jernoble) [ MountainLion Lion SnowLeopard ] media/video-src-blob.html
 webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band.html
 webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band-cues-added-once.html
 webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band-style.html
+webkit.org/b/103663 [ MountainLion Lion SnowLeopard ] media/track/track-in-band-legacy-api.html
 
 # These two tests sometimes timeout
 webkit.org/b/112492 media/track/track-language-preference.html [ Failure Pass ]
@@ -1439,6 +1450,8 @@ webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure Pass ]
 webkit.org/b/111606 fast/borders/border-fit.html [ Failure Pass ]
 webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure Pass ]
 
+Bug(ojan) fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
+Bug(ojan) scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
 
 # Flakey
 webkit.org/b/112533 media/auto-play-in-sandbox-with-allow-scripts.html [ Pass Failure ]
@@ -1477,6 +1490,3 @@ webkit.org/b/113227 transitions/cross-fade-border-image.html [ Pass Failure ]
 webkit.org/b/113227 transitions/default-timing-function.html [ Pass Failure ]
 webkit.org/b/113227 transitions/svg-text-shadow-transition.html [ Pass Failure ]
 
-# Failed due to http://trac.webkit.org/changeset/146949
-webkit.org/b/113361 accessibility/table-with-aria-role.html [ Failure ]
-webkit.org/b/113361 platform/mac/accessibility/button-shouldnot-have-axvalue.html [ Failure ]

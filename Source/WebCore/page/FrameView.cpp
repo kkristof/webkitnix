@@ -195,6 +195,8 @@ FrameView::FrameView(Frame* frame)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
     , m_didRunAutosize(false)
+    , m_headerHeight(0)
+    , m_footerHeight(0)
 #if ENABLE(CSS_FILTERS)
     , m_hasSoftwareFilters(false)
 #endif
@@ -884,7 +886,52 @@ GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) co
     return 0;
 #endif
 }
+
+GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
+{
+    RenderView* renderView = this->renderView();
+    if (!renderView)
+        return 0;
+
+    ASSERT(m_frame == m_frame->page()->mainFrame());
+
+#if USE(ACCELERATED_COMPOSITING)
+    return renderView->compositor()->updateLayerForHeader(wantsLayer);
+#else
+    return 0;
 #endif
+}
+
+GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
+{
+    RenderView* renderView = this->renderView();
+    if (!renderView)
+        return 0;
+
+    ASSERT(m_frame == m_frame->page()->mainFrame());
+
+#if USE(ACCELERATED_COMPOSITING)
+    return renderView->compositor()->updateLayerForFooter(wantsLayer);
+#else
+    return 0;
+#endif
+}
+
+#endif
+
+void FrameView::setHeaderHeight(int headerHeight)
+{
+    if (m_frame && m_frame->page())
+        ASSERT(m_frame == m_frame->page()->mainFrame());
+    m_headerHeight = headerHeight;
+}
+
+void FrameView::setFooterHeight(int footerHeight)
+{
+    if (m_frame && m_frame->page())
+        ASSERT(m_frame == m_frame->page()->mainFrame());
+    m_footerHeight = footerHeight;
+}
 
 bool FrameView::flushCompositingStateForThisFrame(Frame* rootFrameForFlush)
 {
@@ -1617,7 +1664,15 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         // Fixed items should always have layers.
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
-        
+
+#if USE(ACCELERATED_COMPOSITING)
+        if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView
+            || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent) {
+            // Don't invalidate for invisible fixed layers.
+            continue;
+        }
+#endif
+
 #if ENABLE(CSS_FILTERS)
         if (layer->hasAncestorWithFilterOutsets()) {
             // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot 
@@ -2852,7 +2907,7 @@ IntRect FrameView::windowClipRect(bool clipToContents) const
     ASSERT(m_frame->view() == this);
 
     if (paintsEntireContents())
-        return IntRect(IntPoint(), contentsSize());
+        return IntRect(IntPoint(), totalContentsSize());
 
     // Set our clip rect to be our contents.
     IntRect clipRect = contentsToWindow(visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars));
@@ -2989,9 +3044,9 @@ bool FrameView::isScrollable()
     // 4) scrolling: no;
 
     // Covers #1
-    IntSize contentSize = contentsSize();
+    IntSize totalContentsSize = this->totalContentsSize();
     IntSize visibleContentSize = visibleContentRect().size();
-    if ((contentSize.height() <= visibleContentSize.height() && contentSize.width() <= visibleContentSize.width()))
+    if ((totalContentsSize.height() <= visibleContentSize.height() && totalContentsSize.width() <= visibleContentSize.width()))
         return false;
 
     // Covers #2.
@@ -3351,8 +3406,6 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (!frame())
         return;
 
-    InspectorInstrumentation::willPaint(m_frame.get());
-
     Document* document = m_frame->document();
 
 #ifndef NDEBUG
@@ -3383,6 +3436,8 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     ASSERT(!needsLayout());
     if (needsLayout())
         return;
+
+    InspectorInstrumentation::willPaint(renderView);
 
     bool isTopLevelPainter = !sCurrentPaintTimeStamp;
     if (isTopLevelPainter)
@@ -3446,7 +3501,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (isTopLevelPainter)
         sCurrentPaintTimeStamp = 0;
 
-    InspectorInstrumentation::didPaint(m_frame.get(), p, rect);
+    InspectorInstrumentation::didPaint(renderView, p, rect);
 }
 
 void FrameView::setPaintBehavior(PaintBehavior behavior)

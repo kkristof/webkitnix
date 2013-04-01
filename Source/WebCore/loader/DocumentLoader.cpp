@@ -45,6 +45,7 @@
 #include "FrameLoaderClient.h"
 #include "FrameTree.h"
 #include "HTMLFormElement.h"
+#include "HTMLFrameOwnerElement.h"
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
@@ -53,6 +54,7 @@
 #include "ProgressTracker.h"
 #include "ResourceBuffer.h"
 #include "SchemeRegistry.h"
+#include "SecurityPolicy.h"
 #include "Settings.h"
 #include "SubresourceLoader.h"
 #include "TextResourceDecoder.h"
@@ -102,6 +104,7 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_substituteData(substituteData)
     , m_originalRequestCopy(req)
     , m_request(req)
+    , m_originalSubstituteDataWasValid(substituteData.isValid())
     , m_committed(false)
     , m_isStopping(false)
     , m_gotFirstByte(false)
@@ -588,6 +591,8 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, identifier, response);
             String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
             frame()->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message, identifier);
+            if (HTMLFrameOwnerElement* ownerElement = frame()->ownerElement())
+                ownerElement->dispatchEvent(Event::create(eventNames().loadEvent, false, false));
             cancelMainResourceLoad(frameLoader()->cancelledError(m_request));
             return;
         }
@@ -756,6 +761,14 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         m_gotFirstByte = true;
         m_writer.begin(documentURL(), false);
         m_writer.setDocumentWasLoadedAsPartOfNavigation();
+
+        if (SecurityPolicy::allowSubstituteDataAccessToLocal() && m_originalSubstituteDataWasValid) {
+            // If this document was loaded with substituteData, then the document can
+            // load local resources. See https://bugs.webkit.org/show_bug.cgi?id=16756
+            // and https://bugs.webkit.org/show_bug.cgi?id=19760 for further
+            // discussion.
+            m_frame->document()->securityOrigin()->grantLoadLocalResources();
+        }
 
         if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
             return;
@@ -1273,8 +1286,12 @@ const KURL& DocumentLoader::unreachableURL() const
 
 void DocumentLoader::setDefersLoading(bool defers)
 {
-    if (mainResourceLoader())
+    // Multiple frames may be loading the same main resource simultaneously. If deferral state changes,
+    // each frame's DocumentLoader will try to send a setDefersLoading() to the same underlying ResourceLoader. Ensure only
+    // the "owning" DocumentLoader does so, as setDefersLoading() is not resilient to setting the same value repeatedly.
+    if (mainResourceLoader() && mainResourceLoader()->documentLoader() == this)
         mainResourceLoader()->setDefersLoading(defers);
+
     setAllDefersLoading(m_subresourceLoaders, defers);
     setAllDefersLoading(m_plugInStreamLoaders, defers);
     if (!defers)

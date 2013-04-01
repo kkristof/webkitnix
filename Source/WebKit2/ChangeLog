@@ -1,3 +1,524 @@
+2013-03-30  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed buildfix after r147260.
+
+        * WebProcess/qt/QtBuiltinBundlePage.cpp:
+        (WebKit::QtBuiltinBundlePage::QtBuiltinBundlePage):
+
+2013-03-29  Seokju Kwon  <seokju.kwon@gmail.com>
+
+        [EFL] Unreviewed build fix after r147251
+        https://bugs.webkit.org/show_bug.cgi?id=113631
+
+        Unreviewed build fix.
+
+        Add NETWORK_PROCESS guard.
+
+        * UIProcess/WebResourceCacheManagerProxy.cpp:
+        (WebKit::WebResourceCacheManagerProxy::clearCacheForAllOrigins):
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        Crash when "willSendRequest" causes the ResourceLoader to be cancelled.
+        <rdar://problem/13531679> and https://bugs.webkit.org/show_bug.cgi?id=113616
+
+        Reviewed by Alexey Proskuryakov.
+
+        These callbacks to the WebCore ResourceLoader can cause the WebResourceLoader to be destroyed.
+        A RefPtr<> protector fixes that.
+
+        Additionally we can invalidate the WebResourceLoader to avoid unnecessary callbacks to the NetworkProcess.
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::remove): Call detachFromCoreLoader() on a removed WebResourceLoader.
+
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::detachFromCoreLoader): Clear out the ResourceLoader pointer.
+        (WebKit::WebResourceLoader::willSendRequest): Protect this, and don't message back to the NetworkProcess if its not needed.
+        (WebKit::WebResourceLoader::canAuthenticateAgainstProtectionSpace): Ditto
+        (WebKit::WebResourceLoader::didReceiveResource): Paranoid hardening - Protect this before delivering the data to the WebCore
+          ResourceLoader, and null check it before delivering the "didFinishLoader" call.
+        * WebProcess/Network/WebResourceLoader.h:
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        Should never send events to plugins waiting on asynchronous initialization.
+        <rdar://problem/13538945> and https://bugs.webkit.org/show_bug.cgi?id=113612
+
+        Reviewed by Anders Carlsson.
+
+        Sending mouse and keyboard events to a plugin in the middle of asynchronous initialization is silly.
+
+        A quick audit of the sendSync() messages in PluginProxy suggests the following 8 can just have an early return:
+
+        * WebProcess/Plugins/PluginProxy.cpp:
+        (WebKit::PluginProxy::handleMouseEvent):
+        (WebKit::PluginProxy::handleWheelEvent):
+        (WebKit::PluginProxy::handleMouseEnterEvent):
+        (WebKit::PluginProxy::handleMouseLeaveEvent):
+        (WebKit::PluginProxy::handleKeyboardEvent):
+        (WebKit::PluginProxy::handleEditingCommand):
+        (WebKit::PluginProxy::isEditingCommandEnabled):
+        (WebKit::PluginProxy::handlesPageScaleFactor):
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        Should never send events to plugins waiting on asynchronous initialization.
+        <rdar://problem/13538945> and https://bugs.webkit.org/show_bug.cgi?id=113612
+
+        Reviewed by Anders Carlsson.
+
+        Sending mouse and keyboard events to a plugin in the middle of asynchronous initialization is silly.
+
+        A quick audit of the sendSync() messages in PluginProxy suggests the following 8 can just have an early return:
+
+        * WebProcess/Plugins/PluginProxy.cpp:
+        (WebKit::PluginProxy::handleMouseEvent):
+        (WebKit::PluginProxy::handleWheelEvent):
+        (WebKit::PluginProxy::handleMouseEnterEvent):
+        (WebKit::PluginProxy::handleMouseLeaveEvent):
+        (WebKit::PluginProxy::handleKeyboardEvent):
+        (WebKit::PluginProxy::handleEditingCommand):
+        (WebKit::PluginProxy::isEditingCommandEnabled):
+        (WebKit::PluginProxy::handlesPageScaleFactor):
+
+2013-03-29  Alexey Proskuryakov  <ap@apple.com>
+
+        Expose FeatureObserver data to WebKit clients
+        https://bugs.webkit.org/show_bug.cgi?id=113613
+
+        Reviewed by Sam Weinig.
+
+        * Shared/APIClientTraits.cpp:
+        * Shared/APIClientTraits.h:
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.h:
+        * WebProcess/InjectedBundle/InjectedBundlePageLoaderClient.cpp:
+        (WebKit::InjectedBundlePageLoaderClient::featuresUsedInPage):
+        * WebProcess/InjectedBundle/InjectedBundlePageLoaderClient.h:
+        Added a new injected bundle client call, featuresUsedInPage.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::close):
+        (WebKit::WebPage::didCommitLoad):
+        (WebKit::WebPage::reportUsedFeatures):
+        * WebProcess/WebPage/WebPage.h:
+        Report features used in a page when navigating away, or when closing.
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        Crash when "willSendRequest" causes the ResourceLoader to be cancelled.
+        <rdar://problem/13531679> and https://bugs.webkit.org/show_bug.cgi?id=113616
+
+        Reviewed by Alexey Proskuryakov.
+
+        These callbacks to the WebCore ResourceLoader can cause the WebResourceLoader to be destroyed.
+        A RefPtr<> protector fixes that.
+
+        Additionally we can invalidate the WebResourceLoader to avoid unnecessary callbacks to the NetworkProcess.
+
+        * WebProcess/Network/WebResourceLoadScheduler.cpp:
+        (WebKit::WebResourceLoadScheduler::remove): Call detachFromCoreLoader() on a removed WebResourceLoader.
+
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::detachFromCoreLoader): Clear out the ResourceLoader pointer.
+        (WebKit::WebResourceLoader::willSendRequest): Protect this, and don't message back to the NetworkProcess if its not needed.
+        (WebKit::WebResourceLoader::canAuthenticateAgainstProtectionSpace): Ditto
+        (WebKit::WebResourceLoader::didReceiveResource): Paranoid hardening - Protect this before delivering the data to the WebCore
+          ResourceLoader, and null check it before delivering the "didFinishLoader" call.
+        * WebProcess/Network/WebResourceLoader.h:
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        Should never send events to plugins waiting on asynchronous initialization.
+        <rdar://problem/13538945> and https://bugs.webkit.org/show_bug.cgi?id=113612
+
+        Reviewed by Anders Carlsson.
+
+        Sending mouse and keyboard events to a plugin in the middle of asynchronous initialization is silly.
+
+        A quick audit of the sendSync() messages in PluginProxy suggests the following 8 can just have an early return:
+
+        * WebProcess/Plugins/PluginProxy.cpp:
+        (WebKit::PluginProxy::handleMouseEvent):
+        (WebKit::PluginProxy::handleWheelEvent):
+        (WebKit::PluginProxy::handleMouseEnterEvent):
+        (WebKit::PluginProxy::handleMouseLeaveEvent):
+        (WebKit::PluginProxy::handleKeyboardEvent):
+        (WebKit::PluginProxy::handleEditingCommand):
+        (WebKit::PluginProxy::isEditingCommandEnabled):
+        (WebKit::PluginProxy::handlesPageScaleFactor):
+
+2013-03-29  Brady Eidson  <beidson@apple.com>
+
+        "Empty cache..." clears the disk cache from each WebProcess.
+        <rdar://problem/12456652> and https://bugs.webkit.org/show_bug.cgi?id=113603
+
+        Reviewed by Sam Weinig.
+
+        * NetworkProcess/NetworkProcess.cpp:
+        (WebKit::NetworkProcess::NetworkProcess):
+        (WebKit::NetworkProcess::terminate): Override ChildProcess::terminate to allow us to finish clearing the cache.
+        * NetworkProcess/NetworkProcess.h:
+
+        * NetworkProcess/NetworkProcess.messages.in: Add the ClearCacheForAllOrigins message.
+
+        * NetworkProcess/mac/NetworkProcessMac.mm:
+        (WebKit::NetworkProcess::clearCacheForAllOrigins): Clear the disk cache.
+        (WebKit::NetworkProcess::platformTerminate): Wait for the clear to complete.
+
+        * UIProcess/WebResourceCacheManagerProxy.cpp:
+        (WebKit::WebResourceCacheManagerProxy::clearCacheForAllOrigins): Message the network process, also.
+
+        * WebProcess/mac/WebProcessMac.mm:
+        (WebKit::WebProcess::platformClearResourceCaches): Don't clear the disk cache if we use the network process.
+
+2013-03-28  Brady Eidson  <beidson@apple.com>
+
+        We leak NetworkConnectionToWebProcess objects.
+        <rdar://problem/13393118> and https://bugs.webkit.org/show_bug.cgi?id=113551
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/NetworkConnectionToWebProcess.cpp:
+        (WebKit::NetworkConnectionToWebProcess::didClose): Remove this from the global set
+          of NetworkConnectionToWebProcess objects.
+
+2013-03-28  Brady Eidson  <beidson@apple.com>
+
+        Resources are never revalidated/reloaded if a cached response exists on disk.
+        <rdar://problem/13479890> and https://bugs.webkit.org/show_bug.cgi?id=113542
+
+        Reviewed by Alexey Proskuryakov.
+
+        Trying to get a cached resource in didReceiveResponse and then aborting the load
+        meant we never performed any new loads.
+
+        We can check and see if the data is cached data inside didReceiveBuffer, instead.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::didReceiveResponse): Don't try for cached resources here.
+        (WebKit::NetworkResourceLoader::didReceiveData): This callback should never be used.
+        (WebKit::NetworkResourceLoader::didReceiveBuffer): Try to see if this data objected represents
+          a file based mmaped buffer.
+        * NetworkProcess/NetworkResourceLoader.h:
+
+        Refactor these utility functions to start from either a CFURLCachedResponse or a SharedBuffer:
+        * NetworkProcess/mac/NetworkResourceLoaderMac.mm:
+        (CFCachedURLResponseGetMemMappedData):
+        (CFURLCacheIsMemMappedData):
+        (WebKit::tryGetShareableHandleFromCFData):
+        (WebKit::NetworkResourceLoader::tryGetShareableHandleFromCFURLCachedResponse):
+        (WebKit::NetworkResourceLoader::tryGetShareableHandleFromSharedBuffer):
+
+2013-03-28  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] REGRESSION (r125500): WebFrameLoaderClient's active m_pluginView can be zeroed by PluginDocuments leaving the page cache
+        https://bugs.webkit.org/show_bug.cgi?id=113430
+        <rdar://problem/12729564>
+
+        Reviewed by Brady Eidson.
+
+        http://trac.webkit.org/changeset/147152 was wrong, and should have been
+        (as the ChangeLog stated) testing the argument to redirectDataToPlugin,
+        not the value of m_pluginView.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::redirectDataToPlugin):
+
+2013-03-28  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] REGRESSION (r125500): WebFrameLoaderClient's active m_pluginView can be zeroed by PluginDocuments leaving the page cache
+        https://bugs.webkit.org/show_bug.cgi?id=113430
+        <rdar://problem/12729564>
+
+        Reviewed by Brady Eidson.
+
+        Ignore redirectDataToPlugin(0), which is only called from PluginDocument::detach(),
+        and only after r125500. Otherwise, PluginDocuments that are put into the page cache
+        but leave later can clear a totally different and legitimate PluginView from the
+        WebFrameLoaderClient, causing data to be lost and PluginDocument loads to stall.
+
+        This restores our behavior to the pre-r125500 state, which should be fine, as we
+        clear WebFrameLoaderClient's m_pluginView when the load fails or finishes. This
+        matches the changes made in r125500 for every platform other than Chromium and WebKit2.
+
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::redirectDataToPlugin):
+
+2013-03-28  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: shouldUsePDFPlugin can't use pdfLayerControllerClass() because it asserts if it's not available
+        https://bugs.webkit.org/show_bug.cgi?id=113533
+        <rdar://problem/13528720>
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::shouldUsePDFPlugin):
+        Move shouldUsePDFPlugin to WebPageMac, where it belongs, and explicitly look up PDFLayerController
+        instead of using pdfLayerControllerClass(), which ASSERT()s if it isn't available.
+
+2013-03-28  Brady Eidson  <beidson@apple.com>
+
+        Reduce PluginProcess lifetime.
+        <rdar://problem/12465479> and https://bugs.webkit.org/show_bug.cgi?id=113523
+
+        Reviewed by Sam Weinig.
+
+        Lower the minimum process lifetime from 30 minutes to 2 minutes.
+        Lower the "shutdown after last plugin goes away" period from 10 minutes to 1 minute.
+
+        * UIProcess/Plugins/PluginProcessProxy.cpp:
+
+2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Build GTK-specific, non-layer-violating source code into WebCore-independent libPlatformGtk.la
+        https://bugs.webkit.org/show_bug.cgi?id=112546
+
+        Reviewed by Martin Robinson.
+
+        * GNUmakefile.am: Reference the platform_webcore_cppflags and GTK, libsecret and libsoup dependencies' cflags amongst the
+        libPlatformGtk2's CPPFLAGS.
+        * Scripts/generate-forwarding-headers.pl: Remove the Platform framework from the list of the frameworks to be searched
+        for forwarding headers, it's at the moment not necessary to be included.
+        * Shared/gtk/ArgumentCodersGtk.cpp: Adjust the forwarding header for GtkVersioning.h that's been moved back under the
+        WebCore framework.
+        * Shared/gtk/WebEventFactory.cpp: Ditto.
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp: Ditto.
+        * WebProcess/Plugins/Netscape/x11/NetscapePluginX11.cpp: Ditto.
+
+2013-03-27  Tim Horton  <timothy_horton@apple.com>
+
+        Unreviewed Qt build fix after http://trac.webkit.org/changeset/147067.
+
+        * WebProcess/WebPage/WebPage.cpp:
+
+2013-03-27  Tim Horton  <timothy_horton@apple.com>
+
+        PDFPlugin: Enable PDFPlugin only if its dependencies exist on the system
+        https://bugs.webkit.org/show_bug.cgi?id=113372
+        <rdar://problem/12685301>
+
+        Reviewed by Alexey Proskuryakov.
+
+        * Shared/mac/PDFKitImports.h: Wrap in #if PLATFORM(MAC).
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::createPlugin): Use shouldUsePDFPlugin.
+        (WebKit::WebPage::shouldUsePDFPlugin): If the PDFPlugin setting is enabled but PDFLayerController is not available, don't use PDFPlugin.
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage): Add shouldUsePDFPlugin
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::platformPreferencesDidChange): Use shouldUsePDFPlugin.
+
+2013-03-27  Sam Weinig  <sam@webkit.org>
+
+        [WebKit2] Need SPI to determine whether a plug-in is blocked
+        https://bugs.webkit.org/show_bug.cgi?id=113463
+
+        Reviewed by Anders Carlsson.
+
+        Add new SPI, WKContextCopyPlugInInfoForBundleIdetifier, to get data about a plug-in,
+        including whether it is blocked by x-protect.
+
+        * UIProcess/WebLoaderClient.cpp:
+        * UIProcess/API/C/WKAPICast.h:
+        (WebKit::toWKPluginLoadPolicy):
+        (WebKit::toPluginModuleLoadPolicy):
+        Move to a shared location.
+
+        * UIProcess/API/C/mac/WKContextPrivateMac.h:
+        * UIProcess/API/C/mac/WKContextPrivateMac.mm:
+        (WKContextIsPlugInUpdateAvailable):
+        (WKPlugInInfoPathKey):
+        (WKPlugInInfoBundleIdentifierKey):
+        (WKPlugInInfoVersionKey):
+        (WKPlugInInfoLoadPolicyKey):
+        (WKPlugInInfoUpdatePastLastBlockedVersionIsKnownAvailableKey):
+        (WKContextCopyPlugInInfoForBundleIdetifier):
+        Add new SPI and dictionary keys.
+
+        * UIProcess/Plugins/PluginInfoStore.cpp:
+        (WebKit::PluginInfoStore::findPluginWithBundleIdentifer):
+        * UIProcess/Plugins/PluginInfoStore.h:
+        * UIProcess/Plugins/mac/PluginInfoStoreMac.mm:
+        (WebKit::PluginInfoStore::findPluginWithBundleIdentifer):
+        Add function to lookup plug-ins by bundle identifier.
+
+2013-03-27  Beth Dakin  <bdakin@apple.com>
+
+        WKBundlePagePrivateMac.h is not being exported
+        https://bugs.webkit.org/show_bug.cgi?id=113470
+        -and corresponding-
+        <rdar://problem/13522909>
+
+        Reviewed by Sam Weinig.
+
+        Mark it as private instead of project.
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-03-26  Beth Dakin  <bdakin@apple.com>
+
+        Need WK2 API to give a WebView a header and footer
+        https://bugs.webkit.org/show_bug.cgi?id=113352
+        -and corresponding-
+        <rdar://problem/13383835>
+
+        Reviewed by Simon Fraser.
+
+        New API allows setting and getting layers for a header and footer.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/InjectedBundle/API/c/mac: Added.
+        * WebProcess/InjectedBundle/API/c/mac/WKBundlePagePrivateMac.h: Added.
+        * WebProcess/InjectedBundle/API/c/mac/WKBundlePagePrivateMac.mm: Added.
+        (WKBundlePageGetHeaderLayer):
+        (WKBundlePageSetHeaderLayer):
+        (WKBundlePageGetFooterLayer):
+        (WKBundlePageSetFooterLayer):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::setTopOverhangImage):
+        (WebKit::WebPage::setBottomOverhangImage):
+        (WebKit):
+        (WebKit::WebPage::getHeaderLayer):
+        (WebKit::WebPage::setHeaderLayerWithHeight):
+        (WebKit::WebPage::getFooterLayer):
+        (WebKit::WebPage::setFooterLayerWithHeight):
+
+2013-03-27  Jer Noble  <jer.noble@apple.com>
+
+        Going full screen and cancelling gets system into a weird state
+        https://bugs.webkit.org/show_bug.cgi?id=113445
+
+        Reviewed by Eric Carlson.
+
+        Replace an array of BOOL member variables to track full screen state with a single enum, and
+        add state tracking for the "waiting to enter" and "waiting to exit" states. Use this new,
+        more specific enum to be more stringent about the state when responding to WebProcess
+        messages. Also only set the placeholder view's target once in full screen mode.
+
+        * UIProcess/mac/WKFullScreenWindowController.h:
+        * UIProcess/mac/WKFullScreenWindowController.mm:
+        (-[WKFullScreenWindowController isFullScreen]): Yes when in full screen, entering full screen,
+            or waiting to enter full screen.
+        (-[WKFullScreenWindowController cancelOperation:]): Only requestExitFullScreen() if a watchdog
+            has not already been made active.
+        (-[WKFullScreenWindowController enterFullScreen:]): Use the new state variable.
+        (-[WKFullScreenWindowController beganEnterFullScreenWithInitialFrame:WebCore::finalFrame:WebCore::]): Ditto.
+        (-[WKFullScreenWindowController finishedEnterFullScreenAnimation:]): Ditto. Set the placeholder target.
+        (-[WKFullScreenWindowController exitFullScreen]): Ditto. Clear the placeholder target.
+        (-[WKFullScreenWindowController beganExitFullScreenWithInitialFrame:WebCore::finalFrame:WebCore::]): Ditto.
+        (-[WKFullScreenWindowController completeFinishExitFullScreenAnimationAfterRepaint]): Ditto.
+        (-[WKFullScreenWindowController performClose:]): Ditto.
+        (-[WKFullScreenWindowController close]): Ditto.
+        (-[WKFullScreenWindowController _startEnterFullScreenAnimationWithDuration:]): Ditto.
+
+2013-03-27  Brady Eidson  <beidson@apple.com>
+
+        Blind attempt at fixing the release build.
+
+        * NetworkProcess/mac/NetworkResourceLoaderMac.mm:
+        (WebKit::NetworkResourceLoader::willCacheResponseAsync):
+
+2013-03-27  Brady Eidson  <beidson@apple.com>
+
+        Mem mapped resource data improvements.
+        <rdar://problem/13196481> and https://bugs.webkit.org/show_bug.cgi?id=113422
+
+        Reviewed by Alexey Proskuryakov (and looked over by Geoff Garen).
+
+        Remove timer-based approach support code:
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::NetworkResourceLoader):
+        (WebKit::NetworkResourceLoader::abortInProgressLoad):
+        (WebKit::NetworkResourceLoader::didFinishLoading):
+        * NetworkProcess/NetworkResourceLoader.h:
+
+        Add an object to encapsulate monitoring a resource going in to the disk cache.
+        It listens for a callback on the cached response indicating it is disk backed
+        and also sets a timeout so we don't keep the monitor alive and waiting forever.
+        * NetworkProcess/mac/DiskCacheMonitor.h: Added.
+        (WebKit::DiskCacheMonitor::destinationID):
+        (WebKit::DiskCacheMonitor::connectionToWebProcess):
+        (WebKit::DiskCacheMonitor::resourceRequest):
+        * NetworkProcess/mac/DiskCacheMonitor.mm: Added.
+        (CFCachedURLResponseSetBecameFileBackedCallBackBlock):
+        (WebKit::monitorFileBackingStoreCreation):
+        (WebKit::DiskCacheMonitor::DiskCachingMonitor):
+        (WebKit::DiskCacheMonitor::connection):
+
+        Refactoring and monitor certain cached responses:
+        * NetworkProcess/mac/NetworkResourceLoaderMac.mm:
+        (CFCachedURLResponseGetMemMappedData):
+        (WebKit::NetworkResourceLoader::tryGetShareableHandleFromCFURLCachedResponse): Use CFCachedURLResponseGetMemMappedData
+          to explicitly get an mem-mapped data object.
+        (WebKit::NetworkResourceLoader::tryGetShareableHandleForResource):
+        (WebKit::NetworkResourceLoader::willCacheResponseAsync): If the resource is over the minimum
+          size then set up a disk caching monitor.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+
+2013-03-26  Timothy Hatcher  <timothy@apple.com>
+
+        Add support for dock-to-right of the Web Inspector in the Mac port.
+
+        Unfortunately this requires Safari changes, so it is disabled in the nightly builds.
+
+        https://webkit.org/b/113341
+        rdar://problem/10368152
+
+        Reviewed by Joseph Pecoraro.
+
+        * Resources/Dock.pdf: Removed.
+        * Resources/DockBottom.pdf: Added.
+        * Resources/DockRight.pdf: Added.
+        * Shared/WebPreferencesStore.h:
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::WebInspectorProxy):
+        (WebKit::WebInspectorProxy::attachBottom):
+        (WebKit::WebInspectorProxy::attachRight):
+        (WebKit::WebInspectorProxy::attach):
+        (WebKit::WebInspectorProxy::detach):
+        (WebKit::WebInspectorProxy::setAttachedWindowWidth):
+        (WebKit::WebInspectorProxy::createInspectorPage):
+        (WebKit::WebInspectorProxy::canAttach):
+        * UIProcess/WebInspectorProxy.h:
+        (WebInspectorProxy):
+        * UIProcess/WebInspectorProxy.messages.in:
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (-[WKWebInspectorProxyObjCAdapter attachRight:]):
+        (-[WKWebInspectorProxyObjCAdapter attachBottom:]):
+        (-[WKWebInspectorWindow _cursorForResizeDirection:]):
+        (-[WKWebInspectorWindow _customTitleFrame]):
+        (WebKit::createDockButton):
+        (WebKit::WebInspectorProxy::createInspectorWindow):
+        (WebKit::WebInspectorProxy::platformCreateInspectorPage):
+        (WebKit::WebInspectorProxy::platformAttachAvailabilityChanged):
+        (WebKit::WebInspectorProxy::inspectedViewFrameDidChange):
+        (WebKit::WebInspectorProxy::platformInspectedWindowWidth):
+        (WebKit::WebInspectorProxy::platformAttach):
+        (WebKit::WebInspectorProxy::platformDetach):
+        (WebKit::WebInspectorProxy::platformSetAttachedWindowHeight):
+        (WebKit::WebInspectorProxy::platformSetAttachedWindowWidth):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.cpp:
+        (WebKit::WebInspectorFrontendClient::attachWindow):
+        (WebKit::WebInspectorFrontendClient::setAttachedWindowWidth):
+        * WebProcess/WebCoreSupport/WebInspectorFrontendClient.h:
+        (WebInspectorFrontendClient):
+        * WebProcess/WebPage/WebInspector.cpp:
+        (WebKit::WebInspector::attachBottom):
+        (WebKit::WebInspector::attachRight):
+        (WebKit::WebInspector::setAttachedWindowWidth):
+        (WebKit::WebInspector::attachedBottom):
+        (WebKit::WebInspector::attachedRight):
+        (WebKit::WebInspector::detached):
+        * WebProcess/WebPage/WebInspector.h:
+        (WebInspector):
+        * WebProcess/WebPage/WebInspector.messages.in:
+
 2013-03-27  Kondapally Kalyan  <kalyan.kondapally@intel.com>
 
         [CoordGfx] Support to share GraphicsSurface flags with client.

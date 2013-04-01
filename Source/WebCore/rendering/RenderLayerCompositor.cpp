@@ -373,6 +373,21 @@ void RenderLayerCompositor::didFlushChangesForLayer(RenderLayer* layer, const Gr
         fixedRootBackgroundLayerChanged();
 }
 
+void RenderLayerCompositor::didChangeVisibleRect()
+{
+    GraphicsLayer* rootLayer = rootGraphicsLayer();
+    if (!rootLayer)
+        return;
+
+    FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
+    if (!frameView)
+        return;
+
+    IntRect visibleRect = m_clipLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
+    if (rootLayer->visibleRectChangeRequiresFlush(visibleRect))
+        scheduleLayerFlush();
+}
+
 void RenderLayerCompositor::notifyFlushBeforeDisplayRefresh(const GraphicsLayer*)
 {
     if (!m_layerUpdater) {
@@ -1577,7 +1592,7 @@ void RenderLayerCompositor::updateRootLayerPosition()
     if (m_rootContentLayer) {
         const IntRect& documentRect = m_renderView->documentRect();
         m_rootContentLayer->setSize(documentRect.size());
-        m_rootContentLayer->setPosition(documentRect.location());
+        m_rootContentLayer->setPosition(FloatPoint(documentRect.x(), documentRect.y() + m_renderView->frameView()->headerHeight()));
     }
     if (m_clipLayer) {
         FrameView* frameView = m_renderView->frameView();
@@ -1597,6 +1612,8 @@ void RenderLayerCompositor::updateRootLayerPosition()
 
     updateLayerForTopOverhangArea(m_layerForTopOverhangArea);
     updateLayerForBottomOverhangArea(m_layerForBottomOverhangArea);
+    updateLayerForHeader(m_layerForHeader);
+    updateLayerForFooter(m_layerForFooter);
 #endif
 }
 
@@ -1935,31 +1952,6 @@ bool RenderLayerCompositor::clipsCompositingDescendants(const RenderLayer* layer
     return layer->hasCompositingDescendant() && layer->renderer()->hasClipOrOverflowClip();
 }
 
-// Return true if there is an ancestor layer that is fixed positioned to the view.
-// Note that if the ancestor has a stacking context and is fixed position then this method
-// will return false.
-bool RenderLayerCompositor::fixedPositionedByAncestor(const RenderLayer* layer) const
-{
-    if (!layer->isComposited() || !layer->parent())
-        return false;
-
-    const RenderLayer* compositingAncestor = layer->ancestorCompositingLayer();
-    if (!compositingAncestor)
-        return false;
-
-    const RenderLayer* curr = layer;
-    while (curr) {
-        const RenderLayer* next = curr->parent();
-        if (next == compositingAncestor)
-            return false;
-
-        if (next && next->renderer()->style()->position() == FixedPosition)
-            return true;
-        curr = next;
-    }
-    return false;
-}
-
 bool RenderLayerCompositor::requiresCompositingForScrollableFrame() const
 {
     // Need this done first to determine overflow.
@@ -2194,6 +2186,13 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
         return layer->isComposited();
     }
 
+    bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
+    if (!paintsContent) {
+        if (viewportConstrainedNotCompositedReason)
+            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForNoVisibleContent;
+        return false;
+    }
+
     // Fixed position elements that are invisible in the current view don't get their own layer.
     if (FrameView* frameView = m_renderView->frameView()) {
         LayoutRect viewBounds = frameView->viewportConstrainedVisibleContentRect();
@@ -2206,13 +2205,6 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
         }
     }
     
-    bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
-    if (!paintsContent) {
-        if (viewportConstrainedNotCompositedReason)
-            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForNoVisibleContent;
-        return false;
-    }
-
     return true;
 }
 
@@ -2488,8 +2480,60 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForBottomOverhangArea(bool want
         m_scrollLayer->addChildBelow(m_layerForBottomOverhangArea.get(), m_rootContentLayer.get());
     }
 
-    m_layerForBottomOverhangArea->setPosition(FloatPoint(0, m_rootContentLayer->size().height()));
+    m_layerForBottomOverhangArea->setPosition(FloatPoint(0, m_rootContentLayer->size().height() + m_renderView->frameView()->headerHeight() + m_renderView->frameView()->footerHeight()));
     return m_layerForBottomOverhangArea.get();
+}
+
+GraphicsLayer* RenderLayerCompositor::updateLayerForHeader(bool wantsLayer)
+{
+    if (m_renderView->document()->ownerElement())
+        return 0;
+
+    if (!wantsLayer) {
+        if (m_layerForHeader) {
+            m_layerForHeader->removeFromParent();
+            m_layerForHeader = nullptr;
+        }
+        return 0;
+    }
+
+    if (!m_layerForHeader) {
+        m_layerForHeader = GraphicsLayer::create(graphicsLayerFactory(), this);
+#ifndef NDEBUG
+        m_layerForHeader->setName("header");
+#endif
+        m_scrollLayer->addChildBelow(m_layerForHeader.get(), m_rootContentLayer.get());
+    }
+
+    m_layerForHeader->setPosition(FloatPoint(0, 0));
+    m_layerForHeader->setSize(FloatSize(m_renderView->frameView()->visibleWidth(), m_renderView->frameView()->headerHeight()));
+    return m_layerForHeader.get();
+}
+
+GraphicsLayer* RenderLayerCompositor::updateLayerForFooter(bool wantsLayer)
+{
+    if (m_renderView->document()->ownerElement())
+        return 0;
+
+    if (!wantsLayer) {
+        if (m_layerForFooter) {
+            m_layerForFooter->removeFromParent();
+            m_layerForFooter = nullptr;
+        }
+        return 0;
+    }
+
+    if (!m_layerForFooter) {
+        m_layerForFooter = GraphicsLayer::create(graphicsLayerFactory(), this);
+#ifndef NDEBUG
+        m_layerForFooter->setName("footer");
+#endif
+        m_scrollLayer->addChildBelow(m_layerForFooter.get(), m_rootContentLayer.get());
+    }
+
+    m_layerForFooter->setPosition(FloatPoint(0, m_rootContentLayer->size().height() + m_renderView->frameView()->headerHeight()));
+    m_layerForFooter->setSize(FloatSize(m_renderView->frameView()->visibleWidth(), m_renderView->frameView()->footerHeight()));
+    return m_layerForFooter.get();
 }
 
 #endif
@@ -2934,6 +2978,7 @@ void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
 
     unregisterViewportConstrainedLayer(layer);
     m_viewportConstrainedLayers.remove(layer);
+    m_viewportConstrainedLayersNeedingUpdate.remove(layer);
 }
 
 FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportConstraints(RenderLayer* layer) const
@@ -2949,7 +2994,7 @@ FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportCons
 
     constraints.setLayerPositionAtLastLayout(graphicsLayer->position());
     constraints.setViewportRectAtLastLayout(viewportRect);
-        
+
     RenderStyle* style = layer->renderer()->style();
     if (!style->left().isAuto())
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
@@ -3103,6 +3148,8 @@ void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo
     info.addMember(m_contentShadowLayer, "contentShadowLayer");
     info.addMember(m_layerForTopOverhangArea, "layerForTopOverhangArea");
     info.addMember(m_layerForBottomOverhangArea, "layerForBottomOverhangArea");
+    info.addMember(m_layerForHeader, "layerForHeader");
+    info.addMember(m_layerForFooter, "layerForFooter");
 #endif
     info.addMember(m_layerUpdater, "layerUpdater");
 }

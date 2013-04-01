@@ -95,6 +95,7 @@
 #include "DictionaryPopupInfo.h"
 #include "LayerHostingContext.h"
 #include <wtf/RetainPtr.h>
+OBJC_CLASS CALayer;
 OBJC_CLASS NSDictionary;
 OBJC_CLASS NSObject;
 OBJC_CLASS WKAccessibilityWebPageObject;
@@ -368,6 +369,11 @@ public:
 
     void setTopOverhangImage(PassRefPtr<WebImage>);
     void setBottomOverhangImage(PassRefPtr<WebImage>);
+
+    CALayer *getHeaderLayer() const;
+    void setHeaderLayerWithHeight(CALayer *, int);
+    CALayer *getFooterLayer() const;
+    void setFooterLayerWithHeight(CALayer *, int);
 #endif
 
     bool windowIsFocused() const;
@@ -613,6 +619,7 @@ public:
     void setScrollingPerformanceLoggingEnabled(bool);
 
 #if PLATFORM(MAC)
+    bool shouldUsePDFPlugin() const;
     bool pdfPluginEnabled() const { return m_pdfPluginEnabled; }
     void setPDFPluginEnabled(bool enabled) { m_pdfPluginEnabled = enabled; }
 #endif
@@ -823,6 +830,8 @@ private:
     static PluginView* focusedPluginViewForFrame(WebCore::Frame*);
     static PluginView* pluginViewForFrame(WebCore::Frame*);
 
+    void reportUsedFeatures();
+
     OwnPtr<WebCore::Page> m_page;
     RefPtr<WebFrame> m_mainFrame;
     RefPtr<InjectedBundleBackForwardList> m_backForwardList;
@@ -887,6 +896,9 @@ private:
     LayerHostingMode m_layerHostingMode;
 
     RetainPtr<WKAccessibilityWebPageObject> m_mockAccessibilityElement;
+
+    RetainPtr<CALayer> m_headerLayer;
+    RetainPtr<CALayer> m_footerLayer;
 
     WebCore::KeyboardEvent* m_keyboardEventBeingInterpreted;
 

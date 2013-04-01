@@ -408,8 +408,12 @@ public:
     // and descendant layers, and this layer only.
     virtual void flushCompositingState(const FloatRect& /* clipRect */) { }
     virtual void flushCompositingStateForThisLayerOnly() { }
-    
-    // Return a string with a human readable form of the layer tree, If debug is true 
+
+    // If the exposed rect of this layer changes, returns true if this or descendant layers need a flush,
+    // for example to allocate new tiles.
+    virtual bool visibleRectChangeRequiresFlush(const FloatRect& /* clipRect */) const { return false; }
+
+    // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeAsTextBehavior = LayerTreeAsTextBehaviorNormal) const;
 

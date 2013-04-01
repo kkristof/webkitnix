@@ -935,6 +935,17 @@ fast/dom/timer-throttling-hidden-page.html [ WontFix ]
 # Chromium disabled MATHML
 crbug.com/22554 mathml [ Skip ]
 
+# Chromium disabled iframe viewsource attribute.
+fast/frames/viewsource-attribute.html [ WontFix ]
+fast/frames/viewsource-empty-attribute-value.html [ WontFix ]
+fast/frames/viewsource-linebreak.html [ WontFix ]
+fast/frames/viewsource-link-on-href-value.html [ WontFix ]
+fast/frames/viewsource-on-image-file.html [ WontFix ]
+fast/frames/viewsource-plain-text-tags.html [ WontFix ]
+fast/frames/viewsource-xml.html [ WontFix ]
+http/tests/security/view-source-no-javascript-url.html [ WontFix ]
+http/tests/security/view-source-no-refresh.html [ WontFix ]
+
 # INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
 webkit.org/b/109272 fast/forms/datetime [ Skip ]
 webkit.org/b/109272 fast/forms/datetime-multiple-fields [ Skip ]
@@ -979,7 +990,6 @@ crbug.com/8941 [ Win ] http/tests/xmlhttprequest/web-apps/012.html [ Failure ]
 crbug.com/20521 [ Win ] fast/text/atsui-multiple-renderers.html [ Failure ]
 webkit.org/b/78544 [ Linux ] fast/text/atsui-multiple-renderers.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/20521 [ XP ] fast/text/atsui-pointtooffset-calls-cg.html [ Failure ]
-webkit.org/b/113169 [ Linux Release ] fast/text/international/danda-space.html [ ImageOnlyFailure ]
 
 # This test checks that we hack around a bug in helvetica.  We fail to.
 crbug.com/20519 [ Win ] fast/text/wide-zero-width-space.html [ Failure ]
@@ -3357,7 +3367,7 @@ webkit.org/b/98687 fast/css-generated-content/table-row-group-to-inline.html [ F
 
 # These are real failues due to 95121.
 # This is spilling caused by LANCZOS3 scaling algorithm that samples outside the source rect.
-webkit.org/b/95121 [ Win Mac ] fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
+webkit.org/b/95121 [ Win Mac Linux ] fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
 
 # css3-conditionals support is not yet enabled.
 webkit.org/b/86146 css3/supports.html
@@ -3399,7 +3409,7 @@ webkit.org/b/94240 [ Linux ] platform/chromium/virtual/deferred/fast/images/colo
 webkit.org/b/94240 [ Linux Win ] platform/chromium/virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
 webkit.org/b/94240 platform/chromium/virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure ]
 webkit.org/b/94240 platform/chromium/virtual/deferred/fast/images/pdf-as-image-landscape.html [ WontFix ]
-webkit.org/b/94240 [ Win Mac ] platform/chromium/virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
+webkit.org/b/94240 [ Win Mac Linux ] platform/chromium/virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
 webkit.org/b/94240 [ Mac ] platform/chromium/virtual/deferred/fast/images/support-broken-image-delegate.html [ Failure ]
 
 # This ref-test doesn't work on Chromium Mac ("Test" is offset).
@@ -3477,6 +3487,7 @@ webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-off
 webkit.org/b/100478  [ Mac ] css3/filters/custom/effect-custom.html [ ImageOnlyFailure ]
 
 webkit.org/b/100424 editing/selection/user-select-all-selection.html [ Failure ]
+webkit.org/b/100424 editing/selection/user-select-all-with-shift.html [ Failure ]
 webkit.org/b/100475 compositing/tiling/tile-cache-zoomed.html [ Failure ]
 webkit.org/b/100475 platform/chromium/virtual/softwarecompositing/tiling/tile-cache-zoomed.html [ Failure ]
 
@@ -3502,7 +3513,7 @@ webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-resize-reset
 webkit.org/b/90022 fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/90022 platform/chromium/virtual/gpu/fast/canvas/canvas-as-image-hidpi.html [ WontFix ]
 webkit.org/b/101986 [ Linux Win ] platform/chromium/compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
-webkit.org/b/102131 [ Win ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
+webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
 webkit.org/b/102277 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
@@ -3578,6 +3589,7 @@ webkit.org/b/94002 [ Mac Debug ] inspector/debugger/live-edit.html [ Crash Pass 
 webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band.html [ Skip ]
 webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-cues-added-once.html [ Skip ]
 webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-style.html [ Skip ]
+webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-legacy-api.html [ Skip ]
 
 # Flaky on Win (perhaps due to lighttpd?)
 webkit.org/b/104489 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_attribute_order.html [ Failure Pass ]
@@ -3665,7 +3677,7 @@ webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Pas
 
 webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.html [ ImageOnlyFailure ]
 
-webkit.org/b/110739 [ Release MountainLion ] fast/regions/shape-inside-on-regions.html [ ImageOnlyFailure ]
+webkit.org/b/110739 [ Release MountainLion ] fast/regions/shape-inside/shape-inside-on-regions.html [ ImageOnlyFailure ]
 
 # The following tests are are failing since chromium r184584
 webkit.org/b/110851 compositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
@@ -3681,24 +3693,24 @@ webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/overflow/overf
 webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
-crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
-crbug.com/192172 [ Linux ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
+crbug.com/192172 [ Linux Release ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
 
 # These tests flakily reorder the scrollbars in debug, causing text failures
-webkit.org/b/111199 [ Debug Win7 Lion ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
-webkit.org/b/111199 [ Debug Win7 Lion ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
+webkit.org/b/111199 [ Debug ] platform/chromium/virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Pass Failure ]
 
 # This is possibly a bug in the version of fontconfig on Precise, not sure.
 webkit.org/b/110915 [ Linux ] platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure Pass ]
@@ -3761,6 +3773,12 @@ webkit.org/b/91611 media/media-higher-prio-audio-stream.html [ Skip ]
 # Flaky assertion failures on debug bots
 webkit.org/b/112369 [ Debug ] inspector/debugger/pause-in-inline-script.html [ Pass Crash Timeout ]
 
+# Needs rebaseline on all platforms
+Bug(leviw) fast/text/shaping/shaping-selection-rect.html [ Failure ]
+
+Bug(ojan) [ Mac Win ] fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
+Bug(ojan) [ Mac Win ] scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
+
 # Flaky tests
 webkit.org/b/112598 [ Win Mac Linux ] http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 webkit.org/b/112601 http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass ]
@@ -3782,6 +3800,7 @@ webkit.org/b/112987 [ Mac XP Release ] http/tests/xmlhttprequest/origin-whitelis
 webkit.org/b/113128 fast/files/xhr-response-blob.html [ Failure Pass ]
 webkit.org/b/113129 [ Win7 Debug ] inspector/styles/edit-inspector-stylesheet.html [ Slow Failure Pass ]
 webkit.org/b/113178 [ Linux ] fast/css/font-family-pictograph.html [ Pass Failure ]
+webkit.org/b/113467 [ Win ] compositing/shadows/shadow-drawing.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnlyFailure ]
 
@@ -3796,3 +3815,19 @@ crbug.com/223329 [ MountainLion ] fast/writing-mode/text-orientation-basic.html 
 crbug.com/223332 svg/css/root-shadow-offscreen.svg [ ImageOnlyFailure ]
 
 webkit.org/b/113114 media/video-controls-captions.html [ Timeout ]
+
+webkit.org/b/113474 http/tests/cache/subresource-failover-to-network.html [ Pass Failure ]
+
+# pending CSS grammar refactoring
+webkit.org/b/113483 [ Debug ] inspector/console/console-css-warnings.html [ Skip ]
+
+webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.html [ Pass Timeout ]
+
+webkit.org/b/113555 [ Win7 Debug ] fast/forms/state-restore-per-form.html [ Pass Timeout ]
+
+webkit.org/b/113673 [ Win ] fast/exclusions/shape-outside-floats/shape-outside-floats-non-zero-y.html [ ImageOnlyFailure ]
+
+# harfbuzz-ng roll to 0.9.14 needs rebaseline.
+crbug.com/224428 [ Linux ] fast/text/international/khmer-selection.html [ Failure ]
+crbug.com/224428 webkit.org/b/113169 [ Linux ] fast/text/international/danda-space.html [ Failure ]
+

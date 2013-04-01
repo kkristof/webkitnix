@@ -370,7 +370,7 @@ private:
 static inline void setAttributes(Element* element, Vector<Attribute>& attributeVector, ParserContentPolicy parserContentPolicy)
 {
     if (!scriptingContentIsAllowed(parserContentPolicy))
-        element->stripJavaScriptAttributes(attributeVector);
+        element->stripScriptingAttributes(attributeVector);
     element->parserSetAttributes(attributeVector);
 }
 
@@ -820,7 +820,7 @@ void XMLDocumentParser::startElementNs(const xmlChar* xmlLocalName, const xmlCha
 
     newElement->beginParsingChildren();
 
-    ScriptElement* scriptElement = toScriptElement(newElement.get());
+    ScriptElement* scriptElement = toScriptElementIfPossible(newElement.get());
     if (scriptElement)
         m_scriptStartPosition = textPosition();
 
@@ -869,7 +869,7 @@ void XMLDocumentParser::endElementNs()
     if (hackAroundLibXMLEntityParsingBug() && context()->depth <= depthTriggeringEntityExpansion())
         setDepthTriggeringEntityExpansion(-1);
 
-    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptElement(toElement(n.get()))) {
+    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptElementIfPossible(toElement(n.get()))) {
         popCurrentNode();
         n->remove(IGNORE_EXCEPTION);
         return;
@@ -889,7 +889,7 @@ void XMLDocumentParser::endElementNs()
         return;
     }
 
-    ScriptElement* scriptElement = toScriptElement(element);
+    ScriptElement* scriptElement = toScriptElementIfPossible(element);
     if (!scriptElement) {
         popCurrentNode();
         return;

@@ -78,6 +78,18 @@ NSRect focusRingClipRect;
 
 @end
 
+@implementation NSFont (WebCoreTheme)
+
+- (NSString*)webCoreFamilyName
+{
+    if ([[self familyName] hasPrefix:@"."])
+        return [self fontName];
+
+    return [self familyName];
+}
+
+@end
+
 // FIXME: Default buttons really should be more like push buttons and not like buttons.
 
 namespace WebCore {
@@ -567,7 +579,7 @@ NSView *ThemeMac::ensuredView(ScrollView* scrollView)
     
     // Use a fake flipped view.
     static NSView *flippedView = [[WebCoreFlippedView alloc] init];
-    [flippedView setFrameSize:NSSizeFromCGSize(scrollView->contentsSize())];
+    [flippedView setFrameSize:NSSizeFromCGSize(scrollView->totalContentsSize())];
 
     return flippedView;
 }
@@ -595,7 +607,7 @@ FontDescription ThemeMac::controlFont(ControlPart part, const Font& font, float 
             fontDescription.setGenericFamily(FontDescription::SerifFamily);
 
             NSFont* nsFont = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSizeForFont(font)]];
-            fontDescription.firstFamily().setFamily([nsFont familyName]);
+            fontDescription.firstFamily().setFamily([nsFont webCoreFamilyName]);
             fontDescription.setComputedSize([nsFont pointSize] * zoomFactor);
             fontDescription.setSpecifiedSize([nsFont pointSize] * zoomFactor);
             return fontDescription;

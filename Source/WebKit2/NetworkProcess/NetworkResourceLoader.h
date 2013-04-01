@@ -35,6 +35,8 @@
 #include <WebCore/ResourceLoaderOptions.h>
 #include <WebCore/RunLoop.h>
 
+typedef const struct _CFCachedURLResponse* CFCachedURLResponseRef;
+
 namespace WebCore {
 class ResourceBuffer;
 class ResourceHandle;
@@ -67,6 +69,7 @@ public:
     virtual void didSendData(WebCore::ResourceHandle*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didReceiveResponse(WebCore::ResourceHandle*, const WebCore::ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(WebCore::ResourceHandle*, const char*, int, int encodedDataLength) OVERRIDE;
+    virtual void didReceiveBuffer(WebCore::ResourceHandle*, PassRefPtr<WebCore::SharedBuffer>, int encodedDataLength) OVERRIDE;
     virtual void didReceiveCachedMetadata(WebCore::ResourceHandle*, const char*, int) OVERRIDE;
     virtual void didFinishLoading(WebCore::ResourceHandle*, double finishTime) OVERRIDE;
     virtual void didFail(WebCore::ResourceHandle*, const WebCore::ResourceError&) OVERRIDE;
@@ -95,6 +98,10 @@ public:
     // Message handlers.
     void didReceiveNetworkResourceLoaderMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&);
 
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
+    static void tryGetShareableHandleFromCFURLCachedResponse(ShareableResource::Handle&, CFCachedURLResponseRef);
+#endif
+
 private:
     NetworkResourceLoader(const NetworkResourceLoadParameters&, NetworkConnectionToWebProcess*);
 
@@ -113,8 +120,6 @@ private:
     template<typename U> bool sendSyncAbortingOnFailure(const U& message, const typename U::Reply& reply);
     void abortInProgressLoad();
 
-    void tryGetShareableHandleForResource(ShareableResource::Handle&);
-
     RefPtr<RemoteNetworkingContext> m_networkingContext;
     RefPtr<WebCore::ResourceHandle> m_handle;
 
@@ -124,8 +129,7 @@ private:
     uint64_t m_bytesReceived;
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-    void diskCacheTimerFired();
-    WebCore::RunLoop::Timer<NetworkResourceLoader> m_diskCacheTimer;
+    static void tryGetShareableHandleFromSharedBuffer(ShareableResource::Handle&, WebCore::SharedBuffer*);
 #endif
 };
 
