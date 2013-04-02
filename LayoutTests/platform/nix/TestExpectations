@@ -153,26 +153,7 @@ css3/device-adapt/viewport-at-rule-parsing.html
 css3/device-adapt/viewport-properties-validation.html
 css3/device-adapt/viewport-width-check-window-innerwidth-correct.html
 css3/device-adapt/viewport-width-not-affecting-next-page.html
-css3/filters/custom-with-at-rule-syntax/parsing-custom-function-valid.html
-css3/filters/custom/custom-filter-animation.html
-css3/filters/custom/custom-filter-array-blending.html
-css3/filters/custom/custom-filter-mix-bindings.html
-css3/filters/custom/custom-filter-property-computed-style.html
-css3/filters/custom/custom-filter-property-parsing.html
-css3/filters/custom/custom-filter-transforms-animation.html
-css3/filters/custom/missing-custom-filter-shader.html
-css3/filters/filter-animation-from-none-hw.html
-css3/filters/filter-animation-from-none-multi-hw.html
-css3/filters/filter-animation-from-none-multi.html
-css3/filters/filter-animation-from-none.html
-css3/filters/filter-animation-hw.html
-css3/filters/filter-animation-multi-hw.html
-css3/filters/filter-animation-multi.html
-css3/filters/filter-animation.html
-css3/filters/filter-property-computed-style.html
-css3/filters/filter-property-parsing.html
-css3/filters/filter-property.html
-css3/filters/should-not-have-compositing-layer.html
+css3/filters/should-not-have-compositing-layer.html [ Failure ]
 css3/flexbox/flex-rounding.html
 css3/selectors3/html/css3-modsel-d1.html
 css3/selectors3/html/css3-modsel-d1b.html
@@ -193,79 +174,32 @@ css3/selectors3/xml/css3-modsel-d4.xml
 css3/zoom-coords.xhtml
 
 # failing css3 tests
-css3/filters/add-filter-rendering.html
-css3/filters/composited-reflected.html
-css3/filters/crash-filter-change.html
-css3/filters/css-opacity-with-drop-shadow.html
-css3/filters/custom/composited/custom-filter-blend-modes.html
-css3/filters/custom/custom-filter-a-tex-coord-optional.html
-css3/filters/custom/custom-filter-array-uniform-indirect-index.html
-css3/filters/custom/custom-filter-array.html
-css3/filters/custom/custom-filter-blend-modes.html
-css3/filters/custom/custom-filter-change-blend-mode.html
-css3/filters/custom/custom-filter-clamp-css-color-matrix-negative.html
-css3/filters/custom/custom-filter-clamp-css-color-matrix.html
-css3/filters/custom/custom-filter-color-matrix.html
-css3/filters/custom/custom-filter-composite-fractional-source-alpha.html
-css3/filters/custom/custom-filter-composite-operators.html
-css3/filters/custom/custom-filter-composite-source-atop.html
-css3/filters/custom/custom-filter-css-keyword-as-parameter-name.html
-css3/filters/custom/custom-filter-detached-mesh-with-mesh-box-type.html
-css3/filters/custom/custom-filter-mesh-column-row-order.html
-css3/filters/custom/custom-filter-shader-cache.html
-css3/filters/custom/custom-filter-u-mesh-box.html
-css3/filters/custom/custom-filter-u-mesh-size.html
-css3/filters/custom/custom-filter-u-texture-size.html
-css3/filters/custom/custom-filter-u-tile-size.html
-css3/filters/custom/effect-color-check.html
-css3/filters/custom/effect-custom-combined-missing.html
-css3/filters/custom/effect-custom-parameters.html
-css3/filters/custom/effect-custom-transform-parameters.html
-css3/filters/custom/effect-custom.html
-css3/filters/custom/filter-fallback-to-software.html
-css3/filters/custom/filter-repaint-custom-clipped.html
-css3/filters/custom/filter-repaint-custom-rotated.html
-css3/filters/custom/filter-repaint-custom.html
-css3/filters/effect-blur-hw.html
-css3/filters/effect-blur.html
-css3/filters/effect-brightness-hw.html
-css3/filters/effect-brightness.html
-css3/filters/effect-combined-hw.html
-css3/filters/effect-combined.html
-css3/filters/effect-contrast-hw.html
-css3/filters/effect-contrast.html
-css3/filters/effect-drop-shadow-hw.html
-css3/filters/effect-drop-shadow.html
-css3/filters/effect-grayscale-hw.html
-css3/filters/effect-grayscale.html
-css3/filters/effect-hue-rotate-hw.html
-css3/filters/effect-hue-rotate.html
-css3/filters/effect-invert-hw.html
-css3/filters/effect-invert.html
-css3/filters/effect-opacity-hw.html
-css3/filters/effect-opacity.html
-css3/filters/effect-saturate-hw.html
-css3/filters/effect-saturate.html
-css3/filters/effect-sepia-hw.html
-css3/filters/effect-sepia.html
-css3/filters/filter-change-repaint-composited.html
-css3/filters/filter-change-repaint.html
-css3/filters/filter-repaint-blur.html
-css3/filters/filter-repaint-child-layers.html
-css3/filters/filter-repaint-composited-fallback-crash.html
-css3/filters/filter-repaint-composited-fallback.html
-css3/filters/filter-repaint-sepia.html
-css3/filters/filter-repaint-shadow-clipped.html
-css3/filters/filter-repaint-shadow-rotated.html
-css3/filters/filter-repaint-shadow.html
-css3/filters/filter-repaint.html
-css3/filters/filter-with-transform.html
-css3/filters/filtered-compositing-descendant.html
-css3/filters/filtered-inline.html
-css3/filters/nested-filter.html
-css3/filters/nested-filters.html
-css3/filters/regions-expanding.html
-css3/filters/simple-filter-rendering.html
+css3/filters/custom/custom-filter-clamp-css-color-matrix.html [ ImageOnlyFailure ]
+css3/filters/custom/custom-filter-composite-fractional-source-alpha.html [ ImageOnlyFailure ]
+css3/filters/custom/filter-fallback-to-software.html [ ImageOnlyFailure ]
+css3/filters/effect-blur-hw.html [ Failure ]
+css3/filters/effect-blur.html [ Failure ]
+css3/filters/effect-brightness-hw.html [ Failure ]
+css3/filters/effect-brightness.html [ Failure ]
+css3/filters/effect-combined-hw.html [ Failure ]
+css3/filters/effect-combined.html [ Failure ]
+css3/filters/effect-contrast-hw.html [ Failure ]
+css3/filters/effect-contrast.html [ Failure ]
+css3/filters/effect-drop-shadow-hw.html [ Failure ]
+css3/filters/effect-drop-shadow.html [ Failure ]
+css3/filters/effect-grayscale-hw.html [ Failure ]
+css3/filters/effect-grayscale.html [ Failure ]
+css3/filters/effect-hue-rotate-hw.html [ Failure ]
+css3/filters/effect-hue-rotate.html [ Failure ]
+css3/filters/effect-invert-hw.html [ Failure ]
+css3/filters/effect-invert.html [ Failure ]
+css3/filters/effect-opacity-hw.html [ Failure ]
+css3/filters/effect-opacity.html [ Failure ]
+css3/filters/effect-saturate-hw.html [ Failure ]
+css3/filters/effect-saturate.html [ Failure ]
+css3/filters/effect-sepia-hw.html [ Failure ]
+css3/filters/effect-sepia.html [ Failure ]
+css3/filters/regions-expanding.html [ Failure ]
 css3/selectors3/html/css3-modsel-17.html
 css3/selectors3/html/css3-modsel-61.html
 css3/selectors3/xhtml/css3-modsel-17.xml
@@ -276,35 +210,21 @@ css3/selectors3/html/css3-modsel-161.html
 css3/selectors3/xhtml/css3-modsel-161.xml
 css3/selectors3/xml/css3-modsel-161.xml
 css3/unicode-bidi-isolate-aharon-failing.html
-css3/filters/blur-filter-page-scroll.html
-css3/filters/effect-brightness-clamping-hw.html
-css3/filters/effect-brightness-clamping.html
-css3/filters/effect-reference-external.html
-css3/filters/effect-reference-ordering-hw.html
-css3/filters/effect-reference-ordering.html
-css3/filters/effect-reference.html
+css3/filters/effect-brightness-clamping-hw.html [ Failure ]
+css3/filters/effect-brightness-clamping.html [ Failure ]
 css3/images/cross-fade-background-size.html
-css3/filters/effect-reference-hw.html
-css3/filters/blur-filter-page-scroll-self.html
 css3/flexbox/repaint-column-reverse.html
 css3/flexbox/repaint-during-resize-no-flex.html
 css3/flexbox/repaint-rtl-column.html
-css3/filters/multiple-filters-invalidation.html
-css3/filters/composited-during-animation.html
-css3/filters/composited-during-animation-layertree.html
-css3/filters/composited-during-transition-layertree.html
 css3/images/cross-fade-invalidation.html
 css3/masking/clip-path-reference-userSpaceOnUse.html
 css3/masking/clip-path-reference.html
-css3/filters/blur-filter-page-scroll-parents.html
+css3/filters/blur-filter-page-scroll-parents.html [ Failure ]
 
 #flaky css* tests
 css2.1/20110323/replaced-elements-001.htm
 css3/compositing/background-blend-mode-property-parsing.html
 css3/compositing/background-blend-mode-property.html
-css3/filters/custom-with-at-rule-syntax/parsing-at-rule-valid.html
-css3/filters/custom-with-at-rule-syntax/parsing-src-property-invalid.html
-css3/filters/custom-with-at-rule-syntax/parsing-src-property-valid.html
 
 editing/deleting/delete-3775172-fix.html [ Skip ]
 editing/deleting/delete-3928305-fix.html [ Skip ]
@@ -3270,7 +3190,6 @@ compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
-css3/filters/custom/custom-filter-blend-fractional-destination-alpha.html [ ImageOnlyFailure ]
 css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ ImageOnlyFailure ]
 css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ ImageOnlyFailure ]
 css3/line-break/line-break-auto-hyphens.html [ ImageOnlyFailure ]
@@ -3816,6 +3735,16 @@ webaudio/up-mixing-mono-51.html [ Skip ]
 webaudio/up-mixing-mono-stereo.html [ Skip ]
 webaudio/up-mixing-stereo-51.html [ Skip ]
 
+css3/filters/blur-filter-page-scroll.html [ Missing ]
+css3/filters/blur-filter-page-scroll-self.html [ Missing ]
+css3/filters/composited-during-animation.html [ Missing ]
+css3/filters/composited-during-transition-layertree.html [ Missing ]
+css3/filters/effect-reference.html [ Missing ]
+css3/filters/effect-reference-external.html [ Missing ]
+css3/filters/effect-reference-hw.html [ Missing ]
+css3/filters/effect-reference-ordering-hw.html [ Missing ]
+css3/filters/effect-reference-ordering.html [ Missing ]
+
 dom/xhtml/level3 [ Skip ]
 fast/css-generated-content [ Skip ]
 
@@ -4067,8 +3996,8 @@ printing/standards-percentage-heights.html
 # Flakey and failing tests after merge 40a701d 8335e4a
 animations/animation-delay-changed.html
 compositing/overflow/composited-scrolling-paint-phases.html
-css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html
-css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html
+css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ ImageOnlyFailure ]
+css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ ImageOnlyFailure ]
 editing/pasteboard/line-feed-between-br-and-b-should-not-reorder-pasted-content.html
 editing/pasteboard/paste-table-003.html
 editing/pasteboard/paste-table-cells.html
