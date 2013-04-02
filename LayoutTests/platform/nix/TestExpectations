@@ -92,7 +92,7 @@ canvas/philip/tests/2d.text.measure.width.space.html [ Skip ]
 canvas/philip/tests/type.prototype.html [ Skip ]
 
 compositing/rtl/rtl-overflow-scrolling.html [ Skip ]
-compositing/video/video-reflection.html [ Skip ]]
+compositing/video/video-reflection.html [ Skip ]
 
 css1/box_properties/acid_test.html
 
@@ -1005,6 +1005,10 @@ fast/events/standalone-image-drag-to-editable.html [ Skip ]
 fast/events/touch/gesture/context-menu-on-long-press.html [ Skip ]
 fast/events/touch/gesture/context-menu-on-two-finger-tap.html [ Skip ]
 fast/events/updateLayoutForHitTest.html [ Skip ]
+
+fast/exclusions/shape-outside-floats/shape-outside-floats-non-zero-y.html [ ImageOnlyFailure ]
+fast/exclusions/shape-outside-floats/shape-outside-floats-simple-circle.html [ ImageOnlyFailure ]
+fast/exclusions/shape-outside-floats/shape-outside-floats-simple-ellipse.html [ ImageOnlyFailure ]
 
 fast/files/apply-blob-url-to-img.html [ Skip ]
 fast/files/apply-blob-url-to-xhr.html [ Skip ]
@@ -3220,17 +3224,12 @@ fast/sub-pixel/clip-rect-box-consistent-rounding.html [ ImageOnlyFailure ]
 
 
 # Regressions after merge (005e102 c1ff4a8)
-compositing/filters/sw-layer-overlaps-hw-shadow.html [ Failure ]
-compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]
-compositing/filters/sw-shadow-overlaps-hw-layer.html [ Failure ]
-compositing/filters/sw-shadow-overlaps-hw-shadow.html [ Failure ]
 fast/events/keydown-1.html [ Failure Pass ]
 canvas/philip/tests/2d.canvas.readonly.html [ Crash Pass ]
 canvas/philip/tests/2d.gradient.interpolate.multiple.html [ Crash Pass ]
 compositing/absolute-inside-out-of-view-fixed.html [ Crash Pass ]
 compositing/animation/animated-composited-inside-hidden.html [ Crash Pass ]
 compositing/color-matching/image-color-matching.html [ Crash Missing ]
-compositing/geometry/limit-layer-bounds-opacity-transition.html [ Crash Failure ]
 compositing/overflow/overflow-compositing-descendant.html [ Crash Missing ]
 fast/dom/remove-body-during-body-replacement2.html [ Crash Pass ]
 fast/masking/parsing-clip-path-shape.html [ Crash Pass ]
@@ -3279,13 +3278,6 @@ fast/parser/document-write-onload-clear.html [ Crash Pass ]
 fast/parser/document-write-onload-nesting.html [ Crash Pass ]
 fast/parser/document-write-onload-ordering.html [ Crash Pass ]
 fast/parser/double-write-from-closed-iframe.html [ Crash Pass ]
-
-# Failing due to strange error when doing '__proto__'.localeCompare('1') inside NamedThingComparator.
-# When run inside WTR *on* the buildbot, the command above returns 1, while the JSC on the same buildbot
-# and desktop machines and WTR on desktop returns -1, the expected value.
-# This causes the order of the printed data to change, causing the failure.
-# The printed data is correct, though.
-inspector-protocol/runtime-getProperties.html [ Failure ]
 
 # Some tests are failing since way before merge (e51e713 155bfb6), but now we're painting the bot green again.
 inspector-protocol/debugger-pause-dedicated-worker.html [ Failure Pass ]
@@ -3431,18 +3423,8 @@ compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
 
 # Text diff: Graphics Layers hidden/appearing.
 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
-compositing/geometry/limit-layer-bounds-fixed-positioned.html [ Failure ]
 compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
-compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
-compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
-compositing/geometry/limit-layer-bounds-transformed-overflow.html [ Failure ]
-compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
-compositing/layer-creation/fixed-position-in-view-dynamic.html [ Failure ]
 compositing/layer-creation/fixed-position-no-content.html [ Failure ]
-compositing/layer-creation/fixed-position-out-of-view-dynamic.html [ Failure ]
-compositing/layer-creation/fixed-position-out-of-view-scroll-reason.html [ Failure ]
-compositing/layer-creation/no-compositing-for-fixed-position-under-transform.html [ Failure ]
-compositing/layer-creation/scroll-partial-update.html [ Failure ]
 compositing/iframes/iframe-composited-scrolling.html [ Failure ]
 compositing/iframes/leave-compositing-iframe.html [ Failure ]
 compositing/overflow/composited-scrolling-creates-a-stacking-container.html [ Failure ]
@@ -3887,6 +3869,10 @@ scrollbars/scrollbars-on-positioned-content.html [ Skip ]
 security/block-test-no-port.html [ Skip ]
 security/block-test.html [ Skip ]
 
+svg/custom/marker-orient-auto.html [ Missing ]
+svg/filters/feDropShadow-zero-deviation.svg [ Missing ]
+svg/filters/feGaussianBlur-zero-deviation.svg [ Missing ]
+
 transforms/2d/compound-transforms-vs-containers.html [ Skip ]
 transforms/2d/hindi-rotated.html [ Skip ]
 transforms/2d/transform-fixed-container.html [ Skip ]
@@ -4040,7 +4026,6 @@ http/tests/security/xss-DENIED-xsl-external-entity.xml [ Failure ]
 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ ImageOnlyFailure ]
 fast/parser/document-write-basic.html [ Crash ]
 svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
-sputnik/Conformance/07_Lexical_Conventions/7.8_Literals/7.8.5_Regular_Expression_Literals/S7.8.5_A3.1_T2.html [ Crash ]
 
 # Flakey tests after merge 5494e11 a55ee6c
 fast/exclusions/shape-outside-floats/shape-outside-floats-positioning.html [ Failure Pass ]
