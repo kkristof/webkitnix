@@ -1900,7 +1900,6 @@ set(WebCore_SOURCES
     platform/audio/EqualPowerPanner.cpp
     platform/audio/FFTConvolver.cpp
     platform/audio/FFTFrame.cpp
-    platform/audio/FFTFrameStub.cpp
     platform/audio/HRTFDatabase.cpp
     platform/audio/HRTFDatabaseLoader.cpp
     platform/audio/HRTFElevation.cpp
