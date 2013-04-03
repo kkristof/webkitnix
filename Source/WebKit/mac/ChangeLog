@@ -1,3 +1,118 @@
+2013-04-02  Timothy Hatcher  <timothy@apple.com>
+
+        Provide a user default that can be used to disable docking of the Web Inspector.
+
+        The user default is "WebKit Web Inspector Setting - inspectorAttachDisabled".
+
+        https://webkit.org/b/113779
+        rdar://problem/13446021
+
+        Reviewed by Joseph Pecoraro.
+
+        * WebCoreSupport/WebInspectorClient.h:
+        (WebInspectorClient::inspectorAttachDisabled): Added.
+        (WebInspectorClient::setInspectorAttachDisabled): Added.
+
+        * WebCoreSupport/WebInspectorClient.mm:
+        (WebInspectorClient::didResizeMainFrame):
+        (-[WebInspectorWindowController window]):
+        (-[WebInspectorWindowController showWindow:]):
+        Check inspectorAttachDisabled() in places where we attach or update the dock button.
+
+2013-04-02  Alexey Proskuryakov  <ap@apple.com>
+
+        [Mac] Remove WKCreateNSURLConnectionDelegateProxy
+        https://bugs.webkit.org/show_bug.cgi?id=113810
+
+        Reviewed by Anders Carlsson.
+
+        * WebCoreSupport/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface):
+
+2013-04-02  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13551119> [WK2] Crashes in NetworkProcess when canceling loads
+        https://bugs.webkit.org/show_bug.cgi?id=113803
+
+        Reviewed by Darin Adler.
+
+        * WebCoreSupport/WebFrameLoaderClient.mm:
+        (WebFrameLoaderClient::convertMainResourceLoadToDownload):
+        Just pass nil instead of proxy.
+
+2013-04-01  Ryosuke Niwa  <rniwa@webkit.org>
+
+        WebKit/mac shouldn't have code for Mac 10.5 and earlier
+        https://bugs.webkit.org/show_bug.cgi?id=113746
+
+        Reviewed by Darin Adler.
+
+        Deleted the code for 10.5 and removed if-defs for 10.6.
+
+        * Plugins/Hosted/WebHostedNetscapePluginView.mm:
+        (-[WebHostedNetscapePluginView createPlugin]):
+        * Plugins/WebBaseNetscapePluginView.mm:
+        (-[WebBaseNetscapePluginView initWithFrame:pluginPackage:URL:baseURL:MIMEType:attributeKeys:attributeValues:loadManually:element:WebCore::]):
+        * Plugins/WebNetscapePluginView.mm:
+        (-[WebNetscapePluginView createPlugin]):
+        (-[WebNetscapePluginView getVariable:forURL:value:length:]):
+        (-[WebNetscapePluginView _workaroundSilverlightFullscreenBug:]):
+        * WebCoreSupport/WebChromeClient.mm:
+        (WebChromeClient::selectItemWritingDirectionIsNatural):
+        (WebChromeClient::selectItemAlignmentFollowsMenuWritingDirection):
+        * WebCoreSupport/WebEditorClient.mm:
+        (core):
+        (WebEditorClient::checkTextOfParagraph):
+        (WebEditorClient::requestCheckingOfString):
+        * WebView/WebDynamicScrollBarsView.mm:
+        (-[WebDynamicScrollBarsView reflectScrolledClipView:]):
+        * WebView/WebFullScreenController.mm:
+        (-[WebFullScreenController _updateMenuAndDockForFullScreen]):
+        * WebView/WebHTMLView.mm:
+        (-[WebHTMLView _documentFragmentFromPasteboard:inContext:allowPlainText:]):
+        (-[WebHTMLView _frameOrBoundsChanged]):
+        (+[WebHTMLView _insertablePasteboardTypes]):
+        (-[WebHTMLView _documentFragmentFromPasteboard:forType:inContext:subresources:]):
+        (-[WebHTMLView validateUserInterfaceItemWithoutDelegate:]):
+        (writingDirectionKeyBindingsEnabled):
+        (-[WebHTMLView _lookUpInDictionaryFromMenu:]):
+        (-[WebHTMLView attachRootLayer:]):
+        * WebView/WebHTMLViewInternal.h:
+        * WebView/WebPDFDocumentExtras.mm:
+        * WebView/WebPreferences.mm:
+        (+[WebPreferences initialize]):
+        * WebView/WebResourceInternal.h:
+        * WebView/WebScriptDebugDelegate.h:
+        * WebView/WebView.mm:
+        (-[WebView _commonInitializationWithFrameName:groupName:]):
+        (-[WebView _preferencesChanged:]):
+        (+[WebView initialize]):
+        (clientNeedsWebViewInitThreadWorkaround):
+        (-[WebView validateUserInterfaceItemWithoutDelegate:]):
+        (-[WebView setGrammarCheckingEnabled:]):
+        (-[WebView isAutomaticQuoteSubstitutionEnabled]):
+        (-[WebView isAutomaticLinkDetectionEnabled]):
+        (-[WebView isAutomaticDashSubstitutionEnabled]):
+        (-[WebView isAutomaticTextReplacementEnabled]):
+        (-[WebView isAutomaticSpellingCorrectionEnabled]):
+        (-[WebView _searchWithSpotlightFromMenu:]):
+        (WebInstallMemoryPressureHandler):
+        * WebView/WebViewPrivate.h:
+
+2013-04-01  Tim Horton  <timothy_horton@apple.com>
+
+        WebCache should do the normal initialization dance
+        https://bugs.webkit.org/show_bug.cgi?id=113722
+        <rdar://problem/13424530>
+
+        Reviewed by Anders Carlsson.
+
+        In case a WebKit1 client uses WebCache before creating a WebView (or any of the other
+        initialization-ready classes), we should do the initialization work in WebCache as well.
+
+        * Misc/WebCache.mm:
+        (+[WebCache initialize]):
+
 2013-03-26  Timothy Hatcher  <timothy@apple.com>
 
         Add support for dock-to-right of the Web Inspector in the Mac port.

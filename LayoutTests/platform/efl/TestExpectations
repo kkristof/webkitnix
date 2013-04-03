@@ -275,7 +275,7 @@ http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html
 xmlviewer/extensions-api.html
 
 # These test -apple- and -khtml- prefixed CSS properties, which we don't support.
-inspector/styles/vendor-prefixes.html
+inspector/styles/vendor-prefixes.html [ WontFix ]
 
 # There are no expected result set yet.
 editing/unsupported-content/list-delete-001.html 
@@ -308,10 +308,7 @@ fast/profiler/stop-profiling-after-setTimeout.html
 fast/profiler/dead-time.html
 
 # following tests started failing on EFL afrer r122952.
-http/tests/inspector/console-cross-origin-iframe-logging.html
 http/tests/inspector/resource-parameters.html
-http/tests/inspector/compiler-source-mapping-debug.html
-http/tests/inspector/console-websocket-error.html
 inspector/styles/svg-style.xhtml
 inspector/debugger/live-edit.html
 inspector/debugger/live-edit-breakpoints.html
@@ -817,7 +814,6 @@ webkit.org/b/87619 fast/forms/number/number-size.html [ Failure ]
 webkit.org/b/83274 fast/repaint/transform-rotate-and-remove.html [ Pass ]
 
 webkit.org/b/83906 ietestcenter/css3/grid/grid-column-001.htm [ ImageOnlyFailure ]
-webkit.org/b/83907 ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83909 ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
@@ -1443,6 +1439,10 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting.html [ Skip 
 webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Skip ]
 webkit.org/b/50485 inspector-protocol/heap-profiler [ Skip ]
 
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-array.html [ Skip ]
+
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-string.html [ Skip ]
+
 # ENABLE(INPUT_MULTIPLE_FIELDS_UI) is disabled
 fast/forms/date-multiple-fields
 fast/forms/datetime-multiple-fields
@@ -1766,7 +1766,7 @@ webkit.org/b/109949 fast/dom/shadow/distributed-pseudo-element-scoped.html [ Ima
 webkit.org/b/109951 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
 # CUSTOM_ELEMENTS is not enabled.
-webkit.org/b/110958 fast/dom/custom [ Failure ]
+webkit.org/b/110958 fast/dom/custom [ Skip ]
 
 # Failing after r143256.
 webkit.org/b/110282 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
@@ -1789,8 +1789,6 @@ webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failu
 
 webkit.org/b/111058 plugins/plugin-clip-subframe.html [ Failure ]
 
-Bug(ojan) fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
-Bug(ojan) scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
 
 # Newly added tests in r144190 are failing.
 webkit.org/b/111172 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]

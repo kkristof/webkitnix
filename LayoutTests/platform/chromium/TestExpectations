@@ -2872,7 +2872,6 @@ webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyF
 
 # IETC grid layout
 webkit.org/b/83906 ietestcenter/css3/grid/grid-column-001.htm [ ImageOnlyFailure ]
-webkit.org/b/83907 ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83909 ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
@@ -3226,6 +3225,9 @@ webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-clipped.htm
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom.html [ ImageOnlyFailure ]
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-rotated.html [ ImageOnlyFailure ]
 
+# Following test needs rebaseline
+webkit.org/b/110362 [ Linux Win ] css3/filters/filter-change-repaint-composited.html [ ImageOnlyFailure ]
+
 webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
@@ -3464,8 +3466,6 @@ webkit.org/b/99749 [ MountainLion ] fast/repaint/positioned-document-element.htm
 webkit.org/b/96430 [ MountainLion ] fast/text/fallback-traits-fixup.html [ Failure ]
 webkit.org/b/99749 [ MountainLion ] fast/writing-mode/broken-ideograph-small-caps.html [ Failure ]
 
-webkit.org/b/101897 [ MountainLion ] fast/regions/region-style-inline-background-color.html [ ImageOnlyFailure ]
-
 webkit.org/b/79446 svg/repaint/image-with-clip-path.svg [ Pass ImageOnlyFailure ]
 
 # Only ready for JSC so far, not fixed in v8 yet.
@@ -3620,8 +3620,6 @@ crbug.com/166932 [ Debug ] plugins/embed-attributes-setting.html [ Crash Pass ]
 
 webkit.org/b/106858 [ Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure Crash ]
 webkit.org/b/106858 [ Linux Win Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure Pass ]
-webkit.org/b/106858 [ Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
-webkit.org/b/106858 [ Linux Win Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
 # This is won't fix, as the debug and release versions differ.
 
@@ -3663,9 +3661,6 @@ webkit.org/b/109262 [ Debug SnowLeopard ] fast/table/table-cell-before-after-con
 webkit.org/b/109312 [ Win ] fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 webkit.org/b/109312 [ Win ] platform/chromium/virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 
-# Will need pixel rebaseline for subtle compositor change
-crbug.com/168719 css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
-
 # ENABLE_ENCRYPTED_MEDIA_V2 is not enabled.
 webkit.org/b/97037 media/encrypted-media/encrypted-media-v2-events.html [ Timeout ]
 webkit.org/b/97037 media/encrypted-media/encrypted-media-v2-syntax.html [ Timeout ]
@@ -3679,18 +3674,33 @@ webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.
 
 webkit.org/b/110739 [ Release MountainLion ] fast/regions/shape-inside/shape-inside-on-regions.html [ ImageOnlyFailure ]
 
-# The following tests are are failing since chromium r184584
-webkit.org/b/110851 compositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
-webkit.org/b/110851 compositing/geometry/fixed-position-composited-page-scale.html [ ImageOnlyFailure ]
-webkit.org/b/110851 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ ImageOnlyFailure ]
-webkit.org/b/110851 compositing/overflow/overflow-scaled-descendant-overlapping.html [ ImageOnlyFailure ]
-webkit.org/b/110851 compositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/gpu/compositedscrolling/overflow/overflow-scaled-descendant-overlapping.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/overflow/overflow-scaled-descendant-overlapping.html [ ImageOnlyFailure ]
-webkit.org/b/110851 platform/chromium/virtual/softwarecompositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
+# Tests failing since applyPageScaleFactorInCompositor enabled
+crbug.com/225184 compositing/geometry/fixed-position-composited-page-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 compositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/gpu/compositedscrolling/overflow/overflow-scaled-descendant-overlapping.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-smaller-than-viewport.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/overflow/overflow-scaled-descendant-overlapping.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/repaint/page-scale-repaint.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+crbug.com/225184 platform/chromium/virtual/softwarecompositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
+crbug.com/225184 compositing/layer-creation/fixed-position-out-of-view-scaled.html [ Failure ]
+crbug.com/225184 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
+crbug.com/225184 fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/frames/frame-set-rotation-hit.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/repaint/background-scaling.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/repaint/scale-page-shrink.html [ ImageOnlyFailure ]
+crbug.com/225184 platform/chromium/fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
+crbug.com/225184 fast/events/scale-and-scroll-body.html [ Failure ]
+crbug.com/225184 fast/events/scroll-in-scaled-page-with-overflow-hidden.html [ Failure ]
+crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure ]
+crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
+crbug.com/225184 svg/as-image/image-respects-pageScaleFactor.html [ Failure ImageOnlyFailure ]
+crbug.com/225184 [ Mac ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
@@ -3776,9 +3786,6 @@ webkit.org/b/112369 [ Debug ] inspector/debugger/pause-in-inline-script.html [ P
 # Needs rebaseline on all platforms
 Bug(leviw) fast/text/shaping/shaping-selection-rect.html [ Failure ]
 
-Bug(ojan) [ Mac Win ] fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
-Bug(ojan) [ Mac Win ] scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
-
 # Flaky tests
 webkit.org/b/112598 [ Win Mac Linux ] http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 webkit.org/b/112601 http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass ]
@@ -3830,4 +3837,9 @@ webkit.org/b/113673 [ Win ] fast/exclusions/shape-outside-floats/shape-outside-f
 # harfbuzz-ng roll to 0.9.14 needs rebaseline.
 crbug.com/224428 [ Linux ] fast/text/international/khmer-selection.html [ Failure ]
 crbug.com/224428 webkit.org/b/113169 [ Linux ] fast/text/international/danda-space.html [ Failure ]
+
+crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
+
+crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-outside-floats-overflow-hidden.html [ ImageOnlyFailure ]
+crbug.com/225883 [ Win Mac ] inspector/profiler/memory-instrumentation-external-array.html [ Failure ]
 

@@ -39,12 +39,23 @@ input[type="search"]:focus, input[type="text"]:focus {
     bottom: 0;
 }
 
+.inline-block {
+    display: inline-block;
+}
+
 .hidden {
     display: none;
 }
 
 .nowrap {
     white-space: nowrap !important;
+}
+
+.layout-boundary {
+    width: 100%;
+    overflow: hidden;
+    /* position must be relative or absolute */
+    /* height must be a pixel value */
 }
 
 #toolbar {
@@ -166,7 +177,7 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
 }
 
 .toolbar-label {
-    line-height: 23px;
+    line-height: 22px;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
 }
 
@@ -2329,8 +2340,7 @@ body.inactive li.selected .bubble.search-matches {
 }
 
 .source-frame-eval-expression {
-    border: 1px solid rgb(163, 41, 34);
-    margin: -1px;
+    outline: 1px solid rgb(163, 41, 34);
     background-color: rgb(255, 255, 194);
 }
 

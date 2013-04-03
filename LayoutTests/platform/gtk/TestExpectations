@@ -500,9 +500,6 @@ webkit.org/b/112152 [ Debug ] accessibility/table-with-hidden-head-section.html 
 
 webkit.org/b/111451 [ Debug ] editing/selection/selection-in-iframe-removed-crash.html [ Crash Pass ]
 
-webkit.org/b/113019 [ Debug ] storage/indexeddb/factory-basics-workers.html [ Crash ]
-webkit.org/b/113019 [ Debug ] storage/indexeddb/transaction-error.html [ Crash ]
-
 webkit.org/b/111902 [ Debug ] http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Crash ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -947,7 +944,9 @@ webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-fields.html 
 webkit.org/b/50485 inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Failure ]
 webkit.org/b/50485 inspector-protocol/heap-profiler [ Skip ]
 
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-array.html [ Skip ]
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html [ Failure ]
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-string.html [ Skip ]
 
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-has-uninstrumented-canvases.html [ Failure ]
 webkit.org/b/73936 inspector/profiler/canvas2d/canvas-stack-trace.html [ Failure ]
@@ -1107,7 +1106,6 @@ webkit.org/b/82020 plugins/netscape-dom-access-and-reload.html [ Failure ]
 Bug(GTK) editing/spelling/spelling-marker-description.html [ Failure ]
 
 webkit.org/b/83906 ietestcenter/css3/grid/grid-column-001.htm [ ImageOnlyFailure ]
-webkit.org/b/83907 ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83909 ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
@@ -1207,10 +1205,6 @@ webkit.org/b/87355 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Fa
 webkit.org/b/95428 media/video-controls-captions.html [ Failure ]
 
 webkit.org/b/95429 svg/custom/clamped-masking-clipping.svg [ ImageOnlyFailure ]
-
-webkit.org/b/73003 [ Debug ] editing/spelling/spellcheck-async.html [ Failure ]
-webkit.org/b/73003 [ Debug ] editing/spelling/spellcheck-paste.html [ Pass ]
-webkit.org/b/50740 [ Debug ] editing/spelling/spellcheck-queue.html [ Failure ]
 
 webkit.org/b/90775 fast/dom/shadow/focus-navigation.html [ Failure ]
 webkit.org/b/97468 fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
@@ -1370,9 +1364,6 @@ webkit.org/b/111606 fast/borders/border-fit.html [ Failure ]
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Failure ]
 webkit.org/b/111606 fast/repaint/border-fit-lines.html [ Failure ]
 
-Bug(ojan) fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
-Bug(ojan) scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
-
 webkit.org/b/112109 fast/box-shadow/box-shadow-with-zero-radius.html [ ImageOnlyFailure ]
 
 webkit.org/b/112110 media/track/track-cue-container-rendering-position.html [ Failure ]
@@ -1385,9 +1376,10 @@ webkit.org/b/112705 fast/dom/icon-url-property.html [ Failure ]
 
 webkit.org/b/113127 media/track/track-prefer-captions.html [ Timeout ]
 
-webkit.org/b/113689 storage/indexeddb/clone-exception.html [ Failure ]
-webkit.org/b/113689 storage/indexeddb/exceptions.html [ Failure ]
-webkit.org/b/113689 storage/indexeddb/structured-clone.html [ Failure ]
+webkit.org/b/113747 svg/repaint/buffered-rendering-static-image.html [ ImageOnlyFailure ]
+
+webkit.org/b/113772 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure ]
+webkit.org/b/113772 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

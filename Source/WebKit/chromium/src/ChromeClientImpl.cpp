@@ -573,6 +573,11 @@ void ChromeClientImpl::contentsSizeChanged(Frame* frame, const IntSize& size) co
         webframe->client()->didChangeContentsSize(webframe, size);
 }
 
+void ChromeClientImpl::deviceOrPageScaleFactorChanged() const
+{
+    m_webView->deviceOrPageScaleFactorChanged();
+}
+
 void ChromeClientImpl::layoutUpdated(Frame* frame) const
 {
     m_webView->layoutUpdated(WebFrameImpl::fromFrame(frame));
@@ -619,13 +624,28 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
         tooltipText, textDirection);
 }
 
+
+static float calculateTargetDensityDPIFactor(const ViewportArguments& arguments, float deviceScaleFactor)
+{
+    float targetDPI = -1.0f;
+    if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueLowDPI)
+        targetDPI = 120.0f;
+    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueMediumDPI)
+        targetDPI = 160.0f;
+    else if (arguments.deprecatedTargetDensityDPI == ViewportArguments::ValueHighDPI)
+        targetDPI = 240.0f;
+    else if (arguments.deprecatedTargetDensityDPI != ViewportArguments::ValueAuto && arguments.deprecatedTargetDensityDPI != ViewportArguments::ValueDeviceDPI)
+        targetDPI = arguments.deprecatedTargetDensityDPI;
+    return targetDPI > 0 ? (deviceScaleFactor * 120.0f) / targetDPI : 1.0f;
+}
+
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
 {
 #if ENABLE(VIEWPORT)
     if (!m_webView->settings()->viewportEnabled() || !m_webView->isFixedLayoutModeEnabled() || !m_webView->client() || !m_webView->page())
         return;
 
-    IntSize viewportSize = m_webView->dipSize();
+    IntSize viewportSize = m_webView->size();
     float deviceScaleFactor = m_webView->client()->screenInfo().deviceScaleFactor;
 
     // If the window size has not been set yet don't attempt to set the viewport.
@@ -641,8 +661,14 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArgumen
     }
     if (arguments.zoom == ViewportArguments::ValueAuto && !m_webView->settingsImpl()->initializeAtMinimumPageScale())
         computed.initialScale = 1.0f;
-    if (!m_webView->settingsImpl()->applyDeviceScaleFactorInCompositor())
-        computed.initialScale *= deviceScaleFactor;
+
+    if (m_webView->settingsImpl()->supportDeprecatedTargetDensityDPI()) {
+        float targetDensityDPIFactor = calculateTargetDensityDPIFactor(arguments, deviceScaleFactor);
+        computed.initialScale *= targetDensityDPIFactor;
+        computed.minimumScale *= targetDensityDPIFactor;
+        computed.maximumScale *= targetDensityDPIFactor;
+        computed.layoutSize.scale(1.0f / targetDensityDPIFactor);
+    }
 
     m_webView->setInitialPageScaleFactor(computed.initialScale);
     m_webView->setFixedLayoutSize(flooredIntSize(computed.layoutSize));

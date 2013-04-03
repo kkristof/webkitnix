@@ -208,6 +208,10 @@ fast/events/frame-tab-focus.html
 fast/events/option-tab.html
 fast/forms/focus2.html
 
+# Unidentified crash, possibly related to linking issues?
+# https://bugs.webkit.org/show_bug.cgi?id=113220
+fast/forms/select/popup-closes-on-blur.html [ Crash ]
+
 # fast/html/keygen.html is failing on boomer <rdar://problem/5133799>
 fast/html/keygen.html
 fast/invalid/residual-style.html
@@ -1307,6 +1311,10 @@ inspector/profiler/heap-snapshot-summary-sorting-fields.html
 inspector/profiler/heap-snapshot-summary-sorting.html
 inspector/profiler/heap-snapshot-summary-sorting-instances.html
 webkit.org/b/50485 inspector-protocol/heap-profiler [ Skip ]
+
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-array.html [ Skip ]
+
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-string.html [ Skip ]
 
 # New inspector/profiler/memory-instrumentation-canvas.html fails on JSC platforms
 webkit.org/b/99001 inspector/profiler/memory-instrumentation-canvas.html
@@ -2503,8 +2511,15 @@ fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-color.html
 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-underline-position.html
-fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent-inherited.html
-fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html
+fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure ]
+
+# Needs rebaseline.
+webkit.org/b/94198 fast/dom/HTMLImageElement/image-alt-text.html [ Failure ]
+webkit.org/b/94198 fast/dom/HTMLInputElement/input-image-alt-text.html [ Failure ]
+webkit.org/b/94198 fast/encoding/utf-16-big-endian.html [ Failure ]
+webkit.org/b/94198 fast/encoding/utf-16-little-endian.html [ Failure ]
+webkit.org/b/94198 fast/forms/input-value.html [ Failure ]
+webkit.org/b/94198 tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
 
 # ACCELERATED_OVERFLOW_SCROLLING is disabled on Windows
 compositing/overflow/scrolling-without-painting.html
@@ -2689,7 +2704,7 @@ plugins
 sputnik
 fast/xsl
 http
-ietestcenters
+ietestcenter
 media/media-fragments
 media/W3C
 

@@ -1,3 +1,177 @@
+2013-04-03  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Bump required versions of some dependencies
+        https://bugs.webkit.org/show_bug.cgi?id=113282
+
+        Reviewed by Martin Robinson.
+
+        * gtk/jhbuild.modules: Update libsoup, glib, at-spi2 and gtk+ versions.
+
+2013-04-03  Gustavo Noronha Silva  <gustavo.noronha@collabora.com>
+
+        [GTK] gst-plugins-good fails to build with newer Linux(v4l2)
+        https://bugs.webkit.org/show_bug.cgi?id=113809
+
+        Reviewed by Philippe Normand.
+
+        Newer Linux kernels have removed some deprecated macros from v4l2
+        headers, causing gst-plugins-good's build to break. We don't need it
+        right now, so just disable it.
+
+        * gtk/jhbuild.modules: disable v4l2 usage in gst-plugins-good.
+
+2013-03-28  Jesus Sanchez-Palencia  <jesus.palencia@openbossa.org>
+
+        [Qt] Switch ContextMenu implementation to CROSS_PLATFORM_CONTEXT_MENU
+        https://bugs.webkit.org/show_bug.cgi?id=113535
+
+        Reviewed by Simon Hausmann.
+
+        Adding USE_CROSS_PLATFORM_CONTEXT_MENUS to WEBKIT_CONFIG.
+
+        * qmake/mkspecs/features/features.prf:
+
+2013-04-03  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Move logic of simple forwarding functions to TestRunner.
+        https://bugs.webkit.org/show_bug.cgi?id=113863
+
+        Reviewed by Simon Hausmann.
+
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        (TestRunner::setTextDirection):
+        (TestRunner::goBack):
+        (TestRunner::evaluateScriptInIsolatedWorld):
+        (TestRunner::addUserStyleSheet):
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+
+2013-04-03  Tor Arne Vestbø  <tor.arne.vestbo@digia.com>
+
+        [Qt] Disable media support using QuickTime if deployment target != SDK
+
+        We link to a single libWebKitSystemInterface static lib, so unless the
+        deployment target matches the SDK let's not pretend like we'll be able
+        to run on anything lower than the SDK version.
+
+        Reviewed by Simon Hausmann.
+
+        * qmake/mkspecs/features/features.prf:
+
+2013-04-02  James Craig  <james@cookiecrook.com>
+
+        AXRoleDescripton for DL is "list"; should be "description list"
+        https://bugs.webkit.org/show_bug.cgi?id=111665
+
+        Reviewed by Chris Fleizach.
+
+        Defining the role and description strings.
+
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.cpp:
+
+2013-04-02  Roger Fong  <roger_fong@apple.com>
+
+        Unreviewed. Disable running tests on Win EWS queue.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-04-02  Lucas Forschler  <lforschler@apple.com>
+
+        Disable running tests on the MAC WK2 EWS queue.
+        
+        Unreviewed.
+        
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (MacWK2EWS):
+
+2013-04-02  Julie Parent  <jparent@chromium.org>
+
+        Dashboard refactor: Move dashboard specific history related features to History.
+        https://bugs.webkit.org/show_bug.cgi?id=113717
+
+        Reviewed by Ojan Vafai.
+        
+        Each dashboard now creates its own History object, with a custom
+        configuration. This changes from just overriding global functions
+        to passing in callbacks for generatePage, handleValidHashParameter,
+        and handleQueryParameterChange. Same with passing in defaultStateValues
+        and DB_SPECIFIC_INVALIDATING_PARAMS, rather than overriding the global
+        variables.
+        
+        All functions related to these features are now (mostly) private
+        function on History. 
+        
+        Loader no longer needs a loadingComplete callback, since it can just
+        initialize the history object itself.
+
+        * TestResultServer/static-dashboards/aggregate_results.js:
+        (handleValidHashParameter):
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+        (generatePage):
+        (.switch.return):
+        (handleQueryParameterChange):
+        * TestResultServer/static-dashboards/flakiness_dashboard_unittests.js:
+        (resetGlobals):
+        * TestResultServer/static-dashboards/history.js:
+        (.):
+        * TestResultServer/static-dashboards/loader.js:
+        (.):
+        * TestResultServer/static-dashboards/loader_unittests.js:
+        * TestResultServer/static-dashboards/timeline_explorer.js:
+        (generatePage):
+        (initCurrentBuilderTestResults):
+        * TestResultServer/static-dashboards/treemap.js:
+        (generatePage):
+        (.switch.return):
+        (handleQueryParameterChange):
+
+2013-04-02  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r147401.
+        http://trac.webkit.org/changeset/147401
+        https://bugs.webkit.org/show_bug.cgi?id=113767
+
+        The patch makes it extremely hard to set up the dependencies
+        properly on the GTK builders (Requested by zdobersek on
+        #webkit).
+
+        * gtk/jhbuild.modules:
+
+2013-04-02  Sudarsana Nagineni  <sudarsana.nagineni@intel.com>
+
+        [EFL][WK2] Empty tooltip shown when hovering over popup menu items
+        https://bugs.webkit.org/show_bug.cgi?id=113382
+
+        Reviewed by Gyuyoung Kim.
+
+        Do not show the empty tooltip box if the text is null.
+
+        * MiniBrowser/efl/main.c:
+        (popup_menu_populate):
+
+2013-04-02  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Bump required versions of some dependencies
+        https://bugs.webkit.org/show_bug.cgi?id=113282
+
+        Reviewed by Martin Robinson.
+
+        * gtk/jhbuild.modules: Update libsoup, glib, at-spi2 and gtk+ versions.
+
+2013-04-01  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r147319.
+        http://trac.webkit.org/changeset/147319
+        https://bugs.webkit.org/show_bug.cgi?id=113707
+
+        The unit test is still failing on the buildbot (Requested by
+        zdobersek on #webkit).
+
+        * Scripts/run-gtk-tests:
+        (TestRunner):
+
 2013-04-01  Manuel Rego Casasnovas  <rego@igalia.com>
 
         [GTK][WK2] Unskip /webkit2/WebKitWebContext/uri-scheme

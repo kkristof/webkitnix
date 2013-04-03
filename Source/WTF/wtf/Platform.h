@@ -668,22 +668,17 @@
 
 #if OS(DARWIN)
 
-#define HAVE_MERGESORT 1
-#define HAVE_SYS_TIMEB_H 1
-#define WTF_USE_ACCELERATE 1
-
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
-
 #define HAVE_DISPATCH_H 1
 #define HAVE_MADV_FREE 1
+#define HAVE_MERGESORT 1
 #define HAVE_PTHREAD_SETNAME_NP 1
+#define HAVE_SYS_TIMEB_H 1
+#define WTF_USE_ACCELERATE 1
 
 #if !PLATFORM(IOS)
 #define HAVE_HOSTED_CORE_ANIMATION 1
 #define HAVE_MADV_FREE_REUSE 1
 #endif /* !PLATFORM(IOS) */
-
-#endif /* PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060 */
 
 #endif /* OS(DARWIN) */
 
@@ -926,6 +921,12 @@
 /* Accelerated compositing */
 #if PLATFORM(MAC) || PLATFORM(IOS) || PLATFORM(QT) || (PLATFORM(WIN) && !OS(WINCE) && !PLATFORM(WIN_CAIRO))
 #define WTF_USE_ACCELERATED_COMPOSITING 1
+#endif
+
+/* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
+   https://bugs.webkit.org/show_bug.cgi?id=112830 */
+#if USE(CG)
+#define HAVE_COMPOSITOR_FILTER_OUTSETS 1
 #endif
 
 #if ENABLE(WEBGL) && !defined(WTF_USE_3D_GRAPHICS)

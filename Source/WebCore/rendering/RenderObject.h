@@ -527,7 +527,7 @@ public:
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709. 
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker()
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread()
 #if ENABLE(FULLSCREEN_API)
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder()
@@ -554,7 +554,7 @@ public:
 #if ENABLE(CSS_EXCLUSIONS)
         // Shape outside on a float can reposition the float in much the
         // same way as relative positioning, so treat it as such.
-        positioned = positioned || (m_bitfields.floating() && m_bitfields.isBox() && style()->shapeOutside());
+        positioned = positioned || isFloatingWithShapeOutside();
 #endif
         return positioned;
     }
@@ -666,8 +666,7 @@ public:
 
     virtual RenderObject* hoverAncestor() const { return parent(); }
 
-    // IE Extension that can be called on any RenderObject.  See the implementation for the details.
-    RenderBoxModelObject* offsetParent() const;
+    Element* offsetParent() const;
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0);
     void setNeedsLayout(bool needsLayout, MarkingBehavior = MarkContainingBlockChain);
@@ -880,6 +879,7 @@ public:
     virtual unsigned int length() const { return 1; }
 
     bool isFloatingOrOutOfFlowPositioned() const { return (isFloating() || isOutOfFlowPositioned()); }
+    bool isFloatingWithShapeOutside() const { return isBox() && isFloating() && style()->shapeOutside(); }
 
     bool isTransparent() const { return style()->opacity() < 1.0f; }
     float opacity() const { return style()->opacity(); }

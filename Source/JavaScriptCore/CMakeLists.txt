@@ -140,11 +140,13 @@ set(JavaScriptCore_SOURCES
     heap/IncrementalSweeper.cpp
     heap/JITStubRoutineSet.cpp
     heap/MachineStackMarker.cpp
+
     heap/MarkedAllocator.cpp
     heap/MarkedBlock.cpp
     heap/MarkedSpace.cpp
     heap/MarkStack.cpp
     heap/SlotVisitor.cpp
+    heap/SuperRegion.cpp
     heap/WeakSet.cpp
     heap/WeakHandleOwner.cpp
     heap/WeakBlock.cpp

@@ -2477,6 +2477,9 @@ AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(dtTag))
         return DescriptionListTermRole;
 
+    if (node && node->hasTagName(dlTag))
+        return DescriptionListRole;
+
     if (node && (node->hasTagName(rpTag) || node->hasTagName(rtTag)))
         return AnnotationRole;
 
@@ -3673,6 +3676,11 @@ String AccessibilityRenderObject::mathFencedCloseString() const
         return String();
     
     return getAttribute(MathMLNames::closeAttr);
+}
+
+int AccessibilityRenderObject::mathLineThickness() const
+{
+    return getAttribute(MathMLNames::linethicknessAttr).toInt();
 }
 
 #endif

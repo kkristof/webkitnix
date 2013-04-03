@@ -272,6 +272,10 @@ inspector/profiler/heap-snapshot-summary-sorting-instances.html
 inspector/profiler/memory-instrumentation-cached-images.html
 webkit.org/b/50485 inspector-protocol/heap-profiler [ Skip ]
 
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-array.html [ Skip ]
+
+webkit.org/b/113787 inspector/profiler/memory-instrumentation-external-string.html [ Skip ]
+
 # https://bugs.webkit.org/show_bug.cgi?id=40300
 inspector/debugger/live-edit.html
 inspector/debugger/live-edit-breakpoints.html
@@ -348,7 +352,7 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
-webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ]
+webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure ]
 
 # Web Inspector: Implement support for InspectorClient::overrideDeviceMetrics() in platforms other than Chromium
 # https://bugs.webkit.org/show_bug.cgi?id=82886
@@ -884,10 +888,6 @@ sputnik/Conformance/15_Native_Objects/15.8_Math/15.8.2/15.8.2.18_tan/S15.8.2.18_
 fast/frames/sandboxed-iframe-plugins.html
 http/tests/cookies/simple-cookies-max-age.html
 
-# http/tests/inspector/resource-har-conversion.html is failing on the release bot after r63191
-# webkit.org/b/42162
-http/tests/inspector/resource-har-conversion.html
-
 # [Qt] Some inspector test fail intermittently
 # https://bugs.webkit.org/show_bug.cgi?id=42090
 http/tests/inspector/network/network-size.html
@@ -1354,7 +1354,6 @@ fast/repaint/moving-shadow-on-container.html
 fast/repaint/moving-shadow-on-path.html
 ietestcenter/css3/valuesandunits/units-010.htm
 inspector/audits/audits-panel-functional.html
-http/tests/inspector/console-cross-origin-iframe-logging.html
 http/tests/inspector-enabled/console-clear-arguments-on-frame-navigation.html
 http/tests/inspector-enabled/console-clear-arguments-on-frame-remove.html
 svg/W3C-SVG-1.1/paths-data-03-f.svg
@@ -1486,6 +1485,14 @@ css3/images/cross-fade-tiled.html
 
 # --- new crashing test, bug report needed
 css3/filters/effect-reference-hw.html
+
+# Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109098
+css3/filters/filter-change-repaint-composited.html
+css3/filters/composited-layer-bounds-after-sw-blur-animation.html
+css3/filters/composited-layer-bounds-with-composited-blur.html
+css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html
+css3/filters/composited-layer-promotion-after-outset-overlap-change-using-composited-shadow.html
+css3/filters/composited-layer-promotion-after-outset-overlap-change-using-sw-shadow.html
 
 # ============================================================================= #
 # failing fast tests
@@ -1911,7 +1918,7 @@ webkit.org/b/109224 fast/forms/number/number-l10n-input.html [ Skip ]
 # [Qt] New fast/flexbox/line-clamp-link-after-ellipsis.html layout test is failing since r142335.
 webkit.org/b/109353 fast/flexbox/line-clamp-link-after-ellipsis.html [ Skip ]
 
-webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ Skip ]
+webkit.org/b/113769 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.html [ Skip ]
 
 webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Skip ]
 
@@ -2160,10 +2167,6 @@ fast/events/touch/gesture/gesture-dblclick.html
 fast/events/touch/gesture/gesture-scroll.html
 fast/events/touch/gesture/touch-gesture-scroll-sideways.html
 fast/events/touch/gesture/gesture-tap-active-state-iframe.html
-
-# New test introduced in https://bugs.webkit.org/show_bug.cgi?id=103355
-# Needs Qt implementation.
-fast/events/touch/gesture/touch-gesture-scroll-remove-node.html
 
 # Test fails because script pretty-print does not work in inspector on JSC when paused on breakpoint.
 # https://bugs.webkit.org/show_bug.cgi?id=71120
@@ -2461,7 +2464,6 @@ webkit.org/b/62662 [ Debug ] inspector/cookie-parser.html [ Crash Pass ]
 webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
 webkit.org/b/83906 ietestcenter/css3/grid/grid-column-001.htm [ ImageOnlyFailure ]
-webkit.org/b/83907 ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83909 ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/83913 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
@@ -2561,6 +2563,14 @@ webkit.org/b/99306 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyF
 webkit.org/b/99306 animations/missing-values-first-keyframe.html [ ImageOnlyFailure ]
 webkit.org/b/99306 animations/missing-values-last-keyframe.html [ ImageOnlyFailure ]
 webkit.org/b/99306 css3/filters/effect-blur-hw.html [ ImageOnlyFailure ] # Blur effect radius is too small on WebKit1, the effect not applied at all on WebKit2.
+
+# Needs rebaseline.
+webkit.org/b/94198 fast/dom/HTMLImageElement/image-alt-text.html [ Failure ]
+webkit.org/b/94198 fast/dom/HTMLInputElement/input-image-alt-text.html [ Failure ]
+webkit.org/b/94198 fast/encoding/utf-16-big-endian.html [ Failure ]
+webkit.org/b/94198 fast/encoding/utf-16-little-endian.html [ Failure ]
+webkit.org/b/94198 fast/forms/input-value.html [ Failure ]
+webkit.org/b/94198 tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
 
 # REGRESSION(r132143): It made fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html flakey
 webkit.org/b/100117 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html
@@ -2669,11 +2679,6 @@ inspector/editor/text-editor-smart-braces.html
 # [Qt] different result from other platforms
 webkit.org/b/108676 svg/custom/svg-fonts-in-text-controls.html [ Skip ]
 
-# REGRESSION(r142015)
-webkit.org/b/91665 fast/dynamic/absolute-positioned-to-static-positioned.html [ Skip ]
-webkit.org/b/91665 fast/dynamic/floating-to-non-floating.html [ Skip ]
-webkit.org/b/91665 fast/dynamic/static-positioned-to-absolute-positioned.html [ Skip ]
-
 # Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109775
 webkit.org/b/109775 media/audio-controls-rendering.html [ Failure ]
 webkit.org/b/109775 media/controls-after-reload.html [ Failure ]
@@ -2702,8 +2707,6 @@ webkit.org/b/110654 css3/flexbox/button.html [ Failure ]
 # Need support for ResourceHandle::didChangePriority and DRT support
 webkit.org/b/111016 http/tests/loading/promote-img-preload-priority.html [ Failure ]
 
-Bug(ojan) fast/table/overflowHidden.html [ ImageOnlyFailure Failure ]
-Bug(ojan) scrollbars/custom-scrollbar-table-cell.html [ ImageOnlyFailure Failure ]
 
 # Border-fit should happen at layout time rather than paint time
 webkit.org/b/111606 fast/borders/border-fit-2.html [ Skip ]
@@ -2725,3 +2728,6 @@ webkit.org/b/91611 [ Mac Win ] media/media-higher-prio-audio-stream.html [ Skip 
 
 # Newly added test in r147094 fails
 webkit.org/b/113513 inspector/styles/paste-property.html [ Skip ]
+
+# New test crashes after r147388
+webkit.org/b/113770 editing/execCommand/format-block-at-root.html [ Skip ]

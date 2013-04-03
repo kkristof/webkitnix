@@ -1,3 +1,115 @@
+2013-04-03  Mikhail Naganov  <mnaganov@chromium.org>
+
+        [Chromium] Implement target-densityDpi viewport property emulation
+        https://bugs.webkit.org/show_bug.cgi?id=110835
+
+        The value is only used in the Chromium port, when the corresponding
+        setting is enabled.
+
+        This is needed for supporting existing WebView-based applications
+        that rely on this property.
+
+        Reviewed by Adam Barth.
+
+        * public/WebSettings.h:
+        (WebSettings):
+        * src/ChromeClientImpl.cpp:
+        (WebKit):
+        (WebKit::calculateTargetDensityDPIFactor):
+        (WebKit::ChromeClientImpl::dispatchViewportPropertiesDidChange):
+        * src/WebSettingsImpl.cpp:
+        (WebKit::WebSettingsImpl::WebSettingsImpl):
+        (WebKit::WebSettingsImpl::setSupportDeprecatedTargetDensityDPI):
+        (WebKit):
+        * src/WebSettingsImpl.h:
+        (WebSettingsImpl):
+        (WebKit::WebSettingsImpl::supportDeprecatedTargetDensityDPI):
+        * tests/WebFrameTest.cpp:
+        * tests/data/viewport-target-densitydpi-high.html: Added.
+
+2013-04-02  James Craig  <james@cookiecrook.com>
+
+        AXRoleDescripton for DL is "list"; should be "description list"
+        https://bugs.webkit.org/show_bug.cgi?id=111665
+
+        Reviewed by Chris Fleizach.
+
+        Defining the role and description strings.
+
+        * public/WebAccessibilityRole.h:
+        * src/AssertMatchingEnums.cpp:
+
+2013-04-02  Raymond Toy  <rtoy@google.com>
+
+        Add support for using ARM FFT in WebAudio
+        https://bugs.webkit.org/show_bug.cgi?id=109755
+
+        Reviewed by Chris Rogers.
+
+        * features.gypi: Support building with the OpenMAX DL FFT.
+
+2013-04-01  <webkit.review.bot@gmail.com>
+
+        [chromium] Roll chromium deps to 191760.
+        https://bugs.webkit.org/show_bug.cgi?id=113745
+
+        Unreviewed, rolling deps.
+
+        * DEPS:
+
+2013-04-01  Alexandre Elias  <aelias@chromium.org>
+
+        [chromium] Delete code behind if (!applyXYZScaleInCompositor)
+        https://bugs.webkit.org/show_bug.cgi?id=111809
+
+        Reviewed by James Robinson.
+
+        Chromium is setting the flags applyPageScaleFactorInCompositor and
+        applyDeviceScaleFactorInCompositor permanently to true, so any code
+        in platform/chromium with the false setting is dead. Delete all of
+        it.
+
+        I also switched FrameTestHelpers and DumpRenderTree to always turn the
+        setting to true so that they test the code we're actually running.
+        This exposed a number of failing tests which I added in the
+        expectations file.
+
+        Note also that I made calls to setPageScaleFactor turn on
+        force-compositing-mode to make the layout tests work, as
+        pageScaleFactor is now ignored in non-composited mode.
+
+        * src/ChromeClientImpl.cpp:
+        (WebKit::ChromeClientImpl::dispatchViewportPropertiesDidChange):
+        * src/NonCompositedContentHost.cpp:
+        (WebKit::NonCompositedContentHost::NonCompositedContentHost):
+        * src/PageWidgetDelegate.cpp:
+        (WebKit::PageWidgetDelegate::paint):
+        * src/PageWidgetDelegate.h:
+        * src/WebFrameImpl.cpp:
+        (WebKit::WebFrameImpl::selectRange):
+        (WebKit::WebFrameImpl::moveCaretSelectionTowardsWindowPoint):
+        * src/WebPagePopupImpl.cpp:
+        (WebKit::WebPagePopupImpl::paint):
+        * src/WebViewImpl.cpp:
+        (WebKit::WebViewImpl::computeScaleAndScrollForHitRect):
+        (WebKit::WebViewImpl::scaledSize):
+        (WebKit::WebViewImpl::resize):
+        (WebKit::WebViewImpl::paint):
+        (WebKit::WebViewImpl::selectionBounds):
+        (WebKit::WebViewImpl::computeScaleAndScrollForFocusedNode):
+        (WebKit::WebViewImpl::clampOffsetAtScale):
+        (WebKit::WebViewImpl::setPageScaleFactorPreservingScrollOffset):
+        (WebKit::WebViewImpl::setDeviceScaleFactor):
+        (WebKit::WebViewImpl::contentsSize):
+        (WebKit::WebViewImpl::setIsAcceleratedCompositingActive):
+        (WebKit::WebViewImpl::applyScrollAndScale):
+        * src/WebViewImpl.h:
+        * tests/FrameTestHelpers.cpp:
+        (WebKit::FrameTestHelpers::createWebView):
+        * tests/WebFrameTest.cpp:
+        * tests/WebInputEventConversionTest.cpp:
+        (WebCore::TEST):
+
 2013-03-30  Adam Barth  <abarth@webkit.org>
 
         [Chromium] Remove unused includes of stdio.h

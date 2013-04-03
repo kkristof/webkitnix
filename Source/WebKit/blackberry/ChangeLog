@@ -1,3 +1,70 @@
+2013-04-03  Arvid Nilsson  <anilsson@rim.com>
+
+        [BlackBerry] Decouple layout viewport from visual viewport
+        https://bugs.webkit.org/show_bug.cgi?id=113829
+
+        Reviewed by Carlos Garcia Campos.
+
+        Setting the visual viewport would force the layout viewport equal to
+        the visual viewport. Decouple the viewports by allowing the user to
+        specify a layout viewport when setting the viewport(s). The layout
+        viewport could be the exact same value passed for visual viewport, if
+        the old behavior is desired.
+
+        Also reevaluate any viewport arguments when (only) the layout viewport
+        changes in WebPage::setDefaultLayoutSize() since the layout viewport is
+        used as input to the calculation.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setScreenOrientation):
+        (BlackBerry::WebKit::WebPagePrivate::setViewportSize):
+        (BlackBerry::WebKit::WebPage::setViewportSize):
+        (WebKit):
+        (BlackBerry::WebKit::WebPagePrivate::setDefaultLayoutSize):
+        (BlackBerry::WebKit::WebPage::defaultLayoutSize):
+        * Api/WebPage.h:
+        * Api/WebPage_p.h:
+        (WebPagePrivate):
+
+2013-04-02  Maxim Mogilnitsky  <mmogilnitsky@rim.com>
+
+        [BlackBerry] API update for IntRect
+        https://bugs.webkit.org/show_bug.cgi?id=113824
+
+        Reviewed by Rob Buis.
+
+        Modifing IntRect and FloatRect API.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::regionForTextQuads):
+
+2013-04-02  Nima Ghanavatian  <nghanavatian@blackberry.com>
+
+        [BlackBerry] Create a selection from two points irregardless of the caret position.
+        https://bugs.webkit.org/show_bug.cgi?id=113795
+
+        Reviewed by Rob Buis.
+
+        Internally reviewed by Mike Fenton.
+
+        PR276577
+        If we are to set both the base and extent of a selection, we should maintain the base upon setting the extent.
+        This prevents us from overwriting the previous calculation when setting extent.
+        Further, instead of setting and manipulating the selection, simply set up start and end VisiblePositions and
+        create a new directional selection so as to set the base and extent simultaneously.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::setSelection):
+
+2013-04-01  Konrad Piascik  <kpiascik@blackberry.com>
+
+        [BlackBerry] Move Path into it's own header
+        https://bugs.webkit.org/show_bug.cgi?id=113724
+
+        Reviewed by Rob Buis.
+
+        * WebKitSupport/DefaultTapHighlight.cpp:
+
 2013-03-29  Charles Wei  <charles.wei@torchmobile.com.cn>
 
         [BlackBerry] Cleanup the CONTEXT_MENUS in BlackBerry porting

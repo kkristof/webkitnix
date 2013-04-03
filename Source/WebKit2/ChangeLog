@@ -1,3 +1,361 @@
+2013-04-02  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove code for Mac 10.5 and earlier from WTF and WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=113844
+
+        Reviewed by Benjamin Poulain.
+
+        Removed the code for 10.5 and removed if-def for 10.6.
+
+        * Shared/mac/PasteboardTypes.mm:
+        (WebKit::PasteboardTypes::forEditing):
+
+2013-04-02  Anders Carlsson  <andersca@apple.com>
+
+        Be more robust against empty message receiver names in incoming messages
+        https://bugs.webkit.org/show_bug.cgi?id=113833
+        <rdar://problem/13284433>
+
+        Reviewed by Beth Dakin.
+
+        Turns out that we either send or receive messages whose receiver names are empty. This leads to bad things when we try to look
+        up the message receiver name in a hash map since the empty name is used to represent an empty hash map value.
+
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::addWorkQueueMessageReceiverOnConnectionWorkQueue):
+        Sprinkle assertions.
+
+        (CoreIPC::Connection::processIncomingMessage):
+        If the message receiver name is not valid, make sure to call didReceiveInvalidMessage on the client thread.
+
+        (CoreIPC::Connection::dispatchDidReceiveInvalidMessage):
+        Add new helper function.
+
+2013-04-02  Simon Cooper  <scooper@apple.com>
+
+        [Mac][WK2] Don’t let plug-ins use System V shared memory
+        https://bugs.webkit.org/show_bug.cgi?id=113466
+        <rdar://problem/13159030>
+
+        Reviewed, tweaked and landed by Alexey Proskuryakov.
+
+        Instead of allowing plug-ins to request System V shm, give them a
+        temporary but usable alternative if they try to request it.
+
+        * PluginProcess/mac/PluginProcessShim.mm:
+
+2013-04-02  Anders Carlsson  <andersca@apple.com>
+
+        Add WKContextSetInvalidMessageFunction
+        https://bugs.webkit.org/show_bug.cgi?id=113820
+        <rdar://problem/12679817>
+
+        Reviewed by Tim Horton.
+
+        * UIProcess/API/C/WKContext.cpp:
+        (WKContextSetInvalidMessageFunction):
+        Call WebContext::didReceiveInvalidMessage.
+
+        * UIProcess/API/C/WKContextPrivate.h:
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::setInvalidMessageCallback):
+        Set the global variable.
+
+        (WebKit::WebContext::didReceiveInvalidMessage):
+        Construct a message name string and call the invalid message callback.
+
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::didReceiveInvalidMessage):
+        Call WebContext::didReceiveInvalidMessage.
+
+2013-04-02  Alexey Proskuryakov  <ap@apple.com>
+
+        [Mac] Remove WKCreateNSURLConnectionDelegateProxy
+        https://bugs.webkit.org/show_bug.cgi?id=113810
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebCoreSupport/mac/WebSystemInterface.mm:
+        (InitWebCoreSystemInterface):
+
+2013-04-02  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13551119> [WK2] Crashes in NetworkProcess when canceling loads
+        https://bugs.webkit.org/show_bug.cgi?id=113803
+
+        Reviewed by Darin Adler.
+
+        * Shared/Downloads/mac/DownloadMac.mm: (WebKit::Download::startWithHandle):
+        Just pass nil instead of proxy.
+
+2013-04-02  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2] Remove repeating code in declaration of WK2 API classes
+        https://bugs.webkit.org/show_bug.cgi?id=112782
+
+        Reviewed by Benjamin Poulain.
+
+        The following two lines of code had been repeated in every WK2 API
+        object class:
+        1) static const Type APIType = SomeAPIType;
+        2) virtual Type type() const { return APIType; }
+
+        This patch introduces template class 'TypedAPIObject' inherited
+        from WebKit::APIObject and it contains the common functionality. 
+        So the new pattern is that API object classes are inherited from
+        TypedAPIObject (rather than from WebKit::APIObject directly) passing
+        the corresponding API object type as a template parameter.
+
+        The existing API object classes are modified accordingly to the
+        proposed pattern.
+
+        * Shared/APIObject.h:
+        (WebKit):
+        (TypedAPIObject):
+        (WebKit::TypedAPIObject::~TypedAPIObject):
+        (WebKit::TypedAPIObject::TypedAPIObject):
+        * Shared/ImmutableArray.h:
+        (ImmutableArray):
+        * Shared/ImmutableDictionary.h:
+        (ImmutableDictionary):
+        * Shared/WebArchive.h:
+        (WebArchive):
+        * Shared/WebArchiveResource.h:
+        (WebArchiveResource):
+        * Shared/WebBackForwardListItem.h:
+        (WebBackForwardListItem):
+        * Shared/WebBatteryStatus.h:
+        (WebBatteryStatus):
+        * Shared/WebCertificateInfo.h:
+        * Shared/WebConnection.h:
+        (WebConnection):
+        * Shared/WebContextMenuItem.h:
+        (WebContextMenuItem):
+        * Shared/WebData.h:
+        * Shared/WebError.h:
+        (WebKit::WebError::errorCode):
+        * Shared/WebGeolocationPosition.h:
+        (WebGeolocationPosition):
+        * Shared/WebGeometry.h:
+        * Shared/WebGraphicsContext.h:
+        (WebGraphicsContext):
+        * Shared/WebHitTestResult.h:
+        * Shared/WebImage.h:
+        (WebImage):
+        * Shared/WebNetworkInfo.h:
+        (WebNetworkInfo):
+        * Shared/WebNumber.h:
+        * Shared/WebOpenPanelParameters.h:
+        (WebOpenPanelParameters):
+        * Shared/WebRenderLayer.h:
+        * Shared/WebRenderObject.h:
+        * Shared/WebSecurityOrigin.h:
+        * Shared/WebSerializedScriptValue.h:
+        (WebSerializedScriptValue):
+        * Shared/WebString.h:
+        * Shared/WebURL.h:
+        * Shared/WebURLRequest.h:
+        (WebURLRequest):
+        * Shared/WebURLResponse.h:
+        (WebURLResponse):
+        * Shared/WebUserContentURLPattern.h:
+        * Shared/mac/ObjCObjectGraph.h:
+        * UIProcess/Authentication/AuthenticationChallengeProxy.h:
+        (AuthenticationChallengeProxy):
+        * UIProcess/Authentication/AuthenticationDecisionListener.h:
+        (AuthenticationDecisionListener):
+        * UIProcess/Authentication/WebCredential.h:
+        (WebCredential):
+        * UIProcess/Authentication/WebProtectionSpace.h:
+        (WebProtectionSpace):
+        * UIProcess/Downloads/DownloadProxy.h:
+        (DownloadProxy):
+        * UIProcess/GeolocationPermissionRequestProxy.h:
+        (GeolocationPermissionRequestProxy):
+        * UIProcess/Notifications/NotificationPermissionRequest.h:
+        (NotificationPermissionRequest):
+        * UIProcess/Notifications/WebNotification.h:
+        (WebNotification):
+        * UIProcess/Notifications/WebNotificationManagerProxy.h:
+        (WebNotificationManagerProxy):
+        * UIProcess/Plugins/WebPluginSiteDataManager.h:
+        (WebPluginSiteDataManager):
+        * UIProcess/WebApplicationCacheManagerProxy.h:
+        (WebApplicationCacheManagerProxy):
+        * UIProcess/WebBackForwardList.h:
+        (WebBackForwardList):
+        * UIProcess/WebBatteryManagerProxy.h:
+        (WebBatteryManagerProxy):
+        * UIProcess/WebContext.h:
+        (WebContext):
+        * UIProcess/WebCookieManagerProxy.h:
+        (WebCookieManagerProxy):
+        * UIProcess/WebDatabaseManagerProxy.h:
+        (WebDatabaseManagerProxy):
+        * UIProcess/WebEditCommandProxy.h:
+        (WebEditCommandProxy):
+        * UIProcess/WebFrameProxy.h:
+        (WebFrameProxy):
+        * UIProcess/WebGeolocationManagerProxy.h:
+        (WebGeolocationManagerProxy):
+        * UIProcess/WebGrammarDetail.h:
+        (WebGrammarDetail):
+        * UIProcess/WebIconDatabase.h:
+        (WebIconDatabase):
+        * UIProcess/WebInspectorProxy.h:
+        (WebInspectorProxy):
+        * UIProcess/WebKeyValueStorageManagerProxy.h:
+        (WebKeyValueStorageManagerProxy):
+        * UIProcess/WebMediaCacheManagerProxy.h:
+        (WebMediaCacheManagerProxy):
+        * UIProcess/WebNavigationData.h:
+        (WebNavigationData):
+        * UIProcess/WebNetworkInfoManagerProxy.h:
+        (WebNetworkInfoManagerProxy):
+        * UIProcess/WebOpenPanelResultListenerProxy.h:
+        (WebOpenPanelResultListenerProxy):
+        * UIProcess/WebPageGroup.h:
+        (WebPageGroup):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/WebPreferences.cpp:
+        (WebKit::WebPreferences::WebPreferences):
+        * UIProcess/WebPreferences.h:
+        (WebPreferences):
+        * UIProcess/WebResourceCacheManagerProxy.h:
+        (WebResourceCacheManagerProxy):
+        * UIProcess/WebTextChecker.h:
+        (WebTextChecker):
+        * UIProcess/WebVibrationProxy.h:
+        (WebVibrationProxy):
+        * UIProcess/efl/WebPopupItemEfl.h:
+        (WebPopupItemEfl):
+        * UIProcess/efl/WebView.h:
+        * UIProcess/soup/WebSoupRequestManagerProxy.h:
+        (WebSoupRequestManagerProxy):
+        * WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.h:
+        (InjectedBundleNodeHandle):
+        * WebProcess/InjectedBundle/DOM/InjectedBundleRangeHandle.h:
+        (InjectedBundleRangeHandle):
+        * WebProcess/InjectedBundle/InjectedBundle.h:
+        (InjectedBundle):
+        * WebProcess/InjectedBundle/InjectedBundleBackForwardList.h:
+        * WebProcess/InjectedBundle/InjectedBundleBackForwardListItem.h:
+        * WebProcess/InjectedBundle/InjectedBundleDOMWindowExtension.h:
+        (InjectedBundleDOMWindowExtension):
+        * WebProcess/InjectedBundle/InjectedBundleHitTestResult.h:
+        * WebProcess/InjectedBundle/InjectedBundleNavigationAction.h:
+        (InjectedBundleNavigationAction):
+        * WebProcess/InjectedBundle/InjectedBundleScriptWorld.h:
+        (InjectedBundleScriptWorld):
+        * WebProcess/WebPage/PageOverlay.h:
+        (PageOverlay):
+        * WebProcess/WebPage/WebFrame.h:
+        (WebFrame):
+        * WebProcess/WebPage/WebInspector.h:
+        (WebInspector):
+        * WebProcess/WebPage/WebPage.h:
+        (WebPage):
+        * WebProcess/WebPage/WebPageGroupProxy.h:
+        (WebPageGroupProxy):
+
+2013-04-01  Timothy Hatcher  <timothy@apple.com>
+
+        Allow changing Web Inspector dock sides without undocking first.
+
+        https://webkit.org/b/113661
+        rdar://problem/13543127
+
+        Reviewed by Joseph Pecoraro.
+
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::createInspectorPage): Send AttachedBottom and
+        AttachedRight messages so InspectorFrontendClientLocal knows which side we
+        are attached.
+
+        (WebKit::WebInspectorProxy::canAttach): If we are already attached, allow
+        attaching again to allow switching sides.
+
+2013-04-01  Anders Carlsson  <andersca@apple.com>
+
+        Nor this! (Who reviewed this anyway!)
+
+        * WebProcess/Storage/StorageNamespaceProxy.cpp:
+        (WebKit::StorageNamespaceProxy::storageArea):
+
+2013-04-01  Anders Carlsson  <andersca@apple.com>
+
+        Didn't mean to commit this!
+
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+
+2013-04-01  Alexey Proskuryakov  <ap@apple.com>
+
+        https://bugs.webkit.org/show_bug.cgi?id=113721
+        <rdar://problem/13549181> REGRESSION (r146929): HTTP auth credentials not reused during session
+
+        Reviewed by Brady Eidson.
+
+        * NetworkProcess/NetworkResourceLoader.h:
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::shouldUseCredentialStorage): Added an override that
+        we still need. It's not great, but causes no trouble for NetworkProcess.
+        (WebKit::NetworkResourceLoader::shouldUseCredentialStorageAsync): Implement in
+        terms of sync version to avoid duplicating logic.
+
+2013-03-05  Anders Carlsson  <andersca@apple.com>
+
+        Apply changes from storage events locally
+        https://bugs.webkit.org/show_bug.cgi?id=111502
+
+        Reviewed by Sam Weinig.
+
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::StorageAreaProxy):
+        Store the security origin as a member variable.
+
+        (WebKit::StorageAreaProxy::dispatchStorageEvent):
+        Set the item and call the appropriate event dispatch function.
+    
+        (WebKit::StorageAreaProxy::dispatchSessionStorageEvent):
+        (WebKit::StorageAreaProxy::dispatchLocalStorageEvent):
+        Add stubs.
+
+        * WebProcess/Storage/StorageAreaProxy.h:
+
+2013-04-01  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13490123> Sandbox extension tracking is incorrect when restoring a session
+        https://bugs.webkit.org/show_bug.cgi?id=113709
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::SandboxExtensionTracker::didStartProvisionalLoad): Added an assertion
+        to catch extension tracking logic errors that could result in giving an extension to
+        non-local pages.
+        (WebKit::WebPage::SandboxExtensionTracker::didCommitProvisionalLoad): Just like
+        below, clearing m_pendingProvisionalSandboxExtension appears incorrect, even though
+        I am not aware of any scenarios where this happens in practice.
+        (WebKit::WebPage::SandboxExtensionTracker::didFailProvisionalLoad): The load may
+        be failing exactly because a new one cancels it, so we shouldn't be preventing
+        the new one from using its extension.
+
+2013-04-01  Brady Eidson  <beidson@apple.com>
+
+        SharedMemory release build hardening.
+        <rdar://problem/13546860> and https://bugs.webkit.org/show_bug.cgi?id=113710
+
+        Reviewed by Anders Carlsson.
+
+        Successful creation of a memory entry with a size less than the size we requested should be treated
+        as a failure to create the SharedMemory object.
+
+        * Platform/mac/SharedMemoryMac.cpp:
+        (WebKit::SharedMemory::createFromVMBuffer): Early return if the port we get is bogus for our needs.
+        (WebKit::SharedMemory::createHandle): Ditto.
+        (WebKit::SharedMemory::create): Guarantee we pass valid input in to mach_vm_map.
+
 2013-03-30  Csaba Osztrogonác  <ossy@webkit.org>
 
         Unreviewed buildfix after r147260.

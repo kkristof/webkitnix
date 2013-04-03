@@ -89,9 +89,11 @@ ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo() const
 }
 #endif
 
+enum IndentTextOrNot { DoNotIndentText, IndentText };
+
 class LineWidth {
 public:
-    LineWidth(RenderBlock* block, bool isFirstLine)
+    LineWidth(RenderBlock* block, bool isFirstLine, IndentTextOrNot shouldIndentText)
         : m_block(block)
         , m_uncommittedWidth(0)
         , m_committedWidth(0)
@@ -103,6 +105,7 @@ public:
         , m_segment(0)
 #endif
         , m_isFirstLine(isFirstLine)
+        , m_shouldIndentText(shouldIndentText)
     {
         ASSERT(block);
 #if ENABLE(CSS_EXCLUSIONS)
@@ -132,6 +135,8 @@ public:
     void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
     void fitBelowFloats();
 
+    bool shouldIndentText() { return m_shouldIndentText == IndentText; }
+
 private:
     void computeAvailableWidthFromLeftAndRight()
     {
@@ -150,14 +155,15 @@ private:
     const LineSegment* m_segment;
 #endif
     bool m_isFirstLine;
+    IndentTextOrNot m_shouldIndentText;
 };
 
 inline void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block->logicalHeight();
     LayoutUnit logicalHeight = logicalHeightForLine(m_block, m_isFirstLine, replacedHeight);
-    m_left = m_block->logicalLeftOffsetForLine(height, m_isFirstLine, logicalHeight);
-    m_right = m_block->logicalRightOffsetForLine(height, m_isFirstLine, logicalHeight);
+    m_left = m_block->logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight);
+    m_right = m_block->logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight);
 
 #if ENABLE(CSS_EXCLUSIONS)
     if (m_segment) {
@@ -188,7 +194,7 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
             newLeft += shapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
 #endif
 
-        if (m_isFirstLine && m_block->style()->isLeftToRightDirection())
+        if (shouldIndentText() && m_block->style()->isLeftToRightDirection())
             newLeft += floorToInt(m_block->textIndentOffset());
         m_left = max<float>(m_left, newLeft);
     } else {
@@ -198,7 +204,7 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
             newRight += shapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
 #endif
 
-        if (m_isFirstLine && !m_block->style()->isLeftToRightDirection())
+        if (shouldIndentText() && !m_block->style()->isLeftToRightDirection())
             newRight -= floorToInt(m_block->textIndentOffset());
         m_right = min<float>(m_right, newRight);
     }
@@ -235,8 +241,8 @@ void LineWidth::fitBelowFloats()
         if (floatLogicalBottom <= lastFloatLogicalBottom)
             break;
 
-        newLineLeft = m_block->logicalLeftOffsetForLine(floatLogicalBottom, m_isFirstLine);
-        newLineRight = m_block->logicalRightOffsetForLine(floatLogicalBottom, m_isFirstLine);
+        newLineLeft = m_block->logicalLeftOffsetForLine(floatLogicalBottom, shouldIndentText());
+        newLineRight = m_block->logicalRightOffsetForLine(floatLogicalBottom, shouldIndentText());
         newLineWidth = max(0.0f, newLineRight - newLineLeft);
         lastFloatLogicalBottom = floatLogicalBottom;
         if (newLineWidth >= m_uncommittedWidth)
@@ -322,12 +328,14 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     RenderObject* parent = child->parent();
     while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
-        if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
-            extraWidth += borderPaddingMarginStart(parentAsRenderInline);
-        if (end && shouldAddBorderPaddingMargin(child->nextSibling(), end))
-            extraWidth += borderPaddingMarginEnd(parentAsRenderInline);
-        if (!start && !end)
-            return extraWidth;
+        if (!isEmptyInline(parentAsRenderInline)) {
+            if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
+                extraWidth += borderPaddingMarginStart(parentAsRenderInline);
+            if (end && shouldAddBorderPaddingMargin(child->nextSibling(), end))
+                extraWidth += borderPaddingMarginEnd(parentAsRenderInline);
+            if (!start && !end)
+                return extraWidth;
+        }
         child = parent;
         parent = child->parent();
     }
@@ -949,11 +957,25 @@ void RenderBlock::updateLogicalWidthForAlignment(const ETextAlign& textAlign, Bi
     }
 }
 
-static void updateLogicalInlinePositions(RenderBlock* block, float& lineLogicalLeft, float& lineLogicalRight, float& availableLogicalWidth, bool firstLine, LayoutUnit boxLogicalHeight)
+static IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, RenderStyle* style)
+{
+    if (isFirstLine)
+        return IndentText;
+#if ENABLE(CSS3_TEXT)
+    if (isAfterHardLineBreak && style->textIndentLine() == TextIndentEachLine) 
+        return IndentText;
+#else
+    UNUSED_PARAM(isAfterHardLineBreak);
+    UNUSED_PARAM(style);
+#endif
+    return DoNotIndentText;
+}
+
+static void updateLogicalInlinePositions(RenderBlock* block, float& lineLogicalLeft, float& lineLogicalRight, float& availableLogicalWidth, bool firstLine, IndentTextOrNot shouldIndentText, LayoutUnit boxLogicalHeight)
 {
     LayoutUnit lineLogicalHeight = logicalHeightForLine(block, firstLine, boxLogicalHeight);
-    lineLogicalLeft = block->pixelSnappedLogicalLeftOffsetForLine(block->logicalHeight(), firstLine, lineLogicalHeight);
-    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), firstLine, lineLogicalHeight);
+    lineLogicalLeft = block->pixelSnappedLogicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
     availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
 }
 
@@ -964,11 +986,15 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
     
     // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted line of an element. For example, the first line of an anonymous block 
     // box is only affected if it is the first child of its parent element."
-    bool firstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->firstChild() != this);
+    // CSS3 "text-indent", "-webkit-each-line" affects the first line of the block container as well as each line after a forced line break,
+    // but does not affect lines after a soft wrap break.
+    bool isFirstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->firstChild() != this);
+    bool isAfterHardLineBreak = lineBox->prevRootBox() && lineBox->prevRootBox()->endsWithBreak();
+    IndentTextOrNot shouldIndentText = requiresIndent(isFirstLine, isAfterHardLineBreak, style());
     float lineLogicalLeft;
     float lineLogicalRight;
     float availableLogicalWidth;
-    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, firstLine, 0);
+    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, 0);
     bool needsWordSpacing;
 #if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = layoutExclusionShapeInsideInfo();
@@ -1004,7 +1030,7 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
 
     if (firstRun && firstRun->m_object->isReplaced()) {
         RenderBox* renderBox = toRenderBox(firstRun->m_object);
-        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, firstLine, renderBox->logicalHeight());
+        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, renderBox->logicalHeight());
     }
 
     computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
@@ -1618,7 +1644,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
 #endif
         WordMeasurements wordMeasurements;
         end = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
-        renderTextInfo.m_lineBreakIterator.resetLastTwoCharacters();
+        renderTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
             // Once BidiRunList is separated from BidiResolver this will not be needed.
@@ -2618,6 +2644,11 @@ InlineIterator RenderBlock::LineBreaker::nextLineBreak(InlineBidiResolver& resol
 #endif
 }
 
+static inline bool iteratorIsBeyondEndOfRenderCombineText(const InlineIterator& iter, RenderCombineText* renderer)
+{
+    return iter.m_obj == renderer && iter.m_pos >= renderer->textLength();
+}
+
 InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& resolver, LineInfo& lineInfo, RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements& wordMeasurements)
 {
     reset();
@@ -2628,7 +2659,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
     bool includeEndWidth = true;
     LineMidpointState& lineMidpointState = resolver.midpointState();
 
-    LineWidth width(m_block, lineInfo.isFirstLine());
+    LineWidth width(m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
 
     skipLeadingWhitespace(resolver, lineInfo, lastFloatFromPreviousLine, width);
 
@@ -2739,7 +2770,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 m_positionedObjects.append(box);
             width.addUncommittedWidth(inlineLogicalWidth(current.m_obj));
             // Reset prior line break context characters.
-            renderTextInfo.m_lineBreakIterator.resetLastTwoCharacters();
+            renderTextInfo.m_lineBreakIterator.resetPriorContext();
         } else if (current.m_obj->isFloating()) {
             RenderBox* floatBox = toRenderBox(current.m_obj);
             FloatingObject* f = m_block->insertFloatingObject(floatBox);
@@ -2756,7 +2787,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             } else
                 floatsFitOnLine = false;
             // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for floating element.
-            renderTextInfo.m_lineBreakIterator.updateLastTwoCharacters(replacementCharacter);
+            renderTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
         } else if (current.m_obj->isRenderInline()) {
             // Right now, we should only encounter empty inlines here.
             ASSERT(isEmptyInline(current.m_obj));
@@ -2826,7 +2857,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             if (current.m_obj->isRubyRun())
                 width.applyOverhang(toRenderRubyRun(current.m_obj), last, next);
             // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for replaced element.
-            renderTextInfo.m_lineBreakIterator.updateLastTwoCharacters(replacementCharacter);
+            renderTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
         } else if (current.m_obj->isText()) {
             if (!current.m_pos)
                 appliedStartWidth = false;
@@ -2837,8 +2868,16 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             bool isSVGText = t->isSVGInlineText();
 #endif
 
-            if (t->style()->hasTextCombine() && current.m_obj->isCombineText() && !toRenderCombineText(current.m_obj)->isCombined())
-                toRenderCombineText(current.m_obj)->combineText();
+            if (t->style()->hasTextCombine() && current.m_obj->isCombineText() && !toRenderCombineText(current.m_obj)->isCombined()) {
+                RenderCombineText* combineRenderer = toRenderCombineText(current.m_obj);
+                combineRenderer->combineText();
+                // The length of the renderer's text may have changed. Increment stale iterator positions
+                if (iteratorIsBeyondEndOfRenderCombineText(lBreak, combineRenderer)) {
+                    ASSERT(iteratorIsBeyondEndOfRenderCombineText(resolver.position(), combineRenderer));
+                    lBreak.increment();
+                    resolver.increment();
+                }
+            }
 
             RenderStyle* style = t->style(lineInfo.isFirstLine());
             const Font& f = style->font();
@@ -2877,7 +2916,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 renderTextInfo.m_text = t;
                 renderTextInfo.m_font = &f;
                 renderTextInfo.m_layout = f.createLayout(t, width.currentWidth(), collapseWhiteSpace);
-                renderTextInfo.m_lineBreakIterator.reset(t->text(), style->locale());
+                renderTextInfo.m_lineBreakIterator.resetStringAndReleaseIterator(t->text(), style->locale());
             } else if (renderTextInfo.m_layout && renderTextInfo.m_font != &f) {
                 renderTextInfo.m_font = &f;
                 renderTextInfo.m_layout = f.createLayout(t, width.currentWidth(), collapseWhiteSpace);
@@ -2889,8 +2928,8 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             // words with their trailing space, then subtract its width.
             float wordTrailingSpaceWidth = (f.typesettingFeatures() & Kerning) && !textLayout ? f.width(constructTextRun(t, f, &space, 1, style)) + wordSpacing : 0;
 
-            UChar lastCharacterInNode = renderTextInfo.m_lineBreakIterator.lastCharacter();
-            UChar secondToLastCharacterInNode = renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
+            UChar lastCharacter = renderTextInfo.m_lineBreakIterator.lastCharacter();
+            UChar secondToLastCharacter = renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
             for (; current.m_pos < t->textLength(); current.fastIncrementInTextNode()) {
                 bool previousCharacterIsSpace = currentCharacterIsSpace;
                 bool previousCharacterIsWS = currentCharacterIsWS;
@@ -3095,11 +3134,11 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
 
                 atStart = false;
             nextCharacter:
-                secondToLastCharacterInNode = lastCharacterInNode;
-                lastCharacterInNode = c;
+                secondToLastCharacter = lastCharacter;
+                lastCharacter = c;
             }
 
-            renderTextInfo.m_lineBreakIterator.setLastTwoCharacters(lastCharacterInNode, secondToLastCharacterInNode);
+            renderTextInfo.m_lineBreakIterator.setPriorContext(lastCharacter, secondToLastCharacter);
 
             wordMeasurements.grow(wordMeasurements.size() + 1);
             WordMeasurement& wordMeasurement = wordMeasurements.last();
