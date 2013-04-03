@@ -38,6 +38,20 @@ public:
 
     virtual void systemFont(int cssValueId, FontDescription&) const;
 
+protected:
+
+    virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&);
+
+    virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual void setCheckboxSize(RenderStyle*) const;
+
+    virtual bool paintRadio(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual void setRadioSize(RenderStyle*) const;
+
+    virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual bool paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& r) { return paintMenuList(o, i, r); }
 private:
     RenderThemeNix();
 };

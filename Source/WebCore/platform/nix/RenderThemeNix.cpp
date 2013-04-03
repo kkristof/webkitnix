@@ -26,9 +26,25 @@
 #include "config.h"
 #include "RenderThemeNix.h"
 
-#include "NotImplemented.h"
+#include "PaintInfo.h"
+#include "PlatformContextCairo.h"
+#include "public/WebCanvas.h"
+#include "public/WebThemeEngine.h"
+#include "public/WebRect.h"
+#include "public/Platform.h"
 
 namespace WebCore {
+
+static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
+
+static void setSizeIfAuto(RenderStyle* style, const IntSize& size)
+{
+    if (style->width().isIntrinsicOrAuto())
+        style->setWidth(Length(size.width(), Fixed));
+    if (style->height().isAuto())
+        style->setHeight(Length(size.height(), Fixed));
+}
+
 
 PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page*)
 {
@@ -53,7 +69,103 @@ RenderThemeNix::~RenderThemeNix()
 
 void RenderThemeNix::systemFont(int, FontDescription&) const
 {
-    notImplemented();
+}
+
+static WebKit::WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const RenderObject* o)
+{
+    if (!theme->isEnabled(o))
+        return WebKit::WebThemeEngine::StateDisabled;
+    if (theme->isPressed(o))
+        return WebKit::WebThemeEngine::StatePressed;
+    if (theme->isHovered(o))
+        return WebKit::WebThemeEngine::StateHover;
+
+    return WebKit::WebThemeEngine::StateNormal;
+}
+
+bool RenderThemeNix::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    WebKit::WebThemeEngine::ButtonExtraParams extraParams;
+    extraParams.isDefault = isDefault(o);
+    extraParams.hasBorder = true;
+    extraParams.backgroundColor = defaultButtonBackgroundColor;
+    if (o->hasBackground())
+        extraParams.backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor).rgb();
+
+    WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    themeEngine->paintButton(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+    return false;
+}
+
+bool RenderThemeNix::paintTextField(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    // WebThemeEngine does not handle border rounded corner and background image
+    // so return true to draw CSS border and background.
+    if (o->style()->hasBorderRadius() || o->style()->hasBackgroundImage())
+        return true;
+
+    WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    themeEngine->paintTextField(canvas, getWebThemeState(this, o), WebKit::WebRect(rect));
+    return false;
+}
+
+bool RenderThemeNix::paintTextArea(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    return paintTextField(o, i, rect);
+}
+
+bool RenderThemeNix::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    WebKit::WebThemeEngine::ButtonExtraParams extraParams;
+    extraParams.checked = isChecked(o);
+    extraParams.indeterminate = isIndeterminate(o);
+
+    WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    themeEngine->paintCheckbox(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+    return false;
+}
+
+void RenderThemeNix::setCheckboxSize(RenderStyle* style) const
+{
+    // If the width and height are both specified, then we have nothing to do.
+    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+        return;
+
+    IntSize size = WebKit::Platform::current()->themeEngine()->getCheckboxSize();
+    setSizeIfAuto(style, size);
+}
+
+bool RenderThemeNix::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    WebKit::WebThemeEngine::ButtonExtraParams extraParams;
+    extraParams.checked = isChecked(o);
+    extraParams.indeterminate = isIndeterminate(o);
+
+    WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    themeEngine->paintRadio(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+    return false;
+}
+
+void RenderThemeNix::setRadioSize(RenderStyle* style) const
+{
+    // If the width and height are both specified, then we have nothing to do.
+    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+        return;
+
+    IntSize size = WebKit::Platform::current()->themeEngine()->getRadioSize();
+    setSizeIfAuto(style, size);
+}
+
+bool RenderThemeNix::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    themeEngine->paintMenuList(canvas, getWebThemeState(this, o), WebKit::WebRect(rect));
+    return false;
 }
 
 }

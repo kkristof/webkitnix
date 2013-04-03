@@ -47,6 +47,7 @@ namespace WebKit {
 
 class WebAudioBus;
 class WebFFTFrame;
+class WebThemeEngine;
 
 class NixString {
 public:
@@ -61,7 +62,7 @@ private:
 
 typedef NixString WebString;
 
-class Platform {
+class WEBKIT_EXPORT Platform {
 public:
 
     WEBKIT_EXPORT static void initialize(Platform*);
@@ -94,6 +95,9 @@ public:
     // A sample-rate conversion to sampleRate will occur if the file data is at a different sample-rate.
     // Returns true on success.
     virtual bool loadAudioResource(WebAudioBus* destinationBus, const char* audioFileData, size_t dataSize, double sampleRate) { return false; }
+
+    // Theme engine
+    virtual WebThemeEngine* themeEngine();
 
 protected:
     virtual ~Platform() { }

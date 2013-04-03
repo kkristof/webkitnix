@@ -30,7 +30,8 @@
  */
 
 #include "config.h"
-#include "Platform.h"
+#include "public/Platform.h"
+#include "DefaultWebThemeEngine.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/OwnPtr.h>
@@ -65,6 +66,12 @@ void Platform::shutdown()
 Platform* Platform::current()
 {
     return s_platform;
+}
+
+WebThemeEngine* Platform::themeEngine()
+{
+    static DefaultWebThemeEngine theme;
+    return &theme;
 }
 
 } // namespace WebKit
