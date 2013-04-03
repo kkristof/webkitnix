@@ -291,6 +291,12 @@ void WebView::processDidCrash()
     m_viewClient.webProcessCrashed(this, toCopiedAPI(m_webPageProxy->urlAtProcessExit()));
 }
 
+void WebView::didRelaunchProcess()
+{
+    coordinatedGraphicsScene()->setActive(true);
+    m_viewClient.webProcessRelaunched(this);
+}
+
 void WebView::pageDidRequestScroll(const IntPoint& point)
 {
     m_viewClient.pageDidRequestScroll(this, WKPointMake(point.x(), point.y()));

@@ -106,7 +106,7 @@ public:
     virtual bool isViewInWindow() { return true; } // FIXME
     virtual WebCore::IntSize viewSize() { return m_size; }
     virtual void processDidCrash();
-    virtual void didRelaunchProcess() { m_viewClient.webProcessRelaunched(this); }
+    virtual void didRelaunchProcess();
 
     virtual void pageDidRequestScroll(const WebCore::IntPoint& point);
     virtual void didChangeContentsSize(const WebCore::IntSize& size);

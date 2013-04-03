@@ -613,18 +613,20 @@ void MiniBrowser::viewNeedsDisplay(NIXView, WKRect area, const void* clientInfo)
 
 void MiniBrowser::webProcessCrashed(NIXView, WKStringRef url, const void* clientInfo)
 {
-    UNUSED_PARAM(clientInfo);
+    MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     size_t urlStringSize =  WKStringGetMaximumUTF8CStringSize(url);
     char* urlString = new char[urlStringSize];
     WKStringGetUTF8CString(url, urlString, urlStringSize);
     fprintf(stderr, "The web process has crashed on '%s'.\n", urlString);
-    delete urlString;
+    WKPageLoadURL(mb->pageRef(), WKURLCreateWithUTF8CString(urlString));
+    delete[] urlString;
 }
 
 void MiniBrowser::webProcessRelaunched(NIXView, const void* clientInfo)
 {
-    UNUSED_PARAM(clientInfo);
+    MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     fprintf(stdout, "The web process has been restarted.\n");
+    mb->scheduleUpdateDisplay();
 }
 
 void MiniBrowser::pageDidRequestScroll(NIXView, WKPoint position, const void* clientInfo)
