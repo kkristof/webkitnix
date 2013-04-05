@@ -164,6 +164,16 @@ void DefaultWebThemeEngine::paintMenuList(WebCanvas* canvas, State state, const 
     cairo_stroke_preserve(canvas);
 
     gradientFill(canvas, rect.y, rect.height, state == StatePressed);
+
+    const double arrowSize = 6;
+    const double border = 5;
+    cairo_move_to(canvas, rect.x + rect.width - arrowSize - border, rect.y + 1 + rect.height/2 - arrowSize/2);
+    cairo_set_source_rgb(canvas, CHECK_COLOR, CHECK_COLOR, CHECK_COLOR);
+    cairo_rel_line_to(canvas, arrowSize, 0);
+    cairo_rel_line_to(canvas, -arrowSize/2, arrowSize);
+    cairo_close_path(canvas);
+    cairo_fill(canvas);
+
     cairo_restore(canvas);
 }
 

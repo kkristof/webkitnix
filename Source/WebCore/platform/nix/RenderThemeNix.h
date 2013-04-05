@@ -51,6 +51,7 @@ protected:
     virtual void setRadioSize(RenderStyle*) const;
 
     virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&);
+    virtual void adjustMenuListStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& r) { return paintMenuList(o, i, r); }
 private:
     RenderThemeNix();

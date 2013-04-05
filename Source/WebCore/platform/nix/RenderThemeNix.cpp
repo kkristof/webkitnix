@@ -168,4 +168,19 @@ bool RenderThemeNix::paintMenuList(RenderObject* o, const PaintInfo& i, const In
     return false;
 }
 
+void RenderThemeNix::adjustMenuListStyle(StyleResolver*, RenderStyle* style, Element*) const
+{
+    style->resetBorder();
+    style->setWhiteSpace(PRE);
+
+    // FIXME: This may be moved to WebThemeEngine API if someone needs to tune how comboboxes
+    //        are rendered, IMO better to hold the move and API creation until someone really
+    //        need this on WebThemeEngine API.
+    const Length padding(3, Fixed);
+    style->setPaddingTop(padding);
+    style->setPaddingRight(padding);
+    style->setPaddingBottom(padding);
+    style->setPaddingLeft(padding);
+}
+
 }
