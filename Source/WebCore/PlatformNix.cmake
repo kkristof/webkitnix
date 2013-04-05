@@ -138,8 +138,8 @@ list(APPEND WebCore_SOURCES
     platform/text/TextCodecICU.cpp
     platform/text/LocaleNone.cpp
 
-    platform/chromium/support/WebAudioBus.cpp
-    platform/chromium/support/WebData.cpp
+    platform/nix/support/WebAudioBus.cpp
+    platform/nix/support/WebData.cpp
     platform/nix/WebCommon.cpp
 
     css/WebKitCSSArrayFunctionValue.cpp
@@ -286,15 +286,15 @@ add_definitions(-DDATA_DIR="${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}")
 
 if (ENABLE_WEB_AUDIO)
   LIST(APPEND WebCore_INCLUDE_DIRECTORIES
-    "${WEBCORE_DIR}/platform/audio/chromium"
+    "${WEBCORE_DIR}/platform/audio/nix"
     ${LIBAVCODEC_INCLUDE_DIRS}
   )
   list(APPEND WebCore_LIBRARIES
     ${LIBAVCODEC_LIBRARIES}
   )
   LIST(APPEND WebCore_SOURCES
-    platform/audio/chromium/AudioBusChromium.cpp
-    platform/audio/chromium/AudioDestinationChromium.cpp
+    platform/audio/nix/AudioBusNix.cpp
+    platform/audio/nix/AudioDestinationNix.cpp
     platform/audio/nix/FFTFrameNix.cpp
   )
   SET(WEB_AUDIO_DIR ${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}/webaudio/resources)
@@ -305,6 +305,6 @@ endif ()
 
 if (ENABLE_GAMEPAD)
     list(APPEND WebCore_SOURCES
-        platform/chromium/GamepadsChromium.cpp
+        platform/nix/GamepadsNix.cpp
     )
 endif ()
