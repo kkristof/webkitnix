@@ -15,6 +15,7 @@ public:
     virtual WebSize getRadioSize() const;
     virtual void paintRadio(WebCanvas*, State, const WebRect&, const ButtonExtraParams&) const;
     virtual void paintMenuList(WebCanvas *, State, const WebRect &) const;
+    virtual void getMenuListPadding(int& paddingTop, int& paddingLeft, int& paddingBottom, int& paddingRight) const;
 };
 
 }

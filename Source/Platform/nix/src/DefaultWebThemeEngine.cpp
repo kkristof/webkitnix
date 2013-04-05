@@ -40,6 +40,9 @@ const double CHECK_COLOR = 0x66/256.0;
 const double TEXTFIELD_DARK_BORDER_COLOR = 0x9A/256.0;
 const double TEXTFIELD_LIGHT_BORDER_COLOR = 0xEE/256.0;
 
+const int MENULIST_BORDER = 5;
+const int MENULIST_ARROW_SIZE = 6;
+
 namespace WebKit {
 
 static void gradientFill(cairo_t* cairo, double yStart, double yLength, bool inverted = false)
@@ -156,6 +159,14 @@ void DefaultWebThemeEngine::paintRadio(WebCanvas* canvas, State state, const Web
     cairo_restore(canvas);
 }
 
+void DefaultWebThemeEngine::getMenuListPadding(int& paddingTop, int& paddingLeft, int& paddingBottom, int& paddingRight) const
+{
+    paddingTop = MENULIST_BORDER;
+    paddingLeft = MENULIST_BORDER;
+    paddingBottom = MENULIST_BORDER;
+    paddingRight = 2 * MENULIST_BORDER + MENULIST_ARROW_SIZE;
+}
+
 void DefaultWebThemeEngine::paintMenuList(WebCanvas* canvas, State state, const WebRect& rect) const
 {
     cairo_save(canvas);
@@ -165,12 +176,10 @@ void DefaultWebThemeEngine::paintMenuList(WebCanvas* canvas, State state, const 
 
     gradientFill(canvas, rect.y, rect.height, state == StatePressed);
 
-    const double arrowSize = 6;
-    const double border = 5;
-    cairo_move_to(canvas, rect.x + rect.width - arrowSize - border, rect.y + 1 + rect.height/2 - arrowSize/2);
+    cairo_move_to(canvas, rect.x + rect.width - MENULIST_ARROW_SIZE - MENULIST_BORDER, rect.y + 1 + rect.height/2 - MENULIST_ARROW_SIZE/2);
     cairo_set_source_rgb(canvas, CHECK_COLOR, CHECK_COLOR, CHECK_COLOR);
-    cairo_rel_line_to(canvas, arrowSize, 0);
-    cairo_rel_line_to(canvas, -arrowSize/2, arrowSize);
+    cairo_rel_line_to(canvas, MENULIST_ARROW_SIZE, 0);
+    cairo_rel_line_to(canvas, -MENULIST_ARROW_SIZE/2, MENULIST_ARROW_SIZE);
     cairo_close_path(canvas);
     cairo_fill(canvas);
 

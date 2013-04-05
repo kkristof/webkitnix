@@ -173,14 +173,16 @@ void RenderThemeNix::adjustMenuListStyle(StyleResolver*, RenderStyle* style, Ele
     style->resetBorder();
     style->setWhiteSpace(PRE);
 
-    // FIXME: This may be moved to WebThemeEngine API if someone needs to tune how comboboxes
-    //        are rendered, IMO better to hold the move and API creation until someone really
-    //        need this on WebThemeEngine API.
-    const Length padding(3, Fixed);
-    style->setPaddingTop(padding);
-    style->setPaddingRight(padding);
-    style->setPaddingBottom(padding);
-    style->setPaddingLeft(padding);
+    WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
+    int paddingTop = 0;
+    int paddingLeft = 0;
+    int paddingBottom = 0;
+    int paddingRight = 0;
+    themeEngine->getMenuListPadding(paddingTop, paddingLeft, paddingBottom, paddingRight);
+    style->setPaddingTop(Length(paddingTop, Fixed));
+    style->setPaddingRight(Length(paddingRight, Fixed));
+    style->setPaddingBottom(Length(paddingBottom, Fixed));
+    style->setPaddingLeft(Length(paddingLeft, Fixed));
 }
 
 }
