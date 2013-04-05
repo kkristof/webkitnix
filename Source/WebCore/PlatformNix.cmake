@@ -139,7 +139,6 @@ list(APPEND WebCore_SOURCES
 
     platform/nix/support/WebAudioBus.cpp
     platform/nix/support/WebData.cpp
-    platform/nix/WebCommon.cpp
 
     css/WebKitCSSArrayFunctionValue.cpp
     css/WebKitCSSMixFunctionValue.cpp

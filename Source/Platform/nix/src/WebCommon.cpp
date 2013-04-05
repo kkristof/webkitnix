@@ -35,8 +35,7 @@
 
 namespace WebKit {
 
-// FIXME: COPIED FROM WebKit/chromium/src/ but the file itself
-// could be moved to Platform/chromium/src/ instead.
+// Copied from Source/WebKit/chromium/src/
 void failedAssertion(const char* file, int line, const char* function, const char* assertion)
 {
     WTFReportAssertionFailure(file, line, function, assertion);

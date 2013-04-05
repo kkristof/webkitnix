@@ -23,6 +23,7 @@ set (Platform_HEADERS
 set (Platform_SOURCES
     nix/src/Platform.cpp
     nix/src/DefaultWebThemeEngine.cpp
+    nix/src/WebCommon.cpp
 )
 
 install(FILES ${Platform_HEADERS} DESTINATION include/${WebKit2_LIBRARY_NAME}-${PROJECT_VERSION_MAJOR}/NixPlatform)
