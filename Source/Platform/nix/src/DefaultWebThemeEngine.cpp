@@ -37,17 +37,10 @@ const double BG_COLOR2 = 0xDE/256.0;
 const double BORDER_COLOR = 0xA4/256.0;
 const double BORDER_ONHOVER_COLOR = 0x7A/256.0;
 const double CHECK_COLOR = 0x66/256.0;
+const double TEXTFIELD_DARK_BORDER_COLOR = 0x9A/256.0;
+const double TEXTFIELD_LIGHT_BORDER_COLOR = 0xEE/256.0;
 
 namespace WebKit {
-
-static void notImplemented(WebCanvas* canvas, const WebRect& rect, bool blue = false)
-{
-    cairo_save(canvas);
-    cairo_set_source_rgb(canvas, int(!blue), 0, int(blue));
-    cairo_rectangle(canvas, rect.x, rect.y, rect.width, rect.height);
-    cairo_fill(canvas);
-    cairo_restore(canvas);
-}
 
 static void gradientFill(cairo_t* cairo, double yStart, double yLength, bool inverted = false)
 {
@@ -85,14 +78,32 @@ void DefaultWebThemeEngine::paintButton(WebCanvas* canvas, State state, const We
     cairo_restore(canvas);
 }
 
-void DefaultWebThemeEngine::paintTextField(WebCanvas* canvas, State state, const WebRect& rect) const
+void DefaultWebThemeEngine::paintTextField(WebCanvas* canvas, State, const WebRect& rect) const
 {
-    notImplemented(canvas, rect);
+    cairo_save(canvas);
+
+    const double lineWidth = 2;
+    const double correction = lineWidth / 2.0;
+
+    cairo_set_line_width(canvas, lineWidth);
+    cairo_set_source_rgb(canvas, TEXTFIELD_DARK_BORDER_COLOR, TEXTFIELD_DARK_BORDER_COLOR, TEXTFIELD_DARK_BORDER_COLOR);
+    cairo_move_to(canvas, rect.x + correction, rect.y + correction + rect.height);
+    cairo_rel_line_to(canvas, 0, -rect.height);
+    cairo_rel_line_to(canvas, rect.width, 0);
+    cairo_stroke(canvas);
+
+    cairo_set_source_rgb(canvas, TEXTFIELD_LIGHT_BORDER_COLOR, TEXTFIELD_LIGHT_BORDER_COLOR, TEXTFIELD_LIGHT_BORDER_COLOR);
+    cairo_move_to(canvas, rect.x + correction + rect.width, rect.y + correction);
+    cairo_rel_line_to(canvas, 0, rect.height);
+    cairo_rel_line_to(canvas, -rect.width, 0);
+    cairo_stroke(canvas);
+
+    cairo_restore(canvas);
 }
 
 void DefaultWebThemeEngine::paintTextArea(WebCanvas* canvas, State state, const WebRect& rect) const
 {
-    notImplemented(canvas, rect);
+    paintTextField(canvas, state, rect);
 }
 
 WebSize DefaultWebThemeEngine::getCheckboxSize() const
