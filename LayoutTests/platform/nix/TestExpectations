@@ -22,8 +22,6 @@ fast/css/css-keyframe-style-mutate-crash.html [ Skip ]
 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Skip ]
 http/tests/css/shared-stylesheet-mutation.html [ Skip ]
-webaudio/oscillator-basic.html [ Skip ]
-webaudio/realtimeanalyser-fft-sizing.html [ Skip ]
 fast/frames/seamless/seamless-window-location-href.html [ Skip ]
 fast/hidpi/image-set-without-specified-width.html [ Skip ]
 inspector-protocol/media-query-listener-exception.html [ Skip ]
@@ -1912,9 +1910,6 @@ http/tests/xmlhttprequest/workers/methods-async.html [ Skip ]
 http/tests/xmlhttprequest/workers/methods.html [ Skip ]
 http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Skip ]
 http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Skip ]
-
-inspector-protocol/nmi-webaudio.html
-
 ietestcenter/css3/bordersbackgrounds/background_repeat_space_border_box.htm [ Skip ]
 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ Skip ]
 ietestcenter/css3/flexbox/flexbox-align-stretch-001.htm [ Skip ]
@@ -3181,7 +3176,6 @@ fast/replaced/preferred-widths.html [ Failure Pass ]
 loader/go-back-to-different-window-size.html [ Failure Pass ]
 storage/indexeddb/cursor-continue.html [ Failure Pass Crash ]
 storage/indexeddb/cursor-delete.html [ Failure Pass ]
-webaudio/waveshaper.html [ Failure Pass ]
 css3/flexbox/button.html [ Failure ]
 fast/events/touch/gesture/touch-gesture-scroll-div-not-propagated.html [ Failure ]
 fast/events/touch/gesture/touch-gesture-scroll-page-not-propagated.html [ Failure ]
@@ -3246,7 +3240,7 @@ inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Crash
 
 # Failures before merge that removes Chromium
 css3/filters/custom/custom-filter-animation.html [ Failure Pass ]
-fast/hidpi/video-controls-in-hidpi.html [ Failure Pass ]
+fast/hidpi/video-controls-in-hidpi.html [ Failure Pass Crash ]
 compositing/repaint/clipped-layer-size-change.html [ ImageOnlyFailure Pass ]
 fast/backgrounds/obscured-background-child-style-change.html [ ImageOnlyFailure Pass ]
 fast/loader/display-image-unset-allows-cached-image-load.html [ Crash Timeout Pass ]
@@ -3285,7 +3279,6 @@ fast/text/whitespace/normal-after-nowrap-breaking.html [ Failure ]
 fast/css/negative-text-indent-in-inline-block.html [ ImageOnlyFailure ]
 fast/forms/submit-to-blank-multiple-times.html [ Crash ]
 fast/frames/crash-removed-iframe.html [ Crash Timeout ]
-fast/frames/sandboxed-iframe-navigation-windowopen.html [ Crash ]
 fast/loader/image-in-page-cache.html [ Crash Timeout ]
 http/tests/security/frameNavigation/cross-origin-opener.html [ Crash ]
 http/tests/security/frameNavigation/not-opener.html [ Crash ]
@@ -3308,6 +3301,14 @@ editing/selection/toString-1.html [ Failure Pass ]
 storage/indexeddb/index-count.html [ Failure Pass ]
 fast/regions/svg-element-not-collected.html [ ImageOnlyFailure Pass ]
 fast/media/view-mode-media-feature.html [ ImageOnlyFailure ]
+fast/css/text-indent-first-line-001.html [ ImageOnlyFailure Pass ]
+fast/forms/date-multiple-fields/date-multiple-fields-clearbutton-visibility-after-restore.html [ ImageOnlyFailure Pass ]
+fast/forms/input-first-letter-edit.html [ ImageOnlyFailure Pass ]
+fast/media/mq-relative-constraints-06.html [ ImageOnlyFailure Pass ]
+fast/media/mq-transform-03.html [ ImageOnlyFailure Pass ]
+fast/workers/shared-worker-context-gc.html [ Crash ]
+http/tests/cache/partitioned-cache.html [ Crash ]
+fast/frames/sandboxed-iframe-navigation-windowopen.html [ Timeout Crash ]
 
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
@@ -3378,7 +3379,6 @@ html5lib/generated/run-template-data.html
 http/tests/inspector-enabled/console-exception-while-no-inspector.html
 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html
 inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html
-inspector-protocol/nmi-webaudio-leak-test.html
 
 # Reference tests
 fast/block/float/floats-offset-image-strict-lineheight.html [ ImageOnlyFailure ]
@@ -3720,20 +3720,6 @@ compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ Mis
 # Failing due to missing setUseDeferredFrameLoading
 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Missing Failure ]
 
-# WebAudio
-webaudio/audiobuffersource-channels.html [ Skip ]
-webaudio/biquad-getFrequencyResponse.html [ Skip ]
-webaudio/convolution-mono-mono.html [ Skip ]
-webaudio/decode-audio-data-basic.html [ Skip ]
-webaudio/delaynode-max-nondefault-delay.html [ Skip ]
-webaudio/delaynode-max-default-delay.html [ Skip ]
-webaudio/delaynode-maxdelay.html [ Skip ]
-webaudio/delaynode-scheduling.html [ Skip ]
-webaudio/mediaelementaudiosourcenode-gc.html [ Skip ]
-webaudio/mediaelementaudiosourcenode.html [ Skip ]
-webaudio/mediastreamaudiodestinationnode.html [ Skip ]
-webaudio/mediastreamaudiosourcenode.html [ Skip ]
-
 #############################################################
 # DISABLED APIS
 #############################################################
@@ -3764,23 +3750,10 @@ http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [
 # MISSING RESULTS
 ################################################################################
 
-# WebAudio
-# Missing because we would need to decode data for running these
-webaudio/audiobuffersource.html [ Skip ]
-webaudio/audiobuffersource-loop-points.html [ Skip ]
-webaudio/audiobuffersource-multi-channels.html [ Skip ]
-webaudio/audiobuffersource-playbackrate.html [ Skip ]
-webaudio/codec-tests [ Skip ]
-webaudio/gain.html [ Skip ]
-webaudio/mixing.html [ Skip ]
-webaudio/oscillator-custom.html [ Skip ]
-webaudio/oscillator-sawtooth.html [ Skip ]
-webaudio/oscillator-sine.html [ Skip ]
-webaudio/oscillator-square.html [ Skip ]
-webaudio/oscillator-triangle.html [ Skip ]
-webaudio/up-mixing-mono-51.html [ Skip ]
-webaudio/up-mixing-mono-stereo.html [ Skip ]
-webaudio/up-mixing-stereo-51.html [ Skip ]
+# WebAudio: missing because we would need to decode data for running these
+webaudio [ Skip ]
+inspector-protocol/nmi-webaudio.html [ Skip ]
+inspector-protocol/nmi-webaudio-leak-test.html [ Skip ]
 
 css3/filters/blur-filter-page-scroll.html [ Missing ]
 css3/filters/blur-filter-page-scroll-self.html [ Missing ]
@@ -4093,13 +4066,11 @@ svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
 
 # Flakey tests after merge 5494e11 a55ee6c
 fast/exclusions/shape-outside-floats/shape-outside-floats-positioning.html [ Failure Pass ]
-fast/sub-pixel/zoomed-image-tiles.html [ Failure Pass ]
+fast/sub-pixel/zoomed-image-tiles.html [ Failure ImageOnlyFailure Pass ]
 http/tests/security/cross-origin-appcache-allowed.html [ Failure Pass ]
 http/tests/security/cross-origin-appcache.html [ Failure Pass ]
 storage/indexeddb/index-basics.html [ Failure Pass ]
 svg/batik/masking/maskRegions.svg [ Failure Pass ]
-webaudio/javascriptaudionode-upmix2-8channel-input.html [ Failure Pass ]
-webaudio/javascriptaudionode.html [ Failure Pass ]
 
 # Newly added failing test before merge 1545593 eb8adb3
 fast/events/touch/gesture/gesture-tap-hover-clear.html
