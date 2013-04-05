@@ -3309,6 +3309,11 @@ fast/media/mq-transform-03.html [ ImageOnlyFailure Pass ]
 fast/workers/shared-worker-context-gc.html [ Crash ]
 http/tests/cache/partitioned-cache.html [ Crash ]
 fast/frames/sandboxed-iframe-navigation-windowopen.html [ Timeout Crash ]
+http/tests/loading/basic-auth-resend-wrong-credentials.html [ Failure Pass ]
+fast/block/float/previous-sibling-float-001.html [ ImageOnlyFailure Pass ]
+fast/dom/shadow/shadowdom-for-object-only-shadow.html [ ImageOnlyFailure Pass ]
+fast/forms/checkbox-appearance-change-by-checked.html [ ImageOnlyFailure Pass ]
+svg/repaint/buffered-rendering-static-image.html [ ImageOnlyFailure Pass ]
 
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
