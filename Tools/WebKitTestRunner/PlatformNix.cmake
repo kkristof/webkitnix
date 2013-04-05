@@ -32,7 +32,6 @@ list(APPEND WebKitTestRunner_INCLUDE_DIRECTORIES
 
     "${PLATFORM_DIR}/nix/"
     "${TOOLS_DIR}/Shared/nix"
-    "${PLATFORM_DIR}/chromium/"
 )
 
 set(WebKitTestRunner_LIBRARIES
