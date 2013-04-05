@@ -12,7 +12,6 @@ list(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/mediastream/gstreamer"
     "${WEBCORE_DIR}/platform/network/soup"
     "${PLATFORM_DIR}/nix/"
-    "${PLATFORM_DIR}/chromium/"
 )
 
 list(APPEND WebCore_SOURCES
