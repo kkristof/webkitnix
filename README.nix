@@ -112,3 +112,17 @@ you did with MiniBrowser:
 WEB_PROCESS_CMD_PREFIX="/usr/bin/xterm -title WebProcess -e gdb --args" \
 WebKitBuild/Debug/bin/WebKitTestRunner --no-timeout-at-all \
                                          LayoutTests/TEST_OF_YOUR_CHOICE
+
+Using the remote inspector
+==========================
+
+In order to get the InspectorServer running
+you need to set WEBKIT_INSPECTOR_SERVER before
+running MiniBrowser, as in:
+
+"WEBKIT_INSPECTOR_SERVER="127.0.0.1:25555" ./nix_build/Release/bin/MiniBrowser"
+
+After that just open a browser, load http://127.0.0.1:25555/ and you will
+get a list of webpages available for being inspected. You can also load
+directly http://127.0.0.1:25555/webinspector/inspector.html?page=ID if you know
+the page id you want to inspect.
