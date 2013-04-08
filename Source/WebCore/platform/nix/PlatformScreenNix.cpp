@@ -27,6 +27,7 @@
 #include "PlatformScreen.h"
 
 #include "NotImplemented.h"
+#include "FloatRect.h"
 #include <wtf/text/WTFString.h>
 #include "Widget.h"
 
