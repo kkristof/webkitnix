@@ -1,3 +1,124 @@
+2013-04-08  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK build fix.
+
+        * Source/autotools/symbols.filter: Exporting a bunch of symbols.
+
+2013-04-07  Vivek Galatage  <vivek.vg@samsung.com>
+
+        Modify .gitignore file to remove entries for chromium generated files
+        https://bugs.webkit.org/show_bug.cgi?id=114141
+
+        Reviewed by Gyuyoung Kim.
+
+        * .gitignore:
+
+2013-04-07  Patrick Gansterer  <paroga@webkit.org>
+
+        Remove references to Skia and V8 from CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=114130
+
+        Reviewed by Geoffrey Garen.
+
+        * Source/cmake/OptionsBlackBerry.cmake:
+        * Source/cmake/WebKitPackaging.cmake:
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * Source/autotools/SetupWebKitFeatures.m4:
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+        - Remove references to ENABLE_SVG_DOM_OBJC_BINDINGS.
+
+2013-04-05  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] --no-tiled-backing-store build fails because of not used #if USE(ACCELERATED_COMPOSITING)
+        https://bugs.webkit.org/show_bug.cgi?id=113627
+
+        Reviewed by Simon Fraser.
+
+        * Source/cmake/OptionsEfl.cmake: Disabled 3D_GRAPHICS and WEB_GL when accelerated compositing is on
+
+2013-04-05  Rijubrata Bhaumik  <rijubrata.bhaumik@intel.com>
+
+        [EFL] Enable indexed database
+        https://bugs.webkit.org/show_bug.cgi?id=107248
+
+        Reviewed by Alexis Menard.
+
+        * Source/cmake/OptionsEfl.cmake:
+
+2013-04-05  Benjamin Poulain  <benjamin@webkit.org>
+
+        Fix GTK+ for real after r147712
+
+        Reviewed by Ryosuke Niwa.
+
+        * GNUmakefile.am:
+        * Source/Platform: Added.
+        * Source/Platform/GNUmakefile.am: Added.
+
+2013-04-05  Benjamin Poulain  <benjamin@webkit.org>
+
+        Fix GTK+ build after r147712
+
+        Unreviewed.
+
+        * GNUmakefile.am: remove the reference to
+        Source/Platform/GNUmakefile.am. The file has been removed.
+
+2013-04-05  Benjamin Poulain  <bpoulain@apple.com>
+
+        Remove WTFURL from WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=113994
+
+        Reviewed by Ryosuke Niwa.
+
+        * Source/cmake/WebKitFeatures.cmake:
+        * Source/cmakeconfig.h.cmake:
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove the top level gyp directory and Platform/chromium
+        https://bugs.webkit.org/show_bug.cgi?id=113999
+
+        Reviewed by Benjamin Poulain.
+
+        * Source/Platform: Removed.
+        * Source/gyp: Removed.
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Nixed the defunct chromium folder from ManualTests
+        https://bugs.webkit.org/show_bug.cgi?id=113995
+
+        Reviewed by Benjamin Poulain.
+
+        * ManualTests/chromium: Removed.
+        * ManualTests/chromium/autofill-popup-shiftupdown.hml: Removed.
+        * ManualTests/chromium/drag-image-accounts-for-device-scale.html: Removed.
+        * ManualTests/chromium/modifiers-during-drag-and-drop.html: Removed.
+        * ManualTests/chromium/no-autofill-on-readonly.html: Removed.
+        * ManualTests/chromium/onchange-reload-popup.html: Removed.
+        * ManualTests/chromium/popup-menu-crash.html: Removed.
+        * ManualTests/chromium/select-close-popup-value-change.html: Removed.
+        * ManualTests/chromium/suggestions-popup-font-change.html: Removed.
+
+2013-04-04  Xabier Rodriguez Calvar  <calvaris@igalia.com>
+
+        [GStreamer] Virtual modifier for MediaPlayer::simulateAudioInterruption must go
+        https://bugs.webkit.org/show_bug.cgi?id=113851
+
+        Reviewed by Eric Carlson.
+
+        * Source/autotools/symbols.filter: Added
+        _ZN7WebCore11MediaPlayer25simulateAudioInterruptionEv symbol.
+
 2013-04-03  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Bump required versions of some dependencies

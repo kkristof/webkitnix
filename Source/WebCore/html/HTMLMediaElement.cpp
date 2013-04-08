@@ -295,6 +295,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
     , m_lastTextTrackUpdateTime(-1)
+    , m_captionDisplayMode(CaptionUserPreferences::Automatic)
     , m_textTracks(0)
     , m_ignoreTrackDisplayUpdate(0)
 #endif
@@ -496,7 +497,7 @@ void HTMLMediaElement::finishParsingChildren()
     
     for (Node* node = firstChild(); node; node = node->nextSibling()) {
         if (node->hasTagName(trackTag)) {
-            scheduleDelayedAction(LoadTextTrackResource);
+            scheduleDelayedAction(ConfigureTextTracks);
             break;
         }
     }
@@ -610,8 +611,8 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
     }
 
 #if ENABLE(VIDEO_TRACK)
-    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (actionType & LoadTextTrackResource))
-        m_pendingActionFlags |= LoadTextTrackResource;
+    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (actionType & ConfigureTextTracks))
+        m_pendingActionFlags |= ConfigureTextTracks;
 #endif
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
@@ -619,8 +620,7 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
         m_pendingActionFlags |= TextTrackChangesNotification;
 #endif
 
-    if (!m_loadTimer.isActive())
-        m_loadTimer.startOneShot(0);
+    m_loadTimer.startOneShot(0);
 }
 
 void HTMLMediaElement::scheduleNextSourceChild()
@@ -646,7 +646,7 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
     RefPtr<HTMLMediaElement> protect(this); // loadNextSourceChild may fire 'beforeload', which can make arbitrary DOM mutations.
 
 #if ENABLE(VIDEO_TRACK)
-    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (m_pendingActionFlags & LoadTextTrackResource))
+    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && (m_pendingActionFlags & ConfigureTextTracks))
         configureTextTracks();
 #endif
 
@@ -830,6 +830,9 @@ void HTMLMediaElement::loadInternal()
     removeBehaviorRestriction(RequirePageConsentToLoadMediaRestriction);
 
 #if ENABLE(VIDEO_TRACK)
+    if (hasMediaControls())
+        mediaControls()->changedClosedCaptionsVisibility();
+
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
     // disabled state when the element's resource selection algorithm last started".
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled()) {
@@ -939,7 +942,6 @@ void HTMLMediaElement::loadNextSourceChild()
     loadResource(mediaURL, contentType, keySystem);
 }
 
-#if !PLATFORM(CHROMIUM)
 static KURL createFileURLForApplicationCacheResource(const String& path)
 {
     // KURL should have a function to create a url from a path, but it does not. This function
@@ -958,7 +960,6 @@ static KURL createFileURLForApplicationCacheResource(const String& path)
 #endif
     return url;
 }
-#endif
 
 void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& contentType, const String& keySystem)
 {
@@ -981,7 +982,6 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
     // The resource fetch algorithm 
     m_networkState = NETWORK_LOADING;
 
-#if !PLATFORM(CHROMIUM)
     // If the url should be loaded from the application cache, pass the url of the cached file
     // to the media engine.
     ApplicationCacheHost* cacheHost = frame->loader()->documentLoader()->applicationCacheHost();
@@ -994,18 +994,15 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
             return;
         }
     }
-#endif
 
     // Set m_currentSrc *before* changing to the cache url, the fact that we are loading from the app
     // cache is an internal detail not exposed through the media element API.
     m_currentSrc = url;
 
-#if !PLATFORM(CHROMIUM)
     if (resource) {
         url = createFileURLForApplicationCacheResource(resource->path());
         LOG(Media, "HTMLMediaElement::loadResource - will load from app cache -> %s", urlForLoggingMedia(url).utf8().data());
     }
-#endif
 
     LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
@@ -2821,7 +2818,7 @@ void HTMLMediaElement::mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>
     // 7. Set the new text track's mode to the mode consistent with the user's preferences and the requirements of
     // the relevant specification for the data.
     //  - This will happen in configureTextTracks()
-    scheduleDelayedAction(LoadTextTrackResource);
+    scheduleDelayedAction(ConfigureTextTracks);
     
     // 8. Add the new text track to the media element's list of text tracks.
     // 9. Fire an event with the name addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent
@@ -3023,7 +3020,7 @@ void HTMLMediaElement::didAddTrack(HTMLTrackElement* trackElement)
     // Do not schedule the track loading until parsing finishes so we don't start before all tracks
     // in the markup have been added.
     if (!m_parsingInProgress)
-        scheduleDelayedAction(LoadTextTrackResource);
+        scheduleDelayedAction(ConfigureTextTracks);
 
     if (hasMediaControls())
         mediaControls()->closedCaptionTracksChanged();
@@ -3063,19 +3060,11 @@ void HTMLMediaElement::didRemoveTrack(HTMLTrackElement* trackElement)
         m_textTracksWhenResourceSelectionBegan.remove(index);
 }
 
-bool HTMLMediaElement::userPrefersCaptions() const
-{
-    Page* page = document()->page();
-    if (!page)
-        return false;
-
-    CaptionUserPreferences* captionPreferences = page->group().captionPreferences();
-    return captionPreferences->userHasCaptionPreferences() && captionPreferences->shouldShowCaptions();
-}
-
 void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 {
     ASSERT(group.tracks.size());
+
+    LOG(Media, "HTMLMediaElement::configureTextTrackGroup");
 
     Page* page = document()->page();
     CaptionUserPreferences* captionPreferences = page? page->group().captionPreferences() : 0;
@@ -3147,23 +3136,39 @@ void HTMLMediaElement::setSelectedTextTrack(TextTrack* trackToSelect)
     TextTrackList* trackList = textTracks();
     if (!trackList || !trackList->length())
         return;
-    if (trackToSelect && !trackList->contains(trackToSelect))
-        return;
 
-    for (int i = 0, length = trackList->length(); i < length; ++i) {
-        TextTrack* track = trackList->item(i);
-        if (!trackToSelect || track != trackToSelect)
-            track->setMode(TextTrack::disabledKeyword());
-        else
-            track->setMode(TextTrack::showingKeyword());
+    if (trackToSelect != TextTrack::captionMenuOffItem() && trackToSelect != TextTrack::captionMenuAutomaticItem()) {
+        if (!trackList->contains(trackToSelect))
+            return;
+        
+        for (int i = 0, length = trackList->length(); i < length; ++i) {
+            TextTrack* track = trackList->item(i);
+            if (!trackToSelect || track != trackToSelect)
+                track->setMode(TextTrack::disabledKeyword());
+            else
+                track->setMode(TextTrack::showingKeyword());
+        }
     }
 
     CaptionUserPreferences* captionPreferences = document()->page() ? document()->page()->group().captionPreferences() : 0;
-    if (captionPreferences) {
-        captionPreferences->setShouldShowCaptions(trackToSelect);
-        if (trackToSelect && trackToSelect->language().length())
+    if (!captionPreferences)
+        return;
+
+    CaptionUserPreferences::CaptionDisplayMode displayMode = captionPreferences->captionDisplayMode();
+    if (trackToSelect == TextTrack::captionMenuOffItem())
+        displayMode = CaptionUserPreferences::ForcedOnly;
+    else if (trackToSelect == TextTrack::captionMenuAutomaticItem())
+        displayMode = CaptionUserPreferences::Automatic;
+    else {
+        displayMode = CaptionUserPreferences::AlwaysOn;
+        if (trackToSelect->language().length())
             captionPreferences->setPreferredLanguage(trackToSelect->language());
+        
+        // Set m_captionDisplayMode here so we don't reconfigure again when the preference changed notification comes through.
+        m_captionDisplayMode = displayMode;
     }
+
+    captionPreferences->setCaptionDisplayMode(displayMode);
 }
 
 void HTMLMediaElement::configureTextTracks()
@@ -4248,7 +4253,9 @@ bool HTMLMediaElement::hasClosedCaptions() const
         return true;
 
 #if ENABLE(VIDEO_TRACK)
-    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled() && m_textTracks)
+    if (!RuntimeEnabledFeatures::webkitVideoTrackEnabled() || !m_textTracks)
+        return false;
+
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
         if (m_textTracks->item(i)->readinessState() == TextTrack::FailedToLoad)
             continue;
@@ -4258,6 +4265,7 @@ bool HTMLMediaElement::hasClosedCaptions() const
             return true;
     }
 #endif
+
     return false;
 }
 
@@ -4458,6 +4466,8 @@ void HTMLMediaElement::configureTextTrackDisplay()
     if (m_processingPreferenceChange)
         return;
 
+    LOG(Media, "HTMLMediaElement::configureTextTrackDisplay");
+
     bool haveVisibleTextTrack = false;
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
         if (m_textTracks->item(i)->mode() == TextTrack::showingKeyword()) {
@@ -4466,8 +4476,11 @@ void HTMLMediaElement::configureTextTrackDisplay()
         }
     }
 
-    if (m_haveVisibleTextTrack == haveVisibleTextTrack)
+    if (m_haveVisibleTextTrack == haveVisibleTextTrack) {
+        updateActiveTextTrackCues(currentTime());
         return;
+    }
+
     m_haveVisibleTextTrack = haveVisibleTextTrack;
     m_closedCaptionsVisible = m_haveVisibleTextTrack;
 
@@ -4478,8 +4491,10 @@ void HTMLMediaElement::configureTextTrackDisplay()
 
     mediaControls()->changedClosedCaptionsVisibility();
     
-    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
+    if (RuntimeEnabledFeatures::webkitVideoTrackEnabled()) {
         updateTextTrackDisplay();
+        updateActiveTextTrackCues(currentTime());
+    }
 }
 
 void HTMLMediaElement::captionPreferencesChanged()
@@ -4490,13 +4505,23 @@ void HTMLMediaElement::captionPreferencesChanged()
     if (hasMediaControls())
         mediaControls()->textTrackPreferencesChanged();
 
-    setClosedCaptionsVisible(userPrefersCaptions());
+    if (!document()->page())
+        return;
+
+    CaptionUserPreferences::CaptionDisplayMode displayMode = document()->page()->group().captionPreferences()->captionDisplayMode();
+    if (m_captionDisplayMode == displayMode)
+        return;
+
+    m_captionDisplayMode = displayMode;
+    setClosedCaptionsVisible(m_captionDisplayMode == CaptionUserPreferences::AlwaysOn);
 }
 
 void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
 {
     if (!m_textTracks)
         return;
+
+    LOG(Media, "HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured");
 
     // Mark all tracks as not "configured" so that configureTextTracks()
     // will reconsider which tracks to display in light of new user preferences

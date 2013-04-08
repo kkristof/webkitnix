@@ -1506,13 +1506,13 @@ void JSObject::getOwnPropertyNames(JSObject* object, ExecState* exec, PropertyNa
         }
         
         if (SparseArrayValueMap* map = storage->m_sparseMap.get()) {
-            Vector<unsigned> keys;
-            keys.reserveCapacity(map->size());
+            Vector<unsigned, 0, UnsafeVectorOverflow> keys;
+            keys.reserveInitialCapacity(map->size());
             
             SparseArrayValueMap::const_iterator end = map->end();
             for (SparseArrayValueMap::const_iterator it = map->begin(); it != end; ++it) {
                 if (mode == IncludeDontEnumProperties || !(it->value.attributes & DontEnum))
-                    keys.append(static_cast<unsigned>(it->key));
+                    keys.uncheckedAppend(static_cast<unsigned>(it->key));
             }
             
             std::sort(keys.begin(), keys.end());
@@ -1532,7 +1532,10 @@ void JSObject::getOwnPropertyNames(JSObject* object, ExecState* exec, PropertyNa
 void JSObject::getOwnNonIndexPropertyNames(JSObject* object, ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     getClassPropertyNames(exec, object->classInfo(), propertyNames, mode, object->staticFunctionsReified());
+    size_t preStructurePropertyNamesCount = propertyNames.size();
     object->structure()->getPropertyNamesFromStructure(exec->globalData(), propertyNames, mode);
+    size_t numCacheableSlots = preStructurePropertyNamesCount ? 0 : propertyNames.size();
+    propertyNames.setNumCacheableSlots(numCacheableSlots);
 }
 
 double JSObject::toNumber(ExecState* exec) const

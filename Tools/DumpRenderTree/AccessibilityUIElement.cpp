@@ -24,10 +24,14 @@
  */
 
 #include "config.h"
+
+#if HAVE(ACCESSIBILITY)
+
 #include "AccessibilityUIElement.h"
 
 #include <JavaScriptCore/JSObjectRef.h>
 #include <JavaScriptCore/JSRetainPtr.h>
+#include <limits.h>
 
 // Static Functions
 
@@ -1345,3 +1349,4 @@ JSClassRef AccessibilityUIElement::getJSClass()
     static JSClassRef accessibilityUIElementClass = JSClassCreate(&classDefinition);
     return accessibilityUIElementClass;
 }
+#endif

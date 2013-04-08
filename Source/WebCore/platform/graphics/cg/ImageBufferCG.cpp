@@ -44,7 +44,7 @@
 #include <wtf/text/Base64.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(MAC)
 #include "WebCoreSystemInterface.h"
 #endif
 
@@ -235,7 +235,7 @@ BackingStoreCopy ImageBuffer::fastCopyImageMode()
     return DontCopyBackingStore;
 }
 
-NativeImagePtr ImageBuffer::copyNativeImage(BackingStoreCopy copyBehavior) const
+PassNativeImagePtr ImageBuffer::copyNativeImage(BackingStoreCopy copyBehavior) const
 {
     CGImageRef image = 0;
     if (!m_context->isAcceleratedContext()) {

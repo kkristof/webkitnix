@@ -77,14 +77,20 @@ static LayoutUnit logicalHeightForLine(const RenderBlock* block, bool isFirstLin
 }
 
 #if ENABLE(CSS_EXCLUSIONS)
-ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo() const
+ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo(ExclusionShapeStatus exclusionShapeStatus) const
 {
     ExclusionShapeInsideInfo* shapeInsideInfo = view()->layoutState()->exclusionShapeInsideInfo();
+    if (shapeInsideInfo && shapeInsideInfo->needsRemoval() && exclusionShapeStatus == ShapePresent)
+        shapeInsideInfo = 0;
+
     if (!shapeInsideInfo && flowThreadContainingBlock()) {
         LayoutUnit offset = logicalHeight() + logicalHeightForLine(this, false);
         RenderRegion* region = regionAtBlockOffset(offset);
-        return region ? region->exclusionShapeInsideInfo() : 0;
+        if (region)
+            shapeInsideInfo = region->exclusionShapeInsideInfo();
+        return shapeInsideInfo && shapeInsideInfo->needsRemoval() && exclusionShapeStatus == ShapePresent ? 0 : shapeInsideInfo;
     }
+
     return shapeInsideInfo;
 }
 #endif
@@ -326,7 +332,8 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     unsigned lineDepth = 1;
     LayoutUnit extraWidth = 0;
     RenderObject* parent = child->parent();
-    while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
+    // Empty inline parents have added their inline border, padding and margin to the line already.
+    while (parent->isRenderInline() && !isEmptyInline(parent) && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
         if (!isEmptyInline(parentAsRenderInline)) {
             if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
@@ -818,14 +825,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     float measuredWidth = 0;
 
     bool kerningIsEnabled = font.typesettingFeatures() & Kerning;
-
-#if PLATFORM(CHROMIUM) && OS(DARWIN)
-    // FIXME: Having any font feature settings enabled can lead to selection gaps on
-    // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
-    bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath() && !font.fontDescription().featureSettings();
-#else
     bool canUseSimpleFontCodePath = renderer->canUseSimpleFontCodePath();
-#endif
     
     // Since we don't cache glyph overflows, we need to re-measure the run if
     // the style is linebox-contain: glyph.

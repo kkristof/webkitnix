@@ -1,3 +1,44 @@
+2013-04-04  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Remove the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=113942
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * gyp/Configuration.gypi.in: Removed.
+        * gyp/Dependencies.gyp: Removed.
+        * gyp/GNUmakefile: Removed.
+        * gyp/autogen.sh: Removed.
+        * gyp/configure.ac: Removed.
+        * gyp/run-gyp: Removed.
+
+2013-04-04  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [Cairo] Fix canvas drawing of SVG-based patterns and remove NativeImageCairo
+        https://bugs.webkit.org/show_bug.cgi?id=113929
+
+        Reviewed by Martin Robinson.
+
+        Update code now that PassNativeImagePtr is now a typedef to PassRefPtr<cairo_surface_t>
+        instead of NativeImageCairo*.
+
+        * webkit/webkitfavicondatabase.cpp:
+        (getIconPixbufSynchronously):
+
+2013-04-03  Alban Crequy  <alban.crequy@collabora.co.uk>
+
+        [GTK] WebKitWebNavigationAction: fix mix between dispose and finalize
+        https://bugs.webkit.org/show_bug.cgi?id=113794
+
+        Reviewed by Gustavo Noronha Silva.
+
+        WebKitWebNavigationAction's dispose function was named finalize and was calling
+        the parent class's finalise function, causing a memory corruption. Change it to
+        be a proper finalize function instead.
+
+        * webkit/webkitwebnavigationaction.cpp:
+        (webkit_web_navigation_action_class_init):
+
 2013-03-28  Zan Dobersek  <zdobersek@igalia.com>
 
         [GTK] Build GTK-specific, non-layer-violating source code into WebCore-independent libPlatformGtk.la

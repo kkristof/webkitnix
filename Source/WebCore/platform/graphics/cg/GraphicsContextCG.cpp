@@ -45,7 +45,7 @@
 #include <wtf/RetainPtr.h>
 #include <wtf/UnusedParam.h>
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(MAC)
 #include "WebCoreSystemInterface.h"
 #endif
 
@@ -53,7 +53,7 @@
 #include <WebKitSystemInterface/WebKitSystemInterface.h>
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if PLATFORM(MAC)
 
 #if PLATFORM(IOS) || __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 // Building on 10.6 or later: kCGInterpolationMedium is defined in the CGInterpolationQuality enum.
@@ -157,7 +157,7 @@ void GraphicsContext::restorePlatformState()
     m_data->m_userToDeviceTransformKnownToBeIdentity = false;
 }
 
-void GraphicsContext::drawNativeImage(NativeImagePtr imagePtr, const FloatSize& imageSize, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, BlendMode blendMode, ImageOrientation orientation)
+void GraphicsContext::drawNativeImage(PassNativeImagePtr imagePtr, const FloatSize& imageSize, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, BlendMode blendMode, ImageOrientation orientation)
 {
     RetainPtr<CGImageRef> image(imagePtr);
 
@@ -762,16 +762,6 @@ void GraphicsContext::strokePath(const Path& path)
     CGContextStrokePath(context);
 }
 
-static float radiusToLegacyRadius(float radius)
-{
-    return radius > 8 ? 8 + 4 * sqrt((radius - 8) / 2) : radius;
-}
-
-static bool hasBlurredShadow(const GraphicsContextState& state)
-{
-    return state.shadowColor.isValid() && state.shadowColor.alpha() && state.shadowBlur;
-}
-
 void GraphicsContext::fillRect(const FloatRect& rect)
 {
     if (paintingDisabled())
@@ -808,14 +798,13 @@ void GraphicsContext::fillRect(const FloatRect& rect)
     if (m_state.fillPattern)
         applyFillPattern();
 
-    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow(m_state) && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
+    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow() && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
     if (drawOwnShadow) {
-        float shadowBlur = m_state.shadowsUseLegacyRadius ? radiusToLegacyRadius(m_state.shadowBlur) : m_state.shadowBlur;
         // Turn off CG shadows.
         CGContextSaveGState(context);
         CGContextSetShadowWithColor(platformContext(), CGSizeZero, 0, 0);
 
-        ShadowBlur contextShadow(FloatSize(shadowBlur, shadowBlur), m_state.shadowOffset, m_state.shadowColor, m_state.shadowColorSpace);
+        ShadowBlur contextShadow(m_state);
         contextShadow.drawRectShadow(this, rect, RoundedRect::Radii());
     }
 
@@ -837,14 +826,13 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, ColorS
     if (oldFillColor != color || oldColorSpace != colorSpace)
         setCGFillColor(context, color, colorSpace);
 
-    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow(m_state) && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
+    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow() && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
     if (drawOwnShadow) {
-        float shadowBlur = m_state.shadowsUseLegacyRadius ? radiusToLegacyRadius(m_state.shadowBlur) : m_state.shadowBlur;
         // Turn off CG shadows.
         CGContextSaveGState(context);
         CGContextSetShadowWithColor(platformContext(), CGSizeZero, 0, 0);
 
-        ShadowBlur contextShadow(FloatSize(shadowBlur, shadowBlur), m_state.shadowOffset, m_state.shadowColor, m_state.shadowColorSpace);
+        ShadowBlur contextShadow(m_state);
         contextShadow.drawRectShadow(this, rect, RoundedRect::Radii());
     }
 
@@ -869,15 +857,13 @@ void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLef
     if (oldFillColor != color || oldColorSpace != colorSpace)
         setCGFillColor(context, color, colorSpace);
 
-    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow(m_state) && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
+    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow() && !m_state.shadowsIgnoreTransforms; // Don't use ShadowBlur for canvas yet.
     if (drawOwnShadow) {
-        float shadowBlur = m_state.shadowsUseLegacyRadius ? radiusToLegacyRadius(m_state.shadowBlur) : m_state.shadowBlur;
-
         // Turn off CG shadows.
         CGContextSaveGState(context);
         CGContextSetShadowWithColor(platformContext(), CGSizeZero, 0, 0);
 
-        ShadowBlur contextShadow(FloatSize(shadowBlur, shadowBlur), m_state.shadowOffset, m_state.shadowColor, m_state.shadowColorSpace);
+        ShadowBlur contextShadow(m_state);
         contextShadow.drawRectShadow(this, rect, RoundedRect::Radii(topLeft, topRight, bottomLeft, bottomRight));
     }
 
@@ -922,15 +908,13 @@ void GraphicsContext::fillRectWithRoundedHole(const IntRect& rect, const Rounded
     setFillColor(color, colorSpace);
 
     // fillRectWithRoundedHole() assumes that the edges of rect are clipped out, so we only care about shadows cast around inside the hole.
-    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow(m_state) && !m_state.shadowsIgnoreTransforms;
+    bool drawOwnShadow = !isAcceleratedContext() && hasBlurredShadow() && !m_state.shadowsIgnoreTransforms;
     if (drawOwnShadow) {
-        float shadowBlur = m_state.shadowsUseLegacyRadius ? radiusToLegacyRadius(m_state.shadowBlur) : m_state.shadowBlur;
-
         // Turn off CG shadows.
         CGContextSaveGState(context);
         CGContextSetShadowWithColor(platformContext(), CGSizeZero, 0, 0);
 
-        ShadowBlur contextShadow(FloatSize(shadowBlur, shadowBlur), m_state.shadowOffset, m_state.shadowColor, m_state.shadowColorSpace);
+        ShadowBlur contextShadow(m_state);
         contextShadow.drawInsetShadow(this, rect, roundedHoleRect.rect(), roundedHoleRect.radii());
     }
 
@@ -1313,9 +1297,6 @@ AffineTransform GraphicsContext::getCTM(IncludeDeviceScale includeScale) const
 
 FloatRect GraphicsContext::roundToDevicePixels(const FloatRect& rect, RoundingMode roundingMode)
 {
-#if PLATFORM(CHROMIUM)
-    return rect;
-#else
     // It is not enough just to round to pixels in device space. The rotation part of the
     // affine transform matrix to device space can mess with this conversion if we have a
     // rotating image like the hands of the world clock widget. We just need the scale, so
@@ -1356,7 +1337,6 @@ FloatRect GraphicsContext::roundToDevicePixels(const FloatRect& rect, RoundingMo
     FloatPoint roundedOrigin = FloatPoint(deviceOrigin.x / deviceScaleX, deviceOrigin.y / deviceScaleY);
     FloatPoint roundedLowerRight = FloatPoint(deviceLowerRight.x / deviceScaleX, deviceLowerRight.y / deviceScaleY);
     return FloatRect(roundedOrigin, roundedLowerRight - roundedOrigin);
-#endif
 }
 
 void GraphicsContext::drawLineForText(const FloatPoint& point, float width, bool printing)
@@ -1492,7 +1472,7 @@ InterpolationQuality GraphicsContext::imageInterpolationQuality() const
 void GraphicsContext::setAllowsFontSmoothing(bool allowsFontSmoothing)
 {
     UNUSED_PARAM(allowsFontSmoothing);
-#if PLATFORM(IOS) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+#if PLATFORM(MAC)
     CGContextRef context = platformContext();
     CGContextSetAllowsFontSmoothing(context, allowsFontSmoothing);
 #endif

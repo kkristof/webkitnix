@@ -1,3 +1,54 @@
+2013-04-08  Ryuan Choi  <ryuan.choi@samsung.com>
+
+        [EFL] rendering was broken when scrolled ewk_view_single
+        https://bugs.webkit.org/show_bug.cgi?id=114135
+
+        Reviewed by Gyuyoung Kim.
+
+        ewk_view_single use memcpy() to copy previous buffer for scrolling, but
+        memcpy() should not be used when source buffer and destination buffer are
+        overwrapped.
+
+        * ewk/ewk_view_single.cpp:
+        (_ewk_view_screen_move):
+
+2013-04-07  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] --minimal build fails with error: expected `;' before `return'
+        https://bugs.webkit.org/show_bug.cgi?id=113953
+
+        Unreviewed.
+
+        * ewk/ewk_security_origin.cpp:
+        (ewk_security_origin_web_database_quota_get): Added missing semicolon.
+
+2013-04-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Made USE(JSC) unconditional
+        https://bugs.webkit.org/show_bug.cgi?id=114058
+
+        Reviewed by Anders Carlsson.
+
+        * ewk/ewk_frame.cpp:
+        (ewk_frame_script_execute):
+
+2013-04-04  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [Cairo] Fix canvas drawing of SVG-based patterns and remove NativeImageCairo
+        https://bugs.webkit.org/show_bug.cgi?id=113929
+
+        Reviewed by Martin Robinson.
+
+        Update code now that PassNativeImagePtr is now a typedef to PassRefPtr<cairo_surface_t>
+        instead of NativeImageCairo*.
+
+        * ewk/ewk_history.cpp:
+        (ewk_history_item_icon_surface_get):
+        (ewk_history_item_icon_object_add):
+        * ewk/ewk_settings.cpp:
+        (ewk_settings_icon_database_icon_surface_get):
+        (ewk_settings_icon_database_icon_object_get):
+
 2013-03-31  Kangil Han  <kangil.han@samsung.com>
 
         [EFL] Remove unused stdio.h includes

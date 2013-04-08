@@ -345,13 +345,10 @@ void DocumentLoader::notifyFinished(CachedResource* resource)
         return;
     }
 
-    // FIXME: we should fix the design to eliminate the need for a platform ifdef here
-#if !PLATFORM(CHROMIUM)
     if (m_request.cachePolicy() == ReturnCacheDataDontLoad && !m_mainResource->wasCanceled()) {
         frameLoader()->retryAfterFailedCacheOnlyMainResourceLoad();
         return;
     }
-#endif
 
     mainReceivedError(m_mainResource->resourceError());
 }
@@ -567,14 +564,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 
     // The memory cache doesn't understand the application cache or its caching rules. So if a main resource is served
     // from the application cache, ensure we don't save the result for future use.
-    bool shouldRemoveResourceFromCache = willLoadFallback;
-#if PLATFORM(CHROMIUM)
-    // chromium's ApplicationCacheHost implementation always returns true for maybeLoadFallbackForMainResponse(). However, all responses loaded
-    // from appcache will have a non-zero appCacheID().
-    if (response.appCacheID())
-        shouldRemoveResourceFromCache = true;
-#endif
-    if (shouldRemoveResourceFromCache)
+    if (willLoadFallback)
         memoryCache()->remove(m_mainResource.get());
 
     if (willLoadFallback)

@@ -174,6 +174,7 @@ class QtWK2EWS(AbstractEarlyWarningSystem):
 class WinEWS(AbstractEarlyWarningSystem):
     name = "win-ews"
     port_name = "win"
+    _default_run_tests = True
 
 class AbstractChromiumEWS(AbstractEarlyWarningSystem):
     port_name = "chromium"
@@ -187,7 +188,6 @@ class ChromiumLinuxEWS(AbstractChromiumEWS):
     #        a database migration. :(
     name = "chromium-ews"
     port_name = "chromium-xvfb"
-    _default_run_tests = True
 
 
 class ChromiumLinuxDebugEWS(AbstractChromiumEWS):
@@ -211,6 +211,7 @@ class ChromiumAndroidEWS(AbstractChromiumEWS):
 class MacEWS(AbstractEarlyWarningSystem):
     name = "mac-ews"
     port_name = "mac"
+    _default_run_tests = True
     watchers = AbstractEarlyWarningSystem.watchers + [
         "rniwa@webkit.org",
     ]
@@ -219,6 +220,7 @@ class MacEWS(AbstractEarlyWarningSystem):
 class MacWK2EWS(AbstractEarlyWarningSystem):
     name = "mac-wk2-ews"
     port_name = "mac-wk2"
+    _default_run_tests = True
     watchers = AbstractEarlyWarningSystem.watchers + [
         "rniwa@webkit.org",
     ]

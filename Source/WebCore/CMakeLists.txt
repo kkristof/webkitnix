@@ -1670,7 +1670,6 @@ set(WebCore_SOURCES
     inspector/WorkerInspectorController.cpp
     inspector/WorkerRuntimeAgent.cpp
 
-    loader/CachedMetadata.cpp
     loader/CookieJar.cpp
     loader/CrossOriginAccessControl.cpp
     loader/CrossOriginPreflightResultCache.cpp
@@ -1872,12 +1871,10 @@ set(WebCore_SOURCES
     platform/SharedBuffer.cpp
     platform/SharedBufferChunkReader.cpp
     platform/SchemeRegistry.cpp
-    platform/StatsCounter.cpp
     platform/ThreadGlobalData.cpp
     platform/ThreadTimers.cpp
     platform/Timer.cpp
     platform/UUID.cpp
-    platform/VisitedLinks.cpp
     platform/Widget.cpp
 
     platform/animation/Animation.cpp

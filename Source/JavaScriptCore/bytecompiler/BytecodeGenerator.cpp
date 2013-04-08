@@ -46,81 +46,6 @@ using namespace std;
 
 namespace JSC {
 
-/*
-    The layout of a register frame looks like this:
-
-    For
-
-    function f(x, y) {
-        var v1;
-        function g() { }
-        var v2;
-        return (x) * (y);
-    }
-
-    assuming (x) and (y) generated temporaries t1 and t2, you would have
-
-    ------------------------------------
-    |  x |  y |  g | v2 | v1 | t1 | t2 | <-- value held
-    ------------------------------------
-    | -5 | -4 | -3 | -2 | -1 | +0 | +1 | <-- register index
-    ------------------------------------
-    | params->|<-locals      | temps->
-
-    Because temporary registers are allocated in a stack-like fashion, we
-    can reclaim them with a simple popping algorithm. The same goes for labels.
-    (We never reclaim parameter or local registers, because parameters and
-    locals are DontDelete.)
-
-    The register layout before a function call looks like this:
-
-    For
-
-    function f(x, y)
-    {
-    }
-
-    f(1);
-
-    >                        <------------------------------
-    <                        >  reserved: call frame  |  1 | <-- value held
-    >         >snip<         <------------------------------
-    <                        > +0 | +1 | +2 | +3 | +4 | +5 | <-- register index
-    >                        <------------------------------
-    | params->|<-locals      | temps->
-
-    The call instruction fills in the "call frame" registers. It also pads
-    missing arguments at the end of the call:
-
-    >                        <-----------------------------------
-    <                        >  reserved: call frame  |  1 |  ? | <-- value held ("?" stands for "undefined")
-    >         >snip<         <-----------------------------------
-    <                        > +0 | +1 | +2 | +3 | +4 | +5 | +6 | <-- register index
-    >                        <-----------------------------------
-    | params->|<-locals      | temps->
-
-    After filling in missing arguments, the call instruction sets up the new
-    stack frame to overlap the end of the old stack frame:
-
-                             |---------------------------------->                        <
-                             |  reserved: call frame  |  1 |  ? <                        > <-- value held ("?" stands for "undefined")
-                             |---------------------------------->         >snip<         <
-                             | -7 | -6 | -5 | -4 | -3 | -2 | -1 <                        > <-- register index
-                             |---------------------------------->                        <
-                             |                        | params->|<-locals       | temps->
-
-    That way, arguments are "copied" into the callee's stack frame for free.
-
-    If the caller supplies too many arguments, this trick doesn't work. The
-    extra arguments protrude into space reserved for locals and temporaries.
-    In that case, the call instruction makes a real copy of the call frame header,
-    along with just the arguments expected by the callee, leaving the original
-    call frame header and arguments behind. (The call instruction can't just discard
-    extra arguments, because the "arguments" object may access them later.)
-    This copying strategy ensures that all named values will be at the indices
-    expected by the callee.
-*/
-
 void Label::setLocation(unsigned location)
 {
     m_location = location;
@@ -351,7 +276,7 @@ BytecodeGenerator::BytecodeGenerator(JSGlobalData& globalData, JSScope* scope, F
     bool shouldCaptureAllTheThings = m_shouldEmitDebugHooks || codeBlock->usesEval();
 
     bool capturesAnyArgumentByName = false;
-    Vector<RegisterID*> capturedArguments;
+    Vector<RegisterID*, 0, UnsafeVectorOverflow> capturedArguments;
     if (functionBody->hasCapturedVariables() || shouldCaptureAllTheThings) {
         FunctionParameters& parameters = *functionBody->parameters();
         capturedArguments.resize(parameters.size());
@@ -516,7 +441,7 @@ BytecodeGenerator::BytecodeGenerator(JSGlobalData& globalData, JSScope* scope, E
 
     const DeclarationStacks::VarStack& varStack = evalNode->varStack();
     unsigned numVariables = varStack.size();
-    Vector<Identifier> variables;
+    Vector<Identifier, 0, UnsafeVectorOverflow> variables;
     variables.reserveCapacity(numVariables);
     for (size_t i = 0; i < numVariables; ++i)
         variables.append(*varStack[i].first);
@@ -1737,7 +1662,7 @@ RegisterID* BytecodeGenerator::emitNewArray(RegisterID* dst, ElementNode* elemen
         }
     }
 
-    Vector<RefPtr<RegisterID>, 16> argv;
+    Vector<RefPtr<RegisterID>, 16, UnsafeVectorOverflow> argv;
     for (ElementNode* n = elements; n; n = n->next()) {
         if (n->elision())
             break;
@@ -1924,7 +1849,7 @@ RegisterID* BytecodeGenerator::emitCall(OpcodeID opcodeID, RegisterID* dst, Regi
         emitNode(callArguments.argumentRegister(argument++), n);
 
     // Reserve space for call frame.
-    Vector<RefPtr<RegisterID>, JSStack::CallFrameHeaderSize> callFrame;
+    Vector<RefPtr<RegisterID>, JSStack::CallFrameHeaderSize, UnsafeVectorOverflow> callFrame;
     for (int i = 0; i < JSStack::CallFrameHeaderSize; ++i)
         callFrame.append(newTemporary());
 
@@ -2047,7 +1972,7 @@ RegisterID* BytecodeGenerator::emitConstruct(RegisterID* dst, RegisterID* func, 
     }
 
     // Reserve space for call frame.
-    Vector<RefPtr<RegisterID>, JSStack::CallFrameHeaderSize> callFrame;
+    Vector<RefPtr<RegisterID>, JSStack::CallFrameHeaderSize, UnsafeVectorOverflow> callFrame;
     for (int i = 0; i < JSStack::CallFrameHeaderSize; ++i)
         callFrame.append(newTemporary());
 
@@ -2130,6 +2055,7 @@ void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, in
     if (!m_shouldEmitDebugHooks)
         return;
 #endif
+    emitExpressionInfo(charPosition, 0, 0);
     emitOpcode(op_debug);
     instructions().append(debugHookID);
     instructions().append(firstLine);

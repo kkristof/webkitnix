@@ -3975,7 +3975,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\page\win\FrameWin.cpp" />
-    <ClCompile Include="..\loader\CachedMetadata.cpp" />
     <ClCompile Include="..\loader\CookieJar.cpp" />
     <ClCompile Include="..\loader\CrossOriginAccessControl.cpp" />
     <ClCompile Include="..\loader\CrossOriginPreflightResultCache.cpp" />
@@ -4130,12 +4129,10 @@
     <ClCompile Include="..\platform\ScrollView.cpp" />
     <ClCompile Include="..\platform\SharedBuffer.cpp" />
     <ClCompile Include="..\platform\SharedBufferChunkReader.cpp" />
-    <ClCompile Include="..\platform\StatsCounter.cpp" />
     <ClCompile Include="..\platform\ThreadGlobalData.cpp" />
     <ClCompile Include="..\platform\ThreadTimers.cpp" />
     <ClCompile Include="..\platform\Timer.cpp" />
     <ClCompile Include="..\platform\UUID.cpp" />
-    <ClCompile Include="..\platform\VisitedLinks.cpp" />
     <ClCompile Include="..\platform\Widget.cpp" />
     <ClCompile Include="..\platform\win\BitmapInfo.cpp" />
     <ClCompile Include="..\platform\win\BString.cpp" />
@@ -4506,12 +4503,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\platform\graphics\cairo\IntRectCairo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\platform\graphics\cairo\NativeImageCairo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -9930,6 +9921,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\bindings\js\JSRTCStatsResponseCustom.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugSuffix|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_WinCairo|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\bindings\js\JSStorageCustom.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_WinCairo|Win32'">true</ExcludedFromBuild>
@@ -11459,7 +11458,6 @@
     <ClInclude Include="..\page\WindowFocusAllowedIndicator.h" />
     <ClInclude Include="..\page\WorkerNavigator.h" />
     <ClInclude Include="..\page\win\FrameWin.h" />
-    <ClInclude Include="..\loader\CachedMetadata.h" />
     <ClInclude Include="..\loader\CookieJar.h" />
     <ClInclude Include="..\loader\CrossOriginAccessControl.h" />
     <ClInclude Include="..\loader\CrossOriginPreflightResultCache.h" />
@@ -11630,7 +11628,6 @@
     <ClInclude Include="..\platform\SharedTimer.h" />
     <ClInclude Include="..\platform\Sound.h" />
     <ClInclude Include="..\platform\SSLKeyGenerator.h" />
-    <ClInclude Include="..\platform\StatsCounter.h" />
     <ClInclude Include="..\platform\SuddenTermination.h" />
     <ClInclude Include="..\platform\SystemTime.h" />
     <ClInclude Include="..\platform\Theme.h" />
@@ -11640,7 +11637,6 @@
     <ClInclude Include="..\platform\Timer.h" />
     <ClInclude Include="..\platform\TreeShared.h" />
     <ClInclude Include="..\platform\UUID.h" />
-    <ClInclude Include="..\platform\VisitedLinks.h" />
     <ClInclude Include="..\platform\VisitedLinkStrategy.h" />
     <ClInclude Include="..\platform\Widget.h" />
     <ClInclude Include="..\platform\win\BitmapInfo.h" />

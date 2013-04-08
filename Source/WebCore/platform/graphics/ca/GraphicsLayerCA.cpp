@@ -1110,9 +1110,7 @@ void GraphicsLayerCA::platformCALayerDidCreateTiles(const Vector<FloatRect>& dir
     for (size_t i = 0; i < dirtyRects.size(); ++i)
         setNeedsDisplayInRect(dirtyRects[i]);
 
-    // Ensure that the layout is up to date before any individual tiles are painted by telling the client
-    // that it needs to flush its layer state, which will end up scheduling the layer flusher.
-    client()->notifyFlushRequired(this);
+    noteLayerPropertyChanged(TilesAdded);
 }
 
 float GraphicsLayerCA::platformCALayerDeviceScaleFactor()
@@ -1125,6 +1123,10 @@ void GraphicsLayerCA::commitLayerChangesBeforeSublayers(float pageScaleFactor, c
     if (!m_uncommittedChanges)
         return;
 
+    bool needTiledLayer = requiresTiledLayer(pageScaleFactor);
+    if (needTiledLayer != m_usingTiledBacking)
+        swapFromOrToTiledLayer(needTiledLayer);
+
     // Need to handle Preserves3DChanged first, because it affects which layers subsequent properties are applied to
     if (m_uncommittedChanges & (Preserves3DChanged | ReplicatedLayerChanged))
         updateStructuralLayer();
@@ -1133,7 +1135,7 @@ void GraphicsLayerCA::commitLayerChangesBeforeSublayers(float pageScaleFactor, c
         updateGeometry(pageScaleFactor, positionRelativeToBase);
 
     if (m_uncommittedChanges & DrawsContentChanged)
-        updateLayerDrawsContent(pageScaleFactor);
+        updateLayerDrawsContent();
 
     if (m_uncommittedChanges & NameChanged)
         updateLayerNames();
@@ -1296,10 +1298,6 @@ void GraphicsLayerCA::updateGeometry(float pageScaleFactor, const FloatPoint& po
     FloatSize scaledSize;
     FloatSize pixelAlignmentOffset;
     computePixelAlignment(pageScaleFactor, positionRelativeToBase, scaledPosition, scaledSize, scaledAnchorPoint, pixelAlignmentOffset);
-
-    bool needTiledLayer = requiresTiledLayer(pageScaleFactor);
-    if (needTiledLayer != m_usingTiledBacking)
-        swapFromOrToTiledLayer(needTiledLayer);
 
     FloatSize usedSize = m_usingTiledBacking ? constrainedSize() : scaledSize;
     FloatRect adjustedBounds(m_boundsOrigin - pixelAlignmentOffset, usedSize);
@@ -1567,12 +1565,8 @@ GraphicsLayerCA::StructuralLayerPurpose GraphicsLayerCA::structuralLayerPurpose(
     return NoStructuralLayer;
 }
 
-void GraphicsLayerCA::updateLayerDrawsContent(float pageScaleFactor)
+void GraphicsLayerCA::updateLayerDrawsContent()
 {
-    bool needTiledLayer = requiresTiledLayer(pageScaleFactor);
-    if (needTiledLayer != m_usingTiledBacking)
-        swapFromOrToTiledLayer(needTiledLayer);
-
     if (m_drawsContent)
         m_layer->setNeedsDisplay();
     else {
@@ -2567,10 +2561,6 @@ static float clampedContentsScaleForScale(float scale)
 
 void GraphicsLayerCA::updateContentsScale(float pageScaleFactor)
 {
-    bool needTiledLayer = requiresTiledLayer(pageScaleFactor);
-    if (needTiledLayer != m_usingTiledBacking)
-        swapFromOrToTiledLayer(needTiledLayer);
-
     float contentsScale = clampedContentsScaleForScale(pageScaleFactor * deviceScaleFactor());
     
     m_layer->setContentsScale(contentsScale);
@@ -3060,12 +3050,22 @@ void GraphicsLayerCA::noteSublayersChanged()
     propagateLayerChangeToReplicas();
 }
 
+bool GraphicsLayerCA::canThrottleLayerFlush() const
+{
+    // Tile layers are currently plain CA layers, attached directly by TileController. They require immediate flush as they may contain garbage.
+    return !(m_uncommittedChanges & TilesAdded);
+}
+
 void GraphicsLayerCA::noteLayerPropertyChanged(LayerChangeFlags flags)
 {
-    if (!m_uncommittedChanges && m_client)
-        m_client->notifyFlushRequired(this);
+    bool hadUncommittedChanges = !!m_uncommittedChanges;
+    bool oldCanThrottleLayerFlush = canThrottleLayerFlush();
 
     m_uncommittedChanges |= flags;
+
+    bool needsFlush = !hadUncommittedChanges || oldCanThrottleLayerFlush != canThrottleLayerFlush();
+    if (needsFlush && m_client)
+        m_client->notifyFlushRequired(this);
 }
 
 double GraphicsLayerCA::backingStoreMemoryEstimate() const

@@ -864,6 +864,8 @@ private:
 
     void updateNormalFlowList();
 
+    // Non-auto z-index always implies stacking context here, because StyleResolver::adjustRenderStyle already adjusts z-index
+    // based on positioning and other criteria.
     bool isStackingContext(const RenderStyle* style) const { return !style->hasAutoZIndex() || isRootLayer(); }
 
     bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }
@@ -1205,10 +1207,6 @@ protected:
 #if !ASSERT_DISABLED
     bool m_layerListMutationAllowed : 1;
 #endif
-    // This is an optimization added for <table>.
-    // Currently cells do not need to update their repaint rectangles when scrolling. This also
-    // saves a lot of time when scrolling on a table.
-    const bool m_canSkipRepaintRectsUpdateOnScroll : 1;
 
 #if ENABLE(CSS_FILTERS)
     bool m_hasFilterInfo : 1;

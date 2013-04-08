@@ -1402,11 +1402,13 @@ void RenderBlock::updateExclusionShapeInsideInfoAfterStyleChange(const Exclusion
     if (shapeInside == oldShapeInside)
         return;
 
+    ExclusionShapeInsideInfo* exclusionShapeInsideInfo;
     if (shapeInside) {
-        ExclusionShapeInsideInfo* exclusionShapeInsideInfo = ensureExclusionShapeInsideInfo();
+        exclusionShapeInsideInfo = ensureExclusionShapeInsideInfo();
         exclusionShapeInsideInfo->dirtyShapeSize();
-    } else
-        setExclusionShapeInsideInfo(nullptr);
+        exclusionShapeInsideInfo->setNeedsRemoval(false);
+    } else if ((exclusionShapeInsideInfo = this->exclusionShapeInsideInfo(ShapePresentOrRemoved)))
+        exclusionShapeInsideInfo->setNeedsRemoval(true);
 }
 #endif
 
@@ -1415,16 +1417,16 @@ static inline bool exclusionInfoRequiresRelayout(const RenderBlock* block)
 #if !ENABLE(CSS_EXCLUSIONS)
     return false;
 #else
-    ExclusionShapeInsideInfo* info = block->exclusionShapeInsideInfo();
+    ExclusionShapeInsideInfo* info = block->exclusionShapeInsideInfo(RenderBlock::ShapePresentOrRemoved);
     if (info)
-        info->setNeedsLayout(info->shapeSizeDirty());
+        info->setNeedsLayout(info->shapeSizeDirty() || info->needsRemoval());
     else
-        info = block->layoutExclusionShapeInsideInfo();
+        info = block->layoutExclusionShapeInsideInfo(RenderBlock::ShapePresentOrRemoved);
     return info && info->needsLayout();
 #endif
 }
 
-bool RenderBlock::updateRegionsAndExclusionsLogicalSize(RenderFlowThread* flowThread)
+bool RenderBlock::updateRegionsAndExclusionsBeforeChildLayout(RenderFlowThread* flowThread)
 {
 #if ENABLE(CSS_EXCLUSIONS)
     if (!flowThread && !exclusionShapeInsideInfo())
@@ -1465,6 +1467,16 @@ void RenderBlock::computeExclusionShapeSize()
     }
 }
 #endif
+
+void RenderBlock::updateRegionsAndExclusionsAfterChildLayout(RenderFlowThread* flowThread)
+{
+#if ENABLE(CSS_EXCLUSIONS)
+    ExclusionShapeInsideInfo* exclusionShapeInsideInfo = this->exclusionShapeInsideInfo(ShapePresentOrRemoved);
+    if (exclusionShapeInsideInfo && exclusionShapeInsideInfo->needsRemoval())
+        setExclusionShapeInsideInfo(nullptr);
+#endif
+    computeRegionRangeForBlock(flowThread);
+}
 
 void RenderBlock::computeRegionRangeForBlock(RenderFlowThread* flowThread)
 {
@@ -1550,7 +1562,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (logicalWidthChangedInRegions(flowThread))
         relayoutChildren = true;
-    if (updateRegionsAndExclusionsLogicalSize(flowThread))
+    if (updateRegionsAndExclusionsBeforeChildLayout(flowThread))
         relayoutChildren = true;
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
@@ -1619,7 +1631,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
 
     layoutPositionedObjects(relayoutChildren || isRoot());
 
-    computeRegionRangeForBlock(flowThread);
+    updateRegionsAndExclusionsAfterChildLayout(flowThread);
 
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);
@@ -4905,13 +4917,6 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         LayoutRect overflowBox = visualOverflowRect();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedLocation);
-        if (style()->hasBorderRadius()) {
-            LayoutRect borderRect = borderBoxRect();
-            borderRect.moveBy(adjustedLocation);
-            RoundedRect border = style()->getRoundedBorderFor(borderRect, view());
-            if (!locationInContainer.intersects(border))
-                return false;
-        }
         if (!locationInContainer.intersects(overflowBox))
             return false;
     }
@@ -4945,6 +4950,15 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
             return true;
         }
+    }
+
+    // Check if the point is outside radii.
+    if (!isRenderView() && style()->hasBorderRadius()) {
+        LayoutRect borderRect = borderBoxRect();
+        borderRect.moveBy(adjustedLocation);
+        RoundedRect border = style()->getRoundedBorderFor(borderRect, view());
+        if (!locationInContainer.intersects(border))
+            return false;
     }
 
     // Now hit test our background

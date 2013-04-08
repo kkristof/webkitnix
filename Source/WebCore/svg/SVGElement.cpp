@@ -452,6 +452,12 @@ static bool hasLoadListener(Element* element)
     return false;
 }
 
+bool SVGElement::moveToFlowThreadIsNeeded(RefPtr<RenderStyle>& cachedStyle)
+{
+    // Allow only svg root elements to be directly collected by a render flow thread.
+    return parentNode() && !parentNode()->isSVGElement() && hasTagName(SVGNames::svgTag) && Element::moveToFlowThreadIsNeeded(cachedStyle);
+}
+
 void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
 {
     RefPtr<SVGElement> currentTarget = this;
@@ -530,7 +536,7 @@ bool SVGElement::childShouldCreateRenderer(const NodeRenderingContext& childCont
     return false;
 }
 
-void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue)
+void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
     StyledElement::attributeChanged(name, newValue);
 

@@ -1,3 +1,311 @@
+2013-04-08  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] WebPage: misc build fixes
+        https://bugs.webkit.org/show_bug.cgi?id=114152
+
+        Reviewed by Carlos Garcia Campos.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::shouldPluginEnterFullScreen):
+        (BlackBerry::WebKit::WebPagePrivate::didPluginExitFullScreen):
+        (BlackBerry::WebKit::WebPagePrivate::onPluginStartBackgroundPlay):
+        (BlackBerry::WebKit::WebPagePrivate::onPluginStopBackgroundPlay):
+        Remove unused parameters.
+
+        (BlackBerry::WebKit::WebPagePrivate::zoomAnimationFinished):
+        (BlackBerry::WebKit::WebPage::blockZoom):
+        Replace TAAUTO with TASTART (this changed in r120495).
+
+        (BlackBerry::WebKit::WebPagePrivate::setViewportSize):
+        Rename m_fullscreenVideoNode to m_fullscreenNode (this changed in
+        r142220).
+
+        (BlackBerry::WebKit::WebPagePrivate::compositorDrawsRootLayer):
+        Rename paintingGoesToWindow() to paintsIntoWindow() (this changed in
+        r113514).
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * WebCoreSupport/AboutDataEnableFeatures.in:
+        - Remove reference to SVG_DOM_OBJC_BINDINGS.
+
+2013-04-06  Zan Dobersek  <zdobersek@igalia.com>
+
+        Remove the USE(SKIA_ON_MAC_CHROMIUM) guards
+        https://bugs.webkit.org/show_bug.cgi?id=114084
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebCoreSupport/AboutDataUseFeatures.in: Remove the SKIA_ON_MAC_(CHROME|CHROMIUM) reference.
+
+2013-04-05  Tiancheng Jiang  <tijiang@rim.com>
+
+        [BlackBerry] FatFingers Don't check the shadow tree for all elements.
+        https://bugs.webkit.org/show_bug.cgi?id=114066
+
+        Reviewed by Rob Buis.
+
+        BlackBerry PR 263078
+        Internally reviewed by Genevieve Mak.
+
+        No need to check shadow tree since sliders use touch events.
+
+        * WebKitSupport/FatFingers.cpp:
+        (BlackBerry::WebKit::FatFingers::isElementClickable):
+
+2013-04-05  Zan Dobersek  <zdobersek@igalia.com>
+
+        Remove WTF_USE_GOOGLEURL-guarded code
+        https://bugs.webkit.org/show_bug.cgi?id=114028
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebCoreSupport/AboutDataUseFeatures.in: Remove GOOGLEURL from the list.
+
+2013-04-04  Jacky Jiang  <zhajiang@rim.com>
+
+        [BlackBerry] Blitting wrong rect during history navigations
+        https://bugs.webkit.org/show_bug.cgi?id=113963
+
+        Reviewed by Rob Buis.
+        Internally reviewed by Jakob Petsovits.
+
+        On www.bbc.com/news, we blit wrong rect during the second restoration
+        of the view states when we navigate back from stories to the main page.
+        Update the contents size and scroll position before we render and blit
+        if we failed to zoomAboutPoint so that UI thread can still get the
+        correct rect during blit.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::restoreHistoryViewState):
+
+2013-04-05  Jakob Petsovits  <jpetsovits@blackberry.com>
+
+        [BlackBerry] Replace map{From,To}Transformed() with ViewportAccessor
+        https://bugs.webkit.org/show_bug.cgi?id=113449
+
+        Reviewed by Rob Buis.
+
+        This removes the WebPage/BackingStoreClient family of coordinate
+        transformation functions, which were widely disliked for their
+        naming, with ViewportAccessor API that had previously been
+        introduced for limited use cases. This commit takes care of the
+        remaining call sites and leaves us with a single API to use.
+
+        No new tests, only a clean-up/refactor of existing code & functionality.
+
+        * Api/BackingStore.cpp:
+        (BlackBerry::WebKit::BackingStorePrivate::repaint):
+        (BlackBerry::WebKit::BackingStorePrivate::slowScroll):
+        (BlackBerry::WebKit::BackingStorePrivate::visibleContentsRect):
+        (BlackBerry::WebKit::BackingStorePrivate::unclippedVisibleContentsRect):
+        (BlackBerry::WebKit::BackingStorePrivate::blitVisibleContents):
+        (BlackBerry::WebKit::BackingStorePrivate::expandedContentsSize):
+        * Api/InRegionScroller.cpp:
+        (BlackBerry::WebKit::InRegionScrollerPrivate::clipToRect):
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::WebPagePrivate):
+        (BlackBerry::WebKit::WebPagePrivate::init):
+        (BlackBerry::WebKit::WebPagePrivate::scrollPosition):
+        (BlackBerry::WebKit::WebPagePrivate::maximumScrollPosition):
+        (BlackBerry::WebKit::WebPagePrivate::setScrollPosition):
+        (BlackBerry::WebKit::WebPagePrivate::viewportSize):
+        (BlackBerry::WebKit::WebPagePrivate::actualVisibleSize):
+        (BlackBerry::WebKit::WebPagePrivate::layoutFinished):
+        (BlackBerry::WebKit::WebPagePrivate::notifyTransformedContentsSizeChanged):
+        (BlackBerry::WebKit::WebPagePrivate::updateCursor):
+        (BlackBerry::WebKit::WebPagePrivate::focusNodeRect):
+        (BlackBerry::WebKit::WebPagePrivate::contextNode):
+        (BlackBerry::WebKit::WebPagePrivate::blockZoomRectForNode):
+        (BlackBerry::WebKit::WebPagePrivate::zoomAnimationFinished):
+        (BlackBerry::WebKit::WebPagePrivate::handleMouseEvent):
+        (BlackBerry::WebKit::WebPage::blockZoom):
+        * Api/WebPage_p.h:
+        (WebPagePrivate):
+        * WebKitSupport/BackingStoreClient.cpp:
+        (BlackBerry::WebKit::BackingStoreClient::transformedScrollPosition):
+        (BlackBerry::WebKit::BackingStoreClient::transformedMaximumScrollPosition):
+        (BlackBerry::WebKit::BackingStoreClient::actualVisibleSize):
+        (BlackBerry::WebKit::BackingStoreClient::transformedActualVisibleSize):
+        * WebKitSupport/BackingStoreClient.h:
+        (BackingStoreClient):
+        * WebKitSupport/FatFingers.cpp:
+        (BlackBerry::WebKit::FatFingers::fingerRectForPoint):
+        (BlackBerry::WebKit::FatFingers::FatFingers):
+        (BlackBerry::WebKit::FatFingers::findBestPoint):
+        (BlackBerry::WebKit::FatFingers::findIntersectingRegions):
+        (BlackBerry::WebKit::FatFingers::getNodesFromRect):
+        * WebKitSupport/InRegionScrollableArea.cpp:
+        (BlackBerry::WebKit::InRegionScrollableArea::InRegionScrollableArea):
+        * WebKitSupport/InputHandler.cpp:
+        (BlackBerry::WebKit::InputHandler::ensureFocusTextElementVisible):
+        * WebKitSupport/TouchEventHandler.cpp:
+        (BlackBerry::WebKit::TouchEventHandler::sendClickAtFatFingersPoint):
+        (BlackBerry::WebKit::TouchEventHandler::handleTouchPoint):
+        (BlackBerry::WebKit::TouchEventHandler::handleFatFingerPressed):
+        * WebKitSupport/WebKitThreadViewportAccessor.cpp:
+        (BlackBerry::WebKit::WebKitThreadViewportAccessor::pixelContentsSize):
+        (BlackBerry::WebKit::WebKitThreadViewportAccessor::pixelScrollPosition):
+        (BlackBerry::WebKit::WebKitThreadViewportAccessor::documentViewportSize):
+
+2013-04-05  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] Remove unused parameters from notifyAnimationStarted() and paintContents()
+        https://bugs.webkit.org/show_bug.cgi?id=114022
+
+        Reviewed by Carlos Garcia Campos.
+
+        Naming the 'time' and 'inClip' unused parameters only produces
+        compiler warnings.
+
+        * Api/WebOverlay_p.h:
+        (BlackBerry::WebKit::WebOverlayPrivateWebKitThread::notifyAnimationStarted):
+        (WebOverlayPrivateWebKitThread):
+        * Api/WebPage_p.h:
+        (BlackBerry::WebKit::WebPagePrivate::notifyAnimationStarted):
+        (BlackBerry::WebKit::WebPagePrivate::paintContents):
+        * WebKitSupport/DefaultTapHighlight.h:
+        (BlackBerry::WebKit::DefaultTapHighlight::notifyAnimationStarted):
+        * WebKitSupport/InspectorOverlayBlackBerry.cpp:
+        (BlackBerry::WebKit::InspectorOverlay::paintContents):
+        * WebKitSupport/InspectorOverlayBlackBerry.h:
+        (BlackBerry::WebKit::InspectorOverlay::notifyAnimationStarted):
+        (InspectorOverlay):
+        * WebKitSupport/SelectionOverlay.h:
+        (BlackBerry::WebKit::SelectionOverlay::notifyAnimationStarted):
+
+2013-04-05  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] WebOverlay: fix access to m_client
+        https://bugs.webkit.org/show_bug.cgi?id=114003
+
+        Reviewed by Rob Buis.
+
+        m_client was replace by m_overlay in r146058.
+
+        * Api/WebOverlay.cpp:
+        (BlackBerry::WebKit::WebOverlayLayerCompositingThreadClient::uploadTexturesIfNeeded):
+
+2013-04-05  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] WebOverlayPrivate: remove showDebugBorders() and showRepaintCounter()
+        https://bugs.webkit.org/show_bug.cgi?id=114009
+
+        Reviewed by Carlos Garcia Campos.
+
+        These methods were removed in r133517 but were accidentally
+        introduced again in r145968.
+        The previous patch didn't remove them all.
+
+        * WebKitSupport/DefaultTapHighlight.cpp:
+        * WebKitSupport/DefaultTapHighlight.h:
+        (DefaultTapHighlight):
+        * WebKitSupport/InspectorOverlayBlackBerry.cpp:
+        * WebKitSupport/InspectorOverlayBlackBerry.h:
+        (InspectorOverlay):
+        * WebKitSupport/SelectionOverlay.cpp:
+        * WebKitSupport/SelectionOverlay.h:
+        (SelectionOverlay):
+
+2013-04-05  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] WebOverlayPrivate: remove showDebugBorders() and showRepaintCounter()
+        https://bugs.webkit.org/show_bug.cgi?id=114009
+
+        Reviewed by Carlos Garcia Campos.
+
+        These methods were removed in r133517 but were accidentally
+        introduced again in r145968.
+
+        * Api/WebOverlay_p.h:
+        (WebOverlayPrivateWebKitThread):
+
+2013-04-05  Anthony Scian  <ascian@blackberry.com>
+
+        [BlackBerry] WebOverlay: check if platformContext is null
+        https://bugs.webkit.org/show_bug.cgi?id=114005
+
+        Reviewed by Carlos Garcia Campos.
+
+        RIM PR 256522
+        Internally reviewed by Mike Lattanzio.
+
+        The pointer returned by lockBufferDrawable can be null, so it
+        needs to be checked first before being used.
+
+        * Api/WebOverlay.cpp:
+        (BlackBerry::WebKit::WebOverlayLayerCompositingThreadClient::uploadTexturesIfNeeded):
+
+2013-04-05  Benjamin Poulain  <bpoulain@apple.com>
+
+        Remove WTFURL from WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=113994
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebCoreSupport/AboutDataUseFeatures.in:
+
+2013-04-04  Andrew Lo  <anlo@rim.com>
+
+        [BlackBerry] DOMSupport::isFixedPositionOrHasFixedPositionAncestor stops traversing render tree when it hits an iframe element
+        https://bugs.webkit.org/show_bug.cgi?id=113944
+
+        Reviewed by Rob Buis.
+        Internally reviewed by Mike Fenton.
+
+        Internal PR 320732.
+        When checking whether a RenderObject is fixed position or has a fixed position
+        ancestor, we traverse the render tree upwards.
+
+        When we reach the root of the tree, check whether the root is an
+        iframe and has an element owner. If so, we also need to continue iterating
+        up the tree from the owner to see if the iframe is a descendant of a fixed
+        position element.
+
+        * WebKitSupport/DOMSupport.cpp:
+        (BlackBerry::WebKit::DOMSupport::isFixedPositionOrHasFixedPositionAncestor):
+
+2013-04-04  Tiancheng Jiang  <tijiang@rim.com>
+
+        [BlackBerry] Adjust fatfinger result priority
+        https://bugs.webkit.org/show_bug.cgi?id=113957
+
+        Reviewed by Rob Buis.
+
+        RIM PR 224781
+        Internally Reviewed by Genevieve Mak.
+
+        Change fatfigner algorithm, return the clickable element rather than
+        its parent anchor. Modify taphighlight and context menu node selection
+        accordingly.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::webContext):
+        * WebKitSupport/FatFingers.cpp:
+        (BlackBerry::WebKit::FatFingers::findBestPoint):
+        * WebKitSupport/FatFingers.h:
+        * WebKitSupport/TouchEventHandler.cpp:
+        (BlackBerry::WebKit::elementForTapHighlight):
+
+2013-04-03  Arvid Nilsson  <anilsson@rim.com>
+
+        [BlackBerry] Remove defaultViewportArguments check from call site of recomputeVirtualViewportFromViewportArguments
+        https://bugs.webkit.org/show_bug.cgi?id=113872
+
+        Reviewed by Carlos Garcia Campos.
+
+        Carlos pointed out that recomputeVirtualViewportFromViewportArguments
+        already contains the check, and returns an empty IntSize if it fails.
+        So pick up on that to make the code a bit more DRY.
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::setViewportSize):
+
 2013-04-03  Arvid Nilsson  <anilsson@rim.com>
 
         [BlackBerry] Decouple layout viewport from visual viewport

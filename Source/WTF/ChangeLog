@@ -1,3 +1,307 @@
+2013-04-07  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove the android code from WebKit Template Framework
+        https://bugs.webkit.org/show_bug.cgi?id=114138
+
+        Reviewed by Dirk Schulze.
+
+        * wtf/Assertions.cpp:
+        * wtf/Atomics.h:
+        * wtf/MathExtras.h:
+        * wtf/Platform.h:
+        * wtf/ThreadIdentifierDataPthreads.cpp:
+
+2013-04-07  Oliver Hunt  <oliver@apple.com>
+
+        Add bounds checking for WTF::Vector::operator[]
+        https://bugs.webkit.org/show_bug.cgi?id=89600
+
+        Reviewed by Filip Pizlo.
+
+        Add a template parameter to Vector<> that controls whether
+        bounds checking is performed in release builds or not.
+        Defaults to crashing on overflow.
+
+        * wtf/Forward.h:
+        (WTF):
+        * wtf/Vector.h:
+        (WTF):
+        (Vector):
+        (WTF::Vector::at):
+        (WTF::Vector::removeLast):
+        (WTF::::Vector):
+        (WTF::=):
+        (WTF::::contains):
+        (WTF::::find):
+        (WTF::::reverseFind):
+        (WTF::::fill):
+        (WTF::::appendRange):
+        (WTF::::expandCapacity):
+        (WTF::::tryExpandCapacity):
+        (WTF::::resize):
+        (WTF::::shrink):
+        (WTF::::grow):
+        (WTF::::reserveCapacity):
+        (WTF::::tryReserveCapacity):
+        (WTF::::reserveInitialCapacity):
+        (WTF::::shrinkCapacity):
+        (WTF::::append):
+        (WTF::::tryAppend):
+        (WTF::::appendSlowCase):
+        (WTF::::uncheckedAppend):
+        (WTF::::appendVector):
+        (WTF::::insert):
+        (WTF::::prepend):
+        (WTF::::remove):
+        (WTF::::reverse):
+        (WTF::::releaseBuffer):
+        (WTF::::checkConsistency):
+        (WTF::deleteAllValues):
+        (WTF::swap):
+        (WTF::operator==):
+        (WTF::operator!=):
+
+2013-04-07  Patrick Gansterer  <paroga@webkit.org>
+
+        [WIN] Fix problems with export macros of AutodrainedPool
+        https://bugs.webkit.org/show_bug.cgi?id=114132
+
+        Reviewed by Geoffrey Garen.
+
+        Exporting an inline function results in an error with the MS compiler.
+
+        * wtf/AutodrainedPool.h:
+        (AutodrainedPool):
+        (WTF::AutodrainedPool::AutodrainedPool):
+        (WTF::AutodrainedPool::~AutodrainedPool):
+        (WTF::AutodrainedPool::cycle):
+
+2013-04-07  Patrick Gansterer  <paroga@webkit.org>
+
+        [WinCE] Add workaround for UNUSED_PARAM()
+        https://bugs.webkit.org/show_bug.cgi?id=113440
+
+        Reviewed by Benjamin Poulain.
+
+        The MSVC compiler for Windwos CE throws an error when
+        an function parameter is passed to UNUSED_PARAM() and
+        its type is only forward declared.
+
+        * wtf/UnusedParam.h:
+
+2013-04-07  Patrick Gansterer  <paroga@webkit.org>
+
+        Do not check if WTF_ARM_ARCH_VERSION is defined in WTF_ARM_ARCH_AT_LEAST macro
+        https://bugs.webkit.org/show_bug.cgi?id=114127
+
+        Reviewed by Benjamin Poulain.
+
+        Platform.h defines WTF_ARM_ARCH_VERSION for CPU(ARM) always and removing
+        the check works around a bug in older Microsoft compiler versions.
+
+        * wtf/Platform.h:
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * wtf/FeatureDefines.h:
+        - Remove ENABLE_SVG_DOM_OBJC_BINDINGS macro.
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed v8 bindings hooks from IDL files
+        https://bugs.webkit.org/show_bug.cgi?id=114091
+
+        Reviewed by Anders Carlsson and Sam Weinig.
+
+        * wtf/ArrayBuffer.h:
+        (WTF):
+        (WTF::ArrayBufferContents::ArrayBufferContents):
+        (WTF::ArrayBufferContents::transfer):
+        (ArrayBufferContents):
+        (ArrayBuffer):
+        (WTF::ArrayBufferContents::~ArrayBufferContents):
+        * wtf/Platform.h:
+
+2013-04-05  Jesus Sanchez-Palencia  <jesus.palencia@openbossa.org>
+
+        [GTK] Change from PLATFORM(GTK) to USE(GLIB) in WTF/CurrentTime.cpp
+        https://bugs.webkit.org/show_bug.cgi?id=114061
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Now other ports using GLib can use the correct implementation
+        and not the fallback one without adding any other PLATFORM guards
+        here.
+
+        * wtf/CurrentTime.cpp:
+        (WTF):
+
+2013-04-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Made USE(JSC) unconditional
+        https://bugs.webkit.org/show_bug.cgi?id=114058
+
+        Reviewed by Anders Carlsson.
+
+        * wtf/ThreadRestrictionVerifier.h:
+        (WTF):
+        * wtf/WTFThreadData.cpp:
+        (WTF::WTFThreadData::WTFThreadData):
+        (WTF::WTFThreadData::~WTFThreadData):
+        * wtf/WTFThreadData.h:
+        (WTFThreadData):
+        * wtf/text/StringImpl.cpp:
+        (WTF::StringImpl::~StringImpl):
+
+2013-04-05  Roger Fong  <roger_fong@apple.com>
+
+        More VS2010 solution makefile fixes.
+        <rdar://problem/13588964>
+
+        * WTF.vcxproj/WTF.make:
+
+2013-04-05  Anders Carlsson  <andersca@apple.com>
+
+        Remove more dead Chromium code from WTF
+        https://bugs.webkit.org/show_bug.cgi?id=114037
+
+        Reviewed by Allan Sandfeld Jensen.
+
+        * wtf/CurrentTime.cpp:
+        (WTF):
+        * wtf/DisallowCType.h:
+        * wtf/ExportMacros.h:
+        * wtf/MainThread.cpp:
+        * wtf/Platform.h:
+
+2013-04-05  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL] Disable GLOBAL_FAST_MALLOC_NEW by default.
+        https://bugs.webkit.org/show_bug.cgi?id=114031
+
+        Reviewed by Alexis Menard.
+
+        Follow what some other ports already do and avoid globally overriding
+        the `new' and `delete' operators with the ones in FastMalloc.
+
+        In many cases, third-party or client code allocates memory with
+        standard library calls but the memory gets deleted by FastMalloc,
+        causing a crash. The reverse (ie. memory being allocated by FastMalloc
+        and freed by the system libraries) is also possible.
+
+        Commits 135666 and 121018 provide more information about this, as well
+        as comment 6 in bug 89358.
+
+        * wtf/Platform.h:
+
+2013-04-05  Benjamin Poulain  <bpoulain@apple.com>
+
+        Remove WTFURL from WebKit
+        https://bugs.webkit.org/show_bug.cgi?id=113994
+
+        Reviewed by Ryosuke Niwa.
+
+        Painful, but that is for the best now :(
+
+        * GNUmakefile.list.am:
+        * WTF.xcodeproj/project.pbxproj:
+        * wtf/MemoryInstrumentationParsedURL.h: Removed.
+        * wtf/url/api/ParsedURL.cpp: Removed.
+        * wtf/url/api/ParsedURL.h: Removed.
+        * wtf/url/api/URLBuffer.h: Removed.
+        * wtf/url/api/URLQueryCharsetConverter.h: Removed.
+        * wtf/url/api/URLString.cpp: Removed.
+        * wtf/url/api/URLString.h: Removed.
+        * wtf/url/src/RawURLBuffer.h: Removed.
+        * wtf/url/src/URLCanon.h: Removed.
+        * wtf/url/src/URLCanonEtc.cpp: Removed.
+        * wtf/url/src/URLCanonFilesystemurl.cpp: Removed.
+        * wtf/url/src/URLCanonFileurl.cpp: Removed.
+        * wtf/url/src/URLCanonHost.cpp: Removed.
+        * wtf/url/src/URLCanonICU.cpp: Removed.
+        * wtf/url/src/URLCanonIP.cpp: Removed.
+        * wtf/url/src/URLCanonInternal.cpp: Removed.
+        * wtf/url/src/URLCanonInternal.h: Removed.
+        * wtf/url/src/URLCanonMailto.cpp: Removed.
+        * wtf/url/src/URLCanonPath.cpp: Removed.
+        * wtf/url/src/URLCanonPathurl.cpp: Removed.
+        * wtf/url/src/URLCanonQuery.cpp: Removed.
+        * wtf/url/src/URLCanonRelative.cpp: Removed.
+        * wtf/url/src/URLCanonStdURL.cpp: Removed.
+        * wtf/url/src/URLCharacterTypes.cpp: Removed.
+        * wtf/url/src/URLCharacterTypes.h: Removed.
+        * wtf/url/src/URLComponent.h: Removed.
+        * wtf/url/src/URLFile.h: Removed.
+        * wtf/url/src/URLParse.cpp: Removed.
+        * wtf/url/src/URLParse.h: Removed.
+        * wtf/url/src/URLParseFile.cpp: Removed.
+        * wtf/url/src/URLParseInternal.h: Removed.
+        * wtf/url/src/URLSegments.cpp: Removed.
+        * wtf/url/src/URLSegments.h: Removed.
+        * wtf/url/src/URLUtil.cpp: Removed.
+        * wtf/url/src/URLUtil.h: Removed.
+        * wtf/url/src/URLUtilInternal.h: Removed.
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Nixed the defunct chromium folder from WTF
+        https://bugs.webkit.org/show_bug.cgi?id=113992
+
+        Reviewed by Ryosuke Niwa.
+
+        * wtf/chromium: Removed.
+        * wtf/chromium/ChromiumThreading.h: Removed.
+        * wtf/chromium/MainThreadChromium.cpp: Removed.
+
+2013-04-04  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Remove the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=113942
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * WTF.gyp/WTFGTK.gyp: Removed.
+
+2013-04-04  Anders Carlsson  <andersca@apple.com>
+
+        ObjcRuntimeExtras.h should use variadic templates
+        https://bugs.webkit.org/show_bug.cgi?id=113941
+
+        Reviewed by Andreas Kling.
+
+        Reimplement wtfObjcMsgSend and wtfCallIMP as variadic function templates.
+
+        * wtf/ObjcRuntimeExtras.h:
+        (wtfObjcMsgSend):
+        (wtfCallIMP):
+
+2013-04-04  Andras Becsi  <andras.becsi@digia.com>
+
+        Fix the build with GCC 4.8
+        https://bugs.webkit.org/show_bug.cgi?id=113147
+
+        Reviewed by Allan Sandfeld Jensen.
+
+        Disable diagnostic warning -Wunused-local-typedefs for GCC 4.8
+        since dummy typedefs are commonly used in the codebase.
+
+        * wtf/Compiler.h:
+
+2013-04-03  Pratik Solanki  <psolanki@apple.com>
+
+        Enable HAVE_MADV_FREE_REUSE on iOS
+        https://bugs.webkit.org/show_bug.cgi?id=113892
+        <rdar://problem/12787563>
+
+        Reviewed by Mark Rowe.
+
+        * wtf/Platform.h:
+
 2013-04-02  Ryosuke Niwa  <rniwa@webkit.org>
 
         Remove code for Mac 10.5 and earlier from WTF and WebKit2

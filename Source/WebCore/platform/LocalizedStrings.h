@@ -267,7 +267,8 @@ namespace WebCore {
 
 #if ENABLE(VIDEO_TRACK)
     String textTrackSubtitlesText();
-    String textTrackOffText();
+    String textTrackOffMenuItemText();
+    String textTrackAutomaticMenuItemText(const String& language);
     String textTrackNoLabelText();
 #if PLATFORM(MAC)
     String textTrackCountryAndLanguageMenuItemText(const String& title, const String& country, const String& language);
@@ -281,12 +282,10 @@ namespace WebCore {
     String snapshottedPlugInLabelTitle();
     String snapshottedPlugInLabelSubtitle();
 
-#if !PLATFORM(CHROMIUM)
 #define WEB_UI_STRING(string, description) WebCore::localizedString(string)
 #define WEB_UI_STRING_KEY(string, key, description) WebCore::localizedString(key)
 
     String localizedString(const char* key);
-#endif
 
 } // namespace WebCore
 

@@ -65,7 +65,6 @@ list(APPEND WebCore_SOURCES
     platform/efl/EventLoopEfl.cpp
     platform/efl/FileSystemEfl.cpp
     platform/efl/GamepadsEfl.cpp
-    platform/efl/KURLEfl.cpp
     platform/efl/LanguageEfl.cpp
     platform/efl/LocalizedStringsEfl.cpp
     platform/efl/LoggingEfl.cpp
@@ -96,7 +95,6 @@ list(APPEND WebCore_SOURCES
     platform/graphics/cairo/ImageBufferCairo.cpp
     platform/graphics/cairo/ImageCairo.cpp
     platform/graphics/cairo/IntRectCairo.cpp
-    platform/graphics/cairo/NativeImageCairo.cpp
     platform/graphics/cairo/OwnPtrCairo.cpp
     platform/graphics/cairo/PathCairo.cpp
     platform/graphics/cairo/PatternCairo.cpp

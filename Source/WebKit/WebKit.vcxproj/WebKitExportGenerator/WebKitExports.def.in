@@ -196,6 +196,7 @@ EXPORTS
         ?getLocationAndLengthFromRange@TextIterator@WebCore@@SA_NPAVNode@2@PBVRange@2@AAI2@Z
         ?getReferencedFilePaths@FormController@WebCore@@SA?AV?$Vector@VString@WTF@@$0A@@WTF@@ABV34@@Z
         ?inputTag@HTMLNames@WebCore@@3VQualifiedName@2@B
+        ?selectTag@HTMLNames@WebCore@@3VQualifiedName@2@B
 #if ENABLE(INSPECTOR)
         ?getHighlight@InspectorController@WebCore@@QBEXPAUHighlight@2@@Z
         ?instrumentingAgentsForPage@InspectorInstrumentation@WebCore@@CAPAVInstrumentingAgents@2@PAVPage@2@@Z
@@ -369,9 +370,6 @@ EXPORTS
         ?getCGImageRef@BitmapImage@WebCore@@UAEPAUCGImage@@XZ
         ?getFirstCGImageRefOfSize@BitmapImage@WebCore@@UAEPAUCGImage@@ABVIntSize@2@@Z
         ?getCGImageArray@BitmapImage@WebCore@@UAE?AV?$RetainPtr@PBU__CFArray@@@WTF@@XZ
-#elif USE(CAIRO)
-        ?nativeImageForCurrentFrame@BitmapImage@WebCore@@UAEPAVNativeImageCairo@2@XZ
-        ?frameAtIndex@BitmapImage@WebCore@@IAEPAVNativeImageCairo@2@I@Z
 #endif
         ?getHBITMAP@BitmapImage@WebCore@@UAE_NPAUHBITMAP__@@@Z
         ?getHBITMAPOfSize@BitmapImage@WebCore@@UAE_NPAUHBITMAP__@@PAUtagSIZE@@@Z

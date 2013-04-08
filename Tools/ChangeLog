@@ -1,3 +1,626 @@
+2013-04-08  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [EFL] Mark ShouldGoToBackForwardListItem API test as failing
+        https://bugs.webkit.org/show_bug.cgi?id=114161
+
+        Reviewed by Gyuyoung Kim.
+
+        Mark ShouldGoToBackForwardListItem API test as failing for EFL port
+        as it is crashing due to Bug 111074.
+
+        * TestWebKitAPI/PlatformEfl.cmake:
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        - Remove --svg-dom-objc-bindings switch.
+        * qmake/mkspecs/features/features.pri:
+        - Remove reference to ENABLE_SVG_DOM_OBJC_BINDINGS.
+
+2013-04-07  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] -minimal build fails with error: WebCore::FrameSelection::notifyAccessibilityForSelectionChange()
+        https://bugs.webkit.org/show_bug.cgi?id=114089
+
+        Reviewed by Chris Fleizach.
+
+        Wrapped accessibility related code in #if HAVE(ACCESSIBILITY)
+        * DumpRenderTree/AccessibilityController.cpp:
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        * DumpRenderTree/efl/DumpRenderTreeChrome.cpp:
+        (DumpRenderTreeChrome::DumpRenderTreeChrome):
+        * DumpRenderTree/efl/DumpRenderTreeChrome.h:
+        (DumpRenderTreeChrome):
+
+2013-04-06  Laszlo Gombos  <l.gombos@samsung.com>
+
+        Build fix after r147857, remove remaining USE(JSC) guards.
+
+        Unreviewed.
+
+        * DumpRenderTree/config.h:
+        * TestWebKitAPI/config.h:
+        * WebKitTestRunner/config.h:
+
+2013-04-06  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Rename sheriffbot to webkitbot
+        https://bugs.webkit.org/show_bug.cgi?id=114109
+
+        Reviewed by Benjamin Poulain.
+
+        Renamed since sheriffbot will be used in Blink.
+
+        * Scripts/webkitpy/tool/commands/sheriffbot.py:
+        (SheriffBot):
+        (SheriffBot.begin_work_queue):
+
+2013-04-06  Oliver Hunt  <oliver@apple.com>
+
+        Unify the many and varied stack trace mechanisms, and make the result sane.
+        https://bugs.webkit.org/show_bug.cgi?id=114072
+
+        Reviewed by Filip Pizlo.
+
+        The commandline jsc executable no longer requires arguments, so
+        I've made run-jsc work without them.
+
+        * Scripts/run-jsc:
+
+2013-04-06  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] build fails with error: 'UINT_MAX' was not declared in this scope
+        https://bugs.webkit.org/show_bug.cgi?id=114086
+
+        Reviewed by Tim Horton.
+
+        * DumpRenderTree/AccessibilityUIElement.cpp: Included limits.h
+
+2013-04-06  Zan Dobersek  <zdobersek@igalia.com>
+
+        Remove remaining PLATFORM(CHROMIUM) guards in TestWebKitAPI, WebKitTestRunner
+        https://bugs.webkit.org/show_bug.cgi?id=114083
+
+        Reviewed by Ryosuke Niwa.
+
+        Remove the remaining three occurrences of the PLATFORM(CHROMIUM) build guards
+        in TestWebKitAPI and WebKitTestRunner.
+
+        * TestWebKitAPI/config.h:
+        * TestWebKitAPI/mac/InjectedBundleControllerMac.mm:
+        (TestWebKitAPI::InjectedBundleController::platformInitialize):
+        * WebKitTestRunner/InjectedBundle/mac/InjectedBundleMac.mm:
+        (WTR::InjectedBundle::platformInitialize):
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Rolled out 147820 and 147818 because they caused plugins tests to ASSERT
+        https://bugs.webkit.org/show_bug.cgi?id=114094
+
+        Reviewed by Anders Carlsson.
+
+        * Scripts/run-jsc:
+
+2013-04-05  Ojan Vafai  <ojan@chromium.org>
+
+        Move the flakiness dashboard to the new instance at webkit-test-results.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=114080
+
+        Reviewed by Ryosuke Niwa.
+
+        This way, the WebKit and Blink dashboard code can change as appropriate without
+        needing to consider the other project's needs. This still doesn't update the
+        buildbots to upload to the new location, or the dashboard code to pull the
+        results.json files from the new location, but it at least allows for changing the
+        UI code (e.g. the WebKit one can remove all knowledge of the Chromium bots).
+
+        * TestResultServer/app.yaml:
+
+2013-04-05  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Re-enable testing on the commit queue
+        https://bugs.webkit.org/show_bug.cgi?id=114078
+
+        Reviewed by Darin Adler.
+
+        Re-enabled the feature and the associated tests.
+
+        * Scripts/webkitpy/tool/bot/commitqueuetask.py:
+        (CommitQueueTask.run):
+        * Scripts/webkitpy/tool/bot/commitqueuetask_unittest.py:
+        (CommitQueueTaskTest._run_through_task):
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (CommitQueueTest._mock_test_result):
+
+2013-04-05  Oliver Hunt  <oliver@apple.com>
+
+        Unify the many and varied stack trace mechanisms, and make the result sane.
+        https://bugs.webkit.org/show_bug.cgi?id=114072
+
+        Reviewed by Filip Pizlo.
+
+        The commandline jsc executable no longer requires arguments, so
+        I've made run-jsc work without them.
+
+        * Scripts/run-jsc:
+
+2013-04-05  Chris Fleizach  <cfleizach@apple.com>
+
+        AX: Make SVG Group containers accessible elements
+        https://bugs.webkit.org/show_bug.cgi?id=113939
+
+        Reviewed by Simon Fraser.
+
+        Implement axController.elementAtPoint for iOS.
+        Implement a correct version of clickPoint for iOS.
+
+        * DumpRenderTree/ios/AccessibilityControllerIOS.mm:
+        (AccessibilityController::elementAtPoint):
+        * DumpRenderTree/ios/AccessibilityUIElementIOS.mm:
+        (AccessibilityUIElement::clickPointX):
+        (AccessibilityUIElement::clickPointY):
+
+2013-04-05  Sheriff Bot  <webkit.review.bot@gmail.com>
+
+        Unreviewed, rolling out r147773 and r147774.
+        http://trac.webkit.org/changeset/147773
+        http://trac.webkit.org/changeset/147774
+        https://bugs.webkit.org/show_bug.cgi?id=114056
+
+        Causing some exceptions on AppEngine I don't understand
+        (Requested by rniwa on #webkit).
+
+        * QueueStatusServer/config/queues.py:
+        * QueueStatusServer/model/queues.py:
+        (Queue.short_name):
+        (Queue.display_name):
+        * QueueStatusServer/model/queues_unittest.py:
+        (QueueTest.test_short_name):
+        (QueueTest.test_display_name):
+        (QueueTest.test_name_with_underscores):
+
+2013-04-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Fixed run-bindings-tests by removing V8
+        https://bugs.webkit.org/show_bug.cgi?id=114053
+
+        Reviewed by Benjamin Poulain.
+
+        * Scripts/run-bindings-tests:
+        (main):
+
+2013-04-05  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix.
+
+        * QueueStatusServer/model/queues.py:
+        (Queue.short_name):
+        (Queue.display_name):
+
+2013-04-05  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Chromium EWS bots from the queue status server
+        https://bugs.webkit.org/show_bug.cgi?id=113988
+
+        Reviewed by Benjamin Poulain.
+
+        Removed Chromium EWS bots.
+
+        * QueueStatusServer/config/queues.py:
+        * QueueStatusServer/model/queues.py:
+        (Queue.short_name):
+        (Queue.display_name):
+        * QueueStatusServer/model/queues_unittest.py:
+        (QueueTest.test_short_name):
+        (QueueTest.test_display_name):
+        (QueueTest.test_name_with_underscores):
+
+2013-04-05  Rijubrata Bhaumik  <rijubrata.bhaumik@intel.com>
+
+        [EFL] Enable indexed database
+        https://bugs.webkit.org/show_bug.cgi?id=107248
+
+        Reviewed by Alexis Menard.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-04-05  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Remove vestiges of Chromium bits from watchlists.
+        https://bugs.webkit.org/show_bug.cgi?id=114047
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/common/config/watchlist: Removed vestiges.
+
+2013-04-05  Chris Fleizach  <cfleizach@apple.com>
+
+        Add James Craig to the contributors list.
+
+        * Scripts/webkitpy/common/config/committers.py:
+
+2013-04-04  Kent Tamura  <tkent@chromium.org>
+
+        Remove ChromiumPublicApi pattern, and cc/message rules for it.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-04-04  Benjamin Poulain  <bpoulain@apple.com>
+
+        Temporarily disable the Python unittests broken by the commit queue not running layout tests
+        https://bugs.webkit.org/show_bug.cgi?id=113997
+
+        Reviewed by Ryosuke Niwa.
+
+        Disable the tests until Ryosuke gets the time and hardware to have
+        a testing commit-queue.
+
+        * Scripts/webkitpy/tool/bot/commitqueuetask_unittest.py:
+        (CommitQueueTaskTest):
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (CommitQueueTest):
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Chromium builders from build.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=113990
+
+        Reviewed by Benjamin Poulain.
+
+        Land the part to disable triggering of Chromium builders first so that we may start
+        deleting more Chromium code that breaks the update step.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+
+2013-04-04  Benjamin Poulain  <bpoulain@apple.com>
+
+        Remove Chromium's DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=113989
+
+        Reviewed by Kent Tamura.
+
+        On second thought, let's not go to Camelot. It is a silly place.
+
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (resetDefaultsToConsistentValues):
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Nixed the defunct chromium folder from DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=113993
+
+        Reviewed by Ryosuke Niwa.
+
+        * DumpRenderTree/chromium: Removed.
+        * DumpRenderTree/chromium/DRTDevToolsAgent.cpp: Removed.
+        * DumpRenderTree/chromium/DRTDevToolsAgent.h: Removed.
+        * DumpRenderTree/chromium/DRTDevToolsClient.cpp: Removed.
+        * DumpRenderTree/chromium/DRTDevToolsClient.h: Removed.
+        * DumpRenderTree/chromium/DumpRenderTree.cpp: Removed.
+        * DumpRenderTree/chromium/ImageDiff.cpp: Removed.
+        * DumpRenderTree/chromium/LayoutTestHelper.mm: Removed.
+        * DumpRenderTree/chromium/LayoutTestHelperWin.cpp: Removed.
+        * DumpRenderTree/chromium/MockPlatform.cpp: Removed.
+        * DumpRenderTree/chromium/MockPlatform.h: Removed.
+        * DumpRenderTree/chromium/MockWebPrerenderingSupport.cpp: Removed.
+        * DumpRenderTree/chromium/MockWebPrerenderingSupport.h: Removed.
+        * DumpRenderTree/chromium/Task.cpp: Removed.
+        * DumpRenderTree/chromium/Task.h: Removed.
+        * DumpRenderTree/chromium/TestEventPrinter.cpp: Removed.
+        * DumpRenderTree/chromium/TestEventPrinter.h: Removed.
+        * DumpRenderTree/chromium/TestNavigationController.cpp: Removed.
+        * DumpRenderTree/chromium/TestNavigationController.h: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders/WebKit: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders/WebKit/npapi.h: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders/WebKit/npfunctions.h: Removed.
+        * DumpRenderTree/chromium/TestNetscapePlugIn/ForwardingHeaders/WebKit/npruntime.h: Removed.
+        * DumpRenderTree/chromium/TestRunner: Removed.
+        * DumpRenderTree/chromium/TestRunner/public: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebPreferences.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTask.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTestCommon.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityControllerChromium.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityControllerChromium.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/AccessibilityUIElementChromium.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/CppBoundClass.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/CppBoundClass.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/CppVariant.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/CppVariant.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/EventSender.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/GamepadController.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/GamepadController.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/KeyCodeMapping.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/KeyCodeMapping.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockConstraints.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockConstraints.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockGrammarCheck.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockGrammarCheck.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockSpellCheck.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockSpellCheck.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebMediaStreamCenter.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebMediaStreamCenter.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCDTMFSenderHandler.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCDTMFSenderHandler.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCDataChannelHandler.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCDataChannelHandler.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCPeerConnectionHandler.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebRTCPeerConnectionHandler.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebSpeechInputController.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebSpeechInputController.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebSpeechRecognizer.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/MockWebSpeechRecognizer.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/NotificationPresenter.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/NotificationPresenter.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/SpellCheckClient.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/SpellCheckClient.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestCommon.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestCommon.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestInterfaces.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestInterfaces.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestPlugin.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestPlugin.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TestRunner.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TextInputController.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/TextInputController.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebPermissions.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebPermissions.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebPreferences.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTask.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestInterfaces.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestProxy.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeControlWin.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeControlWin.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeEngineMac.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeEngineMac.mm: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeEngineWin.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebTestThemeEngineWin.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.cpp: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/WebUserMediaClientMock.h: Removed.
+        * DumpRenderTree/chromium/TestRunner/src/config.h: Removed.
+        * DumpRenderTree/chromium/TestShell.cpp: Removed.
+        * DumpRenderTree/chromium/TestShell.h: Removed.
+        * DumpRenderTree/chromium/TestShellAndroid.cpp: Removed.
+        * DumpRenderTree/chromium/TestShellMac.mm: Removed.
+        * DumpRenderTree/chromium/TestShellPosix.cpp: Removed.
+        * DumpRenderTree/chromium/TestShellStub.cpp: Removed.
+        * DumpRenderTree/chromium/TestShellWin.cpp: Removed.
+        * DumpRenderTree/chromium/TestShellX11.cpp: Removed.
+        * DumpRenderTree/chromium/WebViewHost.cpp: Removed.
+        * DumpRenderTree/chromium/WebViewHost.h: Removed.
+        * DumpRenderTree/chromium/android_fallback_fonts.xml: Removed.
+        * DumpRenderTree/chromium/android_main_fonts.xml: Removed.
+        * DumpRenderTree/chromium/config.h: Removed.
+        * DumpRenderTree/chromium/fonts.conf: Removed.
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove the rebaseline queue server since nobody except maybe one person from Google uses it.
+
+        Rubber stamped by Benjamin Poulain.
+
+        * RebaselineQueueServer: Removed.
+        * RebaselineQueueServer/app.yaml: Removed.
+        * RebaselineQueueServer/handlers: Removed.
+        * RebaselineQueueServer/handlers/__init__.py: Removed.
+        * RebaselineQueueServer/handlers/builderqueue.py: Removed.
+        * RebaselineQueueServer/handlers/pages.py: Removed.
+        * RebaselineQueueServer/index.yaml: Removed.
+        * RebaselineQueueServer/main.py: Removed.
+        * RebaselineQueueServer/model: Removed.
+        * RebaselineQueueServer/model/__init__.py: Removed.
+        * RebaselineQueueServer/model/queueentry.py: Removed.
+        * RebaselineQueueServer/static: Removed.
+        * RebaselineQueueServer/static/builder-frame-empty.html: Removed.
+        * RebaselineQueueServer/static/styles.css: Removed.
+        * RebaselineQueueServer/templates: Removed.
+        * RebaselineQueueServer/templates/builder-picker.html: Removed.
+        * RebaselineQueueServer/templates/builder-queue-edit.html: Removed.
+        * RebaselineQueueServer/templates/builder-queue-list.html: Removed.
+        * RebaselineQueueServer/templates/home.html: Removed.
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix setup-commit-queue and temporarily disable testing on commit-queue
+        https://bugs.webkit.org/show_bug.cgi?id=113979
+
+        Reviewed by Benjamin Poulain.
+
+        Use commit-queue@webkit.org instead of webkit.bot.review@gmail.com in commit-queue,
+        and temporarily disable tests in commit-queue as we don't have enough resources at the moment.
+
+        * EWSTools/setup-commit-queue.sh:
+        * Scripts/webkitpy/tool/bot/commitqueuetask.py:
+        (CommitQueueTask.run):
+
+2013-04-04  Dirk Pranke  <dpranke@chromium.org>
+
+        temporarily make flakiness dashboard work again webkit.org bots
+        https://bugs.webkit.org/show_bug.cgi?id=113972
+
+        Reviewed by Ojan Vafai.
+
+        This patch disables the chromium.org layout test bots TestExpectations
+        parsing temporarily until we can work out the right way to split into
+        two instances for webkit.org and chromium.org and figure out which
+        code to delete where :).
+
+        * TestResultServer/static-dashboards/flakiness_dashboard.js:
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix webkitpy tests after r147678.
+
+        * Scripts/webkitpy/tool/commands/queues_unittest.py:
+        (CommitQueueTest.test_commit_queue):
+        (test_manual_reject_during_processing):
+
+2013-04-04  Ryosuke Niwa  <rniwa@webkit.org>
+
+        The commit queue should use Mac MountainLion port
+        https://bugs.webkit.org/show_bug.cgi?id=113971
+
+        Reviewed by Lucas Forschler.
+
+        * EWSTools/setup-commit-queue.sh: Copied from Tools/EWSTools/GoogleComputeEngine/build-commit-queue.sh.
+        * Scripts/webkitpy/tool/commands/queues.py:
+        (CommitQueue):
+
+2013-04-04  Dirk Pranke  <dpranke@chromium.org>
+
+        turn off running tests on chromium linux EWS bots
+        https://bugs.webkit.org/show_bug.cgi?id=113959
+
+        Reviewed by Geoffrey Garen.
+
+        Now that the Chromium port is no longer being maintained
+        there's little point in running the tests. Soon we should
+        just shut this bot off altogether.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (ChromiumLinuxEWS):
+
+2013-04-04  Andrew Scherkus  <scherkus@chromium.org>
+
+        Unreviewed. Removing feature-media-reviews@chromium.org from Media watchlist.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-04-04  Pierre Rossi  <pierre.rossi@gmail.com>
+
+        Indentation fix to get webkit-patch working again after r147625
+
+        Unreviewed.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (MacEWS):
+        (MacWK2EWS):
+
+2013-04-04  Lucas Forschler  <lforschler@apple.com>
+
+        Turn tests back on for Mac WK1/WK2 EWS.
+        
+        Unreviewed.
+        
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (MacEWS):
+        (MacWK2EWS):
+
+2013-04-04  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] MiniBrowser custom URI scheme support
+        https://bugs.webkit.org/show_bug.cgi?id=112419
+
+        Reviewed by Carlos Garcia Campos.
+
+        Add support for about URIs in MiniBrowser. An example about page is show
+        with URI "about:minibrowser", the rest of the cases it will show a
+        proper message explaining that the about page didn't exist.
+
+        Internally it uses "minibrowser-about" prefix instead of "about", but
+        from the user point of view it works with "about" prefix.
+
+        * MiniBrowser/gtk/BrowserWindow.c: Add miniBrowserAboutScheme constant.
+        (getInternalURI): Method to convert URIs from "about" prefix to
+        "minibrowser-about".
+        (getExternalURI): Opposite method.
+        (webViewURIChanged): Use "about" prefix to show the URI to users.
+        (webViewEnterFullScreen): Ditto.
+        (browser_window_load_uri): Use "minibrowser-about" prefix internally.
+        * MiniBrowser/gtk/main.c: Add miniBrowserAboutScheme constant.
+        (aboutURISchemeRequestCallback): Callback to manage about calls.
+        (main): Register the URI scheme to manage about URIs.
+
+2013-04-03  Roger Fong  <roger_fong@apple.com>
+
+        Re-enable WinEWS tests.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-04-03  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK][Jhbuild] Move ATK to the main moduleset, bump ATK, at-spi2-(atk|core) versions to 2.8.0
+        https://bugs.webkit.org/show_bug.cgi?id=113883
+
+        Reviewed by Martin Robinson.
+
+        * gtk/jhbuild-optional.modules: Remove the ATK entry as it is now placed in jhbuild.modules.
+        * gtk/jhbuild.modules: Add ATK to the list of webkitgtk-testing-dependencies metamodule, using the 2.8.0 version.
+        The at-spi2-core and at-spi2-atk versions are also increased to 2.8.0.
+
+2013-04-03  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK] Include Pango in jhbuild-optional.modules
+        https://bugs.webkit.org/show_bug.cgi?id=113878
+
+        Reviewed by Martin Robinson.
+
+        Since r147547 Pango 1.32.0 is required. Including the module in the
+        JHBuild optional moduleset.
+
+        * gtk/jhbuild-optional.modules: Add Pango module.
+
+2013-04-03  Zeno Albisser  <zeno@webkit.org>
+
+        [Qt] Add getter for JSC TestRunner to DumpRenderTreeQt.
+        https://bugs.webkit.org/show_bug.cgi?id=113864
+
+        Moving setDefersLoading from TestRunnerQt to TestRunner
+        requires access to the non-Qt TestRunner.
+        As long as we instantiate both TestRunner and TestRunnerQt,
+        we need a separate getter for the non-Qt TestRunner instance.
+
+        Reviewed by Simon Hausmann.
+
+        * DumpRenderTree/qt/DumpRenderTreeQt.cpp:
+        (WebPage::resetSettings):
+        * DumpRenderTree/qt/DumpRenderTreeQt.h:
+        (DumpRenderTree::jscTestRunner):
+        * DumpRenderTree/qt/TestRunnerQt.cpp:
+        (TestRunner::setDefersLoading):
+            Moving setDefersLoading from TestRunnerQt
+            to TestRunner.
+        * DumpRenderTree/qt/TestRunnerQt.h:
+        (TestRunnerQt):
+
+2013-04-03  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] Unskip /webkit2/WebKitWebContext/uri-scheme
+        https://bugs.webkit.org/show_bug.cgi?id=104779
+
+        Reviewed by Carlos Garcia Campos.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner): Unskip /webkit2/WebKitWebContext/uri-scheme as it is
+        passing in current trunk.
+
+2013-04-03  Pierre Rossi  <pierre.rossi@digia.com>
+
+        Fix HAVE(QTTESTSUPPORT) logic
+
+        build_qttestsupport has not been added to WEBKIT_CONFIG in detectFeatures,
+        resulting in HAVE(QTTESTSUPPORT) never being true.
+        Move that logic down in sanitizeFeatures.
+
+        Rubber-stamped by Tor Arne Vestbø.
+
+        * qmake/mkspecs/features/features.prf:
+
 2013-04-03  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [GTK] Bump required versions of some dependencies

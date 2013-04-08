@@ -107,16 +107,13 @@ bool Settings::gUsesOverlayScrollbars = false;
 bool Settings::gShouldUseHighResolutionTimers = true;
 #endif
     
-#if USE(JSC)
 bool Settings::gShouldRespectPriorityInCSSAttributeSetters = false;
-#endif
 
 // NOTEs
-//  1) EditingMacBehavior comprises Tiger, Leopard, SnowLeopard and iOS builds, as well QtWebKit and Chromium when built on Mac;
+//  1) EditingMacBehavior comprises Tiger, Leopard, SnowLeopard and iOS builds, as well as QtWebKit when built on Mac;
 //  2) EditingWindowsBehavior comprises Win32 and WinCE builds, as well as QtWebKit and Chromium when built on Windows;
-//  3) EditingUnixBehavior comprises all unix-based systems, but Darwin/MacOS/Android (and then abusing the terminology);
-//  4) EditingAndroidBehavior comprises Android builds.
-// 99) MacEditingBehavior is used a fallback.
+//  3) EditingUnixBehavior comprises all unix-based systems, but Darwin/MacOS (and then abusing the terminology);
+// 99) MacEditingBehavior is used as a fallback.
 static EditingBehaviorType editingBehaviorTypeForPlatform()
 {
     return
@@ -124,8 +121,6 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     EditingMacBehavior
 #elif OS(WINDOWS)
     EditingWindowsBehavior
-#elif OS(ANDROID)
-    EditingAndroidBehavior
 #elif OS(UNIX)
     EditingUnixBehavior
 #else
@@ -141,21 +136,8 @@ static const bool defaultUnifiedTextCheckerEnabled = true;
 #else
 static const bool defaultUnifiedTextCheckerEnabled = false;
 #endif
-#if PLATFORM(CHROMIUM)
-#if OS(MAC_OS_X)
-static const bool defaultSmartInsertDeleteEnabled = true;
-#else
-static const bool defaultSmartInsertDeleteEnabled = false;
-#endif
-#if OS(WINDOWS)
-static const bool defaultSelectTrailingWhitespaceEnabled = true;
-#else
-static const bool defaultSelectTrailingWhitespaceEnabled = false;
-#endif
-#else
 static const bool defaultSmartInsertDeleteEnabled = true;
 static const bool defaultSelectTrailingWhitespaceEnabled = false;
-#endif
 
 Settings::Settings(Page* page)
     : m_page(0)
@@ -608,7 +590,6 @@ bool Settings::usesOverlayScrollbars()
     return gUsesOverlayScrollbars;
 }
 
-#if USE(JSC)
 void Settings::setShouldRespectPriorityInCSSAttributeSetters(bool flag)
 {
     gShouldRespectPriorityInCSSAttributeSetters = flag;
@@ -618,7 +599,6 @@ bool Settings::shouldRespectPriorityInCSSAttributeSetters()
 {
     return gShouldRespectPriorityInCSSAttributeSetters;
 }
-#endif
 
 #if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
 void Settings::setHiddenPageDOMTimerThrottlingEnabled(bool flag)

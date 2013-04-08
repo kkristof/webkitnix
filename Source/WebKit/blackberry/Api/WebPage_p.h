@@ -264,33 +264,6 @@ public:
     WebCore::IntPoint transformedMaximumScrollPosition() const;
     WebCore::IntSize transformedActualVisibleSize() const;
     WebCore::IntSize transformedViewportSize() const;
-    WebCore::IntRect transformedVisibleContentsRect() const;
-    WebCore::IntSize transformedContentsSize() const;
-
-    // Generic conversions of points, rects, relative to and from contents and viewport.
-    WebCore::IntPoint mapFromContentsToViewport(const WebCore::IntPoint&) const;
-    WebCore::IntPoint mapFromViewportToContents(const WebCore::IntPoint&) const;
-    WebCore::IntRect mapFromContentsToViewport(const WebCore::IntRect&) const;
-    WebCore::IntRect mapFromViewportToContents(const WebCore::IntRect&) const;
-
-    // Generic conversions of points, rects, relative to and from transformed contents and transformed viewport.
-    WebCore::IntPoint mapFromTransformedContentsToTransformedViewport(const WebCore::IntPoint&) const;
-    WebCore::IntPoint mapFromTransformedViewportToTransformedContents(const WebCore::IntPoint&) const;
-    WebCore::IntRect mapFromTransformedContentsToTransformedViewport(const WebCore::IntRect&) const;
-    WebCore::IntRect mapFromTransformedViewportToTransformedContents(const WebCore::IntRect&) const;
-
-    // Generic conversions of points, rects, and sizes to and from transformed coordinates.
-    WebCore::IntPoint mapToTransformed(const WebCore::IntPoint&) const;
-    WebCore::FloatPoint mapToTransformedFloatPoint(const WebCore::FloatPoint&) const;
-    WebCore::IntPoint mapFromTransformed(const WebCore::IntPoint&) const;
-    WebCore::FloatPoint mapFromTransformedFloatPoint(const WebCore::FloatPoint&) const;
-    WebCore::FloatRect mapFromTransformedFloatRect(const WebCore::FloatRect&) const;
-    WebCore::IntSize mapToTransformed(const WebCore::IntSize&) const;
-    WebCore::IntSize mapFromTransformed(const WebCore::IntSize&) const;
-    WebCore::IntRect mapToTransformed(const WebCore::IntRect&) const;
-    void clipToTransformedContentsRect(WebCore::IntRect&) const;
-    WebCore::IntRect mapFromTransformed(const WebCore::IntRect&) const;
-    bool transformedPointEqualsUntransformedPoint(const WebCore::IntPoint& transformedPoint, const WebCore::IntPoint& untransformedPoint);
 
     // Notification methods that deliver changes to the real geometry of the device as specified above.
     void notifyTransformChanged();
@@ -401,9 +374,9 @@ public:
     WebCore::GraphicsLayer* overlayLayer();
 
     // Fallback GraphicsLayerClient implementation, used for various overlay layers.
-    virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double time) { }
+    virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double) { }
     virtual void notifyFlushRequired(const WebCore::GraphicsLayer*);
-    virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) { }
+    virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect&) { }
 
     // WebKit thread, plumbed through from ChromeClientBlackBerry.
     void setRootLayerWebKitThread(WebCore::Frame*, WebCore::LayerWebKitThread*);

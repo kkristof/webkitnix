@@ -65,6 +65,7 @@ static const float autostartSoonAfterUserGestureThreshold = 5.0;
 
 // This delay should not exceed the snapshot delay in PluginView.cpp
 static const double simulatedMouseClickTimerDelay = .75;
+static const double removeSnapshotTimerDelay = 1.5;
 
 HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Document* document, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLPlugInElement(tagName, document)
@@ -77,7 +78,9 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
     , m_needsDocumentActivationCallbacks(false)
     , m_simulatedMouseClickTimer(this, &HTMLPlugInImageElement::simulatedMouseClickTimerFired, simulatedMouseClickTimerDelay)
     , m_swapRendererTimer(this, &HTMLPlugInImageElement::swapRendererTimerFired)
+    , m_removeSnapshotTimer(this, &HTMLPlugInImageElement::removeSnapshotTimerFired)
     , m_createdDuringUserGesture(ScriptController::processingUserGesture())
+    , m_restartedPlugin(false)
 {
     setHasCustomStyleCallbacks();
 }
@@ -93,6 +96,13 @@ void HTMLPlugInImageElement::setDisplayState(DisplayState state)
     HTMLPlugInElement::setDisplayState(state);
     if (displayState() == DisplayingSnapshot)
         m_swapRendererTimer.startOneShot(0);
+
+#if PLATFORM(MAC)
+    if (displayState() == RestartingWithPendingMouseClick || displayState() == Restarting) {
+        m_restartedPlugin = true;
+        m_removeSnapshotTimer.startOneShot(removeSnapshotTimerDelay);
+    }
+#endif
 }
 
 RenderEmbeddedObject* HTMLPlugInImageElement::renderEmbeddedObject() const
@@ -118,7 +128,7 @@ bool HTMLPlugInImageElement::isImageType()
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
-// depending on <param> values. 
+// depending on <param> values.
 bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
 {
     KURL completeURL = document()->completeURL(url);
@@ -131,7 +141,7 @@ bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
 }
 
 // We don't use m_url, or m_serviceType as they may not be the final values
-// that <object> uses depending on <param> values. 
+// that <object> uses depending on <param> values.
 bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const String& serviceType)
 {
     ASSERT(document());
@@ -190,7 +200,7 @@ void HTMLPlugInImageElement::attach()
     PostAttachCallbackDisabler disabler(this);
 
     bool isImage = isImageType();
-    
+
     if (!isImage)
         queuePostAttachCallback(&HTMLPlugInImageElement::updateWidgetCallback, this);
 
@@ -232,10 +242,10 @@ void HTMLPlugInImageElement::finishParsingChildren()
     HTMLPlugInElement::finishParsingChildren();
     if (useFallbackContent())
         return;
-    
+
     setNeedsWidgetUpdate(true);
     if (inDocument())
-        setNeedsStyleRecalc();    
+        setNeedsStyleRecalc();
 }
 
 void HTMLPlugInImageElement::didMoveToNewDocument(Document* oldDocument)
@@ -268,7 +278,7 @@ void HTMLPlugInImageElement::documentDidResumeFromPageCache()
         m_customStyleForPageCache = 0;
         recalcStyle(Force);
     }
-    
+
     HTMLPlugInElement::documentDidResumeFromPageCache();
 }
 
@@ -337,8 +347,8 @@ void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 {
     Document* doc = document();
 
-    RefPtr<Element> shadowContainer = HTMLDivElement::create(doc);
-    shadowContainer->setPseudo(AtomicString("-webkit-snapshotted-plugin-content", AtomicString::ConstructFromLiteral));
+    m_shadowContainer = HTMLDivElement::create(doc);
+    m_shadowContainer->setPseudo(AtomicString("-webkit-snapshotted-plugin-content", AtomicString::ConstructFromLiteral));
 
     RefPtr<Element> container = HTMLDivElement::create(doc);
     container->setAttribute(classAttr, AtomicString("snapshot-container", AtomicString::ConstructFromLiteral));
@@ -347,8 +357,8 @@ void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     overlay->setAttribute(classAttr, AtomicString("snapshot-overlay", AtomicString::ConstructFromLiteral));
     container->appendChild(overlay, ASSERT_NO_EXCEPTION);
 
-    RefPtr<Element> label = HTMLDivElement::create(doc);
-    label->setAttribute(classAttr, AtomicString("snapshot-label", AtomicString::ConstructFromLiteral));
+    m_snapshotLabel = HTMLDivElement::create(doc);
+    m_snapshotLabel->setAttribute(classAttr, AtomicString("snapshot-label", AtomicString::ConstructFromLiteral));
 
     String titleText = snapshottedPlugInLabelTitle();
     String subtitleText = snapshottedPlugInLabelSubtitle();
@@ -364,14 +374,14 @@ void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     RefPtr<Element> title = HTMLDivElement::create(doc);
     title->setAttribute(classAttr, AtomicString("snapshot-title", AtomicString::ConstructFromLiteral));
     title->appendChild(doc->createTextNode(titleText), ASSERT_NO_EXCEPTION);
-    label->appendChild(title, ASSERT_NO_EXCEPTION);
+    m_snapshotLabel->appendChild(title, ASSERT_NO_EXCEPTION);
 
     RefPtr<Element> subTitle = HTMLDivElement::create(doc);
     subTitle->setAttribute(classAttr, AtomicString("snapshot-subtitle", AtomicString::ConstructFromLiteral));
     subTitle->appendChild(doc->createTextNode(subtitleText), ASSERT_NO_EXCEPTION);
-    label->appendChild(subTitle, ASSERT_NO_EXCEPTION);
+    m_snapshotLabel->appendChild(subTitle, ASSERT_NO_EXCEPTION);
 
-    container->appendChild(label, ASSERT_NO_EXCEPTION);
+    container->appendChild(m_snapshotLabel, ASSERT_NO_EXCEPTION);
 
     // Make this into a button for accessibility clients.
     String combinedText = titleText;
@@ -381,8 +391,13 @@ void HTMLPlugInImageElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     container->setAttribute(aria_labelAttr, combinedText);
     container->setAttribute(roleAttr, "button");
 
-    shadowContainer->appendChild(container, ASSERT_NO_EXCEPTION);
-    root->appendChild(shadowContainer, ASSERT_NO_EXCEPTION);
+    m_shadowContainer->appendChild(container, ASSERT_NO_EXCEPTION);
+    root->appendChild(m_shadowContainer, ASSERT_NO_EXCEPTION);
+}
+
+bool HTMLPlugInImageElement::partOfSnapshotLabel(Node* node)
+{
+    return node && (node == m_snapshotLabel.get() || node->isDescendantOf(m_snapshotLabel.get()));
 }
 
 void HTMLPlugInImageElement::swapRendererTimerFired(Timer<HTMLPlugInImageElement>*)
@@ -394,6 +409,13 @@ void HTMLPlugInImageElement::swapRendererTimerFired(Timer<HTMLPlugInImageElement
     // Create a shadow root, which will trigger the code to add a snapshot container
     // and reattach, thus making a new Renderer.
     ensureUserAgentShadowRoot();
+}
+
+void HTMLPlugInImageElement::removeSnapshotTimerFired(Timer<HTMLPlugInImageElement>*)
+{
+    m_snapshotImage = nullptr;
+    m_restartedPlugin = false;
+    renderer()->repaint();
 }
 
 static void addPlugInsFromNodeListMatchingPlugInOrigin(HTMLPlugInImageElementList& plugInList, PassRefPtr<NodeList> collection, const String& plugInOrigin, const String& mimeType)
@@ -446,11 +468,13 @@ void HTMLPlugInImageElement::restartSimilarPlugIns()
     }
 }
 
-void HTMLPlugInImageElement::userDidClickSnapshot(PassRefPtr<MouseEvent> event)
+void HTMLPlugInImageElement::userDidClickSnapshot(PassRefPtr<MouseEvent> event, bool forwardEvent)
 {
-    m_pendingClickEventFromSnapshot = event;
+    if (forwardEvent)
+        m_pendingClickEventFromSnapshot = event;
+
     String plugInOrigin = m_loadedUrl.host();
-    if (document()->page() && !SchemeRegistry::shouldTreatURLSchemeAsLocal(document()->page()->mainFrame()->document()->baseURL().protocol()))
+    if (document()->page() && !SchemeRegistry::shouldTreatURLSchemeAsLocal(document()->page()->mainFrame()->document()->baseURL().protocol()) && document()->page()->settings()->autostartOriginPlugInSnapshottingEnabled())
         document()->page()->plugInClient()->didStartFromOrigin(document()->page()->mainFrame()->document()->baseURL().host(), plugInOrigin, loadedMimeType());
 
     restartSnapshottedPlugIn();
@@ -459,6 +483,9 @@ void HTMLPlugInImageElement::userDidClickSnapshot(PassRefPtr<MouseEvent> event)
 
 void HTMLPlugInImageElement::setIsPrimarySnapshottedPlugIn(bool isPrimarySnapshottedPlugIn)
 {
+    if (!document()->page() || !document()->page()->settings()->primaryPlugInSnapshotDetectionEnabled() || document()->page()->settings()->snapshotAllPlugIns())
+        return;
+
     if (isPrimarySnapshottedPlugIn) {
         restartSnapshottedPlugIn();
         restartSimilarPlugIns();
@@ -537,6 +564,12 @@ void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)
         return;
     }
 
+    if (document()->page()->settings()->snapshotAllPlugIns()) {
+        LOG(Plugins, "%p Plug-in forced to snapshot by user preference", this);
+        setDisplayState(WaitingForSnapshot);
+        return;
+    }
+
     RenderBox* renderEmbeddedObject = toRenderBox(renderer());
     Length styleWidth = renderEmbeddedObject->style()->width();
     Length styleHeight = renderEmbeddedObject->style()->height();
@@ -564,7 +597,7 @@ void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)
         return;
     }
 
-    if (document()->page()->plugInClient()->shouldAutoStartFromOrigin(document()->page()->mainFrame()->document()->baseURL().host(), url.host(), loadedMimeType())) {
+    if (document()->page()->settings()->autostartOriginPlugInSnapshottingEnabled() && document()->page()->plugInClient()->shouldAutoStartFromOrigin(document()->page()->mainFrame()->document()->baseURL().host(), url.host(), loadedMimeType())) {
         LOG(Plugins, "%p Plug-in from (%s, %s) is marked to auto-start, set to play", this, document()->page()->mainFrame()->document()->baseURL().host().utf8().data(), url.host().utf8().data());
         return;
     }

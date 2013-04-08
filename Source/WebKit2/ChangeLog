@@ -1,3 +1,460 @@
+2013-04-08  Andras Becsi  <andras.becsi@digia.com>
+
+        [Qt][WK2] WebView's interactive property is not fully respected
+        https://bugs.webkit.org/show_bug.cgi?id=113066
+
+        Reviewed by Jocelyn Turcotte.
+
+        WK2 sign-off by Benjamin Poulain.
+
+        The QML WebView inherits the "interactive" property from Flickable
+        which is true by default, and disables the interaction with the
+        Flickable if set to false.
+        Resulting from the design of the WebView panning and flicking is
+        disabled by Flickable but to be consistent we also need to disable
+        double-tap gestures and pinch gestures since they would trigger
+        scale and position changes.
+
+        * UIProcess/qt/PageViewportControllerClientQt.cpp:
+        (WebKit::PageViewportControllerClientQt::pinchGestureStarted):
+        (WebKit::PageViewportControllerClientQt::pinchGestureRequestUpdate):
+        (WebKit::PageViewportControllerClientQt::pinchGestureEnded):
+        * UIProcess/qt/QtWebPageEventHandler.cpp:
+        (WebKit::QtWebPageEventHandler::handleDoubleTapEvent):
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * Configurations/FeatureDefines.xcconfig:
+        - Remove ENABLE_SVG_DOM_OBJC_BINDINGS macro.
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Try to fix the WebKit2 build.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit):
+        * NetworkProcess/NetworkResourceLoader.h:
+        (NetworkResourceLoader): Removed a defunct function.
+
+2013-04-05  Ed Bartosh  <bartosh@gmail.com>
+
+        [WK2] --no-tiled-backing-store build fails because FloatPoint is not declared
+        https://bugs.webkit.org/show_bug.cgi?id=113618
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/Plugins/Plugin.h: Forward declared FloatPoint
+
+2013-04-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Made USE(JSC) unconditional
+        https://bugs.webkit.org/show_bug.cgi?id=114058
+
+        Reviewed by Anders Carlsson.
+
+        * Shared/linux/WebMemorySamplerLinux.cpp:
+        (WebKit::WebMemorySampler::sampleWebKit):
+        * config.h:
+
+2013-04-05  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] --no-tiled-backing-store build fails because of not used #if USE(ACCELERATED_COMPOSITING)
+        https://bugs.webkit.org/show_bug.cgi?id=113627
+
+        Reviewed by Simon Fraser.
+
+        Wrapped code with #if USE(ACCELERATED_COMPOSITING) to make it compilable
+        with --no-tiled-backing-store build option:
+        * UIProcess/API/C/efl/WKView.cpp:
+        * UIProcess/API/efl/EvasGLContext.cpp:
+        * UIProcess/API/efl/EvasGLContext.h:
+        * UIProcess/API/efl/EvasGLSurface.cpp:
+        * UIProcess/API/efl/EvasGLSurface.h:
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::EwkView):
+        (EwkView::displayTimerFired):
+        (EwkView::takeSnapshot):
+        * UIProcess/API/efl/EwkView.h:
+        (WebKit):
+        (EwkView):
+        * UIProcess/API/efl/SnapshotImageGL.cpp:
+        * UIProcess/API/efl/SnapshotImageGL.h:
+        * UIProcess/PageViewportController.cpp:
+        * UIProcess/PageViewportController.h:
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        * UIProcess/efl/ViewClientEfl.cpp:
+        (WebKit::ViewClientEfl::didChangeContentsSize):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::didCommitLoad):
+        (WebKit::WebView::updateViewportSize):
+        (WebKit::WebView::didChangeViewportProperties):
+        (WebKit::WebView::pageDidRequestScroll):
+        (WebKit::WebView::didRenderFrame):
+        (WebKit::WebView::pageTransitionViewportReady):
+
+2013-04-05  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL][WK2] --no-tiled-backing-store build fails because of not used #if USE(COORDINATED_GRAPHICS)
+        https://bugs.webkit.org/show_bug.cgi?id=113629
+
+        Reviewed by Simon Fraser.
+
+        Wrapped code related to coordinated graphics with #if USE(COORDINATED_GRAPHICS)
+        * UIProcess/API/CoordinatedGraphics/WKCoordinatedScene.cpp:
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::initialize):
+        (WebKit):
+        (WebKit::WebView::paintToCairoSurface):
+        (WebKit::WebView::updateViewportSize):
+
+2013-04-05  Timothy Hatcher  <timothy@apple.com>
+
+        Allow the Web Inspector to use WebSQL.
+
+        This fixes an exception on load in the Safari Web Inspector.
+
+        https://webkit.org/b/114040
+        rdar://problem/13581422
+
+        Reviewed by Anders Carlsson.
+
+        * UIProcess/mac/WebInspectorProxyMac.mm:
+        (WebKit::exceededDatabaseQuota): Added.
+        (WebKit::WebInspectorProxy::platformCreateInspectorPage): Hook up exceededDatabaseQuota.
+
+2013-04-04  Brady Eidson  <beidson@apple.com>
+
+        Add SPI to get a copy of the context menu at a given point.
+        <rdar://problem/13450908> and https://bugs.webkit.org/show_bug.cgi?id=113958
+
+        Reviewed by Andy Estes.
+
+        Add the new accessor: 
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::contextMenuAtPoint):
+        * WebProcess/WebPage/WebPage.h:
+
+        Expose the new SPI:
+        * WebProcess/InjectedBundle/API/c/WKBundlePage.cpp:
+        (WKBundlePageCopyContextMenuAtPoint):
+        * WebProcess/InjectedBundle/API/c/WKBundlePagePrivate.h:
+
+2013-04-05  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] WebView should own page position and scale factor
+        https://bugs.webkit.org/show_bug.cgi?id=111075
+
+        Reviewed by Andreas Kling.
+
+        View content position and content scale factor should belong to WebView
+        rather than to EwkView as it decreases EwkView usage inside EFL-agnostic
+        WebView and improves WebView encapsulation.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewGetContentScaleFactor):
+        (WKViewSetContentScaleFactor):
+
+            New WKView API was added to set and get content scale factor.
+            The view content scale factor is not the same as page scale factor:
+            it always applies to content but not necessarily applies to the page.
+            The view content scale factor is calculated by viewport controller
+            and applies immediately for painting in UI process. Page scale factor
+            is updated later after the frame is rendered to accomplish the pending
+            scale change.
+
+        (WKViewGetContentPosition):
+        (WKViewSetContentPosition):
+
+            New WKView API was added to set and get content position.
+            Content position is set in UI units.
+
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::EwkView):
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView):
+        * UIProcess/efl/PageViewportControllerClientEfl.cpp:
+        (WebKit::PageViewportControllerClientEfl::setViewportPosition):
+        (WebKit::PageViewportControllerClientEfl::setPageScaleFactor):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::WebView):
+        (WebKit::WebView::paintToCairoSurface):
+        (WebKit::WebView::transformToScene):
+        (WebKit::WebView::updateViewportSize):
+        (WebKit::WebView::pageDidRequestScroll):
+        * UIProcess/efl/WebView.h:
+        (WebKit::WebView::setContentScaleFactor):
+        (WebKit::WebView::contentScaleFactor):
+        (WebView):
+        (WebKit::WebView::setContentPosition):
+        (WebKit::WebView::contentPosition):
+
+2013-04-05  Alberto Garcia  <agarcia@igalia.com>
+
+        [GTK][WK2] WebKitLoaderClient: add missing initializers
+        https://bugs.webkit.org/show_bug.cgi?id=112961
+
+        Reviewed by Carlos Garcia Campos.
+
+        There are two new attributes: pluginLoadPolicy and pluginDidFail.
+
+        * UIProcess/API/gtk/WebKitLoaderClient.cpp:
+        (attachLoaderClientToView):
+
+2013-04-05  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] Encapsulate view states set-up within WebView
+        https://bugs.webkit.org/show_bug.cgi?id=110877
+
+        Reviewed by Benjamin Poulain.
+
+        View states set-up is encapsulated within WebView. This change
+        reduces both usage of EwkView inside WebView class and usage of
+        WebPageProxy inside EwkView class.
+
+        New WKView API was added so that EwkView can define whether or not
+        the view is visible and focused.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewIsFocused):
+        (WKViewSetIsFocused):
+        (WKViewIsVisible):
+        (WKViewSetIsVisible):
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/API/efl/EwkView.cpp:
+        (::handleEvent):
+        (EwkView::handleEvasObjectShow):
+        (EwkView::handleEwkViewFocusIn):
+        (EwkView::handleEwkViewFocusOut):
+        * UIProcess/API/efl/EwkView.h:
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::WebView):
+        (WebKit::WebView::setFocused):
+        (WebKit):
+        (WebKit::WebView::setVisible):
+        (WebKit::WebView::isViewFocused):
+        (WebKit::WebView::isViewVisible):
+        * UIProcess/efl/WebView.h:
+        (WebKit::WebView::isFocused):
+        (WebView):
+        (WebKit::WebView::isVisible):
+
+2013-04-04  KwangYong Choi  <ky0.choi@samsung.com>
+
+        [EFL][WK2] Add support for getting page contents as string
+        https://bugs.webkit.org/show_bug.cgi?id=106752
+
+        Reviewed by Andreas Kling.
+
+        Modified ewk_view_page_contents_get() API to get page contents as string.
+        EWK_PAGE_CONTENTS_TYPE_STRING is added to Ewk_Page_Contents_Type.
+        Now, we can use both EWK_PAGE_CONTENTS_TYPE_MHTML and EWK_PAGE_CONTENTS_TYPE_STRING
+        for getting page contents.
+
+        * UIProcess/API/efl/ewk_view.cpp:
+        (Ewk_Page_Contents_Context):
+        (ewkViewPageContentsAsMHTMLCallback):
+        (ewkViewPageContentsAsStringCallback):
+        (ewk_view_page_contents_get):
+        * UIProcess/API/efl/ewk_view.h:
+        * UIProcess/API/efl/tests/test_ewk2_view.cpp:
+        (PageContentsAsMHTMLCallback):
+        (PageContentsAsStringCallback):
+        (TEST_F):
+
+2013-04-04  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [Cairo] Stop passing raw pointers to BitmapImage::create()
+        https://bugs.webkit.org/show_bug.cgi?id=113945
+
+        Reviewed by Martin Robinson.
+
+        Pass a smart pointer in to BitmapImage::create() instead of a raw one
+        for the cairo surface. The factory method prototype was updated for
+        cairo in r147643.
+
+        * Shared/cairo/ShareableBitmapCairo.cpp:
+        (WebKit::ShareableBitmap::createImage):
+
+2013-04-03  Dean Jackson  <dino@apple.com>
+
+        Expose settings to disable plugin snapshotting autostart and primary detection
+        https://bugs.webkit.org/show_bug.cgi?id=113918
+
+        Reviewed by Tim Horton.
+
+        Three new settings: snapshotAllPlugIns, primaryPlugInSnapshotDetectionEnabled and
+        autostartOriginPlugInSnapshottingEnabled.
+        These are exposed via WKPreferences (WebKit2 only, since that's the only port actively
+        using the feature).
+
+        * Shared/WebPreferencesStore.h: Add macros for new settings.
+        * UIProcess/API/C/WKPreferences.cpp: Getters and setters for new settings.
+        (WKPreferencesSetSnapshotAllPlugIns):
+        (WKPreferencesGetSnapshotAllPlugIns):
+        (WKPreferencesSetAutostartOriginPlugInSnapshottingEnabled):
+        (WKPreferencesGetAutostartOriginPlugInSnapshottingEnabled):
+        (WKPreferencesSetPrimaryPlugInSnapshotDetectionEnabled):
+        (WKPreferencesGetPrimaryPlugInSnapshotDetectionEnabled):
+        * UIProcess/API/C/WKPreferencesPrivate.h:
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::updatePreferences): Forward settings updates.
+        (WebKit::WebPage::addPluginView): Don't run primary plugin detection if the setting is false.
+        (WebKit::WebPage::didFinishLoad): Ditto.
+
+2013-04-04  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [Cairo] Fix canvas drawing of SVG-based patterns and remove NativeImageCairo
+        https://bugs.webkit.org/show_bug.cgi?id=113929
+
+        Reviewed by Martin Robinson.
+
+        Update code now that PassNativeImagePtr is now a typedef to PassRefPtr<cairo_surface_t>
+        instead of NativeImageCairo*.
+
+        * Shared/gtk/ArgumentCodersGtk.cpp:
+        (CoreIPC::decodeImage):
+        * UIProcess/API/C/cairo/WKIconDatabaseCairo.cpp:
+        (WKIconDatabaseTryGetCairoSurfaceForURL):
+        * UIProcess/API/gtk/WebKitFaviconDatabase.cpp:
+        (getIconSurfaceSynchronously):
+
+2013-04-04  Sze Howe Koh  <szehowe.koh@gmail.com>
+
+        [Qt] docs: Fix module name format
+        https://bugs.webkit.org/show_bug.cgi?id=113209
+
+        Reviewed by Jocelyn Turcotte.
+
+        Make QDoc-generated documentation follow the conventions at
+        http://qt-project.org/wiki/Spelling_Module_Names_in_Qt_Documentation
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+
+2013-04-04  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] WebView should own view size
+        https://bugs.webkit.org/show_bug.cgi?id=110753
+
+        Reviewed by Andreas Kling.
+
+        WebView owns view size. WKViewGetSize and WKViewSetSize API
+        is exposed accordingly. Usage of EFL-specific ewkView inside
+        toolkit-agnostic WebView class is reduced.
+
+        * UIProcess/API/C/efl/WKView.cpp:
+        (WKViewGetSize):
+        (WKViewSetSize):
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::setDeviceScaleFactor):
+        (EwkView::size):
+        (EwkView::deviceSize):
+        (EwkView::scheduleUpdateDisplay):
+        (EwkView::handleEvasObjectCalculate):
+        * UIProcess/API/efl/EwkView.h:
+        (EwkView):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::setSize):
+        (WebKit):
+        (WebKit::WebView::paintToCurrentGLContext):
+        (WebKit::WebView::updateViewportSize):
+        (WebKit::WebView::viewSize):
+        (WebKit::WebView::dipSize):
+        * UIProcess/efl/WebView.h:
+        (WebView):
+        (WebKit::WebView::size):
+
+2013-04-03  Anders Carlsson  <andersca@apple.com>
+
+        Don't try to set the exception port for server connections
+        https://bugs.webkit.org/show_bug.cgi?id=113910
+        <rdar://problem/11248925>
+
+        Reviewed by Darin Adler.
+
+        Treat a SetExceptionPort message to the server connection as an invalid message.
+
+        * Platform/CoreIPC/mac/ConnectionMac.cpp:
+        (CoreIPC::Connection::receiveSourceEventHandler):
+
+2013-04-02  Mark Rowe  <mrowe@apple.com>
+
+        <http://webkit.org/b/113898> Eliminate some code duplication by introducing an array of handlers to register / unregister.
+
+        Reviewed by Antti Koivisto.
+
+        * UIProcess/mac/WebContextMac.mm:
+        (OcclusionNotificationHandler): Structure containing the notification name, type and handler.
+        (WebKit::registerOcclusionNotificationHandlers): Register all of the handlers in the array.
+        (WebKit::unregisterOcclusionNotificationHandlers): Unregister all of the handlers in the array.
+
+2013-04-02  Mark Rowe  <mrowe@apple.com>
+
+        Enable process suppression when no windows in the application have drawn recently.
+        <http://webkit.org/b/113854> / <rdar://problem/13540351>
+
+        Reviewed by Darin Adler.
+
+        * UIProcess/mac/WebContextMac.mm:
+        (WebKit::applicationWindowModificationsStarted): Note that modifications are no longer stopped.
+        (WebKit::applicationWindowModificationsStopped): Note that modifications have stopped.
+        (WebKit::registerOcclusionNotificationHandlers): Register handlers for the start and stop notifications.
+        (WebKit::unregisterOcclusionNotificationHandlers): Unregister handlers for the start and stop notifications.
+        (WebKit::WebContext::canEnableProcessSuppressionForNetworkProcess): Allow suppression if the application is occluded
+        or the application has not drawn recently.
+        (WebKit::WebContext::canEnableProcessSuppressionForWebProcess): Ditto.
+        (WebKit::WebContext::canEnableProcessSuppressionForGlobalChildProcesses): Ditto.
+
+2013-04-03  Dean Jackson  <dino@apple.com>
+
+        Cross fade into restarted plugin
+        https://bugs.webkit.org/show_bug.cgi?id=113868
+
+        Reviewed by Tim Horton.
+
+        Add a new plugin process type that indicates this is a plugin that
+        has been restarted from snapshotting. On Apple ports, this allows
+        us to animate the appearance of the plugin so that it crossfades
+        with the snapshot. Other ports will have to add their own fading.
+
+        * PluginProcess/PluginProcess.h: New Type: TypeRestartedProcess.
+        * WebProcess/Plugins/Netscape/mac/PluginProxyMac.mm:
+        (WebKit::PluginProxy::pluginLayer): When the plugin's CALayer is created, if it
+            is a restarted plugin, add an opacity animation to fade it in.
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::createPlugin): Mark restarted plugins with the new process type.
+
+2013-04-03  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13564588> Add a temporary workaround for a build failure.
+
+        Fix suggested by Mark Rowe.
+
+        * Shared/mac/ChildProcessMac.mm:
+
+2013-04-03  Alexey Proskuryakov  <ap@apple.com>
+
+        [WK2] XMLHttpRequest upload events don't work with NetworkProcess
+        https://bugs.webkit.org/show_bug.cgi?id=113887
+
+        Reviewed by Brady Eidson.
+
+        Just forward didSendData client call to WebProcess.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::didSendData):
+        (WebKit::NetworkResourceLoader::didCancelAuthenticationChallenge): Tweaked a comment.
+        * WebProcess/Network/WebResourceLoader.cpp:
+        (WebKit::WebResourceLoader::didSendData):
+        * WebProcess/Network/WebResourceLoader.h:
+        * WebProcess/Network/WebResourceLoader.messages.in:
+
 2013-04-02  Ryosuke Niwa  <rniwa@webkit.org>
 
         Remove code for Mac 10.5 and earlier from WTF and WebKit2

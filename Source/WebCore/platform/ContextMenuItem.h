@@ -36,8 +36,6 @@
 #if PLATFORM(MAC)
 #include <wtf/RetainPtr.h>
 OBJC_CLASS NSMenuItem;
-#elif PLATFORM(WIN)
-typedef struct tagMENUITEMINFOW MENUITEMINFO;
 #elif PLATFORM(GTK)
 typedef struct _GtkMenuItem GtkMenuItem;
 typedef struct _GtkAction GtkAction;
@@ -196,20 +194,6 @@ namespace WebCore {
         ContextMenuAction action;
         String title;
         wxMenu * subMenu;
-        bool checked;
-        bool enabled;
-    };
-#elif PLATFORM(CHROMIUM)
-    struct PlatformMenuItemDescription {
-        PlatformMenuItemDescription()
-            : type(ActionType)
-            , action(ContextMenuItemTagNoAction)
-            , checked(false)
-            , enabled(true) { }
-        ContextMenuItemType type;
-        ContextMenuAction action;
-        String title;
-        Vector<ContextMenuItem> subMenuItems;
         bool checked;
         bool enabled;
     };

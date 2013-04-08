@@ -56,9 +56,7 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 
-#if USE(JSC)
 #include "JSNode.h"
-#endif
 
 using namespace std;
 
@@ -464,7 +462,7 @@ static void willRemoveChildren(ContainerNode* container)
     container->document()->nodeChildrenWillBeRemoved(container);
 
     ChildListMutationScope mutation(container);
-    for (NodeVector::const_iterator it = children.begin(); it != children.end(); it++) {
+    for (NodeVector::const_iterator it = children.begin(); it != children.end(); ++it) {
         Node* child = it->get();
         mutation.willRemoveChild(child);
         child->notifyMutationObserversNodeWillDetach();
@@ -1124,9 +1122,7 @@ static void dispatchChildRemovalEvents(Node* child)
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-#if USE(JSC)
     willCreatePossiblyOrphanedTreeByRemoval(child);
-#endif
     InspectorInstrumentation::willRemoveDOMNode(child->document(), child);
 
     RefPtr<Node> c = child;

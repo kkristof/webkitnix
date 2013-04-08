@@ -1,3 +1,601 @@
+2013-04-07  Oliver Hunt  <oliver@apple.com>
+
+        Add bounds checking for WTF::Vector::operator[]
+        https://bugs.webkit.org/show_bug.cgi?id=89600
+
+        Reviewed by Filip Pizlo.
+
+        Make a few JSC classes opt-out of release mode bounds checking.
+
+        * assembler/AssemblerBuffer.h:
+        (AssemblerBuffer):
+        * assembler/AssemblerBufferWithConstantPool.h:
+        (AssemblerBufferWithConstantPool):
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::CodeBlock):
+        (JSC::CodeBlock::bytecodeOffset):
+        (JSC):
+        (JSC::replaceExistingEntries):
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::bytecodeOffsetForCallAtIndex):
+        (JSC::CodeBlock::callReturnIndexVector):
+        (JSC::CodeBlock::codeOrigins):
+        (RareData):
+        * bytecode/UnlinkedCodeBlock.h:
+        (JSC::UnlinkedEvalCodeBlock::adoptVariables):
+        (UnlinkedEvalCodeBlock):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::BytecodeGenerator):
+        (JSC::BytecodeGenerator::emitNewArray):
+        (JSC::BytecodeGenerator::emitCall):
+        (JSC::BytecodeGenerator::emitConstruct):
+        * bytecompiler/BytecodeGenerator.h:
+        (CallArguments):
+        (JSC::BytecodeGenerator::instructions):
+        (BytecodeGenerator):
+        * bytecompiler/StaticPropertyAnalysis.h:
+        (JSC::StaticPropertyAnalysis::create):
+        (JSC::StaticPropertyAnalysis::StaticPropertyAnalysis):
+        (StaticPropertyAnalysis):
+        * bytecompiler/StaticPropertyAnalyzer.h:
+        (StaticPropertyAnalyzer):
+        (JSC::StaticPropertyAnalyzer::StaticPropertyAnalyzer):
+        * dfg/DFGJITCompiler.cpp:
+        (JSC::DFG::JITCompiler::link):
+        * parser/ASTBuilder.h:
+        (ASTBuilder):
+        * runtime/ArgList.h:
+        (MarkedArgumentBuffer):
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncSort):
+
+2013-04-07  Benjamin Poulain  <benjamin@webkit.org>
+
+        Use Vector::reserveInitialCapacity() when possible in JavaScriptCore runtime
+        https://bugs.webkit.org/show_bug.cgi?id=114111
+
+        Reviewed by Andreas Kling.
+
+        Almost all the code was already using Vector::reserveInitialCapacity()
+        and Vector::uncheckedAppend(). Fix the remaining parts.
+
+        * runtime/ArgList.h:
+        (MarkedArgumentBuffer): The type VectorType is unused.
+
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncSort):
+        Move the variable closer to where it is needed.
+
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::setLengthWithArrayStorage):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::getOwnPropertyNames):
+
+2013-04-07  Patrick Gansterer  <paroga@webkit.org>
+
+        Remove references to Skia and V8 from CMake files
+        https://bugs.webkit.org/show_bug.cgi?id=114130
+
+        Reviewed by Geoffrey Garen.
+
+        * shell/PlatformBlackBerry.cmake:
+
+2013-04-07  David Kilzer  <ddkilzer@apple.com>
+
+        Remove the rest of SVG_DOM_OBJC_BINDINGS
+        <http://webkit.org/b/114112>
+
+        Reviewed by Geoffrey Garen.
+
+        * Configurations/FeatureDefines.xcconfig:
+        - Remove ENABLE_SVG_DOM_OBJC_BINDINGS macro.
+
+2013-04-07  Oliver Hunt  <oliver@apple.com>
+
+        Inspector should display information about non-object exceptions
+        https://bugs.webkit.org/show_bug.cgi?id=114123
+
+        Reviewed by Adele Peterson.
+
+        Make sure we store the right stack information, even when throwing
+        a primitive.
+
+        * interpreter/CallFrame.h:
+        (JSC::ExecState::clearSupplementaryExceptionInfo):
+        (ExecState):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::addStackTraceIfNecessary):
+        (JSC::Interpreter::throwException):
+
+2013-04-06  Oliver Hunt  <oliver@apple.com>
+
+        Unify the many and varied stack trace mechanisms, and make the result sane.
+        https://bugs.webkit.org/show_bug.cgi?id=114072
+
+        Reviewed by Filip Pizlo.
+
+        Makes JSC::StackFrame record the bytecode offset and other necessary data
+        rather than requiring us to perform eager evaluation of the line number, etc.
+        Then remove most of the users of retrieveLastCaller, as most of them were
+        using it to create a stack trace in a fairly incomplete and inefficient way.
+
+        StackFrame now also has a couple of helpers to get the line and column info.
+
+        * API/JSContextRef.cpp:
+        (JSContextCreateBacktrace):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitDebugHook):
+        * interpreter/Interpreter.cpp:
+        (JSC):
+        (JSC::Interpreter::dumpRegisters):
+        (JSC::Interpreter::unwindCallFrame):
+        (JSC::getBytecodeOffsetForCallFrame):
+        (JSC::getCallerInfo):
+        (JSC::StackFrame::line):
+        (JSC::StackFrame::column):
+        (JSC::StackFrame::expressionInfo):
+        (JSC::StackFrame::toString):
+        (JSC::Interpreter::getStackTrace):
+        (JSC::Interpreter::addStackTraceIfNecessary):
+        (JSC::Interpreter::retrieveCallerFromVMCode):
+        * interpreter/Interpreter.h:
+        (StackFrame):
+        (Interpreter):
+        * runtime/Error.cpp:
+        (JSC::throwError):
+        * runtime/JSGlobalData.h:
+        (JSC):
+        (JSGlobalData):
+        * runtime/JSGlobalObject.cpp:
+        (JSC::DynamicGlobalObjectScope::DynamicGlobalObjectScope):
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed v8 bindings hooks from IDL files
+        https://bugs.webkit.org/show_bug.cgi?id=114091
+
+        Reviewed by Anders Carlsson and Sam Weinig.
+
+        * heap/HeapStatistics.h:
+
+2013-04-03  Roger Fong  <roger_fong@apple.com>
+
+        Windows VS2010 build fix.
+
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-06  Zan Dobersek  <zdobersek@igalia.com>
+
+        Remove the remaining PLATFORM(CHROMIUM) guard in JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=114082
+
+        Reviewed by Ryosuke Niwa.
+
+        * runtime/JSExportMacros.h: Remove the remaining PLATFORM(CHROMIUM) guard.
+
+2013-04-06  Ed Bartosh  <bartosh@gmail.com>
+
+        --minimal build fails with error: control reaches end of non-void function
+        https://bugs.webkit.org/show_bug.cgi?id=114085
+
+        Reviewed by Oliver Hunt.
+
+        * interpreter/Interpreter.cpp: return 0 if JIT is not enabled
+        (JSC::getBytecodeOffsetForCallFrame):
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Try to fix the Windows build.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        Added back a symbol that is exported.
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Try to fix the Windows build.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        Removed symbols that aren't exported.
+
+2013-04-06  Geoffrey Garen  <ggaren@apple.com>
+
+        Rolled out 147820 and 147818 because they caused plugins tests to ASSERT
+        https://bugs.webkit.org/show_bug.cgi?id=114094
+
+        Reviewed by Anders Carlsson.
+
+        * API/JSContextRef.cpp:
+        (JSContextCreateBacktrace):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitDebugHook):
+        * interpreter/Interpreter.cpp:
+        (JSC):
+        (JSC::Interpreter::dumpRegisters):
+        (JSC::Interpreter::unwindCallFrame):
+        (JSC::getLineNumberForCallFrame):
+        (JSC::getCallerInfo):
+        (JSC::Interpreter::getStackTrace):
+        (JSC::Interpreter::addStackTraceIfNecessary):
+        (JSC::Interpreter::retrieveCallerFromVMCode):
+        * interpreter/Interpreter.h:
+        (StackFrame):
+        (JSC::StackFrame::toString):
+        (JSC::StackFrame::friendlyLineNumber):
+        (Interpreter):
+        * runtime/Error.cpp:
+        (JSC::throwError):
+        * runtime/JSGlobalData.h:
+        (JSC):
+        (JSGlobalData):
+        * runtime/JSGlobalObject.cpp:
+        (JSC::DynamicGlobalObjectScope::DynamicGlobalObjectScope):
+
+2013-04-06  Patrick Gansterer  <paroga@webkit.org>
+
+        Unreviewed build fix after r146932.
+
+        * profiler/ProfilerDatabase.cpp:
+        (Profiler):
+
+2013-04-06  Patrick Gansterer  <paroga@webkit.org>
+
+        Do not call getenv() on Windows CE where it does not exist.
+
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+
+2013-04-05  Benjamin Poulain  <benjamin@webkit.org>
+
+        Second attempt to fix the Windows bot
+
+        Unreviewed.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-05  Benjamin Poulain  <bpoulain@apple.com>
+
+        Attempt to fix the Windows bot
+
+        Unreviewed.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+        r147825 removed the symbol for nullptr_t. Add it back.
+
+2013-04-02  Roger Fong  <roger_fong@apple.com>
+
+        Build fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-05  Oliver Hunt  <oliver@apple.com>
+
+        Build fix.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::getBytecodeOffsetForCallFrame):
+
+2013-04-05  Oliver Hunt  <oliver@apple.com>
+
+        Unify the many and varied stack trace mechanisms, and make the result sane.
+        https://bugs.webkit.org/show_bug.cgi?id=114072
+
+        Reviewed by Filip Pizlo.
+
+        Makes JSC::StackFrame record the bytecode offset and other necessary data
+        rather than requiring us to perform eager evaluation of the line number, etc.
+        Then remove most of the users of retrieveLastCaller, as most of them were
+        using it to create a stack trace in a fairly incomplete and inefficient way.
+
+        StackFrame now also has a couple of helpers to get the line and column info.
+
+        * API/JSContextRef.cpp:
+        (JSContextCreateBacktrace):
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitDebugHook):
+        * interpreter/Interpreter.cpp:
+        (JSC):
+        (JSC::Interpreter::dumpRegisters):
+        (JSC::Interpreter::unwindCallFrame):
+        (JSC::getBytecodeOffsetForCallFrame):
+        (JSC::getCallerInfo):
+        (JSC::StackFrame::line):
+        (JSC::StackFrame::column):
+        (JSC::StackFrame::expressionInfo):
+        (JSC::StackFrame::toString):
+        (JSC::Interpreter::getStackTrace):
+        (JSC::Interpreter::addStackTraceIfNecessary):
+        (JSC::Interpreter::retrieveCallerFromVMCode):
+        * interpreter/Interpreter.h:
+        (StackFrame):
+        (Interpreter):
+        * runtime/Error.cpp:
+        (JSC::throwError):
+        * runtime/JSGlobalData.h:
+        (JSC):
+        (JSGlobalData):
+        * runtime/JSGlobalObject.cpp:
+        (JSC::DynamicGlobalObjectScope::DynamicGlobalObjectScope):
+
+2013-04-05  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        tryCacheGetByID sets StructureStubInfo accessType to an incorrect value
+        https://bugs.webkit.org/show_bug.cgi?id=114068
+
+        Reviewed by Geoffrey Garen.
+
+        In the case where we have a non-Value cacheable property, we set the StructureStubInfo accessType to 
+        get_by_id_self, but then we don't patch self and instead patch in a get_by_id_self_fail. This leads to 
+        incorrect profiling data so when the DFG compiles the function, it uses a GetByOffset rather than a GetById, 
+        which leads to loading a GetterSetter directly out of an object.
+
+        * jit/JITStubs.cpp:
+        (JSC::tryCacheGetByID):
+        (JSC::DEFINE_STUB_FUNCTION):
+
+2013-04-05  Filip Pizlo  <fpizlo@apple.com>
+
+        If CallFrame::trueCallFrame() knows that it's about to read garbage instead of a valid CodeOrigin/InlineCallFrame, then it should give up and return 0 and all callers should be robust against this
+        https://bugs.webkit.org/show_bug.cgi?id=114062
+
+        Reviewed by Oliver Hunt.
+
+        * bytecode/CodeBlock.h:
+        (JSC::CodeBlock::canGetCodeOrigin):
+        (CodeBlock):
+        * interpreter/CallFrame.cpp:
+        (JSC::CallFrame::trueCallFrame):
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::getStackTrace):
+
+2013-04-05  Geoffrey Garen  <ggaren@apple.com>
+
+        Made USE(JSC) unconditional
+        https://bugs.webkit.org/show_bug.cgi?id=114058
+
+        Reviewed by Anders Carlsson.
+
+        * config.h:
+
+2013-04-05  Filip Pizlo  <fpizlo@apple.com>
+
+        Unreviewed, rolling out http://trac.webkit.org/changeset/147729
+
+        It's causing a bunch of breakage on some more strict compilers:
+        <inline asm>:1267:2: error: ambiguous instructions require an explicit suffix (could be 'ficomps', or 'ficompl')
+
+        * offlineasm/x86.rb:
+
+2013-04-05  Roger Fong  <roger_fong@apple.com>
+
+        More VS2010 solution makefile fixes.
+        <rdar://problem/13588964>
+
+        * JavaScriptCore.vcxproj/JavaScriptCore.make:
+
+2013-04-05  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        LLint should be able to use x87 instead of SSE for floating pointer
+
+        https://bugs.webkit.org/show_bug.cgi?id=112239
+
+        Reviewed by Filip Pizlo.
+
+        Implements LLInt floating point operations in x87, to ensure we support
+        x86 without SSE2.
+
+        X86 (except 64bit) now defaults to using x87 instructions in order to
+        support all 32bit x86 back to i686. The implementation uses the fucomi
+        instruction from i686 which sets the new minimum.
+
+        * offlineasm/x86.rb:
+
+2013-04-04  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        Unreviewed EFL build fix.
+
+        We had undefined reference to `JSC::CodeOrigin::maximumBytecodeIndex'.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::findClosureCallForReturnPC):
+        (JSC::CodeBlock::bytecodeOffset):
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Stop pretending that statements return a value
+        https://bugs.webkit.org/show_bug.cgi?id=113969
+
+        Reviewed by Oliver Hunt.
+
+        Expressions have an intrinsic value, which they return to their parent
+        in the AST.
+
+        Statements just execute for effect in sequence.
+
+        This patch moves emitBytecode into the ExpressionNode and StatementNode
+        subclasses, and changes the SatementNode subclass to return void. This
+        eliminates some cruft where we used to return 0, or try to save a bogus
+        register and return it, as if a statement had a consuming parent in the
+        AST.
+
+        * bytecompiler/BytecodeGenerator.h:
+        (JSC::BytecodeGenerator::emitNode):
+        (BytecodeGenerator):
+        (JSC::BytecodeGenerator::emitNodeInConditionContext):
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::ConstStatementNode::emitBytecode):
+        (JSC::BlockNode::emitBytecode):
+        (JSC::EmptyStatementNode::emitBytecode):
+        (JSC::DebuggerStatementNode::emitBytecode):
+        (JSC::ExprStatementNode::emitBytecode):
+        (JSC::VarStatementNode::emitBytecode):
+        (JSC::IfNode::emitBytecode):
+        (JSC::IfElseNode::emitBytecode):
+        (JSC::DoWhileNode::emitBytecode):
+        (JSC::WhileNode::emitBytecode):
+        (JSC::ForNode::emitBytecode):
+        (JSC::ForInNode::emitBytecode):
+        (JSC::ContinueNode::emitBytecode):
+        (JSC::BreakNode::emitBytecode):
+        (JSC::ReturnNode::emitBytecode):
+        (JSC::WithNode::emitBytecode):
+        (JSC::CaseClauseNode::emitBytecode):
+        (JSC::CaseBlockNode::emitBytecodeForBlock):
+        (JSC::SwitchNode::emitBytecode):
+        (JSC::LabelNode::emitBytecode):
+        (JSC::ThrowNode::emitBytecode):
+        (JSC::TryNode::emitBytecode):
+        (JSC::ScopeNode::emitStatementsBytecode):
+        (JSC::ProgramNode::emitBytecode):
+        (JSC::EvalNode::emitBytecode):
+        (JSC::FunctionBodyNode::emitBytecode):
+        (JSC::FuncDeclNode::emitBytecode):
+        * parser/NodeConstructors.h:
+        (JSC::PropertyListNode::PropertyListNode):
+        (JSC::ArgumentListNode::ArgumentListNode):
+        * parser/Nodes.h:
+        (Node):
+        (ExpressionNode):
+        (StatementNode):
+        (ConstStatementNode):
+        (BlockNode):
+        (EmptyStatementNode):
+        (DebuggerStatementNode):
+        (ExprStatementNode):
+        (VarStatementNode):
+        (IfNode):
+        (IfElseNode):
+        (DoWhileNode):
+        (WhileNode):
+        (ForNode):
+        (ForInNode):
+        (ContinueNode):
+        (BreakNode):
+        (ReturnNode):
+        (WithNode):
+        (LabelNode):
+        (ThrowNode):
+        (TryNode):
+        (ProgramNode):
+        (EvalNode):
+        (FunctionBodyNode):
+        (FuncDeclNode):
+        (CaseBlockNode):
+        (SwitchNode):
+
+2013-04-04  Oliver Hunt  <oliver@apple.com>
+
+        Exception stack unwinding doesn't handle inline callframes correctly
+        https://bugs.webkit.org/show_bug.cgi?id=113952
+
+        Reviewed by Geoffrey Garen.
+
+        The basic problem here is that the exception stack unwinding was
+        attempting to be "clever" and avoid doing a correct stack walk
+        as it "knew" inline callframes couldn't have exception handlers.
+
+        This used to be safe as the exception handling machinery was
+        designed to fail gently and just claim that no handler existed.
+        This was "safe" and even "correct" inasmuch as we currently
+        don't run any code with exception handlers through the dfg.
+
+        This patch fixes the logic by simply making everything uniformly
+        use the safe stack walking machinery, and making the correct
+        boundary checks occur everywhere that they should.
+
+        * bytecode/CodeBlock.cpp:
+        (JSC::CodeBlock::findClosureCallForReturnPC):
+        (JSC::CodeBlock::bytecodeOffset):
+        * interpreter/Interpreter.cpp:
+        (JSC):
+        (JSC::Interpreter::dumpRegisters):
+        (JSC::Interpreter::unwindCallFrame):
+        (JSC::getCallerInfo):
+        (JSC::Interpreter::getStackTrace):
+        (JSC::Interpreter::retrieveCallerFromVMCode):
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed a defunct comment
+        https://bugs.webkit.org/show_bug.cgi?id=113948
+
+        Reviewed by Oliver Hunt.
+
+        This is also a convenient way to test the EWS.
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC):
+
+2013-04-04  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Remove the gyp build
+        https://bugs.webkit.org/show_bug.cgi?id=113942
+
+        Reviewed by Gustavo Noronha Silva.
+
+        * JavaScriptCore.gyp/JavaScriptCoreGTK.gyp: Removed.
+        * JavaScriptCore.gyp/redirect-stdout.sh: Removed.
+
+2013-04-04  Geoffrey Garen  <ggaren@apple.com>
+
+        Simplified bytecode generation by merging prefix and postfix nodes
+        https://bugs.webkit.org/show_bug.cgi?id=113925
+
+        Reviewed by Filip Pizlo.
+
+        PostfixNode now inherits from PrefixNode, so when we detect that we're
+        in a context where postifx and prefix are equivalent, PostFixNode can
+        just call through to PrefixNode codegen, instead of duplicating the
+        logic.
+
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::PostfixNode::emitResolve):
+        (JSC::PostfixNode::emitBracket):
+        (JSC::PostfixNode::emitDot):
+        * parser/NodeConstructors.h:
+        (JSC::PostfixNode::PostfixNode):
+        * parser/Nodes.h:
+        (JSC):
+        (PrefixNode):
+        (PostfixNode):
+
+2013-04-04  Andras Becsi  <andras.becsi@digia.com>
+
+        Fix the build with GCC 4.8
+        https://bugs.webkit.org/show_bug.cgi?id=113147
+
+        Reviewed by Allan Sandfeld Jensen.
+
+        Initialize JSObject* exception to suppress warnings that make
+        the build fail because of -Werror=maybe-uninitialized.
+
+        * runtime/Executable.cpp:
+        (JSC::FunctionExecutable::compileForCallInternal):
+        (JSC::FunctionExecutable::compileForConstructInternal):
+
+2013-04-02  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        get_by_pname can become confused when iterating over objects with static properties
+        https://bugs.webkit.org/show_bug.cgi?id=113831
+
+        Reviewed by Geoffrey Garen.
+
+        get_by_pname doesn't take static properties into account when using a JSPropertyNameIterator to directly 
+        access an object's backing store. One way to fix this is to not cache any properties when iterating over 
+        objects with static properties. This patch fixes the bug that was originally reported on swisscom.ch.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::getOwnNonIndexPropertyNames):
+        * runtime/JSPropertyNameIterator.cpp:
+        (JSC::JSPropertyNameIterator::create):
+        * runtime/PropertyNameArray.h:
+        (JSC::PropertyNameArray::PropertyNameArray):
+        (JSC::PropertyNameArray::numCacheableSlots):
+        (JSC::PropertyNameArray::setNumCacheableSlots):
+        (PropertyNameArray):
+
 2013-04-02  Geoffrey Garen  <ggaren@apple.com>
 
         DFG should compile a little sooner

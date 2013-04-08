@@ -428,7 +428,7 @@ public:
 
     static bool supportsBackgroundColorContent()
     {
-#if USE(CA) || USE(TEXTURE_MAPPER) || PLATFORM(CHROMIUM)
+#if USE(CA) || USE(TEXTURE_MAPPER)
         return true;
 #else
         return false;
@@ -436,6 +436,8 @@ public:
     }
 
     void updateDebugIndicators();
+
+    virtual bool canThrottleLayerFlush() const { return false; }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 

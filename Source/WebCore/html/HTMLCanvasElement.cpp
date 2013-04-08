@@ -50,18 +50,12 @@
 #include <math.h>
 #include <stdio.h>
 
-#if USE(JSC)
 #include <runtime/JSLock.h>
 #include <runtime/Operations.h>
-#endif
 
 #if ENABLE(WEBGL)    
 #include "WebGLContextAttributes.h"
 #include "WebGLRenderingContext.h"
-#endif
-
-#if PLATFORM(CHROMIUM)
-#include <public/Platform.h>
 #endif
 
 namespace WebCore {
@@ -189,18 +183,13 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
 #if ENABLE(WEBGL)    
     Settings* settings = document()->settings();
     if (settings && settings->webGLEnabled()
-#if !PLATFORM(CHROMIUM) && !PLATFORM(GTK) && !PLATFORM(EFL) && !PLATFORM(QT)
+#if !PLATFORM(GTK) && !PLATFORM(EFL) && !PLATFORM(QT)
         && settings->acceleratedCompositingEnabled()
 #endif
         ) {
 
         // Accept the legacy "webkit-3d" name as well as the provisional "experimental-webgl" name.
         bool is3dContext = (type == "webkit-3d") || (type == "experimental-webgl");
-
-#if PLATFORM(CHROMIUM) && !OS(ANDROID)
-        // Now that WebGL is ratified, we will also accept "webgl" as the context name in Chrome.
-        is3dContext |= (type == "webgl");
-#endif
 
         if (is3dContext) {
             if (m_context && !m_context->is3d())
@@ -514,11 +503,6 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
         return false;
 
-#if PLATFORM(CHROMIUM)
-    if (!WebKit::Platform::current()->canAccelerate2dCanvas())
-        return false;
-#endif
-
     return true;
 #else
     UNUSED_PARAM(size);
@@ -565,11 +549,9 @@ void HTMLCanvasElement::createImageBuffer() const
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
-#if USE(JSC)
     JSC::JSLockHolder lock(scriptExecutionContext()->globalData());
     size_t numBytes = 4 * m_imageBuffer->internalSize().width() * m_imageBuffer->internalSize().height();
     scriptExecutionContext()->globalData()->heap.reportExtraMemoryCost(numBytes);
-#endif
 
 #if USE(IOSURFACE_CANVAS_BACKING_STORE) || (ENABLE(ACCELERATED_2D_CANVAS) && USE(ACCELERATED_COMPOSITING))
     if (m_context && m_context->is2d())

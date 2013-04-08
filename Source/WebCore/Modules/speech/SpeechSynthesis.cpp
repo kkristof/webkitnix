@@ -102,6 +102,9 @@ void SpeechSynthesis::startSpeakingImmediately(SpeechSynthesisUtterance* utteran
 
 void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance)
 {
+    if (!utterance)
+        return;
+    
     m_utteranceQueue.append(utterance);
     
     // If the queue was empty, speak this immediately and add it to the queue.
@@ -137,7 +140,7 @@ void SpeechSynthesis::resume()
 
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
-    utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
+    utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (monotonicallyIncreasingTime() - utterance->startTime()), name));
 }
     
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)

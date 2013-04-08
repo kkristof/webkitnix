@@ -126,14 +126,6 @@
 #include <wtf/dtoa.h>
 #endif
 
-#if PLATFORM(CHROMIUM)
-#include "FilterOperation.h"
-#include "FilterOperations.h"
-#include "GraphicsLayer.h"
-#include "GraphicsLayerChromium.h"
-#include "RenderLayerBacking.h"
-#endif
-
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 #include "CDM.h"
 #include "MockCDM.h"
@@ -259,10 +251,14 @@ void Internals::resetToConsistentState(Page* page)
 
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
-    if (FrameView* mainFrameView = page->mainFrame()->view()) {
+
+#if USE(ACCELERATED_COMPOSITING)
+    FrameView* mainFrameView = page->mainFrame()->view();
+    if (mainFrameView) {
         mainFrameView->setHeaderHeight(0);
         mainFrameView->setFooterHeight(0);
     }
+#endif
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
     WebCore::Settings::setUsesOverlayScrollbars(false);
@@ -1850,18 +1846,20 @@ void Internals::setHeaderHeight(Document* document, float height)
 {
     if (!document || !document->view())
         return;
-
+#if USE(ACCELERATED_COMPOSITING)
     FrameView* frameView = document->view();
     frameView->setHeaderHeight(height);
+#endif
 }
 
 void Internals::setFooterHeight(Document* document, float height)
 {
     if (!document || !document->view())
         return;
-
+#if USE(ACCELERATED_COMPOSITING)
     FrameView* frameView = document->view();
     frameView->setFooterHeight(height);
+#endif
 }
 
 #if ENABLE(FULLSCREEN_API)
@@ -2036,25 +2034,15 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
 
 PassRefPtr<ArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptValue> value) const
 {
-#if USE(V8)
-    String stringValue = value->toWireString();
-    return ArrayBuffer::create(static_cast<const void*>(stringValue.impl()->characters()), stringValue.sizeInBytes());
-#else
     Vector<uint8_t> bytes = value->data();
     return ArrayBuffer::create(bytes.data(), bytes.size());
-#endif
 }
 
 PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<ArrayBuffer> buffer) const
 {
-#if USE(V8)
-    String value(static_cast<const UChar*>(buffer->data()), buffer->byteLength() / sizeof(UChar));
-    return SerializedScriptValue::createFromWire(value);
-#else
     Vector<uint8_t> bytes;
     bytes.append(static_cast<const uint8_t*>(buffer->data()), buffer->byteLength());
     return SerializedScriptValue::adopt(bytes);
-#endif
 }
 
 void Internals::setUsesOverlayScrollbars(bool enabled)

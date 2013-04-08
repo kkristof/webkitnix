@@ -278,8 +278,10 @@ private:
     VisiblePosition modifyMovingBackward(TextGranularity);
 
     LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-    
+
+#if HAVE(ACCESSIBILITY)
     void notifyAccessibilityForSelectionChange();
+#endif
 
     void focusedOrActiveStateChanged();
 
@@ -329,10 +331,12 @@ inline void FrameSelection::setTypingStyle(PassRefPtr<EditingStyle> style)
     m_typingStyle = style;
 }
 
-#if !(PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(CHROMIUM) || PLATFORM(EFL))
+#if !(PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(EFL))
+#if HAVE(ACCESSIBILITY)
 inline void FrameSelection::notifyAccessibilityForSelectionChange()
 {
 }
+#endif
 #endif
 
 } // namespace WebCore

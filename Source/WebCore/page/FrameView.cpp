@@ -94,10 +94,6 @@
 #include "TextAutosizer.h"
 #endif
 
-#if PLATFORM(CHROMIUM)
-#include "TraceEvent.h"
-#endif
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -867,11 +863,7 @@ GraphicsLayer* FrameView::setWantsLayerForTopOverHangArea(bool wantsLayer) const
     if (!renderView)
         return 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForTopOverhangArea(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) const
@@ -880,11 +872,7 @@ GraphicsLayer* FrameView::setWantsLayerForBottomOverHangArea(bool wantsLayer) co
     if (!renderView)
         return 0;
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForBottomOverhangArea(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
@@ -895,11 +883,7 @@ GraphicsLayer* FrameView::setWantsLayerForHeader(bool wantsLayer) const
 
     ASSERT(m_frame == m_frame->page()->mainFrame());
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForHeader(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
 GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
@@ -910,28 +894,10 @@ GraphicsLayer* FrameView::setWantsLayerForFooter(bool wantsLayer) const
 
     ASSERT(m_frame == m_frame->page()->mainFrame());
 
-#if USE(ACCELERATED_COMPOSITING)
     return renderView->compositor()->updateLayerForFooter(wantsLayer);
-#else
-    return 0;
-#endif
 }
 
-#endif
-
-void FrameView::setHeaderHeight(int headerHeight)
-{
-    if (m_frame && m_frame->page())
-        ASSERT(m_frame == m_frame->page()->mainFrame());
-    m_headerHeight = headerHeight;
-}
-
-void FrameView::setFooterHeight(int footerHeight)
-{
-    if (m_frame && m_frame->page())
-        ASSERT(m_frame == m_frame->page()->mainFrame());
-    m_footerHeight = footerHeight;
-}
+#endif // ENABLE(RUBBER_BANDING)
 
 bool FrameView::flushCompositingStateForThisFrame(Frame* rootFrameForFlush)
 {
@@ -963,6 +929,26 @@ void FrameView::setNeedsOneShotDrawingSynchronization()
 }
 
 #endif // USE(ACCELERATED_COMPOSITING)
+
+void FrameView::setHeaderHeight(int headerHeight)
+{
+    if (m_frame && m_frame->page())
+        ASSERT(m_frame == m_frame->page()->mainFrame());
+    m_headerHeight = headerHeight;
+
+    if (RenderView* renderView = this->renderView())
+        renderView->setNeedsLayout(true);
+}
+
+void FrameView::setFooterHeight(int footerHeight)
+{
+    if (m_frame && m_frame->page())
+        ASSERT(m_frame == m_frame->page()->mainFrame());
+    m_footerHeight = footerHeight;
+
+    if (RenderView* renderView = this->renderView())
+        renderView->setNeedsLayout(true);
+}
 
 bool FrameView::hasCompositedContent() const
 {
@@ -1125,10 +1111,6 @@ void FrameView::layout(bool allowSubtree)
 {
     if (m_inLayout)
         return;
-
-#if PLATFORM(CHROMIUM)
-    TRACE_EVENT0("webkit", "FrameView::layout");
-#endif
 
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtr<FrameView> protector(this);
@@ -1351,7 +1333,7 @@ void FrameView::layout(bool allowSubtree)
     
     m_layoutCount++;
 
-#if PLATFORM(MAC) || PLATFORM(CHROMIUM)
+#if PLATFORM(MAC)
     if (AXObjectCache* cache = root->document()->existingAXObjectCache())
         cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
 #endif
@@ -1488,13 +1470,6 @@ bool FrameView::useSlowRepaints(bool considerOverlap) const
     // for transparent layers. See the comment in WidgetMac::paint.
     if (contentsInCompositedLayer() && !platformWidget())
         return mustBeSlow;
-
-#if PLATFORM(CHROMIUM)
-    // The chromium compositor does not support scrolling a non-composited frame within a composited page through
-    // the fast scrolling path, so force slow scrolling in that case.
-    if (m_frame->ownerElement() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->view()->hasCompositedContent())
-        return true;
-#endif
 
     bool isOverlapped = m_isOverlapped && considerOverlap;
 
@@ -1638,6 +1613,12 @@ bool FrameView::fixedElementsLayoutRelativeToFrame() const
 IntPoint FrameView::lastKnownMousePosition() const
 {
     return m_frame ? m_frame->eventHandler()->lastKnownMousePosition() : IntPoint();
+}
+
+bool FrameView::shouldSetCursor() const
+{
+    Page* page = frame()->page();
+    return page && page->isOnscreen() && page->focusController()->isActive();
 }
 
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
@@ -2283,6 +2264,10 @@ void FrameView::resetDeferredRepaintDelay()
         if (!m_deferringRepaints)
             doDeferredRepaints();
     }
+#if USE(ACCELERATED_COMPOSITING)
+    if (RenderView* view = renderView())
+        view->compositor()->disableLayerFlushThrottlingTemporarilyForInteraction();
+#endif
 }
 
 double FrameView::adjustedDeferredRepaintDelay() const
@@ -2308,6 +2293,16 @@ void FrameView::endDisableRepaints()
 {
     ASSERT(m_disableRepaints > 0);
     m_disableRepaints--;
+}
+
+void FrameView::updateLayerFlushThrottling(bool isLoadProgressing)
+{
+#if USE(ACCELERATED_COMPOSITING)
+    if (RenderView* view = renderView())
+        view->compositor()->setLayerFlushThrottlingEnabled(isLoadProgressing);
+#else
+    UNUSED_PARAM(isLoadProgressing);
+#endif
 }
 
 void FrameView::layoutTimerFired(Timer<FrameView>*)
@@ -2778,8 +2773,8 @@ void FrameView::autoSizeIfEnabled()
     if (!documentView || !documentElement)
         return;
 
-    // Start from the minimum height and allow it to grow.
-    resize(frameRect().width(), m_minAutoSize.height());
+    // Start from the minimum size and allow it to grow.
+    resize(m_minAutoSize.width(), m_minAutoSize.height());
 
     IntSize size = frameRect().size();
 

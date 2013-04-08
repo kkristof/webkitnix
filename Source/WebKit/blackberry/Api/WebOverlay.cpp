@@ -460,13 +460,17 @@ void WebOverlayLayerCompositingThreadClient::uploadTexturesIfNeeded(LayerComposi
 
         clearBuffer(textureContents, 0, 0, 0, 0);
         PlatformGraphicsContext* platformContext = lockBufferDrawable(textureContents);
+        if (!platformContext) {
+            destroyBuffer(textureContents);
+            return;
+        }
         double transform[] = {
             1, 0,
             0, 1,
             -layer->bounds().width() / 2.0, -layer->bounds().height() / 2.0
         };
         platformContext->setTransform(transform);
-        m_client->drawOverlayContents(m_overlay->q, platformContext);
+        m_overlay->client->drawOverlayContents(m_overlay->q, platformContext);
 
         releaseBufferDrawable(textureContents);
     } else if (!m_image.isNull()) {
@@ -476,6 +480,10 @@ void WebOverlayLayerCompositingThreadClient::uploadTexturesIfNeeded(LayerComposi
             return;
 
         PlatformGraphicsContext* platformContext = BlackBerry::Platform::Graphics::lockBufferDrawable(textureContents);
+        if (!platformContext) {
+            destroyBuffer(textureContents);
+            return;
+        }
 
         AffineTransform transform;
         platformContext->getTransform(reinterpret_cast<double*>(&transform));

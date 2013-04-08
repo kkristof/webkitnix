@@ -52,7 +52,23 @@ enum { kWKViewClientCurrentVersion = 0 };
 WK_EXPORT WKViewRef WKViewCreate(WKContextRef context, WKPageGroupRef pageGroup);
 
 WK_EXPORT void WKViewInitialize(WKViewRef);
+
+WK_EXPORT WKSize WKViewGetSize(WKViewRef);
+WK_EXPORT void WKViewSetSize(WKViewRef, WKSize size);
+
 WK_EXPORT void WKViewSetViewClient(WKViewRef, const WKViewClient*);
+
+WK_EXPORT bool WKViewIsFocused(WKViewRef);
+WK_EXPORT void WKViewSetIsFocused(WKViewRef, bool);
+
+WK_EXPORT bool WKViewIsVisible(WKViewRef);
+WK_EXPORT void WKViewSetIsVisible(WKViewRef, bool);
+
+WK_EXPORT float WKViewGetContentScaleFactor(WKViewRef);
+WK_EXPORT void WKViewSetContentScaleFactor(WKViewRef, float);
+
+WK_EXPORT WKPoint WKViewGetContentPosition(WKViewRef);
+WK_EXPORT void WKViewSetContentPosition(WKViewRef, WKPoint);
 
 WK_EXPORT void WKViewSetUserViewportTranslation(WKViewRef, double tx, double ty);
 WK_EXPORT WKPoint WKViewUserViewportToContents(WKViewRef, WKPoint);

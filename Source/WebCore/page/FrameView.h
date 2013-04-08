@@ -236,6 +236,8 @@ public:
     void startDeferredRepaintTimer(double delay);
     void resetDeferredRepaintDelay();
 
+    void updateLayerFlushThrottling(bool isLoadProgressing);
+
     void beginDisableRepaints();
     void endDisableRepaints();
     bool repaintsDisabled() { return m_disableRepaints > 0; }
@@ -340,6 +342,7 @@ public:
     static void setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double p);
 
     virtual IntPoint lastKnownMousePosition() const;
+    bool shouldSetCursor() const;
 
     virtual bool scrollbarsCanBeActive() const OVERRIDE;
 

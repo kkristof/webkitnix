@@ -27967,14 +27967,6 @@
 			Name="loader"
 			>
 			<File
-				RelativePath="..\loader\CachedMetadata.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\loader\CachedMetadata.h"
-				>
-			</File>
-			<File
 				RelativePath="..\loader\CookieJar.cpp"
 				>
 			</File>
@@ -29335,14 +29327,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\platform\StatsCounter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\platform\StatsCounter.h"
-				>
-			</File>
-			<File
 				RelativePath="..\platform\SuddenTermination.h"
 				>
 			</File>
@@ -29396,14 +29380,6 @@
 			</File>
 			<File
 				RelativePath="..\platform\UUID.h"
-				>
-			</File>
-			<File
-				RelativePath="..\platform\VisitedLinks.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\platform\VisitedLinks.h"
 				>
 			</File>
 			<File
@@ -31942,42 +31918,6 @@
 					</File>
 					<File
 						RelativePath="..\platform\graphics\cairo\IntRectCairo.cpp"
-						>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug_All|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Production|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="..\platform\graphics\cairo\NativeImageCairo.cpp"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -71596,6 +71536,62 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\bindings\js\JSRTCStatsResponseCustom.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug_Cairo_CFLite|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release_Cairo_CFLite|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug_All|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Production|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\bindings\js\JSRTCStatsResponseCustom.h"
+					>
 				</File>
 				<File
 					RelativePath="..\bindings\js\JSStorageCustom.cpp"

@@ -79,10 +79,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 
-#if PLATFORM(CHROMIUM)
-#include "platform/chromium/TraceEvent.h"
-#endif
-
 namespace WebCore {
 
 static const char* const requestAnimationFrameEventName = "requestAnimationFrame";
@@ -528,10 +524,6 @@ void InspectorInstrumentation::didDispatchXHRLoadEventImpl(const InspectorInstru
 
 void InspectorInstrumentation::willPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* renderer)
 {
-#if PLATFORM(CHROMIUM)
-    TRACE_EVENT_INSTANT1("instrumentation", InstrumentationEvents::Paint, InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(renderer->frame()->page()));
-#endif
-
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->willPaint(renderer->frame());
 }
@@ -908,7 +900,7 @@ void InspectorInstrumentation::didCommitLoadImpl(InstrumentingAgents* instrument
 
         if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
             resourceAgent->mainFrameNavigated(loader);
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
         if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
             profilerAgent->resetState();
         if (InspectorHeapProfilerAgent* heapProfilerAgent = instrumentingAgents->inspectorHeapProfilerAgent())

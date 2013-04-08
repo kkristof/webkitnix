@@ -2003,7 +2003,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
 
     if (oldStyle && !areCursorsEqual(oldStyle, style())) {
         if (Frame* frame = this->frame())
-            frame->eventHandler()->dispatchFakeMouseMoveEventSoon();
+            frame->eventHandler()->scheduleCursorUpdate();
     }
 }
 
@@ -2294,7 +2294,7 @@ RespectImageOrientationEnum RenderObject::shouldRespectImageOrientation() const
     // Respect the image's orientation if it's being used as a full-page image or it's
     // an <img> and the setting to respect it everywhere is set.
     return
-#if USE(CG) || PLATFORM(CHROMIUM) || USE(CAIRO) || PLATFORM(BLACKBERRY)
+#if USE(CG) || USE(CAIRO) || PLATFORM(BLACKBERRY)
         // This can only be enabled for ports which honor the orientation flag in their drawing code.
         document()->isImageDocument() ||
 #endif
@@ -2555,9 +2555,9 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
 
     RenderObject* destroyRoot = this;
     for (RenderObject* destroyRootParent = destroyRoot->parent(); destroyRootParent && destroyRootParent->isAnonymous(); destroyRoot = destroyRootParent, destroyRootParent = destroyRootParent->parent()) {
-        // Currently we only remove anonymous cells' wrapper but we should remove all unneeded
+        // Currently we only remove anonymous cells' and table sections' wrappers but we should remove all unneeded
         // wrappers. See http://webkit.org/b/52123 as an example where this is needed.
-        if (!destroyRootParent->isTableCell())
+        if (!destroyRootParent->isTableCell() && !destroyRootParent->isTableSection())
             break;
 
         if (destroyRootParent->firstChild() != this || destroyRootParent->lastChild() != this)

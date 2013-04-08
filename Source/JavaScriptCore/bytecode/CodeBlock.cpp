@@ -1788,7 +1788,7 @@ CodeBlock::CodeBlock(ScriptExecutable* ownerExecutable, UnlinkedCodeBlock* unlin
     // Copy and translate the UnlinkedInstructions
     size_t instructionCount = unlinkedCodeBlock->instructions().size();
     UnlinkedInstruction* pc = unlinkedCodeBlock->instructions().data();
-    Vector<Instruction> instructions(instructionCount);
+    Vector<Instruction, 0, UnsafeVectorOverflow> instructions(instructionCount);
     for (size_t i = 0; i < unlinkedCodeBlock->instructions().size(); ) {
         unsigned opLength = opcodeLength(pc[i].u.opcode);
         instructions[i] = globalData()->interpreter->getOpcode(pc[i].u.opcode);
@@ -2462,7 +2462,7 @@ void CodeBlock::stronglyVisitWeakReferences(SlotVisitor& visitor)
 
 HandlerInfo* CodeBlock::handlerForBytecodeOffset(unsigned bytecodeOffset)
 {
-    ASSERT(bytecodeOffset < instructions().size());
+    RELEASE_ASSERT(bytecodeOffset < instructions().size());
 
     if (!m_rareData)
         return 0;
@@ -2660,7 +2660,8 @@ ClosureCallStubRoutine* CodeBlock::findClosureCallForReturnPC(ReturnAddressPtr r
             continue;
         if (!info.stub->code().executableMemory()->contains(returnAddress.value()))
             continue;
-        
+
+        RELEASE_ASSERT(info.stub->codeOrigin().bytecodeIndex < CodeOrigin::maximumBytecodeIndex);
         return info.stub.get();
     }
     
@@ -2673,6 +2674,7 @@ ClosureCallStubRoutine* CodeBlock::findClosureCallForReturnPC(ReturnAddressPtr r
         ClosureCallStubRoutine* stub = static_cast<ClosureCallStubRoutine*>(genericStub);
         if (!stub->code().executableMemory()->contains(returnAddress.value()))
             continue;
+        RELEASE_ASSERT(stub->codeOrigin().bytecodeIndex < CodeOrigin::maximumBytecodeIndex);
         return stub;
     }
     
@@ -2714,7 +2716,7 @@ unsigned CodeBlock::bytecodeOffset(ExecState* exec, ReturnAddressPtr returnAddre
 #if ENABLE(JIT)
     if (!m_rareData)
         return 1;
-    Vector<CallReturnOffsetToBytecodeOffset>& callIndices = m_rareData->m_callReturnIndexVector;
+    Vector<CallReturnOffsetToBytecodeOffset, 0, UnsafeVectorOverflow>& callIndices = m_rareData->m_callReturnIndexVector;
     if (!callIndices.size())
         return 1;
     
@@ -2724,10 +2726,21 @@ unsigned CodeBlock::bytecodeOffset(ExecState* exec, ReturnAddressPtr returnAddre
             binarySearch<CallReturnOffsetToBytecodeOffset, unsigned>(
                 callIndices, callIndices.size(), callReturnOffset, getCallReturnOffset);
         RELEASE_ASSERT(result->callReturnOffset == callReturnOffset);
+        RELEASE_ASSERT(result->bytecodeOffset < instructionCount());
         return result->bytecodeOffset;
     }
-
-    return findClosureCallForReturnPC(returnAddress)->codeOrigin().bytecodeIndex;
+    ClosureCallStubRoutine* closureInfo = findClosureCallForReturnPC(returnAddress);
+    CodeOrigin origin = closureInfo->codeOrigin();
+    while (InlineCallFrame* inlineCallFrame = origin.inlineCallFrame) {
+        if (inlineCallFrame->baselineCodeBlock() == this)
+            break;
+        origin = inlineCallFrame->caller;
+        RELEASE_ASSERT(origin.bytecodeIndex < CodeOrigin::maximumBytecodeIndex);
+    }
+    RELEASE_ASSERT(origin.bytecodeIndex < CodeOrigin::maximumBytecodeIndex);
+    unsigned bytecodeIndex = origin.bytecodeIndex;
+    RELEASE_ASSERT(bytecodeIndex < instructionCount());
+    return bytecodeIndex;
 #endif // ENABLE(JIT)
 
 #if !ENABLE(LLINT) && !ENABLE(JIT)
@@ -2767,8 +2780,8 @@ void CodeBlock::clearEvalCache()
     m_rareData->m_evalCodeCache.clear();
 }
 
-template<typename T>
-inline void replaceExistingEntries(Vector<T>& target, Vector<T>& source)
+template<typename T, size_t inlineCapacity, typename U, typename V>
+inline void replaceExistingEntries(Vector<T, inlineCapacity, U>& target, Vector<T, inlineCapacity, V>& source)
 {
     ASSERT(target.size() <= source.size());
     for (size_t i = 0; i < target.size(); ++i)

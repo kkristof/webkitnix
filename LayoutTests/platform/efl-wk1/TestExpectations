@@ -138,7 +138,6 @@ webkit.org/b/112020 accessibility/transformed-element.html [ Failure ]
 webkit.org/b/112021 accessibility/visible-elements.html [ Failure ]
 
 accessibility/aria-checkbox-sends-notification.html [ Skip ]
-accessibility/aria-option-role.html [ Skip ]
 accessibility/color-well.html [ Skip ]
 accessibility/deleting-iframe-destroys-axcache.html [ Skip ]
 accessibility/img-fallsback-to-title.html [ Skip ]
@@ -301,6 +300,8 @@ webkit.org/b/96881 fast/frames/sandboxed-iframe-plugins.html [ Failure ]
 webkit.org/b/96881 http/tests/plugins [ Skip ]
 webkit.org/b/96881 plugins [ Skip ]
 webkit.org/b/96881 userscripts/user-script-plugin-document.html [ Failure ]
+webkit.org/b/96881 http/tests/inspector/network/network-embed.html [ Failure ]
+webkit.org/b/96881 http/tests/inspector/network/network-content-replacement-embed.html [ Failure ]
 
 # EFL WK1 does not support the spellchecker feature
 webkit.org/b/86633 editing/spelling [ Skip ]
@@ -451,3 +452,6 @@ webkit.org/b/109081 webgl/conformance/textures/texture-size.html [ Skip ]
 webkit.org/b/109081 webgl/conformance/uniforms/uniform-default-values.html [ Skip ]
 webkit.org/b/109081 webgl/conformance/uniforms/uniform-location.html [ Skip ]
 webkit.org/b/109081 webgl/conformance/uniforms/uniform-samplers-test.html [ Skip ]
+
+webkit.org/b/84333 storage/indexeddb/structured-clone.html [ Failure ]
+webkit.org/b/84333 storage/indexeddb/noblobs.html [ Failure ]

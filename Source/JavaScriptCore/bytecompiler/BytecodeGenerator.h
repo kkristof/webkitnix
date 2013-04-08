@@ -76,7 +76,7 @@ namespace JSC {
 
         RefPtr<RegisterID> m_profileHookRegister;
         ArgumentsNode* m_argumentsNode;
-        Vector<RefPtr<RegisterID>, 8> m_argv;
+        Vector<RefPtr<RegisterID>, 8, UnsafeVectorOverflow> m_argv;
     };
 
     struct FinallyContext {
@@ -334,22 +334,34 @@ namespace JSC {
         LabelScopePtr newLabelScope(LabelScope::Type, const Identifier* = 0);
         PassRefPtr<Label> newLabel();
 
-        // The emitNode functions are just syntactic sugar for calling
-        // Node::emitCode. These functions accept a 0 for the register,
-        // meaning that the node should allocate a register, or ignoredResult(),
-        // meaning that the node need not put the result in a register.
-        // Other emit functions do not accept 0 or ignoredResult().
-        RegisterID* emitNode(RegisterID* dst, Node* n)
+        void emitNode(RegisterID* dst, StatementNode* n)
         {
             // Node::emitCode assumes that dst, if provided, is either a local or a referenced temporary.
             ASSERT(!dst || dst == ignoredResult() || !dst->isTemporary() || dst->refCount());
             addLineInfo(n->lineNo());
-            return m_stack.isSafeToRecurse()
-                ? n->emitBytecode(*this, dst)
-                : emitThrowExpressionTooDeepException();
+            if (!m_stack.isSafeToRecurse()) {
+                emitThrowExpressionTooDeepException();
+                return;
+            }
+            n->emitBytecode(*this, dst);
         }
 
-        RegisterID* emitNode(Node* n)
+        void emitNode(StatementNode* n)
+        {
+            emitNode(0, n);
+        }
+
+        RegisterID* emitNode(RegisterID* dst, ExpressionNode* n)
+        {
+            // Node::emitCode assumes that dst, if provided, is either a local or a referenced temporary.
+            ASSERT(!dst || dst == ignoredResult() || !dst->isTemporary() || dst->refCount());
+            addLineInfo(n->lineNo());
+            if (!m_stack.isSafeToRecurse())
+                return emitThrowExpressionTooDeepException();
+            return n->emitBytecode(*this, dst);
+        }
+
+        RegisterID* emitNode(ExpressionNode* n)
         {
             return emitNode(0, n);
         }
@@ -357,10 +369,12 @@ namespace JSC {
         void emitNodeInConditionContext(ExpressionNode* n, Label* trueTarget, Label* falseTarget, FallThroughMode fallThroughMode)
         {
             addLineInfo(n->lineNo());
-            if (m_stack.isSafeToRecurse())
-                n->emitBytecodeInConditionContext(*this, trueTarget, falseTarget, fallThroughMode);
-            else
+            if (!m_stack.isSafeToRecurse()) {
                 emitThrowExpressionTooDeepException();
+                return;
+            }
+
+            n->emitBytecodeInConditionContext(*this, trueTarget, falseTarget, fallThroughMode);
         }
 
         void emitExpressionInfo(unsigned divot, unsigned startOffset, unsigned endOffset)
@@ -642,7 +656,7 @@ namespace JSC {
         RegisterID* emitInitLazyRegister(RegisterID*);
 
     public:
-        Vector<UnlinkedInstruction>& instructions() { return m_instructions; }
+        Vector<UnlinkedInstruction, 0, UnsafeVectorOverflow>& instructions() { return m_instructions; }
 
         SharedSymbolTable& symbolTable() { return *m_symbolTable; }
 
@@ -677,7 +691,7 @@ namespace JSC {
         void createActivationIfNecessary();
         RegisterID* createLazyRegisterIfNecessary(RegisterID*);
         
-        Vector<UnlinkedInstruction> m_instructions;
+        Vector<UnlinkedInstruction, 0, UnsafeVectorOverflow> m_instructions;
 
         bool m_shouldEmitDebugHooks;
         bool m_shouldEmitProfileHooks;
@@ -707,7 +721,7 @@ namespace JSC {
         int m_dynamicScopeDepth;
         CodeType m_codeType;
 
-        Vector<ControlFlowContext> m_scopeContextStack;
+        Vector<ControlFlowContext, 0, UnsafeVectorOverflow> m_scopeContextStack;
         Vector<SwitchInfo> m_switchContextStack;
         Vector<ForInContext> m_forInContextStack;
         Vector<TryContext> m_tryContextStack;

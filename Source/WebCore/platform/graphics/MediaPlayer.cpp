@@ -76,9 +76,6 @@
 #include "MediaPlayerPrivateQt.h"
 #define PlatformMediaEngineClassName MediaPlayerPrivateQt
 #endif
-#elif PLATFORM(CHROMIUM)
-#include "MediaPlayerPrivateChromium.h"
-#define PlatformMediaEngineClassName MediaPlayerPrivate
 #elif PLATFORM(BLACKBERRY)
 #include "MediaPlayerPrivateBlackBerry.h"
 #define PlatformMediaEngineClassName MediaPlayerPrivate
@@ -1154,6 +1151,13 @@ void MediaPlayer::simulateAudioInterruption()
 }
 #endif
 
+String MediaPlayer::languageOfPrimaryAudioTrack() const
+{
+    if (!m_private)
+        return emptyString();
+    
+    return m_private->languageOfPrimaryAudioTrack();
+}
 }
 
 #endif

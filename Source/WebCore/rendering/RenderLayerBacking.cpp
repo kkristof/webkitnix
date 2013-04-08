@@ -42,6 +42,7 @@
 #include "HTMLIFrameElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
+#include "HTMLPlugInElement.h"
 #include "InspectorInstrumentation.h"
 #include "KeyframeList.h"
 #include "PluginViewBase.h"
@@ -1015,28 +1016,22 @@ void RenderLayerBacking::setBackgroundLayerPaintsFixedRootBackground(bool backgr
 
 bool RenderLayerBacking::requiresHorizontalScrollbarLayer() const
 {
-#if !PLATFORM(CHROMIUM)
     if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
         return false;
-#endif
     return m_owningLayer->horizontalScrollbar();
 }
 
 bool RenderLayerBacking::requiresVerticalScrollbarLayer() const
 {
-#if !PLATFORM(CHROMIUM)
     if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
         return false;
-#endif
     return m_owningLayer->verticalScrollbar();
 }
 
 bool RenderLayerBacking::requiresScrollCornerLayer() const
 {
-#if !PLATFORM(CHROMIUM)
     if (!m_owningLayer->hasOverlayScrollbars() && !m_owningLayer->needsCompositedScrolling())
         return false;
-#endif
     return !m_owningLayer->scrollCornerAndResizerRect().isEmpty();
 }
 
@@ -1449,6 +1444,18 @@ bool RenderLayerBacking::paintsChildren() const
     return false;
 }
 
+static bool isRestartedPlugin(RenderObject* renderer)
+{
+    if (!renderer->isEmbeddedObject())
+        return false;
+
+    Element* element = toElement(renderer->node());
+    if (!element || !element->isPluginElement())
+        return false;
+
+    return toHTMLPlugInElement(element)->restartedPlugin();
+}
+
 static bool isCompositedPlugin(RenderObject* renderer)
 {
     return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing();
@@ -1463,9 +1470,9 @@ bool RenderLayerBacking::isSimpleContainerCompositingLayer() const
     if (renderObject->hasMask()) // masks require special treatment
         return false;
 
-    if (renderObject->isReplaced() && !isCompositedPlugin(renderObject))
+    if (renderObject->isReplaced() && (!isCompositedPlugin(renderObject) || isRestartedPlugin(renderObject)))
         return false;
-    
+
     if (paintsBoxDecorations() || paintsChildren())
         return false;
 
@@ -2141,10 +2148,11 @@ void RenderLayerBacking::notifyAnimationStarted(const GraphicsLayer*, double tim
     renderer()->animation()->notifyAnimationStarted(renderer(), time);
 }
 
-void RenderLayerBacking::notifyFlushRequired(const GraphicsLayer*)
+void RenderLayerBacking::notifyFlushRequired(const GraphicsLayer* layer)
 {
-    if (!renderer()->documentBeingDestroyed())
-        compositor()->scheduleLayerFlush();
+    if (renderer()->documentBeingDestroyed())
+        return;
+    compositor()->scheduleLayerFlush(layer->canThrottleLayerFlush());
 }
 
 void RenderLayerBacking::notifyFlushBeforeDisplayRefresh(const GraphicsLayer* layer)

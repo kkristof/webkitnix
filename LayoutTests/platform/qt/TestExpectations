@@ -218,6 +218,7 @@ webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html
 webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html
 
 # This test is for clients that choose to make the missing plugin indicator a button
+
 plugins/clicking-missing-plugin-fires-delegate.html
 
 # StorageTracker is not enabled.
@@ -865,6 +866,8 @@ plugins/npruntime/delete-plugin-within-getProperty.html
 plugins/npruntime/delete-plugin-within-invoke.html
 
 webkit.org/b/111058 plugins/plugin-clip-subframe.html [ Skip ]
+
+webkit.org/b/113928 plugins/focus.html [ Skip ]
 
 # =========================================================================== #
 # Failing Sputnik tests                                                       #
@@ -1918,7 +1921,9 @@ webkit.org/b/109224 fast/forms/number/number-l10n-input.html [ Skip ]
 # [Qt] New fast/flexbox/line-clamp-link-after-ellipsis.html layout test is failing since r142335.
 webkit.org/b/109353 fast/flexbox/line-clamp-link-after-ellipsis.html [ Skip ]
 
+# Some fast/exclusions/shape-outside-floats tests are failing
 webkit.org/b/113769 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.html [ Skip ]
+webkit.org/b/113769 fast/exclusions/shape-outside-floats/shape-outside-floats-diamond-margin-polygon.html [ Failure ]
 
 webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Skip ]
 
@@ -1932,6 +1937,10 @@ webkit.org/b/110546 [ DEBUG ] fast/parser/document-write-partial-entity-before-l
 webkit.org/b/112914 fast/media/mq-resolution-dpi-dpcm-warning.html [ Skip ]
 webkit.org/b/112914 fast/media/mq-resolution.html [ Skip ]
 webkit.org/b/112914 fast/media/w3c/test_media_queries.html [ Skip ]
+
+webkit.org/b/113930 fast/loader/url-selected-user-gesture.html [ Skip ]
+
+webkit.org/b/113931 fast/forms/select/popup-closes-on-blur.html [ Skip ]
 
 # ============================================================================= #
 # failing security tests
@@ -2052,7 +2061,6 @@ fast/writing-mode/text-orientation-basic.html
 fast/writing-mode/vertical-align-table-baseline.html
 fast/writing-mode/vertical-baseline-alignment.html
 fast/writing-mode/vertical-font-fallback.html
-http/tests/inspector/console-websocket-error.html
 svg/as-image/animated-svg-repaints-completely-in-hidpi.html
 transitions/default-timing-function.html
 
@@ -2300,6 +2308,7 @@ webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle.html [ Skip
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle-padding.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse-padding.html [ Skip ]
+webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-non-zero-y.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-circle.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-ellipse.html [ Skip ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ Skip ]
@@ -2564,14 +2573,6 @@ webkit.org/b/99306 animations/missing-values-first-keyframe.html [ ImageOnlyFail
 webkit.org/b/99306 animations/missing-values-last-keyframe.html [ ImageOnlyFailure ]
 webkit.org/b/99306 css3/filters/effect-blur-hw.html [ ImageOnlyFailure ] # Blur effect radius is too small on WebKit1, the effect not applied at all on WebKit2.
 
-# Needs rebaseline.
-webkit.org/b/94198 fast/dom/HTMLImageElement/image-alt-text.html [ Failure ]
-webkit.org/b/94198 fast/dom/HTMLInputElement/input-image-alt-text.html [ Failure ]
-webkit.org/b/94198 fast/encoding/utf-16-big-endian.html [ Failure ]
-webkit.org/b/94198 fast/encoding/utf-16-little-endian.html [ Failure ]
-webkit.org/b/94198 fast/forms/input-value.html [ Failure ]
-webkit.org/b/94198 tables/mozilla/collapsing_borders/bug41262-3.html [ Failure ]
-
 # REGRESSION(r132143): It made fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html flakey
 webkit.org/b/100117 fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html
 webkit.org/b/100117 editing/style/iframe-onload-crash-mac.html
@@ -2731,3 +2732,6 @@ webkit.org/b/113513 inspector/styles/paste-property.html [ Skip ]
 
 # New test crashes after r147388
 webkit.org/b/113770 editing/execCommand/format-block-at-root.html [ Skip ]
+
+#[Qt] New test fast/js/dom-static-property-for-in-iteration.html fails on Qt after r147570
+webkit.org/b/114157 fast/js/dom-static-property-for-in-iteration.html [ Failure ]
