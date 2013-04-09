@@ -77,21 +77,27 @@ TEST(WebKitNix, WebViewWebProcessCrashed)
     const WKSize size = WKSizeMake(100, 100);
     NIXViewSetSize(view.get(), size);
 
-    WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
-    WKPageLoadURL(NIXViewGetPage(view.get()), redUrl.get());
-    Util::run(&didFinishLoad);
-    didFinishLoad = false;
+    for (int i = 0; i < 50; ++i) {
+        didFinishLoad = false;
+        didWebProcessCrash = false;
+        didWebProcessRelaunch = false;
 
-    WKContextPostMessageToInjectedBundle(context.get(), Util::toWK("Crash").get(), 0);
-    Util::run(&didWebProcessCrash);
+        WKRetainPtr<WKURLRef> redUrl = adoptWK(Util::createURLForResource("../nix/red-background", "html"));
+        WKPageLoadURL(NIXViewGetPage(view.get()), redUrl.get());
+        Util::run(&didFinishLoad);
+        didFinishLoad = false;
 
-    WKRetainPtr<WKURLRef> greenUrl = adoptWK(Util::createURLForResource("../nix/green-background", "html"));
-    WKPageLoadURL(NIXViewGetPage(view.get()), greenUrl.get());
-    Util::run(&didFinishLoad);
+        WKContextPostMessageToInjectedBundle(context.get(), Util::toWK("Crash").get(), 0);
+        Util::run(&didWebProcessCrash);
+        ASSERT_TRUE(didWebProcessCrash);
 
-    ASSERT_TRUE(didWebProcessCrash);
-    ASSERT_TRUE(didWebProcessRelaunch);
-    ASSERT_TRUE(didFinishLoad);
+        WKRetainPtr<WKURLRef> greenUrl = adoptWK(Util::createURLForResource("../nix/green-background", "html"));
+        WKPageLoadURL(NIXViewGetPage(view.get()), greenUrl.get());
+        Util::run(&didFinishLoad);
+
+        ASSERT_TRUE(didWebProcessRelaunch);
+        ASSERT_TRUE(didFinishLoad);
+    }
 }
 
 } // TestWebKitAPI
