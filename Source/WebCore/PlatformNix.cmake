@@ -284,10 +284,6 @@ add_definitions(-DDATA_DIR="${CMAKE_INSTALL_PREFIX}/${DATA_INSTALL_DIR}")
 if (ENABLE_WEB_AUDIO)
   LIST(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/audio/nix"
-    ${LIBAVCODEC_INCLUDE_DIRS}
-  )
-  list(APPEND WebCore_LIBRARIES
-    ${LIBAVCODEC_LIBRARIES}
   )
   LIST(APPEND WebCore_SOURCES
     platform/audio/nix/AudioBusNix.cpp
