@@ -51,6 +51,11 @@
 #include <wtf/UnusedParam.h>
 #include <WebKit2/WKRetainPtr.h>
 
+#define NOCOLOR "\e[m"
+#define RED     "\e[38;05;9m"
+#define YELLOW  "\e[38;05;10m"
+#define GREEN   "\e[38;05;11m"
+
 extern "C" {
 static gboolean callUpdateDisplay(gpointer);
 extern void glUseProgram(GLuint);
@@ -99,6 +104,11 @@ public:
 
     // PopupMenuClient.
     static void showPopupMenu(WKPageRef page, WKPopupMenuListenerRef menuListenerRef, WKRect rect, WKPopupItemTextDirection textDirection, double pageScaleFactor, WKArrayRef itemsRef, int32_t selectedIndex, const void* clientInfo);
+
+    // UIClient.
+    static void runJavaScriptAlert(WKPageRef page, WKStringRef message, WKFrameRef frame, const void* clientInfo);
+    static bool runJavaScriptConfirm(WKPageRef page, WKStringRef message, WKFrameRef frame, const void* clientInfo);
+    static WKStringRef runJavaScriptPrompt(WKPageRef page, WKStringRef message, WKStringRef defaultValue, WKFrameRef frame, const void* clientInfo);
 
     virtual double scale();
 
@@ -258,6 +268,16 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
     popupMenuClient.clientInfo = this;
     popupMenuClient.showPopupMenu = MiniBrowser::showPopupMenu;
     WKPageSetPagePopupMenuClient(pageRef(), &popupMenuClient);
+
+    WKPageUIClient uiClient;
+    memset(&uiClient, 0, sizeof(WKPageUIClient));
+    uiClient.version = kWKPageUIClientCurrentVersion;
+    uiClient.clientInfo = this;
+    uiClient.runJavaScriptAlert = MiniBrowser::runJavaScriptAlert;
+    uiClient.runJavaScriptConfirm = MiniBrowser::runJavaScriptConfirm;
+    uiClient.runJavaScriptPrompt = MiniBrowser::runJavaScriptPrompt;
+
+    WKPageSetPageUIClient(pageRef(), &uiClient);
 
     WKPageLoadURL(pageRef(), WKURLCreateWithUTF8CString(options.url.c_str()));
 }
@@ -624,15 +644,23 @@ void MiniBrowser::viewNeedsDisplay(NIXView, WKRect area, const void* clientInfo)
     mb->scheduleUpdateDisplay();
 }
 
+std::string createStdStringFromWKString(WKStringRef wkStr)
+{
+    size_t wkStrSize = WKStringGetMaximumUTF8CStringSize(wkStr);
+    std::string result;
+    result.resize(wkStrSize + 1);
+    size_t realSize = WKStringGetUTF8CString(wkStr, &result[0], result.length());
+    if (realSize > 0)
+        result.resize(realSize - 1);
+    return result;
+}
+
 void MiniBrowser::webProcessCrashed(NIXView, WKStringRef url, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
-    size_t urlStringSize =  WKStringGetMaximumUTF8CStringSize(url);
-    char* urlString = new char[urlStringSize];
-    WKStringGetUTF8CString(url, urlString, urlStringSize);
-    fprintf(stderr, "The web process has crashed on '%s'.\n", urlString);
-    WKPageLoadURL(mb->pageRef(), WKURLCreateWithUTF8CString(urlString));
-    delete[] urlString;
+    std::string urlString = createStdStringFromWKString(url);
+    fprintf(stderr, "The web process has crashed on '%s'.\n", urlString.c_str());
+    WKPageLoadURL(mb->pageRef(), WKURLCreateWithUTF8CString(urlString.c_str()));
 }
 
 void MiniBrowser::webProcessRelaunched(NIXView, const void* clientInfo)
@@ -983,16 +1011,13 @@ static void printContextMenuItem(const WKContextMenuItemRef item, const int opti
         return;
     }
 
-    const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
-    char* titleBuffer = new char[titleBufferSize];
-    WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
+    std::string titleBuffer = createStdStringFromWKString(title);
 
     // No tabs for level 0.
     for (int i = 0; i < level; ++i)
         printf("\t");
 
-    printf("%d- %s\n", optionIndex, titleBuffer);
-    delete[] titleBuffer;
+    printf("%d- %s\n", optionIndex, titleBuffer.c_str());
     WKRelease(title);
 }
 
@@ -1046,6 +1071,48 @@ void MiniBrowser::showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayR
     scanf("%d",&option);
     if (option > 0 && option <= itemsCounter)
         selectContextMenuItemAtIndex(page, menuItems, option - 1);
+}
+
+void MiniBrowser::runJavaScriptAlert(WKPageRef, WKStringRef message, WKFrameRef, const void*)
+{
+    std::string messageString = createStdStringFromWKString(message);
+    printf(RED "[js:alert] %s" NOCOLOR "\n", messageString.c_str());
+}
+
+bool MiniBrowser::runJavaScriptConfirm(WKPageRef, WKStringRef message, WKFrameRef, const void*)
+{
+    std::string messageString = createStdStringFromWKString(message);
+    printf(GREEN "[js:confirm] %s" NOCOLOR "\n> ", messageString.c_str());
+
+    char option;
+    scanf(" %c", &option);
+    bool ret = (option == 'y' || option == 'Y');
+
+    return ret;
+}
+
+WKStringRef MiniBrowser::runJavaScriptPrompt(WKPageRef, WKStringRef message, WKStringRef defaultValue, WKFrameRef, const void*)
+{
+    std::string messageString = createStdStringFromWKString(message);
+    std::string defaultString = createStdStringFromWKString(defaultValue);
+    printf(YELLOW "[js:prompt] %s [default: '%s']" NOCOLOR "\n> ", messageString.c_str(), defaultString.c_str());
+
+    int size = 256;
+    char* userInput = new char[size + 1];
+    scanf(" %c", userInput);
+    for (int i = 1; i < size; ++i) {
+        scanf("%c", &userInput[i]);
+        if (userInput[i] == '\n') {
+            userInput[i] = '\0';
+            break;
+        }
+    }
+    userInput[size] = '\0';
+
+    WKStringRef ret = WKStringCreateWithUTF8CString(userInput);
+
+    delete[] userInput;
+    return ret;
 }
 
 int main(int argc, char* argv[])
