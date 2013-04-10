@@ -3234,9 +3234,6 @@ compositing/absolute-position-changed-in-composited-layer.html [ Timeout Pass ]
 compositing/animation/animation-compositing.html [ Timeout Pass ]
 compositing/color-matching/pdf-image-match.html [ Missing ]
 
-# Regressions after merge (ed1dcb7 b9b7af1)
-inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Crash ]
-
 # Failures before merge that removes Chromium
 css3/filters/custom/custom-filter-animation.html [ Failure Pass ]
 fast/hidpi/video-controls-in-hidpi.html [ Failure Pass Crash ]
@@ -3244,21 +3241,12 @@ compositing/repaint/clipped-layer-size-change.html [ ImageOnlyFailure Pass ]
 fast/backgrounds/obscured-background-child-style-change.html [ ImageOnlyFailure Pass ]
 fast/loader/display-image-unset-allows-cached-image-load.html [ Crash Timeout Pass ]
 http/tests/misc/iframe-reparenting-id-collision.html [ Crash Timeout Pass ]
-compositing/filters/sw-layer-overlaps-hw-shadow.html [ Failure ]
-compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]
-compositing/filters/sw-shadow-overlaps-hw-layer.html [ Failure ]
-compositing/filters/sw-shadow-overlaps-hw-shadow.html [ Failure ]
-css3/filters/composited-during-animation-layertree.html [ Failure ]
-css3/filters/composited-layer-bounds-with-composited-blur.html [ Failure ]
-css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
-css3/filters/composited-layer-promotion-after-outset-overlap-change-using-composited-shadow.html [ Failure ]
 css3/selectors3/html/css3-modsel-25.html [ Failure ]
 css3/selectors3/html/css3-modsel-70.html [ Failure ]
 css3/selectors3/xhtml/css3-modsel-25.xml [ Failure ]
 css3/selectors3/xhtml/css3-modsel-70.xml [ Failure ]
 css3/selectors3/xml/css3-modsel-25.xml [ Failure ]
 css3/selectors3/xml/css3-modsel-70.xml [ Failure ]
-fast/animation/request-animation-frame-time-unit.html [ Failure ]
 fast/block/basic/011.html [ Failure ]
 fast/block/margin-collapse/103.html [ Failure ]
 fast/dom/HTMLImageElement/image-alt-text.html [ Failure ]
@@ -3269,28 +3257,17 @@ fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.ht
 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html [ Failure ]
 fast/forms/select/popup-closes-on-blur.html [ Failure ]
 fast/lists/inlineBoxWrapperNullCheck.html [ Failure ]
-fast/loader/url-selected-user-gesture.html [ Failure ]
 fast/replaced/replaced-breaking.html [ Failure ]
 fast/replaced/width100percent-checkbox.html [ Failure ]
 fast/replaced/width100percent-radio.html [ Failure ]
 fast/text/textIteratorNilRenderer.html [ Failure ]
 fast/text/whitespace/normal-after-nowrap-breaking.html [ Failure ]
 fast/css/negative-text-indent-in-inline-block.html [ ImageOnlyFailure ]
-fast/forms/submit-to-blank-multiple-times.html [ Crash ]
-fast/frames/crash-removed-iframe.html [ Crash Timeout ]
-fast/loader/image-in-page-cache.html [ Crash Timeout ]
-http/tests/security/frameNavigation/cross-origin-opener.html [ Crash ]
-http/tests/security/frameNavigation/not-opener.html [ Crash ]
-storage/indexeddb/keyrange.html [ Crash ]
-http/tests/security/aboutBlank/security-context-window-open.html [ Timeout Crash ]
 fast/dom/HTMLImageElement/image-with-invalid-border.html [ ImageOnlyFailure Pass ]
 fast/exclusions/shape-inside/shape-inside-polygon-padding-002.html [ ImageOnlyFailure ]
-fast/parser/document-open-in-unload.html [ Crash ]
-fast/workers/stress-js-execution.html [ Crash ]
 http/tests/eventsource/eventsource-cors-basic.html [ Failure Pass ]
 http/tests/xmlhttprequest/access-control-preflight-async-method-denied.html [ Failure Pass ]
 fast/harness/sample-mismatch-reftest.html [ ImageOnlyFailure Pass ]
-http/tests/appcache/abort-cache-onchecking-manifest-404.html [ Crash ]
 editing/selection/skip-non-editable-1.html [ Failure Pass ]
 editing/selection/skip-non-editable-2.html [ Failure Pass ]
 editing/selection/table-caret-1.html [ Failure Pass ]
@@ -3305,9 +3282,6 @@ fast/forms/date-multiple-fields/date-multiple-fields-clearbutton-visibility-afte
 fast/forms/input-first-letter-edit.html [ ImageOnlyFailure Pass ]
 fast/media/mq-relative-constraints-06.html [ ImageOnlyFailure Pass ]
 fast/media/mq-transform-03.html [ ImageOnlyFailure Pass ]
-fast/workers/shared-worker-context-gc.html [ Crash ]
-http/tests/cache/partitioned-cache.html [ Crash ]
-fast/frames/sandboxed-iframe-navigation-windowopen.html [ Timeout Crash ]
 http/tests/loading/basic-auth-resend-wrong-credentials.html [ Failure Pass ]
 fast/block/float/previous-sibling-float-001.html [ ImageOnlyFailure Pass ]
 fast/dom/shadow/shadowdom-for-object-only-shadow.html [ ImageOnlyFailure Pass ]
@@ -3335,7 +3309,6 @@ fast/text/international/pop-up-button-text-alignment-and-direction.html [ Failur
 fast/text/international/text-combine-image-test.html [ Failure ]
 storage/indexeddb/lazy-index-population.html [ Timeout Pass ]
 perf/htmlcollection-backwards-iteration.html [ Failure Pass ]
-storage/indexeddb/index-multientry.html [ Crash ]
 
 # Nix WTR needs EventSender methods mouseScrollBy and continuousMouseScrollBy
 fast/events/wheelevent-direction-inverted-from-device.html [ Skip ]
@@ -3515,7 +3488,6 @@ compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
 
 # Text diff: Graphics Layers hidden/appearing.
 compositing/geometry/limit-layer-bounds-fixed.html [ Failure ]
-compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
 compositing/layer-creation/fixed-position-no-content.html [ Failure ]
 compositing/iframes/iframe-composited-scrolling.html [ Failure ]
 compositing/iframes/leave-compositing-iframe.html [ Failure ]
@@ -3606,6 +3578,8 @@ compositing/reflections/backface-hidden-reflection.html [ Pass ImageOnlyFailure 
 compositing/z-order/negative-z-index.html [ Pass ImageOnlyFailure ]
 
 # Tests missing expected results when running without --pixel-tests.
+css3/filters/effect-reference-composite-hw.html [ Missing ]
+css3/filters/effect-reference-composite.html [ Missing ]
 fast/js/constructor-length.html [ Missing ]
 fast/events/touch/gesture/long-press-on-draggable-element-triggers-drag.html [ Missing ]
 fast/events/touch/gesture/context-menu-on-long-tap.html [ Missing ]
@@ -4018,9 +3992,6 @@ fast/events/drag-and-drop-autoscroll.html [ Failure ]
 # CONSOLE MESSAGE: line 21: TypeError: 'undefined' is not an object (evaluating 'track.track.mode = "hidden"')
 # FAIL: Timed out waiting for notifyDone to be called
 http/tests/security/contentSecurityPolicy/media-src-track-block.html [ Failure ]
-# CONSOLE MESSAGE: line 25: TypeError: 'undefined' is not a function (evaluating 'testRunner.setIsolatedWorldSecurityOrigin(2, 'http://localhost:8000')')
-# FAIL: Timed out waiting for notifyDone to be called
-http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
 fast/events/touch/multi-touch-inside-iframes.html [ Failure Pass ]
 fast/workers/worker-document-leak.html [ Failure Pass ]
@@ -4085,10 +4056,7 @@ fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.
 
 # Flakey and failing tests after merge 1545593 eb8adb3
 editing/pasteboard/smart-drag-drop.html [ Failure Pass ]  
-http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
-http/tests/security/xss-DENIED-xsl-external-entity.xml [ Failure ]
 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ ImageOnlyFailure ]
-fast/parser/document-write-basic.html [ Crash ]
 svg/custom/resources-css-scaled.html [ ImageOnlyFailure ]
 
 # Flakey tests after merge 5494e11 a55ee6c
