@@ -44,6 +44,7 @@
 #include "NameInstance.h"
 #include "ObjectConstructor.h"
 #include "Operations.h"
+#include "StringConstructor.h"
 #include <wtf/InlineASM.h>
 
 #if ENABLE(JIT)
@@ -995,6 +996,23 @@ size_t DFG_OPERATION operationCompareEq(ExecState* exec, EncodedJSValue encodedO
     return JSValue::equalSlowCaseInline(exec, JSValue::decode(encodedOp1), JSValue::decode(encodedOp2));
 }
 
+#if USE(JSVALUE64)
+EncodedJSValue DFG_OPERATION operationCompareStringEq(ExecState* exec, JSCell* left, JSCell* right)
+#else
+size_t DFG_OPERATION operationCompareStringEq(ExecState* exec, JSCell* left, JSCell* right)
+#endif
+{
+    JSGlobalData* globalData = &exec->globalData();
+    NativeCallFrameTracer tracer(globalData, exec);
+    
+    bool result = asString(left)->value(exec) == asString(right)->value(exec);
+#if USE(JSVALUE64)
+    return JSValue::encode(jsBoolean(result));
+#else
+    return result;
+#endif
+}
+
 size_t DFG_OPERATION operationCompareStrictEqCell(ExecState* exec, EncodedJSValue encodedOp1, EncodedJSValue encodedOp2)
 {
     JSGlobalData* globalData = &exec->globalData();
@@ -1582,6 +1600,13 @@ JSCell* DFG_OPERATION operationMakeRope3(ExecState* exec, JSString* a, JSString*
 double DFG_OPERATION operationFModOnInts(int32_t a, int32_t b)
 {
     return fmod(a, b);
+}
+
+JSCell* DFG_OPERATION operationStringFromCharCode(ExecState* exec, int32_t op1)
+{
+    JSGlobalData* globalData = &exec->globalData();
+    NativeCallFrameTracer tracer(globalData, exec);
+    return JSC::stringFromCharCode(exec, op1);
 }
 
 DFGHandlerEncoded DFG_OPERATION lookupExceptionHandler(ExecState* exec, uint32_t callIndex)

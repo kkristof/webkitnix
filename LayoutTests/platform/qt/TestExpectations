@@ -121,8 +121,6 @@ http/tests/security/cross-origin-worker-indexeddb-allowed.html
 http/tests/security/cross-origin-worker-indexeddb.html
 http/tests/security/no-indexeddb-from-sandbox.html
 
-inspector/timeline/timeline-animation-frame.html
-
 # ENABLE(WEB_ARCHIVE) is disabled.
 svg/custom/image-with-prefix-in-webarchive.svg
 http/tests/webarchive
@@ -212,10 +210,6 @@ fast/js/i18n-bindings-locale.html
 
 # JSC does not support setIsolatedWorldSecurityOrigin, (http://webkit.org/b/61540)
 http/tests/security/isolatedWorld/cross-origin-xhr.html
-
-# JSC also doesn't support setIsolatedWorldContentSecurityPolicy (webkit.org/b/100815)
-webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html
-webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html
 
 # This test is for clients that choose to make the missing plugin indicator a button
 
@@ -353,6 +347,7 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
+webkit.org/b/99945 fast/css3-text/css3-text-justify [ Failure ]
 webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure ]
 
 # Web Inspector: Implement support for InspectorClient::overrideDeviceMetrics() in platforms other than Chromium
@@ -1489,14 +1484,6 @@ css3/images/cross-fade-tiled.html
 # --- new crashing test, bug report needed
 css3/filters/effect-reference-hw.html
 
-# Need rebaseline after https://bugs.webkit.org/show_bug.cgi?id=109098
-css3/filters/filter-change-repaint-composited.html
-css3/filters/composited-layer-bounds-after-sw-blur-animation.html
-css3/filters/composited-layer-bounds-with-composited-blur.html
-css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html
-css3/filters/composited-layer-promotion-after-outset-overlap-change-using-composited-shadow.html
-css3/filters/composited-layer-promotion-after-outset-overlap-change-using-sw-shadow.html
-
 # ============================================================================= #
 # failing fast tests
 # ============================================================================= #
@@ -1550,7 +1537,6 @@ fast/dom/isindex-002.html
 # QUrl::from/toACE seems to be stricter than what ICU does.
 fast/encoding/idn-security.html
 fast/encoding/xmacroman-encoding-test.html
-fast/events/autoscroll.html
 fast/events/content-changed-during-drop.html
 fast/events/js-keyboard-event-creation.html
 fast/events/keypress-insert-tab.html

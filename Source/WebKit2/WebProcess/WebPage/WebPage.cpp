@@ -559,12 +559,9 @@ PassRefPtr<Plugin> WebPage::createPlugin(WebFrame* frame, HTMLPlugInElement* plu
 
 #if ENABLE(PLUGIN_PROCESS)
 
-    PluginProcess::Type processType = PluginProcess::TypeRegularProcess;
-    if (pluginElement->displayState() == HTMLPlugInElement::WaitingForSnapshot)
-        processType = PluginProcess::TypeSnapshotProcess;
-    else if (pluginElement->displayState() == HTMLPlugInElement::Restarting || pluginElement->displayState() == HTMLPlugInElement::RestartingWithPendingMouseClick)
-        processType = PluginProcess::TypeRestartedProcess;
-    return PluginProxy::create(pluginPath, processType);
+    PluginProcess::Type processType = (pluginElement->displayState() == HTMLPlugInElement::WaitingForSnapshot ? PluginProcess::TypeSnapshotProcess : PluginProcess::TypeRegularProcess);
+    bool isRestartedProcess = (pluginElement->displayState() == HTMLPlugInElement::Restarting || pluginElement->displayState() == HTMLPlugInElement::RestartingWithPendingMouseClick);
+    return PluginProxy::create(pluginPath, processType, isRestartedProcess);
 #else
     NetscapePlugin::setSetExceptionFunction(NPRuntimeObjectMap::setGlobalException);
     return NetscapePlugin::create(NetscapePluginModule::getOrCreate(pluginPath));
@@ -3917,6 +3914,8 @@ void WebPage::didFinishLoad(WebFrame* frame)
     m_readyToFindPrimarySnapshottedPlugin = true;
     if (!m_page->settings()->snapshotAllPlugIns() && m_page->settings()->primaryPlugInSnapshotDetectionEnabled())
         determinePrimarySnapshottedPlugIn();
+#else
+    UNUSED_PARAM(frame);
 #endif
 }
 
@@ -3929,6 +3928,9 @@ static int primarySnapshottedPlugInMinimumHeight = 300;
 
 void WebPage::determinePrimarySnapshottedPlugIn()
 {
+    if (!m_page->settings()->plugInSnapshottingEnabled())
+        return;
+
     if (!m_readyToFindPrimarySnapshottedPlugin)
         return;
 

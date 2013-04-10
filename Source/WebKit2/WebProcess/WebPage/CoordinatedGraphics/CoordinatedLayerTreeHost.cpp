@@ -262,7 +262,7 @@ void CoordinatedLayerTreeHost::didInstallPageOverlay(PageOverlay* pageOverlay)
     scheduleLayerFlush();
 }
 
-void CoordinatedLayerTreeHost::didUninstallPageOverlay(PageOverlay* pageOverlay)
+void CoordinatedLayerTreeHost::didUninstallPageOverlay(PageOverlay*)
 {
     m_pageOverlay = 0;
 

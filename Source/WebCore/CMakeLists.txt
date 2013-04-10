@@ -1848,7 +1848,6 @@ set(WebCore_SOURCES
     platform/KURL.cpp
     platform/KillRingNone.cpp
     platform/Language.cpp
-    platform/LayoutTestSupport.cpp
     platform/Length.cpp
     platform/LengthBox.cpp
     platform/LinkHash.cpp

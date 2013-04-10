@@ -453,7 +453,6 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_createRenderers(true)
     , m_inPageCache(false)
     , m_accessKeyMapValid(false)
-    , m_useSecureKeyboardEntryWhenActive(false)
     , m_isXHTML(isXHTML)
     , m_isHTML(isHTML)
     , m_isViewSource(false)
@@ -3489,6 +3488,12 @@ bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection
         }
     }
 
+    if (!focusChangeBlocked && m_focusedNode) {
+        // Create the AXObject cache in a focus change because GTK relies on it.
+        if (AXObjectCache* cache = axObjectCache())
+            cache->handleFocusedUIElementChanged(oldFocusedNode.get(), newFocusedNode.get());
+    }
+
     if (!focusChangeBlocked)
         page()->chrome()->focusedNodeChanged(m_focusedNode.get());
 
@@ -3566,29 +3571,6 @@ void Document::updateRangesAfterChildrenChanged(ContainerNode* container)
         HashSet<Range*>::const_iterator end = m_ranges.end();
         for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
             (*it)->nodeChildrenChanged(container);
-    }
-}
-
-void Document::nodeChildrenWillBeRemoved(ContainerNode* container)
-{
-    if (!m_ranges.isEmpty()) {
-        HashSet<Range*>::const_iterator end = m_ranges.end();
-        for (HashSet<Range*>::const_iterator it = m_ranges.begin(); it != end; ++it)
-            (*it)->nodeChildrenWillBeRemoved(container);
-    }
-
-    HashSet<NodeIterator*>::const_iterator nodeIteratorsEnd = m_nodeIterators.end();
-    for (HashSet<NodeIterator*>::const_iterator it = m_nodeIterators.begin(); it != nodeIteratorsEnd; ++it) {
-        for (Node* n = container->firstChild(); n; n = n->nextSibling())
-            (*it)->nodeWillBeRemoved(n);
-    }
-
-    if (Frame* frame = this->frame()) {
-        for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
-            frame->eventHandler()->nodeWillBeRemoved(n);
-            frame->selection()->nodeWillBeRemoved(n);
-            frame->page()->dragCaretController()->nodeWillBeRemoved(n);
-        }
     }
 }
 
@@ -4610,20 +4592,6 @@ void Document::addIconURL(const String& url, const String&, const String&, IconT
         return;
 
     f->loader()->didChangeIcons(iconType);
-}
-
-void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)
-{
-    if (m_useSecureKeyboardEntryWhenActive == usesSecureKeyboard)
-        return;
-
-    m_useSecureKeyboardEntryWhenActive = usesSecureKeyboard;
-    m_frame->selection()->updateSecureKeyboardEntryIfActive();
-}
-
-bool Document::useSecureKeyboardEntryWhenActive() const
-{
-    return m_useSecureKeyboardEntryWhenActive;
 }
 
 static bool isEligibleForSeamless(Document* parent, Document* child)

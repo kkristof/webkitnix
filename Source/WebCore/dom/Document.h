@@ -724,8 +724,6 @@ public:
     void detachRange(Range*);
 
     void updateRangesAfterChildrenChanged(ContainerNode*);
-    // nodeChildrenWillBeRemoved is used when removing all node children at once.
-    void nodeChildrenWillBeRemoved(ContainerNode*);
     // nodeWillBeRemoved is only safe when removing one node at a time.
     void nodeWillBeRemoved(Node*);
     bool canReplaceChild(Node* newChild, Node* oldChild);
@@ -932,9 +930,6 @@ public:
     const Vector<IconURL>& shortcutIconURLs();
     const Vector<IconURL>& iconURLs(int iconTypesMask);
     void addIconURL(const String& url, const String& mimeType, const String& size, IconType);
-
-    void setUseSecureKeyboardEntryWhenActive(bool);
-    bool useSecureKeyboardEntryWhenActive() const;
 
     void updateFocusAppearanceSoon(bool restorePreviousSelection);
     void cancelFocusAppearanceUpdate();
@@ -1489,8 +1484,6 @@ private:
     bool m_accessKeyMapValid;
 
     OwnPtr<SelectorQueryCache> m_selectorQueryCache;
-
-    bool m_useSecureKeyboardEntryWhenActive;
 
     bool m_isXHTML;
     bool m_isHTML;

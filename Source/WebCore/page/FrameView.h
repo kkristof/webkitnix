@@ -236,7 +236,8 @@ public:
     void startDeferredRepaintTimer(double delay);
     void resetDeferredRepaintDelay();
 
-    void updateLayerFlushThrottling(bool isLoadProgressing);
+    void updateLayerFlushThrottlingInAllFrames(bool isLoadProgressing);
+    void adjustTiledBackingCoverage();
 
     void beginDisableRepaints();
     void endDisableRepaints();
@@ -414,6 +415,8 @@ public:
     virtual int footerHeight() const OVERRIDE { return m_footerHeight; }
     void setFooterHeight(int);
 
+    virtual void willEndLiveResize() OVERRIDE;
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
@@ -480,6 +483,10 @@ private:
 #endif
 #endif
 
+    void scheduleResizeEvent();
+    void sendResizeEvent();
+    void delayedResizeEventTimerFired(Timer<FrameView>*);
+
     void updateScrollableAreaSet();
 
     virtual void notifyPageThatContentAreaWillPaint() const;
@@ -525,6 +532,8 @@ private:
     unsigned m_slowRepaintObjectCount;
     int m_borderX;
     int m_borderY;
+
+    Timer<FrameView> m_delayedResizeEventTimer;
 
     Timer<FrameView> m_layoutTimer;
     bool m_delayedLayout;

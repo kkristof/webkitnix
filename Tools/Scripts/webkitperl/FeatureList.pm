@@ -125,6 +125,7 @@ my (
     $requestAnimationFrameSupport,
     $resourceTimingSupport,
     $scriptedSpeechSupport,
+    $seccompFiltersSupport,
     $shadowDOMSupport,
     $sharedWorkersSupport,
     $sqlDatabaseSupport,
@@ -379,7 +380,7 @@ my @features = (
       define => "ENABLE_ORIENTATION_EVENTS", default => isBlackBerry(), value => \$orientationEventsSupport },
 
     { option => "page-visibility-api", desc => "Toggle Page Visibility API support",
-      define => "ENABLE_PAGE_VISIBILITY_API", default => (isBlackBerry() || isEfl()), value => \$pageVisibilityAPISupport },
+      define => "ENABLE_PAGE_VISIBILITY_API", default => (isBlackBerry() || isEfl() || isGtk()), value => \$pageVisibilityAPISupport },
 
     { option => "performance-timeline", desc => "Toggle Performance Timeline support",
       define => "ENABLE_PERFORMANCE_TIMELINE", default => isGtk(), value => \$performanceTimelineSupport },
@@ -401,6 +402,9 @@ my @features = (
 
     { option => "request-animation-frame", desc => "Toggle Request Animation Frame support",
       define => "ENABLE_REQUEST_ANIMATION_FRAME", default => (isAppleMacWebKit() || isGtk() || isEfl() || isBlackBerry() || isNix()), value => \$requestAnimationFrameSupport },
+
+    { option => "seccomp-filters", desc => "Toggle Seccomp Filter sandbox",
+      define => "ENABLE_SECCOMP_FILTERS", default => 0, value => \$seccompFiltersSupport },
 
     { option => "scripted-speech", desc => "Toggle Scripted Speech support",
       define => "ENABLE_SCRIPTED_SPEECH", default => 0, value => \$scriptedSpeechSupport },

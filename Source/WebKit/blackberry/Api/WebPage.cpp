@@ -114,6 +114,7 @@
 #include "RenderTreeAsText.h"
 #include "RenderView.h"
 #include "RenderWidget.h"
+#include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "ScrollTypes.h"
@@ -344,11 +345,6 @@ void WebPage::autofillTextField(const BlackBerry::Platform::String& item)
     d->m_autofillManager->autofillTextField(item);
 }
 
-void WebPage::enableQnxJavaScriptObject(bool enabled)
-{
-    d->m_enableQnxJavaScriptObject = enabled;
-}
-
 BlackBerry::Platform::String WebPage::renderTreeAsText()
 {
     return externalRepresentation(d->m_mainFrame);
@@ -424,7 +420,6 @@ WebPagePrivate::WebPagePrivate(WebPage* webPage, WebPageClient* client, const In
     , m_fullscreenNode(0)
     , m_hasInRegionScrollableAreas(false)
     , m_updateDelegatedOverlaysDispatched(false)
-    , m_enableQnxJavaScriptObject(false)
     , m_deferredTasksTimer(this, &WebPagePrivate::deferredTasksTimerFired)
     , m_selectPopup(0)
     , m_autofillManager(AutofillManager::create(this))
@@ -900,7 +895,7 @@ void WebPage::executeJavaScriptFunction(const std::vector<BlackBerry::Platform::
     for (unsigned i = 0; i < args.size(); ++i)
         argListRef[i] = BlackBerryJavaScriptVariantToJSValueRef(ctx, args[i]);
 
-    JSValueRef windowObjectValue = windowObject();
+    JSValueRef windowObjectValue = toRef(d->m_mainFrame->script()->globalObject(mainThreadNormalWorld()));
     JSObjectRef obj = JSValueToObject(ctx, windowObjectValue, 0);
     JSObjectRef thisObject = obj;
     for (unsigned i = 0; i < function.size(); ++i) {
@@ -1177,7 +1172,7 @@ double WebPagePrivate::clampedScale(double scale) const
 
 bool WebPagePrivate::shouldZoomAboutPoint(double scale, const FloatPoint&, bool enforceScaleClamping, double* clampedScale)
 {
-    if (!m_mainFrame->view())
+    if (!m_mainFrame || !m_mainFrame->view())
         return false;
 
     if (enforceScaleClamping)
@@ -1381,7 +1376,7 @@ void WebPage::setDocumentScrollPosition(const Platform::IntPoint& documentScroll
 
 bool WebPagePrivate::shouldSendResizeEvent()
 {
-    if (!m_mainFrame->document())
+    if (!m_mainFrame || !m_mainFrame->document())
         return false;
 
     // PR#96865 : Provide an option to always send resize events, regardless of the loading
@@ -1518,7 +1513,7 @@ IntRect WebPagePrivate::visibleContentsRect() const
 
 IntSize WebPagePrivate::contentsSize() const
 {
-    if (!m_mainFrame->view())
+    if (!m_mainFrame || !m_mainFrame->view())
         return IntSize();
 
     return m_backingStoreClient->contentsSize();
@@ -1526,7 +1521,7 @@ IntSize WebPagePrivate::contentsSize() const
 
 IntSize WebPagePrivate::absoluteVisibleOverflowSize() const
 {
-    if (!m_mainFrame->contentRenderer())
+    if (!m_mainFrame || !m_mainFrame->contentRenderer())
         return IntSize();
 
     return IntSize(m_mainFrame->contentRenderer()->rightAbsoluteVisibleOverflow(), m_mainFrame->contentRenderer()->bottomAbsoluteVisibleOverflow());
@@ -1859,7 +1854,7 @@ void WebPagePrivate::notifyTransformedScrollChanged()
 
 bool WebPagePrivate::setViewMode(ViewMode mode)
 {
-    if (!m_mainFrame->view())
+    if (!m_mainFrame || !m_mainFrame->view())
         return false;
 
     m_viewMode = mode;
@@ -2741,15 +2736,15 @@ IntRect WebPagePrivate::rectForNode(Node* node)
         int xOffset = 0;
         int yOffset = 0;
         while (!renderBlock->isRoot()) {
-            xOffset += renderBlock->x();
-            yOffset += renderBlock->y();
+            xOffset += renderBlock->x().toInt();
+            yOffset += renderBlock->y().toInt();
             renderBlock = renderBlock->containingBlock();
         }
         const RenderText* renderText = toRenderText(renderer);
         IntRect linesBox = renderText->linesBoundingBox();
         blockRect = IntRect(xOffset + linesBox.x(), yOffset + linesBox.y(), linesBox.width(), linesBox.height());
     } else
-        blockRect = renderer->absoluteClippedOverflowRect();
+        blockRect = IntRect(renderer->absoluteClippedOverflowRect());
 
     if (renderer->isText()) {
         RenderBlock* rb = renderer->containingBlock();
@@ -2758,7 +2753,7 @@ IntRect WebPagePrivate::rectForNode(Node* node)
         int blockWidth = 0;
         int lineCount = rb->lineCount();
         for (int i = 0; i < lineCount; i++)
-            blockWidth = max(blockWidth, rb->availableLogicalWidthForLine(i, false));
+            blockWidth = max(blockWidth, rb->availableLogicalWidthForLine(i, false).toInt());
 
         blockRect.setWidth(blockWidth);
         blockRect.setX(blockRect.x() + rb->logicalLeftOffsetForLine(1, false));
@@ -3041,6 +3036,8 @@ bool WebPage::canGoBackOrForward(int delta) const
 bool WebPage::goBackOrForward(int delta)
 {
     if (d->m_page->canGoBackOrForward(delta)) {
+        d->m_userPerformedManualZoom = false;
+        d->m_userPerformedManualScroll = false;
         d->m_backingStore->d->suspendScreenUpdates();
         d->m_page->goBackOrForward(delta);
         d->m_backingStore->d->resumeScreenUpdates(BackingStore::None);
@@ -4742,22 +4739,12 @@ void WebPage::setTimeoutForJavaScriptExecution(unsigned ms)
     doc->globalData()->timeoutChecker.setTimeoutInterval(ms);
 }
 
-JSContextRef WebPage::scriptContext() const
+JSGlobalContextRef WebPage::globalContext() const
 {
     if (!d->m_mainFrame)
         return 0;
 
-    JSC::Bindings::RootObject *root = d->m_mainFrame->script()->bindingRootObject();
-    if (!root)
-        return 0;
-
-    JSC::ExecState *exec = root->globalObject()->globalExec();
-    return toRef(exec);
-}
-
-JSValueRef WebPage::windowObject() const
-{
-    return toRef(d->m_mainFrame->script()->globalObject(mainThreadNormalWorld()));
+    return toGlobalRef(d->m_mainFrame->script()->globalObject(mainThreadNormalWorld())->globalExec());
 }
 
 // Serialize only the members of HistoryItem which are needed by the client,
@@ -6258,6 +6245,11 @@ Color WebPagePrivate::documentBackgroundColor() const
     if (!color.isValid())
         color = m_webSettings->backgroundColor();
     return color;
+}
+
+bool WebPage::isProcessingUserGesture() const
+{
+    return ScriptController::processingUserGesture();
 }
 
 }

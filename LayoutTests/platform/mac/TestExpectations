@@ -391,6 +391,8 @@ fast/js/i18n-bindings-locale.html
 # https://bugs.webkit.org/show_bug.cgi?id=55509
 compositing/webgl/webgl-nonpremultiplied-blend.html
 
+webkit.org/b/114321 compositing/plugins/invalidate_rect.html [ Failure Pass ]
+
 # DataTransferItems is not yet implemented.
 editing/pasteboard/data-transfer-items.html
 editing/pasteboard/data-transfer-items-image-png.html
@@ -491,10 +493,6 @@ fast/xsl/xslt-processor-template.html
 
 # JSC does not support setIsolatedWorldSecurityOrigin (http://webkit.org/b/61540)
 http/tests/security/isolatedWorld/cross-origin-xhr.html
-
-# JSC also doesn't support setIsolatedWorldContentSecurityPolicy (webkit.org/b/100815)
-webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp.html [ Failure ]
-webkit.org/b/100815 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Failure ]
 
 # https://bugs.webkit.org/show_bug.cgi?id=63282 layerTreeAsText doesn't work for iframes
 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html
@@ -686,13 +684,6 @@ fast/events/dropzone-005.html
 
 # Spelling tests that are flakey. https://bugs.webkit.org/show_bug.cgi?id=82555
 editing/spelling/spellcheck-async-mutation.html
-platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word.html
-platform/mac/editing/spelling/move-cursor-to-autocorrected-word.html
-platform/mac/editing/spelling/forward-delete-into-autocorrected-word.html
-platform/mac/editing/spelling/editing-word-with-marker-1.html
-platform/mac/editing/spelling/delete-into-autocorrected-word.html
-platform/mac/editing/spelling/click-autocorrected-word.html
-platform/mac/editing/spelling/autocorrection-contraction.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=82665
 http/tests/webarchive/test-css-url-encoding-shift-jis.html
@@ -844,10 +835,6 @@ fast/canvas/canvas-imageSmoothingEnabled-repaint.html
 # https://bugs.webkit.org/show_bug.cgi?id=89845
 fast/forms/input-set-composition-scroll.html
 
-# https://bugs.webkit.org/show_bug.cgi?id=90649
-fast/canvas/webgl/tex-image-with-format-and-type.html
-fast/canvas/webgl/tex-sub-image-2d.html
-
 # https://bugs.webkit.org/show_bug.cgi?id=90706
 inspector/timeline/timeline-frames.html
 
@@ -949,6 +936,10 @@ compositing/overflow/scrolling-without-painting.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=110871
 compositing/overlap-blending/reflection-opacity-huge.html
+
+# https://bugs.webkit.org/show_bug.cgi?id=114340
+compositing/overlap-blending/nested-overlap.html
+compositing/overlap-blending/nested-non-overlap-clipping.html
 
 # https://bugs.webkit.org/show_bug.cgi?id=95027
 fast/block/float/016.html
@@ -1174,6 +1165,7 @@ webkit.org/b/89052 fast/css/image-orientation
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/58491 fast/css3-text/css3-text-decoration
 webkit.org/b/76173 fast/css3-text/css3-text-align-last
+webkit.org/b/99945 fast/css3-text/css3-text-justify [ Failure ]
 webkit.org/b/112755 fast/css3-text/css3-text-indent [ Failure ImageOnlyFailure ]
 
 # Our slow tests, in alphabetical order.
@@ -1250,6 +1242,7 @@ webkit.org/b/60731 ietestcenter/css3/grid/grid-column-001.htm [ ImageOnlyFailure
 webkit.org/b/60731 ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 webkit.org/b/60731 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
 webkit.org/b/60731 ietestcenter/css3/grid/grid-items-003.htm [ ImageOnlyFailure ]
+webkit.org/b/60731 [ MountainLion Release ] ietestcenter/css3/grid/grid-items-003.htm [ Pass ImageOnlyFailure ]
 
 webkit.org/b/85404 fast/loader/javascript-url-in-embed.html [ Failure Pass ]
 
@@ -1346,8 +1339,9 @@ webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass 
 # Resource Timing is not enable yet, skip it.
 webkit.org/b/61138 http/tests/w3c/webperf/submission/Intel/resource-timing [ Skip ]
 
-# Can't hide scrollbars in WK1
+# Flacky on Mountain Lion Release, fails everywhere else.
 fast/css/sticky/sticky-top-zoomed.html [ ImageOnlyFailure ]
+webkit.org/b/107356 [ MountainLion Release ] fast/css/sticky/sticky-top-zoomed.html [ Pass ImageOnlyFailure ]
 
 webkit.org/b/100846 inspector-protocol/debugger-pause-dedicated-worker.html [ Skip ]
 webkit.org/b/100846 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Skip ]

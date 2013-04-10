@@ -49,15 +49,12 @@
 #include "ScrollableArea.h"
 #include <wtf/OwnPtr.h>
 
-#if ENABLE(CSS_FILTERS)
-#include "RenderLayerFilterInfo.h"
-#endif
-
 namespace WebCore {
 
 #if ENABLE(CSS_FILTERS)
 class FilterEffectRenderer;
 class FilterOperations;
+class RenderLayerFilterInfo;
 #endif
 class HitTestRequest;
 class HitTestResult;
@@ -772,12 +769,7 @@ public:
     bool needsCompositedScrolling() const;
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
-#if ENABLE(CSS_FILTERS)
-    bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const;
-#else // !ENABLE(CSS_FILTERS)
-    bool needsCompositingLayersRebuiltForFilters(const RenderStyle*, const RenderStyle*, bool) const { return false; }
-#endif // !ENABLE(CSS_FILTERS)
-#else // !USE(ACCELERATED_COMPOSITING)
+#else
     bool isComposited() const { return false; }
     bool hasCompositedMask() const { return false; }
     bool usesCompositedScrolling() const { return false; }
@@ -806,24 +798,14 @@ public:
     FilterOperations computeFilterOperations(const RenderStyle*);
     bool paintsWithFilters() const;
     bool requiresFullLayerImageForFilters() const;
-    FilterEffectRenderer* filterRenderer() const 
-    {
-        RenderLayerFilterInfo* filterInfo = this->filterInfo();
-        return filterInfo ? filterInfo->renderer() : 0;
-    }
-    
-    RenderLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? RenderLayerFilterInfo::filterInfoForRenderLayer(this) : 0; }
-    RenderLayerFilterInfo* ensureFilterInfo() { return RenderLayerFilterInfo::createFilterInfoForRenderLayerIfNeeded(this); }
-    void removeFilterInfoIfNeeded() 
-    {
-        if (hasFilterInfo())
-            RenderLayerFilterInfo::removeFilterInfoForRenderLayer(this); 
-    }
+    FilterEffectRenderer* filterRenderer() const;
+
+    RenderLayerFilterInfo* filterInfo() const;
+    RenderLayerFilterInfo* ensureFilterInfo();
+    void removeFilterInfoIfNeeded();
     
     bool hasFilterInfo() const { return m_hasFilterInfo; }
     void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
-
-    void updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 #endif
 
 #if !ASSERT_DISABLED
@@ -1330,6 +1312,7 @@ private:
 };
 #endif
 
+void makeMatrixRenderable(TransformationMatrix&, bool has3DRendering);
 
 } // namespace WebCore
 

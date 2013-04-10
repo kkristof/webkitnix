@@ -1,3 +1,127 @@
+2013-04-09  Patrick Gansterer  <paroga@webkit.org>
+
+        [CMake] Remove conditional source file lists in WTF
+        https://bugs.webkit.org/show_bug.cgi?id=114250
+
+        Reviewed by Laszlo Gombos.
+
+        Use the #ifdef in the source file instead of conditional adding
+        files to the list of source files. This allows us to remove the
+        information of enabled features from CMake in next step.
+
+        * wtf/CMakeLists.txt:
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove WTF.gyp/WTF.gypi
+        https://bugs.webkit.org/show_bug.cgi?id=114237
+
+        Reviewed by Maciej Stachowiak.
+
+        * WTF.gyp: Removed.
+        * WTF.gyp/.gitignore: Removed.
+        * WTF.gyp/WTF.gyp: Removed.
+        * WTF.gypi: Removed.
+
+2013-04-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove HTML Notification
+        https://bugs.webkit.org/show_bug.cgi?id=114231
+
+        Reviewed by Ryosuke Niwa.
+
+        * wtf/FeatureDefines.h:
+
+2013-04-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        wtf/dtoa/* uses a confusing name to reference its buffers
+        https://bugs.webkit.org/show_bug.cgi?id=109709
+
+        Reviewed by Darin Adler.
+
+        The data structure Vector in wtf/dtoa has nothing to do with a traditional
+        vector, is it just a pointer and the length of the pointed buffer.
+
+        Rename it to BufferReference to avoid mistakes.
+
+        * wtf/dtoa/bignum-dtoa.cc:
+        * wtf/dtoa/bignum-dtoa.h:
+        * wtf/dtoa/bignum.cc:
+        * wtf/dtoa/bignum.h:
+        (Bignum):
+        * wtf/dtoa/double-conversion.cc:
+        * wtf/dtoa/fast-dtoa.cc:
+        * wtf/dtoa/fast-dtoa.h:
+        * wtf/dtoa/fixed-dtoa.cc:
+        * wtf/dtoa/fixed-dtoa.h:
+        (double_conversion):
+        * wtf/dtoa/strtod.cc:
+        * wtf/dtoa/strtod.h:
+        (double_conversion):
+        * wtf/dtoa/utils.h:
+        (double_conversion):
+        (WTF::double_conversion::BufferReference::BufferReference):
+        (WTF::double_conversion::BufferReference::SubBufferReference):
+        (StringBuilder):
+
+2013-04-08  Alberto Garcia  <agarcia@igalia.com>
+
+        [BlackBerry] MathExtras: macros defined in math.h conflict with the real functions
+        https://bugs.webkit.org/show_bug.cgi?id=112683
+
+        Reviewed by Darin Adler.
+
+        After calls to signbit and friends were prefixed with std:: in
+        r143232, the BlackBerry port no longer compiles.
+
+        The solution is to get rid of the macros defined in math.h and use
+        the real functions instead.
+
+        * wtf/MathExtras.h:
+
+2013-04-08  Max Vujovic  <mvujovic@adobe.com>
+
+        REGRESSION (r147502): Animations of CA filters broken
+        https://bugs.webkit.org/show_bug.cgi?id=114067
+
+        Reviewed by Dean Jackson.
+
+        Revert r147502 [1] because it broke CA filter animations.
+        
+        [1]: http://trac.webkit.org/changeset/147502
+
+        * wtf/Platform.h:
+
+2013-04-08  Andreas Kling  <akling@apple.com>
+
+        REGRESSION(r147894): Broke WTFReportBacktrace() on Mac.
+        <http://webkit.org/b/114174>
+
+        Reviewed by Anders Carlsson.
+
+        An #elif !OS(ANDROID) block was erroneously removed, turn it into an #else instead since
+        that path will still be taken for OS(DARWIN).
+
+        * wtf/Assertions.cpp:
+
+2013-04-08  Oliver Hunt  <oliver@apple.com>
+
+        Build fix.
+
+        Remove unnecessary include of <wtf/Forward.h> from Vector.h
+
+        * wtf/Vector.h:
+
+2013-04-08  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed trivial buildfix after r147799.
+
+        Add an ifdef guard to ensure Qt uses its own monotonicallyIncreasingTime()
+        implemenation instead of the GLIB based one.
+
+        * wtf/CurrentTime.cpp:
+        (WTF):
+
 2013-04-07  Benjamin Poulain  <benjamin@webkit.org>
 
         Remove the android code from WebKit Template Framework

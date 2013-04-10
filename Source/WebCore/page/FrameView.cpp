@@ -122,6 +122,9 @@ double FrameView::s_maxDeferredRepaintDelayDuringLoading = 0;
 double FrameView::s_deferredRepaintDelayIncrementDuringLoading = 0;
 #endif
 
+// While the browser window is being resized, resize events will be dispatched at most this often.
+static const double minimumIntervalBetweenResizeEventsDuringLiveResizeInSeconds = 0.2;
+
 // The maximum number of updateWidgets iterations that should be done before returning.
 static const unsigned maxUpdateWidgetsIterations = 2;
 
@@ -168,6 +171,7 @@ FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
     , m_slowRepaintObjectCount(0)
+    , m_delayedResizeEventTimer(this, &FrameView::delayedResizeEventTimerFired)
     , m_layoutTimer(this, &FrameView::layoutTimerFired)
     , m_layoutRoot(0)
     , m_inSynchronousPostLayout(false)
@@ -2295,13 +2299,24 @@ void FrameView::endDisableRepaints()
     m_disableRepaints--;
 }
 
-void FrameView::updateLayerFlushThrottling(bool isLoadProgressing)
+void FrameView::updateLayerFlushThrottlingInAllFrames(bool isLoadProgressing)
 {
 #if USE(ACCELERATED_COMPOSITING)
-    if (RenderView* view = renderView())
-        view->compositor()->setLayerFlushThrottlingEnabled(isLoadProgressing);
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
+        if (RenderView* renderView = frame->contentRenderer())
+            renderView->compositor()->setLayerFlushThrottlingEnabled(isLoadProgressing);
+    }
 #else
     UNUSED_PARAM(isLoadProgressing);
+#endif
+}
+
+void FrameView::adjustTiledBackingCoverage()
+{
+#if USE(ACCELERATED_COMPOSITING)
+    RenderView* renderView = this->renderView();
+    if (renderView && renderView->layer()->backing())
+        renderView->layer()->backing()->adjustTiledBackingCoverage();
 #endif
 }
 
@@ -2733,20 +2748,51 @@ void FrameView::performPostLayoutTasks()
         m_lastViewportSize = currentSize;
         m_lastZoomFactor = currentZoomFactor;
         if (resized) {
-            m_frame->eventHandler()->sendResizeEvent();
-
-#if ENABLE(INSPECTOR)
-            if (InspectorInstrumentation::hasFrontends()) {
-                if (page) {
-                    if (page->mainFrame() == m_frame) {
-                        if (InspectorClient* inspectorClient = page->inspectorController()->inspectorClient())
-                            inspectorClient->didResizeMainFrame(m_frame.get());
-                    }
-                }
-            }
-#endif
+            if (inLiveResize())
+                scheduleResizeEvent();
+            else
+                sendResizeEvent();
         }
     }
+}
+
+void FrameView::sendResizeEvent()
+{
+    if (!m_frame)
+        return;
+
+    m_frame->eventHandler()->sendResizeEvent();
+
+#if ENABLE(INSPECTOR)
+    if (InspectorInstrumentation::hasFrontends()) {
+        if (Page* page = m_frame->page()) {
+            if (page->mainFrame() == m_frame) {
+                if (InspectorClient* inspectorClient = page->inspectorController()->inspectorClient())
+                    inspectorClient->didResizeMainFrame(m_frame.get());
+            }
+        }
+    }
+#endif
+}
+
+void FrameView::delayedResizeEventTimerFired(Timer<FrameView>*)
+{
+    sendResizeEvent();
+}
+
+void FrameView::willEndLiveResize()
+{
+    ScrollableArea::willEndLiveResize();
+    if (m_delayedResizeEventTimer.isActive()) {
+        m_delayedResizeEventTimer.stop();
+        sendResizeEvent();
+    }
+}
+
+void FrameView::scheduleResizeEvent()
+{
+    if (!m_delayedResizeEventTimer.isActive())
+        m_delayedResizeEventTimer.startOneShot(minimumIntervalBetweenResizeEventsDuringLiveResizeInSeconds);
 }
 
 void FrameView::postLayoutTimerFired(Timer<FrameView>*)
@@ -3391,7 +3437,10 @@ void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
     if (m_inProgrammaticScroll)
         return;
     m_maintainScrollPositionAnchor = 0;
+    if (m_wasScrolledByUser == wasScrolledByUser)
+        return;
     m_wasScrolledByUser = wasScrolledByUser;
+    adjustTiledBackingCoverage();
 }
 
 void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
@@ -3883,6 +3932,12 @@ void FrameView::setTracksRepaints(bool trackRepaints)
     if (trackRepaints == m_isTrackingRepaints)
         return;
 
+    // Force layout to flush out any pending repaints.
+    if (trackRepaints) {
+        if (frame() && frame()->document())
+            frame()->document()->updateLayout();
+    }
+
 #if USE(ACCELERATED_COMPOSITING)
     for (Frame* frame = m_frame->tree()->top(); frame; frame = frame->tree()->traverseNext()) {
         if (RenderView* renderView = frame->contentRenderer())
@@ -3905,6 +3960,9 @@ void FrameView::resetTrackedRepaints()
 
 String FrameView::trackedRepaintRectsAsText() const
 {
+    if (frame() && frame()->document())
+        frame()->document()->updateLayout();
+
     TextStream ts;
     if (!m_trackedRepaintRects.isEmpty()) {
         ts << "(repaint rects\n";

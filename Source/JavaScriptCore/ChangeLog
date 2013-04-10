@@ -1,3 +1,269 @@
+2013-04-09  Oliver Hunt  <oliver@apple.com>
+
+        Add liveness tests to JSC API entry points
+        https://bugs.webkit.org/show_bug.cgi?id=114318
+
+        Reviewed by Geoffrey Garen.
+
+        Add simple checks for the existence of a method table on any
+        JSCells passed across the API.  This in turn forces a structure
+        validity test.
+
+        * API/APICast.h:
+        (toJS):
+        (toJSForGC):
+        (unsafeToJS):
+        * API/JSObjectRef.cpp:
+        (JSObjectGetPrivate):
+
+2013-04-09  Oliver Hunt  <oliver@apple.com>
+
+        Rollout last patch as it destroyed everything
+
+        * API/APICast.h:
+        (toJS):
+        (toJSForGC):
+
+2013-04-09  Oliver Hunt  <oliver@apple.com>
+
+        Add liveness tests to JSC API entry points
+        https://bugs.webkit.org/show_bug.cgi?id=114318
+
+        Reviewed by Filip Pizlo.
+
+        Add simple checks for the existence of a method table on any
+        JSCells passed across the API.  This in turn forces a structure
+        validity test.
+
+        * API/APICast.h:
+        (toJS):
+        (toJSForGC):
+
+2013-04-09  Balazs Kilvady  <kilvadyb@homejinni.com>
+
+        LLInt conditional branch compilation fault on MIPS.
+        https://bugs.webkit.org/show_bug.cgi?id=114264
+
+        Reviewed by Filip Pizlo.
+
+        Fix conditional branch compilation in LLInt offlineasm.
+
+        * offlineasm/mips.rb:
+
+2013-04-08  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        JSObject::getOwnNonIndexPropertyNames calculates numCacheableSlots incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=114235
+
+        Reviewed by Geoffrey Garen.
+
+        Due to the way that numCacheableSlots is currently calculated, checking an object's prototype for enumerable 
+        properties causes us not to cache any properties at all. We should only cache properties on the object itself
+        since we currently don't take advantage of any sort of name caching for properties in the prototype chain.
+        This fix undoes a ~2% SunSpider regression caused by http://trac.webkit.org/changeset/147570.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::getOwnNonIndexPropertyNames):
+
+2013-04-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove yarr.gyp
+        https://bugs.webkit.org/show_bug.cgi?id=114247
+
+        Reviewed by Benjamin Poulain.
+
+        * yarr/yarr.gyp: Removed.
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove JavaScriptCore.gyp/gypi
+        https://bugs.webkit.org/show_bug.cgi?id=114238
+
+        Reviewed by Benjamin Poulain.
+
+        * JavaScriptCore.gyp: Removed.
+        * JavaScriptCore.gyp/.gitignore: Removed.
+        * JavaScriptCore.gypi: Removed.
+
+2013-04-08  Vahag Vardanyan  <vaag@ispras.ru>
+
+        Adds fromCharCode intrinsic support.
+        https://bugs.webkit.org/show_bug.cgi?id=104807
+
+        Reviewed by Oliver Hunt.
+
+        Switch to using fromCharCode intrinsic instead of call operation in some cases.
+
+        * dfg/DFGAbstractState.cpp:
+        (JSC::DFG::AbstractState::executeEffects):
+        * dfg/DFGByteCodeParser.cpp:
+        (JSC::DFG::ByteCodeParser::handleIntrinsic):
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        * dfg/DFGNodeType.h:
+        (DFG):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGPredictionPropagationPhase.cpp:
+        (JSC::DFG::PredictionPropagationPhase::propagate):
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compileFromCharCode):
+        (DFG):
+        * dfg/DFGSpeculativeJIT.h:
+        (JSC::DFG::SpeculativeJIT::callOperation):
+        (SpeculativeJIT):
+        * dfg/DFGSpeculativeJIT32_64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * dfg/DFGSpeculativeJIT64.cpp:
+        (JSC::DFG::SpeculativeJIT::compile):
+        * runtime/StringConstructor.cpp:
+        (JSC::stringFromCharCode):
+        (JSC):
+        * runtime/StringConstructor.h:
+        (JSC):
+
+2013-04-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove HTML Notification
+        https://bugs.webkit.org/show_bug.cgi?id=114231
+
+        Reviewed by Ryosuke Niwa.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-04-05  Roger Fong  <roger_fong@apple.com>
+
+        Build fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-08  Filip Pizlo  <fpizlo@apple.com>
+
+        DFG should be able to inline string equality comparisons
+        https://bugs.webkit.org/show_bug.cgi?id=114224
+
+        Reviewed by Oliver Hunt.
+        
+        Inline 8-bit string equality, go to slow path for 16-bit strings. 2x speed-up for string equality
+        comparisons on 8-bit strings. 20-50% speed-up on JSRegress/HashMap tests. 30% speed-up on
+        string-fasta. 2% speed-up on SunSpider overall. Some small speed-ups elsewhere.
+
+        This is a gnarly change but we have loads of test coverage already between the HashMap tests and
+        preexisting DFG string equality tests (which appear to have been designed to test OSR exits, but
+        also give us good overall coverage on string equality behavior).
+
+        * dfg/DFGFixupPhase.cpp:
+        (JSC::DFG::FixupPhase::fixupNode):
+        * dfg/DFGOperations.cpp:
+        * dfg/DFGOperations.h:
+        * dfg/DFGSpeculativeJIT.cpp:
+        (JSC::DFG::SpeculativeJIT::compilePeepHoleBranch):
+        (JSC::DFG::SpeculativeJIT::compare):
+        (JSC::DFG::SpeculativeJIT::compileStrictEq):
+        (JSC::DFG::SpeculativeJIT::compileStringEquality):
+        (DFG):
+        * dfg/DFGSpeculativeJIT.h:
+        (SpeculativeJIT):
+
+2013-04-08  Geoffrey Garen  <ggaren@apple.com>
+
+        Stop #include-ing all of JavaScriptCore in every DOM-related file
+        https://bugs.webkit.org/show_bug.cgi?id=114220
+
+        Reviewed by Sam Weinig.
+
+        I separated WeakInlines.h from Weak.h so WebCore data types that need
+        to declare a Weak<T> data member don't have to #include all of the
+        infrastructure for accessing that data member.
+
+        This also required separating Weak<T> from PassWeak<T> by removing the
+        WeakImplAccessor class template and pushing code down into its subclasses.
+
+        * API/JSWeakObjectMapRefPrivate.cpp:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * bytecode/UnlinkedCodeBlock.h:
+        * heap/PassWeak.h:
+        (JSC):
+        (PassWeak):
+        (JSC::::PassWeak):
+        (JSC::::operator):
+        (JSC::::get):
+        * heap/SlotVisitorInlines.h:
+        * heap/Weak.h:
+        (JSC):
+        (Weak):
+        * heap/WeakInlines.h: Copied from Source/JavaScriptCore/heap/Weak.h.
+        (JSC):
+        (JSC::::Weak):
+        (JSC::::operator):
+        (JSC::::get):
+        (JSC::::was):
+        (JSC::weakClear):
+        * jit/JITThunks.h:
+        * runtime/RegExpCache.h:
+        * runtime/Structure.h:
+        * runtime/WeakGCMap.h:
+
+2013-04-05  Roger Fong  <roger_fong@apple.com>
+
+        Windows build fix fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+
+2013-04-05  Roger Fong  <roger_fong@apple.com>
+
+        Windows build fix.
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-08  Oliver Hunt  <oliver@apple.com>
+
+        Make resolve more robust in the face of lookup misses
+        https://bugs.webkit.org/show_bug.cgi?id=114211
+
+        Reviewed by Filip Pizlo.
+
+        This simply short circuits the resolve operations in the
+        event that we don't find a path to a property.  There's no
+        repro case for this happening unfortunately.
+
+        * llint/LLIntSlowPaths.cpp:
+        (JSC::LLInt::LLINT_SLOW_PATH_DECL):
+
+2013-04-08  Oliver Hunt  <oliver@apple.com>
+
+        Build fix.
+
+        * assembler/ARMv7Assembler.h:
+        (ARMv7Assembler):
+
+2013-04-08  Justin Haygood  <jhaygood@reaktix.com>
+
+        Allow KeywordLookupGenerator.py to work on Windows with Windows style line endings
+        https://bugs.webkit.org/show_bug.cgi?id=63234
+
+        Reviewed by Oliver Hunt.
+
+        * KeywordLookupGenerator.py:
+        (parseKeywords):
+
+2013-04-08  Filip Pizlo  <fpizlo@apple.com>
+
+        REGRESSION(r146669): Assertion hit in JSC::DFG::SpeculativeJIT::fillSpeculateCell() running webgl tests
+        https://bugs.webkit.org/show_bug.cgi?id=114129
+        <rdar://problem/13594898>
+
+        Reviewed by Darin Adler.
+        
+        The check to see if we need a cell check when simplifying a GetById or PutById needs to be hoisted to
+        above where we abstractly execute the instruction, since after we abstracting execute it, it will
+        seem like it no longer needs the cell check.
+
+        * dfg/DFGConstantFoldingPhase.cpp:
+        (JSC::DFG::ConstantFoldingPhase::foldConstants):
+
 2013-04-07  Oliver Hunt  <oliver@apple.com>
 
         Add bounds checking for WTF::Vector::operator[]

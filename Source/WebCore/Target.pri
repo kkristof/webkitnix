@@ -1050,7 +1050,6 @@ SOURCES += \
     platform/graphics/surfaces/qt/GraphicsSurfaceQt.cpp \
     platform/graphics/SurrogatePairAwareTextIterator.cpp \
     platform/graphics/TextRun.cpp \
-    platform/graphics/TextTrackRepresentation.cpp \
     platform/graphics/TiledBackingStore.cpp \
     platform/graphics/transforms/AffineTransform.cpp \
     platform/graphics/transforms/TransformationMatrix.cpp \
@@ -1072,7 +1071,6 @@ SOURCES += \
     platform/KillRingNone.cpp \
     platform/KURL.cpp \
     platform/Language.cpp \
-    platform/LayoutTestSupport.cpp \
     platform/Length.cpp \
     platform/LengthBox.cpp \
     platform/text/LineEnding.cpp \
@@ -1260,7 +1258,6 @@ SOURCES += \
     rendering/RenderTextControlMultiLine.cpp \
     rendering/RenderTextControlSingleLine.cpp \
     rendering/RenderTextFragment.cpp \
-    rendering/RenderTextTrackCue.cpp \
     rendering/RenderTheme.cpp \
     rendering/RenderTreeAsText.cpp \
     rendering/RenderView.cpp \
@@ -1914,7 +1911,6 @@ HEADERS += \
     html/HTMLTextAreaElement.h \
     html/HTMLTextFormControlElement.h \
     html/HTMLTitleElement.h \
-    html/HTMLTrackElement.h \
     html/HTMLUListElement.h \
     html/HTMLVideoElement.h \
     html/HTMLViewSourceDocument.h \
@@ -1967,18 +1963,6 @@ HEADERS += \
     html/shadow/MediaControls.h \
     html/shadow/MediaControlsApple.h \
     html/shadow/DetailsMarkerControl.h \
-    html/track/InbandTextTrack.h \
-    html/track/LoadableTextTrack.h \
-    html/track/TextTrack.h \
-    html/track/TextTrackCue.h \
-    html/track/TextTrackCueGeneric.h \
-    html/track/TextTrackCueList.h \
-    html/track/TextTrackList.h \
-    html/track/TrackBase.h \
-    html/track/TrackEvent.h \
-    html/track/WebVTTParser.h \
-    html/track/WebVTTToken.h \
-    html/track/WebVTTTokenizer.h \
     inspector/BindingVisitors.h \
     inspector/ConsoleAPITypes.h \
     inspector/ConsoleMessage.h \
@@ -2094,7 +2078,6 @@ HEADERS += \
     loader/SubresourceLoader.h \
     loader/SubstituteData.h \
     loader/TextResourceDecoder.h \
-    loader/TextTrackLoader.h \
     loader/ThreadableLoader.h \
     loader/WorkerThreadableLoader.h \
     mathml/MathMLElement.h \
@@ -2265,8 +2248,6 @@ HEADERS += \
     platform/graphics/Image.h \
     platform/graphics/ImageOrientation.h \
     platform/graphics/ImageSource.h \
-    platform/graphics/InbandTextTrackPrivate.h \
-    platform/graphics/InbandTextTrackPrivateClient.h \
     platform/graphics/IntPoint.h \
     platform/graphics/IntPointHash.h \
     platform/graphics/IntRect.h \
@@ -3983,14 +3964,49 @@ enable?(JAVASCRIPT_DEBUGGER) {
 
 
 enable?(VIDEO_TRACK) {
+    HEADERS += \
+        bindings/js/JSTextTrackCustom.h \
+        bindings/js/JSTrackCustom.h \
+        html/HTMLTrackElement.h \
+        html/track/InbandTextTrack.h \
+        html/track/LoadableTextTrack.h \
+        html/track/TextTrack.h \
+        html/track/TextTrackCue.h \
+        html/track/TextTrackCueGeneric.h \
+        html/track/TextTrackCueList.h \
+        html/track/TextTrackList.h \
+        html/track/TrackBase.h \
+        html/track/TrackEvent.h \
+        html/track/WebVTTParser.h \
+        html/track/WebVTTToken.h \
+        html/track/WebVTTTokenizer.h \
+        loader/TextTrackLoader.h \
+        platform/graphics/InbandTextTrackPrivate.h \
+        platform/graphics/InbandTextTrackPrivateClient.h
+
     SOURCES += \
         bindings/js/JSTextTrackCueCustom.cpp \
         bindings/js/JSTextTrackCustom.cpp \
-        bindings/js/JSTextTrackCustom.h \
         bindings/js/JSTrackCustom.cpp \
-        bindings/js/JSTrackCustom.h \
         bindings/js/JSTrackEventCustom.cpp \
-        bindings/js/JSTextTrackListCustom.cpp
+        bindings/js/JSTextTrackListCustom.cpp \
+        html/HTMLTrackElement.cpp \
+        html/track/InbandTextTrack.cpp \
+        html/track/LoadableTextTrack.cpp \
+        html/track/TextTrack.cpp \
+        html/track/TextTrackCue.cpp \
+        html/track/TextTrackCueGeneric.cpp \
+        html/track/TextTrackCueList.cpp \
+        html/track/TextTrackList.cpp \
+        html/track/TrackBase.cpp \
+        html/track/TrackEvent.cpp \
+        html/track/WebVTTElement.cpp \
+        html/track/WebVTTParser.cpp \
+        html/track/WebVTTTokenizer.cpp \
+        loader/cache/CachedTextTrack.cpp \
+        loader/TextTrackLoader.cpp \
+        platform/graphics/TextTrackRepresentation.cpp \
+        rendering/RenderTextTrackCue.cpp
 }
 
 enable?(WEB_SOCKETS) {

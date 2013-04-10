@@ -33,13 +33,13 @@
 #include "GraphicsLayer.h"
 #include "GraphicsLayerClient.h"
 #include "RenderLayer.h"
-#include "TransformationMatrix.h"
 
 namespace WebCore {
 
 class KeyframeList;
 class RenderLayerCompositor;
 class TiledBacking;
+class TransformationMatrix;
 
 enum CompositingLayerType {
     NormalCompositingLayer, // non-tiled layer with backing store
@@ -186,7 +186,6 @@ public:
     GraphicsLayer* layerForScrollCorner() const { return m_layerForScrollCorner.get(); }
 
 #if ENABLE(CSS_FILTERS)
-    void updateFilters(const RenderStyle*);
     bool canCompositeFilters() const { return m_canCompositeFilters; }
 #endif
 
@@ -236,6 +235,9 @@ private:
 
     void updateOpacity(const RenderStyle*);
     void updateTransform(const RenderStyle*);
+#if ENABLE(CSS_FILTERS)
+    void updateFilters(const RenderStyle*);
+#endif
 #if ENABLE(CSS_COMPOSITING)
     void updateLayerBlendMode(const RenderStyle*);
 #endif

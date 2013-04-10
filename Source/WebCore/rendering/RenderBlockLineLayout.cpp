@@ -188,6 +188,25 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
         return;
 
 #if ENABLE(CSS_EXCLUSIONS)
+    // When floats with shape outside are stacked, the floats are positioned based on the bounding box of the shape,
+    // not the shape's contour. Since we computed the width based on the shape contour when we added the float,
+    // when we add a subsequent float on the same line, we need to undo the shape delta in order to position
+    // based on the bounding box. In order to do this, we need to walk back through the floating object list to find
+    // the first previous float that is on the same side as our newFloat.
+    ExclusionShapeOutsideInfo* lastShapeOutsideInfo = 0;
+    const RenderBlock::FloatingObjectSet& floatingObjectSet = m_block->m_floatingObjects->set();
+    RenderBlock::FloatingObjectSetIterator it = floatingObjectSet.end();
+    RenderBlock::FloatingObjectSetIterator begin = floatingObjectSet.begin();
+    for (--it; it != begin; --it) {
+        RenderBlock::FloatingObject* lastFloat = *it;
+        if (lastFloat != newFloat && lastFloat->type() == newFloat->type()) {
+            lastShapeOutsideInfo = lastFloat->renderer()->exclusionShapeOutsideInfo();
+            if (lastShapeOutsideInfo)
+                lastShapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(lastFloat) + lastShapeOutsideInfo->shapeLogicalTop(), logicalHeightForLine(m_block, m_isFirstLine));
+            break;
+        }
+    }
+
     ExclusionShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->exclusionShapeOutsideInfo();
     if (shapeOutsideInfo)
         shapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(newFloat) + shapeOutsideInfo->shapeLogicalTop(), logicalHeightForLine(m_block, m_isFirstLine));
@@ -196,6 +215,8 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
     if (newFloat->type() == RenderBlock::FloatingObject::FloatLeft) {
         float newLeft = m_block->logicalRightForFloat(newFloat);
 #if ENABLE(CSS_EXCLUSIONS)
+        if (lastShapeOutsideInfo)
+            newLeft -= lastShapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
         if (shapeOutsideInfo)
             newLeft += shapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
 #endif
@@ -206,6 +227,8 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
     } else {
         float newRight = m_block->logicalLeftForFloat(newFloat);
 #if ENABLE(CSS_EXCLUSIONS)
+        if (lastShapeOutsideInfo)
+            newRight -= lastShapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
         if (shapeOutsideInfo)
             newRight += shapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
 #endif
@@ -332,8 +355,7 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     unsigned lineDepth = 1;
     LayoutUnit extraWidth = 0;
     RenderObject* parent = child->parent();
-    // Empty inline parents have added their inline border, padding and margin to the line already.
-    while (parent->isRenderInline() && !isEmptyInline(parent) && lineDepth++ < cMaxLineDepth) {
+    while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
         if (!isEmptyInline(parentAsRenderInline)) {
             if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
@@ -2515,7 +2537,7 @@ public:
     TrailingObjects();
     void setTrailingWhitespace(RenderText*);
     void clear();
-    void appendBoxIfNeeded(RenderBox*);
+    void appendBoxIfNeeded(RenderBoxModelObject*);
 
     enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };
 
@@ -2523,7 +2545,7 @@ public:
 
 private:
     RenderText* m_whitespace;
-    Vector<RenderBox*, 4> m_boxes;
+    Vector<RenderBoxModelObject*, 4> m_boxes;
 };
 
 TrailingObjects::TrailingObjects()
@@ -2543,7 +2565,7 @@ inline void TrailingObjects::clear()
     m_boxes.clear();
 }
 
-inline void TrailingObjects::appendBoxIfNeeded(RenderBox* box)
+inline void TrailingObjects::appendBoxIfNeeded(RenderBoxModelObject* box)
 {
     if (m_whitespace)
         m_boxes.append(box);
@@ -2814,6 +2836,8 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     currentCharacterIsSpace = true;
                     currentCharacterIsWS = true;
                     ignoringSpaces = true;
+                } else {
+                    trailingObjects.appendBoxIfNeeded(flowBox);
                 }
             }
 

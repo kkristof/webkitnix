@@ -46,6 +46,7 @@
 #include "InspectorInstrumentation.h"
 #include "KeyframeList.h"
 #include "PluginViewBase.h"
+#include "ProgressTracker.h"
 #include "RenderApplet.h"
 #include "RenderIFrame.h"
 #include "RenderImage.h"
@@ -208,32 +209,39 @@ TiledBacking* RenderLayerBacking::tiledBacking() const
     return m_graphicsLayer->tiledBacking();
 }
 
-void RenderLayerBacking::adjustTiledBackingCoverage()
+static TiledBacking::TileCoverage computeTileCoverage(const RenderLayerBacking* backing)
 {
-    if (!m_usingTiledCacheLayer)
-        return;
+    // FIXME: When we use TiledBacking for overflow, this should look at RenderView scrollability.
+    Frame* frame = backing->owningLayer()->renderer()->frame();
+    if (!frame)
+        return TiledBacking::CoverageForVisibleArea;
 
     TiledBacking::TileCoverage tileCoverage = TiledBacking::CoverageForVisibleArea;
-
-    // FIXME: When we use TiledBacking for overflow, this should look at RenderView scrollability.
-    Frame* frame = renderer()->frame();
-    if (frame) {
-        FrameView* frameView = frame->view();
-        bool clipsToExposedRect = tiledBacking()->clipsToExposedRect();
+    FrameView* frameView = frame->view();
+    bool useMinimalTilesDuringLoading = frame->page()->progress()->isLoadProgressing() && !frameView->wasScrolledByUser();
+    if (!useMinimalTilesDuringLoading) {
+        bool clipsToExposedRect = backing->tiledBacking()->clipsToExposedRect();
         if (frameView->horizontalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
             tileCoverage |= TiledBacking::CoverageForHorizontalScrolling;
 
         if (frameView->verticalScrollbarMode() != ScrollbarAlwaysOff || clipsToExposedRect)
             tileCoverage |= TiledBacking::CoverageForVerticalScrolling;
-
-        if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-            // Ask our TiledBacking for large tiles unless the only reason we're main-thread-scrolling
-            // is a page overlay (find-in-page, the Web Inspector highlight mechanism, etc.).
-            if (scrollingCoordinator->mainThreadScrollingReasons() & ~ScrollingCoordinator::ForcedOnMainThread)
-                tileCoverage |= TiledBacking::CoverageForSlowScrolling;
-        }
     }
+    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(backing->owningLayer())) {
+        // Ask our TiledBacking for large tiles unless the only reason we're main-thread-scrolling
+        // is a page overlay (find-in-page, the Web Inspector highlight mechanism, etc.).
+        if (scrollingCoordinator->mainThreadScrollingReasons() & ~ScrollingCoordinator::ForcedOnMainThread)
+            tileCoverage |= TiledBacking::CoverageForSlowScrolling;
+    }
+    return tileCoverage;
+}
 
+void RenderLayerBacking::adjustTiledBackingCoverage()
+{
+    if (!m_usingTiledCacheLayer)
+        return;
+
+    TiledBacking::TileCoverage tileCoverage = computeTileCoverage(this);
     tiledBacking()->setTileCoverage(tileCoverage);
 }
 
@@ -367,21 +375,7 @@ void RenderLayerBacking::updateTransform(const RenderStyle* style)
 #if ENABLE(CSS_FILTERS)
 void RenderLayerBacking::updateFilters(const RenderStyle* style)
 {
-    bool didCompositeFilters = m_canCompositeFilters;
     m_canCompositeFilters = m_graphicsLayer->setFilters(owningLayer()->computeFilterOperations(style));
-    if (didCompositeFilters != m_canCompositeFilters) {
-        //
-        // If filters used to be painted in software and are now painted in the compositor, we need to:
-        // (1) Remove the FilterEffectRenderer, which was used for painting filters in software.
-        // (2) Repaint the layer contents to remove the software-applied filter because the compositor will apply it.
-        //
-        // Similarly, if filters used to be painted in the compositor and are now painted in software, we need to:
-        // (1) Create a FilterEffectRenderer.
-        // (2) Repaint the layer contents to apply a software filter because the compositor won't apply it.
-        //
-        m_owningLayer->updateOrRemoveFilterEffectRenderer();
-        setContentsNeedDisplay();
-    }
 }
 #endif
 
@@ -613,6 +607,10 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     // Set opacity, if it is not animating.
     if (!renderer()->animation()->isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
+        
+#if ENABLE(CSS_FILTERS)
+    updateFilters(renderer()->style());
+#endif
 
 #if ENABLE(CSS_COMPOSITING)
     updateLayerBlendMode(renderer()->style());

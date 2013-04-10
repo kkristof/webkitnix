@@ -1,3 +1,637 @@
+2013-04-10  Anton Obzhirov  <a.obzhirov@samsung.com>
+
+        [GTK] Add support for Page Visibility
+        https://bugs.webkit.org/show_bug.cgi?id=97324
+
+        Reviewed by Sam Weinig.
+
+        Added new unittest to test page visibility using GTK Widget visibility API.
+
+        * UIProcess/API/gtk/tests/TestWebKitWebView.cpp:
+        (testWebViewPageVisibility):
+        (beforeAll):
+        * UIProcess/API/gtk/tests/WebViewTest.cpp:
+        (WebViewTest::showInWindow):
+        * UIProcess/API/gtk/tests/WebViewTest.h:
+
+2013-04-10  Zan Dobersek  <zdobersek@igalia.com>
+
+        REGRESSION (r146518): WebKit2APITests/TestInspector is failing
+        https://bugs.webkit.org/show_bug.cgi?id=113281
+
+        Reviewed by Darin Adler.
+
+        Changes to the WebInspectorProxy opening processing in r146518 caused the change in how the GTK-specific
+        WebInspectorProxy code operates, specifically the 'bring-to-front' signal is not emitted anymore when opening the
+        inspector due to the WebInspectorProxy::bringToFront method now only bringing the inspector window to front if it exists
+        and opening it (and thus unable to bring it to front) otherwise.
+
+        Closing of the inspector through the didClose method is now done immediately after sending the WebInspector::Close()
+        message to the WebProcess rather than waiting for the WebProcess to communicate back the order of closing. Due to this
+        the relevant code in the test cases had to be changed to not run the loop but rather just check that the closing was
+        successful.
+
+        (InspectorTest::InspectorTest): Remove the initialization of the now redundant m_quitOnBringToFront member variable.
+        (InspectorTest::bringToFront): Quit the loop without checking the removed member variable.
+        (InspectorTest::closed): Do not quit the loop as it is not run anymore.
+        (InspectorTest::showIdle): A helper method that asynchronously calls the webkit_web_inspector_show method, removing some
+        unnecessary complexity about under what exact circumstances to quit the loop in open-window/bring-to-front callbacks.
+        (InspectorTest::show): Replaces the showAndWaitUntilFinished method, adding an idle invocation of the showIdle helper
+        method and running the loop.
+        (InspectorTest::close): Formerly closeAndWaitUntilClosed, now does not run the loop anymore as there's no need for it.
+        (testInspectorDefault): Only the window opening event is now expected upon showing the inspector for the first time.
+        Adjusting callsites to use InspectorTest::show and InspectorTest::close instead of
+        InspectorTest::showAndWaitUntilFinished and InspectorTest::showAndWaitUntilFinished.
+        (CustomInspectorTest::destroyWindow): Formerly destroyWindowAndWaitUntilClosed, the closing is not asynchronous anymore
+        so the loop is not run.
+        (testInspectorManualAttachDetach): Only the window opening event is now expected upon showing the inspector for the first time.
+        Adjusting callsites to use InspectorTest::show and InspectorTest::close instead of
+        InspectorTest::showAndWaitUntilFinished and InspectorTest::showAndWaitUntilFinished.
+        (testInspectorCustomContainerDestroyed): Adjusting callsites to use InspectorTest::show and CustomInspectorTest::destroyWindow
+        instead of InspectorTest::showAndWaitUntilFinished and CustomInspectorTest::destroyWindowAndWaitUntilClosed.
+        * UIProcess/WebInspectorProxy.cpp:
+        (WebKit::WebInspectorProxy::show): When showing a connected WebInspectorProxy, call the bringToFront method which will
+        open the inspector if it's not yet visible or bring it to the front otherwise. 
+
+2013-04-10  Zan Dobersek  <zandobersek@gmail.com>
+
+        [GTK][WK2] Implement WebInspectorProxy::platformInspectedWindowWidth
+        https://bugs.webkit.org/show_bug.cgi?id=113498
+
+        Reviewed by Martin Robinson.
+
+        The method was introduced in r147004.
+
+        * UIProcess/API/gtk/tests/TestInspector.cpp: Specify the gMinimumAttachedInspectorWidth variable, reflecting the value
+        of WebInspectorProxy::minimumAttachedWidth. Use it as the width to which the inspected view should be resized in
+        InspectorTest::resizeViewAndAttach.
+        * UIProcess/gtk/WebInspectorProxyGtk.cpp:
+        (WebKit::WebInspectorProxy::platformInspectedWindowHeight): Use the gtk_widget_get_allocated_height method to return the
+        widget height.
+        (WebKit::WebInspectorProxy::platformInspectedWindowWidth): Newly implemented, similarly uses the
+        gtk_widget_get_allocated_width method to return the widget width.
+
+2013-04-09  Antoine Quint  <graouts@apple.com>
+
+        WKFrameIsDisplayingMarkupDocument should return true for Web Archives
+        https://bugs.webkit.org/show_bug.cgi?id=114291
+
+        Reviewed by Dean Jackson.
+
+        Also return true for the Web Archive MIME type since a Web Archive
+        is displaying a markup document by nature.
+
+        * UIProcess/WebFrameProxy.cpp:
+        (WebKit::WebFrameProxy::isDisplayingMarkupDocument):
+
+2013-04-09  Anders Carlsson  <andersca@apple.com>
+
+        REGRESSION (r147454): Youtube annotation links to new window broken
+        https://bugs.webkit.org/show_bug.cgi?id=114242
+        <rdar://problem/13609940>
+
+        Reviewed by Beth Dakin.
+
+        Set the current user gesture to "DefinitelyProcessingNewUserGesture" if popups are allowed.
+
+        * WebProcess/Plugins/PluginView.cpp:
+        (WebKit::PluginView::performFrameLoadURLRequest):
+
+2013-04-09  Anders Carlsson  <andersca@apple.com>
+
+        If we fail to decode a message name, pass the message length as the name
+        https://bugs.webkit.org/show_bug.cgi?id=114305
+        <rdar://problem/13605703>
+
+        Reviewed by Sam Weinig.
+
+        * Platform/CoreIPC/ArgumentDecoder.h:
+        (CoreIPC::ArgumentDecoder::length):
+        * Platform/CoreIPC/Connection.cpp:
+        (CoreIPC::Connection::processIncomingMessage):
+
+2013-04-08  Dean Jackson  <dino@apple.com>
+
+        Don't create another plugin process for restarted plugins
+        https://bugs.webkit.org/show_bug.cgi?id=114233
+
+        Reviewed by Geoff Garen.
+
+        A snapshotting plugin starts in a separate process from
+        regular plugins. This can be a little confusing to users
+        because they might see two plugin processes. We can set
+        the minimum life and timeout on the snapshotting process
+        to much smaller values, since the process doesn't need
+        to live that long. This will reduce some potential
+        confusion. Also, since there is another plugin process
+        running real plugins, it should be paged in if it needs
+        to restart.
+
+        There was, however, a bug in the process management. A
+        restarted plugin received a special PluginProcess::Type,
+        so that it could cross fade into the page nicely. This
+        caused it to start a *third* plugin process. Instead
+        mark a restarted flag directly on the PluginProxy and
+        revert back to two process types.
+
+        * PluginProcess/PluginProcess.h: Remove TypeRestartedProcess.
+
+        * UIProcess/Plugins/PluginProcessProxy.cpp: Add two new
+            timeout values for snapshotting processes.
+        (WebKit::PluginProcessProxy::didFinishLaunching): Chose which
+            of the timeout pairs to use.
+
+        * WebProcess/Plugins/Netscape/mac/PluginProxyMac.mm:
+        (WebKit::PluginProxy::pluginLayer): Don't look at the process type, instead
+            look at the process flag to see if we are restarted.
+        * WebProcess/Plugins/PluginProxy.cpp:
+        (WebKit::PluginProxy::create): Copy the new flag into constructor.
+        (WebKit::PluginProxy::PluginProxy): Remember the flag.
+        * WebProcess/Plugins/PluginProxy.h: Add a new m_restartedProcess flag.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::createPlugin): When we are creating the proxy, separate
+            the concept of snapshotting and restarting.
+
+2013-04-09  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] IconDatabase images should be decoded in the WebProcess
+        https://bugs.webkit.org/show_bug.cgi?id=112524
+        <rdar://problem/10133914>
+
+        Reviewed by Oliver Hunt.
+
+        In the interests of keeping decoding of data coming in from the greater Internet
+        in the WebProcess, move decoding of favicons from the UIProcess to the WebProcess.
+
+        * UIProcess/WebIconDatabase.cpp:
+        (WebKit::WebIconDatabase::setIconBitmapForIconURL):
+        Receive a ShareableBitmap handle from the WebProcess instead of a DataReference.
+        Use the new setIconBitmapForIconURL IconDatabase method.
+
+        * UIProcess/WebIconDatabase.h:
+        (WebIconDatabase):
+        Rename setIconDataForIconURL to setIconBitmapForIconURL.
+
+        * UIProcess/WebIconDatabase.messages.in: Ditto.
+
+        * WebProcess/IconDatabase/WebIconDatabaseProxy.cpp:
+        (WebKit::WebIconDatabaseProxy::setIconDataForIconURL):
+        In the WebProcess, decode the incoming icon and draw it into a ShareableBitmap.
+
+2013-04-09  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL] Declare TEST_THEME_DIR in a single place.
+        https://bugs.webkit.org/show_bug.cgi?id=114285
+
+        Reviewed by Anders Carlsson.
+
+        * PlatformEfl.cmake: Remove definition of `TEST_THEME_DIR', which is
+        now defined in OptionsEfl.cmake.
+
+2013-04-09  Rafael Brandao  <rafael.lobo@openbossa.org>
+
+        [CoordinatedGraphics] serviceScriptedAnimations expects time in seconds
+        https://bugs.webkit.org/show_bug.cgi?id=112582
+
+        Reviewed by Andreas Kling.
+
+        We've been exposing different time unit for requestAnimationFrame because
+        of wrong conversion before serviceScriptedAnimations function calls.
+        Fixed it to use seconds instead of milliseconds.
+
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::syncDisplayState): Remove unnecessary conversion.
+
+2013-04-09  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] Remove obsolete QtWebPageFindClient forward declaration from qquickwebview_p.h.
+        https://bugs.webkit.org/show_bug.cgi?id=114284
+
+        Reviewed by Andreas Kling.
+
+        The class QtWebPageFindClient was removed in r142073 when the functionality
+        was folded into QQuickWebViewPrivate.
+
+        * UIProcess/API/qt/qquickwebview_p.h:
+        (WebKit):
+
+2013-04-09  Michael Brüning  <michael.bruning@digia.com>
+
+        Fix GTK WebKit2 build after r148005.
+        https://bugs.webkit.org/show_bug.cgi?id=114270
+
+        Reviewed by Andreas Kling.
+
+        Fix GTK build break that went through the buildbot undetected.
+
+        * UIProcess/API/gtk/WebKitFileChooserRequest.cpp:
+        (webkit_file_chooser_request_get_selected_files):
+
+2013-04-09  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] Remove direct references to WebPageProxy from QQuickWebPage.
+        https://bugs.webkit.org/show_bug.cgi?id=112850
+
+        Reviewed by Andreas Kling.
+
+        Removes direct references to WebPageProxy from QQuickWebPage and prepares the
+        class for the move to QRawWebView. The access to the device scale factor and
+        CoordinatedGraphicsScene is provided through QQuickWebViewPrivate, and therefore
+        accessors to these properties are temporarily added. Eventually, this access will
+        be provided through QRawWebView when the move is complete.
+
+        This also moves the pointer to QtWebPageEventHandler from QQuickWebPagePrivate
+        to QQuickWebViewPrivate as it is mainly used from there.
+
+        * UIProcess/API/qt/qquickwebpage.cpp:
+        (QQuickWebPagePrivate::QQuickWebPagePrivate):
+        (QQuickWebPagePrivate::paint):
+        (QQuickWebPage::updatePaintNode):
+        * UIProcess/API/qt/qquickwebpage_p.h:
+        * UIProcess/API/qt/qquickwebpage_p_p.h:
+        (QQuickWebPagePrivate):
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::initialize):
+        (QQuickWebViewPrivate::handleMouseEvent):
+        (QQuickWebViewPrivate::processDidCrash):
+        (QQuickWebViewPrivate::coordinatedGraphicsScene):
+        (QQuickWebViewPrivate::deviceScaleFactor):
+        (QQuickWebViewPrivate::setIntrinsicDeviceScaleFactor):
+        (QQuickWebViewFlickablePrivate::onComponentComplete):
+        (QQuickWebView::keyPressEvent):
+        (QQuickWebView::keyReleaseEvent):
+        (QQuickWebView::inputMethodEvent):
+        (QQuickWebView::focusInEvent):
+        (QQuickWebView::itemChange):
+        (QQuickWebView::touchEvent):
+        (QQuickWebView::wheelEvent):
+        (QQuickWebView::hoverEnterEvent):
+        (QQuickWebView::hoverMoveEvent):
+        (QQuickWebView::hoverLeaveEvent):
+        (QQuickWebView::dragMoveEvent):
+        (QQuickWebView::dragEnterEvent):
+        (QQuickWebView::dragLeaveEvent):
+        (QQuickWebView::dropEvent):
+        * UIProcess/API/qt/qquickwebview_p_p.h:
+        (WebCore):
+        (WebKit):
+        (QQuickWebViewPrivate):
+
+2013-04-09  Michael Brüning  <michael.bruning@digia.com>
+
+        [Qt][WK2] Use C API to enable Navigator Qt Object.
+        https://bugs.webkit.org/show_bug.cgi?id=112810
+
+        Reviewed by Andreas Kling.
+
+        Replace the direct reference to the WebPageProxy with use of
+        C API.
+
+        * UIProcess/API/qt/qquickwebview.cpp:
+        (QQuickWebViewPrivate::setNavigatorQtObjectEnabled):
+
+2013-04-09  Michael Brüning  <michael.bruning@digia.com>
+
+        [WK2] Add C API to copy selected files from WebOpenPanelParameters.
+        https://bugs.webkit.org/show_bug.cgi?id=112339
+
+        Reviewed by Andreas Kling.
+
+        Replaces the existing WebOpenPanelParameters::selectedFileNames() method
+        to return a copy of the selected file names and exposes it through the
+        C API. This is done in order to reduce the direct use of WebKit2 internal
+        classes. The implementation is very similar to the one in 
+        WebOpenPanelParameters::acceptMIMETypes().
+
+        This also updates the GTK port, which is the other user of selectedFileNames.
+
+        * Shared/WebOpenPanelParameters.cpp:
+        (WebKit::WebOpenPanelParameters::selectedFileNames):
+        (WebKit):
+        * Shared/WebOpenPanelParameters.h:
+        (WebOpenPanelParameters):
+        * UIProcess/API/C/WKOpenPanelParameters.cpp:
+        (WKOpenPanelParametersCopySelectedFileNames):
+        * UIProcess/API/C/WKOpenPanelParameters.h:
+        * UIProcess/API/gtk/WebKitFileChooserRequest.cpp:
+        (webkit_file_chooser_request_get_selected_files):
+        * UIProcess/qt/QtWebPageUIClient.cpp:
+        (WebKit::QtWebPageUIClient::runOpenPanel):
+
+2013-04-09  Jinwoo Song  <jinwoo7.song@samsung.com>
+
+        [WK2] Remove build warnings for unused parameters
+        https://bugs.webkit.org/show_bug.cgi?id=114234
+
+        Reviewed by Andreas Kling.
+
+        Fix build warnings -Wunused-parameter.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::SessionStorageNamespace::cloneTo):
+        * UIProcess/WebContext.cpp:
+        (WebKit::WebContext::requestNetworkingStatistics):
+        (WebKit::WebContext::pluginInfoStoreDidLoadPlugins):
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::removeItem):
+        (WebKit::StorageAreaProxy::clear):
+        (WebKit::StorageAreaProxy::dispatchSessionStorageEvent):
+        (WebKit::StorageAreaProxy::dispatchLocalStorageEvent):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::didUninstallPageOverlay):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::didFinishLoad):
+        * WebProcess/WebProcess.cpp:
+        (WebKit::WebProcess::shouldPlugInAutoStartFromOrigin):
+
+2013-04-09  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WK2] Drop WebProcess capabilities on Linux using seccomp filters
+        https://bugs.webkit.org/show_bug.cgi?id=89875
+
+        Reviewed by Maciej Stachowiak.
+
+        Introduce the foundations of the SeccompFilter-based sandbox. The
+        hardening of the WebProcess (and potentially PluginProcess, etc)
+        works by a combination of the two things:
+
+        - Blocking syscalls that are not used, reducing the size of the attack
+        surface.
+        - Trapping sensitive syscalls and delegating the execution of these
+        syscalls to a separated trusted process subject to a set of policies.
+
+        The initial implementation traps the open()-family of syscalls on WebKit
+        EFL's and Qt's WebProcess, but it could be easily used by any Linux port,
+        since the code is suppose to be Linux-compliant. The list of syscalls handled
+        by the broker process should definitely grow as we mature the
+        implementation. Other syscalls needs to be handled to get this sandbox
+        fully functional, like unlink(), mkdir(), etc.
+
+        The broker process should be initialized as early as possible on the
+        sandboxed process main() function, because it only does a fork(), which
+        is cheap on Linux. That also aims to minimize the resident memory footprint
+        of the broker process.
+
+        Opening of files for upload and saving downloads is not supported yet,
+        since it should be handled to the UIProcess in a similar fashion as
+        the Mac port does.
+
+        * PlatformEfl.cmake:
+        * Shared/linux/SeccompFilters/OpenSyscall.cpp: Added.
+        (WebKit):
+        (WebKit::OpenSyscall::createFromOpenatContext):
+        (WebKit::OpenSyscall::createFromCreatContext):
+        (WebKit::OpenSyscall::OpenSyscall):
+        (WebKit::OpenSyscall::setResult):
+        (WebKit::OpenSyscall::execute):
+        (WebKit::OpenSyscall::encode):
+        (WebKit::OpenSyscall::decode):
+        (WebKit::OpenSyscallResult::OpenSyscallResult):
+        (WebKit::OpenSyscallResult::~OpenSyscallResult):
+        (WebKit::OpenSyscallResult::encode):
+        (WebKit::OpenSyscallResult::decode):
+        * Shared/linux/SeccompFilters/OpenSyscall.h: Added.
+        (CoreIPC):
+        (WebKit):
+        (OpenSyscall):
+        (WebKit::OpenSyscall::setPath):
+        (WebKit::OpenSyscall::setFlags):
+        (WebKit::OpenSyscall::setMode):
+        (OpenSyscallResult):
+        (WebKit::OpenSyscallResult::fd):
+        (WebKit::OpenSyscallResult::errorNumber):
+        * Shared/linux/SeccompFilters/SeccompBroker.cpp: Added.
+        (WebKit):
+        (SeccompBrokerClient):
+        (WebKit::sendMessage):
+        (WebKit::receiveMessage):
+        (WebKit::SIGSYSHandler):
+        (WebKit::registerSIGSYSHandler):
+        (WebKit::SeccompBrokerClient::shared):
+        (WebKit::SeccompBrokerClient::SeccompBrokerClient):
+        (WebKit::SeccompBrokerClient::~SeccompBrokerClient):
+        (WebKit::SeccompBrokerClient::dispatch):
+        (WebKit::SeccompBrokerClient::handleIfOpeningOnlineCPUCount):
+        (WebKit::SeccompBroker::launchProcess):
+        (WebKit::SeccompBroker::initialize):
+        (WebKit::SeccompBroker::runLoop):
+        * Shared/linux/SeccompFilters/SeccompBroker.h: Added.
+        (WebKit):
+        (SeccompBroker):
+        (WebKit::SeccompBroker::setSyscallPolicy):
+        (WebKit::SeccompBroker::SeccompBroker):
+        * Shared/linux/SeccompFilters/SeccompFilters.cpp: Added.
+        (WebKit):
+        (WebKit::SeccompFilters::SeccompFilters):
+        (WebKit::SeccompFilters::~SeccompFilters):
+        (WebKit::SeccompFilters::addRule):
+        (WebKit::SeccompFilters::initialize):
+        * Shared/linux/SeccompFilters/SeccompFilters.h: Added.
+        (WebKit):
+        (SeccompFilters):
+        (WebKit::SeccompFilters::context):
+        (WebKit::SeccompFilters::platformInitialize):
+        * Shared/linux/SeccompFilters/SigactionSyscall.cpp: Added.
+        (WebKit):
+        (WebKit::SigactionSyscall::createFromContext):
+        * Shared/linux/SeccompFilters/SigactionSyscall.h: Added.
+        (WebKit):
+        (SigactionSyscall):
+        * Shared/linux/SeccompFilters/SigprocmaskSyscall.cpp: Added.
+        (WebKit):
+        (WebKit::SigprocmaskSyscall::createFromContext):
+        * Shared/linux/SeccompFilters/SigprocmaskSyscall.h: Added.
+        (WebKit):
+        (SigprocmaskSyscall):
+        * Shared/linux/SeccompFilters/Syscall.cpp: Added.
+        (WebKit):
+        (WebKit::Syscall::createFromContext):
+        (WebKit::Syscall::createFromDecoder):
+        (WebKit::Syscall::Syscall):
+        (WebKit::SyscallResult::createFromDecoder):
+        (WebKit::SyscallResult::SyscallResult):
+        * Shared/linux/SeccompFilters/Syscall.h: Added.
+        (CoreIPC):
+        (WebKit):
+        (Syscall):
+        (WebKit::Syscall::~Syscall):
+        (WebKit::Syscall::type):
+        (WebKit::Syscall::setContext):
+        (WebKit::Syscall::context):
+        (SyscallResult):
+        (WebKit::SyscallResult::~SyscallResult):
+        (WebKit::SyscallResult::type):
+        * Shared/linux/SeccompFilters/SyscallPolicy.cpp: Added.
+        (WebKit):
+        (WebKit::removeTrailingSlash):
+        (WebKit::SyscallPolicy::hasPermissionForPath):
+        (WebKit::SyscallPolicy::addFilePermission):
+        (WebKit::SyscallPolicy::addDirectoryPermission):
+        (WebKit::SyscallPolicy::addDefaultWebProcessPolicy):
+        * Shared/linux/SeccompFilters/SyscallPolicy.h: Added.
+        (WebKit):
+        (SyscallPolicy):
+        * Target.pri:
+        * WebKit2.pri:
+        * WebProcess/efl/SeccompFiltersWebProcessEfl.cpp: Added.
+        (WebKit):
+        (WebKit::SeccompFiltersWebProcessEfl::SeccompFiltersWebProcessEfl):
+        (WebKit::SeccompFiltersWebProcessEfl::platformInitialize):
+        * WebProcess/efl/SeccompFiltersWebProcessEfl.h: Added.
+        (WebKit):
+        (SeccompFiltersWebProcessEfl):
+        * WebProcess/qt/SeccompFiltersWebProcessQt.cpp: Added.
+        (WebKit):
+        (WebKit::SeccompFiltersWebProcessQt::SeccompFiltersWebProcessQt):
+        (WebKit::SeccompFiltersWebProcessQt::platformInitialize):
+        * WebProcess/qt/SeccompFiltersWebProcessQt.h: Added.
+        (WebKit):
+        (SeccompFiltersWebProcessQt):
+        * WebProcess/qt/WebProcessQt.cpp:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+        * WebProcess/soup/WebProcessSoup.cpp:
+        (WebKit::WebProcess::platformInitializeWebProcess):
+
+2013-04-08  Grzegorz Czajkowski  <g.czajkowski@samsung.com>
+
+        [WK2][EFL] Mark not implemented methods in TextCheckerEfl.
+        https://bugs.webkit.org/show_bug.cgi?id=112261
+
+        Reviewed by Anders Carlsson.
+
+        There's no need to call client's methods in TextCheckerEfl.cpp if they are not
+        implemented. Mark them as not implemented until we provide proper implementation.
+
+        * UIProcess/efl/TextCheckerEfl.cpp:
+        (WebKit::TextChecker::isContinuousSpellCheckingAllowed):
+        (WebKit::TextChecker::setGrammarCheckingEnabled):
+        (WebKit::TextChecker::grammarCheckingEnabledStateChanged):
+        (WebKit::TextChecker::checkGrammarOfString):
+        (WebKit::TextChecker::spellingUIIsShowing):
+        (WebKit::TextChecker::toggleSpellingUIIsShowing):
+        (WebKit::TextChecker::updateSpellingUIWithMisspelledWord):
+        (WebKit::TextChecker::updateSpellingUIWithGrammarString):
+
+2013-04-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove HTML Notification
+        https://bugs.webkit.org/show_bug.cgi?id=114231
+
+        Reviewed by Ryosuke Niwa.
+
+        * Configurations/FeatureDefines.xcconfig:
+
+2013-04-08  Tim Horton  <timothy_horton@apple.com>
+
+        Don't run primary plugin detection if plugin snapshotting is off
+        https://bugs.webkit.org/show_bug.cgi?id=114222
+        <rdar://problem/13603988>
+
+        Reviewed by Dean Jackson.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::determinePrimarySnapshottedPlugIn):
+
+2013-04-08  Patrick Gansterer  <paroga@webkit.org>
+
+        [WIN] Remove WebKit2 source code
+        https://bugs.webkit.org/show_bug.cgi?id=114096
+
+        Reviewed by Anders Carlsson.
+
+        Remove conditional includes for the windows platform.
+
+        * Shared/API/c/WKBase.h:
+        * UIProcess/API/C/WKAPICast.h:
+
+2013-04-08  Geoffrey Garen  <ggaren@apple.com>
+
+        Stop #include-ing all of JavaScriptCore in every DOM-related file
+        https://bugs.webkit.org/show_bug.cgi?id=114220
+
+        Reviewed by Sam Weinig.
+
+        * Shared/WebCoreArgumentCoders.cpp:
+        * WebProcess/Plugins/Netscape/NPRuntimeObjectMap.h:
+
+2013-04-08  Brady Eidson  <beidson@apple.com>
+
+        Web/Plugin process deadlock initializing async plugins.
+        <rdar://problem/13525232> and https://bugs.webkit.org/show_bug.cgi?id=114217
+
+        Reviewed by Anders Carlsson.
+
+       The "Async initialization complete" messages probably don't have to be synchronous.
+
+        * PluginProcess/WebProcessConnection.cpp:
+        (WebKit::WebProcessConnection::createPluginAsynchronously): Notify of initialization success/failure asynchronously.
+        * WebProcess/Plugins/PluginProxy.messages.in: 
+
+2013-04-08  Anders Carlsson  <andersca@apple.com>
+
+        Add an async version of ResourceHandle::didReceiveResponse
+        https://bugs.webkit.org/show_bug.cgi?id=114215
+
+        Reviewed by Sam Weinig.
+
+        * NetworkProcess/NetworkResourceLoader.cpp:
+        (WebKit::NetworkResourceLoader::didReceiveResponseAsync):
+        Send the message and then call continueDidReceiveResponse.
+
+2013-04-08  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Build Platform as a separate static library
+        https://bugs.webkit.org/show_bug.cgi?id=114164
+
+        Reviewed by Martin Robinson.
+
+        This way we reduce a bit the amount of files compiled twice
+        because of the plugin process.
+
+        * GNUmakefile.am:
+        * GNUmakefile.list.am:
+        * Platform/gtk/WorkQueueGtk.cpp: Remove unused header.
+        * Platform/unix/SharedMemoryUnix.cpp: Ditto.
+
+2013-04-08  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] WebView: Add callbacks to the WKViewClient to remove direct access to page viewport controller
+        https://bugs.webkit.org/show_bug.cgi?id=110741
+
+        Reviewed by Anders Carlsson.
+
+        Provided WKViewClient with didRequestScroll, didRenderFrame and didCompletePageTransition
+        callbacks so that direct access from WebView to page viewport controller is avoided.
+
+        Implementation of callbacks is also added to keep the current EFL WK2 functionality.
+
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/efl/PageLoadClientEfl.cpp:
+        (WebKit::PageLoadClientEfl::didCommitLoadForFrame):
+
+            Moved here code from deleted WebView::didCommitLoad.
+
+        * UIProcess/efl/ViewClientEfl.cpp:
+        (WebKit::ViewClientEfl::didChangeContentsPosition):
+        (WebKit):
+        (WebKit::ViewClientEfl::didRenderFrame):
+        (WebKit::ViewClientEfl::didCompletePageTransition):
+        (WebKit::ViewClientEfl::ViewClientEfl):
+        * UIProcess/efl/ViewClientEfl.h:
+        (ViewClientEfl):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::pageDidRequestScroll):
+        (WebKit::WebView::didRenderFrame):
+        (WebKit::WebView::pageTransitionViewportReady):
+        * UIProcess/efl/WebViewClient.cpp:
+        (WebKit::WebViewClient::didChangeContentsPosition):
+        (WebKit):
+        (WebKit::WebViewClient::didRenderFrame):
+        (WebKit::WebViewClient::didCompletePageTransition):
+        * UIProcess/efl/WebViewClient.h:
+        (WebCore):
+
 2013-04-08  Andras Becsi  <andras.becsi@digia.com>
 
         [Qt][WK2] WebView's interactive property is not fully respected

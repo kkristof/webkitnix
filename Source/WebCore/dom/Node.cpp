@@ -1132,6 +1132,62 @@ void Node::detach()
 #endif
 }
 
+Node* Node::pseudoAwarePreviousSibling() const
+{
+    if (parentElement() && !previousSibling()) {
+        Element* parent = parentElement();
+        if (isAfterPseudoElement() && parent->lastChild())
+            return parent->lastChild();
+        if (!isBeforePseudoElement())
+            return parent->pseudoElement(BEFORE);
+    }
+    return previousSibling();
+}
+
+Node* Node::pseudoAwareNextSibling() const
+{
+    if (parentElement() && !nextSibling()) {
+        Element* parent = parentElement();
+        if (isBeforePseudoElement() && parent->firstChild())
+            return parent->firstChild();
+        if (!isAfterPseudoElement())
+            return parent->pseudoElement(AFTER);
+    }
+    return nextSibling();
+}
+
+Node* Node::pseudoAwareFirstChild() const
+{
+    if (isElementNode()) {
+        const Element* currentElement = toElement(this);
+        Node* first = currentElement->pseudoElement(BEFORE);
+        if (first)
+            return first;
+        first = currentElement->firstChild();
+        if (!first)
+            first = currentElement->pseudoElement(AFTER);
+        return first;
+    }
+
+    return firstChild();
+}
+
+Node* Node::pseudoAwareLastChild() const
+{
+    if (isElementNode()) {
+        const Element* currentElement = toElement(this);
+        Node* last = currentElement->pseudoElement(AFTER);
+        if (last)
+            return last;
+        last = currentElement->lastChild();
+        if (!last)
+            last = currentElement->pseudoElement(BEFORE);
+        return last;
+    }
+
+    return lastChild();
+}
+
 // FIXME: This code is used by editing.  Seems like it could move over there and not pollute Node.
 Node *Node::previousNodeConsideringAtomicNodes() const
 {
@@ -2096,11 +2152,18 @@ void Node::didMoveToNewDocument(Document* oldDocument)
 {
     TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(oldDocument);
 
+    if (const EventTargetData* eventTargetData = this->eventTargetData()) {
+        const EventListenerMap& listenerMap = eventTargetData->eventListenerMap;
+        if (!listenerMap.isEmpty()) {
+            Vector<AtomicString> types = listenerMap.eventTypes();
+            for (unsigned i = 0; i < types.size(); ++i)
+                document()->addListenerTypeIfNeeded(types[i]);
+        }
+    }
+
     if (AXObjectCache::accessibilityEnabled() && oldDocument)
         if (AXObjectCache* cache = oldDocument->existingAXObjectCache())
             cache->remove(this);
-
-    // FIXME: Event listener types for this node should be set on the new owner document here.
 
     const EventListenerVector& wheelListeners = getEventListeners(eventNames().mousewheelEvent);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
@@ -2627,7 +2690,6 @@ void Node::removedLastRef()
 void Node::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
     info.addMember(m_parentOrShadowHostNode, "parentOrShadowHostNode");
     info.addMember(m_treeScope, "treeScope");
     info.ignoreMember(m_next);

@@ -242,13 +242,6 @@ webkit.org/b/98942 storage/storagequota-request-quota.html [ Failure ]
 webkit.org/b/98942 fast/workers/worker-storagequota-query-usage.html [ Failure ]
 webkit.org/b/98942 fast/workers/shared-worker-storagequota-query-usage.html [ Failure ]
 
-# This platform does not support the Page Visibility API.
-webkit.org/b/97324 fast/events/page-visibility-iframe-delete-test.html [ Skip ]
-webkit.org/b/97324 fast/events/page-visibility-iframe-move-test.html [ Skip ]
-webkit.org/b/97324 fast/events/page-visibility-iframe-propagation-test.html [ Skip ]
-webkit.org/b/97324 fast/events/page-visibility-null-view.html [ Skip ]
-webkit.org/b/97324 fast/events/page-visibility-transition-test.html [ Skip ]
-
 # GTK doesn't support smart replace.
 webkit.org/b/61661 editing/pasteboard/drag-drop-list.html [ Failure ]
 
@@ -632,6 +625,23 @@ webkit.org/b/107018 svg/animations/animate-linear-discrete-additive-c.svg [ Imag
 webkit.org/b/107018 svg/animations/mozilla/animateMotion-mpath-pathLength-1.svg [ ImageOnlyFailure Pass ]
 
 webkit.org/b/112918 http/tests/appcache/abort-cache-ondownloading-resource-404.html [ Failure Pass ]
+
+webkit.org/b/114254 css3/bdi-element.html [ Timeout Pass ]
+webkit.org/b/114254 css3/masking/clip-path-animation.html [ Timeout Pass ]
+webkit.org/b/114254 css3/images/cross-fade-background-size.html [ Timeout Pass ]
+webkit.org/b/114254 css3/calc/background-position-parsing.html [ Timeout Pass ]
+webkit.org/b/114254 css3/flexbox/align-absolute-child.html [ Timeout Pass ]
+webkit.org/b/114254 css1/text_properties/letter_spacing.html [ Timeout Pass ]
+webkit.org/b/114254 css1/formatting_model/canvas.html [ Timeout Pass ]
+webkit.org/b/114254 css1/classification/display.html [ Timeout Pass ]
+webkit.org/b/114254 css1/box_properties/acid_test.html [ Timeout Pass ]
+webkit.org/b/114254 css1/pseudo/anchor.html [ Timeout Pass ]
+webkit.org/b/114254 css1/basic/class_as_selector.html [ Timeout Pass ]
+webkit.org/b/114254 css1/units/color_units.html [ Timeout Pass ]
+webkit.org/b/114254 css1/conformance/forward_compatible_parsing.html [ Timeout Pass ]
+webkit.org/b/114254 css1/font_properties/font.html [ Timeout Pass ]
+webkit.org/b/114254 css2.1/20110323/absolute-non-replaced-height-001.htm [ Timeout Pass ]
+webkit.org/b/114254 css2.1/t09-c5526c-display-00-e.html [ Timeout Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Flaky tests
@@ -1332,11 +1342,12 @@ webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-circle-padding.htm
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-ellipse-padding.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-inside/shape-inside-polygon-padding-002.html [ ImageOnlyFailure ]
+webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-diamond-margin-polygon.html [ Failure ]
+webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.html [ Failure ]
+webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html [ Failure ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-circle.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-ellipse.html [ ImageOnlyFailure ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-simple-rounded-rectangle.html [ ImageOnlyFailure ]
-webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.html [ Failure ]
-webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html [ Failure ]
 webkit.org/b/110089 fast/exclusions/shape-outside-floats/shape-outside-floats-non-zero-y.html [ ImageOnlyFailure ]
 
 webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
@@ -1374,6 +1385,11 @@ webkit.org/b/113747 svg/repaint/buffered-rendering-static-image.html [ ImageOnly
 
 webkit.org/b/113772 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure ]
 webkit.org/b/113772 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure ]
+
+webkit.org/b/114251 accessibility/svg-group-element-with-title.html [ Failure ]
+
+webkit.org/b/114259 platform/gtk/accessibility/aria-slider-required-attributes.html [ Failure ]
+webkit.org/b/114259 platform/gtk/accessibility/combo-box-collapsed-selection-changed.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

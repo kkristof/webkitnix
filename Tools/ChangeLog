@@ -1,3 +1,475 @@
+2013-04-10  Anton Obzhirov  <a.obzhirov@samsung.com>
+
+        [GTK] Add support for Page Visibility
+        https://bugs.webkit.org/show_bug.cgi?id=97324
+
+        Reviewed by Sam Weinig.
+
+        Implemented test runner API for page visibility layout tests.
+
+        * DumpRenderTree/gtk/TestRunnerGtk.cpp:
+        (TestRunner::resetPageVisibility):
+        (TestRunner::setPageVisibility):
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-04-10  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [ATK] REGRESSION(r148033): Add a stub for AccessibilityUIElement::pathDescription().
+        https://bugs.webkit.org/show_bug.cgi?id=114342
+
+        Reviewed by Gyuyoung Kim.
+
+        Commit 148033 only added an implementation for the Mac port, which made
+        other ports fail most tests since loading the injected bundle failed
+        with a missing symbol.
+
+        * WebKitTestRunner/InjectedBundle/atk/AccessibilityUIElementAtk.cpp:
+        (WTR::AccessibilityUIElement::pathDescription):
+
+2013-04-10  Artur Moryc  <a.moryc@samsung.com>
+
+        [EFL] Add spell checking option to MiniBrowser
+        https://bugs.webkit.org/show_bug.cgi?id=114282
+
+        Reviewed by Ryosuke Niwa.
+
+        Spell checking is enabled by adding a flag (t/text-checking)
+        with launching MiniBrowser.
+
+        * MiniBrowser/efl/main.c:
+        (window_create):
+        (elm_main):
+
+2013-04-10  Zan Dobersek  <zdobersek@igalia.com>
+
+        REGRESSION (r146518): WebKit2APITests/TestInspector is failing
+        https://bugs.webkit.org/show_bug.cgi?id=113281
+
+        Reviewed by Darin Adler.
+
+        * Scripts/run-gtk-tests:
+        (TestRunner): Remove the skip entry for the WebKit2APITests/TestInspector unit test.
+
+2013-04-09  Glenn Adams  <glenn@skynav.com>
+
+        Fix trivial test-webkitpy regression introduced by http://trac.webkit.org/changeset/148075.
+
+        Unreviewed.
+
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (RunTest.test_build_check):
+
+2013-04-09  Glenn Adams  <glenn@skynav.com>
+
+        [webkitpy] Remove chromium ports.
+        https://bugs.webkit.org/show_bug.cgi?id=114326
+
+        Reviewed by Dirk Pranke.
+
+        As a side effect, also:
+
+        - remove chromium builders from webkitpy.layout_tests.port.builders
+        - remove chromium builders from rebaseline
+        - rewrite chromium dependent tests in rebaseline_unittest
+        - remove chromium platform from garden-o-matic
+        - select apple platform as default platform in garden-o-matic
+        - remove chromium port dependencies from a few other tests (run_webkit_tests_integrationtest, factory_unittest, style.checkers.test_expectations_unittest)
+
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/garden-o-matic.html:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/config.js:
+        * Scripts/webkitpy/common/checkout/baselineoptimizer_unittest.py:
+        (BaselineOptimizerTest.test_move_baselines):
+        (BaselineOptimizerTest.test_efl):
+        (BaselineOptimizerTest.test_no_add_mac_future):
+        (BaselineOptimizerTest.test_win_does_not_drop_to_win_7sp0):
+        (BaselineOptimizerTest.test_common_directory_includes_root):
+        (BaselineOptimizerTest.test_complex_shadowing):
+        (BaselineOptimizerTest.test_virtual_ports_filtered):
+        * Scripts/webkitpy/layout_tests/port/builders.py:
+        * Scripts/webkitpy/layout_tests/port/chromium.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_android.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_android_unittest.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_linux.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_linux_unittest.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_mac.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_mac_unittest.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_port_testcase.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_unittest.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_win.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/chromium_win_unittest.py: Removed.
+        * Scripts/webkitpy/layout_tests/port/factory.py:
+        (platform_options):
+        (PortFactory):
+        * Scripts/webkitpy/layout_tests/port/factory_unittest.py:
+        (FactoryTest.test_qt):
+        (FactoryTest.test_get_from_builder_name):
+        * Scripts/webkitpy/layout_tests/run_webkit_tests_integrationtest.py:
+        (RunTest.test_build_check):
+        * Scripts/webkitpy/style/checkers/test_expectations_unittest.py:
+        (TestExpectationsTestCase.test_determine_port_from_expectations_path):
+        * Scripts/webkitpy/tool/commands/rebaseline.py:
+        (Rebaseline._builders_to_pull_from):
+        * Scripts/webkitpy/tool/commands/rebaseline_unittest.py:
+        (_BaseTestCase):
+        (_BaseTestCase.setUp):
+        (TestRebaselineTest.setUp):
+        (TestRebaselineTest.test_baseline_directory):
+        (test_rebaseline_updates_expectations_file):
+        (test_rebaseline_does_not_include_overrides):
+        (test_rebaseline_test):
+        (test_rebaseline_test_and_print_scm_changes):
+        (test_rebaseline_and_copy_test):
+        (test_rebaseline_and_copy_test_no_existing_result):
+        (test_rebaseline_and_copy_test_with_lion_result):
+        (test_rebaseline_and_copy_no_overwrite_test):
+        (TestRebaselineExpectations.test_rebaseline_expectations):
+
+2013-04-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+        newcommitbot (WKR) requires a subversion checkout
+        https://bugs.webkit.org/show_bug.cgi?id=114309
+
+        Reviewed by Benjamin Poulain.
+
+        Directly talk to the subversion server instead of relying on a local checkout.
+        This allows us to run WKR off of a git clone.
+
+        * Scripts/webkitpy/tool/commands/newcommitbot.py:
+        (NewCommitBot.next_work_item):
+        (NewCommitBot.process_work_item):
+
+2013-04-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+        webkitbot refers to sheriffbot in help
+        https://bugs.webkit.org/show_bug.cgi?id=114307
+
+        Reviewed by Benjamin Poulain.
+
+        Fixed the bug by proxying the IRC nickname of "sheriffbot" via Sheriff object.
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Help):
+        (Help.execute):
+        (RollChromiumDEPS.execute):
+        * Scripts/webkitpy/tool/bot/ircbot_unittest.py:
+        (IRCBotTest.test_help):
+        * Scripts/webkitpy/tool/bot/sheriff.py:
+        (Sheriff.name):
+
+2013-04-06  Roger Fong  <roger_fong@apple.com>
+
+        Kill old processes between runs on WinEWS bots.
+        Temporarily disable tests to let bots catch up again.
+
+        * EWSTools/start-queue-win.sh:
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (WinEWS):
+
+2013-04-09  Glenn Adams  <glenn@skynav.com>
+
+        [webkitpy] Remove chromium deprecated port support.
+        https://bugs.webkit.org/show_bug.cgi?id=114228
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/common/config/ports.py:
+        (DeprecatedPort.port): Removed chromium ports from port name to port class mapping.
+        (ChromiumPort): Removed.
+        (ChromiumAndroidPort): Removed.
+        (ChromiumXVFBPort): Removed.
+        * Scripts/webkitpy/common/config/ports_unittest.py:
+        (DeprecatedPortTest.test_chromium_port): Removed.
+        (DeprecatedPortTest.test_chromium_android_port): Removed.
+        (DeprecatedPortTest.test_chromium_xvfb_port): Removed.
+        * Scripts/webkitpy/tool/steps/update_unittest.py:
+        (UpdateTest.test_update_command_non_interactive): Use mac instead of chromium ports.
+        (UpdateTest.test_update_command_interactive): Use mac instead of chromium ports.
+
+2013-04-09  Chris Fleizach  <cfleizach@apple.com>
+
+        AX: The bounding paths should be made available through accessibility
+        https://bugs.webkit.org/show_bug.cgi?id=113817
+
+        Reviewed by David Kilzer.
+
+        Add a pathDescription property for testing so that it's possible
+        to verify that a path is being returned correctly.
+
+        * DumpRenderTree/AccessibilityUIElement.cpp:
+        (getPathDescriptionCallback):
+        (AccessibilityUIElement::pathDescription):
+        (AccessibilityUIElement::getJSClass):
+        * DumpRenderTree/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * DumpRenderTree/ios/AccessibilityUIElementIOS.mm:
+        (_CGPathEnumerationIteration):
+        (AccessibilityUIElement::pathDescription):
+        * DumpRenderTree/mac/AccessibilityUIElementMac.mm:
+        (AccessibilityUIElement::pathDescription):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.cpp:
+        (WTR::AccessibilityUIElement::pathDescription):
+        (WTR):
+        * WebKitTestRunner/InjectedBundle/AccessibilityUIElement.h:
+        (AccessibilityUIElement):
+        * WebKitTestRunner/InjectedBundle/Bindings/AccessibilityUIElement.idl:
+        * WebKitTestRunner/InjectedBundle/mac/AccessibilityUIElementMac.mm:
+        (WTR::AccessibilityUIElement::pathDescription):
+        (WTR):
+
+2013-04-09  Raphael Kubo da Costa  <raphael.kubo.da.costa@intel.com>
+
+        [EFL] Declare TEST_THEME_DIR in a single place.
+        https://bugs.webkit.org/show_bug.cgi?id=114285
+
+        Reviewed by Anders Carlsson.
+
+        Adapt to the renaming of `THEME_DIR' to `TEST_THEME_DIR'.
+
+        * DumpRenderTree/efl/CMakeLists.txt:
+        * DumpRenderTree/efl/DumpRenderTreeChrome.cpp:
+        (DumpRenderTreeChrome::createView):
+        (DumpRenderTreeChrome::createInspectorView):
+        (DumpRenderTreeChrome::initialize):
+        (DumpRenderTreeChrome::onDownloadRequest):
+        * EWebLauncher/CMakeLists.txt:
+        * EWebLauncher/main.c:
+        (findThemePath):
+        * EWebLauncher/url_bar.c:
+        (url_bar_add):
+        * MiniBrowser/efl/CMakeLists.txt:
+        * MiniBrowser/efl/main.c:
+        (window_create):
+        * TestWebKitAPI/PlatformEfl.cmake:
+        * TestWebKitAPI/efl/PlatformWebView.cpp:
+        (TestWebKitAPI::PlatformWebView::PlatformWebView):
+        * WebKitTestRunner/PlatformEfl.cmake:
+        * WebKitTestRunner/efl/PlatformWebViewEfl.cpp:
+        (WTR::PlatformWebView::PlatformWebView):
+
+2013-04-09  ChangSeok Oh  <changseok.oh@collabora.com>
+
+        [GTK][AC] upversion of clutter and its dependecy
+        https://bugs.webkit.org/show_bug.cgi?id=114016
+
+        Reviewed by Gustavo Noronha Silva.
+
+        Upversion of clutter to 1.14, cogl to 1.14 and clutter-gtk to 1.4.4.
+
+        * gtk/jhbuild-optional.modules:
+
+2013-04-09  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WK2] Drop WebProcess capabilities on Linux using seccomp filters
+        https://bugs.webkit.org/show_bug.cgi?id=89875
+
+        Reviewed by Maciej Stachowiak.
+
+        Add unit tests to verify if the handling of the open, openat, creat syscall
+        is being done right. We check if the Read/Write/ReadAndWrite permissions
+        are respected, if the canonical path is being resolved and if
+        the permissions are falling back to the topmost parent directory with a
+        policy set when the directory being opened has no policy.
+
+        We also test if any attempt of blocking SIGSYS is silently ignored.
+        SIGSYS cannot be blocked because in it's handler is where we hook
+        syscalls to the broker process.
+
+        Also added libseccomp to EFL's jhbuild to make the life of developers
+        willing to help easier.
+
+        * Scripts/webkitperl/FeatureList.pm:
+        * TestWebKitAPI/PlatformEfl.cmake:
+        * TestWebKitAPI/Tests/WebKit2/SeccompFilters.cpp: Added.
+        (TestWebKitAPI):
+        (SeccompEnvironment):
+        (TestWebKitAPI::SeccompEnvironment::SetUp):
+        (TestWebKitAPI::SeccompEnvironment::TearDown):
+        (TestWebKitAPI::dummyHandler):
+        (TestWebKitAPI::TEST):
+        (TestWebKitAPI::stressTest):
+        * efl/jhbuild.modules:
+        * qmake/mkspecs/features/features.pri:
+
+2013-04-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+        REGRESSION: Autocorrection doesn't work in DumpRenderTree
+        https://bugs.webkit.org/show_bug.cgi?id=113846
+
+        Reviewed by Alexey Proskuryakov.
+
+        The problem was that we were replacing NSSpellCheck's dictionary with our own
+        in DumpRenderTree but we were not adding necessary corrections to the dictionary.
+
+        Fixed the bug by having NSSpellChecker correct "mesage" and "wouldn" to "message"
+        and "would" respectively in DumpRenderTree.
+
+        * DumpRenderTree/mac/DumpRenderTree.mm:
+        (resetDefaultsToConsistentValues):
+
+2013-04-09  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove the gyp files for Tools
+        https://bugs.webkit.org/show_bug.cgi?id=114248
+
+        Reviewed by Ryosuke Niwa.
+
+        * DumpRenderTree/DumpRenderTree.gyp: Removed.
+        * DumpRenderTree/DumpRenderTree.gyp/.gitignore: Removed.
+        * DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp: Removed.
+        * DumpRenderTree/DumpRenderTree.gypi: Removed.
+        * TestWebKitAPI/TestWebKitAPI.gyp: Removed.
+        * TestWebKitAPI/TestWebKitAPI.gyp/.gitignore: Removed.
+        * TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp: Removed.
+        * TestWebKitAPI/TestWebKitAPI.gypi: Removed.
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        WKR (new-commit-bot) is too slow
+        https://bugs.webkit.org/show_bug.cgi?id=110087
+
+        Reviewed by Geoffrey Garen.
+
+        Running "svn up" or "git svn fetch" is way too slow (takes 2-3 minutes) on the machine I'm running the bot.
+        Just run "svn log -r <revision>" instead to cut down the delay.
+
+        Unfortunately, this work around doesn't work in a git checkout but who cares given I'm the one running the bot.
+
+        * Scripts/webkitpy/tool/commands/newcommitbot.py:
+        (NewCommitBot):
+        (NewCommitBot.next_work_item):
+        (NewCommitBot._is_empty_log):
+        (NewCommitBot._update_checkout):
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix. Can't remove appendCustomBuildFlags.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (appendCustomBuildFlags):
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Chromium builders from build.webkit.org
+        https://bugs.webkit.org/show_bug.cgi?id=113990
+
+        Reviewed by Benjamin Poulain.
+
+        Removed.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        (InstallGtkDependencies):
+        (RunUnitTests.start):
+        (RunWebKit2Tests.start):
+        (Factory.__init__):
+        (unitTestsSupported):
+        (TestFactory.__init__):
+        (BuildAndTestFactory.__init__):
+        (BuildAndPerfTestFactory.__init__):
+        (BuildAndPerfTestWebKit2Factory.__init__):
+        (DownloadAndPerfTestFactory.__init__):
+        (loadBuilderConfig):
+        * BuildSlaveSupport/build.webkit.org-config/templates/root.html:
+
+2013-04-08  Benjamin Poulain  <benjamin@webkit.org>
+
+        Remove HTML Notification
+        https://bugs.webkit.org/show_bug.cgi?id=114231
+
+        Reviewed by Ryosuke Niwa.
+
+        * qmake/mkspecs/features/features.pri:
+
+2013-04-08  Glenn Adams  <glenn@skynav.com>
+
+        Remove chromium EWS support, and fix broken test.
+        https://bugs.webkit.org/show_bug.cgi?id=114221
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/tool/commands/earlywarningsystem.py:
+        (AbstractChromiumEWS): Removed.
+        (ChromiumLinuxEWS): Removed.
+        (ChromiumLinuxDebugEWS): Removed.
+        (ChromiumWindowsEWS): Removed.
+        (ChromiumAndroidEWS): Removed.
+        * Scripts/webkitpy/tool/commands/earlywarningsystem_unittest.py:
+        (EarlyWarningSystemTest): Fix misspelled class name.
+        (test_ewses): Fix entry point name to ensure test is run.
+
+2013-04-08  Patrick Gansterer  <paroga@webkit.org>
+
+        [WIN] Remove WebKit2 source code
+        https://bugs.webkit.org/show_bug.cgi?id=114096
+
+        Reviewed by Anders Carlsson.
+
+        Remove the windows specific parts of the MiniBrowser.
+
+        * MiniBrowser/MiniBrowser.vcproj: Removed.
+        * MiniBrowser/MiniBrowserLauncher.vcproj: Removed.
+        * MiniBrowser/MiniBrowserPostBuild.cmd: Removed.
+        * MiniBrowser/MiniBrowserPreBuild.cmd: Removed.
+        * MiniBrowser/win/BrowserView.cpp: Removed.
+        * MiniBrowser/win/BrowserView.h: Removed.
+        * MiniBrowser/win/BrowserWindow.cpp: Removed.
+        * MiniBrowser/win/BrowserWindow.h: Removed.
+        * MiniBrowser/win/MiniBrowser.cpp: Removed.
+        * MiniBrowser/win/MiniBrowser.h: Removed.
+        * MiniBrowser/win/MiniBrowser.rc: Removed.
+        * MiniBrowser/win/main.cpp: Removed.
+        * MiniBrowser/win/resource.h: Removed.
+        * MiniBrowser/win/stdafx.cpp: Removed.
+        * MiniBrowser/win/stdafx.h: Removed.
+
+2013-04-08  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Use port 6665 instead of 6667 since the latter doesn't seem to work well.
+
+        * Scripts/webkitpy/common/config/irc.py:
+
+2013-04-08  Arunprasad Rajkumar  <arunprasadr@nds.com>
+
+        Call Netscape Plugin's toString() and valueOf() instead of providing default implementation
+        https://bugs.webkit.org/show_bug.cgi?id=113139
+
+        Reviewed by Anders Carlsson.
+
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePlugin.vcxproj:
+        * DumpRenderTree/DumpRenderTree.vcxproj/TestNetscapePlugin/TestNetscapePlugin.vcxproj.filters:
+        * DumpRenderTree/TestNetscapePlugIn/CMakeLists.txt:
+        * DumpRenderTree/TestNetscapePlugIn/Tests/ToStringAndValueOfObject.cpp: Added.
+        (ToStringAndValueOfObject):
+        (ToStringAndValueOfObject::ToStringAndValueOfObject):
+        (ScriptableObject):
+        (ToStringAndValueOfObject::ScriptableObject::hasMethod):
+        (ToStringAndValueOfObject::ScriptableObject::invoke):
+        (ToStringAndValueOfObject::ScriptableObject::pluginTest):
+        (ToStringAndValueOfObject::NPP_GetValue):
+        * DumpRenderTree/TestNetscapePlugIn/win/TestNetscapePlugin.vcproj:
+        * DumpRenderTree/qt/TestNetscapePlugin/TestNetscapePlugin.pro:
+        * GNUmakefile.am:
+
+2013-04-08  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK] Bump gnome-themes-standard to 3.6.0
+        https://bugs.webkit.org/show_bug.cgi?id=114155
+
+        Reviewed by Martin Robinson.
+
+        * gtk/jhbuild.modules: As now we depend on GTK+ 3.6.0 bump the
+        dependency of gnome-themes-standard accordingly.
+
+2013-04-08  David Levin  <levin@chromium.org>
+
+        Remove my watchlist entries.
+        https://bugs.webkit.org/show_bug.cgi?id=114180
+
+        Reviewed by Adam Barth.
+
+        * Scripts/webkitpy/common/config/committers.py:
+        * Scripts/webkitpy/common/config/watchlist:
+
 2013-04-08  Christophe Dumez  <ch.dumez@sisa.samsung.com>
 
         [EFL] Mark ShouldGoToBackForwardListItem API test as failing
