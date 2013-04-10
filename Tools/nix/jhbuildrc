@@ -104,7 +104,7 @@ if cross_compiler_prefix:
     module_autogenargs['freetype6'] = autogenargs
 
     os.environ['LDFLAGS'] = ''
-    for libdir in ('/lib', '/usr/lib', '/lib/%s' % cross_target_name, '/usr/lib/%s' % cross_target_name):
+    for libdir in (os.path.join(os.sep, prefix, 'lib64'), '/lib', '/usr/lib', '/lib/%s' % cross_target_name, '/usr/lib/%s' % cross_target_name):
         os.environ['LDFLAGS'] += ' -Wl,-rpath-link=' + cross_target_root + libdir + ' -L' + cross_target_root + libdir
 
     os.environ['CFLAGS'] = ' -I' + cross_target_root + '/usr/include/'
