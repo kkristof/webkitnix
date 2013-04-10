@@ -154,7 +154,7 @@ private:
 };
 
 MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
-    : m_context(AdoptWK, WKContextCreate())
+    : m_context(AdoptWK, WKContextCreateWithInjectedBundlePath(WKStringCreateWithUTF8CString(MINIBROWSER_INJECTEDBUNDLE_DIR "libMiniBrowserInjectedBundle.so")))
     , m_pageGroup(AdoptWK, (WKPageGroupCreateWithIdentifier(WKStringCreateWithUTF8CString("MiniBrowser"))))
     , m_window(new LinuxWindow(this, options.width, options.height))
     , m_view(0)
