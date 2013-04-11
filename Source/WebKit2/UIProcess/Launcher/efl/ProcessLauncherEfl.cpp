@@ -29,6 +29,8 @@
 #include <WebCore/RunLoop.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+#include <sys/wait.h>
+#include <errno.h>
 
 using namespace WebCore;
 
@@ -94,6 +96,7 @@ void ProcessLauncher::launchProcess()
         m_processIdentifier = pid;
         // We've finished launching the process, message back to the main run loop.
         RunLoop::main()->dispatch(bind(&ProcessLauncher::didFinishLaunchingProcess, this, pid, sockets[1]));
+        while (waitpid(pid, 0, 0) == -1 && errno == EINTR) { }
     } else {
         ASSERT_NOT_REACHED();
         return;

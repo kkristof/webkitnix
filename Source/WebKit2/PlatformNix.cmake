@@ -4,7 +4,7 @@ list(APPEND WebKit2_LINK_FLAGS
 
 list(APPEND WebKit2_SOURCES
     Platform/gtk/ModuleGtk.cpp
-    Platform/gtk/WorkQueueGtk.cpp
+    Platform/efl/WorkQueueEfl.cpp
     Platform/unix/SharedMemoryUnix.cpp
 
     Platform/CoreIPC/unix/ConnectionUnix.cpp
@@ -47,7 +47,7 @@ list(APPEND WebKit2_SOURCES
     UIProcess/soup/WebSoupRequestManagerClient.cpp
     UIProcess/soup/WebSoupRequestManagerProxy.cpp
 
-    UIProcess/Launcher/gtk/ProcessLauncherGtk.cpp
+    UIProcess/Launcher/efl/ProcessLauncherEfl.cpp
     UIProcess/gtk/WebProcessProxyGtk.cpp
 
     UIProcess/Plugins/unix/PluginInfoStoreUnix.cpp
