@@ -33,6 +33,8 @@
 #include "TextureMapperPlatformLayer.h"
 #include "WebContextMenuProxy.h"
 #include "WebViewClient.h"
+#include "WebPopupItemPlatform.h"
+#include "WebPopupMenuListener.h"
 #include <WebCore/TransformationMatrix.h>
 
 namespace WebCore {
@@ -145,7 +147,7 @@ public:
     virtual void doneWithTouchEvent(const NativeWebTouchEvent&, bool wasEventHandled);
 #endif
 
-    virtual PassRefPtr<WebPopupMenuProxy> createPopupMenuProxy(WebPageProxy*) { notImplemented(); return PassRefPtr<WebPopupMenuProxy>(); }
+    virtual PassRefPtr<WebPopupMenuProxy> createPopupMenuProxy(WebPageProxy* page) { return WebPopupMenuListener::create(page); }
     virtual PassRefPtr<WebContextMenuProxy> createContextMenuProxy(WebPageProxy*) { notImplemented(); return PassRefPtr<WebContextMenuProxy>(); }
 
 #if ENABLE(INPUT_TYPE_COLOR)

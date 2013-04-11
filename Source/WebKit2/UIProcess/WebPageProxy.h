@@ -86,6 +86,10 @@
 #include <Evas.h>
 #endif
 
+#if PLATFORM(NIX)
+#include "WebUIPopupMenuClient.h"
+#endif
+
 #if PLATFORM(QT)
 #include "QtNetworkRequestData.h"
 #endif
@@ -279,7 +283,7 @@ public:
     void initializeLoaderClient(const WKPageLoaderClient*);
     void initializePolicyClient(const WKPagePolicyClient*);
     void initializeUIClient(const WKPageUIClient*);
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     void initializeUIPopupMenuClient(const WKPageUIPopupMenuClient*);
 #endif
 
@@ -1065,7 +1069,7 @@ private:
     WebPolicyClient m_policyClient;
     WebFormClient m_formClient;
     WebUIClient m_uiClient;
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     WebUIPopupMenuClient m_uiPopupMenuClient;
 #endif
     WebFindClient m_findClient;

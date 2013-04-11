@@ -31,6 +31,8 @@
 #include <GL/gl.h>
 #include <WebKit2/WKArray.h>
 #include <WebKit2/WKContextMenuItem.h>
+#include <WebKit2/WKPage.h>
+#include <WebKit2/WKPopupMenuListener.h>
 #include <WebKit2/WKPreferences.h>
 #include <WebKit2/WKPreferencesPrivate.h>
 #include <WebKit2/WKString.h>
@@ -94,6 +96,9 @@ public:
 
     // ContextMenuClient.
     static void showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayRef menuItems, const void* clientInfo);
+
+    // PopupMenuClient.
+    static void showPopupMenu(WKPageRef page, WKPopupMenuListenerRef menuListenerRef, WKRect rect, WKPopupItemTextDirection textDirection, double pageScaleFactor, WKArrayRef itemsRef, int32_t selectedIndex, const void* clientInfo);
 
     virtual double scale();
 
@@ -245,6 +250,14 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
     contextMenuClient.clientInfo = this;
     contextMenuClient.showContextMenu = MiniBrowser::showContextMenu;
     WKPageSetPageContextMenuClient(pageRef(), &contextMenuClient);
+
+    // Popup Menu UI client.
+    WKPageUIPopupMenuClient popupMenuClient;
+    memset(&popupMenuClient, 0, sizeof(WKPageUIPopupMenuClient));
+    popupMenuClient.version = kWKPageUIPopupMenuClientCurrentVersion;
+    popupMenuClient.clientInfo = this;
+    popupMenuClient.showPopupMenu = MiniBrowser::showPopupMenu;
+    WKPageSetPagePopupMenuClient(pageRef(), &popupMenuClient);
 
     WKPageLoadURL(pageRef(), WKURLCreateWithUTF8CString(options.url.c_str()));
 }
@@ -904,6 +917,62 @@ void MiniBrowser::updateTextInputState(NIXView, bool isContentEditable, WKRect c
         mb->m_cursorRect = WKRectMake(0, 0, 0, 0);
         mb->m_editorRect = WKRectMake(0, 0, 0, 0);
     }
+}
+
+static void printPopupMenuItem(const WKPopupItemRef item, const int optionIndex, const int level)
+{
+    const WKStringRef title = WKPopupItemCopyText(item);
+    if (WKStringIsEmpty(title)) {
+        WKRelease(title);
+        return;
+    }
+
+    const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
+    char* titleBuffer = new char[titleBufferSize];
+    WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
+
+    // No tabs for level 0.
+    for (int i = 0; i < level; ++i)
+        printf("\t");
+
+    printf("%d- %s\n", optionIndex, titleBuffer);
+    delete[] titleBuffer;
+    WKRelease(title);
+}
+
+static int renderPopupMenu(const WKArrayRef menuItems, int& optionIndex, const int level = 0)
+{
+    size_t size = WKArrayGetSize(menuItems);
+    for (size_t i = 0; i < size; ++i) {
+        const WKPopupItemRef item = static_cast<WKPopupItemRef>(WKArrayGetItemAtIndex(menuItems, i));
+        if (WKPopupItemGetType(item) == kWKPopupItemTypeSeparator)
+            printf("--------------------\n");
+        else
+            printPopupMenuItem(item, optionIndex++, level);
+    }
+    return (optionIndex - 1);
+}
+
+void MiniBrowser::showPopupMenu(WKPageRef page, WKPopupMenuListenerRef menuListenerRef, WKRect rect, WKPopupItemTextDirection textDirection, double pageScaleFactor, WKArrayRef itemsRef, int32_t selectedIndex, const void* clientInfo)
+{
+    // FIXME: we should have a GUI popup menu at some point.
+    printf("\n# POPUP MENU #\n");
+
+    int optionIndex = 1;
+    printf("--------------------\n");
+    const int itemsCounter = renderPopupMenu(itemsRef, optionIndex);
+    printf("--------------------\n");
+
+    int option = 0;
+    printf("Popup Menu option (0 for none): ");
+    scanf("%d", &option);
+    if (option > 0 && option <= itemsCounter) {
+        if (WKPopupItemIsLabel(static_cast<WKPopupItemRef>(WKArrayGetItemAtIndex(itemsRef, option - 1))))
+            option = selectedIndex + 1;
+    } else {
+        option = selectedIndex + 1;
+    }
+    WKPopupMenuListenerSetSelection(menuListenerRef, option - 1);
 }
 
 static void printContextMenuItem(const WKContextMenuItemRef item, const int optionIndex, const int level)

@@ -189,11 +189,14 @@ set(WebKit2_SOURCES
     Shared/WebPageGroupData.cpp
     Shared/WebPlatformTouchPoint.cpp
     Shared/WebPopupItem.cpp
+    Shared/WebPopupItemPlatform.cpp
+    Shared/WebPopupMenuListener.cpp
     Shared/WebPreferencesStore.cpp
     Shared/WebProcessCreationParameters.cpp
     Shared/WebRenderLayer.cpp
     Shared/WebRenderObject.cpp
     Shared/WebTouchEvent.cpp
+    Shared/WebUIPopupMenuClient.cpp
     Shared/WebURLRequest.cpp
     Shared/WebURLResponse.cpp
     Shared/WebWheelEvent.cpp
@@ -213,6 +216,8 @@ set(WebKit2_SOURCES
     Shared/API/c/WKNumber.cpp
     Shared/API/c/WKRenderLayer.cpp
     Shared/API/c/WKRenderObject.cpp
+    Shared/API/c/WKPopupItem.cpp
+    Shared/API/c/WKPopupMenuListener.cpp
     Shared/API/c/WKSecurityOrigin.cpp
     Shared/API/c/WKSerializedScriptValue.cpp
     Shared/API/c/WKString.cpp

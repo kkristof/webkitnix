@@ -461,6 +461,13 @@ void WebPageProxy::initializeContextMenuClient(const WKPageContextMenuClient* cl
 }
 #endif
 
+#if PLATFORM(NIX)
+void WebPageProxy::initializeUIPopupMenuClient(const WKPageUIPopupMenuClient* client)
+{
+    m_uiPopupMenuClient.initialize(client);
+}
+#endif
+
 void WebPageProxy::reattachToWebProcess()
 {
     ASSERT(!isValid());
@@ -623,7 +630,7 @@ void WebPageProxy::close()
     m_loaderClient.initialize(0);
     m_policyClient.initialize(0);
     m_uiClient.initialize(0);
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     m_uiPopupMenuClient.initialize(0);
 #endif
 
@@ -3220,7 +3227,7 @@ void WebPageProxy::failedToShowPopupMenu()
 void WebPageProxy::showPopupMenu(const IntRect& rect, uint64_t textDirection, const Vector<WebPopupItem>& items, int32_t selectedIndex, const PlatformPopupMenuData& data)
 {
     if (m_activePopupMenu) {
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
         m_uiPopupMenuClient.hidePopupMenu(this);
 #else
         m_activePopupMenu->hidePopupMenu();
@@ -3237,7 +3244,7 @@ void WebPageProxy::showPopupMenu(const IntRect& rect, uint64_t textDirection, co
     // Since showPopupMenu() can spin a nested run loop we need to turn off the responsiveness timer.
     m_process->responsivenessTimer()->stop();
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     UNUSED_PARAM(data);
     m_uiPopupMenuClient.showPopupMenu(this, m_activePopupMenu.get(), rect, static_cast<TextDirection>(textDirection), m_pageScaleFactor, items, selectedIndex);
 #else
@@ -3258,7 +3265,7 @@ void WebPageProxy::hidePopupMenu()
     if (!m_activePopupMenu)
         return;
 
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
     m_uiPopupMenuClient.hidePopupMenu(this);
 #else
     m_activePopupMenu->hidePopupMenu();

@@ -31,6 +31,8 @@
 #include <WebKit2/WKContextMenuItem.h>
 #include <WebKit2/WKPage.h>
 #include <WebKit2/WKPageGroup.h>
+#include <WebKit2/WKPopupItem.h>
+#include <WebKit2/WKPopupMenuListener.h>
 
 #ifdef __cplusplus
 extern "C" {

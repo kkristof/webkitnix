@@ -43,7 +43,6 @@ list(APPEND WebKit2_SOURCES
     UIProcess/nix/WebInspectorProxyNix.cpp
     UIProcess/nix/WebPageProxyNix.cpp
     UIProcess/efl/WebPreferencesEfl.cpp
-
     UIProcess/soup/WebCookieManagerProxySoup.cpp
     UIProcess/soup/WebSoupRequestManagerClient.cpp
     UIProcess/soup/WebSoupRequestManagerProxy.cpp
@@ -212,6 +211,8 @@ set(WebKitNix_WebKit2_HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKNumber.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPageLoadTypes.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPageVisibilityTypes.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPopupItem.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKPopupMenuListener.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKRenderLayer.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKRenderObject.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/Shared/API/c/WKSecurityOrigin.h"

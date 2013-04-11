@@ -133,7 +133,7 @@ public:
 #if USE(SOUP)
         TypeSoupRequestManager,
 #endif
-#if PLATFORM(EFL)
+#if PLATFORM(EFL) || PLATFORM(NIX)
         TypePopupMenuItem,
 #endif
     };
