@@ -31,6 +31,7 @@
 #include <wtf/text/WTFString.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <stdio.h>
 
 using namespace WebCore;
 
