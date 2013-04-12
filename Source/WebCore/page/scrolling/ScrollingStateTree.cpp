@@ -25,8 +25,6 @@
  
 #include "config.h"
 
-#if ENABLE(THREADED_SCROLLING)
-
 #include "ScrollingStateTree.h"
 
 #include "ScrollingStateFixedNode.h"
@@ -64,7 +62,7 @@ ScrollingNodeID ScrollingStateTree::attachNode(ScrollingNodeType nodeType, Scrol
         removeNode(node);
     }
 
-    ScrollingStateNode* newNode;
+    ScrollingStateNode* newNode = 0;
     if (!parentID) {
         // If we're resetting the root node, we should clear the HashMap and destroy the current children.
         clear();
@@ -181,5 +179,3 @@ ScrollingStateNode* ScrollingStateTree::stateNodeForID(ScrollingNodeID scrollLay
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(THREADED_SCROLLING)

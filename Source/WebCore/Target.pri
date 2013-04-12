@@ -858,7 +858,7 @@ SOURCES += \
     loader/cache/CachedScript.cpp \
     loader/cache/CachedShader.cpp \
     loader/cache/CachedSVGDocument.cpp \
-    loader/cache/CachedSVGDocument.h \
+    loader/cache/CachedSVGDocumentReference.cpp \
     loader/cache/CachedXSLStyleSheet.cpp \
     loader/CookieJar.cpp \
     loader/CrossOriginAccessControl.cpp \
@@ -2035,6 +2035,8 @@ HEADERS += \
     loader/cache/CachedCSSStyleSheet.h \
     loader/cache/CachedFont.h \
     loader/cache/CachedImage.h \
+    loader/cache/CachedRawResource.h \
+    loader/cache/CachedRawResourceClient.h \
     loader/cache/CachedResourceClientWalker.h \
     loader/cache/CachedResource.h \
     loader/cache/CachedResourceHandle.h \
@@ -2356,7 +2358,6 @@ HEADERS += \
     platform/network/ResourceErrorBase.h \
     platform/network/ResourceHandle.h \
     platform/network/ResourceHandleTypes.h \
-    platform/network/ResourceLoadInfo.h \
     platform/network/ResourceLoadPriority.h \
     platform/network/ResourceLoadTiming.h \
     platform/network/ResourceRequestBase.h \
@@ -4142,6 +4143,13 @@ enable?(CANVAS_PROXY) {
 
 use?(3D_GRAPHICS) {
     HEADERS += \
+        page/scrolling/ScrollingConstraints.h \
+        page/scrolling/ScrollingCoordinator.h \
+        page/scrolling/ScrollingStateFixedNode.h \
+        page/scrolling/ScrollingStateNode.h \
+        page/scrolling/ScrollingStateScrollingNode.h \
+        page/scrolling/ScrollingStateStickyNode.h \
+        page/scrolling/ScrollingStateTree.h \
         page/scrolling/coordinatedgraphics/ScrollingCoordinatorCoordinatedGraphics.h \
         platform/graphics/cpu/arm/GraphicsContext3DNEON.h \
         platform/graphics/ANGLEWebKitBridge.h \
@@ -4167,7 +4175,16 @@ use?(3D_GRAPHICS) {
         platform/graphics/texmap/coordinated/UpdateAtlas.h
 
     SOURCES += \
+        page/scrolling/ScrollingConstraints.cpp \
+        page/scrolling/ScrollingCoordinator.cpp \
+        page/scrolling/ScrollingStateFixedNode.cpp \
+        page/scrolling/ScrollingStateNode.cpp \
+        page/scrolling/ScrollingStateScrollingNode.cpp \
+        page/scrolling/ScrollingStateStickyNode.cpp \
+        page/scrolling/ScrollingStateTree.cpp \
         page/scrolling/coordinatedgraphics/ScrollingCoordinatorCoordinatedGraphics.cpp \
+        page/scrolling/coordinatedgraphics/ScrollingStateNodeCoordinatedGraphics.cpp \
+        page/scrolling/coordinatedgraphics/ScrollingStateScrollingNodeCoordinatedGraphics.cpp \
         platform/graphics/ANGLEWebKitBridge.cpp \
         platform/graphics/GraphicsContext3D.cpp \
         platform/graphics/gpu/DrawingBuffer.cpp \

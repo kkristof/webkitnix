@@ -28686,6 +28686,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\loader\cache\CachedRawResourceClient.h"
+					>
+				</File>
+				<File
 					RelativePath="..\loader\cache\CachedResource.cpp"
 					>
 				</File>
@@ -28759,6 +28763,10 @@
 				</File>
 				<File
 					RelativePath="..\loader\cache\CachedSVGDocument.h"
+					>
+				</File>
+				<File
+					RelativePath="..\loader\cache\CachedSVGDocumentReference.cpp"
 					>
 				</File>
 				<File
@@ -33195,10 +33203,6 @@
 				</File>
 				<File
 					RelativePath="..\platform\network\ResourceHandleTypes.h"
-					>
-				</File>
-				<File
-					RelativePath="..\platform\network\ResourceLoadInfo.h"
 					>
 				</File>
 				<File

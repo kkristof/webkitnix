@@ -1,3 +1,224 @@
+2013-04-11  Benjamin Poulain  <bpoulain@apple.com>
+
+        Merge CharacterClassTable into CharacterClass
+        https://bugs.webkit.org/show_bug.cgi?id=114409
+
+        Reviewed by Darin Adler.
+
+        CharacterClassTable is only a pointer and a boolean.
+        It is a little overkill to make a separate allocation
+        for that.
+
+        * create_regex_tables:
+        * yarr/YarrJIT.cpp:
+        (JSC::Yarr::YarrGenerator::matchCharacterClass):
+        * yarr/YarrPattern.cpp:
+        (JSC::Yarr::CharacterClassConstructor::charClass):
+        * yarr/YarrPattern.h:
+        (CharacterClass):
+        (JSC::Yarr::CharacterClass::CharacterClass):
+
+2013-04-11  Michael Saboff  <msaboff@apple.com>
+
+        Added UNLIKELY() suggested in https://bugs.webkit.org/show_bug.cgi?id=114366
+        after checking in the original change. 
+
+        Rubber-stamped by Jessie Berlin.
+
+        * dfg/DFGOperations.cpp:
+
+2013-04-10  Benjamin Poulain  <benjamin@webkit.org>
+
+        Unify JSC Parser's error and error message
+        https://bugs.webkit.org/show_bug.cgi?id=114363
+
+        Reviewed by Geoffrey Garen.
+
+        The parser kept the error state over two attributes:
+        error and errorMessage. They were changed in sync,
+        but had some discrepancy (for example, the error message
+        was always defined to something).
+
+        This patch unifies the two. There is an error if
+        if the error message is non-null or if the parsing finished
+        before the end.
+
+        This also gets rid of the allocation of the error message
+        when instantiating a parser.
+
+        * parser/Parser.cpp:
+        (JSC::::Parser):
+        (JSC::::parseInner):
+        (JSC::::parseSourceElements):
+        (JSC::::parseVarDeclaration):
+        (JSC::::parseConstDeclaration):
+        (JSC::::parseForStatement):
+        (JSC::::parseSwitchStatement):
+        (JSC::::parsePrimaryExpression):
+        * parser/Parser.h:
+        (JSC::Parser::updateErrorMessage):
+        (JSC::Parser::updateErrorWithNameAndMessage):
+        (JSC::Parser::hasError):
+        (Parser):
+
+2013-04-10  Oliver Hunt  <oliver@apple.com>
+
+        Set trap is not being called for API objects
+        https://bugs.webkit.org/show_bug.cgi?id=114403
+
+        Reviewed by Anders Carlsson.
+
+        Intercept putByIndex on the callback object and add tests
+        to make sure we don't regress in future.
+
+        * API/JSCallbackObject.h:
+        (JSCallbackObject):
+        * API/JSCallbackObjectFunctions.h:
+        (JSC::::putByIndex):
+        (JSC):
+        * API/tests/testapi.c:
+        (PropertyCatchalls_setProperty):
+        * API/tests/testapi.js:
+
+2013-04-10  Benjamin Poulain  <bpoulain@apple.com>
+
+        Mass remove all the empty directories
+
+        Rubberstamped by Ryosuke Niwa.
+
+        * qt/api: Removed.
+        * qt/benchmarks/qscriptengine: Removed.
+        * qt/benchmarks/qscriptvalue: Removed.
+        * qt/tests/qscriptengine: Removed.
+        * qt/tests/qscriptstring: Removed.
+        * qt/tests/qscriptvalue: Removed.
+        * qt/tests/qscriptvalueiterator: Removed.
+
+2013-04-10  Mark Hahnenberg  <mhahnenberg@apple.com>
+
+        JSObject::getOwnNonIndexPropertyNames calculates numCacheableSlots incorrectly
+        https://bugs.webkit.org/show_bug.cgi?id=114235
+
+        Reviewed by Filip Pizlo.
+
+        If the object doesn't have any properties but the prototype does, we'll assume those prototype properties are 
+        accessible in the base object's backing store, which is bad.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::getPropertyNames):
+        (JSC::JSObject::getOwnNonIndexPropertyNames):
+        * runtime/PropertyNameArray.h:
+        (JSC::PropertyNameArray::PropertyNameArray):
+        (JSC::PropertyNameArray::setNumCacheableSlotsForObject):
+        (JSC::PropertyNameArray::setBaseObject):
+        (PropertyNameArray):
+
+2013-04-10  Patrick Gansterer  <paroga@webkit.org>
+
+        Remove code duplicates from MacroAssemblerARM
+        https://bugs.webkit.org/show_bug.cgi?id=104457
+
+        Reviewed by Oliver Hunt.
+
+        Reuse some existing methods to avoid duplicated code.
+
+        * assembler/MacroAssemblerARM.h:
+        (JSC::MacroAssemblerARM::store8):
+        (JSC::MacroAssemblerARM::store32):
+        (JSC::MacroAssemblerARM::swap):
+        (JSC::MacroAssemblerARM::add32):
+        (JSC::MacroAssemblerARM::sub32):
+
+2013-04-10  Michael Saboff  <msaboff@apple.com>
+
+        DFG: Negative size for new Array() interpreted as large unsigned int
+        https://bugs.webkit.org/show_bug.cgi?id=114366
+
+        Reviewed by Oliver Hunt.
+
+        Added new check in operationNewArrayWithSize() for a negative
+        size.  If size is negative throw a "RangeError: Array size is not a
+        small enough positive integer" exception.
+
+        * dfg/DFGOperations.cpp:
+
+2013-04-10  peavo@outlook.com  <peavo@outlook.com>
+
+        WinCairo build fails to link.
+        https://bugs.webkit.org/show_bug.cgi?id=114358
+
+        Reviewed by Brent Fulgham.
+
+        Export the symbol WTF::MD5::checksum().
+
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+
+2013-04-08  Anders Carlsson  <andersca@apple.com>
+
+        Remove unneeded headers from FrameLoader.h
+        https://bugs.webkit.org/show_bug.cgi?id=114223
+
+        Reviewed by Geoffrey Garen.
+
+        Update for WTF changes.
+
+        * bytecode/SpeculatedType.h:
+        * runtime/JSCJSValue.h:
+
+2013-04-09  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed bitrotted TimeoutChecker code
+        https://bugs.webkit.org/show_bug.cgi?id=114336
+
+        Reviewed by Alexey Proskuryakov.
+
+        This mechanism hasn't worked for a while.
+
+        MarkL is working on a new version of this feature with a distinct
+        implementation.
+
+        * API/APIShims.h:
+        (JSC::APIEntryShim::~APIEntryShim):
+        (JSC::APIEntryShim::init):
+        * GNUmakefile.list.am:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCore.vcproj:
+        * JavaScriptCore.vcproj/JavaScriptCore/JavaScriptCoreExports.def:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj:
+        * JavaScriptCore.vcxproj/JavaScriptCore.vcxproj.filters:
+        * JavaScriptCore.vcxproj/JavaScriptCoreExportGenerator/JavaScriptCoreExports.def.in:
+        * JavaScriptCore.xcodeproj/project.pbxproj:
+        * Target.pri:
+        * dfg/DFGGPRInfo.h:
+        * jit/JIT.cpp:
+        * jit/JIT.h:
+        * jit/JITStubs.cpp:
+        * jit/JITStubs.h:
+        * jit/JSInterfaceJIT.h:
+        (JSInterfaceJIT):
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        * runtime/JSGlobalObject.cpp:
+        * runtime/JSONObject.cpp:
+        (JSC::Stringifier::appendStringifiedValue):
+        (JSC::Walker::walk):
+        * runtime/TimeoutChecker.cpp: Removed.
+        * runtime/TimeoutChecker.h: Removed.
+
+2013-04-10  Oliver Hunt  <oliver@apple.com>
+
+        REGRESSION (r148073): WebKit Nightly r148082 crashes on launch in JSObjectSetPrivate
+        https://bugs.webkit.org/show_bug.cgi?id=114341
+
+        Reviewed by Alexey Proskuryakov.
+
+        Make JSObjectSetPrivate use uncheckedToJS as some clients
+        clear their private data during finalization for some reason.
+
+        * API/JSObjectRef.cpp:
+        (JSObjectSetPrivate):
+
 2013-04-09  Oliver Hunt  <oliver@apple.com>
 
         Add liveness tests to JSC API entry points

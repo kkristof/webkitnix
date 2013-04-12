@@ -1,3 +1,69 @@
+2013-04-12  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148262.
+        http://trac.webkit.org/changeset/148262
+        https://bugs.webkit.org/show_bug.cgi?id=114493
+
+        Cairo dep should now build, rolling r148247 back in (Requested
+        by zdobersek on #webkit).
+
+        * Source/autotools/FindDependencies.m4:
+        * Source/autotools/PrintBuildConfiguration.m4:
+        * Source/autotools/SetupWebKitFeatures.m4:
+
+2013-04-11  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148247.
+        http://trac.webkit.org/changeset/148247
+        https://bugs.webkit.org/show_bug.cgi?id=114490
+
+        Cairo dep fails to build on builders due to missing EGL
+        headers (Requested by zdobersek on #webkit).
+
+        * Source/autotools/FindDependencies.m4:
+        * Source/autotools/PrintBuildConfiguration.m4:
+        * Source/autotools/SetupWebKitFeatures.m4:
+
+2013-04-11  Paweł Forysiuk  <tuxator@o2.pl>
+
+        [GTK] Webkit fails to build with MinGW compiler after changeset 146468
+        https://bugs.webkit.org/show_bug.cgi?id=114473
+
+        Reviewed by Martin Robinson.
+
+        * Source/autotools/CheckSystemAndBasicDependencies.m4: Fix typo.
+
+2013-04-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Add accelerated 2D canvas support using cairo-gl
+        https://bugs.webkit.org/show_bug.cgi?id=104672
+
+        Reviewed by Alejandro G. Castro.
+
+        Detect that we can activate accelerated canvas when CairoGL is present and
+        TextureMapperGL is enabled.
+
+        * Source/autotools/FindDependencies.m4: Look for CairoGL.
+        * Source/autotools/PrintBuildConfiguration.m4: Print the status of accelerated canvas activation.
+        * Source/autotools/SetupWebKitFeatures.m4: Set the feature.
+
+2013-04-11  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed.
+
+        * Source/autotools/symbols.filter: Stop exporting redundant symbols.
+
+2013-04-11  Rune Lillesveen  <rune@opera.com>
+
+        Incorrect evaluation of resolution media queries
+        https://bugs.webkit.org/show_bug.cgi?id=114029
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Removed setResolutionOverride from exports.
+
+        * Source/autotools/symbols.filter:
+
 2013-04-10  Anton Obzhirov  <a.obzhirov@samsung.com>
 
         [GTK] Add support for Page Visibility

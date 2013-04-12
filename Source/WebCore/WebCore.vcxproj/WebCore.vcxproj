@@ -4074,6 +4074,7 @@
     <ClCompile Include="..\loader\cache\CachedScript.cpp" />
     <ClCompile Include="..\loader\cache\CachedShader.cpp" />
     <ClCompile Include="..\loader\cache\CachedSVGDocument.cpp" />
+    <ClCompile Include="..\loader\cache\CachedSVGDocumentReference.cpp" />
     <ClCompile Include="..\loader\cache\CachedTextTrack.cpp" />
     <ClCompile Include="..\loader\cache\CachedXSLStyleSheet.cpp" />
     <ClCompile Include="..\loader\cache\MemoryCache.cpp" />
@@ -11530,6 +11531,7 @@
     <ClInclude Include="..\loader\cache\CachedFont.h" />
     <ClInclude Include="..\loader\cache\CachedImage.h" />
     <ClInclude Include="..\loader\cache\CachedRawResource.h" />
+    <ClInclude Include="..\loader\cache\CachedRawResourceClient.h" />
     <ClInclude Include="..\loader\cache\CachedResource.h" />
     <ClInclude Include="..\loader\cache\CachedResourceClient.h" />
     <ClInclude Include="..\loader\cache\CachedResourceClientWalker.h" />
@@ -11919,7 +11921,6 @@
     <ClInclude Include="..\platform\network\ResourceHandleClient.h" />
     <ClInclude Include="..\platform\network\ResourceHandleInternal.h" />
     <ClInclude Include="..\platform\network\ResourceHandleTypes.h" />
-    <ClInclude Include="..\platform\network\ResourceLoadInfo.h" />
     <ClInclude Include="..\platform\network\ResourceLoadPriority.h" />
     <ClInclude Include="..\platform\network\ResourceLoadTiming.h" />
     <ClInclude Include="..\platform\network\ResourceRequestBase.h" />

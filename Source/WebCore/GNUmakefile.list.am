@@ -4007,6 +4007,7 @@ webcore_sources += \
 	Source/WebCore/loader/cache/CachedResourceClientWalker.h \
 	Source/WebCore/loader/cache/CachedRawResource.cpp \
 	Source/WebCore/loader/cache/CachedRawResource.h \
+	Source/WebCore/loader/cache/CachedRawResourceClient.h \
 	Source/WebCore/loader/cache/CachedResource.cpp \
 	Source/WebCore/loader/cache/CachedResource.h \
 	Source/WebCore/loader/cache/CachedResourceHandle.cpp \
@@ -4856,6 +4857,7 @@ webcore_svg_sources += \
 	Source/WebCore/loader/cache/CachedSVGDocument.cpp \
 	Source/WebCore/loader/cache/CachedSVGDocument.h \
 	Source/WebCore/loader/cache/CachedSVGDocumentClient.h \
+	Source/WebCore/loader/cache/CachedSVGDocumentReference.cpp \
 	Source/WebCore/loader/cache/CachedSVGDocumentReference.h \
 	Source/WebCore/platform/graphics/SVGGlyph.cpp \
 	Source/WebCore/platform/graphics/SVGGlyph.h \
@@ -5922,7 +5924,6 @@ webcore_platform_sources += \
 	Source/WebCore/platform/network/ResourceHandle.h \
 	Source/WebCore/platform/network/ResourceHandleInternal.h \
 	Source/WebCore/platform/network/ResourceHandleTypes.h \
-	Source/WebCore/platform/network/ResourceLoadInfo.h \
 	Source/WebCore/platform/network/ResourceLoadPriority.h \
 	Source/WebCore/platform/network/ResourceLoadTiming.cpp \
 	Source/WebCore/platform/network/ResourceLoadTiming.h \

@@ -607,9 +607,11 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
     // use the root element.
 
     // To combat the inability to scroll on a page with overflow:hidden on the root when scaled, disregard hidden when
-    // there is a frameScaleFactor that is greater than one on the main frame.
+    // there is a frameScaleFactor that is greater than one on the main frame. Also disregard hidden if there is a
+    // header or footer.
 
-    bool overrideHidden = m_frame->page() && m_frame->page()->mainFrame() == m_frame && m_frame->frameScaleFactor() > 1;
+    bool overrideHidden = (m_frame->page() && m_frame->page()->mainFrame() == m_frame && m_frame->frameScaleFactor() > 1)
+        || (m_frame->page() && m_frame->page()->mainFrame() == m_frame && (headerHeight() || footerHeight()));
 
     EOverflow overflowX = o->style()->overflowX();
     EOverflow overflowY = o->style()->overflowY();
@@ -2780,6 +2782,12 @@ void FrameView::delayedResizeEventTimerFired(Timer<FrameView>*)
     sendResizeEvent();
 }
 
+void FrameView::willStartLiveResize()
+{
+    ScrollView::willStartLiveResize();
+    adjustTiledBackingCoverage();
+}
+    
 void FrameView::willEndLiveResize()
 {
     ScrollableArea::willEndLiveResize();
@@ -2787,6 +2795,7 @@ void FrameView::willEndLiveResize()
         m_delayedResizeEventTimer.stop();
         sendResizeEvent();
     }
+    adjustTiledBackingCoverage();
 }
 
 void FrameView::scheduleResizeEvent()

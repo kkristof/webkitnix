@@ -54,6 +54,7 @@ private:
     static void didChangeContentsPosition(WKViewRef, WKPoint, const void* clientInfo);
     static void didRenderFrame(WKViewRef, WKSize, WKRect, const void* clientInfo);
     static void didCompletePageTransition(WKViewRef, const void* clientInfo);
+    static void didChangeViewportAttributes(WKViewRef, WKViewportAttributesRef, const void* clientInfo);
 
     EwkView* m_view;
 };

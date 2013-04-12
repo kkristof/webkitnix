@@ -33,6 +33,7 @@
 #include "ApplicationCacheHost.h"
 #include "ArchiveResourceCollection.h"
 #include "CachedPage.h"
+#include "CachedRawResource.h"
 #include "CachedResourceLoader.h"
 #include "DOMWindow.h"
 #include "Document.h"
@@ -47,10 +48,12 @@
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HistoryItem.h"
+#include "IconController.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
 #include "MemoryCache.h"
 #include "Page.h"
+#include "PolicyChecker.h"
 #include "ProgressTracker.h"
 #include "ResourceBuffer.h"
 #include "SchemeRegistry.h"
@@ -605,8 +608,10 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 
     m_response = response;
 
-    if (m_identifierForLoadWithoutResourceLoader)
+    if (m_identifierForLoadWithoutResourceLoader) {
+        addResponse(m_response);
         frameLoader()->notifier()->dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
+    }
 
     ASSERT(!m_waitingForContentPolicy);
     m_waitingForContentPolicy = true;

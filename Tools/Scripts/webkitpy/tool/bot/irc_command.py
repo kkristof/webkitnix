@@ -114,6 +114,8 @@ class Hi(IRCCommand):
     help_string = "Retrieves a random quip from Bugzilla."
 
     def execute(self, nick, args, tool, sheriff):
+        if len(args) and args[0] == 'webkitbot!':
+            return "%s: hi %s!" % (nick, nick)
         quips = tool.bugs.quips()
         quips.append('"Only you can prevent forest fires." -- Smokey the Bear')
         return random.choice(quips)
@@ -130,49 +132,15 @@ class Restart(IRCCommand):
 
 class RollChromiumDEPS(IRCCommand):
     usage_string = "roll-chromium-deps REVISION"
-    help_string = "Rolls WebKit's Chromium DEPS to the given revision. Give LKGR as the revision number to use the last known good revision. This lands an unreviewed patch and provides the bug URL."
-
-    def _parse_args(self, args):
-        if not args:
-            return None
-        revision = args[0].lstrip("r")
-        if revision == "LKGR" or revision.isdigit():
-            return revision
-        return None
-
-    def _expand_irc_nickname(self, nick):
-        contributor = CommitterList().contributor_by_irc_nickname(nick)
-        if contributor:
-            return str(contributor)
-        return nick
+    help_string = "Rolls WebKit's Chromium DEPS to the given revision???"
 
     def execute(self, nick, args, tool, sheriff):
-        revision = self._parse_args(args)
-        if not revision:
+        if not len(args):
             return self.usage(nick)
-
-        roll_target = "r%s" % revision if revision.isdigit() else "last-known good revision"
-        tool.irc().post("%s: Rolling Chromium DEPS to %s" % (nick, roll_target))
-        changelog_message = "Unreviewed.  Rolled Chromium DEPS to %s.  Requested by %s via %s.\n\n" % (roll_target, self._expand_irc_nickname(nick), sheriff.name())
-
-        try:
-            bug_id = sheriff.post_chromium_deps_roll(revision, roll_target, changelog_message)
-            bug_url = tool.bugs.bug_url_for_bug_id(bug_id)
-            return "%s: Created DEPS roll: %s" % (nick, bug_url)
-        except ScriptError, e:
-            tool.irc().post("%s: Failed to create DEPS roll:" % nick)
-            pre_bug_error_messages = [
-                r"Current Chromium DEPS revision \d+ is newer than \d+\.",
-                r"Unable to update Chromium DEPS\.",
-                r"Unable to parse LKGR from: .*",
-                r"Unable to reach LKGR source: .*",
-                r"Invalid revision number\.",
-            ]
-            for message in pre_bug_error_messages:
-                match = re.search(message, e.output)
-                if match:
-                    return "%s: %s" % (nick, match.group(0))
-            _post_error_and_check_for_bug_url(tool, nick, e)
+        tool.irc().post("%s: Will roll Chromium DEPS to %s" % (nick, args[0]))
+        tool.irc().post("%s: Rolling Chromium DEPS to %s" % (nick, args[0]))
+        tool.irc().post("%s: Rolled Chromium DEPS to %s" % (nick, args[0]))
+        tool.irc().post("%s: Thank You" % nick)
 
 
 class Rollout(IRCCommand):
@@ -275,44 +243,6 @@ class Rollout(IRCCommand):
             _post_error_and_check_for_bug_url(tool, nicks_string, e)
 
 
-class Sheriffs(IRCCommand):
-    usage_string = "sheriffs"
-    help_string = "Retrieves who the current Chromium WebKit sheriffs are from: %s" % urls.chromium_webkit_sheriff_url
-
-    def _retrieve_webkit_sheriffs(self, tool, url):
-        try:
-            sheriff_js = tool.web.get_binary(url, True)
-        except:
-            return None
-        if sheriff_js == None:
-            return None
-
-        match = re.search(r"document.write\('(.*)'\)", sheriff_js)
-
-        try:
-            return match.group(1)
-        except:
-            return None
-
-    def execute(self, nick, args, tool, sheriff):
-        if not args:
-            url = urls.chromium_webkit_sheriff_url
-        else:
-            url = args[0]
-
-        sheriffs = self._retrieve_webkit_sheriffs(tool, url)
-        if sheriffs == None:
-            return "%s: Failed to parse URL: %s" % (nick, url)
-
-        sheriff_name = "Chromium Webkit sheriff"
-        sheriff_count = len(sheriffs.split())
-        if sheriff_count == 0:
-            return "%s: There are no %ss currently assigned." % (nick, sheriff_name)
-        if sheriff_count == 1:
-            return "%s: The current %s is: %s" % (nick, sheriff_name, sheriffs)
-        return "%s: The current %ss are: %s" % (nick, sheriff_name, sheriffs)
-
-
 class Whois(IRCCommand):
     usage_string = "whois SEARCH_STRING"
     help_string = "Searches known contributors and returns any matches with irc, email and full name. Wild card * permitted."
@@ -354,7 +284,6 @@ visible_commands = {
     "restart": Restart,
     "roll-chromium-deps": RollChromiumDEPS,
     "rollout": Rollout,
-    "sheriffs": Sheriffs,
     "whois": Whois,
 }
 
@@ -364,10 +293,5 @@ visible_commands = {
 # people to use and it seems silly to have them hunt around for "rollout" instead.
 commands = visible_commands.copy()
 commands["revert"] = Rollout
-commands["gardeners"] = Sheriffs
-# Enough people misspell "sheriffs" that they've requested aliases for the command.
-commands["sherriffs"] = Sheriffs
-commands["sherifs"] = Sheriffs
-commands["sherrifs"] = Sheriffs
 # "hello" Alias for "hi" command for the purposes of testing aliases
 commands["hello"] = Hi

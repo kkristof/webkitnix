@@ -34,6 +34,7 @@ namespace WebCore {
 class IntPoint;
 class IntRect;
 class IntSize;
+class ViewportAttributes;
 }
 
 namespace WebKit {
@@ -49,6 +50,7 @@ public:
     void didChangeContentsPosition(WebView*, const WebCore::IntPoint&);
     void didRenderFrame(WebView*, const WebCore::IntSize&, const WebCore::IntRect&);
     void didCompletePageTransition(WebView*);
+    void didChangeViewportAttributes(WebView*, const WebCore::ViewportAttributes&);
 };
 
 } // namespace WebKit

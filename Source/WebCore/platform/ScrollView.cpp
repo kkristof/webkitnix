@@ -335,6 +335,12 @@ IntPoint ScrollView::adjustScrollPositionWithinRange(const IntPoint& scrollPoint
     return newScrollPosition;
 }
 
+IntSize ScrollView::scrollOffsetRelativeToDocument() const
+{
+    IntSize scrollOffset = this->scrollOffset();
+    return IntSize(scrollOffset.width(), scrollOffset.height() - headerHeight());
+}
+
 int ScrollView::scrollSize(ScrollbarOrientation orientation) const
 {
     // If no scrollbars are present, it does not indicate content is not be scrollable.
@@ -707,26 +713,26 @@ void ScrollView::scrollContentsSlowPath(const IntRect& updateRect)
 IntPoint ScrollView::rootViewToContents(const IntPoint& rootViewPoint) const
 {
     IntPoint viewPoint = convertFromRootView(rootViewPoint);
-    return viewPoint + scrollOffset();
+    return viewPoint + scrollOffsetRelativeToDocument();
 }
 
 IntPoint ScrollView::contentsToRootView(const IntPoint& contentsPoint) const
 {
-    IntPoint viewPoint = contentsPoint - scrollOffset();
+    IntPoint viewPoint = contentsPoint + IntSize(0, headerHeight()) - scrollOffset();
     return convertToRootView(viewPoint);  
 }
 
 IntRect ScrollView::rootViewToContents(const IntRect& rootViewRect) const
 {
     IntRect viewRect = convertFromRootView(rootViewRect);
-    viewRect.move(scrollOffset());
+    viewRect.move(scrollOffsetRelativeToDocument());
     return viewRect;
 }
 
 IntRect ScrollView::contentsToRootView(const IntRect& contentsRect) const
 {
     IntRect viewRect = contentsRect;
-    viewRect.move(-scrollOffset());
+    viewRect.move(-scrollOffset() + IntSize(0, headerHeight()));
     return convertToRootView(viewRect);
 }
 
@@ -736,8 +742,7 @@ IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const
         return convertFromContainingWindow(windowPoint);
 
     IntPoint viewPoint = convertFromContainingWindow(windowPoint);
-    IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
-    return viewPoint + offsetInDocument;
+    return viewPoint + scrollOffsetRelativeToDocument();
 }
 
 IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
@@ -745,8 +750,7 @@ IntPoint ScrollView::contentsToWindow(const IntPoint& contentsPoint) const
     if (delegatesScrolling())
         return convertToContainingWindow(contentsPoint);
 
-    IntSize offsetInDocument = scrollOffset() + IntSize(0, headerHeight());
-    IntPoint viewPoint = contentsPoint - offsetInDocument;
+    IntPoint viewPoint = contentsPoint + IntSize(0, headerHeight()) - scrollOffset();
     return convertToContainingWindow(viewPoint);  
 }
 
@@ -756,8 +760,7 @@ IntRect ScrollView::windowToContents(const IntRect& windowRect) const
         return convertFromContainingWindow(windowRect);
 
     IntRect viewRect = convertFromContainingWindow(windowRect);
-    IntSize offsetInDocument = scrollOffset() - IntSize(0, headerHeight());
-    viewRect.move(offsetInDocument);
+    viewRect.move(scrollOffsetRelativeToDocument());
     return viewRect;
 }
 

@@ -40,7 +40,6 @@
 #include "InspectorInstrumentation.h"
 #include "Page.h"
 #include "PageCache.h"
-#include "ResourceHandle.h"
 #include "StorageMap.h"
 #include "TextAutosizer.h"
 #include <limits>
@@ -319,15 +318,6 @@ void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
 }
 
 #endif
-
-void Settings::setResolutionOverride(const IntSize& densityPerInchOverride)
-{
-    if (m_resolutionDensityPerInchOverride == densityPerInchOverride)
-        return;
-
-    m_resolutionDensityPerInchOverride = densityPerInchOverride;
-    m_page->setNeedsRecalcStyleInAllFrames();
-}
 
 void Settings::setMediaTypeOverride(const String& mediaTypeOverride)
 {

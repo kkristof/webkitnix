@@ -1,3 +1,719 @@
+2013-04-12  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
+
+        [WK2][EFL] WebView: Add callbacks to the WKViewClient to handle page viewport update
+        https://bugs.webkit.org/show_bug.cgi?id=110463
+
+        Reviewed by Anders Carlsson.
+
+        * UIProcess/efl/ViewClientEfl.h:
+        (ViewClientEfl):
+        * UIProcess/efl/WebView.cpp:
+        (WebKit::WebView::didChangeViewportProperties):
+        * UIProcess/efl/WebViewClient.cpp:
+        (WebKit::WebViewClient::didChangeViewportAttributes):
+        (WebKit):
+        * UIProcess/efl/WebViewClient.h:
+
+            Added didChangeViewportAttributes callback to the WKViewClient to
+            handle page viewport updates.
+
+        * CMakeLists.txt:
+        * Shared/API/c/WKBase.h:
+        * Shared/APIObject.h:
+        * UIProcess/API/C/WKAPICast.h:
+        (WebKit):
+        * UIProcess/API/C/WKViewportAttributes.cpp: Added.
+        (WKViewportAttributesGetTypeID):
+        * UIProcess/API/C/WKViewportAttributes.h: Added.
+        * UIProcess/API/C/efl/WKView.h:
+        * UIProcess/WebViewportAttributes.cpp: Added.
+        (WebKit):
+        (WebKit::WebViewportAttributes::WebViewportAttributes):
+        (WebKit::WebViewportAttributes::~WebViewportAttributes):
+        * UIProcess/WebViewportAttributes.h: Added.
+        (WebKit):
+        (WebViewportAttributes):
+        (WebKit::WebViewportAttributes::create):
+        (WebKit::WebViewportAttributes::originalAttributes):
+        (WebKit::WebViewportAttributes::type):
+
+            Added WKViewportAttributesRef - WK2 C API object that is wrapping 
+            WebCore::ViewportAttributes structure and is passed in didChangeViewportAttributes
+            WKViewClient callback.
+
+        * UIProcess/efl/ViewClientEfl.cpp:
+        (WebKit::ViewClientEfl::didChangeViewportAttributes):
+        (WebKit):
+
+            Added implementaion of didChangeViewportAttributes WKViewClient 
+            callback so that existing EFL WK2 funtionality is kept.
+
+
+2013-04-12  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] The style of visited links doesn't change in WebKit2
+        https://bugs.webkit.org/show_bug.cgi?id=112175
+
+        Reviewed by Benjamin Poulain.
+
+        The problem is that visited links were not tracked by the web
+        process. There's a web process initial parameter to set whether
+        web process should track visited links or not and it's disabled by
+        default.
+
+        * UIProcess/gtk/WebContextGtk.cpp:
+        (WebKit::WebContext::platformInitializeWebProcess): Always set
+        shouldTrackVisitedLinks to true.
+
+2013-04-11  Tim Horton  <timothy_horton@apple.com>
+
+        REGRESSION (r146956): ASSERTion failure: WebKit::WebProcess::pageWillLeaveWindow
+        https://bugs.webkit.org/show_bug.cgi?id=114481
+        <rdar://problem/13534784>
+
+        Reviewed by Simon Fraser.
+
+        Inform the WebProcess of WebPages which are already in a window when created.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::WebPage):
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Add support for clearing storage areas
+        https://bugs.webkit.org/show_bug.cgi?id=114479
+
+        Reviewed by Beth Dakin.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::StorageArea::StorageArea):
+        Store the quota size so we can recreate the underlying StorageMap when clearing.
+        
+        (WebKit::StorageManager::StorageArea::clear):
+        Create a new storage map and dispatch events.
+
+        (WebKit::StorageManager::clear):
+        Find the right storage area and call clear.
+
+        * UIProcess/Storage/StorageManager.messages.in:
+        Add Clear message.
+
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::clear):
+        Call the storage map.
+
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        (WebKit::StorageAreaMap::clear):
+        Reset the cached values and send a clear message.
+
+        (WebKit::StorageAreaMap::resetValues):
+        New helper function.
+
+        (WebKit::StorageAreaMap::didClear):
+        New stub.
+
+        * WebProcess/Storage/StorageAreaMap.messages.in:
+        Add DidClear message.
+
+2013-04-11  Beth Dakin  <bdakin@apple.com>
+
+        WebKit should set the header and footer layers' contentsScale when the device 
+        scale factor changes
+        https://bugs.webkit.org/show_bug.cgi?id=114471
+        -and corresponding-
+        <rdar://problem/13621288>
+
+        Reviewed by Simon Fraser.
+
+        Update the header and footer contentsScale when the device scale factor has 
+        changed.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::setDeviceScaleFactor):
+        * WebProcess/WebPage/WebPage.h:
+        * WebProcess/WebPage/mac/WebPageMac.mm:
+        (WebKit::WebPage::updateHeaderAndFooterLayersForDeviceScaleChange):
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Implement removing storage area items
+        https://bugs.webkit.org/show_bug.cgi?id=114472
+
+        Reviewed by Beth Dakin.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (StorageManager::StorageArea):
+        (WebKit::StorageManager::StorageArea::setItem):
+        Rename connection to sourceConnection.
+
+        (WebKit::StorageManager::StorageArea::removeItem):
+        Remove the item from the map and dispatch events if needed.
+
+        (WebKit::StorageManager::removeItem):
+        Find the right storage area, remove the item and send back a DidRemoveItem message.
+
+        * UIProcess/Storage/StorageManager.messages.in:
+        Add RemoveItem message.
+
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::removeItem):
+        Call StorageAreaMap::removeItem.
+
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        (WebKit::StorageAreaMap::removeItem):
+        Send a RemoveItem message to the storage manager.
+        
+        (WebKit::StorageAreaMap::didRemoveItem):
+        Add empty stub.
+
+        * WebProcess/Storage/StorageAreaMap.messages.in:
+        Add DidRemoveItem message.
+
+2013-04-11  Tim Horton  <timothy_horton@apple.com>
+
+        InjectedBundleNodeHandle::imageForRect doesn't respect device scale factor or highlighting option
+        https://bugs.webkit.org/show_bug.cgi?id=114466
+        <rdar://problem/13508513>
+
+        Reviewed by Simon Fraser.
+
+        Respect the device scale factor when creating the snapshot image.
+        Clear the snapshot image before drawing into it.
+        Respect SnapshotOptionsExcludeSelectionHighlighting.
+
+        * WebProcess/InjectedBundle/DOM/InjectedBundleNodeHandle.cpp:
+        (WebKit::imageForRect):
+
+2013-04-11  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148034, r148052, r148097, and
+        r148194.
+        http://trac.webkit.org/changeset/148034
+        http://trac.webkit.org/changeset/148052
+        http://trac.webkit.org/changeset/148097
+        http://trac.webkit.org/changeset/148194
+        https://bugs.webkit.org/show_bug.cgi?id=114463
+
+        broke mutiresolution favicons, among other things (Requested
+        by thorton on #webkit).
+
+        * UIProcess/WebIconDatabase.cpp:
+        (WebKit::WebIconDatabase::setIconDataForIconURL):
+        * UIProcess/WebIconDatabase.h:
+        (WebIconDatabase):
+        * UIProcess/WebIconDatabase.messages.in:
+        * WebProcess/IconDatabase/WebIconDatabaseProxy.cpp:
+        (WebKit::WebIconDatabaseProxy::setIconDataForIconURL):
+        * WebProcess/Plugins/PDF/PDFPlugin.mm:
+        (WebKit::PDFPlugin::destroy):
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Implement StorageManager::getValues
+        https://bugs.webkit.org/show_bug.cgi?id=114461
+
+        Reviewed by Beth Dakin.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::StorageArea::items):
+        (WebKit::StorageManager::getValues):
+        Return the items from the right storage area.
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Clean up related storage areas when a connection is destroyed
+        https://bugs.webkit.org/show_bug.cgi?id=114459
+
+        Reviewed by Beth Dakin.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::processWillCloseConnection):
+        Dispatch invalidateConnectionInternal on the work queue.
+        
+        (WebKit::StorageManager::createStorageMap):
+        (WebKit::StorageManager::destroyStorageMap):
+        Rename m_storageAreas to m_storageAreasByConnection.
+
+        (WebKit::StorageManager::invalidateConnectionInternal):
+        Go over all known storage areas and remove this connection as a listener.
+
+        (WebKit::StorageManager::findStorageArea):
+        Rename m_storageAreas to m_storageAreasByConnection.
+
+        * UIProcess/Storage/StorageManager.h:
+        Rename m_storageAreas to m_storageAreasByConnection.
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Make StorageAreaMap dispatch session storage events
+        https://bugs.webkit.org/show_bug.cgi?id=114454
+
+        Reviewed by Beth Dakin.
+
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        (WebKit::StorageAreaMap::dispatchStorageEvent):
+        Depending on the storage area type, call dispatchSessionStorageEvent or dispatchLocalStorageEvent.
+
+        (WebKit::StorageAreaMap::dispatchSessionStorageEvent):
+        Enumerate all the frames in our page and dispatch the event to the relevant ones.
+
+        (WebKit::StorageAreaMap::dispatchLocalStorageEvent):
+        Add empty stub for now.
+
+2013-04-11  Anders Carlsson  <andersca@apple.com>
+
+        Implement more logic in StorageAreaMap
+        https://bugs.webkit.org/show_bug.cgi?id=114451
+
+        Reviewed by Alexey Proskuryakov.
+
+        * Platform/CoreIPC/HandleMessage.h:
+        (CoreIPC::callMemberFunction):
+        Add new overload.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::StorageArea::addListener):
+        (WebKit::StorageManager::StorageArea::removeListener):
+        These take storage map IDs.
+
+        (WebKit::StorageManager::StorageArea::setItem):
+        Rename storageAreaID to sourceStorageAreaID.
+
+        (WebKit::StorageManager::StorageArea::dispatchEvents):
+        Remove the code that would not dispatch to the source connection, there may still be storage areas interested in those events.
+
+        (WebKit::StorageManager::setItem):
+        This now takes the source storage area ID.
+
+        (WebKit::StorageManager::findStorageArea):
+        This takes a storage map ID.
+
+        * UIProcess/Storage/StorageManager.messages.in:
+        SetItem now takes the source storage area ID as well.
+
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::setItem):
+        Pass the source frame to StorageAreaMap::setItem.
+
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        (WebKit::StorageAreaMap::StorageAreaMap):
+        Send CreateStorageMap and add the object as a message receiver.
+
+        (WebKit::StorageAreaMap::~StorageAreaMap):
+        Send DestroyStorageMap and remove the object as a message receiver.
+
+        (WebKit::StorageAreaMap::length):
+        (WebKit::StorageAreaMap::key):
+        (WebKit::StorageAreaMap::item):
+        (WebKit::StorageAreaMap::contains):
+        Load values and forward calls to the storage map.
+
+        (WebKit::StorageAreaMap::setItem):
+        This now takes the source frame as well. Update the local storage map and send a SetItem message.
+        
+        (WebKit::StorageAreaMap::loadValuesIfNeeded):
+        Get the values from the storage manager.
+
+        (WebKit::StorageAreaMap::dispatchStorageEvent):
+        This now takes the source storage area ID.
+
+        * WebProcess/Storage/StorageAreaMap.messages.in:
+        DispatchStorageEvent now takes the source storage area ID.
+
+2013-04-10  Brady Eidson  <beidson@apple.com>
+
+        Web/Plugin process deadlock initializing async plugins.
+        <rdar://problem/13525232> and https://bugs.webkit.org/show_bug.cgi?id=114217
+
+        Rubberstamped by Anders Carlsson.
+
+        Rollout r147953 and r147968 as we identified other causes for this.
+
+        * PluginProcess/WebProcessConnection.cpp:
+        (WebKit::WebProcessConnection::createPluginAsynchronously):
+        * WebProcess/Plugins/PluginProxy.messages.in:
+
+2013-04-11  Alexey Proskuryakov  <ap@apple.com>
+
+        Remove some ResourceHandle.h includes
+        https://bugs.webkit.org/show_bug.cgi?id=114416
+
+        Reviewed by Ryosuke Niwa.
+
+        * WebProcess/Network/NetworkProcessConnection.cpp: Added an include that is now
+        necessary.
+
+2013-04-11  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        [Qt] EventHandler should handle Space and BackSpace 
+        https://bugs.webkit.org/show_bug.cgi?id=114428
+
+        Reviewed by Jocelyn Turcotte.
+
+        Remove our own handling of space and backspace.
+
+        * WebProcess/WebPage/qt/WebPageQt.cpp:
+        (WebKit::WebPage::performDefaultBehaviorForKeyEvent):
+
+2013-04-11  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Unreviewed Qt buildfixes after r148147, r148148 and r148154.
+
+        * DerivedSources.pri:
+        * Target.pri:
+
+2013-04-10  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK build fix, fixing the WebKit2 build.
+
+        * GNUmakefile.list.am:
+
+2013-04-10  Gyuyoung Kim  <gyuyoung.kim@samsung.com>
+
+        [WK2] Build warning in didReceiveMessage() generated by messages.py
+        https://bugs.webkit.org/show_bug.cgi?id=112513
+
+        Reviewed by Anders Carlsson.
+
+        Legacy receiver makes -Wunused-parameter build warnings. This patch is to fix them.
+
+        * Scripts/webkit2/messages.py:
+        (generate_message_handler):
+
+2013-04-10  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [CMAKE] Build fix after StorageArea refactoring
+        https://bugs.webkit.org/show_bug.cgi?id=114398
+
+        Unreviewed build fix.
+
+        Change StorageAreaImpl.messages.in with StorageAreaMap.messages.in.
+        Add StorageAreaMap.cpp in CMakeLists.txt.
+
+        * CMakeLists.txt:
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Make StorageAreaImpl a wrapper around StorageAreaMap
+        https://bugs.webkit.org/show_bug.cgi?id=114404
+
+        Reviewed by Oliver Hunt.
+
+        Prepare for moving all the code that deals with local storage values to StorageAreaMap,
+        and make StorageAreaImpl a dumb wrapper that simply calls through to the map.
+
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::create):
+        (WebKit::StorageAreaImpl::StorageAreaImpl):
+        (WebKit::StorageAreaImpl::~StorageAreaImpl):
+        (WebKit::StorageAreaImpl::storageType):
+        (WebKit::StorageAreaImpl::length):
+        (WebKit::StorageAreaImpl::key):
+        (WebKit::StorageAreaImpl::getItem):
+        (WebKit::StorageAreaImpl::setItem):
+        (WebKit::StorageAreaImpl::contains):
+        * WebProcess/Storage/StorageAreaImpl.h:
+        (WebKit::StorageAreaImpl::storageAreaID):
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        (WebKit::generateStorageMapID):
+        (WebKit::StorageAreaMap::create):
+        (WebKit::StorageAreaMap::StorageAreaMap):
+        (WebKit::StorageAreaMap::storageType):
+        (WebKit::StorageAreaMap::length):
+        (WebKit::StorageAreaMap::key):
+        (WebKit::StorageAreaMap::item):
+        (WebKit::StorageAreaMap::setItem):
+        (WebKit::StorageAreaMap::contains):
+        (WebKit::StorageAreaMap::didSetItem):
+        (WebKit::StorageAreaMap::dispatchStorageEvent):
+        * WebProcess/Storage/StorageAreaMap.h:
+        * WebProcess/Storage/StorageNamespaceImpl.cpp:
+        (WebKit::StorageNamespaceImpl::storageArea):
+        * WebProcess/Storage/StorageNamespaceImpl.h:
+        (StorageNamespaceImpl):
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Rename StorageManager messages to refer to the StorageMap instead of the StorageArea
+        https://bugs.webkit.org/show_bug.cgi?id=114401
+
+        Reviewed by Ryosuke Niwa.
+
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::createStorageMap):
+        (WebKit::StorageManager::destroyStorageMap):
+        (WebKit::StorageManager::setItem):
+        * UIProcess/Storage/StorageManager.h:
+        * UIProcess/Storage/StorageManager.messages.in:
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::StorageAreaImpl):
+        (WebKit::StorageAreaImpl::~StorageAreaImpl):
+
+2013-04-10  Benjamin Poulain  <bpoulain@apple.com>
+
+        Mass remove all the empty directories
+
+        Rubberstamped by Ryosuke Niwa.
+
+        * Platform/CoreIPC/gtk: Removed.
+        * Platform/CoreIPC/qt: Removed.
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.32: Removed.
+        * PluginProcess/EntryPoint/mac/XPCService/PluginService.64: Removed.
+        * PluginProcess/gtk: Removed.
+        * Shared/API/c/win: Removed.
+        * Shared/Plugins/Netscape/win: Removed.
+        * Shared/cg/win: Removed.
+        * Shared/win: Removed.
+        * UIProcess/API/C/win: Removed.
+        * UIProcess/API/gtk/webkit: Removed.
+        * UIProcess/Launcher/win: Removed.
+        * UIProcess/Plugins/gtk: Removed.
+        * UIProcess/Plugins/win: Removed.
+        * UIProcess/texmap: Removed.
+        * UIProcess/win: Removed.
+        * WebProcess/Authentication/mac: Removed.
+        * WebProcess/Cookies/efl: Removed.
+        * WebProcess/Cookies/gtk: Removed.
+        * WebProcess/Downloads/cf/win: Removed.
+        * WebProcess/Downloads/cfnet: Removed.
+        * WebProcess/Downloads/curl: Removed.
+        * WebProcess/Downloads/efl: Removed.
+        * WebProcess/Downloads/gtk: Removed.
+        * WebProcess/Downloads/mac: Removed.
+        * WebProcess/Downloads/qt: Removed.
+        * WebProcess/Downloads/soup: Removed.
+        * WebProcess/FullScreen/gtk: Removed.
+        * WebProcess/FullScreen/mac: Removed.
+        * WebProcess/FullScreen/qt: Removed.
+        * WebProcess/FullScreen/win: Removed.
+        * WebProcess/InjectedBundle/API/c/win: Removed.
+        * WebProcess/InjectedBundle/win: Removed.
+        * WebProcess/KeyValueStorage: Removed.
+        * WebProcess/Network/CustomProtocols/mac: Removed.
+        * WebProcess/Plugins/Netscape/gtk: Removed.
+        * WebProcess/Plugins/Netscape/win: Removed.
+        * WebProcess/WebCoreSupport/win: Removed.
+        * WebProcess/WebPage/LayerTreeCoordinator: Removed.
+        * WebProcess/WebPage/ca/mac: Removed.
+        * WebProcess/WebPage/ca/win: Removed.
+        * WebProcess/WebPage/win: Removed.
+        * WebProcess/win: Removed.
+        * qt/Resources: Removed.
+
+2013-04-10  Jaehun Lim  <ljaehun.lim@samsung.com>
+
+        [CMAKE] Build fix after r148147, r148148
+        https://bugs.webkit.org/show_bug.cgi?id=114395
+
+        Unreviewed build fix.
+
+        Use StorageAreaImpl, StorageNamespaceImpl instead of StorageAreaProxy, StorageNamespaceProxy.
+
+        * CMakeLists.txt:
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Add a stubbed out StorageAreaMap class
+        https://bugs.webkit.org/show_bug.cgi?id=114392
+
+        Reviewed by Andreas Kling.
+
+        The intention is that StorageAreaMap is going to take over responsibility for storing the storage values in the
+        web process, as well as dispatching events. A StorageAreaMap will be shared between multiple StorageAreaImpl objects,
+        for example if multiple frames with the same origin use local storage.
+
+        * DerivedSources.make:
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::StorageArea::dispatchEvents):
+        (WebKit::StorageManager::setItem):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        (WebKit::StorageAreaImpl::StorageAreaImpl):
+        (WebKit::StorageAreaImpl::~StorageAreaImpl):
+        * WebProcess/Storage/StorageAreaMap.cpp: Added.
+        (WebKit):
+        (WebKit::StorageAreaMap::create):
+        (WebKit::StorageAreaMap::StorageAreaMap):
+        (WebKit::StorageAreaMap::~StorageAreaMap):
+        (WebKit::StorageAreaMap::didSetItem):
+        (WebKit::StorageAreaMap::dispatchStorageEvent):
+        * WebProcess/Storage/StorageAreaMap.h: Added.
+        (WebKit):
+        (StorageAreaMap):
+        * WebProcess/Storage/StorageAreaMap.messages.in: Renamed from Source/WebKit2/WebProcess/Storage/StorageAreaImpl.messages.in.
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Rename StorageAreaProxy to StorageAreaImpl.
+
+        Rubber-stamped by Beth Dakin.
+
+        * DerivedSources.make:
+        * UIProcess/Storage/StorageManager.cpp:
+        (WebKit::StorageManager::StorageArea::dispatchEvents):
+        (WebKit::StorageManager::setItem):
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/Storage/StorageAreaImpl.cpp: Renamed from Source/WebKit2/WebProcess/Storage/StorageAreaProxy.cpp.
+        * WebProcess/Storage/StorageAreaImpl.h: Renamed from Source/WebKit2/WebProcess/Storage/StorageAreaProxy.h.
+        * WebProcess/Storage/StorageAreaImpl.messages.in: Renamed from Source/WebKit2/WebProcess/Storage/StorageAreaProxy.messages.in.
+        * WebProcess/Storage/StorageNamespaceImpl.cpp:
+        (WebKit::StorageNamespaceImpl::storageArea):
+        * WebProcess/Storage/StorageNamespaceImpl.h:
+        (WebKit):
+        (StorageNamespaceImpl):
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Rename StorageNamespaceProxy to StorageNamespaceImpl.
+
+        Rubber-stamped by Beth Dakin.
+
+        * WebKit2.xcodeproj/project.pbxproj:
+        * WebProcess/Storage/StorageAreaProxy.cpp:
+        (WebKit::StorageAreaProxy::create):
+        (WebKit::StorageAreaProxy::StorageAreaProxy):
+        * WebProcess/Storage/StorageAreaProxy.h:
+        (StorageAreaProxy):
+        * WebProcess/Storage/StorageNamespaceImpl.cpp: Renamed from Source/WebKit2/WebProcess/Storage/StorageNamespaceProxy.cpp.
+        * WebProcess/Storage/StorageNamespaceImpl.h: Renamed from Source/WebKit2/WebProcess/Storage/StorageNamespaceProxy.h.
+        * WebProcess/WebCoreSupport/WebPlatformStrategies.cpp:
+        (WebKit::WebPlatformStrategies::sessionStorageNamespace):
+
+2013-04-10  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] Un-pollute TCADA methods with "PageOverlayLayerMap::iterator end"
+        https://bugs.webkit.org/show_bug.cgi?id=114387
+
+        Reviewed by Simon Fraser.
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::updatePreferences):
+        (WebKit::TiledCoreAnimationDrawingArea::paintContents):
+        (WebKit::TiledCoreAnimationDrawingArea::flushLayers):
+        (WebKit::TiledCoreAnimationDrawingArea::setExposedRect):
+        (WebKit::TiledCoreAnimationDrawingArea::mainFrameScrollabilityChanged):
+        (WebKit::TiledCoreAnimationDrawingArea::updateGeometry):
+        (WebKit::TiledCoreAnimationDrawingArea::setRootCompositingLayer):
+
+2013-04-10  Tim Horton  <timothy_horton@apple.com>
+
+        [wk2] REGRESSION: Find highlight does not update when the view is resized
+        https://bugs.webkit.org/show_bug.cgi?id=114382
+        <rdar://problem/13599797>
+
+        Reviewed by Simon Fraser.
+
+        Invalidate the page overlays from TiledCoreAnimationDrawingArea::updateGeometry.
+        This will have no effect if the page overlay hasn't previously asked to be painted
+        (as drawsContent will remain false on the layer).
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea): Add invalidateAllPageOverlays.
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::invalidateAllPageOverlays): Factor this out of didChangeScrollOffsetForAnyFrame.
+        (WebKit::TiledCoreAnimationDrawingArea::didChangeScrollOffsetForAnyFrame): Call invalidateAllPageOverlays.
+        (WebKit::TiledCoreAnimationDrawingArea::updateGeometry): Call invalidateAllPageOverlays.
+
+2013-04-10  Beth Dakin  <bdakin@apple.com>
+
+        FindBanner matches are offset when the WKView has a header or footer
+        https://bugs.webkit.org/show_bug.cgi?id=114314
+        -and corresponding-
+        <rdar://problem/13522434>
+
+        Reviewed by Simon Fraser.
+
+        When calculating the matching rects, also adjust to the scroll offset that is  
+        relative to the Document.
+        * WebProcess/WebPage/FindController.cpp:
+        (WebKit::FindController::rectsForTextMatches):
+
+2013-04-10  Tobias Mueller  <tobiasmue@gnome.org>
+
+        Fixed build failure in Plugin.h: FloatPoint was not in namespace WebCore
+
+        make[1]: *** Waiting for unfinished jobs....
+        In file included from Source/WebKit2/PluginProcess/PluginCreationParameters.h:31:0,
+                         from Source/WebKit2/PluginProcess/PluginCreationParameters.cpp:27:
+        ./Source/WebKit2/WebProcess/Plugins/Plugin.h:268:58: error: 'FloatPoint' in namespace 'WebCore' does not name a type
+        ./Source/WebKit2/WebProcess/Plugins/Plugin.h:268:77: error: ISO C++ forbids declaration of 'parameter' with no type [-fpermissive]
+        cc1plus: warning: unrecognized command line option "-Wno-c++11-extensions" [enabled by default]
+        make[1]: *** [Source/WebKit2/PluginProcess/libwebkit2gtk_3_0_la-PluginCreationParameters.lo] Error 1
+
+        It now passes that make target.
+
+        https://bugs.webkit.org/show_bug.cgi?id=111862
+
+        Reviewed by Darin Adler.
+
+        * WebProcess/Plugins/Plugin.h:
+        (WebCore): Added FloatPoint to the WebCore namespace
+
+2013-04-08  Anders Carlsson  <andersca@apple.com>
+
+        Remove unneeded headers from FrameLoader.h
+        https://bugs.webkit.org/show_bug.cgi?id=114223
+
+        Reviewed by Geoffrey Garen.
+
+        Include HistoryController.h from WebCore.
+
+        * WebProcess/Plugins/PDF/SimplePDFPlugin.h:
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        * WebProcess/WebPage/WebPage.cpp:
+
+2013-04-09  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed bitrotted TimeoutChecker code
+        https://bugs.webkit.org/show_bug.cgi?id=114336
+
+        Reviewed by Alexey Proskuryakov.
+
+        This mechanism hasn't worked for a while.
+
+        MarkL is working on a new version of this feature with a distinct
+        implementation.
+
+        * WebProcess/Plugins/Netscape/NPJSObject.cpp:
+        (WebKit::NPJSObject::construct):
+        (WebKit::NPJSObject::invoke):
+        * WebProcess/Plugins/Netscape/NPRuntimeObjectMap.cpp:
+        (WebKit::NPRuntimeObjectMap::evaluate):
+
+2013-04-09  Mark Rowe  <mrowe@apple.com>
+
+        <rdar://problem/13617144> WKNavigationData needs to expose the destination of the navigation
+
+        Introduce WKNavigationDataCopyNavigationDestinationURL to access the destination of the navigation.
+
+        Reviewed by Dan Bernstein.
+
+        * UIProcess/API/C/WKNavigationData.cpp:
+        (WKNavigationDataCopyURL): Add a note about returning the URL from the original request for sake of
+        backwards-compatibility.
+        (WKNavigationDataCopyNavigationDestinationURL): Return the URL from our underlying WebNavigationDataStore.
+        * UIProcess/API/C/WKNavigationData.h:
+        * WebProcess/WebCoreSupport/WebFrameLoaderClient.cpp:
+        (WebKit::WebFrameLoaderClient::updateGlobalHistory): Store the current URL in to the WebNavigationDataStore
+        object. WKNavigationData can retrieve the value that we were previously storing here via the originalRequest.
+
+2013-04-09  Mark Rowe  <mrowe@apple.com>
+
+        <rdar://problem/13617104> WKPageCopySessionState needs to provide more context to the filter callback
+
+        Introduce a new value type for WKPageSessionStateFilterCallback that represents the passing
+        of whole WKBackForwardListItemRefs to the filter callback. This allows clients to consider
+        more than the original URL of the item when filtering entries from the session state.
+
+        Reviewed by Darin Adler.
+
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageGetSessionBackForwardListItemValueType): Return a static string representing our new value type.
+        * UIProcess/API/C/WKPage.h:
+        * UIProcess/cf/WebBackForwardListCF.cpp:
+        (WebKit::WebBackForwardList::createCFDictionaryRepresentation): Call the filter function with each of the
+        possible value types in turn, respecting the first false value, if any, that is returned.
+
 2013-04-10  Anton Obzhirov  <a.obzhirov@samsung.com>
 
         [GTK] Add support for Page Visibility

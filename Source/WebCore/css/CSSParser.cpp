@@ -726,9 +726,17 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique)
             return true;
         break;
-    case CSSPropertyImageRendering: // auto | optimizeContrast
-        if (valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast)
+    case CSSPropertyImageRendering: // auto | crisp-edges | pixelated | -webkit-smooth | optimizeSpeed | optimizeQuality | -webkit-optimize-contrast
+#if ENABLE(CSS4_IMAGES)
+        if (valueID == CSSValueAuto || valueID == CSSValueCrispEdges || valueID == CSSValuePixelated
+            || valueID == CSSValueWebkitSmooth || valueID == CSSValueWebkitOptimizeContrast
+            || valueID == CSSValueOptimizespeed || valueID == CSSValueOptimizequality)
             return true;
+#else
+        if (valueID == CSSValueAuto || valueID == CSSValueCrispEdges || valueID == CSSValueWebkitOptimizeContrast
+            || valueID == CSSValueOptimizespeed || valueID == CSSValueOptimizequality)
+            return true;
+#endif
         break;
     case CSSPropertyListStylePosition: // inside | outside | inherit
         if (valueID == CSSValueInside || valueID == CSSValueOutside)
@@ -2349,6 +2357,19 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 #endif
         return parseFontFaceSrc();
 
+#if ENABLE(CSS_SHADERS)
+    case CSSPropertyMix:
+        // The mix property is just supported inside of an @filter rule.
+        if (!m_inFilterRule)
+            return false;
+        return parseFilterRuleMix();
+    case CSSPropertyParameters:
+        // The parameters property is just supported inside of an @filter rule.
+        if (!m_inFilterRule)
+            return false;
+        return parseFilterRuleParameters();
+#endif
+
     case CSSPropertyUnicodeRange:
         return parseFontFaceUnicodeRange();
 
@@ -2892,6 +2913,10 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyPage:
         return parsePage(propId, important);
     case CSSPropertyFontStretch:
+#if ENABLE(CSS_SHADERS)
+    case CSSPropertyGeometry:
+        return m_inFilterRule ? parseGeometry(propId, value, important) : false;
+#endif
     case CSSPropertyTextLineThrough:
     case CSSPropertyTextOverline:
     case CSSPropertyTextUnderline:
@@ -8797,6 +8822,115 @@ bool CSSParser::parseFilterRuleSrc()
         return false;
 
     addProperty(CSSPropertySrc, srcList.release(), m_important);
+    return true;
+}
+
+bool CSSParser::parseFilterRuleMix()
+{
+    if (m_valueList->size() > 2)
+        return false;
+
+    RefPtr<CSSValueList> mixList = CSSValueList::createSpaceSeparated();
+
+    bool hasBlendMode = false;
+    bool hasAlphaCompositing = false;
+    CSSParserValue* value = m_valueList->current();
+    while (value) {
+        RefPtr<CSSValue> mixValue;
+        if (!hasBlendMode && isBlendMode(value->id)) {
+            hasBlendMode = true;
+            mixValue = cssValuePool().createIdentifierValue(value->id);
+        } else if (!hasAlphaCompositing && isCompositeOperator(value->id)) {
+            hasAlphaCompositing = true;
+            mixValue = cssValuePool().createIdentifierValue(value->id);
+        }
+
+        if (!mixValue)
+            return false;
+
+        mixList->append(mixValue.release());
+        value = m_valueList->next();
+    }
+
+    addProperty(CSSPropertyMix, mixList.release(), m_important);
+    return true;
+}
+
+bool CSSParser::parseGeometry(CSSPropertyID propId, CSSParserValue* value, bool important)
+{
+    ASSERT(propId == CSSPropertyGeometry);
+
+    // <geometry-shape> = grid(<integer>{1,2} || [ detached | attached ]?)
+    if (value->unit != CSSParserValue::Function || !equalIgnoringCase(value->function->name, "grid("))
+        return false;
+
+    ASSERT(value->function->args);
+
+    // grid() function should have from 1 to 3 arguments.
+    unsigned size = value->function->args->size();
+    if (!size || size > 3)
+        return false;
+
+    CSSParserValueList* gridParserValueList = value->function->args.get();
+    CSSParserValue* gridParserValue = gridParserValueList->current();
+    RefPtr<CSSValueList> geometryList = CSSValueList::createSpaceSeparated();
+
+    bool hasDimensions = false;
+    bool hasConnectivity = false;
+
+    while (gridParserValue) {
+        if (hasDimensions && hasConnectivity) {
+            geometryList.release();
+            return false;
+        }
+
+        if (gridParserValue->id == CSSValueAttached || gridParserValue->id == CSSValueDetached) {
+            hasConnectivity = true;
+            geometryList->append(cssValuePool().createIdentifierValue(gridParserValue->id));
+            gridParserValue = gridParserValueList->next();
+        } else if (!hasDimensions && parseGridDimensions(gridParserValueList, geometryList)) {
+            hasDimensions = true;
+            gridParserValue = gridParserValueList->current();
+        } else {
+            geometryList.release();
+            return false;
+        }
+    }
+
+    addProperty(propId, geometryList.release(), important);
+    return hasDimensions;
+}
+
+bool CSSParser::parseGridDimensions(CSSParserValueList* args, RefPtr<CSSValueList>& gridValueList)
+{
+    ASSERT(args);
+
+    // There must be at least one valid numeric value.
+    CSSParserValue* arg = args->current();
+    if (!arg || !validUnit(arg, FPositiveInteger))
+        return false;
+
+    // A valid numeric value is parsed and then we move on.
+    gridValueList->append(createPrimitiveNumericValue(arg));
+    arg = args->next();
+
+    // If the next argument is not numeric, we are done parsing the grid dimensions.
+    if (!arg || !validUnit(arg, FPositiveInteger))
+        return true;
+
+    // Commit the second numeric value we found.
+    gridValueList->append(createPrimitiveNumericValue(arg));
+    args->next();
+    return true;
+}
+
+bool CSSParser::parseFilterRuleParameters()
+{
+    RefPtr<CSSValueList> paramsList = parseCustomFilterParameters(m_valueList.get());
+    if (!paramsList)
+        return false;
+
+    addProperty(CSSPropertyParameters, paramsList.release(), m_important);
     return true;
 }
 

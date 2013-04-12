@@ -1202,6 +1202,12 @@ css3/filters/custom-with-at-rule-syntax/parsing-at-rule-invalid.html
 css3/filters/custom-with-at-rule-syntax/parsing-at-rule-valid.html
 css3/filters/custom-with-at-rule-syntax/parsing-src-property-invalid.html
 css3/filters/custom-with-at-rule-syntax/parsing-src-property-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-geometry-property-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-geometry-property-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-mix-property-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-mix-property-valid.html
+css3/filters/custom-with-at-rule-syntax/parsing-parameters-property-invalid.html
+css3/filters/custom-with-at-rule-syntax/parsing-parameters-property-valid.html
 
 # The following tests need further investigation:
 # https://bugs.webkit.org/show_bug.cgi?id=101531
@@ -1910,6 +1916,7 @@ webkit.org/b/109353 fast/flexbox/line-clamp-link-after-ellipsis.html [ Skip ]
 # Some fast/exclusions/shape-outside-floats tests are failing
 webkit.org/b/113769 fast/exclusions/shape-outside-floats/shape-outside-floats-ellipse-margin-left.html [ Skip ]
 webkit.org/b/113769 fast/exclusions/shape-outside-floats/shape-outside-floats-diamond-margin-polygon.html [ Failure ]
+webkit.org/b/113769 fast/exclusions/shape-inside/shape-inside-polygon-padding-003.html [ Skip ]
 
 webkit.org/b/110090 fast/events/clientXY-in-zoom-and-scroll.html [ Skip ]
 
@@ -2285,6 +2292,7 @@ svg/animations/animateTransform-rotate-around-point.svg
 svg/animations/animateMotion-additive-1.svg
 svg/text/alt-glyph-for-surrogate-pair.svg
 svg/transforms/transformed-text-fill-gradient.html
+fast/regions/counters/extract-list-items-013.html
 fast/regions/floats-basic-in-variable-width-regions.html
 fast/regions/region-style-rule-position.html
 fast/forms/select/intrinsic-min-width-applies-with-fixed-width.html
@@ -2721,3 +2729,7 @@ webkit.org/b/113770 editing/execCommand/format-block-at-root.html [ Skip ]
 
 #[Qt] New test fast/js/dom-static-property-for-in-iteration.html fails on Qt after r147570
 webkit.org/b/114157 fast/js/dom-static-property-for-in-iteration.html [ Failure ]
+
+# Nested opacity with overflow may display wrong results when composited
+webkit.org/b/114338 compositing/overlap-blending/nested-overlap-overflow.html [ Skip ]
+webkit.org/b/114338 compositing/overlap-blending/nested-non-overlap-clipping.html [ Skip ]

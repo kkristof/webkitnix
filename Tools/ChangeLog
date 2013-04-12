@@ -1,3 +1,478 @@
+2013-04-12  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Chromium scripts
+        https://bugs.webkit.org/show_bug.cgi?id=114492
+
+        Reviewed by Benjamin Poulain.
+
+        * Scripts/run-chromium-webkit-unit-tests: Removed.
+        * Scripts/update-webkit-chromium: Removed.
+
+2013-04-12  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148262.
+        http://trac.webkit.org/changeset/148262
+        https://bugs.webkit.org/show_bug.cgi?id=114493
+
+        Cairo dep should now build, rolling r148247 back in (Requested
+        by zdobersek on #webkit).
+
+        * Scripts/webkitdirs.pm:
+        (buildAutotoolsProject):
+        * gtk/jhbuild.modules:
+
+2013-04-11  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148247.
+        http://trac.webkit.org/changeset/148247
+        https://bugs.webkit.org/show_bug.cgi?id=114490
+
+        Cairo dep fails to build on builders due to missing EGL
+        headers (Requested by zdobersek on #webkit).
+
+        * Scripts/webkitdirs.pm:
+        (buildAutotoolsProject):
+        * gtk/jhbuild.modules:
+
+2013-04-11  Martin Robinson  <mrobinson@igalia.com>
+
+        [GTK] Add accelerated 2D canvas support using cairo-gl
+        https://bugs.webkit.org/show_bug.cgi?id=104672
+
+        Reviewed by Alejandro G. Castro.
+
+        Since the value of ACCELERATED_2D_CANVAS relies on some somewhat unusual
+        dependencies, don't override value of the setting determined by configure.
+        This will make it easier for people using build-webkit, but not the
+        WebKit JHBuild.
+
+        * Scripts/webkitdirs.pm:
+        (buildAutotoolsProject): Add a blacklist for settings to never override.
+        * gtk/jhbuild.modules: Build CairoGL.
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        build.webkit.org should link to webkit-queues instead of webkit-commit-queue
+        https://bugs.webkit.org/show_bug.cgi?id=114477
+
+        Reviewed by Benjamin Poulain.
+
+        * BuildSlaveSupport/build.webkit.org-config/templates/root.html:
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Leaks builder should not be triggered upon new commits
+        https://bugs.webkit.org/show_bug.cgi?id=114475
+
+        Reviewed by Jessie Berlin.
+
+        Don't trigger them on new checkins. Wait for Mountain Lion (Build), which already triggers
+        the leak builder when builds are done.
+
+        * BuildSlaveSupport/build.webkit.org-config/config.json:
+
+2013-04-11  Kalev Lember  <kalevlember@gmail.com>
+
+        [GTK] Windows build failure after r136056
+        https://bugs.webkit.org/show_bug.cgi?id=114121
+
+        Reviewed by Martin Robinson.
+
+        * TestWebKitAPI/config.h: Make sure defines are correct for other
+        Windows ports than apple-win.
+
+2013-04-11  Ojan Vafai  <ojan@chromium.org>
+
+        Remove myself from watchlists.
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Build fix. Don't hard-code queues.webkit.org at least during the transition.
+
+        * QueueStatusServer/templates/statusbubble.html:
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Use webkit-queues.appspot.com instead of webkit-commit-queue.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=114397
+
+        Reviewed by Benjamin Poulain.
+
+        Reland the patch since Alan appears to have finished the migration.
+
+        * Scripts/webkitpy/common/net/statusserver.py:
+        (StatusServer):
+
+2013-04-11  Brian Holt  <brian.holt@samsung.com>
+
+        [Gtk] Combo boxes should be arrow-out-of-able similar to list boxes when caret-browsing is enabled.
+        https://bugs.webkit.org/show_bug.cgi?id=76796
+
+        Reviewed by Chris Fleizach.
+
+        Make the Gtk window for the DRT a toplevel so that it gets the
+        focus from the window manager when the test starts.
+
+        * DumpRenderTree/gtk/DumpRenderTree.cpp:
+        (main):
+
+2013-04-04  Allan Sandfeld Jensen  <allan.jensen@digia.com>
+
+        Use CSS4 image-rendering to determing image scaling quality
+        https://bugs.webkit.org/show_bug.cgi?id=113405
+
+        Reviewed by Simon Fraser.
+
+        Introduce new flag to enable experimental support for CSS4 Images.
+
+        * Scripts/webkitperl/FeatureList.pm:
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove code for Chromium from wkbuild.py
+        https://bugs.webkit.org/show_bug.cgi?id=114423
+
+        Reviewed by Benjamin Poulain.
+
+        * BuildSlaveSupport/build.webkit.org-config/wkbuild.py:
+        (_should_file_trigger_build):
+        * BuildSlaveSupport/build.webkit.org-config/wkbuild_unittest.py:
+        (ShouldBuildTest):
+
+2013-04-11  Philippe Normand  <pnormand@igalia.com>
+
+        Unreviewed, update my IRC nickname.
+
+        * Scripts/webkitpy/common/config/committers.py: I no longer use philn-tp.
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove the rest of Chromium code from webkitpy
+        https://bugs.webkit.org/show_bug.cgi?id=114420
+
+        Reviewed by Benjamin Poulain.
+
+        * Scripts/webkitpy/common/config/urls.py:
+        (view_revision_url):
+        * Scripts/webkitpy/common/host.py:
+        (Host._engage_awesome_locale_hacks):
+        (Host.initialize_scm):
+        (Host):
+        * Scripts/webkitpy/common/host_mock.py:
+        (MockHost.__init__):
+        (MockHost.checkout):
+        * Scripts/webkitpy/common/net/buildbot/chromiumbuildbot.py: Removed.
+        * Scripts/webkitpy/layout_tests/layout_package/json_results_generator.py:
+        (JSONResultsGeneratorBase._insert_generic_metadata):
+        * Scripts/webkitpy/layout_tests/models/test_expectations.py:
+        (TestExpectationParser._tokenize_line):
+        * Scripts/webkitpy/layout_tests/models/test_expectations_unittest.py:
+        (ExpectationSyntaxTests.test_bare_name_and_bugs):
+        (ExpectationSyntaxTests.test_warnings):
+        * Scripts/webkitpy/layout_tests/port/base.py:
+        (Port.skips_perf_test):
+        (Port.path_to_test_expectations_file):
+        (Port._port_flag_for_scripts):
+        * Scripts/webkitpy/style/checkers/cpp.py:
+        (check_function_definition):
+        (check_include_line):
+        * Scripts/webkitpy/style/checkers/cpp_unittest.py:
+        (OrderOfIncludesTest.test_check_wtf_includes):
+        (WebKitStyleTest.test_webkit_export_check):
+        * Scripts/webkitpy/style/checkers/test_expectations_unittest.py:
+        (TestExpectationsTestCase.test_valid_expectations):
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Rollout.execute):
+        * Scripts/webkitpy/tool/bot/irc_command_unittest.py:
+        (IRCCommandTest.test_whois):
+        * Scripts/webkitpy/tool/bot/ircbot_unittest.py:
+        (IRCBotTest.test_help):
+        * Scripts/webkitpy/tool/commands/sheriffbot_unittest.py:
+        (SheriffBotTest.test_command_aliases):
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        roll-chromium-deps doesn't roll DEPS
+        https://bugs.webkit.org/show_bug.cgi?id=114421
+
+        Reviewed by Antti Koivisto.
+
+        Roll DEPS. Rolling DEPS. Rolled DEPS.
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (RollChromiumDEPS.execute):
+
+2013-04-11  Glenn Adams  <glenn@skynav.com>
+
+        [webkitpy] Remove lingering return_exit_code usage in scm_mock and rebaselineserver.
+        https://bugs.webkit.org/show_bug.cgi?id=114418
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/common/checkout/scm/scm_mock.py:
+        (MockSCM.add): Remove optional remove_exit_code argument.
+        (MockSCM.add_list): Remove optional remove_exit_code argument and return value.
+        * Scripts/webkitpy/tool/servers/rebaselineserver.py:
+        (_rebaseline_test): Use ScriptError to capture SCM.add() failure and exit code.
+        (_move_test_baselines): Use ScriptError to capture SCM.add() failure and exit code.
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Fix roll-chromium-deps and hi.
+
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (Hi.execute):
+        (RollChromiumDEPS.execute):
+
+2013-04-11  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove webkitpy code to roll Chromium DEPS
+        https://bugs.webkit.org/show_bug.cgi?id=114415
+
+        Reviewed by Benjamin Poulain.
+
+        Removed the code to roll Chromium DEPS in WebKit.
+
+        * Scripts/webkitpy/common/checkout/checkout.py:
+        (Checkout.bug_id_for_this_commit):
+        * Scripts/webkitpy/common/checkout/checkout_mock.py:
+        (MockCheckout.commit_message_for_this_commit):
+        * Scripts/webkitpy/common/checkout/checkout_unittest.py:
+        (CheckoutTest.test_suggested_reviewers):
+        * Scripts/webkitpy/common/checkout/deps.py: Removed.
+        * Scripts/webkitpy/common/checkout/deps_mock.py: Removed.
+        * Scripts/webkitpy/tool/bot/irc_command.py:
+        (RollChromiumDEPS): Teach webkitbot a sense of humor.
+        (RollChromiumDEPS.execute):
+        * Scripts/webkitpy/tool/bot/irc_command_unittest.py:
+        (IRCCommandTest.test_create_bug):
+        * Scripts/webkitpy/tool/bot/ircbot_unittest.py:
+        (IRCBotTest.test_revert):
+        * Scripts/webkitpy/tool/bot/sheriff.py:
+        (Sheriff.post_rollout_patch):
+        * Scripts/webkitpy/tool/commands/__init__.py:
+        * Scripts/webkitpy/tool/commands/roll.py: Removed.
+        * Scripts/webkitpy/tool/commands/roll_unittest.py: Removed.
+        * Scripts/webkitpy/tool/steps/__init__.py:
+        * Scripts/webkitpy/tool/steps/preparechangelogfordepsroll.py: Removed.
+        * Scripts/webkitpy/tool/steps/updatechromiumdeps.py: Removed.
+        * Scripts/webkitpy/tool/steps/updatechromiumdeps_unittest.py: Removed.
+
+2013-04-11  Glenn Adams  <glenn@skynav.com>
+
+        [webkitpy] SVNTest fails four tests when using subversion client 1.7 or later
+        https://bugs.webkit.org/show_bug.cgi?id=114386
+
+        Reviewed by Benjamin Poulain.
+
+        Subversion client 1.7 uses a new locking scheme that invalidates the technique used
+        in test_svn_lock(), so skip that test for 1.7 (or later) until a new technique
+        can be implemented. Further, 1.7 changed svn add to not add intermediate directories
+        by default and to return exit code 1 if a file/dir had already been added.
+
+        * Scripts/webkitpy/common/checkout/scm/scm_unittest.py:
+        (test_svn_lock): Skip body of test if subversion client 1.7 or later.
+        * Scripts/webkitpy/common/checkout/scm/svn.py:
+        (SVN.add_list): Use --parents option and handle exit code 1 if subversion client 1.7 or later.
+
+2013-04-10  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed.
+
+        * GNUmakefile.am: Removing extra whitespace that's producing warnings.
+
+2013-04-10  Glenn Adams  <glenn@skynav.com>
+
+        [webkitpy] Remove unused return_exit_code argument and returned values from SCM.{add,add_list}
+        https://bugs.webkit.org/show_bug.cgi?id=114410
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/common/checkout/scm/git.py:
+        (Git.add_list): Remove optional return_exit_code argument. Remove return value.
+        * Scripts/webkitpy/common/checkout/scm/scm.py:
+        (SCM.add): Remove optional return_exit_code argument.
+        (SCM.add_list): Remove optional return_exit_code argument.
+        * Scripts/webkitpy/common/checkout/scm/svn.py:
+        (SVN.add_list): Remove optional return_exit_code argument. Remove return value.
+
+2013-04-10  Eric Seidel  <eric@webkit.org>
+
+        Remove myself from the watchlists, I'm getting too much bug mail. :)
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-04-10  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148158.
+        http://trac.webkit.org/changeset/148158
+        https://bugs.webkit.org/show_bug.cgi?id=114405
+
+        We need to migrate status data (Requested by rniwa on
+        #webkit).
+
+        * Scripts/webkitpy/common/net/statusserver.py:
+        (StatusServer):
+
+2013-04-10  Benjamin Poulain  <bpoulain@apple.com>
+
+        Mass remove all the empty directories
+
+        Rubberstamped by Ryosuke Niwa.
+
+        * BuildSlaveSupport/gtk/crashmon/log: Removed.
+        * BuildSlaveSupport/gtk/xvfb/log: Removed.
+        * DumpRenderTree/ForwardingHeaders/wtf: Removed.
+        * DumpRenderTree/unix/TestNetscapePlugin/ForwardingHeaders/WebKit: Removed.
+        * MiniBrowser/gtk/WebBundle: Removed.
+        * MiniBrowser/win: Removed.
+        * QtTestPlatformPlugin/mac: Removed.
+        * Scripts/webkitpy/tool/bot/testdata: Removed.
+        * Scripts/webkitpy/tool/commands/data/rebaselineserver: Removed.
+        * efl/ImageDiff: Removed.
+        * iExploder/htdocs: Removed.
+        * iExploder/iexploder-1.7.2/output: Removed.
+        * iExploder/tools: Removed.
+        * qmake/config.tests/libexecdir: Removed.
+        * qmake/config.tests/libjpeg: Removed.
+        * qmake/config.tests/libpng: Removed.
+
+2013-04-10  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Use webkit-queeus.appspot.com instead of webkit-commit-queue.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=114397
+
+        Reviewed by Benjamin Poulain.
+
+        * Scripts/webkitpy/common/net/statusserver.py:
+        (StatusServer):
+
+2013-04-10  Adam Barth  <abarth@webkit.org>
+
+        Remove abarth from watchlists
+        https://bugs.webkit.org/show_bug.cgi?id=114390
+
+        Reviewed by Ryosuke Niwa.
+
+        I'm trying to cut down on the amount of bugmail I get so that I'll have
+        more of a chance to notice a piece of bugmail directed at me.
+
+        * Scripts/webkitpy/common/config/watchlist:
+
+2013-04-10  Ryosuke Niwa  <rniwa@webkit.org>
+
+        webkit-test-results.appspot.com loads the dashboard for Chromium by default
+        https://bugs.webkit.org/show_bug.cgi?id=114381
+
+        Reviewed by Benjamin Poulain.
+
+        Changed the defaults.
+
+        * TestResultServer/static-dashboards/builders.js:
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        (currentBuilderGroupCategory):
+
+2013-04-10  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Remove Chromium EWS bots from the queue status server
+        https://bugs.webkit.org/show_bug.cgi?id=113988
+
+        Reviewed by Benjamin Poulain.
+
+        Removed Chromium EWS bots. Also updated it to use webkit-queues.appspot.com.
+
+        * QueueStatusServer/app.yaml:
+        * QueueStatusServer/config/queues.py:
+        * QueueStatusServer/model/queues.py:
+        (Queue.short_name):
+        (Queue.display_name):
+        * QueueStatusServer/model/queues_unittest.py:
+        (QueueTest.test_short_name):
+        (QueueTest.test_display_name):
+        (QueueTest.test_name_with_underscores):
+        * QueueStatusServer/templates/activebots.html:
+
+2013-04-10  Ojan Vafai  <ojan@chromium.org>
+
+        Change all instances of test-results.appspot.com to webkit-test-results.appspot.com
+        https://bugs.webkit.org/show_bug.cgi?id=114370
+
+        Reviewed by Ryosuke Niwa.
+
+        Finish the transition of WebKit over to it's own instance of the flakiness dashboard.
+        Unfortunately, there's no way to test this until this is committed and there is
+        a master restart.
+
+        * BuildSlaveSupport/build.webkit.org-config/master.cfg:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/garden-o-matic.html:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/builders_unittests.js:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/ui.js:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/ui/notifications_unittests.js:
+        * BuildSlaveSupport/build.webkit.org-config/public_html/TestFailures/scripts/ui/results.js:
+        * TestResultServer/generate_builders_json.py:
+        * TestResultServer/static-dashboards/dashboard_base.js:
+        * TestResultServer/static-dashboards/loader.js:
+
+2013-04-10  Glenn Adams  <glenn@skynav.com>
+
+        [Qt] Fix regression to test-webkitpy.
+        https://bugs.webkit.org/show_bug.cgi?id=114368
+
+        Reviewed by Ryosuke Niwa.
+
+        * Scripts/webkitpy/layout_tests/port/factory.py:
+        (PortFactory._default_port): Return qt-linux instead of chromium-linux as default port for linux/freebsd.
+        (PortFactory.get): Remove obsolete chromium port related code.
+        * Scripts/webkitpy/layout_tests/port/mac.py:
+        (MacPort.default_child_processes): Prevent type error if can't determine total memory.
+
+2013-04-10  Anders Carlsson  <andersca@apple.com>
+
+        Remove unneeded headers from FrameLoader.h
+        https://bugs.webkit.org/show_bug.cgi?id=114223
+
+        Reviewed by Geoffrey Garen.
+
+        Add back headers implicitly included by other headers.
+
+        * WebKitTestRunner/WorkQueueManager.cpp:
+
+2013-04-10  Zan Dobersek  <zdobersek@igalia.com>
+
+        [GTK] Include a crash-fixing patch for the at-spi2-atk dependency
+        https://bugs.webkit.org/show_bug.cgi?id=114365
+
+        Reviewed by Martin Robinson.
+
+        Add a patch for the at-spi2-atk 2.8.0 dependency that is applied through the Jhbuild setup.
+        The patch addresses crashes in the tally_event_reply method. It is already committed into the
+        at-spi2-atk source tree and will be available with the next stable release, after which the
+        patch should be removed and the dependency version bumped.
+
+        * gtk/jhbuild.modules:
+        * gtk/patches/at-spi2-atk-2.8.0-null-check-after-cleanup.patch: Added.
+
+2013-04-10  Brent Fulgham  <bfulgham@webkit.org>
+
+        [WinCairo] Unreviewed build fix. Correct DropBox download link.
+
+        * Scripts/update-webkit-wincairo-libs: Revise download URL to
+        match change in DropBox server behavior.
+
+2013-04-09  Geoffrey Garen  <ggaren@apple.com>
+
+        Removed an annoying message from svn-create-patch
+        https://bugs.webkit.org/show_bug.cgi?id=114332
+
+        Reviewed by Alexey Proskuryakov.
+
+        I see this message basically every time I write a patch, so it must not
+        be true.
+
+        * Scripts/svn-create-patch:
+        (generateDiff):
+
 2013-04-10  Anton Obzhirov  <a.obzhirov@samsung.com>
 
         [GTK] Add support for Page Visibility

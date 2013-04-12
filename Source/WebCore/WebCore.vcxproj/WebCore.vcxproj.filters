@@ -2412,6 +2412,9 @@
     <ClCompile Include="..\loader\cache\CachedRawResource.cpp">
       <Filter>loader\cache</Filter>
     </ClCompile>
+    <ClCompile Include="..\loader\cache\CachedRawResourceClient.cpp">
+      <Filter>loader\cache</Filter>
+    </ClCompile>
     <ClCompile Include="..\loader\cache\CachedResource.cpp">
       <Filter>loader\cache</Filter>
     </ClCompile>
@@ -2434,6 +2437,9 @@
       <Filter>loader\cache</Filter>
     </ClCompile>
     <ClCompile Include="..\loader\cache\CachedSVGDocument.cpp">
+      <Filter>loader\cache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\loader\cache\CachedSVGDocumentReference.cpp">
       <Filter>loader\cache</Filter>
     </ClCompile>
     <ClCompile Include="..\loader\cache\CachedTextTrack.cpp">
@@ -10096,9 +10102,6 @@
       <Filter>platform\network</Filter>
     </ClInclude>
     <ClInclude Include="..\platform\network\ResourceHandleTypes.h">
-      <Filter>platform\network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\platform\network\ResourceLoadInfo.h">
       <Filter>platform\network</Filter>
     </ClInclude>
     <ClInclude Include="..\platform\network\ResourceLoadPriority.h">

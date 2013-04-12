@@ -102,6 +102,7 @@
 #include <WebCore/HTMLInputElement.h>
 #include <WebCore/HTMLPlugInElement.h>
 #include <WebCore/HTMLPlugInImageElement.h>
+#include <WebCore/HistoryController.h>
 #include <WebCore/HistoryItem.h>
 #include <WebCore/KeyboardEvent.h>
 #include <WebCore/MIMETypeRegistry.h>
@@ -369,6 +370,8 @@ WebPage::WebPage(uint64_t pageID, const WebPageCreationParameters& parameters)
     // Page defaults to in-window, but setIsInWindow depends on it being a valid indicator of actually having been put into a window.
     if (!parameters.isInWindow)
         m_page->setIsInWindow(false);
+    else
+        WebProcess::shared().pageDidEnterWindow(this);
 
     setIsInWindow(parameters.isInWindow);
 
@@ -1232,6 +1235,8 @@ void WebPage::setDeviceScaleFactor(float scaleFactor)
 #if PLATFORM(MAC)
     for (HashSet<PluginView*>::const_iterator it = m_pluginViews.begin(), end = m_pluginViews.end(); it != end; ++it)
         (*it)->setDeviceScaleFactor(scaleFactor);
+
+    updateHeaderAndFooterLayersForDeviceScaleChange(scaleFactor);
 #endif
 
     if (m_findController.isShowingOverlay()) {

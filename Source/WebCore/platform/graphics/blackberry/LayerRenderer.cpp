@@ -445,11 +445,7 @@ bool LayerRenderer::useSurface(LayerRendererSurface* surface)
 
     surface->ensureTexture();
 
-    GLuint texid = reinterpret_cast<GLuint>(platformBufferHandle(surface->texture()->textureId()));
-    if (!texid) {
-        BlackBerry::Platform::Graphics::lockAndBindBufferGLTexture(surface->texture()->textureId(), GL_TEXTURE_2D);
-        texid = reinterpret_cast<GLuint>(platformBufferHandle(surface->texture()->textureId()));
-    }
+    GLuint texid = surface->texture()->platformTexture();
 
     if (!m_fbo)
         glGenFramebuffers(1, &m_fbo);
@@ -599,8 +595,18 @@ void LayerRenderer::drawDebugBorder(LayerCompositingThread* layer)
     } else
         glDisable(GL_BLEND);
 
+    // If we're rendering to a surface, don't include debug border inside the surface.
+    if (m_currentLayerRendererSurface)
+        return;
+
+    FloatQuad transformedBounds;
+    if (layerAlreadyOnSurface(layer))
+        transformedBounds = layer->layerRendererSurface()->transformedBounds();
+    else
+        transformedBounds = layer->getTransformedBounds();
+
     const GLES2Program& program = useProgram(ColorProgram);
-    glVertexAttribPointer(program.positionLocation(), 2, GL_FLOAT, GL_FALSE, 0, &layer->getTransformedBounds());
+    glVertexAttribPointer(program.positionLocation(), 2, GL_FLOAT, GL_FALSE, 0, &transformedBounds);
     glUniform4f(m_colorColorLocation, borderColor.red() / 255.0, borderColor.green() / 255.0, borderColor.blue() / 255.0, 1);
 
     glLineWidth(std::max(1.0f, layer->borderWidth()));

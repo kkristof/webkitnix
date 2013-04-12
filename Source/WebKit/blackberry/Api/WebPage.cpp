@@ -370,6 +370,7 @@ WebPagePrivate::WebPagePrivate(WebPage* webPage, WebPageClient* client, const In
     , m_overflowExceedsContentsSize(false)
     , m_resetVirtualViewportOnCommitted(true)
     , m_shouldUseFixedDesktopMode(false)
+    , m_inspectorEnabled(false)
     , m_preventIdleDimmingCount(0)
 #if ENABLE(TOUCH_EVENTS)
     , m_preventDefaultOnTouchStart(false)
@@ -2320,7 +2321,10 @@ IntSize WebPagePrivate::fixedLayoutSize(bool snapToIncrement) const
 
     // If the load state is none then we haven't actually got anything yet, but we need to layout
     // the entire page so that the user sees the entire page (unrendered) instead of just part of it.
-    if (m_loadState == None)
+    // If the load state is Provisional, it is possible that absoluteVisibleOverflowSize() and
+    // contentsSize() are based on the old page and cause inconsistent fixedLayoutSize, so layout the
+    // new page based on the defaultLayoutSize as well.
+    if (m_loadState == None || m_loadState == Provisional)
         return IntSize(defaultLayoutWidth, defaultLayoutHeight);
 
     if (m_viewMode == FixedDesktop) {
@@ -4731,12 +4735,6 @@ unsigned WebPage::timeoutForJavaScriptExecution() const
 void WebPage::setTimeoutForJavaScriptExecution(unsigned ms)
 {
     Settings::setTimeoutForJavaScriptExecution(d->m_page->groupName(), ms);
-
-    Document* doc = d->m_page->mainFrame()->document();
-    if (!doc)
-        return;
-
-    doc->globalData()->timeoutChecker.setTimeoutInterval(ms);
 }
 
 JSGlobalContextRef WebPage::globalContext() const
@@ -5159,26 +5157,29 @@ bool WebPage::isDNSPrefetchEnabled() const
 
 void WebPage::enableWebInspector()
 {
-    if (!d->m_inspectorClient)
+    if (isWebInspectorEnabled() || !d->m_inspectorClient)
         return;
 
     d->m_page->inspectorController()->connectFrontend(d->m_inspectorClient);
     d->m_page->settings()->setDeveloperExtrasEnabled(true);
     d->setPreventsScreenDimming(true);
+    d->m_inspectorEnabled = true;
 }
 
 void WebPage::disableWebInspector()
 {
-    if (isWebInspectorEnabled()) {
-        d->m_page->inspectorController()->disconnectFrontend();
-        d->m_page->settings()->setDeveloperExtrasEnabled(false);
-        d->setPreventsScreenDimming(false);
-    }
+    if (!isWebInspectorEnabled())
+        return;
+
+    d->m_page->inspectorController()->disconnectFrontend();
+    d->m_page->settings()->setDeveloperExtrasEnabled(false);
+    d->setPreventsScreenDimming(false);
+    d->m_inspectorEnabled = false;
 }
 
 bool WebPage::isWebInspectorEnabled()
 {
-    return d->m_page->settings()->developerExtrasEnabled();
+    return d->m_inspectorEnabled;
 }
 
 void WebPage::enablePasswordEcho()

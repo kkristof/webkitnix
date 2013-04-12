@@ -61,6 +61,7 @@
 #include <WebCore/FrameView.h>
 #include <WebCore/HTMLAppletElement.h>
 #include <WebCore/HTMLFormElement.h>
+#include <WebCore/HistoryController.h>
 #include <WebCore/HistoryItem.h>
 #include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/MouseEvent.h>
@@ -907,7 +908,7 @@ void WebFrameLoaderClient::updateGlobalHistory()
     DocumentLoader* loader = m_frame->coreFrame()->loader()->documentLoader();
 
     WebNavigationDataStore data;
-    data.url = loader->urlForHistory().string();
+    data.url = loader->url().string();
     // FIXME: use direction of title.
     data.title = loader->title().string();
     data.originalRequest = loader->originalRequestCopy();

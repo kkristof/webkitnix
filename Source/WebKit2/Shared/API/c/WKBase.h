@@ -135,6 +135,7 @@ typedef const struct OpaqueWKPreferences* WKPreferencesRef;
 typedef const struct OpaqueWKProtectionSpace* WKProtectionSpaceRef;
 typedef const struct OpaqueWKTextChecker* WKTextCheckerRef;
 typedef const struct OpaqueWKVibration* WKVibrationRef;
+typedef const struct OpaqueWKViewportAttributes* WKViewportAttributesRef;
 
 /* WebKit2 Bundle types */
 

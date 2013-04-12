@@ -38,6 +38,31 @@
 
 namespace WebCore {
 
+class SurfaceFunctor {
+public:
+    SurfaceFunctor(LayerRendererSurface* surface)
+        : m_surface(surface)
+    {
+    }
+
+protected:
+    LayerRendererSurface* m_surface;
+};
+
+class InverseSurfaceWidth : public SurfaceFunctor {
+public:
+    InverseSurfaceWidth(LayerRendererSurface* surface) : SurfaceFunctor(surface) { }
+
+    float operator() () { return 1.0f / m_surface->size().width(); }
+};
+
+class InverseSurfaceHeight : public SurfaceFunctor {
+public:
+    InverseSurfaceHeight(LayerRendererSurface* surface) : SurfaceFunctor(surface) { }
+
+    float operator() () { return 1.0f / m_surface->size().height(); }
+};
+
 static int operationTypeToProgramID(const FilterOperation::OperationType& t)
 {
     switch (t) {
@@ -500,11 +525,7 @@ bool LayerFilterRenderer::initializeSharedGLObjects()
 
 void LayerFilterRenderer::ping(LayerRendererSurface* surface)
 {
-    GLuint texid = reinterpret_cast<GLuint>(platformBufferHandle(m_texture->textureId()));
-    if (!texid) {
-        BlackBerry::Platform::Graphics::lockAndBindBufferGLTexture(m_texture->textureId(), GL_TEXTURE_2D);
-        texid = reinterpret_cast<GLuint>(platformBufferHandle(m_texture->textureId()));
-    }
+    GLuint texid = m_texture->platformTexture();
 
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,
@@ -515,7 +536,7 @@ void LayerFilterRenderer::ping(LayerRendererSurface* surface)
     );
     glBindTexture(
         GL_TEXTURE_2D,
-        reinterpret_cast<GLuint>(platformBufferHandle(surface->texture()->textureId()))
+        surface->texture()->platformTexture()
     );
 }
 
@@ -525,22 +546,18 @@ void LayerFilterRenderer::pong(LayerRendererSurface* surface)
         GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
-        reinterpret_cast<GLuint>(platformBufferHandle(surface->texture()->textureId())),
+        surface->texture()->platformTexture(),
         0
     );
     glBindTexture(
         GL_TEXTURE_2D,
-        reinterpret_cast<GLuint>(platformBufferHandle(m_texture->textureId()))
+        m_texture->platformTexture()
     );
 }
 
 void LayerFilterRenderer::pushSnapshot(LayerRendererSurface* surface, int sourceId)
 {
-    GLuint texid = reinterpret_cast<GLuint>(platformBufferHandle(m_snapshotTexture->textureId()));
-    if (!texid) {
-        BlackBerry::Platform::Graphics::lockAndBindBufferGLTexture(m_snapshotTexture->textureId(), GL_TEXTURE_2D);
-        texid = reinterpret_cast<GLuint>(platformBufferHandle(m_snapshotTexture->textureId()));
-    }
+    GLuint texid = m_snapshotTexture->platformTexture();
 
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,
@@ -568,7 +585,7 @@ void LayerFilterRenderer::popSnapshot()
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindTexture(
         GL_TEXTURE_2D,
-        reinterpret_cast<GLuint>(platformBufferHandle(m_snapshotTexture->textureId()))
+        m_snapshotTexture->platformTexture()
     );
 }
 
@@ -609,14 +626,12 @@ Vector<RefPtr<LayerFilterRendererAction> > LayerFilterRenderer::actionsForOperat
 
             // BLUR Y:
             ret.last()->appendParameter(Uniform1f::create(m_amountLocation[LayerData::CSSFilterShaderBlurY], amount));
-            ret.last()->appendParameter(Uniform1f::create(m_blurAmountLocation[0]
-                , 1.0f / float(surface->size().height())));
+            ret.last()->appendParameter(Uniform1f::createWithFunctor(m_blurAmountLocation[0], InverseSurfaceHeight(surface)));
 
             // BLUR X:
             ret.append(LayerFilterRendererAction::create(LayerData::CSSFilterShaderBlurX));
             ret.last()->appendParameter(Uniform1f::create(m_amountLocation[LayerData::CSSFilterShaderBlurX], amount));
-            ret.last()->appendParameter(Uniform1f::create(m_blurAmountLocation[1]
-                , 1.0f / float(surface->size().width())));
+            ret.last()->appendParameter(Uniform1f::createWithFunctor(m_blurAmountLocation[1], InverseSurfaceWidth(surface)));
 
             }
             break;
@@ -642,15 +657,13 @@ Vector<RefPtr<LayerFilterRendererAction> > LayerFilterRenderer::actionsForOperat
             ret.append(LayerFilterRendererAction::create(LayerData::CSSFilterShaderBlurY));
             ret.last()->appendParameter(Uniform1f::create(m_amountLocation[LayerData::CSSFilterShaderBlurY]
                 , dsfo.stdDeviation()));
-            ret.last()->appendParameter(Uniform1f::create(m_blurAmountLocation[0]
-                , 1.0f / float(surface->size().height())));
+            ret.last()->appendParameter(Uniform1f::createWithFunctor(m_blurAmountLocation[0], InverseSurfaceHeight(surface)));
 
             // BLUR X
             ret.append(LayerFilterRendererAction::create(LayerData::CSSFilterShaderBlurX));
             ret.last()->appendParameter(Uniform1f::create(m_amountLocation[LayerData::CSSFilterShaderBlurX]
                 , dsfo.stdDeviation()));
-            ret.last()->appendParameter(Uniform1f::create(m_blurAmountLocation[1]
-                , 1.0f / float(surface->size().width())));
+            ret.last()->appendParameter(Uniform1f::createWithFunctor(m_blurAmountLocation[1], InverseSurfaceWidth(surface)));
 
             // Repaint original image
             ret.append(LayerFilterRendererAction::create(LayerData::CSSFilterShaderPassthrough));
@@ -719,14 +732,8 @@ void LayerFilterRenderer::applyActions(unsigned& fbo, LayerCompositingThread* la
         // actionsForOperations takes care of that.
 
         if (actions[i]->shouldPushSnapshot()) {
-            RefPtr<Texture> currentTexture = (!(i % 2) ? surface->texture() : m_texture);
-            GLuint texid = reinterpret_cast<GLuint>(platformBufferHandle(currentTexture->textureId()));
-            if (!texid) {
-                BlackBerry::Platform::Graphics::lockAndBindBufferGLTexture(currentTexture->textureId(), GL_TEXTURE_2D);
-                texid = reinterpret_cast<GLuint>(platformBufferHandle(currentTexture->textureId()));
-            }
-
-            pushSnapshot(surface, texid);
+            RefPtr<LayerTexture> currentTexture = (!(i % 2) ? surface->texture() : m_texture);
+            pushSnapshot(surface, currentTexture->platformTexture());
         }
         if (!(i % 2))
             ping(surface); // Set framebuffer to ours, and texture to parent

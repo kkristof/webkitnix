@@ -441,6 +441,9 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyCounterReset:
     case CSSPropertyFloat:
     case CSSPropertyFontStretch:
+#if ENABLE(CSS_SHADERS)
+    case CSSPropertyGeometry:
+#endif
     case CSSPropertyHeight:
     case CSSPropertyLeft:
     case CSSPropertyMargin:
@@ -675,6 +678,10 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
     case CSSPropertyWebkitWrapThrough:
+#endif
+#if ENABLE(CSS_SHADERS)
+    case CSSPropertyMix:
+    case CSSPropertyParameters:
 #endif
 #if ENABLE(SVG)
     case CSSPropertyClipPath:

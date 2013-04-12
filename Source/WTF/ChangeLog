@@ -1,3 +1,63 @@
+2013-04-11  Oliver Hunt  <oliver@apple.com>
+
+        Add more type validation to debug builds
+        https://bugs.webkit.org/show_bug.cgi?id=114478
+
+        Reviewed by Mark Hahnenberg.
+
+        Add BINDING_VALIDATION flag and make RELEASE_ASSERT use UNLIKELY.
+
+        * wtf/Assertions.h:
+        * wtf/Platform.h:
+
+2013-04-10  Thiago Marcos P. Santos  <thiago.santos@intel.com>
+
+        [WTF] Get rid of truncated thread name warnings for non-Windows platforms
+        https://bugs.webkit.org/show_bug.cgi?id=114266
+
+        Reviewed by Ryosuke Niwa.
+
+        Hide the annoying message from ports that are not really interested
+        about it.
+
+        * wtf/Threading.cpp:
+        (WTF::createThread):
+
+2013-04-10  Benjamin Poulain  <bpoulain@apple.com>
+
+        Mass remove all the empty directories
+
+        Rubberstamped by Ryosuke Niwa.
+
+        * wtf/qt/compat: Removed.
+        * wtf/unicode/glib: Removed.
+        * wtf/unicode/qt4: Removed.
+        * wtf/unicode/wince: Removed.
+
+2013-04-08  Anders Carlsson  <andersca@apple.com>
+
+        Remove unneeded headers from FrameLoader.h
+        https://bugs.webkit.org/show_bug.cgi?id=114223
+
+        Reviewed by Geoffrey Garen.
+
+        * wtf/Forward.h:
+        Add PrintStream.
+
+        * wtf/HashTable.h:
+        Don't include DataLog.h unless DUMP_HASHTABLE_STATS_PER_TABLE is 1.
+
+2013-04-10  Laszlo Gombos  <l.gombos@samsung.com>
+
+        Remove ENABLE_3D_PLUGIN
+        https://bugs.webkit.org/show_bug.cgi?id=108002
+
+        Reviewed by Antti Koivisto.
+
+        Remove ENABLE_3D_PLUGIN, it was only used by Chromium.
+
+        * wtf/FeatureDefines.h:
+
 2013-04-09  Patrick Gansterer  <paroga@webkit.org>
 
         [CMake] Remove conditional source file lists in WTF

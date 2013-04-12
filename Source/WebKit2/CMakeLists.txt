@@ -305,6 +305,7 @@ set(WebKit2_SOURCES
     UIProcess/WebUIClient.cpp
     UIProcess/WebVibrationProvider.cpp
     UIProcess/WebVibrationProxy.cpp
+    UIProcess/WebViewportAttributes.cpp
 
     UIProcess/API/C/WKApplicationCacheManager.cpp
     UIProcess/API/C/WKAuthenticationChallenge.cpp
@@ -347,6 +348,7 @@ set(WebKit2_SOURCES
     UIProcess/API/C/WKResourceCacheManager.cpp
     UIProcess/API/C/WKTextChecker.cpp
     UIProcess/API/C/WKVibration.cpp
+    UIProcess/API/C/WKViewportAttributes.cpp
 
     UIProcess/API/CoordinatedGraphics/WKCoordinatedScene.cpp
 
@@ -461,8 +463,9 @@ set(WebKit2_SOURCES
 
     WebProcess/ResourceCache/WebResourceCacheManager.cpp
 
-    WebProcess/Storage/StorageAreaProxy.cpp
-    WebProcess/Storage/StorageNamespaceProxy.cpp
+    WebProcess/Storage/StorageAreaImpl.cpp
+    WebProcess/Storage/StorageAreaMap.cpp
+    WebProcess/Storage/StorageNamespaceImpl.cpp
     WebProcess/Storage/WebKeyValueStorageManager.cpp
 
     WebProcess/WebCoreSupport/WebBatteryClient.cpp
@@ -572,7 +575,7 @@ set(WebKit2_MESSAGES_IN_FILES
 
     WebProcess/ResourceCache/WebResourceCacheManager.messages.in
 
-    WebProcess/Storage/StorageAreaProxy.messages.in
+    WebProcess/Storage/StorageAreaMap.messages.in
     WebProcess/Storage/WebKeyValueStorageManager.messages.in
 
     WebProcess/WebCoreSupport/WebDatabaseManager.messages.in
