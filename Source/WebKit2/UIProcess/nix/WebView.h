@@ -32,6 +32,7 @@
 #include "PageClient.h"
 #include "TextureMapperPlatformLayer.h"
 #include "WebContextMenuProxy.h"
+#include "WebContextMenuProxyNix.h"
 #include "WebViewClient.h"
 #include "WebPopupItemPlatform.h"
 #include "WebPopupMenuListener.h"
@@ -148,7 +149,7 @@ public:
 #endif
 
     virtual PassRefPtr<WebPopupMenuProxy> createPopupMenuProxy(WebPageProxy* page) { return WebPopupMenuListener::create(page); }
-    virtual PassRefPtr<WebContextMenuProxy> createContextMenuProxy(WebPageProxy*) { notImplemented(); return PassRefPtr<WebContextMenuProxy>(); }
+    virtual PassRefPtr<WebContextMenuProxy> createContextMenuProxy(WebPageProxy*) { return m_activeContextMenu; }
 
 #if ENABLE(INPUT_TYPE_COLOR)
     virtual PassRefPtr<WebColorChooserProxy> createColorChooserProxy(WebPageProxy*, const Color& initialColor) { notImplemented(); return PassRefPtr<WebColorChooserProxy>(); }
@@ -203,6 +204,7 @@ private:
     float m_scale;
     float m_opacity;
     WebCore::TransformationMatrix m_userViewportTransformation;
+    WTF::RefPtr<WebContextMenuProxyNix> m_activeContextMenu;
 };
 
 inline WebKit::WebView* toImpl(NIXView view)

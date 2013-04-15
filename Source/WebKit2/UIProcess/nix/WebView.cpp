@@ -51,6 +51,7 @@ WebView::WebView(WebContext* context, WebPageGroup* pageGroup)
     , m_isSuspended(false)
     , m_scale(1.f)
     , m_opacity(1.f)
+    , m_activeContextMenu(WebContextMenuProxyNix::create())
 {
     m_webPageProxy->pageGroup()->preferences()->setForceCompositingMode(true);
 }
