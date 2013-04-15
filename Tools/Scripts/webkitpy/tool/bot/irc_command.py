@@ -121,6 +121,14 @@ class Hi(IRCCommand):
         return random.choice(quips)
 
 
+class PingPong(IRCCommand):
+    usage_string = "ping"
+    help_string = "Responds with pong."
+
+    def execute(self, nick, args, tool, sheriff):
+        return nick + ": pong"
+
+
 class Restart(IRCCommand):
     usage_string = "restart"
     help_string = "Restarts sherrifbot.  Will update its WebKit checkout, and re-join the channel momentarily."
@@ -247,33 +255,37 @@ class Whois(IRCCommand):
     usage_string = "whois SEARCH_STRING"
     help_string = "Searches known contributors and returns any matches with irc, email and full name. Wild card * permitted."
 
-    def _nick_or_full_record(self, contributor):
+    def _full_record_and_nick(self, contributor):
+        result = ''
+
         if contributor.irc_nicknames:
-            return ', '.join(contributor.irc_nicknames)
-        return unicode(contributor)
+            result += ' (:%s)' % ', :'.join(contributor.irc_nicknames)
+
+        if contributor.can_review:
+            result += ' (r)'
+        elif contributor.can_commit:
+            result += ' (c)'
+
+        return unicode(contributor) + result
 
     def execute(self, nick, args, tool, sheriff):
         if not args:
             return self.usage(nick)
-        search_string = " ".join(args)
+        search_string = unicode(" ".join(args))
         # FIXME: We should get the ContributorList off the tool somewhere.
         contributors = CommitterList().contributors_by_search_string(search_string)
         if not contributors:
-            return "%s: Sorry, I don't know any contributors matching '%s'." % (nick, search_string)
+            return unicode("%s: Sorry, I don't know any contributors matching '%s'.") % (nick, search_string)
         if len(contributors) > 5:
-            return "%s: More than 5 contributors match '%s', could you be more specific?" % (nick, search_string)
+            return unicode("%s: More than 5 contributors match '%s', could you be more specific?") % (nick, search_string)
         if len(contributors) == 1:
             contributor = contributors[0]
             if not contributor.irc_nicknames:
-                return "%s: %s hasn't told me their nick. Boo hoo :-(" % (nick, contributor)
-            if contributor.emails and search_string.lower() not in map(lambda email: email.lower(), contributor.emails):
-                formattedEmails = ', '.join(contributor.emails)
-                return "%s: %s is %s (%s). Why do you ask?" % (nick, search_string, self._nick_or_full_record(contributor), formattedEmails)
-            else:
-                return "%s: %s is %s. Why do you ask?" % (nick, search_string, self._nick_or_full_record(contributor))
-        contributor_nicks = map(self._nick_or_full_record, contributors)
+                return unicode("%s: %s hasn't told me their nick. Boo hoo :-(") % (nick, contributor)
+            return unicode("%s: %s is %s. Why do you ask?") % (nick, search_string, self._full_record_and_nick(contributor))
+        contributor_nicks = map(self._full_record_and_nick, contributors)
         contributors_string = join_with_separators(contributor_nicks, only_two_separator=" or ", last_separator=', or ')
-        return "%s: I'm not sure who you mean?  %s could be '%s'." % (nick, contributors_string, search_string)
+        return unicode("%s: I'm not sure who you mean?  %s could be '%s'.") % (nick, contributors_string, search_string)
 
 
 # FIXME: Lame.  We should have an auto-registering CommandCenter.
@@ -281,6 +293,7 @@ visible_commands = {
     "create-bug": CreateBug,
     "help": Help,
     "hi": Hi,
+    "ping": PingPong,
     "restart": Restart,
     "roll-chromium-deps": RollChromiumDEPS,
     "rollout": Rollout,

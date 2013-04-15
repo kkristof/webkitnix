@@ -165,12 +165,15 @@ svg/custom/foreignObject-crash-on-hover.xml
 svg/custom/use-events-crash.svg
 
 # [WK2] [Mac] Spellcheck tests don't seem to work
+webkit.org/b/105616 editing/spelling/spelling-changed-text.html
 webkit.org/b/105616 platform/mac/editing/spelling/removing-underline-after-accepting-autocorrection-using-punctuation.html [ Failure ]
 webkit.org/b/105616 platform/mac/editing/spelling/click-autocorrected-word.html
 webkit.org/b/105616 platform/mac/editing/spelling/move-cursor-to-beginning-of-autocorrected-word.html
 webkit.org/b/105616 platform/mac/editing/spelling/move-cursor-to-autocorrected-word.html
 webkit.org/b/105616 platform/mac/editing/spelling/delete-into-autocorrected-word.html
 webkit.org/b/105616 platform/mac/editing/spelling/forward-delete-into-autocorrected-word.html
+webkit.org/b/105616 platform/mac/editing/spelling/forward-delete-into-autocorrected-word.html
+webkit.org/b/105616 platform/mac/editing/spelling/autocorrection-with-multi-line-text.html
 
 # [WK2] [Mac] Support drag in mouse events for WebKit2 EventSender
 # <https://bugs.webkit.org/show_bug.cgi?id=68552>
@@ -337,6 +340,13 @@ webkit.org/b/104954 [ Debug ] http/tests/canvas/canvas-slow-font-loading.html [ 
 
 # Flaky everywhere.
 webkit.org/b/114302 platform/mac-wk2/plugins/mouse-events-scaled-iframe.html [ Pass Failure ]
+
+webkit.org/b/114571 [ Debug ] fast/regions/fixed-pos-elem-in-region.html [ Pass Failure ]
+
+webkit.org/b/114572 platform/mac-wk2/plugins/mouse-events-scaled.html [ Pass Failure ]
+
+webkit.org/b/114573 fast/repaint/selection-gap-fixed-child.html [ Failure ]
+webkit.org/b/114573 fast/repaint/selection-gap-flipped-fixed-child.html [ Failure ]
 
 ### END OF (1) Classified failures with bug reports
 ########################################

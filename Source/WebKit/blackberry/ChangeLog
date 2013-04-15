@@ -1,3 +1,76 @@
+2013-04-15  Andy Chen  <andchen@blackberry.com>
+
+        [BlackBerry] Forward userGesture when creating a new window
+        https://bugs.webkit.org/show_bug.cgi?id=114622
+
+        Reviewed by Rob Buis.
+
+        Client could use this info to decide whether the popup should
+        be blocked.
+        PR 291898
+        Reviewed internally by Mike Fenton
+
+        * Api/WebPageClient.h:
+        * WebCoreSupport/ChromeClientBlackBerry.cpp:
+        (WebCore::ChromeClientBlackBerry::createWindow):
+        * WebCoreSupport/FrameLoaderClientBlackBerry.cpp:
+        (WebCore::FrameLoaderClientBlackBerry::dispatchCreatePage):
+
+2013-04-15  Xan Lopez  <xlopez@igalia.com>
+
+        [BlackBerry] ASSERT in StyleResolver::ensureScopeResolver()
+        https://bugs.webkit.org/show_bug.cgi?id=114615
+
+        Reviewed by Carlos Garcia Campos.
+
+        Add a method to enable the style scoped feature to our
+        DumpRenderTreeSupport class.
+
+        * WebKitSupport/DumpRenderTreeSupport.cpp:
+        (DumpRenderTreeSupport::setStyleScopedEnabled):
+        * WebKitSupport/DumpRenderTreeSupport.h:
+        (DumpRenderTreeSupport):
+
+2013-04-12  Yongxin Dai  <yodai@rim.com>
+
+        [BlackBerry] Enable selecting text in single line input field without selection point being actually on the targeted text vertically
+        https://bugs.webkit.org/show_bug.cgi?id=114515
+
+        Reviewed by Rob Buis.
+
+        PR #317924.
+        Internally reviewed by Mike Fenton.
+
+        It was still hard to select text in URL bar with an inverted selection handle.
+        We improve the issue by replacing the Y coordinate of selection point with Y
+        coordinate of start caret for single line input filed. Thus, the Y coordinate
+        is always valid regardless of the actual location of the selection handle.
+
+        * WebKitSupport/SelectionHandler.cpp:
+        (BlackBerry::WebKit::SelectionHandler::setSelection):
+        (BlackBerry::WebKit::SelectionHandler::startCaretViewportRect):
+        (WebKit):
+        (BlackBerry::WebKit::SelectionHandler::caretPositionChanged):
+        * WebKitSupport/SelectionHandler.h:
+        (SelectionHandler):
+
+2013-04-12  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [BlackBerry] Crash running layout tests
+        https://bugs.webkit.org/show_bug.cgi?id=114503
+
+        Reviewed by Xan Lopez.
+
+        Hit an assertion in ~GuardedPointerBase when DRT is
+        deleted. DumpRenderTree class derives from
+        BlackBerry::Platform::LayoutTestClient that derives from
+        BlackBerry::Platform::GuardedPointerBase, so the DRT pointer
+        should no be released with delete but with
+        BlackBerry::Platform::deleteGuardedObject().
+
+        * Api/WebPage.cpp:
+        (BlackBerry::WebKit::WebPagePrivate::~WebPagePrivate):
+
 2013-04-12  Carlos Garcia Campos  <cgarcia@igalia.com>
 
         [BlackBerry] Crash running layout tests when WebPage is destroyed

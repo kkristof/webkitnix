@@ -112,6 +112,7 @@ namespace WebCore {
     class Cursor;
     class DragData;
     class FloatRect;
+    class GraphicsLayer;
     class IntSize;
     class ProtectionSpace;
     class SharedBuffer;
@@ -394,7 +395,7 @@ public:
 
 #if PLATFORM(MAC)
     void updateWindowIsVisible(bool windowIsVisible);
-    void windowAndViewFramesChanged(const WebCore::FloatRect& windowFrameInScreenCoordinates, const WebCore::FloatRect& viewFrameInWindowCoordinates, const WebCore::FloatPoint& accessibilityViewCoordinates);
+    void windowAndViewFramesChanged(const WebCore::FloatRect& viewFrameInWindowCoordinates, const WebCore::FloatPoint& accessibilityViewCoordinates);
     void viewExposedRectChanged(const WebCore::FloatRect& exposedRect);
     void setMainFrameIsScrollable(bool);
 
@@ -791,6 +792,8 @@ public:
 
 private:
     WebPageProxy(PageClient*, PassRefPtr<WebProcessProxy>, WebPageGroup*, uint64_t pageID);
+
+    void resetStateAfterProcessExited();
 
     // CoreIPC::MessageReceiver
     virtual void didReceiveMessage(CoreIPC::Connection*, CoreIPC::MessageDecoder&) OVERRIDE;

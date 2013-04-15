@@ -306,6 +306,7 @@ SOURCES += \
     css/CSSValueList.cpp \
     css/CSSValuePool.cpp \
     css/DOMWindowCSS.cpp \
+    css/DeprecatedStyleBuilder.cpp \
     css/DocumentRuleSets.cpp \
     css/ElementRuleCollector.cpp \
     css/FontFeatureValue.cpp \
@@ -330,7 +331,6 @@ SOURCES += \
     css/SelectorCheckerFastPath.cpp \
     css/SelectorFilter.cpp \
     css/ShadowValue.cpp \
-    css/StyleBuilder.cpp \
     css/StyleInvalidationAnalysis.cpp \
     css/StyleMedia.cpp \
     css/StylePropertySet.cpp \
@@ -1554,6 +1554,7 @@ HEADERS += \
     css/CSSValueList.h \
     css/CSSValuePool.h \
     css/CSSVariableValue.h \
+    css/DeprecatedStyleBuilder.h \
     css/DOMWindowCSS.h \
     css/FontFeatureValue.h \
     css/FontLoader.h \
@@ -1572,7 +1573,6 @@ HEADERS += \
     css/ShadowValue.h \
     css/SiblingTraversalStrategies.h \
     css/StyleMedia.h \
-    css/StyleBuilder.h \
     css/StyleInvalidationAnalysis.h \
     css/StylePropertySet.h \
     css/StylePropertyShorthand.h \
@@ -3978,6 +3978,7 @@ enable?(VIDEO_TRACK) {
         html/track/TextTrackList.h \
         html/track/TrackBase.h \
         html/track/TrackEvent.h \
+        html/track/TrackListBase.h \
         html/track/WebVTTParser.h \
         html/track/WebVTTToken.h \
         html/track/WebVTTTokenizer.h \
@@ -4001,6 +4002,7 @@ enable?(VIDEO_TRACK) {
         html/track/TextTrackList.cpp \
         html/track/TrackBase.cpp \
         html/track/TrackEvent.cpp \
+        html/track/TrackListBase.cpp \
         html/track/WebVTTElement.cpp \
         html/track/WebVTTParser.cpp \
         html/track/WebVTTTokenizer.cpp \

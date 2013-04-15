@@ -2196,12 +2196,19 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             }
         case CSSPropertyTextIndent: {
+            // If CSS3_TEXT is disabled or text-indent has only one value(<length> | <percentage>),
+            // getPropertyCSSValue() returns CSSValue.
             RefPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style->textIndent(), style.get());
 #if ENABLE(CSS3_TEXT)
-            if (style->textIndentLine() == TextIndentEachLine) {
+            // If CSS3_TEXT is enabled and text-indent has -webkit-each-line or -webkit-hanging,
+            // getPropertyCSSValue() returns CSSValueList.
+            if (style->textIndentLine() == TextIndentEachLine || style->textIndentType() == TextIndentHanging) {
                 RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
                 list->append(textIndent.release());
-                list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+                if (style->textIndentLine() == TextIndentEachLine)
+                    list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+                if (style->textIndentType() == TextIndentHanging)
+                    list->append(cssValuePool().createIdentifierValue(CSSValueWebkitHanging));
                 return list.release();
             }
 #endif
@@ -2928,14 +2935,9 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
     return value && propertyValue && value->equals(*propertyValue);
 }
 
-PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copy() const
+PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyProperties() const
 {
     return copyPropertiesInSet(computedProperties, numComputedProperties);
-}
-
-PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::makeMutable()
-{
-    return copy();
 }
 
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForShorthandProperties(const StylePropertyShorthand& shorthand) const
@@ -2986,7 +2988,7 @@ PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForGri
     return list.release();
 }
 
-PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const
+PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const
 {
     Vector<CSSProperty, 256> list;
     list.reserveInitialCapacity(length);
@@ -2995,7 +2997,7 @@ PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(co
         if (value)
             list.append(CSSProperty(set[i], value.release(), false));
     }
-    return StylePropertySet::create(list.data(), list.size());
+    return MutableStylePropertySet::create(list.data(), list.size());
 }
 
 void CSSComputedStyleDeclaration::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

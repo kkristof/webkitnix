@@ -820,15 +820,12 @@ editing/spelling/grammar-edit-word.html
 # Spellchecker behavior tests.
 # https://bugs.webkit.org/show_bug.cgi?id=108370
 editing/spelling/spelling-double-clicked-word.html
-editing/spelling/spelling-double-clicked-word-with-underscores.html
 editing/spelling/spelling-exactly-selected-multiple-words.html
 editing/spelling/spelling-exactly-selected-word.html
 editing/spelling/spelling-multiword-selection.html
 editing/spelling/spelling-should-select-multiple-words.html
-editing/spelling/spelling-should-select-single-word.html
 editing/spelling/spelling-subword-selection.html
 editing/spelling/spelling-with-punctuation-selection.html
-editing/spelling/spelling-with-underscore-selection.html
 editing/spelling/spelling-with-whitespace-selection.html
 webkit.org/b/108370 editing/spelling/spelling-changed-text.html [ Failure ]
 
@@ -2626,6 +2623,7 @@ webkit.org/b/103769 media/track/track-in-band.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-cues-added-once.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-style.html [ Skip ]
 webkit.org/b/103769 media/track/track-in-band-legacy-api.html [ Skip ]
+webkit.org/b/103769 media/track/track-forced-subtitles-in-band.html [ Skip ]
 
 webkit.org/b/104150 fast/media/implicit-media-all.html [ ImageOnlyFailure ]
 
@@ -2733,3 +2731,6 @@ webkit.org/b/114157 fast/js/dom-static-property-for-in-iteration.html [ Failure 
 # Nested opacity with overflow may display wrong results when composited
 webkit.org/b/114338 compositing/overlap-blending/nested-overlap-overflow.html [ Skip ]
 webkit.org/b/114338 compositing/overlap-blending/nested-non-overlap-clipping.html [ Skip ]
+
+# REGRESSION(r148378): editing/style/block-style-005.html failing
+webkit.org/b/114612 editing/style/block-style-005.html [ Skip ]

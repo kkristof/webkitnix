@@ -1575,7 +1575,8 @@ void WebPageProxy::terminateProcess()
     if (!m_isValid)
         return;
 
-    m_process->terminate();
+    m_process->requestTermination();
+    resetStateAfterProcessExited();
 }
 
 #if !USE(CF) || defined(BUILDING_QT__)
@@ -3292,10 +3293,7 @@ void WebPageProxy::internalShowContextMenu(const IntPoint& menuLocation, const W
 
     m_activeContextMenuHitTestResultData = hitTestResultData;
 
-#if PLATFORM(EFL) || PLATFORM(NIX)
-    m_contextMenuClient.hideContextMenu(this);
-#else
-    if (m_activeContextMenu) {
+    if (!m_contextMenuClient.hideContextMenu(this) && m_activeContextMenu) {
         m_activeContextMenu->hideContextMenu();
         m_activeContextMenu = 0;
     }
@@ -3303,24 +3301,17 @@ void WebPageProxy::internalShowContextMenu(const IntPoint& menuLocation, const W
     m_activeContextMenu = m_pageClient->createContextMenuProxy(this);
     if (!m_activeContextMenu)
         return;
-#endif
 
     // Since showContextMenu() can spin a nested run loop we need to turn off the responsiveness timer.
     m_process->responsivenessTimer()->stop();
 
     // Give the PageContextMenuClient one last swipe at changing the menu.
     Vector<WebContextMenuItemData> items;
-#if PLATFORM(EFL) || PLATFORM(NIX)
-    if (!m_contextMenuClient.getContextMenuFromProposedMenu(this, proposedItems, items, hitTestResultData, userData.get()))
-        m_contextMenuClient.showContextMenu(this, menuLocation, proposedItems);
-    else
-        m_contextMenuClient.showContextMenu(this, menuLocation, items);
-#else
-    if (!m_contextMenuClient.getContextMenuFromProposedMenu(this, proposedItems, items, hitTestResultData, userData.get()))
-        m_activeContextMenu->showContextMenu(menuLocation, proposedItems);
-    else
+    if (!m_contextMenuClient.getContextMenuFromProposedMenu(this, proposedItems, items, hitTestResultData, userData.get())) {
+        if (!m_contextMenuClient.showContextMenu(this, menuLocation, proposedItems))
+            m_activeContextMenu->showContextMenu(menuLocation, proposedItems);
+    } else if (!m_contextMenuClient.showContextMenu(this, menuLocation, items))
         m_activeContextMenu->showContextMenu(menuLocation, items);
-#endif
     m_contextMenuClient.contextMenuDismissed(this);
 }
 
@@ -3853,8 +3844,17 @@ void WebPageProxy::processDidBecomeResponsive()
 
 void WebPageProxy::processDidCrash()
 {
-    ASSERT(m_pageClient);
+    ASSERT(m_isValid);
 
+    resetStateAfterProcessExited();
+
+    m_pageClient->processDidCrash();
+    m_loaderClient.processDidCrash(this);
+}
+
+void WebPageProxy::resetStateAfterProcessExited()
+{
+    ASSERT(m_pageClient);
     m_process->removeMessageReceiver(Messages::WebPageProxy::messageReceiverName(), m_pageID);
 
     m_isValid = false;
@@ -3941,16 +3941,11 @@ void WebPageProxy::processDidCrash()
 
     m_pendingLearnOrIgnoreWordMessageCount = 0;
 
-    m_pageClient->processDidCrash();
-    m_loaderClient.processDidCrash(this);
-
-    if (!m_isValid) {
-        // If the call out to the loader client didn't cause the web process to be relaunched, 
-        // we'll call setNeedsDisplay on the view so that we won't have the old contents showing.
-        // If the call did cause the web process to be relaunched, we'll keep the old page contents showing
-        // until the new web process has painted its contents.
-        setViewNeedsDisplay(IntRect(IntPoint(), viewSize()));
-    }
+    // If the call out to the loader client didn't cause the web process to be relaunched,
+    // we'll call setNeedsDisplay on the view so that we won't have the old contents showing.
+    // If the call did cause the web process to be relaunched, we'll keep the old page contents showing
+    // until the new web process has painted its contents.
+    setViewNeedsDisplay(IntRect(IntPoint(), viewSize()));
 
     // Can't expect DidReceiveEvent notifications from a crashed web process.
     m_keyEventQueue.clear();

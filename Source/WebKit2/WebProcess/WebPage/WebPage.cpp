@@ -104,6 +104,7 @@
 #include <WebCore/HTMLPlugInImageElement.h>
 #include <WebCore/HistoryController.h>
 #include <WebCore/HistoryItem.h>
+#include <WebCore/JSDOMWindow.h>
 #include <WebCore/KeyboardEvent.h>
 #include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/MouseEvent.h>
@@ -121,6 +122,7 @@
 #include <WebCore/RunLoop.h>
 #include <WebCore/RuntimeEnabledFeatures.h>
 #include <WebCore/SchemeRegistry.h>
+#include <WebCore/ScriptController.h>
 #include <WebCore/ScriptValue.h>
 #include <WebCore/SerializedScriptValue.h>
 #include <WebCore/Settings.h>
@@ -2054,9 +2056,6 @@ void WebPage::suspendActiveDOMObjectsAndAnimations()
 void WebPage::resumeActiveDOMObjectsAndAnimations()
 {
     m_page->resumeActiveDOMObjectsAndAnimations();
-
-    // We need to repaint on resume to kickstart animated painting again.
-    m_drawingArea->setNeedsDisplay();
 }
 
 IntPoint WebPage::screenToWindow(const IntPoint& point)
@@ -2970,9 +2969,10 @@ void WebPage::setWindowIsVisible(bool windowIsVisible)
         (*it)->setWindowIsVisible(windowIsVisible);
 }
 
-void WebPage::windowAndViewFramesChanged(const FloatRect& windowFrameInScreenCoordinates, const FloatRect& viewFrameInWindowCoordinates, const FloatPoint& accessibilityViewCoordinates)
+void WebPage::windowAndViewFramesChanged(const FloatRect& windowFrameInScreenCoordinates, const FloatRect& windowFrameInUnflippedScreenCoordinates, const FloatRect& viewFrameInWindowCoordinates, const FloatPoint& accessibilityViewCoordinates)
 {
     m_windowFrameInScreenCoordinates = windowFrameInScreenCoordinates;
+    m_windowFrameInUnflippedScreenCoordinates = windowFrameInUnflippedScreenCoordinates;
     m_viewFrameInWindowCoordinates = viewFrameInWindowCoordinates;
     m_accessibilityPosition = accessibilityViewCoordinates;
     
@@ -2980,7 +2980,7 @@ void WebPage::windowAndViewFramesChanged(const FloatRect& windowFrameInScreenCoo
     for (HashSet<PluginView*>::const_iterator it = m_pluginViews.begin(), end = m_pluginViews.end(); it != end; ++it)
         (*it)->windowAndViewFramesChanged(enclosingIntRect(windowFrameInScreenCoordinates), enclosingIntRect(viewFrameInWindowCoordinates));
 
-    m_hasCachedWindowFrame = !m_windowFrameInScreenCoordinates.isEmpty();
+    m_hasCachedWindowFrame = !m_windowFrameInUnflippedScreenCoordinates.isEmpty();
 }
 #endif
 

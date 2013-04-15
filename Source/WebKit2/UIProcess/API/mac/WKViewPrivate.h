@@ -25,11 +25,19 @@
 
 #import <WebKit2/WKView.h>
 
+typedef enum {
+    WKContentAnchorTopLeft,
+    WKContentAnchorTopRight,
+    WKContentAnchorBottomLeft,
+    WKContentAnchorBottomRight,
+} WKContentAnchor;
+
 @interface WKView (Private)
 
 /* C SPI support. */
 
 @property(readonly) WKPageRef pageRef;
+@property WKContentAnchor contentAnchor;
 
 - (id)initWithFrame:(NSRect)frame contextRef:(WKContextRef)contextRef pageGroupRef:(WKPageGroupRef)pageGroupRef;
 - (id)initWithFrame:(NSRect)frame contextRef:(WKContextRef)contextRef pageGroupRef:(WKPageGroupRef)pageGroupRef relatedToPage:(WKPageRef)relatedPage;
@@ -63,5 +71,8 @@
 
 - (BOOL)windowOcclusionDetectionEnabled;
 - (void)setWindowOcclusionDetectionEnabled:(BOOL)flag;
+
+- (void)forceAsyncDrawingAreaSizeUpdate:(NSSize)size;
+- (void)waitForAsyncDrawingAreaSizeUpdate;
 
 @end

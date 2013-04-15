@@ -218,8 +218,8 @@ public:
     virtual CachedResourceLoader* mediaPlayerCachedResourceLoader() { return 0; }
 
 #if ENABLE(VIDEO_TRACK)
-    virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) { }
-    virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) { }
+    virtual void mediaPlayerDidAddTextTrack(PassRefPtr<InbandTextTrackPrivate>) { }
+    virtual void mediaPlayerDidRemoveTextTrack(PassRefPtr<InbandTextTrackPrivate>) { }
 
     virtual void textTrackRepresentationBoundsChanged(const IntRect&) { }
     virtual void paintTextTrackRepresentation(GraphicsContext*, const IntRect&) { }
@@ -315,6 +315,7 @@ public:
 
     PassRefPtr<TimeRanges> buffered();
     PassRefPtr<TimeRanges> seekable();
+    double minTimeSeekable();
     double maxTimeSeekable();
 
     bool didLoadingProgress();

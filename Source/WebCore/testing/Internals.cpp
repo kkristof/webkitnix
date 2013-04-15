@@ -51,9 +51,6 @@
 #include "FrameView.h"
 #include "HTMLContentElement.h"
 #include "HTMLInputElement.h"
-#if ENABLE(VIDEO)
-#include "HTMLMediaElement.h"
-#endif
 #include "HTMLNames.h"
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
@@ -135,6 +132,11 @@
 #if ENABLE(VIDEO_TRACK)
 #include "CaptionUserPreferences.h"
 #include "PageGroup.h"
+#endif
+
+#if ENABLE(VIDEO)
+#include "HTMLMediaElement.h"
+#include "TimeRanges.h"
 #endif
 
 #if ENABLE(SPEECH_SYNTHESIS)
@@ -1513,11 +1515,76 @@ bool Internals::hasAutocorrectedMarker(Document* document, int from, int length,
 
 void Internals::setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&)
 {
-    if (!contextDocument() || !contextDocument()->frame() || !contextDocument()->frame()->editor())
+    if (!contextDocument() || !contextDocument()->frame())
         return;
 
     if (enabled != contextDocument()->frame()->editor()->isContinuousSpellCheckingEnabled())
         contextDocument()->frame()->editor()->toggleContinuousSpellChecking();
+}
+
+void Internals::setAutomaticQuoteSubstitutionEnabled(bool enabled, ExceptionCode&)
+{
+    if (!contextDocument() || !contextDocument()->frame())
+        return;
+
+#if USE(AUTOMATIC_TEXT_REPLACEMENT)
+    if (enabled != contextDocument()->frame()->editor()->isAutomaticQuoteSubstitutionEnabled())
+        contextDocument()->frame()->editor()->toggleAutomaticQuoteSubstitution();
+#else
+    UNUSED_PARAM(enabled);
+#endif
+}
+
+void Internals::setAutomaticLinkDetectionEnabled(bool enabled, ExceptionCode&)
+{
+    if (!contextDocument() || !contextDocument()->frame())
+        return;
+
+#if USE(AUTOMATIC_TEXT_REPLACEMENT)
+    if (enabled != contextDocument()->frame()->editor()->isAutomaticLinkDetectionEnabled())
+        contextDocument()->frame()->editor()->toggleAutomaticLinkDetection();
+#else
+    UNUSED_PARAM(enabled);
+#endif
+}
+
+void Internals::setAutomaticDashSubstitutionEnabled(bool enabled, ExceptionCode&)
+{
+    if (!contextDocument() || !contextDocument()->frame())
+        return;
+
+#if USE(AUTOMATIC_TEXT_REPLACEMENT)
+    if (enabled != contextDocument()->frame()->editor()->isAutomaticDashSubstitutionEnabled())
+        contextDocument()->frame()->editor()->toggleAutomaticDashSubstitution();
+#else
+    UNUSED_PARAM(enabled);
+#endif
+}
+
+void Internals::setAutomaticTextReplacementEnabled(bool enabled, ExceptionCode&)
+{
+    if (!contextDocument() || !contextDocument()->frame())
+        return;
+
+#if USE(AUTOMATIC_TEXT_REPLACEMENT)
+    if (enabled != contextDocument()->frame()->editor()->isAutomaticTextReplacementEnabled())
+        contextDocument()->frame()->editor()->toggleAutomaticTextReplacement();
+#else
+    UNUSED_PARAM(enabled);
+#endif
+}
+
+void Internals::setAutomaticSpellingCorrectionEnabled(bool enabled, ExceptionCode&)
+{
+    if (!contextDocument() || !contextDocument()->frame())
+        return;
+
+#if USE(AUTOMATIC_TEXT_REPLACEMENT)
+    if (enabled != contextDocument()->frame()->editor()->isAutomaticSpellingCorrectionEnabled())
+        contextDocument()->frame()->editor()->toggleAutomaticSpellingCorrection();
+#else
+    UNUSED_PARAM(enabled);
+#endif
 }
 
 bool Internals::isOverwriteModeEnabled(Document* document, ExceptionCode&)
@@ -2136,5 +2203,63 @@ void Internals::setCaptionsStyleSheetOverride(const String& override, ExceptionC
     document->page()->group().captionPreferences()->setCaptionsStyleSheetOverride(override);
 #endif
 }
+
+void Internals::setPrimaryAudioTrackLanguageOverride(const String& language, ExceptionCode& ec)
+{
+    Document* document = contextDocument();
+    if (!document || !document->page()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(WIN)
+    document->page()->group().captionPreferences()->setPrimaryAudioTrackLanguageOverride(language);
+#else
+    UNUSED_PARAM(language);
+#endif
+}
+
+void Internals::setCaptionDisplayMode(const String& mode, ExceptionCode& ec)
+{
+    Document* document = contextDocument();
+    if (!document || !document->page()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+    
+#if ENABLE(VIDEO_TRACK) && !PLATFORM(WIN)
+    CaptionUserPreferences* captionPreferences = document->page()->group().captionPreferences();
+    
+    if (equalIgnoringCase(mode, "Automatic"))
+        captionPreferences->setCaptionDisplayMode(CaptionUserPreferences::Automatic);
+    else if (equalIgnoringCase(mode, "ForcedOnly"))
+        captionPreferences->setCaptionDisplayMode(CaptionUserPreferences::ForcedOnly);
+    else if (equalIgnoringCase(mode, "AlwaysOn"))
+        captionPreferences->setCaptionDisplayMode(CaptionUserPreferences::AlwaysOn);
+    else
+        ec = SYNTAX_ERR;
+#else
+    UNUSED_PARAM(mode);
+#endif
+}
+
+#if ENABLE(VIDEO)
+PassRefPtr<TimeRanges> Internals::createTimeRanges(Float32Array* startTimes, Float32Array* endTimes)
+{
+    ASSERT(startTimes && endTimes);
+    ASSERT(startTimes->length() == endTimes->length());
+    RefPtr<TimeRanges> ranges = TimeRanges::create();
+
+    unsigned count = std::min(startTimes->length(), endTimes->length());
+    for (unsigned i = 0; i < count; ++i)
+        ranges->add(startTimes->item(i), endTimes->item(i));
+    return ranges;
+}
+
+double Internals::closestTimeToTimeRanges(double time, TimeRanges* ranges)
+{
+    return ranges->nearest(time);
+}
+#endif
 
 }

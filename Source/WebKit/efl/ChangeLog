@@ -1,3 +1,30 @@
+2013-04-14  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        Unreviewed build fix for WebKit1 EFL after r148373 due to missing
+        header includes.
+
+        * WebCoreSupport/DumpRenderTreeSupportEfl.cpp:
+        * WebCoreSupport/EditorClientEfl.cpp:
+        * WebCoreSupport/FrameLoaderClientEfl.cpp:
+        * WebCoreSupport/InspectorClientEfl.cpp:
+        * ewk/ewk_frame.cpp:
+        * ewk/ewk_view.cpp:
+        * ewk/ewk_view_private.h:
+        (WebCore):
+
+2013-04-13  Ed Bartosh  <bartosh@gmail.com>
+
+        [EFL] --minimal build fails with error: 'ViewModeInvalid' is not a member of 'WebCore::Page'
+        https://bugs.webkit.org/show_bug.cgi?id=114048
+
+        Reviewed by Gyuyoung Kim.
+
+        Wrapped view-mode media related code into #if ENABLE(VIEW_MODE_CSS_MEDIA)
+
+        * WebCoreSupport/AssertMatchingEnums.cpp:
+        * ewk/ewk_view.cpp:
+        (ewk_view_mode_set):
+
 2013-04-10  Benjamin Poulain  <bpoulain@apple.com>
 
         Mass remove all the empty directories

@@ -135,6 +135,7 @@ public:
     virtual MediaPlayer::ReadyState readyState() const { return MediaPlayer::HaveNothing; }
 
     virtual double maxTimeSeekableDouble() const { return 0; }
+    virtual double minTimeSeekable() const { return 0; }
     virtual PassRefPtr<TimeRanges> buffered() const { return TimeRanges::create(); }
 
     virtual unsigned totalBytes() const { return 0; }
@@ -681,6 +682,11 @@ double MediaPlayer::maxTimeSeekable()
     return m_private->maxTimeSeekableDouble();
 }
 
+double MediaPlayer::minTimeSeekable()
+{
+    return m_private->minTimeSeekable();
+}
+
 bool MediaPlayer::didLoadingProgress()
 {
     return m_private->didLoadingProgress();
@@ -1102,7 +1108,7 @@ void MediaPlayer::addTextTrack(PassRefPtr<InbandTextTrackPrivate> track)
     if (!m_mediaPlayerClient)
         return;
 
-    m_mediaPlayerClient->mediaPlayerDidAddTrack(track);
+    m_mediaPlayerClient->mediaPlayerDidAddTextTrack(track);
 }
 
 void MediaPlayer::removeTextTrack(PassRefPtr<InbandTextTrackPrivate> track)
@@ -1110,7 +1116,7 @@ void MediaPlayer::removeTextTrack(PassRefPtr<InbandTextTrackPrivate> track)
     if (!m_mediaPlayerClient)
         return;
 
-    m_mediaPlayerClient->mediaPlayerDidRemoveTrack(track);
+    m_mediaPlayerClient->mediaPlayerDidRemoveTextTrack(track);
 }
 
 bool MediaPlayer::requiresTextTrackRepresentation() const

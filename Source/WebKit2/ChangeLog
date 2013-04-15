@@ -1,3 +1,608 @@
+2013-04-15  Seulgi Kim  <seulgikim@company100.net>
+
+        Schedule rendering at regular interval (60fps)
+        https://bugs.webkit.org/show_bug.cgi?id=114617
+
+        Reviewed by Martin Robinson.
+
+        Schedule rendering reguarly regardless of the time taken to render a
+        frame. Otherwise, next flush delayed by the amount of the rendering
+        time.
+
+        * WebProcess/WebPage/gtk/LayerTreeHostGtk.cpp:
+        (WebKit::LayerTreeHostGtk::LayerTreeHostGtk):
+        (WebKit::LayerTreeHostGtk::layerFlushTimerFired):
+        (WebKit::LayerTreeHostGtk::flushAndRenderLayers):
+        * WebProcess/WebPage/gtk/LayerTreeHostGtk.h:
+
+2013-04-15  Michał Pakuła vel Rutka  <m.pakula@samsung.com>
+
+        [EFL][WK2] Use C API in ewk_context_menu
+        https://bugs.webkit.org/show_bug.cgi?id=109698
+
+        Reviewed by Andreas Kling.
+
+        EFL port unlike others does not handle context menus inside WebKit but exposes an API:
+        ewk_context_menu and ewk_context_menu_item, and leaves context menu to application.
+        Currently EFL port's context menu API uses internal C++ classes, while it should use WK2 C API,
+        to avoid violating layering.
+        This patch changes EFL context menu API to use only WK2 C API.
+
+        * UIProcess/API/efl/EwkView.cpp:
+        (EwkView::showContextMenu):
+        * UIProcess/API/efl/EwkView.h:
+        (WebKit):
+        (EwkView):
+        * UIProcess/API/efl/ewk_context_menu.cpp:
+        (EwkContextMenu::EwkContextMenu):
+        (EwkContextMenu::contextMenuItemSelected):
+        (ewk_context_menu_item_select):
+        (getWKTagFromEwkAction):
+        * UIProcess/API/efl/ewk_context_menu_item.cpp:
+        (EwkContextMenuItem::EwkContextMenuItem):
+        (getEwkActionFromWKTag):
+        * UIProcess/API/efl/ewk_context_menu_item.h:
+        * UIProcess/API/efl/ewk_context_menu_item_private.h:
+        (EwkContextMenuItem::create):
+        (EwkContextMenuItem):
+        * UIProcess/API/efl/ewk_context_menu_private.h:
+        (EwkContextMenu::create):
+        (EwkContextMenu):
+        * UIProcess/efl/ContextMenuClientEfl.cpp:
+        (showContextMenu):
+        (hideContextMenu):
+        (ContextMenuClientEfl::ContextMenuClientEfl):
+        * UIProcess/efl/ContextMenuClientEfl.h:
+        (WebKit::ContextMenuClientEfl::view):
+        * UIProcess/efl/WebContextMenuProxyEfl.cpp:
+        (WebKit::WebContextMenuProxyEfl::showContextMenu):
+        (WebKit::WebContextMenuProxyEfl::hideContextMenu):
+        * UIProcess/efl/WebContextMenuProxyEfl.h:
+        (WebContextMenuProxyEfl):
+
+2013-04-15  Balazs Kelemen  <kbalazs@webkit.org>
+
+        [CoordGfx] Background color should not be part of GraphicsLayerState
+        https://bugs.webkit.org/show_bug.cgi?id=113785
+
+        Reviewed by Andreas Kling.
+
+        Page background is independent from layer state, send it to the UI
+        as soon as possible.
+
+        * Shared/CoordinatedGraphics/CoordinatedGraphicsArgumentCoders.cpp:
+        (CoreIPC::::encode):
+        (CoreIPC::::decode):
+        * WebProcess/WebPage/CoordinatedGraphics/CoordinatedLayerTreeHost.cpp:
+        (WebKit::CoordinatedLayerTreeHost::setBackgroundColor):
+
+2013-04-15  Michał Pakuła vel Rutka  <m.pakula@samsung.com>
+
+        [WK2] Add new callbacks and a function for WebKit2 context menu API
+        https://bugs.webkit.org/show_bug.cgi?id=111552
+
+        Reviewed by Anders Carlsson.
+
+        Add contextMenuHide and contextMenuShow callbacks to WKPageContextMenuClient
+        and WKPageContextMenuSelected API so context menus can be handled outside
+        WebKit. API version of this client was bumped so older client version still
+         can be used
+
+        * Shared/APIClientTraits.cpp:
+        (WebKit):
+        * Shared/APIClientTraits.h:
+        * UIProcess/API/C/WKPage.cpp:
+        (WKPageSelectContextMenuItem):
+        * UIProcess/API/C/WKPage.h:
+        * UIProcess/API/gtk/WebKitContextMenuClient.cpp:
+        (attachContextMenuClientToView):
+        * UIProcess/WebPageContextMenuClient.cpp:
+        (WebKit::WebPageContextMenuClient::getContextMenuFromProposedMenu):
+        (WebKit::WebPageContextMenuClient::showContextMenu):
+        (WebKit):
+        (WebKit::WebPageContextMenuClient::hideContextMenu):
+        * UIProcess/WebPageContextMenuClient.h:
+        (WebPageContextMenuClient):
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::internalShowContextMenu):
+        * UIProcess/efl/ContextMenuClientEfl.cpp:
+        (ContextMenuClientEfl::ContextMenuClientEfl):
+
+2013-04-14  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        [EFL][WK2] Regression(r148274): Broke rendering in the browser
+        https://bugs.webkit.org/show_bug.cgi?id=114593
+
+        Reviewed by Anders Carlsson.
+
+        r148274 added a new "didChangeViewportAttributes" callback to
+        WKView but did not hook it up in ViewClientEfl. This patch
+        fixes this and makes rendering work again in the browser.
+
+        * UIProcess/efl/ViewClientEfl.cpp:
+        (WebKit::ViewClientEfl::ViewClientEfl):
+
+2013-04-14  Andreas Kling  <akling@apple.com>
+
+        Move CSSOM classes to using MutableStylePropertySet over StylePropertySet.
+        <http://webkit.org/b/114581>
+
+        Reviewed by Anders Carlsson.
+
+        * WebProcess/WebCoreSupport/WebEditorClient.cpp:
+        (WebKit::WebEditorClient::shouldApplyStyle):
+
+2013-04-14  Christophe Dumez  <ch.dumez@sisa.samsung.com>
+
+        Unreviewed build fix for WebKit2 EFL after r148373 due to missing
+        header includes.
+
+        * UIProcess/InspectorServer/efl/WebInspectorServerEfl.cpp:
+        * UIProcess/efl/InputMethodContextEfl.cpp:
+
+2013-04-13  Sam Weinig  <sam@webkit.org>
+
+        Add ObjC API for setting initialization data for the WKWebProcessPlugIn
+        https://bugs.webkit.org/show_bug.cgi?id=103846
+
+        Reviewed by Darin Adler.
+
+        * UIProcess/API/mac/WKProcessGroup.h:
+        Adds a new optional processGroupWillCreateConnectionToWebProcessPlugIn: method for the WKProcessGroupDelegate protocol,
+        which allows the user to pass (via an autoreleased return value) initialization data to the web process plugin.
+
+        * UIProcess/API/mac/WKProcessGroup.mm:
+        (getInjectedBundleInitializationUserData):
+        (setUpInectedBundleClient):
+        (-[WKProcessGroup initWithInjectedBundleURL:]):
+        (-[WKProcessGroup dealloc]):
+        Use the existing WKContextInjectedBundleClient infrastructure to pass the initialization data to the bundle
+        via the new ObjCObjectGraph APIObject.
+
+        * WebProcess/InjectedBundle/API/mac/WKWebProcessPlugIn.h:
+        Adds webProcessPlugIn:initializeWithObject: to the WKWebProcessPlugIn protocol, replacing webProcessPlugInInitialize:.
+
+        * WebProcess/InjectedBundle/mac/InjectedBundleMac.mm:
+        (WebKit::InjectedBundle::load):
+        Pass the initialization data to the web process plugin.
+
+2013-04-13  Sam Weinig  <sam@webkit.org>
+
+        Attempt Build Fix.
+
+        * WebProcess/Plugins/Netscape/NPJSObject.cpp:
+
+2013-04-12  Sam Weinig  <sam@webkit.org>
+
+        Make Frame's ScriptController an OwnPtr and remove the #include
+        https://bugs.webkit.org/show_bug.cgi?id=114105
+
+        Reviewed by Dean Jackson.
+
+        * Shared/WebHitTestResult.cpp:
+        * Shared/WebHitTestResult.h:
+        * UIProcess/Plugins/PlugInAutoStartProvider.cpp:
+        * UIProcess/WebContext.h:
+        * UIProcess/WebPageProxy.h:
+        * WebProcess/InjectedBundle/API/c/WKBundleFrame.cpp:
+        * WebProcess/InjectedBundle/InjectedBundleDOMWindowExtension.cpp:
+        * WebProcess/Plugins/Netscape/NPJSObject.cpp:
+        * WebProcess/Plugins/Netscape/NPRuntimeObjectMap.cpp:
+        * WebProcess/Plugins/PDF/PDFPlugin.h:
+        * WebProcess/Plugins/PluginView.cpp:
+        * WebProcess/Storage/StorageAreaImpl.cpp:
+        * WebProcess/Storage/StorageAreaMap.cpp:
+        * WebProcess/WebPage/WebFrame.cpp:
+        * WebProcess/WebPage/WebPage.cpp:
+
+2013-04-13  Zan Dobersek  <zdobersek@igalia.com>
+
+        Unreviewed GTK build fix after r148311.
+
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp:
+        (resizeWebKitWebViewBaseFromAllocation): Passing IntSize() as the scroll offset
+        argument to the DrawingAreaProxy::setSize method.
+
+2013-04-12  Gavin Barraclough  <barraclough@apple.com>
+
+        Add private interface to WKView to asynchronously update the drawing area size
+        https://bugs.webkit.org/show_bug.cgi?id=114549
+
+        Reviewed by Simon Fraser.
+
+        This will allow a client using the WKView to resize the contents without blocking waiting for the web process to repaint.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView _setDrawingAreaSize:]):
+            - if the new size of teh drawing area does not match the frame size, position it according to the contentAnchor.
+        (-[WKView updateLayer]):
+            - Don't let a subsequent frame size change block on a prior async resize.
+        (-[WKView forceAsyncDrawingAreaSizeUpdate:]):
+            - resize the drawing area asynchronously, even if frame size udpates are disabled.
+        (-[WKView waitForAsyncDrawingAreaSizeUpdate]):
+            - wait for asynchronous updates to complete.
+
+        * UIProcess/API/mac/WKViewPrivate.h:
+            - declare new methods.
+
+        * UIProcess/DrawingAreaProxy.cpp:
+        (WebKit):
+        * UIProcess/DrawingAreaProxy.h:
+        (DrawingAreaProxy):
+        (WebKit::DrawingAreaProxy::waitForPossibleGeometryUpdate):
+        * UIProcess/mac/TiledCoreAnimationDrawingAreaProxy.h:
+        (TiledCoreAnimationDrawingAreaProxy):
+        * UIProcess/mac/TiledCoreAnimationDrawingAreaProxy.mm:
+        (WebKit::TiledCoreAnimationDrawingAreaProxy::waitForPossibleGeometryUpdate):
+            - pass timeout for waitForPossibleGeometryUpdate as a parameter.
+
+2013-04-12  Jessie Berlin  <jberlin@apple.com>
+
+        32-bit build fix.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView setFrameSize:]):
+
+2013-04-12  Jeffrey Pfau  <jpfau@apple.com>
+
+        Query directly for cache partition names
+        https://bugs.webkit.org/show_bug.cgi?id=114538
+
+        Reviewed by David Kilzer.
+
+        Call back into WebKitSystemInterface to ask it for the cache
+        partition names instead of trying to figure them out.
+
+        * WebProcess/ResourceCache/WebResourceCacheManager.cpp:
+        (WebKit::WebResourceCacheManager::getCacheOrigins):
+        (WebKit):
+        (WebKit::WebResourceCacheManager::returnCacheOrigins):
+        * WebProcess/ResourceCache/WebResourceCacheManager.h:
+        (WebResourceCacheManager):
+        * WebProcess/ResourceCache/cf/WebResourceCacheManagerCFNet.cpp:
+        (WebKit::WebResourceCacheManager::cfURLCacheHostNames):
+        (WebKit):
+        (WebKit::WebResourceCacheManager::cfURLCacheHostNamesWithCallback):
+
+2013-04-12  Gavin Barraclough  <barraclough@apple.com>
+
+        Build fix - too soon!
+
+        * UIProcess/API/mac/WKViewPrivate.h:
+
+2013-04-12  Gavin Barraclough  <barraclough@apple.com>
+
+        Build fix - too soon!
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView setFrameSize:]):
+
+2013-04-12  Adenilson Cavalcanti  <cavalcantii@gmail.com>
+
+        [WK2] WebPageProxy loadURL() won't work when called just after terminateProcess()
+        https://bugs.webkit.org/show_bug.cgi?id=110743
+
+        Reviewed by Benjamin Poulain.
+
+        A call to loadURL() just after terminating WebProcess will fail thanks to
+        WebPageProxy being in an undefined state since it is in the middle of its own
+        cleanup after process termination.
+
+        To properly fix this, not only WebPageProxy cleanup should be made
+        at WebProcess termination request, but also WebProcessProxy needs
+        to only return to its caller after terminating the process and
+        closing connections. Otherwise, WebPageProxy can even be able to
+        detect that WebProcess is no longer running, but a call to respawn
+        the process will fail.
+
+        To fix these issues, this patch moves the cleanup code to a shared private function
+        that is used for both the cases i.e. user termination and real crash. WebProcess
+        shutdown is done using a new method that ensures that all cleanup was done before
+        returning.
+
+        A last change introduced in this patch is that for user requested termination,
+        clients are no longer notified of a crash (since it is not a crash).
+
+        * UIProcess/WebPageProxy.cpp:
+        (WebKit::WebPageProxy::terminateProcess):
+        (WebKit::WebPageProxy::processDidCrash):
+        (WebKit):
+        (WebKit::WebPageProxy::resetStateAfterProcessExited):
+        * UIProcess/WebPageProxy.h:
+        (WebPageProxy):
+        * UIProcess/WebProcessProxy.cpp:
+        (WebKit::WebProcessProxy::userRequestedTerminate):
+        (WebKit):
+        * UIProcess/WebProcessProxy.h:
+        (WebProcessProxy):
+
+2013-04-12  Gavin Barraclough  <barraclough@apple.com>
+
+        Add contentAnchor to WKView
+        http://bugs.webkit.org/show_bug.cgi?id=114469
+        
+        Currently if you call setFrameSize: while frame size updates are disabled, or if the geometry
+        update times out, then the previously rendered page content will be rendered anchored to the
+        top left corner of the frame.
+
+        This is appropriate if the frame is being resized from the bottom right corner. In order to
+        achieve a more desirable appearance if the frame is being resized from another corner we
+        should allow the corner at which the content anchors to be specified.
+
+        Reviewed by Simon Fraser.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView setFrameSize:]):
+            - If the content anchor has been set, then updating the frame size moves the origin within the layer.
+        (-[WKView _setDrawingAreaSize:]):
+            - Instruct the drawing area to paint at the correct position within the layer.
+        (-[WKView _setAcceleratedCompositingModeRootLayer:]):
+            - If the root layer is cleared this implicitly resets any origin position we had set within it.
+        (-[WKView initWithFrame:contextRef:pageGroupRef:relatedToPage:]):
+            - initialize new data members.
+        (-[WKView setContentAnchor:]):
+        (-[WKView contentAnchor]):
+            - Accessor implementation for @property contentAnchor.
+
+        * UIProcess/API/mac/WKViewPrivate.h:
+        (NS_ENUM):
+            - Added WKContentAnchor enum type, and @property contentAnchor.
+
+        * UIProcess/DrawingAreaProxy.cpp:
+        (WebKit::DrawingAreaProxy::setSize):
+            - Don't suppress geometry updates where the layer poistion has changed.
+
+        * UIProcess/DrawingAreaProxy.h:
+        (DrawingAreaProxy):
+            - Added m_layerPosition, layerPosition argument to setSize
+
+        * UIProcess/mac/TiledCoreAnimationDrawingAreaProxy.h:
+        (TiledCoreAnimationDrawingAreaProxy):
+            - Added m_lastSentLayerPosition
+
+        * UIProcess/mac/TiledCoreAnimationDrawingAreaProxy.mm:
+        (WebKit::TiledCoreAnimationDrawingAreaProxy::didUpdateGeometry):
+            - Don't suppress geometry updates where the layer poistion has changed.
+
+        (WebKit::TiledCoreAnimationDrawingAreaProxy::sendUpdateGeometry):
+            - Pass layer position in UpdateGeometry message.
+
+        * WebProcess/WebPage/DrawingArea.h:
+        (WebKit::DrawingArea::updateGeometry):
+            - Added layerPosition argument to updateGeometry
+
+        * WebProcess/WebPage/DrawingArea.messages.in:
+            - Added layerPosition argument to updateGeometry
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.h:
+        (TiledCoreAnimationDrawingArea):
+            - Added layerPosition argument to updateGeometry
+
+        * WebProcess/WebPage/mac/TiledCoreAnimationDrawingArea.mm:
+        (WebKit::TiledCoreAnimationDrawingArea::updateGeometry):
+            - Added layerPosition argument to updateGeometry
+
+2013-04-12  Commit Queue  <rniwa@webkit.org>
+
+        Unreviewed, rolling out r148296 and r148297.
+        http://trac.webkit.org/changeset/148296
+        http://trac.webkit.org/changeset/148297
+        https://bugs.webkit.org/show_bug.cgi?id=114536
+
+        Needs more thought (Requested by ap on #webkit).
+
+        * NetworkProcess/mac/com.apple.WebKit.NetworkProcess.sb.in:
+
+2013-04-12  Tim Horton  <timothy_horton@apple.com>
+
+        REGRESSION (r138858): GIFs don't start playing when they come out of background tabs
+        https://bugs.webkit.org/show_bug.cgi?id=108864
+        <rdar://problem/13140489>
+
+        Reviewed by Antti Koivisto.
+
+        Don't repaint the world when animations resume; instead, FrameView
+        will cause all animated images to repaint. This line also had no effect for
+        TiledCoreAnimationDrawingArea, which does not implement setNeedsDisplay.
+
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::resumeActiveDOMObjectsAndAnimations):
+
+2013-04-12  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13334446> [Mac] Tweak sandbox profile.
+
+        Apply a post-landing review comment.
+
+        * NetworkProcess/mac/com.apple.WebKit.NetworkProcess.sb.in:
+
+2013-04-12  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13334446> [Mac] Tweak sandbox profile.
+
+        Reviewed by Jessie Berlin.
+
+        * NetworkProcess/mac/com.apple.WebKit.NetworkProcess.sb.in:
+
+2013-04-12  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Split GtkAuthenticationDialog in two widgets
+        https://bugs.webkit.org/show_bug.cgi?id=103644
+
+        Reviewed by Xan Lopez.
+
+        * GNUmakefile.list.am: Add new files to compilation.
+        * UIProcess/API/gtk/WebKit2GtkAuthenticationDialog.cpp: Removed.
+        * UIProcess/API/gtk/WebKit2GtkAuthenticationDialog.h: Removed.
+        * UIProcess/API/gtk/WebKitAuthenticationDialog.cpp: Added.
+        (webkitAuthenticationDialogAuthenticate): Use the
+        AuthenticationChallengeProxy to authenticate and destroy the dialog.
+        (okButtonClicked): Call webkitAuthenticationDialogAuthenticate()
+        with the credential.
+        (cancelButtonClicked): Call
+        webkitAuthenticationDialogAuthenticate() with a NULL credential to
+        continue without credential.
+        (webkitAuthenticationDialogInitialize): Build the UI.
+        (webkitAuthenticationDialogDraw): Draw a background.
+        (webkitAuthenticationDialogMap): Grab default button.
+        (webkitAuthenticationDialogConstructed): Create a GtkStyleContext
+        with the GtkWindow path to draw the widget background like a real
+        dialog.
+        (webkit_authentication_dialog_class_init):
+        (webkitAuthenticationDialogNew): Create a new
+        WebKitAuthenticationDialog widget.
+        * UIProcess/API/gtk/WebKitAuthenticationDialog.h: Added.
+        * UIProcess/API/gtk/WebKitLoaderClient.cpp:
+        * UIProcess/API/gtk/WebKitWebView.cpp:
+        (webkitWebViewHandleAuthenticationChallenge): Create a
+        WebKitAuthenticationDialog widget and pass add it to the
+        container.
+        * UIProcess/API/gtk/WebKitWebViewBase.cpp:
+        (_WebKitWebViewBasePrivate): Updated to use the widget directly.
+        (webkitWebViewChildIsInternalWidget): Ditto.
+        (webkitWebViewBaseAddAuthenticationDialog): Ditto.
+        (webkitWebViewBaseCancelAuthenticationDialog): Ditto.
+        (webkitWebViewBaseContainerRemove): Ditto.
+        (webkitWebViewBaseContainerForall): Ditto.
+        (resizeWebKitWebViewBaseFromAllocation): Ditto.
+        (webkitWebViewBaseFocus): Ditto.
+        (webkitWebViewBaseDestroy): Destroy the auth widget is present.
+        (webkit_web_view_base_class_init): Add implementation for
+        GtkWidgetClass::destroy.
+        * UIProcess/API/gtk/WebKitWebViewBasePrivate.h:
+
+2013-04-12  Carlos Garcia Campos  <cgarcia@igalia.com>
+
+        [GTK] Web Process crash when the UI process finishes too early
+        https://bugs.webkit.org/show_bug.cgi?id=112729
+
+        Reviewed by Anders Carlsson.
+
+        The problem is when creating the GSocket in the WorkQeue for the
+        socket descriptor. GLib considers a programmer error to create a
+        GSocket providing an invalid socket and finishes the process with
+        g_error(). We are actually providing a valid socket when creating
+        the GSocket, but it can be invalidated by the worker thread while
+        the GSocket is being created. This is because
+        registerEventSourceHandler is called from the main thread and
+        unregisterEventSourceHandler can be called from the worker
+        thread. We are currently registering two event handlers, one to
+        read data from the socket and another one to close the CoreIPC
+        connection when the socket connection is broken. Every event
+        source registered uses its own GSocket (even if the file
+        descriptor is actually the same), so that when the UI process
+        finishes too early, the first event handler can be executed in the
+        worker thread, closing the socket descriptor, while the main
+        thread is creating the GSocket for the second one.
+        We don't really need to use a separate event handler to monitor
+        the connection, because GSocket always notifies when condition is
+        G_IO_HUP and G_IO_ERR even if they haven't been explicitly set in
+        g_socket_create_source(). We can register socket event sources
+        differently, providing also a function to be called when the
+        connection is closed, using a single socket and the same even source.
+
+        * Platform/CoreIPC/unix/ConnectionUnix.cpp:
+        (CoreIPC::Connection::platformInvalidate):
+        (CoreIPC::Connection::open): Register a single socket event
+        handler providing also a function to be called when the connection
+        is closed.
+        * Platform/WorkQueue.h:
+        (WorkQueue):
+        * Platform/gtk/WorkQueueGtk.cpp: The EventSource class has been
+        split, moving everyting specific to socket event source to a
+        derived class SocketEventSource.
+        (WorkQueue::EventSource::EventSource):
+        (WorkQueue::EventSource::performWork):
+        (WorkQueue::EventSource::performWorkOnce):
+        (WorkQueue::EventSource::performWorkOnTermination):
+        (WorkQueue::EventSource::deleteEventSource):
+        (WorkQueue::EventSource):
+        (WorkQueue::SocketEventSource):
+        (WorkQueue::SocketEventSource::SocketEventSource):
+        (WorkQueue::SocketEventSource::cancel):
+        (WorkQueue::SocketEventSource::didClose):
+        (WorkQueue::SocketEventSource::checkCondition):
+        (WorkQueue::SocketEventSource::eventCallback):
+        (WorkQueue::registerSocketEventHandler):
+        (WorkQueue::unregisterSocketEventHandler):
+        (WorkQueue::dispatchOnSource):
+
+2013-04-12  Alexey Proskuryakov  <ap@apple.com>
+
+        <rdar://problem/13126204> [Mac] Tweak sandbox profile.
+
+        Reviewed by Anders Carlsson.
+
+        * NetworkProcess/mac/com.apple.WebKit.NetworkProcess.sb.in:
+        * WebProcess/com.apple.WebProcess.sb.in:
+
+2013-04-12  Manuel Rego Casasnovas  <rego@igalia.com>
+
+        [GTK][WK2] Add document-loaded signal to WebKitWebPage
+        https://bugs.webkit.org/show_bug.cgi?id=110614
+
+        Reviewed by Carlos Garcia Campos.
+
+        Add a new signal document-loaded to WebKitWebPage that will be emitted
+        when the DOM document has been loaded for the main frame.
+
+        * UIProcess/API/gtk/tests/TestWebExtensions.cpp:
+        (documentLoadedCallback):
+        (testDocumentLoadedSignal):
+        (beforeAll): Add test for document-loaded signal.
+        * UIProcess/API/gtk/tests/WebExtensionTest.cpp:
+        (documentLoadedCallback):
+        (pageCreatedCallback):
+        (methodCallCallback): Add new D-Bus signal DocumentLoaded in order to
+        test document-loaded signal.
+        * WebProcess/InjectedBundle/API/gtk/WebKitWebPage.cpp:
+        (webkit_web_page_class_init):
+        (webkitWebPageCreate): Add document-loaded signal and emit it when
+        didFinishDocumentLoadForFrame is called.
+
+2013-04-12  Hanyee Kim  <choco@company100.net>
+
+        [GTK] Webkit fails to build webkit2gtk-tests-resources.gresource.
+        https://bugs.webkit.org/show_bug.cgi?id=114485
+
+        Reviewed by Martin Robinson.
+
+        Generating webkit2gtk-tests-resources.gresource can be failed due to
+        the non-existing target directory.
+        We need to make target directory before generating it.
+
+        * UIProcess/API/gtk/tests/GNUmakefile.am:
+
+2013-04-12  Andreas Kling  <akling@apple.com>
+
+        REGRESSION(r145869): Right-click on SWF contents displays the context menu at the wrong place.
+        <http://webkit.org/b/113836>
+        <rdar://problem/13587624>
+
+        Reviewed by Anders "Wesley Crusher" Carlsson.
+
+        Mac plugins expect flipped-Y screen coordinates, while DOM APIs speak in unflipped coordinates,
+        and we were mixing them up in the window frame caching optimization.
+
+        Solve this by having the UIProcess send both flipped and unflipped window frames to the WebProcess.
+        The flipped frame is passed on to plugins, and the unflipped frame is used for window.screenX/Y etc.
+
+        * UIProcess/API/mac/WKView.mm:
+        (-[WKView _updateWindowAndViewFrames]):
+
+            No need to retrieve the window frame here as WebPageProxy::windowAndViewFramesChanged() will
+            always override it anyway.
+
+        * UIProcess/mac/WebPageProxyMac.mm:
+        (WebKit::WebPageProxy::windowAndViewFramesChanged):
+        * WebProcess/WebCoreSupport/WebChromeClient.cpp:
+        (WebKit::WebChromeClient::windowRect):
+        * WebProcess/WebPage/WebPage.cpp:
+        (WebKit::WebPage::windowAndViewFramesChanged):
+        * WebProcess/WebPage/WebPage.h:
+        (WebKit::WebPage::windowFrameInUnflippedScreenCoordinates):
+        * WebProcess/WebPage/WebPage.messages.in:
+
 2013-04-12  Mikhail Pozdnyakov  <mikhail.pozdnyakov@intel.com>
 
         [WK2][EFL] WebView: Add callbacks to the WKViewClient to handle page viewport update

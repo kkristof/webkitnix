@@ -1895,11 +1895,11 @@ void DragCaretController::paintDragCaret(Frame* frame, GraphicsContext* p, const
 #endif
 }
 
-PassRefPtr<StylePropertySet> FrameSelection::copyTypingStyle() const
+PassRefPtr<MutableStylePropertySet> FrameSelection::copyTypingStyle() const
 {
     if (!m_typingStyle || !m_typingStyle->style())
         return 0;
-    return m_typingStyle->style()->copy();
+    return m_typingStyle->style()->mutableCopy();
 }
 
 bool FrameSelection::shouldDeleteSelection(const VisibleSelection& selection) const

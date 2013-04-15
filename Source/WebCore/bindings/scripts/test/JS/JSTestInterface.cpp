@@ -499,31 +499,17 @@ void JSTestInterfaceOwner::finalize(JSC::Handle<JSC::Unknown> handle, void* cont
     jsTestInterface->releaseImpl();
 }
 
-#if ENABLE(BINDING_INTEGRITY)
-#if PLATFORM(WIN)
-#pragma warning(disable: 4483)
-extern "C" { extern void (*const __identifier("??_7TestInterface@WebCore@@6B@")[])(); }
-#else
-extern "C" { extern void* _ZTVN7WebCore13TestInterfaceE[]; }
-#endif
-#endif
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, TestInterface* impl)
 {
     if (!impl)
         return jsNull();
     if (JSValue result = getExistingWrapper<JSTestInterface>(exec, impl)) return result;
-
-#if ENABLE(BINDING_INTEGRITY)
-    void* actualVTablePointer = *(reinterpret_cast<void**>(impl));
-#if PLATFORM(WIN)
-    void* expectedVTablePointer = reinterpret_cast<void*>(__identifier("??_7TestInterface@WebCore@@6B@"));
-#else
-    void* expectedVTablePointer = &_ZTVN7WebCore13TestInterfaceE[2];
 #if COMPILER(CLANG)
-    COMPILE_ASSERT(__is_polymorphic(TestInterface), TestInterface_is_not_polymorphic);
-#endif
-#endif
-    RELEASE_ASSERT(actualVTablePointer == expectedVTablePointer);
+    // If you hit this failure the interface definition has the ImplementationLacksVTable
+    // attribute. You should remove that attribute. If the class has subclasses
+    // that may be passed through this toJS() function you should use the SkipVTableValidation
+    // attribute to TestInterface.
+    COMPILE_ASSERT(!__is_polymorphic(TestInterface), TestInterface_is_polymorphic_but_idl_claims_not_to_be);
 #endif
     return createNewWrapper<JSTestInterface>(exec, globalObject, impl);
 }

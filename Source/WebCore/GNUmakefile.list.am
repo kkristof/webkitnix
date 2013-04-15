@@ -2677,6 +2677,8 @@ webcore_sources += \
 	Source/WebCore/css/DOMWindowCSS.cpp \
 	Source/WebCore/css/DOMWindowCSS.h \
 	Source/WebCore/css/DashboardRegion.h \
+	Source/WebCore/css/DeprecatedStyleBuilder.cpp \
+	Source/WebCore/css/DeprecatedStyleBuilder.h \
 	Source/WebCore/css/DocumentRuleSets.cpp \
 	Source/WebCore/css/DocumentRuleSets.h \
 	Source/WebCore/css/ElementRuleCollector.cpp \
@@ -2728,8 +2730,6 @@ webcore_sources += \
 	Source/WebCore/css/ShadowValue.cpp \
 	Source/WebCore/css/ShadowValue.h \
 	Source/WebCore/css/SiblingTraversalStrategies.h \
-	Source/WebCore/css/StyleBuilder.cpp \
-	Source/WebCore/css/StyleBuilder.h \
 	Source/WebCore/css/StyleInvalidationAnalysis.cpp \
 	Source/WebCore/css/StyleInvalidationAnalysis.h \
 	Source/WebCore/css/StyleMedia.cpp \
@@ -3785,6 +3785,8 @@ webcore_sources += \
 	Source/WebCore/html/track/TrackBase.h \
 	Source/WebCore/html/track/TrackEvent.cpp \
 	Source/WebCore/html/track/TrackEvent.h \
+	Source/WebCore/html/track/TrackListBase.cpp \
+	Source/WebCore/html/track/TrackListBase.h \
 	Source/WebCore/html/track/WebVTTElement.cpp \
 	Source/WebCore/html/track/WebVTTElement.h \
 	Source/WebCore/html/track/WebVTTParser.cpp \
@@ -6224,8 +6226,6 @@ platformgtk_sources += \
 	Source/WebCore/platform/gtk/GOwnPtrGtk.h \
 	Source/WebCore/platform/gtk/GRefPtrGtk.cpp \
 	Source/WebCore/platform/gtk/GRefPtrGtk.h \
-	Source/WebCore/platform/gtk/GtkAuthenticationDialog.cpp \
-	Source/WebCore/platform/gtk/GtkAuthenticationDialog.h \
 	Source/WebCore/platform/gtk/GtkClickCounter.cpp \
 	Source/WebCore/platform/gtk/GtkClickCounter.h \
 	Source/WebCore/platform/gtk/GtkInputMethodFilter.cpp \
@@ -6236,7 +6236,6 @@ platformgtk_sources += \
 	Source/WebCore/platform/gtk/GtkUtilities.h \
 	Source/WebCore/platform/gtk/GtkVersioning.c \
 	Source/WebCore/platform/gtk/GtkVersioning.h \
-	Source/WebCore/platform/gtk/KURLGtk.cpp \
 	Source/WebCore/platform/gtk/KeyBindingTranslator.cpp \
 	Source/WebCore/platform/gtk/KeyBindingTranslator.h \
 	Source/WebCore/platform/gtk/LanguageGtk.cpp \
@@ -6256,6 +6255,8 @@ platformgtk_sources += \
 	Source/WebCore/platform/gtk/TemporaryLinkStubs.cpp \
 	Source/WebCore/platform/gtk/UserAgentGtk.cpp \
 	Source/WebCore/platform/gtk/UserAgentGtk.h \
+	Source/WebCore/platform/gtk/WebKitAuthenticationWidget.cpp \
+	Source/WebCore/platform/gtk/WebKitAuthenticationWidget.h \
 	Source/WebCore/platform/audio/gtk/AudioBusGtk.cpp \
 	Source/WebCore/platform/graphics/gtk/ColorGtk.cpp \
 	Source/WebCore/platform/graphics/gtk/GdkCairoUtilities.cpp \

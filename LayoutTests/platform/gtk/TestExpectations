@@ -403,6 +403,7 @@ webkit.org/b/103771 media/track/track-in-band.html [ Failure ]
 webkit.org/b/103771 media/track/track-in-band-cues-added-once.html [ Timeout ]
 webkit.org/b/103771 media/track/track-in-band-style.html [ Timeout ]
 webkit.org/b/103771 media/track/track-in-band-legacy-api.html [ Failure ]
+webkit.org/b/103771 media/track/track-forced-subtitles-in-band.html [ Failure ]
 
 #Incorrect rebaseline
 webkit.org/b/107818 media/controls-styling.html [ Failure ]
@@ -1310,15 +1311,12 @@ webkit.org/b/108363 fullscreen/full-screen-iframe-legacy.html [ Failure ]
 
 # Spellchecker behavior tests.
 webkit.org/b/108370 editing/spelling/spelling-double-clicked-word.html [ Skip ]
-webkit.org/b/108370 editing/spelling/spelling-double-clicked-word-with-underscores.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-exactly-selected-multiple-words.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-exactly-selected-word.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-multiword-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-should-select-multiple-words.html [ Skip ]
-webkit.org/b/108370 editing/spelling/spelling-should-select-single-word.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-subword-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-with-punctuation-selection.html [ Skip ]
-webkit.org/b/108370 editing/spelling/spelling-with-underscore-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-with-whitespace-selection.html [ Skip ]
 webkit.org/b/108370 editing/spelling/spelling-changed-text.html [ Failure ]
 
@@ -1386,6 +1384,10 @@ webkit.org/b/114251 accessibility/svg-group-element-with-title.html [ Failure ]
 
 webkit.org/b/114259 platform/gtk/accessibility/aria-slider-required-attributes.html [ Failure ]
 webkit.org/b/114259 platform/gtk/accessibility/combo-box-collapsed-selection-changed.html [ Failure ]
+
+webkit.org/b/114625 fast/loader/willsendrequest-returns-null-for-memory-cache-load.html [ Failure ]
+
+webkit.org/b/114626 accessibility/link-inside-button-accessible-text.html [ Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Tests failing

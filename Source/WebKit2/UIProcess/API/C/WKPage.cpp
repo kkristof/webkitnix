@@ -902,3 +902,10 @@ bool WKPageGetOverridePrivateBrowsingEnabled(WKPageRef pageRef)
 {
     return toImpl(pageRef)->overridePrivateBrowsingEnabled();
 }
+
+void WKPageSelectContextMenuItem(WKPageRef page, WKContextMenuItemRef item)
+{
+#if ENABLE(CONTEXT_MENUS)
+    toImpl(page)->contextMenuItemSelected(*(toImpl(item)->data()));
+#endif
+}

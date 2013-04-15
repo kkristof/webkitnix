@@ -304,7 +304,7 @@ StyleRule::StyleRule(int sourceLine)
 
 StyleRule::StyleRule(const StyleRule& o)
     : StyleRuleBase(o)
-    , m_properties(o.m_properties->copy())
+    , m_properties(o.m_properties->mutableCopy())
     , m_selectorList(o.m_selectorList)
 {
 }
@@ -313,11 +313,11 @@ StyleRule::~StyleRule()
 {
 }
 
-StylePropertySet* StyleRule::mutableProperties()
+MutableStylePropertySet* StyleRule::mutableProperties()
 {
     if (!m_properties->isMutable())
-        m_properties = m_properties->copy();
-    return m_properties.get();
+        m_properties = m_properties->mutableCopy();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRule::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -332,7 +332,7 @@ StyleRulePage::StyleRulePage()
 
 StyleRulePage::StyleRulePage(const StyleRulePage& o)
     : StyleRuleBase(o)
-    , m_properties(o.m_properties->copy())
+    , m_properties(o.m_properties->mutableCopy())
     , m_selectorList(o.m_selectorList)
 {
 }
@@ -341,11 +341,11 @@ StyleRulePage::~StyleRulePage()
 {
 }
 
-StylePropertySet* StyleRulePage::mutableProperties()
+MutableStylePropertySet* StyleRulePage::mutableProperties()
 {
     if (!m_properties->isMutable())
-        m_properties = m_properties->copy();
-    return m_properties.get();
+        m_properties = m_properties->mutableCopy();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRulePage::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -367,7 +367,7 @@ StyleRuleFontFace::StyleRuleFontFace()
 
 StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& o)
     : StyleRuleBase(o)
-    , m_properties(o.m_properties->copy())
+    , m_properties(o.m_properties->mutableCopy())
 {
 }
 
@@ -375,11 +375,11 @@ StyleRuleFontFace::~StyleRuleFontFace()
 {
 }
 
-StylePropertySet* StyleRuleFontFace::mutableProperties()
+MutableStylePropertySet* StyleRuleFontFace::mutableProperties()
 {
     if (!m_properties->isMutable())
-        m_properties = m_properties->copy();
-    return m_properties.get();
+        m_properties = m_properties->mutableCopy();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -486,7 +486,7 @@ StyleRuleViewport::StyleRuleViewport()
 
 StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& o)
     : StyleRuleBase(o)
-    , m_properties(o.m_properties->copy())
+    , m_properties(o.m_properties->mutableCopy())
 {
 }
 
@@ -494,11 +494,11 @@ StyleRuleViewport::~StyleRuleViewport()
 {
 }
 
-StylePropertySet* StyleRuleViewport::mutableProperties()
+MutableStylePropertySet* StyleRuleViewport::mutableProperties()
 {
     if (!m_properties->isMutable())
-        m_properties = m_properties->copy();
-    return m_properties.get();
+        m_properties = m_properties->mutableCopy();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleViewport::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -523,7 +523,7 @@ StyleRuleFilter::StyleRuleFilter(const String& filterName)
 StyleRuleFilter::StyleRuleFilter(const StyleRuleFilter& o)
     : StyleRuleBase(o)
     , m_filterName(o.m_filterName)
-    , m_properties(o.m_properties->copy())
+    , m_properties(o.m_properties->mutableCopy())
 {
 }
 
@@ -531,11 +531,11 @@ StyleRuleFilter::~StyleRuleFilter()
 {
 }
 
-StylePropertySet* StyleRuleFilter::mutableProperties()
+MutableStylePropertySet* StyleRuleFilter::mutableProperties()
 {
     if (!m_properties->isMutable())
-        m_properties = m_properties->copy();
-    return m_properties.get();
+        m_properties = m_properties->mutableCopy();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleFilter::setProperties(PassRefPtr<StylePropertySet> properties)

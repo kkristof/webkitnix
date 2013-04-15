@@ -32,6 +32,7 @@
 #include "ExceptionCodePlaceholder.h"
 #include "NodeList.h"
 #include <wtf/ArrayBuffer.h>
+#include <wtf/Float32Array.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -57,6 +58,7 @@ class ShadowRoot;
 class WebKitPoint;
 class MallocStatistics;
 class SerializedScriptValue;
+class TimeRanges;
 class TypeConversions;
 
 typedef int ExceptionCode;
@@ -201,6 +203,11 @@ public:
     bool hasGrammarMarker(Document*, int from, int length, ExceptionCode&);
     bool hasAutocorrectedMarker(Document*, int from, int length, ExceptionCode&);
     void setContinuousSpellCheckingEnabled(bool enabled, ExceptionCode&);
+    void setAutomaticQuoteSubstitutionEnabled(bool enabled, ExceptionCode&);
+    void setAutomaticLinkDetectionEnabled(bool enabled, ExceptionCode&);
+    void setAutomaticDashSubstitutionEnabled(bool enabled, ExceptionCode&);
+    void setAutomaticTextReplacementEnabled(bool enabled, ExceptionCode&);
+    void setAutomaticSpellingCorrectionEnabled(bool enabled, ExceptionCode&);
 
     bool isOverwriteModeEnabled(Document*, ExceptionCode&);
     void toggleOverwriteModeEnabled(Document*, ExceptionCode&);
@@ -313,6 +320,13 @@ public:
 
     String captionsStyleSheetOverride(ExceptionCode&);
     void setCaptionsStyleSheetOverride(const String&, ExceptionCode&);
+    void setPrimaryAudioTrackLanguageOverride(const String&, ExceptionCode&);
+    void setCaptionDisplayMode(const String&, ExceptionCode&);
+
+#if ENABLE(VIDEO)
+    PassRefPtr<TimeRanges> createTimeRanges(Float32Array* startTimes, Float32Array* endTimes);
+    double closestTimeToTimeRanges(double time, TimeRanges*);
+#endif
 
 private:
     explicit Internals(Document*);

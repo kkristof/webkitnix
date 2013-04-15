@@ -46,8 +46,8 @@ public:
     void customContextMenuItemSelected(WebPageProxy*, const WebContextMenuItemData&);
     void contextMenuItemSelected(WebPageProxy*, const WebContextMenuItemData&);
     void contextMenuDismissed(WebPageProxy*);
-    void showContextMenu(WebPageProxy*, const WebCore::IntPoint&, const Vector<WebContextMenuItemData>&);
-    void hideContextMenu(WebPageProxy*);
+    bool showContextMenu(WebPageProxy*, const WebCore::IntPoint&, const Vector<WebContextMenuItemData>&);
+    bool hideContextMenu(WebPageProxy*);
 };
 
 } // namespace WebKit

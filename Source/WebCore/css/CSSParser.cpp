@@ -535,7 +535,7 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseColorValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static bool parseColorValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool strict = isStrictParserMode(cssParserMode);
@@ -633,7 +633,7 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned& 
     return ok;
 }
 
-static bool parseSimpleLengthValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool acceptsNegativeNumbers;
@@ -1189,7 +1189,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseKeywordValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, const CSSParserContext& parserContext)
+static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, const CSSParserContext& parserContext)
 {
     ASSERT(!string.isEmpty());
 
@@ -1246,7 +1246,7 @@ static bool parseTransformArguments(WebKitCSSTransformValue* transformValue, Cha
     return true;
 }
 
-static bool parseTranslateTransformValue(StylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+static bool parseTranslateTransformValue(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
 {
     if (propertyID != CSSPropertyWebkitTransform)
         return false;
@@ -1297,14 +1297,14 @@ PassRefPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& strin
 {
     if (string.isEmpty())
         return 0;
-    RefPtr<StylePropertySet> dummyStyle = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
     if (!parseValue(dummyStyle.get(), CSSPropertyFontFamily, string, false, CSSQuirksMode, 0))
         return 0;
     return static_pointer_cast<CSSValueList>(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily));
 }
 
 #if ENABLE(CSS_VARIABLES)
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, Document* document)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, Document* document)
 {
     ASSERT(!string.isEmpty());
 
@@ -1322,7 +1322,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
 }
 #endif
 
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
 {
     ASSERT(!string.isEmpty());
     if (parseSimpleLengthValue(declaration, propertyID, string, important, cssParserMode))
@@ -1345,7 +1345,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     return parser.parseValue(declaration, propertyID, string, important, contextStyleSheet);
 }
 
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
 {
     setStyleSheet(contextStyleSheet);
 
@@ -1431,14 +1431,14 @@ void CSSParser::parseSelector(const String& string, CSSSelectorList& selectorLis
     m_selectorListForParseSelector = 0;
 }
 
-PassRefPtr<StylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
+PassRefPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
     CSSParserContext context = element->document()->elementSheet()->contents()->parserContext();
     context.mode = strictToCSSParserMode(element->isHTMLElement() && !element->document()->inQuirksMode());
     return CSSParser(context).parseDeclaration(string, element->document()->elementSheet()->contents());
 }
 
-PassRefPtr<StylePropertySet> CSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
+PassRefPtr<ImmutableStylePropertySet> CSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
 {
     setStyleSheet(contextStyleSheet);
 
@@ -1449,13 +1449,13 @@ PassRefPtr<StylePropertySet> CSSParser::parseDeclaration(const String& string, S
     if (m_hasFontFaceOnlyValues)
         deleteFontFaceOnlyValues();
 
-    RefPtr<StylePropertySet> style = createStylePropertySet();
+    RefPtr<ImmutableStylePropertySet> style = createStylePropertySet();
     clearProperties();
     return style.release();
 }
 
 
-bool CSSParser::parseDeclaration(StylePropertySet* declaration, const String& string, PassRefPtr<CSSRuleSourceData> prpRuleSourceData, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const String& string, PassRefPtr<CSSRuleSourceData> prpRuleSourceData, StyleSheetContents* contextStyleSheet)
 {
     // Length of the "@-webkit-decls{" prefix.
     static const unsigned prefixLength = 15;
@@ -1542,7 +1542,7 @@ static inline void filterProperties(bool important, const CSSParser::ParsedPrope
     }
 }
 
-PassRefPtr<StylePropertySet> CSSParser::createStylePropertySet()
+PassRefPtr<ImmutableStylePropertySet> CSSParser::createStylePropertySet()
 {
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = m_parsedProperties.size();
@@ -1560,7 +1560,7 @@ PassRefPtr<StylePropertySet> CSSParser::createStylePropertySet()
     if (unusedEntries)
         results.remove(0, unusedEntries);
 
-    return StylePropertySet::createImmutable(results.data(), results.size(), m_context.mode);
+    return ImmutableStylePropertySet::create(results.data(), results.size(), m_context.mode);
 }
 
 void CSSParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassRefPtr<CSSValue> value, bool important, bool implicit)
@@ -9413,46 +9413,40 @@ bool CSSParser::parseTextEmphasisStyle(bool important)
 
 PassRefPtr<CSSValue> CSSParser::parseTextIndent()
 {
+    // <length> | <percentage> | inherit  when CSS3_TEXT is disabled.
+    // [ <length> | <percentage> ] && [ -webkit-hanging || -webkit-each-line ]? | inherit  when CSS3_TEXT is enabled.
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-
-    // <length> | <percentage> | inherit
-    if (m_valueList->size() == 1) {
-        CSSParserValue* value = m_valueList->current();
-        if (!value->id && validUnit(value, FLength | FPercent)) {
-            list->append(createPrimitiveNumericValue(value));
-            m_valueList->next();
-            return list.release();
-        }
-    }
-
+    bool hasLengthOrPercentage = false;
 #if ENABLE(CSS3_TEXT)
-    // The case where text-indent has only <length>(or <percentage>) value
-    // is handled above if statement even though CSS3_TEXT is enabled.
-
-    // [ [ <length> | <percentage> ] && -webkit-each-line ] | inherit
-    if (m_valueList->size() != 2)
-        return 0;
-
-    CSSParserValue* firstValue = m_valueList->current();
-    CSSParserValue* secondValue = m_valueList->next();
-    CSSParserValue* lengthOrPercentageValue = 0;
-
-    // [ <length> | <percentage> ] -webkit-each-line
-    if (validUnit(firstValue, FLength | FPercent) && secondValue->id == CSSValueWebkitEachLine)
-        lengthOrPercentageValue = firstValue;
-    // -webkit-each-line [ <length> | <percentage> ]
-    else if (firstValue->id == CSSValueWebkitEachLine && validUnit(secondValue, FLength | FPercent))
-        lengthOrPercentageValue = secondValue;
-
-    if (lengthOrPercentageValue) {
-        list->append(createPrimitiveNumericValue(lengthOrPercentageValue));
-        list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
-        m_valueList->next();
-        return list.release();
-    }
+    bool hasEachLine = false;
+    bool hasHanging = false;
 #endif
 
-    return 0;
+    CSSParserValue* value = m_valueList->current();
+    while (value) {
+        if (!hasLengthOrPercentage && validUnit(value, FLength | FPercent)) {
+            list->append(createPrimitiveNumericValue(value));
+            hasLengthOrPercentage = true;
+        }
+#if ENABLE(CSS3_TEXT)
+        else if (!hasEachLine && value->id == CSSValueWebkitEachLine) {
+            list->append(cssValuePool().createIdentifierValue(CSSValueWebkitEachLine));
+            hasEachLine = true;
+        } else if (!hasHanging && value->id == CSSValueWebkitHanging) {
+            list->append(cssValuePool().createIdentifierValue(CSSValueWebkitHanging));
+            hasHanging = true;
+        }
+#endif
+        else
+            return 0;
+
+        value = m_valueList->next();
+    }
+
+    if (!hasLengthOrPercentage)
+        return 0;
+
+    return list.release();
 }
 
 bool CSSParser::parseLineBoxContain(bool important)

@@ -350,6 +350,14 @@ static bool shouldAddBorderPaddingMargin(RenderObject* child, bool &checkSide)
     return checkSide;
 }
 
+static RenderObject* previousInFlowSibling(RenderObject* child)
+{
+    child = child->previousSibling();
+    while (child && child->isOutOfFlowPositioned())
+        child = child->previousSibling();
+    return child;
+}
+
 static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, bool end = true)
 {
     unsigned lineDepth = 1;
@@ -358,7 +366,7 @@ static LayoutUnit inlineLogicalWidth(RenderObject* child, bool start = true, boo
     while (parent->isRenderInline() && lineDepth++ < cMaxLineDepth) {
         RenderInline* parentAsRenderInline = toRenderInline(parent);
         if (!isEmptyInline(parentAsRenderInline)) {
-            if (start && shouldAddBorderPaddingMargin(child->previousSibling(), start))
+            if (start && shouldAddBorderPaddingMargin(previousInFlowSibling(child), start))
                 extraWidth += borderPaddingMarginStart(parentAsRenderInline);
             if (end && shouldAddBorderPaddingMargin(child->nextSibling(), end))
                 extraWidth += borderPaddingMarginEnd(parentAsRenderInline);
@@ -864,7 +872,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
             lastEndOffset = wordMeasurement.endOffset;
             if (kerningIsEnabled && lastEndOffset == run->m_stop) {
                 int wordLength = lastEndOffset - wordMeasurement.startOffset;
-                measuredWidth += renderer->width(wordMeasurement.startOffset, wordLength, xPos, lineInfo.isFirstLine());
+                measuredWidth += renderer->width(wordMeasurement.startOffset, wordLength, xPos + measuredWidth, lineInfo.isFirstLine());
                 if (i > 0 && wordLength == 1 && renderer->characterAt(wordMeasurement.startOffset) == ' ')
                     measuredWidth += renderer->style()->wordSpacing();
             } else
@@ -3215,10 +3223,9 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 RenderText* nextText = toRenderText(next);
                 if (nextText->textLength()) {
                     UChar c = nextText->characterAt(0);
-                    // If the next item on the line is text, and if we did not end with
-                    // a space, then the next text run continues our word (and so it needs to
-                    // keep adding to the uncommitted width. Just update and continue.
-                    checkForBreak = !currentCharacterIsSpace && (c == ' ' || c == '\t' || (c == '\n' && !next->preservesNewline()));
+                    // If we allow whitespace collapsing, 'word  ' and 'word' are equivalent before a whitespace
+                    // character, so treat both as a potential linebreak.
+                    checkForBreak = (ignoringSpaces || !currentCharacterIsSpace) && (c == ' ' || c == '\t' || (c == '\n' && !next->preservesNewline()));
                 } else if (nextText->isWordBreak())
                     checkForBreak = true;
 

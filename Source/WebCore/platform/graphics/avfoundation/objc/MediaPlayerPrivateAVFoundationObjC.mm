@@ -49,6 +49,8 @@
 #import <wtf/Uint8Array.h>
 #import <wtf/Uint16Array.h>
 #import <wtf/Uint32Array.h>
+#import <wtf/CurrentTime.h>
+#import <wtf/text/CString.h>
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
@@ -578,10 +580,7 @@ float MediaPlayerPrivateAVFoundationObjC::platformDuration() const
         return narrowPrecisionToFloat(CMTimeGetSeconds(cmDuration));
 
     if (CMTIME_IS_INDEFINITE(cmDuration)) {
-        if (![[m_avAsset.get() tracks] count])
-            return 0;
-        else
-            return numeric_limits<float>::infinity();
+        return numeric_limits<float>::infinity();
     }
 
     LOG(Media, "MediaPlayerPrivateAVFoundationObjC::platformDuration(%p) - invalid duration, returning %.0f", this, MediaPlayer::invalidTime());
@@ -601,7 +600,7 @@ float MediaPlayerPrivateAVFoundationObjC::currentTime() const
     return 0;
 }
 
-void MediaPlayerPrivateAVFoundationObjC::seekToTime(float time)
+void MediaPlayerPrivateAVFoundationObjC::seekToTime(double time)
 {
     // setCurrentTime generates several event callbacks, update afterwards.
     setDelayCallbacks(true);
@@ -669,23 +668,44 @@ PassRefPtr<TimeRanges> MediaPlayerPrivateAVFoundationObjC::platformBufferedTimeR
     return timeRanges.release();
 }
 
-float MediaPlayerPrivateAVFoundationObjC::platformMaxTimeSeekable() const
+double MediaPlayerPrivateAVFoundationObjC::platformMinTimeSeekable() const
+{
+    NSArray *seekableRanges = [m_avPlayerItem.get() seekableTimeRanges];
+    if (!seekableRanges || ![seekableRanges count])
+        return 0;
+
+    double minTimeSeekable = std::numeric_limits<double>::infinity();
+    bool hasValidRange = false;
+    for (NSValue *thisRangeValue in seekableRanges) {
+        CMTimeRange timeRange = [thisRangeValue CMTimeRangeValue];
+        if (!CMTIMERANGE_IS_VALID(timeRange) || CMTIMERANGE_IS_EMPTY(timeRange))
+            continue;
+
+        hasValidRange = true;
+        double startOfRange = CMTimeGetSeconds(timeRange.start);
+        if (minTimeSeekable > startOfRange)
+            minTimeSeekable = startOfRange;
+    }
+    return hasValidRange ? minTimeSeekable : 0;
+}
+
+double MediaPlayerPrivateAVFoundationObjC::platformMaxTimeSeekable() const
 {
     NSArray *seekableRanges = [m_avPlayerItem.get() seekableTimeRanges];
     if (!seekableRanges)
         return 0;
 
-    float maxTimeSeekable = 0;
+    double maxTimeSeekable = 0;
     for (NSValue *thisRangeValue in seekableRanges) {
         CMTimeRange timeRange = [thisRangeValue CMTimeRangeValue];
         if (!CMTIMERANGE_IS_VALID(timeRange) || CMTIMERANGE_IS_EMPTY(timeRange))
             continue;
         
-        float endOfRange = narrowPrecisionToFloat(CMTimeGetSeconds(CMTimeRangeGetEnd(timeRange)));
+        double endOfRange = CMTimeGetSeconds(CMTimeRangeGetEnd(timeRange));
         if (maxTimeSeekable < endOfRange)
             maxTimeSeekable = endOfRange;
     }
-    return maxTimeSeekable;   
+    return maxTimeSeekable;
 }
 
 float MediaPlayerPrivateAVFoundationObjC::platformMaxTimeLoaded() const
@@ -1331,9 +1351,6 @@ void MediaPlayerPrivateAVFoundationObjC::processTextTracks()
         if (!newTrack)
             continue;
 
-        if ([[option mediaType] isEqualToString:AVMediaTypeSubtitle] && [option hasMediaCharacteristic:AVMediaCharacteristicContainsOnlyForcedSubtitles])
-            continue;
-
         m_textTracks.append(InbandTextTrackPrivateAVFObjC::create(this, option));
     }
 
@@ -1404,6 +1421,8 @@ String MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack() const
     AVMediaSelectionOptionType *currentlySelectedAudibleOption = [m_avPlayerItem.get() selectedMediaOptionInMediaSelectionGroup:audibleGroup];
     if (currentlySelectedAudibleOption) {
         m_languageOfPrimaryAudioTrack = [[currentlySelectedAudibleOption locale] localeIdentifier];
+        LOG(Media, "MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack(%p) - returning language of selected audible option: %s", this, m_languageOfPrimaryAudioTrack.utf8().data());
+
         return m_languageOfPrimaryAudioTrack;
     }
 #endif // HAVE(AVFOUNDATION_TEXT_TRACK_SUPPORT)
@@ -1413,6 +1432,7 @@ String MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack() const
     NSArray *tracks = [m_avAsset.get() tracksWithMediaType:AVMediaTypeAudio];
     if (!tracks || [tracks count] != 1) {
         m_languageOfPrimaryAudioTrack = emptyString();
+        LOG(Media, "MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack(%p) - %i audio tracks, returning emptyString()", this, (tracks ? [tracks count] : 0));
         return m_languageOfPrimaryAudioTrack;
     }
 
@@ -1422,13 +1442,15 @@ String MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack() const
     // Some legacy tracks have "und" as a language, treat that the same as no language at all.
     if (language && ![language isEqualToString:@"und"]) {
         m_languageOfPrimaryAudioTrack = language;
+        LOG(Media, "MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack(%p) - returning language of single audio track: %s", this, m_languageOfPrimaryAudioTrack.utf8().data());
         return m_languageOfPrimaryAudioTrack;
     }
 
+    LOG(Media, "MediaPlayerPrivateAVFoundationObjC::languageOfPrimaryAudioTrack(%p) - single audio track has no language, returning emptyString()", this);
     m_languageOfPrimaryAudioTrack = emptyString();
     return m_languageOfPrimaryAudioTrack;
 }
-    
+
 NSArray* assetMetadataKeyNames()
 {
     static NSArray* keys;

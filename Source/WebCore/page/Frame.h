@@ -37,7 +37,6 @@
 #include "FrameSelection.h"
 #include "FrameTree.h"
 #include "NavigationScheduler.h"
-#include "ScriptController.h"
 #include "UserScriptTypes.h"
 
 #if PLATFORM(WIN)
@@ -69,6 +68,7 @@ namespace WebCore {
     class RegularExpression;
     class RenderPart;
     class TiledBackingStore;
+    class ScriptController;
 
 #if !USE(TILED_BACKING_STORE)
     class TiledBackingStoreClient { };
@@ -190,12 +190,6 @@ namespace WebCore {
         String searchForLabelsBeforeElement(const Vector<String>& labels, Element*, size_t* resultDistance, bool* resultIsInCellAbove);
         String matchLabelsAgainstElement(const Vector<String>& labels, Element*);
 
-#if PLATFORM(MAC)
-        NSImage* selectionImage(bool forceBlackText = false) const;
-        NSImage* rangeImage(Range*, bool forceBlackText = false) const;
-        NSImage* snapshotDragImage(Node*, NSRect* imageRect, NSRect* elementRect) const;
-        NSImage* imageFromRect(NSRect) const;
-#endif
         void suspendActiveDOMObjectsAndAnimations();
         void resumeActiveDOMObjectsAndAnimations();
         bool activeDOMObjectsAndAnimationsSuspended() const { return m_activeDOMObjectsAndAnimationsSuspendedCount > 0; }
@@ -223,7 +217,7 @@ namespace WebCore {
         RefPtr<FrameView> m_view;
         RefPtr<Document> m_doc;
 
-        ScriptController m_script;
+        OwnPtr<ScriptController> m_script;
 
         mutable Editor m_editor;
         mutable FrameSelection m_selection;
@@ -283,7 +277,7 @@ namespace WebCore {
 
     inline ScriptController* Frame::script()
     {
-        return &m_script;
+        return m_script.get();
     }
 
     inline Document* Frame::document() const
