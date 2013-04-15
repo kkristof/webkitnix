@@ -1045,7 +1045,7 @@ static bool selectContextMenuItemAtIndex(const WKPageRef page, const WKArrayRef 
     for (size_t i = 0; i < size; ++i) {
         const WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
         if (counter == index) {
-            WKPageContextMenuItemSelected(page, item);
+            WKPageSelectContextMenuItem(page, item);
             return true;
         }
         if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSubmenu) {

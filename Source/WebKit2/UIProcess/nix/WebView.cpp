@@ -275,7 +275,7 @@ void WebView::commitViewportChanges()
     if (!drawingArea)
         return;
 
-    drawingArea->setSize(m_size, IntSize());
+    drawingArea->setSize(m_size, IntSize(), IntSize(m_scrollPosition.x(), m_scrollPosition.y()));
     drawingArea->setVisibleContentsRect(visibleRect(), FloatPoint());
 }
 
