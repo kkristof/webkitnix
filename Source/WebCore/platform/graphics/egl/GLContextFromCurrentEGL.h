@@ -42,6 +42,7 @@ public:
     // These are not used by Nix.
     virtual void swapBuffers() { }
     virtual IntSize defaultFrameBufferSize() { return IntSize(); }
+    virtual cairo_device_t* cairoDevice() { return 0; }
 
     // TODO: This is not used in GLContext interface, it's used by
     // GLContextGLX only as an implementation detail.
