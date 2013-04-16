@@ -46,6 +46,8 @@
 #include <cstring>
 #include <glib.h>
 #include <string>
+#include <iostream>
+#include <climits>
 
 #include <wtf/Platform.h>
 #include <wtf/UnusedParam.h>
@@ -60,6 +62,8 @@ extern "C" {
 static gboolean callUpdateDisplay(gpointer);
 extern void glUseProgram(GLuint);
 }
+
+using namespace std;
 
 class MiniBrowser : public LinuxWindowClient, public GestureRecognizerClient {
 public:
@@ -644,10 +648,10 @@ void MiniBrowser::viewNeedsDisplay(NIXView, WKRect area, const void* clientInfo)
     mb->scheduleUpdateDisplay();
 }
 
-std::string createStdStringFromWKString(WKStringRef wkStr)
+string createStdStringFromWKString(WKStringRef wkStr)
 {
     size_t wkStrSize = WKStringGetMaximumUTF8CStringSize(wkStr);
-    std::string result;
+    string result;
     result.resize(wkStrSize + 1);
     size_t realSize = WKStringGetUTF8CString(wkStr, &result[0], result.length());
     if (realSize > 0)
@@ -658,15 +662,15 @@ std::string createStdStringFromWKString(WKStringRef wkStr)
 void MiniBrowser::webProcessCrashed(NIXView, WKStringRef url, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
-    std::string urlString = createStdStringFromWKString(url);
-    fprintf(stderr, "The web process has crashed on '%s'.\n", urlString.c_str());
+    const string urlString = createStdStringFromWKString(url);
+    cerr << "The web process has crashed on '" << urlString << "', reloading page...\n";
     WKPageLoadURL(mb->pageRef(), WKURLCreateWithUTF8CString(urlString.c_str()));
 }
 
 void MiniBrowser::webProcessRelaunched(NIXView, const void* clientInfo)
 {
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
-    fprintf(stdout, "The web process has been restarted.\n");
+    cout << "The web process has been restarted.\n";
     mb->scheduleUpdateDisplay();
 }
 
@@ -955,16 +959,11 @@ static void printPopupMenuItem(const WKPopupItemRef item, const int optionIndex,
         return;
     }
 
-    const size_t titleBufferSize = WKStringGetMaximumUTF8CStringSize(title);
-    char* titleBuffer = new char[titleBufferSize];
-    WKStringGetUTF8CString(title, titleBuffer, titleBufferSize);
-
     // No tabs for level 0.
     for (int i = 0; i < level; ++i)
-        printf("\t");
+        cout << "\t";
 
-    printf("%d- %s\n", optionIndex, titleBuffer);
-    delete[] titleBuffer;
+    cout << optionIndex << "- " << createStdStringFromWKString(title) << endl;
     WKRelease(title);
 }
 
@@ -974,7 +973,7 @@ static int renderPopupMenu(const WKArrayRef menuItems, int& optionIndex, const i
     for (size_t i = 0; i < size; ++i) {
         const WKPopupItemRef item = static_cast<WKPopupItemRef>(WKArrayGetItemAtIndex(menuItems, i));
         if (WKPopupItemGetType(item) == kWKPopupItemTypeSeparator)
-            printf("--------------------\n");
+            cout << "--------------------\n";
         else
             printPopupMenuItem(item, optionIndex++, level);
     }
@@ -984,16 +983,16 @@ static int renderPopupMenu(const WKArrayRef menuItems, int& optionIndex, const i
 void MiniBrowser::showPopupMenu(WKPageRef page, WKPopupMenuListenerRef menuListenerRef, WKRect rect, WKPopupItemTextDirection textDirection, double pageScaleFactor, WKArrayRef itemsRef, int32_t selectedIndex, const void* clientInfo)
 {
     // FIXME: we should have a GUI popup menu at some point.
-    printf("\n# POPUP MENU #\n");
+    cout << "\n# POPUP MENU #\n";
 
     int optionIndex = 1;
-    printf("--------------------\n");
+    cout << "--------------------\n";
     const int itemsCounter = renderPopupMenu(itemsRef, optionIndex);
-    printf("--------------------\n");
+    cout << "--------------------\n";
 
     int option = 0;
-    printf("Popup Menu option (0 for none): ");
-    scanf("%d", &option);
+    cout << "Popup Menu option (0 for none): ";
+    cin >> option;
     if (option > 0 && option <= itemsCounter) {
         if (WKPopupItemIsLabel(static_cast<WKPopupItemRef>(WKArrayGetItemAtIndex(itemsRef, option - 1))))
             option = selectedIndex + 1;
@@ -1015,9 +1014,9 @@ static void printContextMenuItem(const WKContextMenuItemRef item, const int opti
 
     // No tabs for level 0.
     for (int i = 0; i < level; ++i)
-        printf("\t");
+        cout << "\t";
 
-    printf("%d- %s\n", optionIndex, titleBuffer.c_str());
+    cout << optionIndex << "- " << titleBuffer << endl;
     WKRelease(title);
 }
 
@@ -1027,7 +1026,7 @@ static int renderContextMenu(const WKArrayRef menuItems, int& optionIndex, const
     for (size_t i = 0; i < size; ++i) {
         const WKContextMenuItemRef item = static_cast<WKContextMenuItemRef>(WKArrayGetItemAtIndex(menuItems, i));
         if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSeparator)
-            printf("--------------------\n");
+            cout << "--------------------" << endl;
         else if (WKContextMenuItemGetType(item) == kWKContextMenuItemTypeSubmenu) {
             printContextMenuItem(item, optionIndex++, level);
             const WKArrayRef subMenu = WKContextMenuCopySubmenuItems(item);
@@ -1059,16 +1058,16 @@ static bool selectContextMenuItemAtIndex(const WKPageRef page, const WKArrayRef 
 void MiniBrowser::showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayRef menuItems, const void*)
 {
     // FIXME: we should have a GUI context menu at some point.
-    printf("\n# CONTEXT MENU #\n");
+    cout << "\n# CONTEXT MENU #\n";
 
     int optionIndex = 1;
-    printf("--------------------\n");
+    cout << "--------------------\n";
     const int itemsCounter = renderContextMenu(menuItems, optionIndex);
-    printf("--------------------\n");
+    cout << "--------------------\n";
 
     int option = 0;
-    printf("Context Menu option (0 for none): ");
-    scanf("%d",&option);
+    cout << "Context Menu option (0 for none): ";
+    cin >> option;
     if (option > 0 && option <= itemsCounter)
         selectContextMenuItemAtIndex(page, menuItems, option - 1);
 }
@@ -1076,43 +1075,28 @@ void MiniBrowser::showContextMenu(WKPageRef page, WKPoint menuLocation, WKArrayR
 void MiniBrowser::runJavaScriptAlert(WKPageRef, WKStringRef message, WKFrameRef, const void*)
 {
     std::string messageString = createStdStringFromWKString(message);
-    printf(RED "[js:alert] %s" NOCOLOR "\n", messageString.c_str());
+    cout << RED "[js:alert] " << messageString << NOCOLOR "\n";
 }
 
 bool MiniBrowser::runJavaScriptConfirm(WKPageRef, WKStringRef message, WKFrameRef, const void*)
 {
     std::string messageString = createStdStringFromWKString(message);
-    printf(GREEN "[js:confirm] %s" NOCOLOR "\n> ", messageString.c_str());
+    cout << GREEN "[js:confirm] " << messageString << NOCOLOR "\n> ";
 
     char option;
-    scanf(" %c", &option);
-    bool ret = (option == 'y' || option == 'Y');
-
-    return ret;
+    cin >> option;
+    return option == 'y' || option == 'Y';
 }
 
 WKStringRef MiniBrowser::runJavaScriptPrompt(WKPageRef, WKStringRef message, WKStringRef defaultValue, WKFrameRef, const void*)
 {
     std::string messageString = createStdStringFromWKString(message);
     std::string defaultString = createStdStringFromWKString(defaultValue);
-    printf(YELLOW "[js:prompt] %s [default: '%s']" NOCOLOR "\n> ", messageString.c_str(), defaultString.c_str());
+    cout << YELLOW "[js:prompt] " << messageString << " [default: '" << defaultString << "']" NOCOLOR "\n> ";
 
-    int size = 256;
-    char* userInput = new char[size + 1];
-    scanf(" %c", userInput);
-    for (int i = 1; i < size; ++i) {
-        scanf("%c", &userInput[i]);
-        if (userInput[i] == '\n') {
-            userInput[i] = '\0';
-            break;
-        }
-    }
-    userInput[size] = '\0';
-
-    WKStringRef ret = WKStringCreateWithUTF8CString(userInput);
-
-    delete[] userInput;
-    return ret;
+    std::string userInput;
+    getline(cin, userInput);
+    return WKStringCreateWithUTF8CString(userInput.c_str());
 }
 
 int main(int argc, char* argv[])
@@ -1121,7 +1105,7 @@ int main(int argc, char* argv[])
     if (!options.parse(argc, argv))
         return 1;
 
-    printf("MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n");
+    cout << "MiniBrowser: Use Alt + Left and Alt + Right to navigate back and forward. Use F5 to reload.\n";
 
     GMainLoop* mainLoop = g_main_loop_new(0, false);
     MiniBrowser browser(mainLoop, options);
