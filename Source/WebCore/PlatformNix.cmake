@@ -29,7 +29,6 @@ list(APPEND WebCore_SOURCES
     platform/nix/ErrorsNix.cpp
     platform/gtk/EventLoopGtk.cpp
     platform/gtk/FileSystemGtk.cpp
-    platform/nix/KURLNix.cpp
     platform/nix/LanguageNix.cpp
     platform/nix/LocalizedStringsNix.cpp
     platform/gtk/LoggingGtk.cpp
