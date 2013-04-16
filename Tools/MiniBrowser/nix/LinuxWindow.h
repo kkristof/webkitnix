@@ -27,7 +27,8 @@
 #define LinuxWindow_h
 
 #include "XlibEventSource.h"
-#include <WebKit2/WKGeometry.h>
+#include "WebKit2/WKGeometry.h"
+
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <utility>

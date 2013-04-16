@@ -25,7 +25,7 @@
 
 #include "XlibEventSource.h"
 
-#include "assert.h"
+#include <cassert>
 
 struct WrappedGSource {
     GSource source;

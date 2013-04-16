@@ -26,8 +26,8 @@
 #ifndef TouchMocker_h
 #define TouchMocker_h
 
-#include <NIXEvents.h>
-#include <NIXView.h>
+#include "NIXEvents.h"
+#include "NIXView.h"
 #include <map>
 
 struct MockedTouchPoint : public NIXTouchPoint {
