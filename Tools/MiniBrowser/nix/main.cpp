@@ -283,7 +283,9 @@ MiniBrowser::MiniBrowser(GMainLoop* mainLoop, const Options& options)
 
     WKPageSetPageUIClient(pageRef(), &uiClient);
 
-    WKPageLoadURL(pageRef(), WKURLCreateWithUTF8CString(options.url.c_str()));
+    WKURLRef wkUrl = WKURLCreateWithUTF8CString(options.url.c_str());
+    WKPageLoadURL(pageRef(), wkUrl);
+    WKRelease(wkUrl);
 }
 
 MiniBrowser::~MiniBrowser()
@@ -664,7 +666,9 @@ void MiniBrowser::webProcessCrashed(NIXView, WKStringRef url, const void* client
     MiniBrowser* mb = static_cast<MiniBrowser*>(const_cast<void*>(clientInfo));
     const string urlString = createStdStringFromWKString(url);
     cerr << "The web process has crashed on '" << urlString << "', reloading page...\n";
-    WKPageLoadURL(mb->pageRef(), WKURLCreateWithUTF8CString(urlString.c_str()));
+    WKURLRef wkUrl = WKURLCreateWithUTF8CString(urlString.c_str());
+    WKPageLoadURL(mb->pageRef(), wkUrl);
+    WKRelease(wkUrl);
 }
 
 void MiniBrowser::webProcessRelaunched(NIXView, const void* clientInfo)
