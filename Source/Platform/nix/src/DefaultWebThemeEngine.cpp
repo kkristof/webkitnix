@@ -47,6 +47,7 @@ namespace WebKit {
 
 static void gradientFill(cairo_t* cairo, double yStart, double yLength, bool inverted = false)
 {
+#if 0
     double gradStartColor = BG_COLOR1;
     double gradEndColor = BG_COLOR2;
     if (inverted)
@@ -58,17 +59,21 @@ static void gradientFill(cairo_t* cairo, double yStart, double yLength, bool inv
     cairo_set_source(cairo, gradient);
     cairo_fill(cairo);
     cairo_pattern_destroy(gradient);
+#endif
 }
 
 static void setupBorder(cairo_t * cairo, WebThemeEngine::State state)
 {
+#if 0
     double borderColor = state == WebThemeEngine::StateHover ? BORDER_ONHOVER_COLOR : BORDER_COLOR;
     cairo_set_source_rgb(cairo, borderColor, borderColor, borderColor);
     cairo_set_line_width(cairo, 1);
+#endif
 }
 
 void DefaultWebThemeEngine::paintButton(WebCanvas* canvas, State state, const WebRect& rect, const ButtonExtraParams&) const
 {
+#if 0
     cairo_save(canvas);
     setupBorder(canvas, state);
     // Cairo uses a coordinate system not based on pixel coordinates, so
@@ -79,10 +84,12 @@ void DefaultWebThemeEngine::paintButton(WebCanvas* canvas, State state, const We
 
     gradientFill(canvas, rect.y, rect.height, state == StatePressed);
     cairo_restore(canvas);
+#endif
 }
 
 void DefaultWebThemeEngine::paintTextField(WebCanvas* canvas, State, const WebRect& rect) const
 {
+#if 0
     cairo_save(canvas);
 
     const double lineWidth = 2;
@@ -102,6 +109,7 @@ void DefaultWebThemeEngine::paintTextField(WebCanvas* canvas, State, const WebRe
     cairo_stroke(canvas);
 
     cairo_restore(canvas);
+#endif
 }
 
 void DefaultWebThemeEngine::paintTextArea(WebCanvas* canvas, State state, const WebRect& rect) const
@@ -116,6 +124,7 @@ WebSize DefaultWebThemeEngine::getCheckboxSize() const
 
 void DefaultWebThemeEngine::paintCheckbox(WebCanvas* canvas, State state, const WebRect& rect, const ButtonExtraParams& param) const
 {
+#if 0
     cairo_save(canvas);
     setupBorder(canvas, state);
     cairo_rectangle(canvas, rect.x + 0.5, rect.y + 0.5, rect.width, rect.height);
@@ -135,6 +144,7 @@ void DefaultWebThemeEngine::paintCheckbox(WebCanvas* canvas, State state, const 
     }
 
     cairo_restore(canvas);
+#endif
 }
 
 WebSize DefaultWebThemeEngine::getRadioSize() const
@@ -144,6 +154,7 @@ WebSize DefaultWebThemeEngine::getRadioSize() const
 
 void DefaultWebThemeEngine::paintRadio(WebCanvas* canvas, State state, const WebRect& rect, const ButtonExtraParams& param) const
 {
+#if 0
     cairo_save(canvas);
     setupBorder(canvas, state);
     cairo_arc(canvas, rect.x + rect.width/2.0, rect.y + rect.height/2.0, rect.width/2.0, 0, 2 * M_PI);
@@ -157,6 +168,7 @@ void DefaultWebThemeEngine::paintRadio(WebCanvas* canvas, State state, const Web
         cairo_fill(canvas);
     }
     cairo_restore(canvas);
+#endif
 }
 
 void DefaultWebThemeEngine::getMenuListPadding(int& paddingTop, int& paddingLeft, int& paddingBottom, int& paddingRight) const
@@ -169,6 +181,7 @@ void DefaultWebThemeEngine::getMenuListPadding(int& paddingTop, int& paddingLeft
 
 void DefaultWebThemeEngine::paintMenuList(WebCanvas* canvas, State state, const WebRect& rect) const
 {
+#if 0
     cairo_save(canvas);
     setupBorder(canvas, state);
     cairo_rectangle(canvas, rect.x + 0.5, rect.y + 0.5, rect.width, rect.height);
@@ -184,6 +197,7 @@ void DefaultWebThemeEngine::paintMenuList(WebCanvas* canvas, State state, const 
     cairo_fill(canvas);
 
     cairo_restore(canvas);
+#endif
 }
 
 }

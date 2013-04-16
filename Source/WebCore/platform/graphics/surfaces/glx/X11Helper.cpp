@@ -26,6 +26,8 @@
 #include "config.h"
 #include "X11Helper.h"
 
+#include "stdio.h"
+
 namespace WebCore {
 
 // Used for handling XError.
@@ -167,6 +169,35 @@ void X11Helper::createPixmap(Pixmap* handleId, const XVisualInfo& visualInfo, co
     *handleId = tempHandleId;
     XSync(X11Helper::nativeDisplay(), false);
 }
+
+#if USE(EGL)
+void X11Helper::createPixmap(Pixmap* handleId, const EGLint id, bool supportsAlpha, const IntSize& size)
+{
+    UNUSED_PARAM(supportsAlpha);
+    VisualID visualId = static_cast<VisualID>(id);
+
+    if (!visualId)
+        return;
+
+    // EGL has suggested a visual id, so get the rest of the visual info for that id.
+    XVisualInfo visualInfoTemplate;
+    memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+    visualInfoTemplate.visualid = visualId;
+    int matchingCount = 0;
+    OwnPtrX11<XVisualInfo> matchingVisuals(XGetVisualInfo(nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount));
+
+    printf("matchingCount: %d\n", matchingCount);
+    if (!matchingVisuals)
+        return;
+
+    for (int i = 0; i < matchingCount; i++)
+        if (matchingVisuals[i].depth == 32) {
+            printf("foundVisual!\n");
+            createPixmap(handleId, matchingVisuals[i], size);
+            return;
+        }
+}
+#endif
 
 void X11Helper::destroyPixmap(const uint32_t pixmapId)
 {

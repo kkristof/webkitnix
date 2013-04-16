@@ -30,8 +30,10 @@
 #include "WebKit2/WKAPICast.h"
 #include "NIXView.h"
 
+#if USE(CAIRO)
 #include <WebKit2/WKImageCairo.h>
 #include <cairo/cairo.h>
+#endif
 #include <cassert>
 
 extern "C" {
@@ -165,6 +167,7 @@ void PlatformWebView::makeWebViewFirstResponder()
 
 WKRetainPtr<WKImageRef> PlatformWebView::windowSnapshotImage()
 {
+#if USE(CAIRO)
     int width = NIXViewSize(m_view).width;
     int height = NIXViewSize(m_view).height;
     cairo_format_t format = CAIRO_FORMAT_ARGB32;
@@ -208,6 +211,7 @@ WKRetainPtr<WKImageRef> PlatformWebView::windowSnapshotImage()
     WKImageRef resultImage =  WKImageCreateFromCairoSurface(surface, options);
     cairo_surface_destroy(surface);
     return adoptWK(resultImage);
+#endif
 }
 
 void PlatformWebView::didInitializeClients()

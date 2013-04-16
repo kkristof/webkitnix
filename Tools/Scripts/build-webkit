@@ -328,7 +328,6 @@ if (isNix()) {
     # We remove CMakeCache to avoid the bots to reuse cached flags when
     # we enable new features. This forces a reconfiguration.
     removeCMakeCache();
-
     buildCMakeProjectOrExit($clean, "Nix", $prefixPath, $makeArgs, (cmakeBasedPortArguments(), cMakeArgsFromFeatures()), $cmakeArgs);
 }
 

@@ -123,7 +123,7 @@ Window LinuxWindow::createXWindow(VisualID visualID)
     setAttributes.colormap = XCreateColormap(m_display, rootWindow, visualInfo->visual, AllocNone);
     setAttributes.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
 
-    Window window = XCreateWindow(m_display, rootWindow, 0, 0, m_width, m_height, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWColormap | CWEventMask, &setAttributes);
+    Window window = XCreateWindow(m_display, rootWindow, 0, 0, m_width, m_height, 0, visualInfo->depth, InputOutput, visualInfo->visual, CWColormap | CWEventMask | CWBorderPixel, &setAttributes);
     XFree(visualInfo);
 
     wmDeleteMessageAtom = XInternAtom(m_display, "WM_DELETE_WINDOW", False);

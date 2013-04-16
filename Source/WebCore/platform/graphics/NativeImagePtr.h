@@ -46,6 +46,8 @@ QT_END_NAMESPACE
 namespace WebCore {
 class NativeImageSkia;
 }
+#elif USE(GL2D)
+#include "NativeImageGL2D.h"
 #elif OS(WINCE)
 #include "SharedBitmap.h"
 #endif
@@ -74,6 +76,8 @@ typedef wxBitmap* NativeImagePtr;
 #elif USE(CAIRO)
 typedef RefPtr<cairo_surface_t> NativeImagePtr;
 typedef PassRefPtr<cairo_surface_t> PassNativeImagePtr;
+#elif USE(GL2D)
+typedef WebCore::NativeImageGL2D* NativeImagePtr;
 #elif USE(SKIA)
 typedef RefPtr<NativeImageSkia> NativeImagePtr;
 typedef PassRefPtr<NativeImageSkia> PassNativeImagePtr;

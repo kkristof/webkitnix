@@ -32,6 +32,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <utility>
+#include <wtf/Platform.h>
 
 void fatalError(const char* message);
 

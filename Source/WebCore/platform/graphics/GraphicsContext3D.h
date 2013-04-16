@@ -108,6 +108,9 @@ class IntRect;
 class IntSize;
 #if USE(CAIRO)
 class PlatformContextCairo;
+#elif USE(GL2D)
+class PlatformContextGL2D;
+typedef PlatformContextGL2D PlatformContextCairo;
 #elif PLATFORM(BLACKBERRY)
 class GraphicsContext;
 #endif

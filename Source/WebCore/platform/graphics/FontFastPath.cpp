@@ -219,6 +219,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
             }
 
             // Proceed with the fallback list.
+            printf("getChild %p\n",m_fontFallbackList.get());
             node = node->getChild(fontDataAt(node->level()), pageNumber);
             if (pageNumber)
                 m_fontFallbackList->m_pages.set(pageNumber, node);

@@ -134,6 +134,8 @@ public:
     // This is only safe to use when we know that the contents of the shareable bitmap won't change.
     QImage createQImage();
     static void releaseSharedMemoryData(void* typelessBitmap);
+#elif USE(GL2D)
+    void *rawImageData() { return data(); }
 #endif
 
 private:
@@ -167,6 +169,10 @@ private:
 
     // If the shareable bitmap is backed by fastMalloced memory, this points to the data.
     void* m_data;
+
+#if USE(GL2D)
+    RefPtr<WebCore::Image> m_backingTexture;
+#endif
 };
 
 } // namespace WebKit

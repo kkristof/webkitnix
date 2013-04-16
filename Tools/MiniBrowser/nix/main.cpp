@@ -586,6 +586,9 @@ void MiniBrowser::updateDisplay()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     NIXViewPaintToCurrentGLContext(m_view);
+    GLubyte pixel[4];
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    //printf("color: %d %d %d %d\n", pixel[0], pixel[1], pixel[2], pixel[3]);
     if (m_touchMocker)
         m_touchMocker->paintTouchPoints(size);
 

@@ -26,7 +26,7 @@
 #ifndef EGLSurface_h
 #define EGLSurface_h
 
-#if USE(EGL) && USE(GRAPHICS_SURFACE)
+#if USE(EGL) && (USE(GRAPHICS_SURFACE) || USE(GL2D))
 
 #include "GLTransportSurface.h"
 

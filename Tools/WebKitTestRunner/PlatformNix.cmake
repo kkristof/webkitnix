@@ -13,7 +13,8 @@ set(ForwardingNetworkHeadersForWebKitTestRunner_NAME forwarding-headersSoupForWe
 
 list(APPEND WebKitTestRunner_SOURCES
     ${WTF_DIR}/wtf/MD5.cpp
-    ${WEBKIT_TESTRUNNER_DIR}/cairo/TestInvocationCairo.cpp
+    #${WEBKIT_TESTRUNNER_DIR}/cairo/TestInvocationCairo.cpp
+    ${WEBKIT_TESTRUNNER_DIR}/gl2d/TestInvocationGL2D.cpp
 
     ${WEBKIT_TESTRUNNER_DIR}/nix/EventSenderProxyNix.cpp
     ${WEBKIT_TESTRUNNER_DIR}/nix/PlatformWebViewNix.cpp

@@ -41,11 +41,18 @@
 
 #if USE(CG)
 typedef struct CGContext PlatformGraphicsContext;
+#elif USE(GL2D)
+namespace WebCore {
+class PlatformContextGL2D;
+}
+typedef WebCore::PlatformContextGL2D PlatformGraphicsContext;
+typedef WebCore::PlatformContextGL2D GraphicsContextPlatformPrivate;
 #elif USE(CAIRO)
 namespace WebCore {
 class PlatformContextCairo;
 }
 typedef WebCore::PlatformContextCairo PlatformGraphicsContext;
+
 #elif PLATFORM(OPENVG)
 namespace WebCore {
 class SurfaceOpenVG;
@@ -114,8 +121,9 @@ namespace WebCore {
     class DrawingBuffer;
     class Generator;
 #if !USE(SKIA)
-    class GraphicsContextPlatformPrivate;
+//class GraphicsContextPlatformPrivate;
 #endif
+    class GraphicsContextPlatformPrivate;
     class ImageBuffer;
     class IntRect;
     class RoundedRect;

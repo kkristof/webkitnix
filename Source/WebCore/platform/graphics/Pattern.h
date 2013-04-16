@@ -43,6 +43,8 @@ typedef cairo_pattern_t* PlatformPatternPtr;
 #elif USE(SKIA)
 class SkShader;
 typedef SkShader* PlatformPatternPtr;
+#elif USE(GL2D)
+typedef void* PlatformPatternPtr;
 #elif PLATFORM(QT)
 #include <QBrush>
 typedef QBrush PlatformPatternPtr;

@@ -141,6 +141,7 @@ void CoordinatedGraphicsScene::requestAnimationFrame()
 }
 #endif
 
+#if !USE(GL2D)
 void CoordinatedGraphicsScene::paintToGraphicsContext(PlatformGraphicsContext* platformContext)
 {
     if (!m_textureMapper)
@@ -165,6 +166,7 @@ void CoordinatedGraphicsScene::paintToGraphicsContext(PlatformGraphicsContext* p
     m_textureMapper->endPainting();
     m_textureMapper->setGraphicsContext(0);
 }
+#endif
 
 void CoordinatedGraphicsScene::setScrollPosition(const FloatPoint& scrollPosition)
 {

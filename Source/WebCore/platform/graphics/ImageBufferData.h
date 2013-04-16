@@ -31,6 +31,8 @@
 #include "ImageBufferDataQt.h"
 #elif USE(SKIA)
 #include "ImageBufferDataSkia.h"
+#elif USE(GL2D)
+#include "ImageBufferDataGL2D.h"
 #elif OS(WINCE)
 #include "ImageBufferDataWince.h"
 #elif PLATFORM(WX)

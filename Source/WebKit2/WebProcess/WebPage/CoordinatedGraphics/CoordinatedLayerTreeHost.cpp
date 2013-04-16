@@ -146,9 +146,9 @@ void CoordinatedLayerTreeHost::scheduleLayerFlush()
 {
     if (!m_layerFlushSchedulingEnabled)
         return;
-
+//     printf(".");
     if (!m_layerFlushTimer.isActive())
-        m_layerFlushTimer.startOneShot(0);
+        m_layerFlushTimer.startOneShot(1);
 }
 
 void CoordinatedLayerTreeHost::cancelPendingLayerFlush()
@@ -327,7 +327,7 @@ bool CoordinatedLayerTreeHost::flushPendingLayerChanges()
         m_webPage->send(Messages::WebPageProxy::VoidCallback(m_forceRepaintAsyncCallbackID));
         m_forceRepaintAsyncCallbackID = 0;
     }
-
+//     printf("+\n");
     return didSync;
 }
 

@@ -27,7 +27,7 @@
 #include "RenderThemeNix.h"
 
 #include "PaintInfo.h"
-#include "PlatformContextCairo.h"
+// #include "PlatformContextCairo.h"
 #include "public/WebCanvas.h"
 #include "public/WebThemeEngine.h"
 #include "public/WebRect.h"
@@ -85,6 +85,7 @@ static WebKit::WebThemeEngine::State getWebThemeState(const RenderTheme* theme, 
 
 bool RenderThemeNix::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
+#if 0
     WebKit::WebThemeEngine::ButtonExtraParams extraParams;
     extraParams.isDefault = isDefault(o);
     extraParams.hasBorder = true;
@@ -95,11 +96,13 @@ bool RenderThemeNix::paintButton(RenderObject* o, const PaintInfo& i, const IntR
     WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
     WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
     themeEngine->paintButton(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+#endif
     return false;
 }
 
 bool RenderThemeNix::paintTextField(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
+#if 0
     // WebThemeEngine does not handle border rounded corner and background image
     // so return true to draw CSS border and background.
     if (o->style()->hasBorderRadius() || o->style()->hasBackgroundImage())
@@ -108,6 +111,7 @@ bool RenderThemeNix::paintTextField(RenderObject* o, const PaintInfo& i, const I
     WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
     WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
     themeEngine->paintTextField(canvas, getWebThemeState(this, o), WebKit::WebRect(rect));
+#endif
     return false;
 }
 
@@ -118,6 +122,7 @@ bool RenderThemeNix::paintTextArea(RenderObject* o, const PaintInfo& i, const In
 
 bool RenderThemeNix::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
+#if 0
     WebKit::WebThemeEngine::ButtonExtraParams extraParams;
     extraParams.checked = isChecked(o);
     extraParams.indeterminate = isIndeterminate(o);
@@ -125,6 +130,7 @@ bool RenderThemeNix::paintCheckbox(RenderObject* o, const PaintInfo& i, const In
     WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
     WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
     themeEngine->paintCheckbox(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+#endif
     return false;
 }
 
@@ -140,6 +146,7 @@ void RenderThemeNix::setCheckboxSize(RenderStyle* style) const
 
 bool RenderThemeNix::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
+#if 0
     WebKit::WebThemeEngine::ButtonExtraParams extraParams;
     extraParams.checked = isChecked(o);
     extraParams.indeterminate = isIndeterminate(o);
@@ -147,6 +154,7 @@ bool RenderThemeNix::paintRadio(RenderObject* o, const PaintInfo& i, const IntRe
     WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
     WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
     themeEngine->paintRadio(canvas, getWebThemeState(this, o), WebKit::WebRect(rect), extraParams);
+#endif
     return false;
 }
 
@@ -162,9 +170,11 @@ void RenderThemeNix::setRadioSize(RenderStyle* style) const
 
 bool RenderThemeNix::paintMenuList(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
+#if 0
     WebKit::WebCanvas* canvas = i.context->platformContext()->cr();
     WebKit::WebThemeEngine* themeEngine = WebKit::Platform::current()->themeEngine();
     themeEngine->paintMenuList(canvas, getWebThemeState(this, o), WebKit::WebRect(rect));
+#endif
     return false;
 }
 

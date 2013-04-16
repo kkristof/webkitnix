@@ -1,7 +1,8 @@
 list(APPEND WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform/nix"
-    "${WEBCORE_DIR}/platform/cairo"
-    "${WEBCORE_DIR}/platform/graphics/cairo"
+#    "${WEBCORE_DIR}/platform/cairo"
+#    "${WEBCORE_DIR}/platform/graphics/cairo"
+    "${WEBCORE_DIR}/platform/graphics/gl2d"
     "${WEBCORE_DIR}/platform/graphics/freetype"
     "${WEBCORE_DIR}/platform/graphics/harfbuzz/"
     "${WEBCORE_DIR}/platform/graphics/harfbuzz/ng"
@@ -46,40 +47,67 @@ list(APPEND WebCore_SOURCES
     platform/nix/TemporaryLinkStubs.cpp
     platform/nix/WidgetNix.cpp
 
-    platform/cairo/WidgetBackingStoreCairo.cpp
-    platform/graphics/cairo/BitmapImageCairo.cpp
-    platform/graphics/cairo/CairoUtilities.cpp
-    platform/graphics/cairo/FontCairo.cpp
-    platform/graphics/cairo/GradientCairo.cpp
-    platform/graphics/cairo/GraphicsContextCairo.cpp
-    platform/graphics/cairo/ImageBufferCairo.cpp
-    platform/graphics/cairo/ImageCairo.cpp
-    platform/graphics/cairo/IntRectCairo.cpp
-    platform/graphics/cairo/OwnPtrCairo.cpp
-    platform/graphics/cairo/PathCairo.cpp
-    platform/graphics/cairo/PatternCairo.cpp
-    platform/graphics/cairo/PlatformContextCairo.cpp
-    platform/graphics/cairo/PlatformPathCairo.cpp
-    platform/graphics/cairo/RefPtrCairo.cpp
-    platform/graphics/cairo/TileCairo.cpp
-    platform/graphics/cairo/TiledBackingStoreBackendCairo.cpp
-    platform/graphics/cairo/TransformationMatrixCairo.cpp
+#     platform/cairo/WidgetBackingStoreCairo.cpp
+#     platform/graphics/cairo/BitmapImageCairo.cpp
+#     platform/graphics/cairo/CairoUtilities.cpp
+#     platform/graphics/cairo/FontCairo.cpp
+#     platform/graphics/cairo/GradientCairo.cpp
+#     platform/graphics/cairo/GraphicsContextCairo.cpp
+#     platform/graphics/cairo/ImageBufferCairo.cpp
+#     platform/graphics/cairo/ImageCairo.cpp
+#     platform/graphics/cairo/IntRectCairo.cpp
+#     platform/graphics/cairo/NativeImageCairo.cpp
+#     platform/graphics/cairo/OwnPtrCairo.cpp
+#     platform/graphics/cairo/PathCairo.cpp
+#     platform/graphics/cairo/PatternCairo.cpp
+#     platform/graphics/cairo/PlatformContextCairo.cpp
+#     platform/graphics/cairo/PlatformPathCairo.cpp
+#     platform/graphics/cairo/RefPtrCairo.cpp
+#     platform/graphics/cairo/TileCairo.cpp
+#     platform/graphics/cairo/TiledBackingStoreBackendCairo.cpp
+#     platform/graphics/cairo/TransformationMatrixCairo.cpp
 
-    platform/image-decoders/cairo/ImageDecoderCairo.cpp
+    platform/graphics/gl2d/BitmapImageGL2D.cpp
+    platform/graphics/gl2d/DrawingBufferGL2D.cpp
+    platform/graphics/gl2d/GraphicsContextGL2D.cpp
+    platform/graphics/gl2d/GraphicsContext3DGL2D.cpp
+    platform/graphics/gl2d/GradientGL2D.cpp
+    platform/graphics/gl2d/GlyphPageTreeNodeGL2D.cpp
+    platform/graphics/gl2d/ImageBufferGL2D.cpp
+    platform/graphics/gl2d/ImageGL2D.cpp
+    platform/graphics/gl2d/NativeImageGL2D.cpp
+    platform/graphics/gl2d/PathGL2D.cpp
+    platform/graphics/gl2d/PlatformContextGL2D.cpp
+    platform/graphics/gl2d/TileGL2D.cpp
+    platform/image-decoders/gl2d/ImageDecoderGL2D.cpp
+
+    platform/graphics/gl2d/FontGL2D.cpp
+    platform/graphics/gl2d/fontconfigGL2D.cpp
+#     platform/graphics/gl2d/FontCacheGL2D.cpp
+     platform/graphics/gl2d/FontCustomPlatformData.cpp
+#     platform/graphics/gl2d/FontPlatformDataGL2D.cpp
+#     platform/graphics/FontPlatformData.cpp
+    platform/graphics/gl2d/SimpleFontDataGL2D.cpp
+
+#     platform/graphics/cairo/FontCairoHarfbuzzNG.cpp
+    platform/graphics/freetype/FontCacheFreeType.cpp
+#    platform/graphics/freetype/FontCustomPlatformDataFreeType.cpp
+    platform/graphics/freetype/FontPlatformDataFreeType.cpp
+#     platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
+#     platform/graphics/freetype/SimpleFontDataFreeType.cpp
+
+#     platform/image-decoders/cairo/ImageDecoderCairo.cpp
 
     platform/graphics/WOFFFileFormat.cpp
-    platform/graphics/cairo/FontCairoHarfbuzzNG.cpp
-    platform/graphics/freetype/FontCacheFreeType.cpp
-    platform/graphics/freetype/FontCustomPlatformDataFreeType.cpp
-    platform/graphics/freetype/FontPlatformDataFreeType.cpp
-    platform/graphics/freetype/GlyphPageTreeNodeFreeType.cpp
-    platform/graphics/freetype/SimpleFontDataFreeType.cpp
-    platform/graphics/harfbuzz/HarfBuzzFace.cpp
-    platform/graphics/harfbuzz/HarfBuzzFaceCairo.cpp
-    platform/graphics/harfbuzz/HarfBuzzShaper.cpp
+#     platform/graphics/harfbuzz/HarfBuzzShaperBase.cpp
+#     platform/graphics/harfbuzz/HarfBuzzFace.cpp
+#     platform/graphics/harfbuzz/HarfBuzzFaceCairo.cpp
+#     platform/graphics/harfbuzz/HarfBuzzShaper.cpp
 
     platform/graphics/ImageSource.cpp
-    platform/graphics/cairo/DrawingBufferCairo.cpp
+#     platform/graphics/cairo/DrawingBufferCairo.cpp
+#      platform/graphics/efl/GraphicsContext3DEfl.cpp
+    platform/graphics/efl/GraphicsContext3DPrivate.cpp
     platform/graphics/nix/IconNix.cpp
     platform/graphics/nix/ImageNix.cpp
     platform/graphics/OpenGLShims.cpp
@@ -166,15 +194,33 @@ endif ()
 if (WTF_USE_EGL)
     list(INSERT WebCore_INCLUDE_DIRECTORIES 0
         platform/graphics/egl
+        platform/graphics/surfaces/egl
+        platform/graphics/surfaces/efl
         ${EGL_INCLUDE_DIR}
     )
     list(APPEND WebCore_SOURCES
-        platform/graphics/cairo/GLContext.cpp
-        platform/graphics/cairo/GraphicsContext3DCairo.cpp
-        platform/graphics/cairo/GraphicsContext3DPrivate.cpp
-        platform/graphics/egl/GLContextFromCurrentEGL.cpp
+#         platform/graphics/cairo/GLContext.cpp
+#         platform/graphics/cairo/GraphicsContext3DCairo.cpp
+#         platform/graphics/cairo/GraphicsContext3DPrivate.cpp
+#         platform/graphics/egl/GLContextFromCurrentEGL.cpp
+
+        platform/graphics/efl/GraphicsContext3DPrivate.cpp
+        platform/graphics/surfaces/efl/GLTransportSurface.cpp
+        platform/graphics/surfaces/efl/GraphicsSurfaceCommon.cpp
+
+        platform/graphics/opengl/GLPlatformContext.cpp
+        platform/graphics/opengl/GLPlatformSurface.cpp
+
+        platform/graphics/surfaces/egl/EGLConfigSelector.cpp
+        platform/graphics/surfaces/egl/EGLContext.cpp
+        platform/graphics/surfaces/egl/EGLHelper.cpp
+        platform/graphics/surfaces/egl/EGLSurface.cpp
+
+        platform/graphics/surfaces/egl/EGLXSurface.cpp
+        platform/graphics/surfaces/glx/X11Helper.cpp
     )
     list(APPEND WebCore_LIBRARIES ${EGL_LIBRARY})
+    add_definitions(-DWTF_USE_EGL=1)
 else ()
     list(APPEND WebCore_INCLUDE_DIRECTORIES
         platform/graphics/surfaces/glx
@@ -182,7 +228,7 @@ else ()
         ${X11_X11_INCLUDE_PATH}
     )
     list(APPEND WebCore_SOURCES
-        platform/graphics/efl/GraphicsContext3DEfl.cpp
+#         platform/graphics/efl/GraphicsContext3DEfl.cpp
         platform/graphics/efl/GraphicsContext3DPrivate.cpp
         platform/graphics/opengl/GLPlatformContext.cpp
         platform/graphics/opengl/GLPlatformSurface.cpp
@@ -208,7 +254,7 @@ list(APPEND WebCore_USER_AGENT_STYLE_SHEETS
 )
 
 list(APPEND WebCore_LIBRARIES
-    ${CAIRO_LIBRARIES}
+    #${CAIRO_LIBRARIES}
     ${FONTCONFIG_LIBRARIES}
     ${FREETYPE_LIBRARIES}
     ${ICU_LIBRARIES}
@@ -229,7 +275,7 @@ list(APPEND WebCore_LIBRARIES
 
 list(APPEND WebCore_INCLUDE_DIRECTORIES
     ${FONTCONFIG_INCLUDE_DIR}
-    ${CAIRO_INCLUDE_DIRS}
+    #${CAIRO_INCLUDE_DIRS}
     ${FREETYPE_INCLUDE_DIRS}
     ${ICU_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}

@@ -10,11 +10,12 @@ list(APPEND WebKit2_SOURCES
     Platform/CoreIPC/unix/ConnectionUnix.cpp
     Platform/CoreIPC/unix/AttachmentUnix.cpp
 
-    Shared/API/c/cairo/WKImageCairo.cpp
+    #Shared/API/c/cairo/WKImageCairo.cpp
 
     Shared/API/c/gtk/WKGraphicsContextGtk.cpp
 
-    Shared/cairo/ShareableBitmapCairo.cpp
+    #Shared/cairo/ShareableBitmapCairo.cpp
+    Shared/gl2d/ShareableBitmapGL2D.cpp
 
     Shared/nix/LayerTreeContextNix.cpp
     Shared/nix/NativeWebMouseEventNix.cpp
@@ -33,7 +34,8 @@ list(APPEND WebKit2_SOURCES
 
     UIProcess/API/nix/NIXView.cpp
 
-    UIProcess/cairo/BackingStoreCairo.cpp
+    #UIProcess/cairo/BackingStoreCairo.cpp
+    UIProcess/gl2d/BackingStoreGL2D.cpp
 
     UIProcess/nix/WebView.cpp
     UIProcess/nix/WebViewClient.cpp
@@ -93,7 +95,8 @@ list(APPEND WebKit2_MESSAGES_IN_FILES
 list(APPEND WebKit2_INCLUDE_DIRECTORIES
     "${JAVASCRIPTCORE_DIR}/llint"
     "${WEBCORE_DIR}/platform/nix"
-    "${WEBCORE_DIR}/platform/graphics/cairo"
+#    "${WEBCORE_DIR}/platform/graphics/cairo"
+    "${WEBCORE_DIR}/platform/graphics/gl2d"
     "${WEBCORE_DIR}/platform/graphics/filters/texmap"
     "${WEBCORE_DIR}/platform/network/soup"
     "${WEBCORE_DIR}/svg/graphics"
