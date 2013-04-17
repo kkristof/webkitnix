@@ -48,7 +48,7 @@ list(APPEND WebKit2_SOURCES
     UIProcess/soup/WebSoupRequestManagerProxy.cpp
 
     UIProcess/Launcher/efl/ProcessLauncherEfl.cpp
-    UIProcess/gtk/WebProcessProxyGtk.cpp
+    UIProcess/efl/WebProcessProxyEfl.cpp
 
     UIProcess/Plugins/unix/PluginInfoStoreUnix.cpp
 
