@@ -30,7 +30,9 @@
 #include "GL2DDefs.h"
 #include "GraphicsTypes.h"
 #include "FloatRect.h"
+#include "IntPoint.h"
 #include "IntRect.h"
+#include "IntSize.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -53,17 +55,14 @@ public:
         return adoptRef(new PlatformContextGL2D(targetTexture));
     }
 
-    ~PlatformContextGL2D();
-
     static PlatformContextGL2D* release(PassRefPtr<PlatformContextGL2D> context) { return context.leakRef(); }
     static void createGLContextIfNeed()
     {
         if (!s_offScreenContext)
             createGLContext();
     }
-
-    void setUpdateBuffer(void* updateBuffer) { m_updateBuffer = updateBuffer; }
-    void setUpdateRect(IntRect updateRect) { m_updateRect = updateRect; }
+    static GLPlatformContext* offScreenContext() { return s_offScreenContext; }
+    static GLPlatformSurface* offScreenSurface() { return s_offScreenSurface; }
     NativeImageGL2D* targetTexture() const { return m_targetTexture; }
 
     void save();
@@ -103,8 +102,6 @@ private:
     };
 
     NativeImageGL2D* m_targetTexture;
-    void* m_updateBuffer;
-    IntRect m_updateRect;
     GL2DState m_state;
     Vector<GL2DState> m_stack;
 

@@ -196,6 +196,7 @@ if (WTF_USE_EGL)
         platform/graphics/egl
         platform/graphics/surfaces/egl
         platform/graphics/surfaces/efl
+        platform/graphics/surfaces/glx
         ${EGL_INCLUDE_DIR}
     )
     list(APPEND WebCore_SOURCES

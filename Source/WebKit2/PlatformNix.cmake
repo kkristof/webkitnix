@@ -98,6 +98,8 @@ list(APPEND WebKit2_INCLUDE_DIRECTORIES
 #    "${WEBCORE_DIR}/platform/graphics/cairo"
     "${WEBCORE_DIR}/platform/graphics/gl2d"
     "${WEBCORE_DIR}/platform/graphics/filters/texmap"
+    "${WEBCORE_DIR}/platform/graphics/opengl"
+    "${WEBCORE_DIR}/platform/graphics/surfaces/efl"
     "${WEBCORE_DIR}/platform/network/soup"
     "${WEBCORE_DIR}/svg/graphics"
     "${WEBKIT2_DIR}/Shared/soup"

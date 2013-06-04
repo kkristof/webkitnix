@@ -28,6 +28,7 @@
 #include "PlatformContextGL2D.h"
 
 #include "Color.h"
+#include "GLDefs.h"
 #include "GLPlatformContext.h"
 #include "GraphicsContext3D.h"
 #include "NativeImageGL2D.h"
@@ -45,58 +46,12 @@ bool PlatformContextGL2D::s_supportsSubImage = false;
 
 PlatformContextGL2D::PlatformContextGL2D(NativeImageGL2D* targetBuffer)
     : m_targetTexture(targetBuffer)
-    , m_updateBuffer(0)
 {
     m_state.m_transform[4] = 0;
     m_state.m_transform[5] = 0;
     createGLContextIfNeed();
     m_state.m_scissorRect.setWidth(targetBuffer->width());
     m_state.m_scissorRect.setHeight(targetBuffer->height());
-}
-
-PlatformContextGL2D::~PlatformContextGL2D()
-{
-    if (!m_updateBuffer)
-        return;
-
-    IntRect updateRect = IntRect(IntPoint(), m_targetTexture->size());
-    updateRect.intersect(m_updateRect);
-
-    if (updateRect.width() == 0 || updateRect.height() == 0)
-        return;
-
-    GLint previousFbo = m_targetTexture->bindFbo();
-#if !USE(OPENGL_ES_2)
-    if (supportsSubImage()) {
-        glPixelStorei(GL_PACK_ROW_LENGTH, m_targetTexture->width());
-        glPixelStorei(GL_PACK_SKIP_PIXELS, updateRect.x());
-        glPixelStorei(GL_PACK_SKIP_ROWS, updateRect.y());
-
-        glReadPixels(updateRect.x(), updateRect.y(), updateRect.width(), updateRect.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_updateBuffer);
-
-        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
-        return;
-    }
-#endif
-    Vector<uint8_t> temporaryData;
-    unsigned int sourceScanLine = updateRect.width() * 4;
-    unsigned int destinationScanLine = m_targetTexture->width() * 4;
-
-    temporaryData.resize(sourceScanLine * updateRect.height());
-    glReadPixels(updateRect.x(), updateRect.y(), updateRect.width(), updateRect.height(), GL_RGBA, GL_UNSIGNED_BYTE, temporaryData.data());
-
-    const uint8_t* source = temporaryData.data();
-    uint8_t* destination = reinterpret_cast<uint8_t*>(m_updateBuffer) + (updateRect.x() * 4) + updateRect.y() * destinationScanLine;
-    for (int y = updateRect.height(); y > 0; --y) {
-        memcpy(destination, source, sourceScanLine);
-        source += sourceScanLine;
-        destination += destinationScanLine;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
-    m_targetTexture->restoreFbo();
 }
 
 void PlatformContextGL2D::createGLContext()
@@ -262,7 +217,7 @@ void PlatformContextGL2D::copyRect(const FloatRect& destRect, PlatformContextGL2
 
     glUniform1i(g_textureShaderVariables[0].location, 0);
     glActiveTexture(GL_TEXTURE0);
-    sourceContext->targetTexture()->bindMeAsTexture();
+    sourceContext->targetTexture()->bindTexture();
 
     rectPosition[0] = mapToViewport(destRect.x() + transform(4));
     rectPosition[1] = mapToViewport(destRect.y() + destRect.height() + transform(5));

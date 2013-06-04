@@ -27,6 +27,7 @@
 #include "config.h"
 #include "ShareableBitmap.h"
 
+#include <WebCore/GLDefs.h>
 #include <WebCore/BitmapImage.h>
 #include <WebCore/GraphicsContext.h>
 #include <WebCore/NativeImageGL2D.h>
@@ -39,11 +40,7 @@ namespace WebKit {
 
 PassOwnPtr<GraphicsContext> ShareableBitmap::createGraphicsContext()
 {
-    if (!m_backingTexture)
-        m_backingTexture = BitmapImage::create(NativeImageGL2D::create(m_size.width(), m_size.height(), 0));
-
-    RefPtr<PlatformGraphicsContext> context = PlatformGraphicsContext::create(m_backingTexture->nativeImageForCurrentFrame());
-    context->setUpdateBuffer(data());
+    RefPtr<PlatformGraphicsContext> context = PlatformGraphicsContext::create(m_sharedImage.get());
     return adoptPtr(new GraphicsContext(PlatformContextGL2D::release(context)));
 }
 
@@ -57,7 +54,7 @@ void ShareableBitmap::paint(GraphicsContext& context, float scaleFactor, const I
 
 PassRefPtr<Image> ShareableBitmap::createImage()
 {
-    RefPtr<Image> image = BitmapImage::create(NativeImageGL2D::create(m_size.width(), m_size.height(), data()));
+    RefPtr<Image> image = BitmapImage::create(m_sharedImage.get());
     return image.release();
 }
 

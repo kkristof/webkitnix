@@ -27,6 +27,11 @@
 #ifndef GL2DDefs_h
 #define GL2DDefs_h
 
+// GLDefs.h may define some symbols, which clashes with other WebKit symbols,
+// such as None, Cursor. Therefore it cannot be included by GL2D header files.
+
+#define GL_GLEXT_PROTOTYPES 1
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 

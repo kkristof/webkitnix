@@ -47,6 +47,10 @@
 #include <wtf/text/CString.h>
 #endif
 
+#if USE(GL2D)
+#include "PlatformContextGL2D.h"
+#endif
+
 #if ENABLE(CSS_SHADERS)
 #include "CustomFilterCompiledProgram.h"
 #include "CustomFilterOperation.h"
@@ -728,13 +732,10 @@ void BitmapTextureGL::updateContents(Image* image, const IntRect& targetRect, co
         return;
 
 #if USE(GL2D)
-
-    ASSERT_NOT_REACHED();
     GLint previousFbo = frameImage->bindFbo();
     glBindTexture(GL_TEXTURE_2D, m_id);
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, targetRect.x(), targetRect.y(), offset.x(), offset.y(), targetRect.width(), targetRect.height());
     glBindFramebuffer(GL_FRAMEBUFFER, previousFbo);
-
 #else // USE(GL2D)
 
     int bytesPerLine;

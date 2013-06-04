@@ -76,7 +76,7 @@ void BitmapImage::checkForSolidColor()
         return;
 
     uint32_t pixelColor;
-    nativeImage->bindMeAsTexture();
+    nativeImage->bindTexture();
     glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixelColor);
     m_solidColor = pixelColor;
 

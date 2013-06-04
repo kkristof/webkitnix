@@ -35,45 +35,6 @@
 #include "PlatformContextGL2D.h"
 #endif
 
-// #include <stdio.h>
-// #include <time.h>
-// static void printFps()
-// {
-//     static int init = 1;
-//     static clock_t start[3];
-//     static int fps[2];
-//     static double sum;
-//     static clock_t printStart;
-//     clock_t currentTime = clock();
-// 
-//     if (init) {
-//         start[0] = start[1] = start[2] = printStart = currentTime;
-//         fps[0] = fps[1] = fps[2] = 0;
-//         sum = 0 /* fps[0] + fps[1] */;
-//         init = 0;
-//     }
-// 
-//     sum++;
-// 
-//     if (start[2] + (2 * CLOCKS_PER_SEC) < currentTime) {
-//         sum -= fps[0] + fps[1];
-//         fps[0] = fps[1];
-//         fps[1] = sum;
-//         start[0] = start[1];
-//         start[1] = start[2];
-// 
-//         sum += fps[0];
-//         start[2] += 2 * CLOCKS_PER_SEC;
-//     }
-// 
-//     if (printStart + (CLOCKS_PER_SEC / 4) < currentTime)
-//     {
-//         printf("FPS: %.2lf   \r", sum / ((double)(currentTime - start[0]) / (double)CLOCKS_PER_SEC));
-//         fflush(stdout);
-//         printStart += CLOCKS_PER_SEC / 4;
-//     }
-// }
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -155,10 +116,6 @@ PassOwnPtr<WebCore::GraphicsContext> WebCoordinatedSurface::createGraphicsContex
 
     ASSERT(m_bitmap);
     OwnPtr<GraphicsContext> graphicsContext = m_bitmap->createGraphicsContext();
-//     printFps();
-#if USE(GL2D)
-    graphicsContext->platformContext()->setUpdateRect(rect);
-#endif
     graphicsContext->clip(rect);
     graphicsContext->translate(rect.x(), rect.y());
     return graphicsContext.release();
@@ -252,12 +209,8 @@ void WebCoordinatedSurface::copyToTexture(PassRefPtr<WebCore::BitmapTexture> pas
 #endif
 
     ASSERT(m_bitmap);
-#if USE(GL2D)
-    texture->updateContents(m_bitmap->rawImageData(), target, sourceOffset, m_bitmap->size().width() * 4, BitmapTexture::UpdateCanModifyOriginalImageData);
-#else
     RefPtr<Image> image = m_bitmap->createImage();
     texture->updateContents(image.get(), target, sourceOffset, BitmapTexture::UpdateCanModifyOriginalImageData);
-#endif
 }
 #endif // USE(TEXTURE_MAPPER)
 

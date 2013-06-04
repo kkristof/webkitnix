@@ -57,6 +57,9 @@ public:
     virtual PlatformSurfaceConfig configuration() OVERRIDE;
     virtual void destroy() OVERRIDE;
     virtual GLPlatformSurface::SurfaceAttributes attributes() const OVERRIDE;
+#if USE(GL2D)
+    EGLConfigSelector* configSelector() const { return m_configSelector.get(); }
+#endif
 
 protected:
     EGLOffScreenSurface(SurfaceAttributes);

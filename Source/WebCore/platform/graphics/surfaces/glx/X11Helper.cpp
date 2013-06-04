@@ -186,13 +186,11 @@ void X11Helper::createPixmap(Pixmap* handleId, const EGLint id, bool supportsAlp
     int matchingCount = 0;
     OwnPtrX11<XVisualInfo> matchingVisuals(XGetVisualInfo(nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount));
 
-    printf("matchingCount: %d\n", matchingCount);
     if (!matchingVisuals)
         return;
 
     for (int i = 0; i < matchingCount; i++)
         if (matchingVisuals[i].depth == 32) {
-            printf("foundVisual!\n");
             createPixmap(handleId, matchingVisuals[i], size);
             return;
         }

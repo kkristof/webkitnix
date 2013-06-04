@@ -43,33 +43,51 @@ public:
         return new NativeImageGL2D(width, height, buffer, alpha);
     }
 
+    static NativeImageGL2D* create(const IntSize& size, const void* buffer = 0, bool alpha = false)
+    {
+        return create(size.width(), size.height(), buffer, alpha);
+    }
+
+    static NativeImageGL2D* createShared(int width, int height, uintptr_t sharedImageHandle = 0)
+    {
+        return new NativeImageGL2D(width, height, sharedImageHandle);
+    }
+
+    static NativeImageGL2D* createShared(const IntSize& size, uintptr_t sharedImageHandle = 0)
+    {
+        return createShared(size.width(), size.height(), sharedImageHandle);
+    }
+
     ~NativeImageGL2D();
 
     const IntSize& size() const { return m_size; }
     int width() const { return m_size.width(); }
     int height() const { return m_size.height(); }
+    uintptr_t sharedImageHandle() { return m_sharedImageHandle; }
+    GLuint texture() const { return m_texture; }
     size_t sizeInBytes() const { return width() * height() * 4; }
     bool hasAlpha() const { return m_alpha; }
     GLuint fbo() const { return m_fbo; }
 
-    void bindMeAsTexture()
-    {
-        ASSERT(m_texture);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
-    }
-
+    void bindTexture();
     GLint bindFbo();
     GLint restoreFbo();
 
 protected:
     NativeImageGL2D(int, int, const void* = 0, bool = false);
+    NativeImageGL2D(int, int, uintptr_t);
 
 private:
     IntSize m_size;
+    // m_sharedImageHandle and m_texture cannot be non 0 in the same time.
+    uintptr_t m_sharedImageHandle;
+    uintptr_t m_privateImageHandle;
     GLuint m_texture;
     GLuint m_fbo;
-    GLint m_previousFbo;
+    GLuint m_renderBuffer;
     bool m_alpha;
+
+    GLint m_previousFbo;
 };
 
 }
