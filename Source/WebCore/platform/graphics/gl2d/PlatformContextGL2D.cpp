@@ -291,8 +291,6 @@ void PlatformContextGL2D::fillRect(const FloatRect& rect, const Color& color)
     IntRect fillRect = enclosingIntRect(FloatRect(offset, rect.size()));
     targetRect.intersect(fillRect);
 
-//     printf("targetRect: %d %d %d %d | %p\n", targetRect.x(), targetRect.y(), targetRect.width(), targetRect.height(), this);
-//     printf("rgba: %02x %02x %02x %02x\n", (int)(r*255),(int)(g*255),(int)(b*255),(int)(a*255));
     glEnable(GL_SCISSOR_TEST);
     glScissor(targetRect.x(), targetRect.y(), targetRect.width(), targetRect.height());
     rectPosition[0] = mapToViewport(targetRect.x());
